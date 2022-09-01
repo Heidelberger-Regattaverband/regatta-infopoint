@@ -2,7 +2,7 @@ use anyhow::{Ok, Result};
 use async_std::net::TcpStream;
 use tiberius::{AuthMethod, Client, Config, EncryptionLevel, Row};
 
-const HEATS_QUERY: &str = "SELECT c.Comp_ID, c.Comp_Event_ID_FK, c.Comp_Number, c.Comp_RoundCode, c.Comp_Label, c.Comp_State, c.Comp_Cancelled, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel \
+const HEATS_QUERY: &str = "SELECT c.Comp_ID, c.Comp_Event_ID_FK, c.Comp_Number, c.Comp_RoundCode, c.Comp_Label, c.Comp_State, c.Comp_Cancelled, c.Comp_DateTime, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel \
     FROM Comp AS c \
     INNER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK \
     WHERE c.Comp_Event_ID_FK = @P1";
@@ -12,10 +12,7 @@ const REGATTA_ID: i32 = 12;
 async fn main() -> Result<()> {
     let config = create_config();
 
-    let tcp = TcpStream::connect(config.get_addr()).await?;
-    tcp.set_nodelay(true)?;
-
-    let mut client = Client::connect(config, tcp).await?;
+    let mut client = create_client(config).await?;
 
     println!("Query {HEATS_QUERY}");
 
@@ -32,6 +29,14 @@ async fn main() -> Result<()> {
     // assert_eq!(Some(1), row.get(0));
 
     Ok(())
+}
+
+async fn create_client(config: Config) -> Result<Client<TcpStream>> {
+    let tcp = TcpStream::connect(config.get_addr()).await?;
+    tcp.set_nodelay(true)?;
+
+    let client = Client::connect(config, tcp).await?;
+    Ok(client)
 }
 
 fn create_config() -> Config {
