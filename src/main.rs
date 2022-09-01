@@ -2,7 +2,7 @@ use anyhow::Result;
 use async_std::net::TcpStream;
 use tiberius::{AuthMethod, Client, Config, EncryptionLevel, Row};
 
-const HEATS_QUERY: &str = "SELECT c.Comp_ID, c.Comp_Event_ID_FK, c.Comp_Number, c.Comp_RoundCode, c.Comp_Label, o.Offer_RaceNumber, o.Offer_ShortLabel \
+const HEATS_QUERY: &str = "SELECT c.Comp_ID, c.Comp_Event_ID_FK, c.Comp_Number, c.Comp_RoundCode, c.Comp_Label, c.Comp_State, c.Comp_Cancelled, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel \
     FROM Comp AS c \
     INNER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK \
     WHERE c.Comp_Event_ID_FK = 12";
@@ -35,25 +35,34 @@ async fn main() -> Result<()> {
                 .try_get("Offer_RaceNumber")?
                 .unwrap_or_else(|| "")
                 .to_string(),
-                race_short_label: row
+            race_short_label: row
                 .try_get("Offer_ShortLabel")?
                 .unwrap_or_else(|| "")
                 .to_string(),
-            heat_number: row.try_get("Comp_Number")?.unwrap_or_else(|| 0),
+            race_long_label: row
+                .try_get("Offer_LongLabel")?
+                .unwrap_or_else(|| "")
+                .to_string(),
+            number: row.try_get("Comp_Number")?.unwrap_or_else(|| 0),
             round_code: row
                 .try_get("Comp_RoundCode")?
                 .unwrap_or_else(|| "")
                 .to_string(),
-            label: row.try_get("Comp_Label")?.unwrap_or_else(|| "").to_string(),
+            division_number: row.try_get("Comp_Label")?.unwrap_or_else(|| "").to_string(),
+            state: row.try_get("Comp_State")?.unwrap_or_else(|| 0),
+            cancelled: row.try_get("Comp_Cancelled")?.unwrap_or_else(|| false),
         };
         println!(
-            "Heat: id={}, race_number={}, heat_number={}, round_code={}, label={}, race_short_label={}",
+            "Heat: id={}, race_number={}, number={}, round_code={}, division_number={}, race_short_label={}, state={}, cancelled={}, race_long_label={}", 
             heat.id,
             heat.race_number,
-            heat.heat_number,
+            heat.number,
             heat.round_code,
-            heat.label,
-            heat.race_short_label
+            heat.division_number,
+            heat.race_short_label,
+            heat.state,
+            heat.cancelled,
+            heat.race_long_label
         );
         heats.push(heat);
     }
@@ -75,9 +84,12 @@ fn create_config() -> Config {
 
 struct Heat {
     id: i32,
-    heat_number: i16,
     race_number: String,
     race_short_label: String,
+    number: i16,
     round_code: String,
-    label: String,
+    division_number: String,
+    state: u8,
+    cancelled: bool,
+    race_long_label: String,
 }
