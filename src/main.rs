@@ -1,6 +1,6 @@
-use anyhow::Result;
+use anyhow::{Ok, Result};
 use async_std::net::TcpStream;
-use tiberius::{AuthMethod, Client, Config, EncryptionLevel};
+use tiberius::{AuthMethod, Client, Config, EncryptionLevel, Row};
 
 const HEATS_QUERY: &str = "SELECT c.Comp_ID, c.Comp_Event_ID_FK, c.Comp_Number, c.Comp_RoundCode, c.Comp_Label, c.Comp_State, c.Comp_Cancelled, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel \
     FROM Comp AS c \
@@ -25,8 +25,26 @@ async fn main() -> Result<()> {
         .into_first_result()
         .await?;
 
-    println!("Row count: {}", rows.len());
+    let heats = get_heats(rows);
+    println!("Heats count: {}", heats.unwrap().len());
 
+    // println!("{:?}", row);
+    // assert_eq!(Some(1), row.get(0));
+
+    Ok(())
+}
+
+fn create_config() -> Config {
+    let mut config = Config::new();
+    config.host("8e835d.online-server.cloud");
+    config.port(1433);
+    config.authentication(AuthMethod::sql_server("SA", "Regatta4HD"));
+    config.database("Regatta_2022_Test");
+    config.encryption(EncryptionLevel::NotSupported);
+    config
+}
+
+fn get_heats(rows: Vec<Row>) -> Result<Vec<Heat>> {
     let mut heats: Vec<Heat> = Vec::new();
 
     for row in rows {
@@ -67,20 +85,7 @@ async fn main() -> Result<()> {
         );
         heats.push(heat);
     }
-    // println!("{:?}", row);
-    // assert_eq!(Some(1), row.get(0));
-
-    Ok(())
-}
-
-fn create_config() -> Config {
-    let mut config = Config::new();
-    config.host("8e835d.online-server.cloud");
-    config.port(1433);
-    config.authentication(AuthMethod::sql_server("SA", "Regatta4HD"));
-    config.database("Regatta_2022_Test");
-    config.encryption(EncryptionLevel::NotSupported);
-    config
+    Ok(heats)
 }
 
 struct Heat {
