@@ -1,11 +1,12 @@
 use anyhow::Result;
 use async_std::net::TcpStream;
-use tiberius::{AuthMethod, Client, Config, EncryptionLevel, Row};
+use tiberius::{AuthMethod, Client, Config, EncryptionLevel};
 
 const HEATS_QUERY: &str = "SELECT c.Comp_ID, c.Comp_Event_ID_FK, c.Comp_Number, c.Comp_RoundCode, c.Comp_Label, c.Comp_State, c.Comp_Cancelled, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel \
     FROM Comp AS c \
     INNER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK \
-    WHERE c.Comp_Event_ID_FK = 12";
+    WHERE c.Comp_Event_ID_FK = @P1";
+const REGATTA_ID: i32 = 12;
 
 #[async_std::main]
 async fn main() -> Result<()> {
@@ -19,7 +20,7 @@ async fn main() -> Result<()> {
     println!("Query {HEATS_QUERY}");
 
     let rows = client
-        .query(HEATS_QUERY, &[])
+        .query(HEATS_QUERY, &[&REGATTA_ID])
         .await?
         .into_first_result()
         .await?;
