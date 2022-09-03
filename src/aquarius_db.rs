@@ -19,14 +19,6 @@ const HEAT_REGISTRATION_QUERY: &str =
 
 const REGATTA_ID: i32 = 12;
 
-pub async fn create_client(config: Config) -> Result<Client<TcpStream>> {
-    let tcp = TcpStream::connect(config.get_addr()).await?;
-    tcp.set_nodelay(true)?;
-
-    let client = Client::connect(config, tcp).await?;
-    Ok(client)
-}
-
 pub fn create_config() -> Config {
     let mut config = Config::new();
     config.host("8e835d.online-server.cloud");
