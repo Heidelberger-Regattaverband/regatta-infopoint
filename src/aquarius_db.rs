@@ -1,7 +1,7 @@
 use anyhow::{Ok, Result};
 use async_std::net::TcpStream;
 use serde::Serialize;
-use tiberius::{AuthMethod, Client, Config, EncryptionLevel, Row};
+use tiberius::{Client, Row};
 
 const HEATS_QUERY: &str = "SELECT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel \
     FROM Comp AS c \
@@ -18,16 +18,6 @@ const HEAT_REGISTRATION_QUERY: &str =
     WHERE ce.CE_Comp_ID_FK = @P1 AND r.Result_SplitNr = 64";
 
 const REGATTA_ID: i32 = 12;
-
-pub fn create_config() -> Config {
-    let mut config = Config::new();
-    config.host("8e835d.online-server.cloud");
-    config.port(1433);
-    config.authentication(AuthMethod::sql_server("SA", "Regatta4HD"));
-    config.database("Regatta_2022_Test");
-    config.encryption(EncryptionLevel::NotSupported);
-    config
-}
 
 pub async fn get_heat_registrations(
     client: &mut Client<TcpStream>,

@@ -4,27 +4,14 @@ mod rest_api;
 
 use actix_web::{web::Data, App, HttpServer};
 use bb8::Pool;
-use connection_manager::{TiberiusConnectionManager, TiberiusPool};
-
-// #[async_std::main]
-// async fn main() -> Result<()> {
-//     let mut client = aquarius_db::create_client(aquarius_db::create_config()).await?;
-//     let heats = aquarius_db::get_heats(&mut client).await?;
-//     println!("Heats count: {}", heats.len());
-
-//     let heat_id = heats.get(1).unwrap().id;
-//     let heat_registrations = aquarius_db::get_heat_registrations(&mut client, heat_id).await?;
-//     println!("heat_registrations count: {}", heat_registrations.len());
-
-//     Ok(())
-// }
+use connection_manager::{TiberiusConnectionManager};
+use tiberius::{AuthMethod, Config, EncryptionLevel};
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let manager: TiberiusConnectionManager =
-        TiberiusConnectionManager::new(aquarius_db::create_config()).unwrap();
-    let db_pool: TiberiusPool = Pool::builder().max_size(5).build(manager).await.unwrap();
-    let data: Data<TiberiusPool> = Data::new(db_pool);
+    let manager = TiberiusConnectionManager::new(create_config()).unwrap();
+    let db_pool = Pool::builder().max_size(5).build(manager).await.unwrap();
+    let data = Data::new(db_pool);
 
     HttpServer::new(move || {
         App::new()
@@ -36,4 +23,14 @@ async fn main() -> std::io::Result<()> {
     .bind(("127.0.0.1", 8080))?
     .run()
     .await
+}
+
+fn create_config() -> Config {
+    let mut config = Config::new();
+    config.host("8e835d.online-server.cloud");
+    config.port(1433);
+    config.authentication(AuthMethod::sql_server("SA", "Regatta4HD"));
+    config.database("Regatta_2022_Test");
+    config.encryption(EncryptionLevel::NotSupported);
+    config
 }
