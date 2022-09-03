@@ -7,11 +7,14 @@ const HEATS_QUERY: &str = "SELECT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o
     INNER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK \
     WHERE c.Comp_Event_ID_FK = @P1";
 
-const HEAT_RESULT_QUERY: &str =
-    "SELECT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel \
-    FROM Comp c \
-    INNER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK \
-    WHERE c.Comp_ID = @P1";
+const HEAT_REGISTRATION_QUERY: &str =
+    "SELECT	ce.CE_Lane, e.Entry_Bib, e.Entry_BoatNumber, l.Label_Short, l.Label_Long, r.Result_Rank \
+    FROM CompEntries AS ce
+    JOIN Entry AS e ON ce.CE_Entry_ID_FK = e.Entry_ID
+    JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
+    JOIN Label AS l ON el.EL_Label_ID_FK = l.Label_ID
+    JOIN Result AS r ON r.Result_CE_ID_FK = ce.CE_ID
+    WHERE ce.CE_Comp_ID_FK = @P1 AND r.Result_SplitNr = 64";
 
 const REGATTA_ID: i32 = 12;
 
@@ -33,17 +36,24 @@ pub fn create_config() -> Config {
     config
 }
 
-pub async fn get_heat_result(client: &mut Client<TcpStream>, heat_id: i32) -> Result<Heat> {
+pub async fn get_heat_registrations(
+    client: &mut Client<TcpStream>,
+    heat_id: i32,
+) -> Result<Vec<HeatRegistration>> {
     let rows = client
-        .query(HEAT_RESULT_QUERY, &[&heat_id])
+        .query(HEAT_REGISTRATION_QUERY, &[&heat_id])
         .await?
         .into_first_result()
         .await?;
 
-    let row = rows.first().unwrap();
+    let mut heat_registrations: Vec<HeatRegistration> = Vec::new();
 
-    let heat = create_heat(row).unwrap();
-    Ok(heat)
+    for row in &rows {
+        let heat_registration = create_heat_registration(row).unwrap();
+        print_heat_registration(&heat_registration);
+        heat_registrations.push(heat_registration);
+    }
+    Ok(heat_registrations)
 }
 
 pub async fn get_heats(client: &mut Client<TcpStream>) -> Result<Vec<Heat>> {
@@ -92,6 +102,20 @@ fn create_heat(row: &Row) -> Result<Heat> {
     Ok(heat)
 }
 
+fn create_heat_registration(row: &Row) -> Result<HeatRegistration> {
+    let heat_registration = HeatRegistration {
+        lane: row.try_get("CE_Lane")?.unwrap_or_else(|| 0),
+        bib: row.try_get("Entry_Bib")?.unwrap_or_else(|| 0),
+        rank: row.try_get("Result_Rank")?.unwrap_or_else(|| 0),
+        short_label: row
+            .try_get("Label_Short")?
+            .unwrap_or_else(|| "")
+            .to_string(),
+        long_label: row.try_get("Label_Long")?.unwrap_or_else(|| "").to_string(),
+    };
+    Ok(heat_registration)
+}
+
 pub fn print_heat(heat: &Heat) {
     println!(
         "Heat: id={}, race_number={}, number={}, round_code={}, division_number={}, race_short_label={}, state={}, cancelled={}, race_long_label={}", 
@@ -107,6 +131,17 @@ pub fn print_heat(heat: &Heat) {
     );
 }
 
+pub fn print_heat_registration(heat_registration: &HeatRegistration) {
+    println!(
+        "Heat_Registration: lane={}, bib={}, rank={}, short_label={}, long_label={}",
+        heat_registration.lane,
+        heat_registration.bib,
+        heat_registration.rank,
+        heat_registration.short_label,
+        heat_registration.long_label
+    );
+}
+
 pub struct Heat {
     pub id: i32,
     race_number: String,
@@ -117,4 +152,12 @@ pub struct Heat {
     state: u8,
     cancelled: bool,
     race_long_label: String,
+}
+
+pub struct HeatRegistration {
+    lane: i16,
+    bib: i16,
+    rank: u8,
+    short_label: String,
+    long_label: String,
 }
