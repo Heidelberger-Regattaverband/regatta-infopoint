@@ -1,13 +1,11 @@
 mod aquarius_db;
+mod rest_api;
 
 use anyhow::{Ok, Result};
 
 #[async_std::main]
 async fn main() -> Result<()> {
-    let config = aquarius_db::create_config();
-
-    let mut client = aquarius_db::create_client(config).await?;
-
+    let mut client = aquarius_db::create_client(aquarius_db::create_config()).await?;
     let heats = aquarius_db::get_heats(&mut client).await?;
     println!("Heats count: {}", heats.len());
 
