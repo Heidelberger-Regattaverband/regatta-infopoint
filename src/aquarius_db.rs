@@ -1,5 +1,6 @@
 use anyhow::{Ok, Result};
 use async_std::net::TcpStream;
+use serde::Serialize;
 use tiberius::{AuthMethod, Client, Config, EncryptionLevel, Row};
 
 const HEATS_QUERY: &str = "SELECT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel \
@@ -116,7 +117,8 @@ fn create_heat_registration(row: &Row) -> Result<HeatRegistration> {
     Ok(heat_registration)
 }
 
-#[derive(Debug)]pub struct Heat {
+#[derive(Debug, Serialize)]
+pub struct Heat {
     pub id: i32,
     race_number: String,
     race_short_label: String,
@@ -128,7 +130,7 @@ fn create_heat_registration(row: &Row) -> Result<HeatRegistration> {
     race_long_label: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct HeatRegistration {
     lane: i16,
     bib: i16,
