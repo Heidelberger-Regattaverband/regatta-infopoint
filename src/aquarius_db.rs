@@ -50,7 +50,7 @@ pub async fn get_heat_registrations(
 
     for row in &rows {
         let heat_registration = create_heat_registration(row).unwrap();
-        print_heat_registration(&heat_registration);
+        dbg!(&heat_registration);
         heat_registrations.push(heat_registration);
     }
     Ok(heat_registrations)
@@ -69,7 +69,7 @@ pub async fn get_heats(client: &mut Client<TcpStream>) -> Result<Vec<Heat>> {
 
     for row in &rows {
         let heat = create_heat(row).unwrap();
-        print_heat(&heat);
+        println!("{:?}", heat);
         heats.push(heat);
     }
     Ok(heats)
@@ -116,33 +116,7 @@ fn create_heat_registration(row: &Row) -> Result<HeatRegistration> {
     Ok(heat_registration)
 }
 
-pub fn print_heat(heat: &Heat) {
-    println!(
-        "Heat: id={}, race_number={}, number={}, round_code={}, division_number={}, race_short_label={}, state={}, cancelled={}, race_long_label={}", 
-        heat.id,
-        heat.race_number,
-        heat.number,
-        heat.round_code,
-        heat.division_number,
-        heat.race_short_label,
-        heat.state,
-        heat.cancelled,
-        heat.race_long_label
-    );
-}
-
-pub fn print_heat_registration(heat_registration: &HeatRegistration) {
-    println!(
-        "Heat_Registration: lane={}, bib={}, rank={}, short_label={}, long_label={}",
-        heat_registration.lane,
-        heat_registration.bib,
-        heat_registration.rank,
-        heat_registration.short_label,
-        heat_registration.long_label
-    );
-}
-
-pub struct Heat {
+#[derive(Debug)]pub struct Heat {
     pub id: i32,
     race_number: String,
     race_short_label: String,
@@ -154,6 +128,7 @@ pub struct Heat {
     race_long_label: String,
 }
 
+#[derive(Debug)]
 pub struct HeatRegistration {
     lane: i16,
     bib: i16,
