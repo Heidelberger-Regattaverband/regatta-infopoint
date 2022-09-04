@@ -11,17 +11,19 @@ use tiberius::{AuthMethod, Config, EncryptionLevel};
 #[actix_web::main]
 async fn main() -> Result<()> {
     let manager = TiberiusConnectionManager::new(create_config()).unwrap();
-    let db_pool = Pool::builder().max_size(5).build(manager).await.unwrap();
+    let db_pool = Pool::builder().max_size(20).build(manager).await.unwrap();
     let data = Data::new(db_pool);
 
     HttpServer::new(move || {
         App::new()
             .app_data(Data::clone(&data))
             .service(rest_api::hello)
+            .service(rest_api::regattas)
             .service(rest_api::heats)
             .service(rest_api::heat_registrations)
     })
     .bind(("127.0.0.1", 8080))?
+    .workers(4)
     .run()
     .await
 }
