@@ -4,7 +4,7 @@ mod rest_api;
 
 use actix_web::{web::Data, App, HttpServer};
 use bb8::Pool;
-use connection_manager::{TiberiusConnectionManager};
+use connection_manager::TiberiusConnectionManager;
 use tiberius::{AuthMethod, Config, EncryptionLevel};
 
 #[actix_web::main]
