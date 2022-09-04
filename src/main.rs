@@ -5,10 +5,11 @@ mod rest_api;
 use actix_web::{web::Data, App, HttpServer};
 use bb8::Pool;
 use connection_manager::TiberiusConnectionManager;
+use std::io::Result;
 use tiberius::{AuthMethod, Config, EncryptionLevel};
 
 #[actix_web::main]
-async fn main() -> std::io::Result<()> {
+async fn main() -> Result<()> {
     let manager = TiberiusConnectionManager::new(create_config()).unwrap();
     let db_pool = Pool::builder().max_size(5).build(manager).await.unwrap();
     let data = Data::new(db_pool);
