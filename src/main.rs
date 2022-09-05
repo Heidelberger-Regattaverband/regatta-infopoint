@@ -2,6 +2,7 @@ mod aquarius_db;
 mod connection_manager;
 mod rest_api;
 
+use actix_files::Files;
 use actix_web::{web::Data, App, HttpServer};
 use bb8::Pool;
 use connection_manager::TiberiusConnectionManager;
@@ -25,6 +26,8 @@ async fn main() -> Result<()> {
             .service(rest_api::regattas)
             .service(rest_api::heats)
             .service(rest_api::heat_registrations)
+            .service(Files::new("/", "./static").show_files_listing())
+            .service(Files::new("/ui", "./static/ui").index_file("index.html"))
     })
     .bind(("127.0.0.1", http_port))?
     .workers(4)
