@@ -57,21 +57,30 @@ fn get_db_name() -> String {
     var("DB_NAME").unwrap_or("Regatta_2022_Test".to_string())
 }
 
+fn get_db_user() -> String {
+    var("DB_USER").unwrap_or("sa".to_string())
+}
+
+fn get_db_password() -> String {
+    var("DB_PASSWORD").unwrap()
+}
+
 fn create_config() -> Config {
     let db_host = get_db_host();
     let db_port = get_db_port();
     let db_name = get_db_name();
+    let db_user = get_db_user();
 
     println!(
-        "Database configuration: host={}, port={}, name={}",
-        db_host, db_port, db_name
+        "Database configuration: host={}, port={}, name={}, user={}",
+        db_host, db_port, db_name, db_user
     );
 
     let mut config = Config::new();
     config.host(db_host);
     config.port(db_port);
     config.database(db_name);
-    config.authentication(AuthMethod::sql_server("SA", "Regatta4HD"));
+    config.authentication(AuthMethod::sql_server(db_user, get_db_password()));
     config.encryption(EncryptionLevel::NotSupported);
     config
 }
