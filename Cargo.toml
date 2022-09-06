@@ -2,6 +2,10 @@
 name = "aquarius"
 version = "0.1.0"
 edition = "2021"
+authors = ["Markus Ofterdinger <markus@ofterdinger.de>"]
+readme = "README.md"
+license = "Apache-2.0"
+description = "An infopoint showing results of a rowing regatta in a web browser."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
