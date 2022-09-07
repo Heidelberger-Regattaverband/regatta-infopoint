@@ -12,6 +12,8 @@ description = "An infopoint showing results of a rowing regatta in a web browser
 [dependencies]
 anyhow = "1"
 async-std =  {version = "1.12.0", features = ["attributes"]}
+env_logger = "0.9"
+log = "0.4"
 
 # Web
 actix-web = "4"
@@ -21,4 +23,4 @@ serde = { version = "1", features = ["derive"] }
 # Database
 bb8 = "0.8"
 async-trait = "0.1"
-tiberius = "0.11.0"
+tiberius = "0.11"

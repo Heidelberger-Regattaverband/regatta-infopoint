@@ -6,18 +6,21 @@ use actix_files::Files;
 use actix_web::{web::Data, App, HttpServer};
 use bb8::Pool;
 use connection_manager::TiberiusConnectionManager;
+use log::info;
 use std::{env::var, io::Result};
 use tiberius::{AuthMethod, Config, EncryptionLevel};
 
 #[actix_web::main]
 async fn main() -> Result<()> {
-    let config = create_config();
-    let manager = TiberiusConnectionManager::new(config).unwrap();
-    let db_pool = Pool::builder().max_size(20).build(manager).await.unwrap();
-    let data = Data::new(db_pool);
+    env_logger::init();
+    info!("Starting infopoint");
+
+    let manager = TiberiusConnectionManager::new(create_config()).unwrap();
+    let pool = Pool::builder().max_size(20).build(manager).await.unwrap();
+    let data = Data::new(pool);
     let http_port = get_http_port();
 
-    println!("Starting HTTP server on port {http_port}");
+    info!("Starting HTTP server on port {http_port}");
 
     HttpServer::new(move || {
         App::new()
@@ -71,7 +74,7 @@ fn create_config() -> Config {
     let db_name = get_db_name();
     let db_user = get_db_user();
 
-    println!(
+    info!(
         "Database configuration: host={}, port={}, name={}, user={}",
         db_host, db_port, db_name, db_user
     );
