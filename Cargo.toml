@@ -21,4 +21,4 @@ serde = { version = "1", features = ["derive"] }
 # Database
 bb8 = "0.8"
 async-trait = "0.1"
-tiberius = "0.10.0"
+tiberius = "0.11.0"
