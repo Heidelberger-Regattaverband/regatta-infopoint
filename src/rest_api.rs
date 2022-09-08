@@ -2,20 +2,14 @@ use crate::{
     aquarius_db::{
         get_heat_registrations, get_heats, get_regattas, Heat, HeatRegistration, Regatta,
     },
-    connection_manager::TiberiusPool,
+    db::TiberiusPool,
 };
 
 use actix_web::{
     get,
     web::Data,
     web::{Json, Path},
-    HttpResponse, Responder,
 };
-
-#[get("/api")]
-async fn hello() -> impl Responder {
-    HttpResponse::Ok().body("Hello world!")
-}
 
 #[get("/api/regattas")]
 async fn regattas(data: Data<TiberiusPool>) -> Json<Vec<Regatta>> {

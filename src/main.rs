@@ -1,5 +1,5 @@
 mod aquarius_db;
-mod connection_manager;
+mod db;
 mod rest_api;
 
 use actix_files::Files;
@@ -12,7 +12,7 @@ async fn main() -> Result<()> {
     env_logger::init();
     info!("Starting infopoint");
 
-    let pool = connection_manager::create_pool().await;
+    let pool = db::create_pool().await;
     let data = Data::new(pool);
     let http_port = get_http_port();
 
@@ -21,7 +21,6 @@ async fn main() -> Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(Data::clone(&data))
-            .service(rest_api::hello)
             .service(rest_api::regattas)
             .service(rest_api::heats)
             .service(rest_api::heat_registrations)
