@@ -14,9 +14,6 @@ async fn main() -> Result<()> {
 
     let pool = db::create_pool().await;
     let data = Data::new(pool);
-    let http_port = get_http_port();
-
-    info!("Starting HTTP server on port {http_port}");
 
     HttpServer::new(move || {
         App::new()
@@ -27,19 +24,19 @@ async fn main() -> Result<()> {
             .service(Files::new("/", "./static").show_files_listing())
             .service(Files::new("/ui", "./static/ui").index_file("index.html"))
     })
-    .bind((get_http_bind(), http_port))?
+    .bind(get_http_bind())?
     .workers(4)
     .run()
     .await
 }
 
-fn get_http_port() -> u16 {
-    env::var("HTTP_PORT")
+fn get_http_bind() -> (String, u16) {
+    let port = env::var("HTTP_PORT")
         .unwrap_or("8080".to_string())
         .parse()
-        .unwrap()
-}
+        .unwrap();
+    let host = env::var("HTTP_BIND").unwrap_or("127.0.0.1".to_string());
+    info!("HTTP server is listening on: {host}:{port}");
 
-fn get_http_bind() -> String {
-    env::var("HTTP_BIND").unwrap_or("127.0.0.1".to_string())
+    (host, port)
 }
