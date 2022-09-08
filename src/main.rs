@@ -1,89 +1,42 @@
 mod aquarius_db;
-mod connection_manager;
+mod db;
 mod rest_api;
 
 use actix_files::Files;
 use actix_web::{web::Data, App, HttpServer};
-use bb8::Pool;
-use connection_manager::TiberiusConnectionManager;
 use log::info;
-use std::{env::var, io::Result};
-use tiberius::{AuthMethod, Config, EncryptionLevel};
+use std::{env, io::Result};
 
 #[actix_web::main]
 async fn main() -> Result<()> {
     env_logger::init();
     info!("Starting infopoint");
 
-    let manager = TiberiusConnectionManager::new(create_config()).unwrap();
-    let pool = Pool::builder().max_size(20).build(manager).await.unwrap();
+    let pool = db::create_pool().await;
     let data = Data::new(pool);
-    let http_port = get_http_port();
-
-    info!("Starting HTTP server on port {http_port}");
 
     HttpServer::new(move || {
         App::new()
             .app_data(Data::clone(&data))
-            .service(rest_api::hello)
             .service(rest_api::regattas)
             .service(rest_api::heats)
             .service(rest_api::heat_registrations)
             .service(Files::new("/", "./static").show_files_listing())
             .service(Files::new("/ui", "./static/ui").index_file("index.html"))
     })
-    .bind(("127.0.0.1", http_port))?
+    .bind(get_http_bind())?
     .workers(4)
     .run()
     .await
 }
 
-fn get_http_port() -> u16 {
-    var("HTTP_PORT")
+fn get_http_bind() -> (String, u16) {
+    let port = env::var("HTTP_PORT")
         .unwrap_or("8080".to_string())
         .parse()
-        .unwrap()
-}
+        .unwrap();
+    let host = env::var("HTTP_BIND").unwrap_or("127.0.0.1".to_string());
+    info!("HTTP server is listening on: {host}:{port}");
 
-fn get_db_port() -> u16 {
-    var("DB_PORT")
-        .unwrap_or("1433".to_string())
-        .parse()
-        .unwrap()
-}
-
-fn get_db_host() -> String {
-    var("DB_HOST").unwrap_or("8e835d.online-server.cloud".to_string())
-}
-
-fn get_db_name() -> String {
-    var("DB_NAME").unwrap_or("Regatta_2022_Test".to_string())
-}
-
-fn get_db_user() -> String {
-    var("DB_USER").unwrap_or("sa".to_string())
-}
-
-fn get_db_password() -> String {
-    var("DB_PASSWORD").unwrap()
-}
-
-fn create_config() -> Config {
-    let db_host = get_db_host();
-    let db_port = get_db_port();
-    let db_name = get_db_name();
-    let db_user = get_db_user();
-
-    info!(
-        "Database configuration: host={}, port={}, name={}, user={}",
-        db_host, db_port, db_name, db_user
-    );
-
-    let mut config = Config::new();
-    config.host(db_host);
-    config.port(db_port);
-    config.database(db_name);
-    config.authentication(AuthMethod::sql_server(db_user, get_db_password()));
-    config.encryption(EncryptionLevel::NotSupported);
-    config
+    (host, port)
 }

@@ -1,5 +1,6 @@
 use anyhow::{Ok, Result};
 use async_std::net::TcpStream;
+use log::debug;
 use serde::Serialize;
 use tiberius::{Client, Row};
 
@@ -22,7 +23,7 @@ const HEAT_REGISTRATION_QUERY: &str =
 const REGATTA_ID: i32 = 12;
 
 pub async fn get_regattas(client: &mut Client<TcpStream>) -> Result<Vec<Regatta>> {
-    println!("Query {HEATS_QUERY}");
+    debug!("Query {HEATS_QUERY}");
 
     let rows = client
         .query(REGATTAS_QUERY, &[])
@@ -33,8 +34,8 @@ pub async fn get_regattas(client: &mut Client<TcpStream>) -> Result<Vec<Regatta>
     let mut regattas: Vec<Regatta> = Vec::new();
 
     for row in &rows {
-        let regatta = create_regatta(row).unwrap();
-        println!("{:?}", regatta);
+        let regatta = create_regatta(row);
+        debug!("{:?}", regatta);
         regattas.push(regatta);
     }
     Ok(regattas)
@@ -50,18 +51,18 @@ pub async fn get_heat_registrations(
         .into_first_result()
         .await?;
 
-    let mut heat_registrations: Vec<HeatRegistration> = Vec::new();
+    let mut heat_registrations: Vec<HeatRegistration> = Vec::with_capacity(rows.len());
 
     for row in &rows {
-        let heat_registration = create_heat_registration(row).unwrap();
-        dbg!(&heat_registration);
+        let heat_registration = create_heat_registration(row);
+        debug!("{:?}", heat_registration);
         heat_registrations.push(heat_registration);
     }
     Ok(heat_registrations)
 }
 
 pub async fn get_heats(client: &mut Client<TcpStream>) -> Result<Vec<Heat>> {
-    println!("Query {HEATS_QUERY}");
+    debug!("Query {HEATS_QUERY}");
 
     let rows = client
         .query(HEATS_QUERY, &[&REGATTA_ID])
@@ -72,72 +73,45 @@ pub async fn get_heats(client: &mut Client<TcpStream>) -> Result<Vec<Heat>> {
     let mut heats: Vec<Heat> = Vec::new();
 
     for row in &rows {
-        let heat = create_heat(row).unwrap();
-        println!("{:?}", heat);
+        let heat = create_heat(row);
+        debug!("{:?}", heat);
         heats.push(heat);
     }
     Ok(heats)
 }
 
-fn create_regatta(row: &Row) -> Result<Regatta> {
-    let regatta = Regatta {
-        id: row.try_get("Event_ID")?.unwrap_or_else(|| 0),
-        title: row
-            .try_get("Event_Title")?
-            .unwrap_or_else(|| "")
-            .to_string(),
-        sub_title: row
-            .try_get("Event_SubTitle")?
-            .unwrap_or_else(|| "")
-            .to_string(),
-        venue: row
-            .try_get("Event_Venue")?
-            .unwrap_or_else(|| "")
-            .to_string(),
-    };
-    Ok(regatta)
+fn create_regatta(row: &Row) -> Regatta {
+    Regatta {
+        id: Column::get(row, "Event_ID"),
+        title: Column::get(row, "Event_Title"),
+        sub_title: Column::get(row, "Event_SubTitle"),
+        venue: Column::get(row, "Event_Venue"),
+    }
 }
 
-fn create_heat(row: &Row) -> Result<Heat> {
-    let heat = Heat {
-        id: row.try_get("Comp_ID")?.unwrap_or_else(|| 0),
-        race_number: row
-            .try_get("Offer_RaceNumber")?
-            .unwrap_or_else(|| "")
-            .to_string(),
-        race_short_label: row
-            .try_get("Offer_ShortLabel")?
-            .unwrap_or_else(|| "")
-            .to_string(),
-        race_long_label: row
-            .try_get("Offer_LongLabel")?
-            .unwrap_or_else(|| "")
-            .to_string(),
-        number: row.try_get("Comp_Number")?.unwrap_or_else(|| 0),
-        round_code: row
-            .try_get("Comp_RoundCode")?
-            .unwrap_or_else(|| "")
-            .to_string(),
-        division_number: row.try_get("Comp_Label")?.unwrap_or_else(|| "").to_string(),
-        state: row.try_get("Comp_State")?.unwrap_or_else(|| 0),
-        cancelled: row.try_get("Comp_Cancelled")?.unwrap_or_else(|| false),
-    };
-    Ok(heat)
+fn create_heat(row: &Row) -> Heat {
+    Heat {
+        id: Column::get(row, "Comp_ID"),
+        race_number: Column::get(row, "Offer_RaceNumber"),
+        race_short_label: Column::get(row, "Offer_ShortLabel"),
+        race_long_label: Column::get(row, "Offer_LongLabel"),
+        number: Column::get(row, "Comp_Number"),
+        round_code: Column::get(row, "Comp_RoundCode"),
+        division_number: Column::get(row, "Comp_Label"),
+        state: Column::get(row, "Comp_State"),
+        cancelled: Column::get(row, "Comp_Cancelled"),
+    }
 }
 
-fn create_heat_registration(row: &Row) -> Result<HeatRegistration> {
-    let heat_registration = HeatRegistration {
-        id: row.try_get("CE_ID")?.unwrap_or_else(|| 0),
-        lane: row.try_get("CE_Lane")?.unwrap_or_else(|| 0),
-        bib: row.try_get("Entry_Bib")?.unwrap_or_else(|| 0),
-        rank: row.try_get("Result_Rank")?.unwrap_or_else(|| 0),
-        short_label: row
-            .try_get("Label_Short")?
-            .unwrap_or_else(|| "")
-            .to_string(),
-        long_label: row.try_get("Label_Long")?.unwrap_or_else(|| "").to_string(),
-    };
-    Ok(heat_registration)
+fn create_heat_registration(row: &Row) -> HeatRegistration {
+    HeatRegistration {
+        id: Column::get(row, "CE_ID"),
+        lane: Column::get(row, "CE_Lane"),
+        bib: Column::get(row, "Entry_Bib"),
+        rank: Column::get(row, "Result_Rank"),
+        short_label: Column::get(row, "Label_Short"),
+        long_label: Column::get(row, "Label_Long"),
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -169,4 +143,42 @@ pub struct HeatRegistration {
     rank: u8,
     short_label: String,
     long_label: String,
+}
+
+// see: https://github.com/prisma/tiberius/issues/101#issuecomment-978144867
+trait Column {
+    fn get(row: &Row, col_name: &str) -> Self;
+}
+
+impl Column for bool {
+    fn get(row: &Row, col_name: &str) -> bool {
+        row.try_get::<bool, _>(col_name).unwrap().unwrap()
+    }
+}
+
+impl Column for u8 {
+    fn get(row: &Row, col_name: &str) -> u8 {
+        row.try_get::<u8, _>(col_name).unwrap().unwrap()
+    }
+}
+
+impl Column for i16 {
+    fn get(row: &Row, col_name: &str) -> i16 {
+        row.try_get::<i16, _>(col_name).unwrap().unwrap()
+    }
+}
+
+impl Column for i32 {
+    fn get(row: &Row, col_name: &str) -> i32 {
+        row.try_get::<i32, _>(col_name).unwrap().unwrap()
+    }
+}
+
+impl Column for String {
+    fn get(row: &Row, col_name: &str) -> String {
+        row.try_get::<&str, _>(col_name)
+            .unwrap()
+            .unwrap()
+            .to_string()
+    }
 }
