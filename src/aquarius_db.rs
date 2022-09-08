@@ -1,5 +1,6 @@
 use anyhow::{Ok, Result};
 use async_std::net::TcpStream;
+use log::debug;
 use serde::Serialize;
 use tiberius::{Client, Row};
 
@@ -22,7 +23,7 @@ const HEAT_REGISTRATION_QUERY: &str =
 const REGATTA_ID: i32 = 12;
 
 pub async fn get_regattas(client: &mut Client<TcpStream>) -> Result<Vec<Regatta>> {
-    println!("Query {HEATS_QUERY}");
+    debug!("Query {HEATS_QUERY}");
 
     let rows = client
         .query(REGATTAS_QUERY, &[])
@@ -33,8 +34,8 @@ pub async fn get_regattas(client: &mut Client<TcpStream>) -> Result<Vec<Regatta>
     let mut regattas: Vec<Regatta> = Vec::new();
 
     for row in &rows {
-        let regatta = create_regatta(row).unwrap();
-        println!("{:?}", regatta);
+        let regatta = create_regatta(row);
+        debug!("{:?}", regatta);
         regattas.push(regatta);
     }
     Ok(regattas)
@@ -50,18 +51,18 @@ pub async fn get_heat_registrations(
         .into_first_result()
         .await?;
 
-    let mut heat_registrations: Vec<HeatRegistration> = Vec::new();
+    let mut heat_registrations: Vec<HeatRegistration> = Vec::with_capacity(rows.len());
 
     for row in &rows {
-        let heat_registration = create_heat_registration(row).unwrap();
-        dbg!(&heat_registration);
+        let heat_registration = create_heat_registration(row);
+        debug!("{:?}", heat_registration);
         heat_registrations.push(heat_registration);
     }
     Ok(heat_registrations)
 }
 
 pub async fn get_heats(client: &mut Client<TcpStream>) -> Result<Vec<Heat>> {
-    println!("Query {HEATS_QUERY}");
+    debug!("Query {HEATS_QUERY}");
 
     let rows = client
         .query(HEATS_QUERY, &[&REGATTA_ID])
@@ -72,25 +73,24 @@ pub async fn get_heats(client: &mut Client<TcpStream>) -> Result<Vec<Heat>> {
     let mut heats: Vec<Heat> = Vec::new();
 
     for row in &rows {
-        let heat = create_heat(row).unwrap();
-        println!("{:?}", heat);
+        let heat = create_heat(row);
+        debug!("{:?}", heat);
         heats.push(heat);
     }
     Ok(heats)
 }
 
-fn create_regatta(row: &Row) -> Result<Regatta> {
-    let regatta = Regatta {
+fn create_regatta(row: &Row) -> Regatta {
+    Regatta {
         id: Column::get(row, "Event_ID"),
         title: Column::get(row, "Event_Title"),
         sub_title: Column::get(row, "Event_SubTitle"),
         venue: Column::get(row, "Event_Venue"),
-    };
-    Ok(regatta)
+    }
 }
 
-fn create_heat(row: &Row) -> Result<Heat> {
-    let heat = Heat {
+fn create_heat(row: &Row) -> Heat {
+    Heat {
         id: Column::get(row, "Comp_ID"),
         race_number: Column::get(row, "Offer_RaceNumber"),
         race_short_label: Column::get(row, "Offer_ShortLabel"),
@@ -100,20 +100,18 @@ fn create_heat(row: &Row) -> Result<Heat> {
         division_number: Column::get(row, "Comp_Label"),
         state: Column::get(row, "Comp_State"),
         cancelled: Column::get(row, "Comp_Cancelled"),
-    };
-    Ok(heat)
+    }
 }
 
-fn create_heat_registration(row: &Row) -> Result<HeatRegistration> {
-    let heat_registration = HeatRegistration {
+fn create_heat_registration(row: &Row) -> HeatRegistration {
+    HeatRegistration {
         id: Column::get(row, "CE_ID"),
         lane: Column::get(row, "CE_Lane"),
         bib: Column::get(row, "Entry_Bib"),
         rank: Column::get(row, "Result_Rank"),
         short_label: Column::get(row, "Label_Short"),
         long_label: Column::get(row, "Label_Long"),
-    };
-    Ok(heat_registration)
+    }
 }
 
 #[derive(Debug, Serialize)]
