@@ -42,7 +42,7 @@ pub struct TiberiusConnectionManager {
 
 impl TiberiusConnectionManager {
     /// Create a new `TiberiusConnectionManager`.
-    pub fn new(config: Config) -> tiberius::Result<TiberiusConnectionManager> {
+    fn new(config: Config) -> tiberius::Result<TiberiusConnectionManager> {
         Ok(TiberiusConnectionManager { config })
     }
 }

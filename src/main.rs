@@ -4,8 +4,6 @@ mod rest_api;
 
 use actix_files::Files;
 use actix_web::{web::Data, App, HttpServer};
-use bb8::Pool;
-use connection_manager::TiberiusConnectionManager;
 use log::info;
 use std::{env, io::Result};
 
@@ -14,7 +12,7 @@ async fn main() -> Result<()> {
     env_logger::init();
     info!("Starting infopoint");
 
-    let pool: Pool<TiberiusConnectionManager> = connection_manager::create_pool().await;
+    let pool = connection_manager::create_pool().await;
     let data = Data::new(pool);
     let http_port = get_http_port();
 
@@ -30,7 +28,7 @@ async fn main() -> Result<()> {
             .service(Files::new("/", "./static").show_files_listing())
             .service(Files::new("/ui", "./static/ui").index_file("index.html"))
     })
-    .bind(("127.0.0.1", http_port))?
+    .bind((get_http_bind(), http_port))?
     .workers(4)
     .run()
     .await
@@ -41,4 +39,8 @@ fn get_http_port() -> u16 {
         .unwrap_or("8080".to_string())
         .parse()
         .unwrap()
+}
+
+fn get_http_bind() -> String {
+    env::var("HTTP_BIND").unwrap_or("127.0.0.1".to_string())
 }
