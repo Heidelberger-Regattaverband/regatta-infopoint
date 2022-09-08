@@ -29,7 +29,7 @@
 use async_std::net::TcpStream;
 use async_trait::async_trait;
 use bb8::Pool;
-use tiberius::{error::Error, Client, Config};
+use tiberius::Config;
 
 pub type TiberiusPool = Pool<TiberiusConnectionManager>;
 
@@ -47,13 +47,13 @@ impl TiberiusConnectionManager {
 
 #[async_trait]
 impl bb8::ManageConnection for TiberiusConnectionManager {
-    type Connection = Client<TcpStream>;
-    type Error = Error;
+    type Connection = tiberius::Client<TcpStream>;
+    type Error = tiberius::error::Error;
 
     async fn connect(&self) -> Result<Self::Connection, Self::Error> {
         let tcp = TcpStream::connect(&self.config.get_addr()).await?;
         tcp.set_nodelay(true)?;
-        Client::connect(self.config.clone(), tcp).await
+        tiberius::Client::connect(self.config.clone(), tcp).await
     }
 
     async fn is_valid(&self, connection: &mut Self::Connection) -> Result<(), Self::Error> {
