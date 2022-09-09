@@ -54,10 +54,12 @@ mod tests {
 
     #[actix_web::test]
     async fn test_index_get() {
+        let app_data = create_app_data().await;
+
         let app = test::init_service(
             App::new()
                 .service(rest_api::regattas)
-                .app_data(Data::clone(&create_app_data().await)),
+                .app_data(Data::clone(&app_data)),
         )
         .await;
         let request = test::TestRequest::get().uri("/api/regattas").to_request();
