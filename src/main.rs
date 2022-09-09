@@ -2,8 +2,10 @@ mod aquarius_db;
 mod db;
 mod rest_api;
 
+use crate::db::TiberiusConnectionManager;
 use actix_files::Files;
 use actix_web::{web::Data, App, HttpServer};
+use bb8::Pool;
 use log::info;
 use std::{env, io::Result};
 
@@ -12,8 +14,7 @@ async fn main() -> Result<()> {
     env_logger::init();
     info!("Starting infopoint");
 
-    let pool = db::create_pool().await;
-    let data = Data::new(pool);
+    let data = create_app_data().await;
 
     HttpServer::new(move || {
         App::new()
@@ -41,6 +42,11 @@ fn get_http_bind() -> (String, u16) {
     (host, port)
 }
 
+async fn create_app_data() -> Data<Pool<TiberiusConnectionManager>> {
+    let pool = db::create_pool().await;
+    Data::new(pool)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -48,13 +54,10 @@ mod tests {
 
     #[actix_web::test]
     async fn test_index_get() {
-        let pool = db::create_pool().await;
-        let data = Data::new(pool);
-
         let app = test::init_service(
             App::new()
                 .service(rest_api::regattas)
-                .app_data(Data::clone(&data)),
+                .app_data(Data::clone(&create_app_data().await)),
         )
         .await;
         let request = test::TestRequest::get().uri("/api/regattas").to_request();
