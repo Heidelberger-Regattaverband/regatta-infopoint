@@ -72,27 +72,26 @@ impl bb8::ManageConnection for TiberiusConnectionManager {
 pub async fn create_pool() -> Pool<TiberiusConnectionManager> {
     let config = create_config();
     let manager = TiberiusConnectionManager::new(config).unwrap();
-    let pool = Pool::builder().max_size(20).build(manager).await.unwrap();
-    pool
+    Pool::builder().max_size(20).build(manager).await.unwrap()
 }
 
 fn get_db_port() -> u16 {
     env::var("DB_PORT")
-        .unwrap_or("1433".to_string())
+        .unwrap_or_else(|_| "1433".to_string())
         .parse()
         .unwrap()
 }
 
 fn get_db_host() -> String {
-    env::var("DB_HOST").unwrap_or("8e835d.online-server.cloud".to_string())
+    env::var("DB_HOST").unwrap_or_else(|_| "8e835d.online-server.cloud".to_string())
 }
 
 fn get_db_name() -> String {
-    env::var("DB_NAME").unwrap_or("Regatta_2022_Test".to_string())
+    env::var("DB_NAME").unwrap_or_else(|_| "Regatta_2022_Test".to_string())
 }
 
 fn get_db_user() -> String {
-    env::var("DB_USER").unwrap_or("sa".to_string())
+    env::var("DB_USER").unwrap_or_else(|_| "sa".to_string())
 }
 
 fn get_db_password() -> String {
