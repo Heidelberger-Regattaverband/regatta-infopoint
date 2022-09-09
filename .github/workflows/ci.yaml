@@ -36,9 +36,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ rustc }}-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-build-target-${{ env.rustc }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-cargo-build-target-${{ rustc }}-
+            ${{ runner.os }}-cargo-build-target-${{ env.rustc }}-
 
       - uses: actions-rs/cargo@v1
         name: Build and execute tests
