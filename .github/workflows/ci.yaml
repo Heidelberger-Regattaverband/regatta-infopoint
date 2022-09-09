@@ -17,13 +17,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Toolchain
+      - name: Setup toolchain
         id: toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
 
-      - name: restore build & cargo cache
+      - name: Restore build & cargo cache
         uses: Swatinem/rust-cache@v2
 
       - name: Build and run tests
