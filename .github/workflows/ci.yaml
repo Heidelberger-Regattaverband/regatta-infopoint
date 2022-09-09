@@ -23,23 +23,8 @@ jobs:
         with:
           toolchain: stable
 
-      # Caching
-      - name: Cache Cargo directories
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/bin
-            ~/.cargo/git
-            ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Cache Cargo Build
-        uses: actions/cache@v2
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ steps.toolchain.outputs.rustc }}-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-build-target-${{ steps.toolchain.outputs.rustc }}-
+      - name: restore build & cargo cache
+        uses: Swatinem/rust-cache@v2
 
       - name: Build and run tests
         uses: actions-rs/cargo@v1
