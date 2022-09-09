@@ -40,3 +40,25 @@ fn get_http_bind() -> (String, u16) {
 
     (host, port)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use actix_web::{test, App};
+
+    #[actix_web::test]
+    async fn test_index_get() {
+        let pool = db::create_pool().await;
+        let data = Data::new(pool);
+
+        let app = test::init_service(
+            App::new()
+                .service(rest_api::regattas)
+                .app_data(Data::clone(&data)),
+        )
+        .await;
+        let request = test::TestRequest::get().uri("/api/regattas").to_request();
+        let response = test::call_service(&app, request).await;
+        assert!(response.status().is_success());
+    }
+}
