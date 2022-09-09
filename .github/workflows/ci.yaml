@@ -15,19 +15,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        name: Checkout
 
       - uses: actions-rs/toolchain@v1
+        name: Toolchain
         with:
           toolchain: stable
 
       - uses: actions-rs/cargo@v1
+        name: Build and execute tests
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         with:
           command: test
           args: --workspace
 
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --all-features
+      # - uses: actions-rs/cargo@v1
+      #   with:
+      #     command: build
+      #     args: --release --all-features
