@@ -1,4 +1,5 @@
 name: Continuous Integration
+
 on:
   # Trigger the workflow on push or pull request, but only for the main branch
   push:
@@ -14,13 +15,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
+
       - uses: actions-rs/cargo@v1
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         with:
           command: test
           args: --workspace
+
       - uses: actions-rs/cargo@v1
         with:
           command: build
