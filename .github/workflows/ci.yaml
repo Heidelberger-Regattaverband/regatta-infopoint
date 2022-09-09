@@ -14,8 +14,8 @@ jobs:
     name: Rust project
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        name: Checkout
+      - name: Checkout
+        uses: actions/checkout@v3
 
       - name: Toolchain
         id: toolchain
@@ -41,8 +41,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-build-target-${{ steps.toolchain.outputs.rustc }}-
 
-      - uses: actions-rs/cargo@v1
-        name: Build and execute tests
+      - name: Build and run tests
+        uses: actions-rs/cargo@v1
         env:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         with:
