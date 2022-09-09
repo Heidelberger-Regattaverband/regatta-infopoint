@@ -1,4 +1,5 @@
 name: Continuous Integration
+
 on:
   # Trigger the workflow on push or pull request, but only for the main branch
   push:
@@ -13,11 +14,42 @@ jobs:
     name: Rust project
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Toolchain
+        id: toolchain
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - uses: actions-rs/cargo@v1
+
+      # Caching
+      - name: Cache Cargo directories
+        uses: actions/cache@v2
         with:
-          command: build
-          args: --release --all-features
+          path: |
+            ~/.cargo/bin
+            ~/.cargo/git
+            ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache Cargo Build
+        uses: actions/cache@v2
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-${{ steps.toolchain.outputs.rustc }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-build-target-${{ steps.toolchain.outputs.rustc }}-
+
+      - name: Build and run tests
+        uses: actions-rs/cargo@v1
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        with:
+          command: test
+          args: --workspace
+
+      # - uses: actions-rs/cargo@v1
+      #   with:
+      #     command: build
+      #     args: --release --all-features
