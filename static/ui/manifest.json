@@ -46,7 +46,7 @@
         "type": "sap.ui.model.json.JSONModel",
         "uri": "Invoices.json"
       },
-      "heats":{
+      "heat":{
         "type": "sap.ui.model.json.JSONModel",
         "uri": "/api/heats"
       }
