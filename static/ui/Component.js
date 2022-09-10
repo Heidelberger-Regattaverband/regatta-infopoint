@@ -6,13 +6,8 @@ sap.ui.define([
   "use strict";
   return UIComponent.extend("sap.ui.demo.walkthrough.Component", {
     metadata: {
-      "interfaces": ["sap.ui.core.IAsyncContentCreation"],
-      "rootView": {
-        "viewName": "sap.ui.demo.walkthrough.view.App",
-        "type": "XML",
-        /*"async": true, // implicitly set via the sap.ui.core.IAsyncContentCreation interface*/
-        "id": "app"
-      }
+      interfaces: ["sap.ui.core.IAsyncContentCreation"],
+      manifest: "json"
     },
     init: function () {
       // call the init function of the parent
@@ -27,15 +22,15 @@ sap.ui.define([
       this.setModel(oModel);
 
       // set i18n model
-      var i18nModel = new ResourceModel({
-        bundleName: "sap.ui.demo.walkthrough.i18n.i18n"
-      });
-      this.setModel(i18nModel, "i18n");
+      // var i18nModel = new ResourceModel({
+      //   bundleName: "sap.ui.demo.walkthrough.i18n.i18n"
+      // });
+      // this.setModel(i18nModel, "i18n");
 
-      var oInvoiceModel = new JSONModel();
-      oInvoiceModel.loadData("Invoices.json");
-      // oInvoiceModel.loadData("http://localhost:8080/api/heats");
-      this.setModel(oInvoiceModel, "invoice");
+      // var oInvoiceModel = new JSONModel();
+      // oInvoiceModel.loadData("Invoices.json");
+      // // oInvoiceModel.loadData("http://localhost:8080/api/heats");
+      // this.setModel(oInvoiceModel, "invoice");
     }
   });
 });
