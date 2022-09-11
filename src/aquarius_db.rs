@@ -2,7 +2,7 @@ use anyhow::{Ok, Result};
 use async_std::net::TcpStream;
 use log::debug;
 use serde::Serialize;
-use tiberius::{Client, Row};
+use tiberius::{time::chrono::NaiveDateTime, Client, Row};
 
 const REGATTAS_QUERY: &str = "SELECT * FROM Event e;";
 
@@ -90,6 +90,11 @@ fn create_regatta(row: &Row) -> Regatta {
 }
 
 fn create_heat(row: &Row) -> Heat {
+    let date_time: NaiveDateTime = Column::get(row, "Comp_DateTime");
+    let date = date_time.date().to_string();
+    let time = date_time.time().to_string();
+    println!("date={}, time={}", date, time);
+
     Heat {
         id: Column::get(row, "Comp_ID"),
         race_number: Column::get(row, "Offer_RaceNumber"),
@@ -100,6 +105,8 @@ fn create_heat(row: &Row) -> Heat {
         division_number: Column::get(row, "Comp_Label"),
         state: Column::get(row, "Comp_State"),
         cancelled: Column::get(row, "Comp_Cancelled"),
+        date: date,
+        time: time,
     }
 }
 
@@ -125,14 +132,16 @@ pub struct Regatta {
 #[derive(Debug, Serialize)]
 pub struct Heat {
     pub id: i32,
-    race_number: String,
-    race_short_label: String,
     number: i16,
+    race_short_label: String,
+    race_long_label: String,
+    race_number: String,
     round_code: String,
     division_number: String,
     state: u8,
     cancelled: bool,
-    race_long_label: String,
+    date: String,
+    time: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -171,6 +180,12 @@ impl Column for i16 {
 impl Column for i32 {
     fn get(row: &Row, col_name: &str) -> i32 {
         row.try_get::<i32, _>(col_name).unwrap().unwrap()
+    }
+}
+
+impl Column for NaiveDateTime {
+    fn get(row: &Row, col_name: &str) -> NaiveDateTime {
+        row.try_get::<NaiveDateTime, _>(col_name).unwrap().unwrap()
     }
 }
 
