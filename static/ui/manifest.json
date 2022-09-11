@@ -12,6 +12,10 @@
   },
   "sap.ui": {
     "technology": "UI5",
+    "icons": {
+      "icon": "sap-icon://task",
+      "favIcon": "/icon/favicon.ico"
+    },
     "deviceTypes": {
       "desktop": true,
       "tablet": true,
@@ -42,7 +46,7 @@
           "fallbackLocale": ""
         }
       },
-      "heat":{
+      "heat": {
         "type": "sap.ui.model.json.JSONModel",
         "uri": "/api/heats"
       }
