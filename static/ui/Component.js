@@ -4,7 +4,7 @@ sap.ui.define([
   "sap/ui/model/resource/ResourceModel"
 ], function (UIComponent, JSONModel, ResourceModel) {
   "use strict";
-  return UIComponent.extend("sap.ui.demo.walkthrough.Component", {
+  return UIComponent.extend("de.regatta_hd.infopoint.Component", {
     metadata: {
       interfaces: ["sap.ui.core.IAsyncContentCreation"],
       manifest: "json"

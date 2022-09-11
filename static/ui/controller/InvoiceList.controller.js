@@ -3,7 +3,7 @@ sap.ui.define([
   "sap/ui/model/json/JSONModel"
 ], function (Controller, JSONModel) {
   "use strict";
-  return Controller.extend("sap.ui.demo.walkthrough.controller.InvoiceList", {
+  return Controller.extend("de.regatta_hd.infopoint.controller.InvoiceList", {
     onInit: function () {
       var oViewModel = new JSONModel({
         currency: "EUR"
