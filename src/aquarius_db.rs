@@ -91,9 +91,6 @@ fn create_regatta(row: &Row) -> Regatta {
 
 fn create_heat(row: &Row) -> Heat {
     let date_time: NaiveDateTime = Column::get(row, "Comp_DateTime");
-    let date = date_time.date().to_string();
-    let time = date_time.time().to_string();
-    println!("date={}, time={}", date, time);
 
     Heat {
         id: Column::get(row, "Comp_ID"),
@@ -105,8 +102,8 @@ fn create_heat(row: &Row) -> Heat {
         division_number: Column::get(row, "Comp_Label"),
         state: Column::get(row, "Comp_State"),
         cancelled: Column::get(row, "Comp_Cancelled"),
-        date: date,
-        time: time,
+        date: date_time.date().to_string(),
+        time: date_time.time().to_string(),
     }
 }
 
