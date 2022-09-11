@@ -50,10 +50,10 @@ async fn create_app_data() -> Data<Pool<TiberiusConnectionManager>> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use actix_web::{test, App};
+    use actix_web::{test, test::TestRequest, App};
 
     #[actix_web::test]
-    async fn test_index_get() {
+    async fn test_get_regattas() {
         let app_data = create_app_data().await;
 
         let app = test::init_service(
@@ -62,7 +62,22 @@ mod tests {
                 .app_data(Data::clone(&app_data)),
         )
         .await;
-        let request = test::TestRequest::get().uri("/api/regattas").to_request();
+        let request = TestRequest::get().uri("/api/regattas").to_request();
+        let response = test::call_service(&app, request).await;
+        assert!(response.status().is_success());
+    }
+
+    #[actix_web::test]
+    async fn test_get_heats() {
+        let app_data = create_app_data().await;
+
+        let app = test::init_service(
+            App::new()
+                .service(rest_api::heats)
+                .app_data(Data::clone(&app_data)),
+        )
+        .await;
+        let request = TestRequest::get().uri("/api/heats").to_request();
         let response = test::call_service(&app, request).await;
         assert!(response.status().is_success());
     }
