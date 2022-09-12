@@ -6,14 +6,7 @@ sap.ui.define([
 ], function (Controller, JSONModel, StateLabelFormatter, RaceLabelFormatter) {
   "use strict";
 
-  return Controller.extend("de.regatta_hd.infopoint.controller.InvoiceList", {
-
-    onInit: function () {
-      var oViewModel = new JSONModel({
-        currency: "EUR"
-      });
-      this.getView().setModel(oViewModel, "view");
-    }
-
+  return Controller.extend("de.regatta_hd.infopoint.controller.HeatsTable", {
   });
+
 });

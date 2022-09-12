@@ -4,8 +4,7 @@
       <pages>
         <Page title="{i18n>homePageTitle}">
           <content>
-            <mvc:XMLView viewName="de.regatta_hd.infopoint.view.HelloPanel" />
-            <mvc:XMLView viewName="de.regatta_hd.infopoint.view.InvoiceList" />
+            <mvc:XMLView viewName="de.regatta_hd.infopoint.view.HeatsTable" />
           </content>
         </Page>
       </pages>

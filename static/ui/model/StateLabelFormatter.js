@@ -18,7 +18,7 @@ sap.ui.define(function () {
             return "gestartet";
           case 4:
             return "offiziel";
-          case 6:
+          case 5:
             return "beendet";
         }
       }
