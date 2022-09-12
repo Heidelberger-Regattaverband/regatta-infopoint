@@ -1,9 +1,51 @@
 <mvc:View controllerName="de.regatta_hd.infopoint.controller.InvoiceList" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
-  <List headerText="{i18n>invoiceListTitle}" class="sapUiResponsiveMargin" width="auto" items="{heat>/}" growing="true" growingScrollToLoad="true">
+
+  <Table items="{heat>/}" growing="true" growingScrollToLoad="true">
+    <columns>
+      <Column hAlign="Center" width="4em">
+        <Text text="Laufnr." />
+      </Column>
+      <Column hAlign="Center" width="6em">
+        <Text text="Datum" />
+      </Column>
+      <Column hAlign="Center" width="6em">
+        <Text text="Startzeit" />
+      </Column>
+      <Column hAlign="Begin" width="12em">
+        <Text text="Rennen" />
+      </Column>
+      <Column hAlign="Begin" width="12em">
+        <Text text="Kurzbez." />
+      </Column>
+      <Column hAlign="Center" width="12em">
+        <Text text="Status" />
+      </Column>
+    </columns>
+
     <items>
-      <ObjectListItem
-        title="{heat>race_number} {heat>round_code}{heat>division_number} - {heat>race_short_label} - {heat>race_long_label}"
-      />
+      <ColumnListItem>
+        <cells>
+          <Text text="{heat>number}" />
+          <Text text="{heat>date}" />
+          <Text text="{heat>time}" />
+          <Text text="{
+            parts: [
+              {path: 'heat>race_number'},
+              {path: 'heat>round_code'},
+              {path: 'heat>division_number'}
+            ],
+            formatter: 'de.regatta_hd.infopoint.model.RaceLabelFormatter.raceLabel'
+          }" />
+          <Text text="{heat>race_short_label}" />
+          <Text text="{
+            parts: [
+              {path: 'heat>state'},
+              {path: 'heat>cancelled'}
+            ],
+            formatter: 'de.regatta_hd.infopoint.model.StateLabelFormatter.stateLabel'
+          }" />
+        </cells>
+      </ColumnListItem>
     </items>
-  </List>
+  </Table>
 </mvc:View>
