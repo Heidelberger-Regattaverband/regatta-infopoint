@@ -9,7 +9,8 @@ const REGATTAS_QUERY: &str = "SELECT * FROM Event e;";
 const HEATS_QUERY: &str = "SELECT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel \
     FROM Comp AS c \
     INNER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK \
-    WHERE c.Comp_Event_ID_FK = @P1";
+    WHERE c.Comp_Event_ID_FK = @P1 \
+    ORDER BY Comp_DateTime ASC";
 
 const HEAT_REGISTRATION_QUERY: &str =
     "SELECT	ce.*, e.Entry_Bib, e.Entry_BoatNumber, l.Label_Short, l.Label_Long, r.Result_Rank \
