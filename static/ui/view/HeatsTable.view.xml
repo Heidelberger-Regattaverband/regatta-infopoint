@@ -42,7 +42,7 @@
               {path: 'heat>state'},
               {path: 'heat>cancelled'}
             ],
-            formatter: 'de.regatta_hd.infopoint.model.StateLabelFormatter.stateLabel'
+            formatter: '.stateLabelFormatter.stateLabel'
           }" />
         </cells>
       </ColumnListItem>

@@ -3,23 +3,25 @@ sap.ui.define(function () {
 
   var Formatter = {
     stateLabel: function (iState, bCancelled) {
+      var resourceBundle = this.getView().getModel("i18n").getResourceBundle();
 
       if (bCancelled) {
-        return "gestrichen";
+        return resourceBundle.getText("heat.state.cancelled");
       } else {
         switch (iState) {
           default:
-            return "unbekannt";
           case 0:
-            return "keine Daten";
+            return resourceBundle.getText("heat.state.initial");
           case 1:
-            return "geplant";
+            return resourceBundle.getText("heat.state.scheduled");
           case 3:
-            return "gestartet";
+            return resourceBundle.getText("heat.state.started");
           case 4:
-            return "offiziell";
+            return resourceBundle.getText("heat.state.official");
           case 5:
-            return "beendet";
+            return resourceBundle.getText("heat.state.finished");
+          case 6:
+            return resourceBundle.getText("heat.state.photoFinish");
         }
       }
     }

@@ -7,6 +7,7 @@ sap.ui.define([
   "use strict";
 
   return Controller.extend("de.regatta_hd.infopoint.controller.HeatsTable", {
+    stateLabelFormatter: StateLabelFormatter
   });
 
 });
