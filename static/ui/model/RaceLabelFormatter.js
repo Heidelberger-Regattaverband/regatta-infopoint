@@ -3,12 +3,18 @@ sap.ui.define(function () {
 
   var Formatter = {
     raceLabel: function (sRaceNumber, roundCode, divisionNumber) {
-      if (roundCode == "A") {
-        return sRaceNumber + " - Abteilung " + divisionNumber;
-      } else if (roundCode == "R") {
-        return sRaceNumber + " - Hauptrennen";
-      } else {
-        return sRaceNumber;
+
+      switch (roundCode) {
+        case "A":
+          return sRaceNumber + " - Abteilung " + divisionNumber;
+        case "R":
+          return sRaceNumber + " - Hauptrennen";
+        case "V":
+          return sRaceNumber + " - Vorlauf " + divisionNumber;
+        case "F":
+          return sRaceNumber + " - Finale";
+        default:
+          return sRaceNumber;
       }
     }
   };
