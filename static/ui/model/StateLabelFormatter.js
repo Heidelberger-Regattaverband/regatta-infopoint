@@ -14,7 +14,7 @@ sap.ui.define(function () {
             return resourceBundle.getText("heat.state.initial");
           case 1:
             return resourceBundle.getText("heat.state.scheduled");
-          case 3:
+          case 2:
             return resourceBundle.getText("heat.state.started");
           case 4:
             return resourceBundle.getText("heat.state.official");

@@ -3,22 +3,22 @@
   <Table items="{heat>/}" growing="true" growingScrollToLoad="true">
     <columns>
       <Column hAlign="Center" width="4em">
-        <Text text="Laufnr." />
+        <Text text="{i18n>heatsTable.column.number}" />
       </Column>
       <Column hAlign="Center" width="6em">
-        <Text text="Datum" />
+        <Text text="{i18n>heatsTable.column.date}" />
       </Column>
       <Column hAlign="Center" width="6em">
-        <Text text="Startzeit" />
+        <Text text="{i18n>heatsTable.column.time}" />
       </Column>
       <Column hAlign="Begin" width="12em">
-        <Text text="Rennen" />
+        <Text text="{i18n>heatsTable.column.race}" />
       </Column>
       <Column hAlign="Begin" width="12em">
-        <Text text="Kurzbez." />
+        <Text text="{i18n>heatsTable.column.shortLabel}" />
       </Column>
       <Column hAlign="Center" width="12em">
-        <Text text="Status" />
+        <Text text="{i18n>heatsTable.column.state}" />
       </Column>
     </columns>
 
