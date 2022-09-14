@@ -1,6 +1,18 @@
 <mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatsTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
 
-  <Table items="{heat>/}" growing="true" growingScrollToLoad="true">
+  <Table items="{heat>/}" growing="true" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders">
+    <headerToolbar>
+      <OverflowToolbar id="otbSubheader">
+        <ToolbarSpacer />
+        <SearchField ariaLabelledBy="text1" id="maxPrice" liveChange="onFilter">
+          <layoutData>
+            <OverflowToolbarLayoutData maxWidth="300px" shrinkable="true" priority="NeverOverflow" />
+          </layoutData>
+        </SearchField>
+        <OverflowToolbarButton tooltip="Refresh" type="Transparent" text="Refresh" icon="sap-icon://refresh" press="onRefresh" />
+      </OverflowToolbar>
+    </headerToolbar>
+
     <columns>
       <Column hAlign="Center" width="4em">
         <Text text="{i18n>heatsTable.column.number}" />
