@@ -27,22 +27,22 @@
           </headerToolbar>
 
           <columns>
-            <Column hAlign="Center" width="4em">
+            <Column hAlign="Center" width="3em">
               <Text text="{i18n>heatsTable.column.number}" class="bold" />
             </Column>
-            <Column hAlign="Center" width="6em">
+            <Column hAlign="Center" width="4em">
               <Text text="{i18n>heatsTable.column.date}" class="bold" />
             </Column>
-            <Column hAlign="Center" width="6em">
+            <Column hAlign="Center" width="4em">
               <Text text="{i18n>heatsTable.column.time}" class="bold" />
             </Column>
-            <Column hAlign="Begin" width="12em">
+            <Column hAlign="Begin" width="8em">
               <Text text="{i18n>heatsTable.column.race}" class="bold" />
             </Column>
-            <Column hAlign="Begin" width="12em">
+            <Column hAlign="Begin" width="8em">
               <Text text="{i18n>heatsTable.column.heat}" class="bold" />
             </Column>
-            <Column hAlign="Center" width="12em">
+            <Column hAlign="Center" width="6em">
               <Text text="{i18n>heatsTable.column.state}" class="bold" />
             </Column>
           </columns>
