@@ -2,13 +2,13 @@
 
   <f:DynamicPage id="dynamicPageId" toggleHeaderOnTitleClick="false">
     <!-- DynamicPage Title -->
-    <f:title>
+    <!-- <f:title>
       <f:DynamicPageTitle>
         <f:heading>
           <Title text="Products ({products>/ProductCollectionStats/Counts/Total})" />
         </f:heading>
       </f:DynamicPageTitle>
-    </f:title>
+    </f:title> -->
 
     <!-- DynamicPage Content -->
     <f:content>
@@ -85,12 +85,12 @@
     </f:content>
 
     <!-- DynamicPage Footer -->
-    <f:footer>
+    <!-- <f:footer>
       <OverflowToolbar>
         <ToolbarSpacer />
         <Button type="Accept" text="Accept" />
         <Button type="Reject" text="Reject" />
       </OverflowToolbar>
-    </f:footer>
+    </f:footer> -->
   </f:DynamicPage>
 </mvc:View>
