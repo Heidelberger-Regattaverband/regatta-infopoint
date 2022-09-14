@@ -8,6 +8,8 @@ sap.ui.define([
   return Controller.extend("de.regatta_hd.infopoint.controller.HeatsTable", {
     stateLabelFormatter: StateLabelFormatter,
 
+    raceLabelFormatter: RaceLabelFormatter,
+
     onSelectionChange: function (oEvent) {
       var oSelectedItem = oEvent.getParameter("listItem");
       var oBindingCtx = oSelectedItem.getBindingContext("heat");

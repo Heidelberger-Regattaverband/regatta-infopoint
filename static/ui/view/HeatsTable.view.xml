@@ -46,7 +46,7 @@
               {path: 'heat>round_code'},
               {path: 'heat>division_number'}
             ],
-            formatter: 'de.regatta_hd.infopoint.model.RaceLabelFormatter.raceLabel'
+            formatter: '.raceLabelFormatter.raceLabel'
           }" />
           <Text text="{heat>race_short_label}" />
           <Text text="{
