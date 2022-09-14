@@ -7,7 +7,7 @@ use tiberius::{time::chrono::NaiveDateTime, Client, Row};
 const REGATTAS_QUERY: &str = "SELECT * FROM Event e;";
 
 const HEATS_QUERY: &str =
-    "SELECT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel, ag.* \
+    "SELECT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, ag.* \
     FROM Comp AS c \
     JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK \
     JOIN AgeClass AS ag ON o.Offer_AgeClass_ID_FK = ag.AgeClass_ID \
@@ -100,6 +100,7 @@ fn create_heat(row: &Row) -> Heat {
         race_number: Column::get(row, "Offer_RaceNumber"),
         race_short_label: Column::get(row, "Offer_ShortLabel"),
         race_long_label: Column::get(row, "Offer_LongLabel"),
+        race_comment: Column::get(row, "Offer_Comment"),
         number: Column::get(row, "Comp_Number"),
         round_code: Column::get(row, "Comp_RoundCode"),
         label: Column::get(row, "Comp_Label"),
@@ -139,6 +140,7 @@ pub struct Heat {
     number: i16,
     race_short_label: String,
     race_long_label: String,
+    race_comment: String,
     race_number: String,
     round_code: String,
     label: String,

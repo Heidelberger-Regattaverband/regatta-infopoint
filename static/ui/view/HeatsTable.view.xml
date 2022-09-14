@@ -44,15 +44,16 @@
             parts: [
               {path: 'heat>race_number'},
               {path: 'heat>race_short_label'},
-              {path: 'heat>ac_num_sub_classes'},
-              {path: 'heat>group_value'}
+              {path: 'heat>race_comment'}
             ],
             formatter: '.raceLabelFormatter.raceLabel'
           }" />
           <Text text="{
             parts: [
               {path: 'heat>round_code'},
-              {path: 'heat>label'}
+              {path: 'heat>label'},
+              {path: 'heat>ac_num_sub_classes'},
+              {path: 'heat>group_value'}
             ],
             formatter: '.heatLabelFormatter.heatLabel'
           }" />
