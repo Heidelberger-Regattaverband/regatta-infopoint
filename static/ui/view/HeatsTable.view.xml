@@ -1,6 +1,6 @@
 <mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatsTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
 
-  <Table items="{heat>/}" growing="true" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders">
+  <Table items="{heat>/}" growing="true" growingScrollToLoad="true" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders">
     <headerToolbar>
       <OverflowToolbar id="otbSubheader">
         <ToolbarSpacer />

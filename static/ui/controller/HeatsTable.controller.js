@@ -1,13 +1,19 @@
 sap.ui.define([
   "sap/ui/core/mvc/Controller",
-  "sap/ui/model/json/JSONModel",
   "../model/StateLabelFormatter",
   "../model/RaceLabelFormatter"
-], function (Controller, JSONModel, StateLabelFormatter, RaceLabelFormatter) {
+], function (Controller, StateLabelFormatter, RaceLabelFormatter) {
   "use strict";
 
   return Controller.extend("de.regatta_hd.infopoint.controller.HeatsTable", {
-    stateLabelFormatter: StateLabelFormatter
-  });
+    stateLabelFormatter: StateLabelFormatter,
 
+    onSelectionChange: function (oEvent) {
+      var oSelectedItem = oEvent.getParameter("listItem");
+      var sPath = oSelectedItem.getBindingContext("heat").getPath();
+      var oItem = this.getView().getModel("heat").getProperty(sPath);
+      alert(JSON.stringify(oItem));
+    }
+
+  });
 });
