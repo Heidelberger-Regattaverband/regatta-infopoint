@@ -1,10 +1,16 @@
-<mvc:View controllerName="de.regatta_hd.infopoint.controller.App" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" displayBlock="true">
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.App" xmlns="sap.m" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc" displayBlock="true">
   <Shell appWidthLimited="false" homeIcon="{ 'phone':'', 'phone@2':'', 'tablet':'', 'tablet@2':'', 'precomposed':true, 'favicon':'icon/favicon.ico' }">
     <App class="infopoint">
       <pages>
         <Page title="{i18n>homePageTitle}">
           <content>
-            <mvc:XMLView viewName="de.regatta_hd.infopoint.view.HeatsTable" />
+            <mvc:View height="100%">
+              <f:FlexibleColumnLayout id="flexibleColumnLayout" backgroundDesign="Solid">
+                <f:beginColumnPages>
+                  <mvc:XMLView id="beginView" viewName="de.regatta_hd.infopoint.view.HeatsTable" />
+                </f:beginColumnPages>
+              </f:FlexibleColumnLayout>
+            </mvc:View>
           </content>
         </Page>
       </pages>

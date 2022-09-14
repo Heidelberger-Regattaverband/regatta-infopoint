@@ -1,71 +1,96 @@
-<mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatsTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatsTable" xmlns="sap.m" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc">
 
-  <Table items="{heat>/}" growing="true" growingScrollToLoad="true" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders">
-    <headerToolbar>
-      <OverflowToolbar id="otbSubheader">
+  <f:DynamicPage id="dynamicPageId" toggleHeaderOnTitleClick="false">
+    <!-- DynamicPage Title -->
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Products ({products>/ProductCollectionStats/Counts/Total})" />
+        </f:heading>
+      </f:DynamicPageTitle>
+    </f:title>
+
+    <!-- DynamicPage Content -->
+    <f:content>
+      <VBox fitContainer="true">
+        <Table items="{heat>/}" growing="true" growingScrollToLoad="true" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders">
+          <headerToolbar>
+            <OverflowToolbar id="otbSubheader">
+              <ToolbarSpacer />
+              <SearchField ariaLabelledBy="text1" id="maxPrice" liveChange="onFilter">
+                <layoutData>
+                  <OverflowToolbarLayoutData maxWidth="300px" shrinkable="true" priority="NeverOverflow" />
+                </layoutData>
+              </SearchField>
+              <OverflowToolbarButton tooltip="Refresh" type="Transparent" text="Refresh" icon="sap-icon://refresh" press="onRefresh" />
+            </OverflowToolbar>
+          </headerToolbar>
+
+          <columns>
+            <Column hAlign="Center" width="4em">
+              <Text text="{i18n>heatsTable.column.number}" class="bold" />
+            </Column>
+            <Column hAlign="Center" width="6em">
+              <Text text="{i18n>heatsTable.column.date}" class="bold" />
+            </Column>
+            <Column hAlign="Center" width="6em">
+              <Text text="{i18n>heatsTable.column.time}" class="bold" />
+            </Column>
+            <Column hAlign="Begin" width="12em">
+              <Text text="{i18n>heatsTable.column.race}" class="bold" />
+            </Column>
+            <Column hAlign="Begin" width="12em">
+              <Text text="{i18n>heatsTable.column.heat}" class="bold" />
+            </Column>
+            <Column hAlign="Center" width="12em">
+              <Text text="{i18n>heatsTable.column.state}" class="bold" />
+            </Column>
+          </columns>
+
+          <items>
+            <ColumnListItem>
+              <cells>
+                <Text text="{heat>number}" />
+                <Text text="{heat>date}" />
+                <Text text="{heat>time}" />
+                <Text text="{
+                  parts: [
+                    {path: 'heat>race_number'},
+                    {path: 'heat>race_short_label'},
+                    {path: 'heat>race_comment'}
+                  ],
+                  formatter: '.raceLabelFormatter.raceLabel'
+                }" />
+                <Text text="{
+                  parts: [
+                    {path: 'heat>round_code'},
+                    {path: 'heat>label'},
+                    {path: 'heat>ac_num_sub_classes'},
+                    {path: 'heat>group_value'}
+                  ],
+                  formatter: '.heatLabelFormatter.heatLabel'
+                }" />
+                <Text text="{
+                  parts: [
+                    {path: 'heat>state'},
+                    {path: 'heat>cancelled'}
+                  ],
+                  formatter: '.stateLabelFormatter.stateLabel'
+                }" />
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table>
+      </VBox>
+    </f:content>
+
+    <!-- DynamicPage Footer -->
+    <f:footer>
+      <OverflowToolbar>
         <ToolbarSpacer />
-        <SearchField ariaLabelledBy="text1" id="maxPrice" liveChange="onFilter">
-          <layoutData>
-            <OverflowToolbarLayoutData maxWidth="300px" shrinkable="true" priority="NeverOverflow" />
-          </layoutData>
-        </SearchField>
-        <OverflowToolbarButton tooltip="Refresh" type="Transparent" text="Refresh" icon="sap-icon://refresh" press="onRefresh" />
+        <Button type="Accept" text="Accept" />
+        <Button type="Reject" text="Reject" />
       </OverflowToolbar>
-    </headerToolbar>
-
-    <columns>
-      <Column hAlign="Center" width="4em">
-        <Text text="{i18n>heatsTable.column.number}" class="bold" />
-      </Column>
-      <Column hAlign="Center" width="6em">
-        <Text text="{i18n>heatsTable.column.date}" class="bold" />
-      </Column>
-      <Column hAlign="Center" width="6em">
-        <Text text="{i18n>heatsTable.column.time}" class="bold" />
-      </Column>
-      <Column hAlign="Begin" width="12em">
-        <Text text="{i18n>heatsTable.column.race}" class="bold" />
-      </Column>
-      <Column hAlign="Begin" width="12em">
-        <Text text="{i18n>heatsTable.column.heat}" class="bold" />
-      </Column>
-      <Column hAlign="Center" width="12em">
-        <Text text="{i18n>heatsTable.column.state}" class="bold" />
-      </Column>
-    </columns>
-
-    <items>
-      <ColumnListItem>
-        <cells>
-          <Text text="{heat>number}" />
-          <Text text="{heat>date}" />
-          <Text text="{heat>time}" />
-          <Text text="{
-            parts: [
-              {path: 'heat>race_number'},
-              {path: 'heat>race_short_label'},
-              {path: 'heat>race_comment'}
-            ],
-            formatter: '.raceLabelFormatter.raceLabel'
-          }" />
-          <Text text="{
-            parts: [
-              {path: 'heat>round_code'},
-              {path: 'heat>label'},
-              {path: 'heat>ac_num_sub_classes'},
-              {path: 'heat>group_value'}
-            ],
-            formatter: '.heatLabelFormatter.heatLabel'
-          }" />
-          <Text text="{
-            parts: [
-              {path: 'heat>state'},
-              {path: 'heat>cancelled'}
-            ],
-            formatter: '.stateLabelFormatter.stateLabel'
-          }" />
-        </cells>
-      </ColumnListItem>
-    </items>
-  </Table>
+    </f:footer>
+  </f:DynamicPage>
 </mvc:View>
