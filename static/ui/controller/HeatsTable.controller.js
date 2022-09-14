@@ -10,8 +10,8 @@ sap.ui.define([
 
     onSelectionChange: function (oEvent) {
       var oSelectedItem = oEvent.getParameter("listItem");
-      var sPath = oSelectedItem.getBindingContext("heat").getPath();
-      var oItem = this.getView().getModel("heat").getProperty(sPath);
+      var oBindingCtx = oSelectedItem.getBindingContext("heat");
+      var oItem = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
       alert(JSON.stringify(oItem));
     }
 
