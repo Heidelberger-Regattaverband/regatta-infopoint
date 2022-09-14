@@ -50,6 +50,13 @@
         "type": "sap.ui.model.json.JSONModel",
         "uri": "/api/heats"
       }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
     }
   }
 }

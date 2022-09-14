@@ -15,22 +15,22 @@
 
     <columns>
       <Column hAlign="Center" width="4em">
-        <Text text="{i18n>heatsTable.column.number}" />
+        <Text text="{i18n>heatsTable.column.number}" class="bold" />
       </Column>
       <Column hAlign="Center" width="6em">
-        <Text text="{i18n>heatsTable.column.date}" />
+        <Text text="{i18n>heatsTable.column.date}" class="bold" />
       </Column>
       <Column hAlign="Center" width="6em">
-        <Text text="{i18n>heatsTable.column.time}" />
+        <Text text="{i18n>heatsTable.column.time}" class="bold" />
       </Column>
       <Column hAlign="Begin" width="12em">
-        <Text text="{i18n>heatsTable.column.race}" />
+        <Text text="{i18n>heatsTable.column.race}" class="bold" />
       </Column>
       <Column hAlign="Begin" width="12em">
-        <Text text="{i18n>heatsTable.column.shortLabel}" />
+        <Text text="{i18n>heatsTable.column.shortLabel}" class="bold" />
       </Column>
       <Column hAlign="Center" width="12em">
-        <Text text="{i18n>heatsTable.column.state}" />
+        <Text text="{i18n>heatsTable.column.state}" class="bold" />
       </Column>
     </columns>
 
