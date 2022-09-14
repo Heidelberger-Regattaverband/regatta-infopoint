@@ -7,8 +7,7 @@ use crate::{
 
 use actix_web::{
     get,
-    web::Data,
-    web::{Json, Path},
+    web::{Data, Json, Path},
 };
 
 #[get("/api/regattas")]

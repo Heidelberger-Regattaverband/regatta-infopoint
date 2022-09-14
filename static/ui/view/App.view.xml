@@ -1,11 +1,10 @@
-<mvc:View controllerName="sap.ui.demo.walkthrough.controller.App" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" displayBlock="true">
-  <Shell appWidthLimited="false">
-    <App class="myAppDemoWT">
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.App" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" displayBlock="true">
+  <Shell appWidthLimited="false" homeIcon="{ 'phone':'', 'phone@2':'', 'tablet':'', 'tablet@2':'', 'precomposed':true, 'favicon':'icon/favicon.ico' }">
+    <App class="infopoint">
       <pages>
         <Page title="{i18n>homePageTitle}">
           <content>
-            <mvc:XMLView viewName="sap.ui.demo.walkthrough.view.HelloPanel" />
-            <mvc:XMLView viewName="sap.ui.demo.walkthrough.view.InvoiceList" />
+            <mvc:XMLView viewName="de.regatta_hd.infopoint.view.HeatsTable" />
           </content>
         </Page>
       </pages>

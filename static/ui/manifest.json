@@ -1,7 +1,7 @@
 {
   "_version": "1.12.0",
   "sap.app": {
-    "id": "sap.ui.demo.walkthrough",
+    "id": "de.regatta_hd.infopoint",
     "type": "application",
     "i18n": "i18n/i18n.properties",
     "title": "{{appTitle}}",
@@ -12,6 +12,10 @@
   },
   "sap.ui": {
     "technology": "UI5",
+    "icons": {
+      "icon": "sap-icon://task",
+      "favIcon": "/icon/favicon.ico"
+    },
     "deviceTypes": {
       "desktop": true,
       "tablet": true,
@@ -20,7 +24,7 @@
   },
   "sap.ui5": {
     "rootView": {
-      "viewName": "sap.ui.demo.walkthrough.view.App",
+      "viewName": "de.regatta_hd.infopoint.view.App",
       "type": "XML",
       "id": "app"
     },
@@ -35,21 +39,24 @@
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
-          "bundleName": "sap.ui.demo.walkthrough.i18n.i18n",
+          "bundleName": "de.regatta_hd.infopoint.i18n.i18n",
           "supportedLocales": [
-            ""
+            "de"
           ],
           "fallbackLocale": ""
         }
       },
-      "invoice": {
-        "type": "sap.ui.model.json.JSONModel",
-        "uri": "Invoices.json"
-      },
-      "heats":{
+      "heat": {
         "type": "sap.ui.model.json.JSONModel",
         "uri": "/api/heats"
       }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
     }
   }
 }

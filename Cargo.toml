@@ -23,4 +23,5 @@ serde = { version = "1", features = ["derive"] }
 # Database
 bb8 = "0.8"
 async-trait = "0.1"
+# https://github.com/prisma/tiberius#feature-flags
 tiberius = { version = "0.11", features = ["chrono"] }
