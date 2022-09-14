@@ -2,55 +2,44 @@ sap.ui.define(function () {
   "use strict";
 
   var Formatter = {
-    raceLabel: function (sRaceNumber, sRoundCode, sRoundLabel, iNumSubClasses, iGroupValue) {
+    raceLabel: function (sRaceNumber, sRaceShortLabel, iNumSubClasses, iGroupValue) {
       var sGroupValue = "";
       if (iNumSubClasses > 0) {
+        const PREFIX = " - AK ";
         switch (iGroupValue) {
           case 0:
-            sGroupValue = " - AK A";
+            sGroupValue = PREFIX + "A";
             break;
           case 4:
-            sGroupValue = " - AK B";
+            sGroupValue = PREFIX + "B";
             break;
           case 8:
-            sGroupValue = " - AK C";
+            sGroupValue = PREFIX + "C";
             break;
           case 12:
-            sGroupValue = " - AK D";
+            sGroupValue = PREFIX + "D";
             break;
           case 16:
-            sGroupValue = " - AK E";
+            sGroupValue = PREFIX + "E";
             break;
           case 20:
-            sGroupValue = " - AK F";
+            sGroupValue = PREFIX + "F";
             break;
           case 24:
-            sGroupValue = " - AK G";
+            sGroupValue = PREFIX + "G";
             break;
           case 28:
-            sGroupValue = " - AK H";
+            sGroupValue = PREFIX + "H";
             break;
           case 32:
-            sGroupValue = " - AK I";
+            sGroupValue = PREFIX + "I";
             break;
           case 36:
-            sGroupValue = " - AK J";
+            sGroupValue = PREFIX + "J";
             break;
         }
       }
-
-      switch (sRoundCode) {
-        case "A":
-          return sRaceNumber + " - Abteilung " + sRoundLabel;
-        case "R":
-          return sRaceNumber + " - Hauptrennen" + sGroupValue;
-        case "V":
-          return sRaceNumber + " - Vorlauf " + sRoundLabel;
-        case "F":
-          return sRaceNumber + " - Finale";
-        default:
-          return sRaceNumber;
-      }
+      return sRaceNumber + " - " + sRaceShortLabel + sGroupValue;
     }
   };
 

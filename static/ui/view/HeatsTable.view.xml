@@ -27,7 +27,7 @@
         <Text text="{i18n>heatsTable.column.race}" class="bold" />
       </Column>
       <Column hAlign="Begin" width="12em">
-        <Text text="{i18n>heatsTable.column.shortLabel}" class="bold" />
+        <Text text="{i18n>heatsTable.column.heat}" class="bold" />
       </Column>
       <Column hAlign="Center" width="12em">
         <Text text="{i18n>heatsTable.column.state}" class="bold" />
@@ -43,14 +43,19 @@
           <Text text="{
             parts: [
               {path: 'heat>race_number'},
-              {path: 'heat>round_code'},
-              {path: 'heat>label'},
+              {path: 'heat>race_short_label'},
               {path: 'heat>ac_num_sub_classes'},
               {path: 'heat>group_value'}
             ],
             formatter: '.raceLabelFormatter.raceLabel'
           }" />
-          <Text text="{heat>race_short_label}" />
+          <Text text="{
+            parts: [
+              {path: 'heat>round_code'},
+              {path: 'heat>label'}
+            ],
+            formatter: '.heatLabelFormatter.heatLabel'
+          }" />
           <Text text="{
             parts: [
               {path: 'heat>state'},
