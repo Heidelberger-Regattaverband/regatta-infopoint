@@ -6,9 +6,11 @@ use tiberius::{time::chrono::NaiveDateTime, Client, Row};
 
 const REGATTAS_QUERY: &str = "SELECT * FROM Event e;";
 
-const HEATS_QUERY: &str = "SELECT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel \
+const HEATS_QUERY: &str =
+    "SELECT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel, ag.* \
     FROM Comp AS c \
-    INNER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK \
+    JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK \
+    JOIN AgeClass AS ag ON o.Offer_AgeClass_ID_FK = ag.AgeClass_ID \
     WHERE c.Comp_Event_ID_FK = @P1 \
     ORDER BY Comp_DateTime ASC";
 
@@ -106,6 +108,9 @@ fn create_heat(row: &Row) -> Heat {
         cancelled: Column::get(row, "Comp_Cancelled"),
         date: date_time.date().to_string(),
         time: date_time.time().to_string(),
+        ac_abbr: Column::get(row, "AgeClass_Abbr"),
+        ac_abbr_suffix: Column::get(row, "AgeClass_AbbrSuffix"),
+        ac_num_sub_classes: Column::get(row, "AgeClass_NumSubClasses"),
     }
 }
 
@@ -142,6 +147,9 @@ pub struct Heat {
     cancelled: bool,
     date: String,
     time: String,
+    ac_abbr: String,
+    ac_num_sub_classes: u8,
+    ac_abbr_suffix: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -193,7 +201,7 @@ impl Column for String {
     fn get(row: &Row, col_name: &str) -> String {
         row.try_get::<&str, _>(col_name)
             .unwrap()
-            .unwrap()
+            .unwrap_or("")
             .to_string()
     }
 }

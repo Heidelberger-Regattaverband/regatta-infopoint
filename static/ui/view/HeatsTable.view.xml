@@ -45,6 +45,7 @@
               {path: 'heat>race_number'},
               {path: 'heat>round_code'},
               {path: 'heat>label'},
+              {path: 'heat>ac_num_sub_classes'},
               {path: 'heat>group_value'}
             ],
             formatter: '.raceLabelFormatter.raceLabel'
