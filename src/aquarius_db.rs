@@ -99,7 +99,6 @@ fn create_heat(row: &Row) -> Heat {
         id: Column::get(row, "Comp_ID"),
         race_number: Column::get(row, "Offer_RaceNumber"),
         race_short_label: Column::get(row, "Offer_ShortLabel"),
-        race_long_label: Column::get(row, "Offer_LongLabel"),
         race_comment: Column::get(row, "Offer_Comment"),
         number: Column::get(row, "Comp_Number"),
         round_code: Column::get(row, "Comp_RoundCode"),
@@ -109,8 +108,6 @@ fn create_heat(row: &Row) -> Heat {
         cancelled: Column::get(row, "Comp_Cancelled"),
         date: date_time.date().to_string(),
         time: date_time.time().to_string(),
-        ac_abbr: Column::get(row, "AgeClass_Abbr"),
-        ac_abbr_suffix: Column::get(row, "AgeClass_AbbrSuffix"),
         ac_num_sub_classes: Column::get(row, "AgeClass_NumSubClasses"),
     }
 }
@@ -139,7 +136,6 @@ pub struct Heat {
     pub id: i32,
     number: i16,
     race_short_label: String,
-    race_long_label: String,
     race_comment: String,
     race_number: String,
     round_code: String,
@@ -149,9 +145,7 @@ pub struct Heat {
     cancelled: bool,
     date: String,
     time: String,
-    ac_abbr: String,
     ac_num_sub_classes: u8,
-    ac_abbr_suffix: String,
 }
 
 #[derive(Debug, Serialize)]
