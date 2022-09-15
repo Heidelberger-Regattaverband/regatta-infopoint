@@ -5,7 +5,7 @@
     <f:content>
       <VBox fitContainer="true">
 
-        <Table items="{heatRegistration>/}" growing="true" growingScrollToLoad="true" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders">
+        <Table items="{path: 'heatRegistration>/', sorter: {path: 'rank'}}" growing="true" growingScrollToLoad="true" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders">
 
           <columns>
             <Column hAlign="Center" width="3em">
