@@ -12,41 +12,38 @@
 
     <!-- DynamicPage Content -->
     <f:content>
-      <VBox fitContainer="true">
+      <Table items="{path: 'heatRegistration>/', sorter: {path: 'rank'}}" growing="true" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders">
 
-        <Table items="{path: 'heatRegistration>/', sorter: {path: 'rank'}}" growing="true" growingScrollToLoad="true" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders">
+        <columns>
+          <Column hAlign="Center" width="3em">
+            <Text text="{i18n>heatRegistrationTable.column.rank}" class="bold" />
+          </Column>
+          <Column hAlign="Center" width="3em">
+            <Text text="{i18n>heatRegistrationTable.column.lane}" class="bold" />
+          </Column>
+          <Column hAlign="Center" width="3em">
+            <Text text="{i18n>heatRegistrationTable.column.bib}" class="bold" />
+          </Column>
+          <Column hAlign="Begin" width="12em">
+            <Text text="{i18n>heatRegistrationTable.column.boat}" class="bold" />
+          </Column>
+          <Column hAlign="Center" width="4em">
+            <Text text="{i18n>heatRegistrationTable.column.result}" class="bold" />
+          </Column>
+        </columns>
 
-          <columns>
-            <Column hAlign="Center" width="3em">
-              <Text text="{i18n>heatRegistrationTable.column.rank}" class="bold" />
-            </Column>
-            <Column hAlign="Center" width="3em">
-              <Text text="{i18n>heatRegistrationTable.column.lane}" class="bold" />
-            </Column>
-            <Column hAlign="Center" width="3em">
-              <Text text="{i18n>heatRegistrationTable.column.bib}" class="bold" />
-            </Column>
-            <Column hAlign="Begin" width="12em">
-              <Text text="{i18n>heatRegistrationTable.column.boat}" class="bold" />
-            </Column>
-            <Column hAlign="Center" width="4em">
-              <Text text="{i18n>heatRegistrationTable.column.result}" class="bold" />
-            </Column>
-          </columns>
-
-          <items>
-            <ColumnListItem>
-              <cells>
-                <Text text="{heatRegistration>rank}" />
-                <Text text="{heatRegistration>lane}" />
-                <Text text="{heatRegistration>bib}" />
-                <Text text="{heatRegistration>short_label}" />
-                <Text text="{heatRegistration>result}" />
-              </cells>
-            </ColumnListItem>
-          </items>
-        </Table>
-      </VBox>
+        <items>
+          <ColumnListItem>
+            <cells>
+              <Text text="{heatRegistration>rank}" />
+              <Text text="{heatRegistration>lane}" />
+              <Text text="{heatRegistration>bib}" />
+              <Text text="{heatRegistration>short_label}" />
+              <Text text="{heatRegistration>result}" />
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
     </f:content>
   </f:DynamicPage>
 </mvc:View>
