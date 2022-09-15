@@ -35,7 +35,7 @@ sap.ui.define([
         let oModel = new JSONModel();
         oModel.loadData("/api/heats/" + oHeat.id + "/registrations");
 
-        this.getOwnerComponent().setModel(oHeat, "heat");
+        this.getOwnerComponent().setModel(new JSONModel(oHeat), "heat");
         this.getOwnerComponent().setModel(oModel, "heatRegistration");
 
         var oFCL = this.getView().getParent().getParent();

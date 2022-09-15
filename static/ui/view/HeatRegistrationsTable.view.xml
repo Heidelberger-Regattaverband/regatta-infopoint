@@ -1,6 +1,15 @@
-<mvc:View xmlns="sap.m" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatRegistrationsTable" xmlns="sap.m" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc">
 
   <f:DynamicPage id="dynamicPageId" toggleHeaderOnTitleClick="false">
+    <!-- DynamicPage Title -->
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:navigationActions>
+          <OverflowToolbarButton type="Transparent" icon="sap-icon://decline" press="handleClose" tooltip="Close middle column" />
+        </f:navigationActions>
+      </f:DynamicPageTitle>
+    </f:title>
+
     <!-- DynamicPage Content -->
     <f:content>
       <VBox fitContainer="true">
