@@ -2,29 +2,29 @@
 
   <f:DynamicPage id="dynamicPageId" toggleHeaderOnTitleClick="false">
     <!-- DynamicPage Title -->
-    <!-- <f:title>
+    <f:title>
       <f:DynamicPageTitle>
         <f:heading>
-          <Title text="Products ({products>/ProductCollectionStats/Counts/Total})" />
+          <Title text="Läufe" />
         </f:heading>
+        <f:content>
+          <!-- <OverflowToolbar>
+            <ToolbarSpacer />
+            <SearchField liveChange="onFilter">
+              <layoutData>
+                <OverflowToolbarLayoutData maxWidth="200px" shrinkable="true" priority="NeverOverflow" />
+              </layoutData>
+            </SearchField>
+            <OverflowToolbarButton tooltip="Refresh" type="Transparent" text="Refresh" icon="sap-icon://refresh" press="onRefresh" />
+          </OverflowToolbar> -->
+        </f:content>
       </f:DynamicPageTitle>
-    </f:title> -->
+    </f:title>
 
     <!-- DynamicPage Content -->
     <f:content>
       <VBox fitContainer="true">
-        <Table items="{heat>/}" growing="true" growingScrollToLoad="true" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders">
-          <headerToolbar>
-            <OverflowToolbar id="otbSubheader">
-              <ToolbarSpacer />
-              <SearchField ariaLabelledBy="text1" id="maxPrice" liveChange="onFilter">
-                <layoutData>
-                  <OverflowToolbarLayoutData maxWidth="300px" shrinkable="true" priority="NeverOverflow" />
-                </layoutData>
-              </SearchField>
-              <OverflowToolbarButton tooltip="Refresh" type="Transparent" text="Refresh" icon="sap-icon://refresh" press="onRefresh" />
-            </OverflowToolbar>
-          </headerToolbar>
+        <Table items="{heat>/}" growing="true" growingScrollToLoad="true" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="ColumnHeaders">
 
           <columns>
             <Column hAlign="Center" width="3em">
