@@ -2,13 +2,13 @@
 
   <f:DynamicPage id="dynamicPageId" toggleHeaderOnTitleClick="false">
     <!-- DynamicPage Title -->
-    <f:title>
+    <!-- <f:title>
       <f:DynamicPageTitle>
         <f:heading>
           <Title text="Läufe" />
         </f:heading>
         <f:content>
-          <!-- <OverflowToolbar>
+          <OverflowToolbar>
             <ToolbarSpacer />
             <SearchField liveChange="onFilter">
               <layoutData>
@@ -16,10 +16,10 @@
               </layoutData>
             </SearchField>
             <OverflowToolbarButton tooltip="Refresh" type="Transparent" text="Refresh" icon="sap-icon://refresh" press="onRefresh" />
-          </OverflowToolbar> -->
+          </OverflowToolbar>
         </f:content>
       </f:DynamicPageTitle>
-    </f:title>
+    </f:title> -->
 
     <!-- DynamicPage Content -->
     <f:content>
