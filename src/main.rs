@@ -22,8 +22,8 @@ async fn main() -> Result<()> {
             .service(rest_api::get_regattas)
             .service(rest_api::get_heats)
             .service(rest_api::get_heat_registrations)
-            .service(Files::new("/", "./static").show_files_listing())
-            .service(Files::new("/ui", "./static/ui").index_file("index.html"))
+            .service(Files::new("/", "./static").show_files_listing().use_last_modified(true))
+            .service(Files::new("/ui", "./static/ui").index_file("index.html").use_last_modified(true))
     })
     .bind(get_http_bind())?
     .workers(4)
