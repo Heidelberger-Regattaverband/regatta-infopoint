@@ -19,9 +19,9 @@ async fn main() -> Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(Data::clone(&data))
-            .service(rest_api::regattas)
-            .service(rest_api::heats)
-            .service(rest_api::heat_registrations)
+            .service(rest_api::get_regattas)
+            .service(rest_api::get_heats)
+            .service(rest_api::get_heat_registrations)
             .service(Files::new("/", "./static").show_files_listing())
             .service(Files::new("/ui", "./static/ui").index_file("index.html"))
     })
@@ -62,7 +62,7 @@ mod tests {
 
         let app = test::init_service(
             App::new()
-                .service(rest_api::regattas)
+                .service(rest_api::get_regattas)
                 .app_data(Data::clone(&app_data)),
         )
         .await;
@@ -77,7 +77,7 @@ mod tests {
 
         let app = test::init_service(
             App::new()
-                .service(rest_api::heats)
+                .service(rest_api::get_heats)
                 .app_data(Data::clone(&app_data)),
         )
         .await;
