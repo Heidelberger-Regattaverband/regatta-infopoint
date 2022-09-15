@@ -15,7 +15,7 @@ const HEATS_QUERY: &str =
     ORDER BY Comp_DateTime ASC";
 
 const HEAT_REGISTRATION_QUERY: &str =
-    "SELECT	ce.*, e.Entry_Bib, e.Entry_BoatNumber, l.Label_Short, l.Label_Long, r.Result_Rank \
+    "SELECT	ce.*, e.Entry_Bib, e.Entry_BoatNumber, l.Label_Short, l.Label_Long, r.Result_Rank, r.Result_DisplayValue \
     FROM CompEntries AS ce
     JOIN Entry AS e ON ce.CE_Entry_ID_FK = e.Entry_ID
     JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
@@ -120,6 +120,7 @@ fn create_heat_registration(row: &Row) -> HeatRegistration {
         rank: Column::get(row, "Result_Rank"),
         short_label: Column::get(row, "Label_Short"),
         long_label: Column::get(row, "Label_Long"),
+        result: Column::get(row, "Result_DisplayValue"),
     }
 }
 
@@ -156,6 +157,7 @@ pub struct HeatRegistration {
     rank: u8,
     short_label: String,
     long_label: String,
+    result: String,
 }
 
 // see: https://github.com/prisma/tiberius/issues/101#issuecomment-978144867
