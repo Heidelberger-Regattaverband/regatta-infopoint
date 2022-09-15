@@ -51,7 +51,12 @@
             <ColumnListItem>
               <cells>
                 <Text text="{heat>number}" />
-                <Text text="{heat>date}" />
+                <Text text="{
+                  parts: [
+                    {path: 'heat>date'}
+                  ],
+                  formatter: '.dayFormatter.format'
+                }" />
                 <Text text="{heat>time}" />
                 <Text text="{
                   parts: [

@@ -3,16 +3,19 @@ sap.ui.define([
   "../model/StateLabelFormatter",
   "../model/RaceLabelFormatter",
   "../model/HeatLabelFormatter",
+  "../model/DayFormatter",
   "sap/f/library"
-], function (Controller, StateLabelFormatter, RaceLabelFormatter, HeatLabelFormatter, fioriLibrary) {
+], function (Controller, StateLabelFormatter, RaceLabelFormatter, HeatLabelFormatter, DayFormatter, fioriLibrary) {
   "use strict";
-
   return Controller.extend("de.regatta_hd.infopoint.controller.HeatsTable", {
+
     stateLabelFormatter: StateLabelFormatter,
 
     raceLabelFormatter: RaceLabelFormatter,
 
     heatLabelFormatter: HeatLabelFormatter,
+
+    dayFormatter: DayFormatter,
 
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
