@@ -47,7 +47,7 @@
           "fallbackLocale": ""
         }
       },
-      "heat": {
+      "heats": {
         "type": "sap.ui.model.json.JSONModel",
         "uri": "/api/heats"
       }

@@ -17,11 +17,13 @@ const HEATS_QUERY: &str =
 const HEAT_REGISTRATION_QUERY: &str =
     "SELECT	ce.*, e.Entry_Bib, e.Entry_BoatNumber, l.Label_Short, l.Label_Long, r.Result_Rank, r.Result_DisplayValue \
     FROM CompEntries AS ce
+    JOIN Comp AS c ON ce.CE_Comp_ID_FK = c.Comp_ID
     JOIN Entry AS e ON ce.CE_Entry_ID_FK = e.Entry_ID
     JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
     JOIN Label AS l ON el.EL_Label_ID_FK = l.Label_ID
     JOIN Result AS r ON r.Result_CE_ID_FK = ce.CE_ID
-    WHERE ce.CE_Comp_ID_FK = @P1 AND r.Result_SplitNr = 64";
+    WHERE ce.CE_Comp_ID_FK = @P1 AND r.Result_SplitNr = 64 \
+      AND el.EL_RoundFrom <= c.Comp_Round AND c.Comp_Round <= el.EL_RoundTo";
 
 const REGATTA_ID: i32 = 12;
 

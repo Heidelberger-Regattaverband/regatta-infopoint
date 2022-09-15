@@ -24,7 +24,7 @@
     <!-- DynamicPage Content -->
     <f:content>
       <VBox fitContainer="true">
-        <Table items="{heat>/}" growing="true" growingScrollToLoad="true" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="ColumnHeaders">
+        <Table items="{heats>/}" growing="true" growingScrollToLoad="true" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="ColumnHeaders">
 
           <columns>
             <Column hAlign="Center" width="3em">
@@ -50,40 +50,40 @@
           <items>
             <ColumnListItem>
               <cells>
-                <Text text="{heat>number}" />
+                <Text text="{heats>number}" />
                 <Text text="{
                   parts: [
-                    {path: 'heat>date'}
+                    {path: 'heats>date'}
                   ],
                   formatter: '.dayFormatter.format'
                 }" />
                 <Text text="{
                   parts: [
-                    {path: 'heat>time'}
+                    {path: 'heats>time'}
                   ],
                   formatter: '.timeFormatter.format'
                 }" />
                 <Text text="{
                   parts: [
-                    {path: 'heat>race_number'},
-                    {path: 'heat>race_short_label'},
-                    {path: 'heat>race_comment'}
+                    {path: 'heats>race_number'},
+                    {path: 'heats>race_short_label'},
+                    {path: 'heats>race_comment'}
                   ],
                   formatter: '.raceLabelFormatter.raceLabel'
                 }" />
                 <Text text="{
                   parts: [
-                    {path: 'heat>round_code'},
-                    {path: 'heat>label'},
-                    {path: 'heat>ac_num_sub_classes'},
-                    {path: 'heat>group_value'}
+                    {path: 'heats>round_code'},
+                    {path: 'heats>label'},
+                    {path: 'heats>ac_num_sub_classes'},
+                    {path: 'heats>group_value'}
                   ],
                   formatter: '.heatLabelFormatter.heatLabel'
                 }" />
                 <Text text="{
                   parts: [
-                    {path: 'heat>state'},
-                    {path: 'heat>cancelled'}
+                    {path: 'heats>state'},
+                    {path: 'heats>cancelled'}
                   ],
                   formatter: '.stateLabelFormatter.stateLabel'
                 }" />
