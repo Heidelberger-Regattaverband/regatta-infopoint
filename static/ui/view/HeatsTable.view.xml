@@ -57,7 +57,12 @@
                   ],
                   formatter: '.dayFormatter.format'
                 }" />
-                <Text text="{heat>time}" />
+                <Text text="{
+                  parts: [
+                    {path: 'heat>time'}
+                  ],
+                  formatter: '.timeFormatter.format'
+                }" />
                 <Text text="{
                   parts: [
                     {path: 'heat>race_number'},
