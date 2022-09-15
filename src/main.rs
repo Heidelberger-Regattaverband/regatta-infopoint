@@ -32,14 +32,18 @@ async fn main() -> Result<()> {
 }
 
 fn get_http_bind() -> (String, u16) {
-    let port = env::var("HTTP_PORT")
-        .unwrap_or_else(|_| "8080".to_string())
-        .parse()
-        .unwrap();
+    let port = get_http_port();
     let host = env::var("HTTP_BIND").unwrap_or_else(|_| "127.0.0.1".to_string());
     info!("HTTP server is listening on: {host}:{port}");
 
     (host, port)
+}
+
+fn get_http_port() -> u16 {
+    env::var("HTTP_PORT")
+        .unwrap_or_else(|_| "8080".to_string())
+        .parse()
+        .unwrap()
 }
 
 async fn create_app_data() -> Data<Pool<TiberiusConnectionManager>> {

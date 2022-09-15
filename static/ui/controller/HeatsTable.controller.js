@@ -14,15 +14,20 @@ sap.ui.define([
 
     heatLabelFormatter: HeatLabelFormatter,
 
+    onInit: function () {
+      this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
+    },
+
     onSelectionChange: function (oEvent) {
       var oSelectedItem = oEvent.getParameter("listItem");
-      var oBindingCtx = oSelectedItem.getBindingContext("heat");
-      var oItem = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
-      // alert(JSON.stringify(oItem));
+      if (oSelectedItem) {
+        var oBindingCtx = oSelectedItem.getBindingContext("heat");
+        var oItem = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
+        // alert(JSON.stringify(oItem));
 
-      var oFCL = this.getView().getParent().getParent();
-
-      oFCL.setLayout(fioriLibrary.LayoutType.TwoColumnsMidExpanded);
+        var oFCL = this.getView().getParent().getParent();
+        oFCL.setLayout(fioriLibrary.LayoutType.TwoColumnsMidExpanded);
+      }
     }
 
   });

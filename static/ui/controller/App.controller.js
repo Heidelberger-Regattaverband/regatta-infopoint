@@ -2,8 +2,11 @@ sap.ui.define([
   "sap/ui/core/mvc/Controller"
 ], function (Controller) {
   "use strict";
-
   return Controller.extend("de.regatta_hd.infopoint.controller.App", {
-  });
 
+    onInit: function () {
+      this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
+    }
+
+  });
 });
