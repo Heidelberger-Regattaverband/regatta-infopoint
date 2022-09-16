@@ -1,71 +1,103 @@
-<mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatsTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatsTable" xmlns="sap.m" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc">
 
-  <Table items="{heat>/}" growing="true" growingScrollToLoad="true" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders">
-    <headerToolbar>
-      <OverflowToolbar id="otbSubheader">
-        <ToolbarSpacer />
-        <SearchField ariaLabelledBy="text1" id="maxPrice" liveChange="onFilter">
-          <layoutData>
-            <OverflowToolbarLayoutData maxWidth="300px" shrinkable="true" priority="NeverOverflow" />
-          </layoutData>
-        </SearchField>
-        <OverflowToolbarButton tooltip="Refresh" type="Transparent" text="Refresh" icon="sap-icon://refresh" press="onRefresh" />
-      </OverflowToolbar>
-    </headerToolbar>
+  <f:DynamicPage id="dynamicPageId" toggleHeaderOnTitleClick="false">
+    <!-- DynamicPage Title -->
+    <!-- <f:title>
+      <f:DynamicPageTitle>
+        <f:heading>
+          <Title text="Läufe" />
+        </f:heading>
+        <f:content>
+          <OverflowToolbar>
+            <ToolbarSpacer />
+            <SearchField liveChange="onFilter">
+              <layoutData>
+                <OverflowToolbarLayoutData maxWidth="200px" shrinkable="true" priority="NeverOverflow" />
+              </layoutData>
+            </SearchField>
+            <OverflowToolbarButton tooltip="Refresh" type="Transparent" text="Refresh" icon="sap-icon://refresh" press="onRefresh" />
+          </OverflowToolbar>
+        </f:content>
+      </f:DynamicPageTitle>
+    </f:title> -->
+    <f:title>
+      <f:DynamicPageTitle>
+        <f:actions>
+          <OverflowToolbarButton type="Transparent" icon="sap-icon://refresh" press="handleRefresh" tooltip="Refresh" />
+        </f:actions>
+      </f:DynamicPageTitle>
+    </f:title>
 
-    <columns>
-      <Column hAlign="Center" width="4em">
-        <Text text="{i18n>heatsTable.column.number}" class="bold" />
-      </Column>
-      <Column hAlign="Center" width="6em">
-        <Text text="{i18n>heatsTable.column.date}" class="bold" />
-      </Column>
-      <Column hAlign="Center" width="6em">
-        <Text text="{i18n>heatsTable.column.time}" class="bold" />
-      </Column>
-      <Column hAlign="Begin" width="12em">
-        <Text text="{i18n>heatsTable.column.race}" class="bold" />
-      </Column>
-      <Column hAlign="Begin" width="12em">
-        <Text text="{i18n>heatsTable.column.heat}" class="bold" />
-      </Column>
-      <Column hAlign="Center" width="12em">
-        <Text text="{i18n>heatsTable.column.state}" class="bold" />
-      </Column>
-    </columns>
+    <!-- DynamicPage Content -->
+    <f:content>
+      <Table items="{heats>/}" growing="true" growingScrollToLoad="true" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="ColumnHeaders">
 
-    <items>
-      <ColumnListItem>
-        <cells>
-          <Text text="{heat>number}" />
-          <Text text="{heat>date}" />
-          <Text text="{heat>time}" />
-          <Text text="{
-            parts: [
-              {path: 'heat>race_number'},
-              {path: 'heat>race_short_label'},
-              {path: 'heat>race_comment'}
-            ],
-            formatter: '.raceLabelFormatter.raceLabel'
-          }" />
-          <Text text="{
-            parts: [
-              {path: 'heat>round_code'},
-              {path: 'heat>label'},
-              {path: 'heat>ac_num_sub_classes'},
-              {path: 'heat>group_value'}
-            ],
-            formatter: '.heatLabelFormatter.heatLabel'
-          }" />
-          <Text text="{
-            parts: [
-              {path: 'heat>state'},
-              {path: 'heat>cancelled'}
-            ],
-            formatter: '.stateLabelFormatter.stateLabel'
-          }" />
-        </cells>
-      </ColumnListItem>
-    </items>
-  </Table>
+        <columns>
+          <Column hAlign="Center" width="3em">
+            <Text text="{i18n>heatsTable.column.number}" class="bold" />
+          </Column>
+          <Column hAlign="Center" width="4em">
+            <Text text="{i18n>heatsTable.column.date}" class="bold" />
+          </Column>
+          <Column hAlign="Center" width="4em">
+            <Text text="{i18n>heatsTable.column.time}" class="bold" />
+          </Column>
+          <Column hAlign="Begin" width="8em">
+            <Text text="{i18n>heatsTable.column.race}" class="bold" />
+          </Column>
+          <Column hAlign="Begin" width="8em">
+            <Text text="{i18n>heatsTable.column.heat}" class="bold" />
+          </Column>
+          <Column hAlign="Center" width="6em">
+            <Text text="{i18n>heatsTable.column.state}" class="bold" />
+          </Column>
+        </columns>
+
+        <items>
+          <ColumnListItem>
+            <cells>
+              <Text text="{heats>number}" />
+              <Text text="{
+                  parts: [
+                    {path: 'heats>date'}
+                  ],
+                  formatter: '.dayFormatter.format'
+                }" />
+              <Text text="{
+                  parts: [
+                    {path: 'heats>time'}
+                  ],
+                  formatter: '.timeFormatter.format'
+                }" />
+              <Text text="{
+                  parts: [
+                    {path: 'heats>race_number'},
+                    {path: 'heats>race_short_label'},
+                    {path: 'heats>race_comment'}
+                  ],
+                  formatter: '.formatter.raceLabel'
+                }" />
+              <Text text="{
+                  parts: [
+                    {path: 'heats>round_code'},
+                    {path: 'heats>label'},
+                    {path: 'heats>ac_num_sub_classes'},
+                    {path: 'heats>group_value'}
+                  ],
+                  formatter: '.heatLabelFormatter.heatLabel'
+                }" />
+              <Text text="{
+                  parts: [
+                    {path: 'heats>state'},
+                    {path: 'heats>cancelled'}
+                  ],
+                  formatter: '.stateLabelFormatter.stateLabel'
+                }" />
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+    </f:content>
+
+  </f:DynamicPage>
 </mvc:View>

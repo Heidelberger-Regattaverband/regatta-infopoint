@@ -15,13 +15,15 @@ const HEATS_QUERY: &str =
     ORDER BY Comp_DateTime ASC";
 
 const HEAT_REGISTRATION_QUERY: &str =
-    "SELECT	ce.*, e.Entry_Bib, e.Entry_BoatNumber, l.Label_Short, l.Label_Long, r.Result_Rank \
+    "SELECT	ce.*, e.Entry_Bib, e.Entry_BoatNumber, l.Label_Short, l.Label_Long, r.Result_Rank, r.Result_DisplayValue \
     FROM CompEntries AS ce
+    JOIN Comp AS c ON ce.CE_Comp_ID_FK = c.Comp_ID
     JOIN Entry AS e ON ce.CE_Entry_ID_FK = e.Entry_ID
     JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
     JOIN Label AS l ON el.EL_Label_ID_FK = l.Label_ID
     JOIN Result AS r ON r.Result_CE_ID_FK = ce.CE_ID
-    WHERE ce.CE_Comp_ID_FK = @P1 AND r.Result_SplitNr = 64";
+    WHERE ce.CE_Comp_ID_FK = @P1 AND r.Result_SplitNr = 64 \
+      AND el.EL_RoundFrom <= c.Comp_Round AND c.Comp_Round <= el.EL_RoundTo";
 
 const REGATTA_ID: i32 = 12;
 
@@ -120,6 +122,8 @@ fn create_heat_registration(row: &Row) -> HeatRegistration {
         rank: Column::get(row, "Result_Rank"),
         short_label: Column::get(row, "Label_Short"),
         long_label: Column::get(row, "Label_Long"),
+        result: Column::get(row, "Result_DisplayValue"),
+        boat_number: Column::get(row, "Entry_BoatNumber"),
     }
 }
 
@@ -156,6 +160,8 @@ pub struct HeatRegistration {
     rank: u8,
     short_label: String,
     long_label: String,
+    boat_number: i16,
+    result: String,
 }
 
 // see: https://github.com/prisma/tiberius/issues/101#issuecomment-978144867
@@ -177,7 +183,7 @@ impl Column for u8 {
 
 impl Column for i16 {
     fn get(row: &Row, col_name: &str) -> i16 {
-        row.try_get::<i16, _>(col_name).unwrap().unwrap()
+        row.try_get::<i16, _>(col_name).unwrap().unwrap_or_default()
     }
 }
 

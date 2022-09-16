@@ -19,11 +19,21 @@ async fn main() -> Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(Data::clone(&data))
-            .service(rest_api::regattas)
-            .service(rest_api::heats)
-            .service(rest_api::heat_registrations)
-            .service(Files::new("/", "./static").show_files_listing())
-            .service(Files::new("/ui", "./static/ui").index_file("index.html"))
+            .service(rest_api::get_regattas)
+            .service(rest_api::get_heats)
+            .service(rest_api::get_heat_registrations)
+            .service(
+                Files::new("/", "./static")
+                    .show_files_listing()
+                    .use_last_modified(true)
+                    .use_etag(true),
+            )
+            .service(
+                Files::new("/ui", "./static/ui")
+                    .index_file("index.html")
+                    .use_last_modified(true)
+                    .use_etag(true),
+            )
     })
     .bind(get_http_bind())?
     .workers(4)
@@ -32,14 +42,18 @@ async fn main() -> Result<()> {
 }
 
 fn get_http_bind() -> (String, u16) {
-    let port = env::var("HTTP_PORT")
-        .unwrap_or_else(|_| "8080".to_string())
-        .parse()
-        .unwrap();
+    let port = get_http_port();
     let host = env::var("HTTP_BIND").unwrap_or_else(|_| "127.0.0.1".to_string());
     info!("HTTP server is listening on: {host}:{port}");
 
     (host, port)
+}
+
+fn get_http_port() -> u16 {
+    env::var("HTTP_PORT")
+        .unwrap_or_else(|_| "8080".to_string())
+        .parse()
+        .unwrap()
 }
 
 async fn create_app_data() -> Data<Pool<TiberiusConnectionManager>> {
@@ -58,7 +72,7 @@ mod tests {
 
         let app = test::init_service(
             App::new()
-                .service(rest_api::regattas)
+                .service(rest_api::get_regattas)
                 .app_data(Data::clone(&app_data)),
         )
         .await;
@@ -73,7 +87,7 @@ mod tests {
 
         let app = test::init_service(
             App::new()
-                .service(rest_api::heats)
+                .service(rest_api::get_heats)
                 .app_data(Data::clone(&app_data)),
         )
         .await;
