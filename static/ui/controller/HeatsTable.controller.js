@@ -2,18 +2,18 @@ sap.ui.define([
   "sap/ui/core/mvc/Controller",
   "sap/ui/model/json/JSONModel",
   "../model/StateLabelFormatter",
-  "../model/RaceLabelFormatter",
+  "../model/Formatter",
   "../model/HeatLabelFormatter",
   "../model/DayFormatter",
   "../model/TimeFormatter",
   "sap/f/library"
-], function (Controller, JSONModel, StateLabelFormatter, RaceLabelFormatter, HeatLabelFormatter, DayFormatter, TimeFormatter, fioriLibrary) {
+], function (Controller, JSONModel, StateLabelFormatter, Formatter, HeatLabelFormatter, DayFormatter, TimeFormatter, fioriLibrary) {
   "use strict";
   return Controller.extend("de.regatta_hd.infopoint.controller.HeatsTable", {
 
     stateLabelFormatter: StateLabelFormatter,
 
-    raceLabelFormatter: RaceLabelFormatter,
+    formatter: Formatter,
 
     heatLabelFormatter: HeatLabelFormatter,
 

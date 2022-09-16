@@ -123,6 +123,7 @@ fn create_heat_registration(row: &Row) -> HeatRegistration {
         short_label: Column::get(row, "Label_Short"),
         long_label: Column::get(row, "Label_Long"),
         result: Column::get(row, "Result_DisplayValue"),
+        boat_number: Column::get(row, "Entry_BoatNumber"),
     }
 }
 
@@ -159,6 +160,7 @@ pub struct HeatRegistration {
     rank: u8,
     short_label: String,
     long_label: String,
+    boat_number: i16,
     result: String,
 }
 
@@ -181,7 +183,7 @@ impl Column for u8 {
 
 impl Column for i16 {
     fn get(row: &Row, col_name: &str) -> i16 {
-        row.try_get::<i16, _>(col_name).unwrap().unwrap()
+        row.try_get::<i16, _>(col_name).unwrap().unwrap_or_default()
     }
 }
 

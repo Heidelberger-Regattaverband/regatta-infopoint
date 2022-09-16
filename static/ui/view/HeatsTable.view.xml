@@ -30,55 +30,54 @@
 
     <!-- DynamicPage Content -->
     <f:content>
-      <VBox fitContainer="true">
-        <Table items="{heats>/}" growing="true" growingScrollToLoad="true" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="ColumnHeaders">
+      <Table items="{heats>/}" growing="true" growingScrollToLoad="true" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="ColumnHeaders">
 
-          <columns>
-            <Column hAlign="Center" width="3em">
-              <Text text="{i18n>heatsTable.column.number}" class="bold" />
-            </Column>
-            <Column hAlign="Center" width="4em">
-              <Text text="{i18n>heatsTable.column.date}" class="bold" />
-            </Column>
-            <Column hAlign="Center" width="4em">
-              <Text text="{i18n>heatsTable.column.time}" class="bold" />
-            </Column>
-            <Column hAlign="Begin" width="8em">
-              <Text text="{i18n>heatsTable.column.race}" class="bold" />
-            </Column>
-            <Column hAlign="Begin" width="8em">
-              <Text text="{i18n>heatsTable.column.heat}" class="bold" />
-            </Column>
-            <Column hAlign="Center" width="6em">
-              <Text text="{i18n>heatsTable.column.state}" class="bold" />
-            </Column>
-          </columns>
+        <columns>
+          <Column hAlign="Center" width="3em">
+            <Text text="{i18n>heatsTable.column.number}" class="bold" />
+          </Column>
+          <Column hAlign="Center" width="4em">
+            <Text text="{i18n>heatsTable.column.date}" class="bold" />
+          </Column>
+          <Column hAlign="Center" width="4em">
+            <Text text="{i18n>heatsTable.column.time}" class="bold" />
+          </Column>
+          <Column hAlign="Begin" width="8em">
+            <Text text="{i18n>heatsTable.column.race}" class="bold" />
+          </Column>
+          <Column hAlign="Begin" width="8em">
+            <Text text="{i18n>heatsTable.column.heat}" class="bold" />
+          </Column>
+          <Column hAlign="Center" width="6em">
+            <Text text="{i18n>heatsTable.column.state}" class="bold" />
+          </Column>
+        </columns>
 
-          <items>
-            <ColumnListItem>
-              <cells>
-                <Text text="{heats>number}" />
-                <Text text="{
+        <items>
+          <ColumnListItem>
+            <cells>
+              <Text text="{heats>number}" />
+              <Text text="{
                   parts: [
                     {path: 'heats>date'}
                   ],
                   formatter: '.dayFormatter.format'
                 }" />
-                <Text text="{
+              <Text text="{
                   parts: [
                     {path: 'heats>time'}
                   ],
                   formatter: '.timeFormatter.format'
                 }" />
-                <Text text="{
+              <Text text="{
                   parts: [
                     {path: 'heats>race_number'},
                     {path: 'heats>race_short_label'},
                     {path: 'heats>race_comment'}
                   ],
-                  formatter: '.raceLabelFormatter.raceLabel'
+                  formatter: '.formatter.raceLabel'
                 }" />
-                <Text text="{
+              <Text text="{
                   parts: [
                     {path: 'heats>round_code'},
                     {path: 'heats>label'},
@@ -87,18 +86,17 @@
                   ],
                   formatter: '.heatLabelFormatter.heatLabel'
                 }" />
-                <Text text="{
+              <Text text="{
                   parts: [
                     {path: 'heats>state'},
                     {path: 'heats>cancelled'}
                   ],
                   formatter: '.stateLabelFormatter.stateLabel'
                 }" />
-              </cells>
-            </ColumnListItem>
-          </items>
-        </Table>
-      </VBox>
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
     </f:content>
 
   </f:DynamicPage>
