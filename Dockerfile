@@ -1,6 +1,6 @@
 # build image: docker build -t infopoint .
 # run container: docker run -it --rm --name infopoint -p 80:8080 --env DB_PASSWORD= infopoint
-FROM rust:1.63.0 AS BUILDER
+FROM rust:1.63.0
 
 LABEL maintainer="markus@ofterdinger.de"
 
