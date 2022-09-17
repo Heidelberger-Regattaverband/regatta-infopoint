@@ -32,12 +32,21 @@
     <f:content>
       <IconTabBar id="idIconTabBar" select=".onFilterSelect" class="sapUiResponsiveContentPadding">
         <items>
-          <IconTabFilter count="{/ProductCollectionStats/Counts/Weight/Ok}" text="{regatta>/start_date}" key="{regatta>/start_date}" />
-          <IconTabFilter count="{/ProductCollectionStats/Counts/Weight/Heavy}" text="{regatta>/end_date}" key="{regatta>/end_date}" />
+          <IconTabFilter text="{
+            parts: [
+              {path: 'regatta>/start_date'}
+            ],
+            formatter: '.formatter.dayLabel'
+          }" key="{regatta>/start_date}" />
+          <IconTabFilter text="{
+            parts: [
+              {path: 'regatta>/end_date'}
+            ],
+            formatter: '.formatter.dayLabel'
+          }" key="{regatta>/end_date}" />
         </items>
         <content>
           <Table items="{heats>/}" growing="true" growingScrollToLoad="true" growingThreshold="100" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="ColumnHeaders">
-
             <columns>
               <Column hAlign="Center" width="3em">
                 <Text text="{i18n>heatsTable.column.number}" class="bold" />
@@ -67,13 +76,13 @@
                   parts: [
                     {path: 'heats>date'}
                   ],
-                  formatter: '.dayFormatter.format'
+                  formatter: '.formatter.dayLabel'
                 }" />
                   <Text text="{
                   parts: [
                     {path: 'heats>time'}
                   ],
-                  formatter: '.timeFormatter.format'
+                  formatter: '.formatter.timeLabel'
                 }" />
                   <Text text="{
                   parts: [

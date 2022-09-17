@@ -4,10 +4,8 @@ sap.ui.define([
   "../model/StateLabelFormatter",
   "../model/Formatter",
   "../model/HeatLabelFormatter",
-  "../model/DayFormatter",
-  "../model/TimeFormatter",
   "sap/f/library"
-], function (Controller, JSONModel, StateLabelFormatter, Formatter, HeatLabelFormatter, DayFormatter, TimeFormatter, fioriLibrary) {
+], function (Controller, JSONModel, StateLabelFormatter, Formatter, HeatLabelFormatter, fioriLibrary) {
   "use strict";
   return Controller.extend("de.regatta_hd.infopoint.controller.HeatsTable", {
 
@@ -16,10 +14,6 @@ sap.ui.define([
     formatter: Formatter,
 
     heatLabelFormatter: HeatLabelFormatter,
-
-    dayFormatter: DayFormatter,
-
-    timeFormatter: TimeFormatter,
 
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
