@@ -95,7 +95,7 @@ fn get_db_user() -> String {
 }
 
 fn get_db_password() -> String {
-    env::var("DB_PASSWORD").unwrap()
+    env::var("DB_PASSWORD").unwrap_or_default()
 }
 
 fn create_config() -> tiberius::Config {

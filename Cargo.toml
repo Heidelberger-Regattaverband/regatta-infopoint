@@ -1,5 +1,5 @@
 [package]
-name = "regatta-infopoint"
+name = "infopoint"
 version = "0.1.0"
 edition = "2021"
 authors = ["Markus Ofterdinger <markus@ofterdinger.de>"]

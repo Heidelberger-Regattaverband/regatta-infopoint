@@ -43,7 +43,7 @@ async fn main() -> Result<()> {
 
 fn get_http_bind() -> (String, u16) {
     let port = get_http_port();
-    let host = env::var("HTTP_BIND").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let host = env::var("HTTP_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
     info!("HTTP server is listening on: {host}:{port}");
 
     (host, port)

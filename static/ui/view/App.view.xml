@@ -1,5 +1,5 @@
 <mvc:View controllerName="de.regatta_hd.infopoint.controller.App" xmlns="sap.m" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc" displayBlock="true">
-  <Shell appWidthLimited="false" homeIcon="{ 'phone':'', 'phone@2':'', 'tablet':'', 'tablet@2':'', 'precomposed':true, 'favicon':'icon/favicon.ico' }">
+  <Shell homeIcon="{ 'phone':'', 'phone@2':'', 'tablet':'', 'tablet@2':'', 'precomposed':true, 'favicon':'icon/favicon.ico' }">
     <App class="infopoint">
       <pages>
         <Page title="{i18n>homePageTitle}">
