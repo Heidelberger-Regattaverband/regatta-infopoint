@@ -5,13 +5,11 @@ FROM rust:1.63.0
 WORKDIR /usr/src/infopoint
 COPY . .
 
-#RUN cargo install --path .
-#CMD ["infopoint"]
-
-RUN cargo build --release
-
+EXPOSE 8080
 ENV RUST_LOG=INFO
 
-EXPOSE 8080
+#RUN cargo build --release
+#CMD ["./target/release/infopoint"]
 
-CMD ["./target/release/infopoint"]
+RUN cargo install --git https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git --branch main
+CMD ["infopoint"]
