@@ -20,13 +20,13 @@
         </f:content>
       </f:DynamicPageTitle>
     </f:title> -->
-    <f:title>
+    <!-- <f:title>
       <f:DynamicPageTitle>
         <f:actions>
           <OverflowToolbarButton type="Transparent" icon="sap-icon://refresh" press="handleRefresh" tooltip="Refresh" />
         </f:actions>
       </f:DynamicPageTitle>
-    </f:title>
+    </f:title> -->
 
     <!-- DynamicPage Content -->
     <f:content>
