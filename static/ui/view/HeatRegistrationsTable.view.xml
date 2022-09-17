@@ -69,7 +69,6 @@
                   ],
                   formatter: '.formatter.boatLabel'
                 }" />
-
               <Text text="{heatRegistration>result}" />
             </cells>
           </ColumnListItem>
