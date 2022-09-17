@@ -1112,6 +1112,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "infopoint"
+version = "0.1.0"
+dependencies = [
+ "actix-files",
+ "actix-web",
+ "anyhow",
+ "async-std",
+ "async-trait",
+ "bb8",
+ "env_logger",
+ "log",
+ "serde",
+ "tiberius",
+]
+
+[[package]]
 name = "instant"
 version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1546,22 +1562,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fb5a58c1855b4b6819d59012155603f0b22ad30cad752600aadfcb695265519a"
 dependencies = [
  "bitflags",
-]
-
-[[package]]
-name = "regatta-infopoint"
-version = "0.1.0"
-dependencies = [
- "actix-files",
- "actix-web",
- "anyhow",
- "async-std",
- "async-trait",
- "bb8",
- "env_logger",
- "log",
- "serde",
- "tiberius",
 ]
 
 [[package]]
