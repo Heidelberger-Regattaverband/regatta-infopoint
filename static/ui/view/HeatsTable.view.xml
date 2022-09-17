@@ -30,46 +30,52 @@
 
     <!-- DynamicPage Content -->
     <f:content>
-      <Table items="{heats>/}" growing="true" growingScrollToLoad="true" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="ColumnHeaders">
-
-        <columns>
-          <Column hAlign="Center" width="3em">
-            <Text text="{i18n>heatsTable.column.number}" class="bold" />
-          </Column>
-          <Column hAlign="Center" width="4em">
-            <Text text="{i18n>heatsTable.column.date}" class="bold" />
-          </Column>
-          <Column hAlign="Center" width="4em">
-            <Text text="{i18n>heatsTable.column.time}" class="bold" />
-          </Column>
-          <Column hAlign="Begin" width="8em">
-            <Text text="{i18n>heatsTable.column.race}" class="bold" />
-          </Column>
-          <Column hAlign="Begin" width="8em">
-            <Text text="{i18n>heatsTable.column.heat}" class="bold" />
-          </Column>
-          <Column hAlign="Center" width="6em">
-            <Text text="{i18n>heatsTable.column.state}" class="bold" />
-          </Column>
-        </columns>
-
+      <IconTabBar id="idIconTabBar" select=".onFilterSelect" class="sapUiResponsiveContentPadding">
         <items>
-          <ColumnListItem>
-            <cells>
-              <Text text="{heats>number}" />
-              <Text text="{
+          <IconTabFilter count="{/ProductCollectionStats/Counts/Weight/Ok}" text="{regatta>/start_date}" key="{regatta>/start_date}" />
+          <IconTabFilter count="{/ProductCollectionStats/Counts/Weight/Heavy}" text="{regatta>/end_date}" key="{regatta>/end_date}" />
+        </items>
+        <content>
+          <Table items="{heats>/}" growing="true" growingScrollToLoad="true" growingThreshold="100" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="ColumnHeaders">
+
+            <columns>
+              <Column hAlign="Center" width="3em">
+                <Text text="{i18n>heatsTable.column.number}" class="bold" />
+              </Column>
+              <Column hAlign="Center" width="4em">
+                <Text text="{i18n>heatsTable.column.date}" class="bold" />
+              </Column>
+              <Column hAlign="Center" width="4em">
+                <Text text="{i18n>heatsTable.column.time}" class="bold" />
+              </Column>
+              <Column hAlign="Begin" width="8em">
+                <Text text="{i18n>heatsTable.column.race}" class="bold" />
+              </Column>
+              <Column hAlign="Begin" width="8em">
+                <Text text="{i18n>heatsTable.column.heat}" class="bold" />
+              </Column>
+              <Column hAlign="Center" width="6em">
+                <Text text="{i18n>heatsTable.column.state}" class="bold" />
+              </Column>
+            </columns>
+
+            <items>
+              <ColumnListItem>
+                <cells>
+                  <Text text="{heats>number}" />
+                  <Text text="{
                   parts: [
                     {path: 'heats>date'}
                   ],
                   formatter: '.dayFormatter.format'
                 }" />
-              <Text text="{
+                  <Text text="{
                   parts: [
                     {path: 'heats>time'}
                   ],
                   formatter: '.timeFormatter.format'
                 }" />
-              <Text text="{
+                  <Text text="{
                   parts: [
                     {path: 'heats>race_number'},
                     {path: 'heats>race_short_label'},
@@ -77,7 +83,7 @@
                   ],
                   formatter: '.formatter.raceLabel'
                 }" />
-              <Text text="{
+                  <Text text="{
                   parts: [
                     {path: 'heats>round_code'},
                     {path: 'heats>label'},
@@ -86,17 +92,19 @@
                   ],
                   formatter: '.heatLabelFormatter.heatLabel'
                 }" />
-              <Text text="{
+                  <Text text="{
                   parts: [
                     {path: 'heats>state'},
                     {path: 'heats>cancelled'}
                   ],
                   formatter: '.stateLabelFormatter.stateLabel'
                 }" />
-            </cells>
-          </ColumnListItem>
-        </items>
-      </Table>
+                </cells>
+              </ColumnListItem>
+            </items>
+          </Table>
+        </content>
+      </IconTabBar>
     </f:content>
 
   </f:DynamicPage>

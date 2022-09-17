@@ -4,7 +4,9 @@ use log::debug;
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Client, Row};
 
-const REGATTAS_QUERY: &str = "SELECT * FROM Event e;";
+const REGATTAS_QUERY: &str = "SELECT * FROM Event e";
+
+const REGATTA_QUERY: &str = "SELECT * FROM Event e WHERE e.Event_ID = @P1";
 
 const HEATS_QUERY: &str =
     "SELECT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, ag.* \
@@ -44,6 +46,20 @@ pub async fn get_regattas(client: &mut Client<TcpStream>) -> Result<Vec<Regatta>
         regattas.push(regatta);
     }
     Ok(regattas)
+}
+
+pub async fn get_regatta(client: &mut Client<TcpStream>, regatta_id: i32) -> Result<Regatta> {
+    debug!("Query {REGATTA_QUERY}");
+
+    let row = client
+        .query(REGATTA_QUERY, &[&regatta_id])
+        .await?
+        .into_row()
+        .await?
+        .unwrap();
+
+    let regatta = create_regatta(&row);
+    Ok(regatta)
 }
 
 pub async fn get_heat_registrations(
@@ -86,11 +102,16 @@ pub async fn get_heats(client: &mut Client<TcpStream>) -> Result<Vec<Heat>> {
 }
 
 fn create_regatta(row: &Row) -> Regatta {
+    let start_date: NaiveDateTime = Column::get(row, "Event_StartDate");
+    let end_date: NaiveDateTime = Column::get(row, "Event_EndDate");
+
     Regatta {
         id: Column::get(row, "Event_ID"),
         title: Column::get(row, "Event_Title"),
         sub_title: Column::get(row, "Event_SubTitle"),
         venue: Column::get(row, "Event_Venue"),
+        start_date: start_date.date().to_string(),
+        end_date: end_date.date().to_string(),
     }
 }
 
@@ -133,6 +154,8 @@ pub struct Regatta {
     title: String,
     sub_title: String,
     venue: String,
+    start_date: String,
+    end_date: String,
 }
 
 #[derive(Debug, Serialize)]

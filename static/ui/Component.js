@@ -1,7 +1,8 @@
 sap.ui.define([
   "sap/ui/core/UIComponent",
+  "sap/ui/model/json/JSONModel",
   "sap/ui/Device"
-], function (UIComponent, Device) {
+], function (UIComponent, JSONModel, Device) {
   "use strict";
   return UIComponent.extend("de.regatta_hd.infopoint.Component", {
 
@@ -14,10 +15,9 @@ sap.ui.define([
       // call the init function of the parent
       UIComponent.prototype.init.apply(this, arguments);
 
-      // var oInvoiceModel = new JSONModel();
-      // oInvoiceModel.loadData("Invoices.json");
-      // // oInvoiceModel.loadData("http://localhost:8080/api/heats");
-      // this.setModel(oInvoiceModel, "invoice");
+      var oRegattaModel = new JSONModel();
+      oRegattaModel.loadData("/api/regattas/13");
+      this.setModel(oRegattaModel, "regatta");
     },
 
     getContentDensityClass: function () {

@@ -20,6 +20,7 @@ async fn main() -> Result<()> {
         App::new()
             .app_data(Data::clone(&data))
             .service(rest_api::get_regattas)
+            .service(rest_api::get_regatta)
             .service(rest_api::get_heats)
             .service(rest_api::get_heat_registrations)
             .service(
