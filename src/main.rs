@@ -20,6 +20,7 @@ async fn main() -> Result<()> {
         App::new()
             .app_data(Data::clone(&data))
             .service(rest_api::get_regattas)
+            .service(rest_api::get_regatta)
             .service(rest_api::get_heats)
             .service(rest_api::get_heat_registrations)
             .service(
@@ -91,7 +92,7 @@ mod tests {
                 .app_data(Data::clone(&app_data)),
         )
         .await;
-        let request = TestRequest::get().uri("/api/heats").to_request();
+        let request = TestRequest::get().uri("/api/regattas/12/heats").to_request();
         let response = test::call_service(&app, request).await;
         assert!(response.status().is_success());
     }

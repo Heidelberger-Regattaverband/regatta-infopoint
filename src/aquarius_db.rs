@@ -2,12 +2,15 @@ use anyhow::{Ok, Result};
 use async_std::net::TcpStream;
 use log::debug;
 use serde::Serialize;
+use std::time::Duration;
 use tiberius::{time::chrono::NaiveDateTime, Client, Row};
 
-const REGATTAS_QUERY: &str = "SELECT * FROM Event e;";
+const REGATTAS_QUERY: &str = "SELECT * FROM Event e";
+
+const REGATTA_QUERY: &str = "SELECT * FROM Event e WHERE e.Event_ID = @P1";
 
 const HEATS_QUERY: &str =
-    "SELECT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, ag.* \
+    "SELECT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, ag.* \
     FROM Comp AS c \
     JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK \
     JOIN AgeClass AS ag ON o.Offer_AgeClass_ID_FK = ag.AgeClass_ID \
@@ -15,7 +18,7 @@ const HEATS_QUERY: &str =
     ORDER BY Comp_DateTime ASC";
 
 const HEAT_REGISTRATION_QUERY: &str =
-    "SELECT	ce.*, e.Entry_Bib, e.Entry_BoatNumber, l.Label_Short, l.Label_Long, r.Result_Rank, r.Result_DisplayValue \
+    "SELECT	ce.*, e.Entry_Bib, e.Entry_BoatNumber, l.Label_Short, l.Label_Long, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta \
     FROM CompEntries AS ce
     JOIN Comp AS c ON ce.CE_Comp_ID_FK = c.Comp_ID
     JOIN Entry AS e ON ce.CE_Entry_ID_FK = e.Entry_ID
@@ -24,8 +27,6 @@ const HEAT_REGISTRATION_QUERY: &str =
     JOIN Result AS r ON r.Result_CE_ID_FK = ce.CE_ID
     WHERE ce.CE_Comp_ID_FK = @P1 AND r.Result_SplitNr = 64 \
       AND el.EL_RoundFrom <= c.Comp_Round AND c.Comp_Round <= el.EL_RoundTo";
-
-const REGATTA_ID: i32 = 12;
 
 pub async fn get_regattas(client: &mut Client<TcpStream>) -> Result<Vec<Regatta>> {
     debug!("Query {HEATS_QUERY}");
@@ -44,6 +45,20 @@ pub async fn get_regattas(client: &mut Client<TcpStream>) -> Result<Vec<Regatta>
         regattas.push(regatta);
     }
     Ok(regattas)
+}
+
+pub async fn get_regatta(client: &mut Client<TcpStream>, regatta_id: i32) -> Result<Regatta> {
+    debug!("Query {REGATTA_QUERY}");
+
+    let row = client
+        .query(REGATTA_QUERY, &[&regatta_id])
+        .await?
+        .into_row()
+        .await?
+        .unwrap();
+
+    let regatta = create_regatta(&row);
+    Ok(regatta)
 }
 
 pub async fn get_heat_registrations(
@@ -66,11 +81,11 @@ pub async fn get_heat_registrations(
     Ok(heat_registrations)
 }
 
-pub async fn get_heats(client: &mut Client<TcpStream>) -> Result<Vec<Heat>> {
+pub async fn get_heats(client: &mut Client<TcpStream>, regatta_id: i32) -> Result<Vec<Heat>> {
     debug!("Query {HEATS_QUERY}");
 
     let rows = client
-        .query(HEATS_QUERY, &[&REGATTA_ID])
+        .query(HEATS_QUERY, &[&regatta_id])
         .await?
         .into_first_result()
         .await?;
@@ -86,11 +101,16 @@ pub async fn get_heats(client: &mut Client<TcpStream>) -> Result<Vec<Heat>> {
 }
 
 fn create_regatta(row: &Row) -> Regatta {
+    let start_date: NaiveDateTime = Column::get(row, "Event_StartDate");
+    let end_date: NaiveDateTime = Column::get(row, "Event_EndDate");
+
     Regatta {
         id: Column::get(row, "Event_ID"),
         title: Column::get(row, "Event_Title"),
         sub_title: Column::get(row, "Event_SubTitle"),
         venue: Column::get(row, "Event_Venue"),
+        start_date: start_date.date().to_string(),
+        end_date: end_date.date().to_string(),
     }
 }
 
@@ -111,10 +131,17 @@ fn create_heat(row: &Row) -> Heat {
         date: date_time.date().to_string(),
         time: date_time.time().to_string(),
         ac_num_sub_classes: Column::get(row, "AgeClass_NumSubClasses"),
+        distance: Column::get(row, "Offer_Distance"),
     }
 }
 
 fn create_heat_registration(row: &Row) -> HeatRegistration {
+    let delta: i32 = Column::get(row, "Result_Delta");
+    let duration = Duration::from_millis(delta as u64);
+
+    let seconds = duration.as_secs();
+    let millis = duration.subsec_millis() / 10;
+
     HeatRegistration {
         id: Column::get(row, "CE_ID"),
         lane: Column::get(row, "CE_Lane"),
@@ -124,6 +151,7 @@ fn create_heat_registration(row: &Row) -> HeatRegistration {
         long_label: Column::get(row, "Label_Long"),
         result: Column::get(row, "Result_DisplayValue"),
         boat_number: Column::get(row, "Entry_BoatNumber"),
+        delta: format!("{}.{}", seconds, millis),
     }
 }
 
@@ -133,6 +161,8 @@ pub struct Regatta {
     title: String,
     sub_title: String,
     venue: String,
+    start_date: String,
+    end_date: String,
 }
 
 #[derive(Debug, Serialize)]
@@ -150,6 +180,7 @@ pub struct Heat {
     date: String,
     time: String,
     ac_num_sub_classes: u8,
+    distance: i16,
 }
 
 #[derive(Debug, Serialize)]
@@ -162,6 +193,7 @@ pub struct HeatRegistration {
     long_label: String,
     boat_number: i16,
     result: String,
+    delta: String,
 }
 
 // see: https://github.com/prisma/tiberius/issues/101#issuecomment-978144867
