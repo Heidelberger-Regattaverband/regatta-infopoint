@@ -4,24 +4,6 @@
     <!-- DynamicPage Title -->
     <!-- <f:title>
       <f:DynamicPageTitle>
-        <f:heading>
-          <Title text="Läufe" />
-        </f:heading>
-        <f:content>
-          <OverflowToolbar>
-            <ToolbarSpacer />
-            <SearchField liveChange="onFilter">
-              <layoutData>
-                <OverflowToolbarLayoutData maxWidth="200px" shrinkable="true" priority="NeverOverflow" />
-              </layoutData>
-            </SearchField>
-            <OverflowToolbarButton tooltip="Refresh" type="Transparent" text="Refresh" icon="sap-icon://refresh" press="onRefresh" />
-          </OverflowToolbar>
-        </f:content>
-      </f:DynamicPageTitle>
-    </f:title> -->
-    <!-- <f:title>
-      <f:DynamicPageTitle>
         <f:actions>
           <OverflowToolbarButton type="Transparent" icon="sap-icon://refresh" press="handleRefresh" tooltip="Refresh" />
         </f:actions>
