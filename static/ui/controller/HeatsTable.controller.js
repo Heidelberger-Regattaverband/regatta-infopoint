@@ -19,6 +19,12 @@ sap.ui.define([
 
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
+
+      let oRegatta = this.getOwnerComponent().getModel("regatta").getData();
+
+      let oIconTabBar = this.byId("heatsIconTabBar");
+      let sKey = oIconTabBar.getSelectedKey();
+      // this._setFilter(sKey);
     },
 
     onSelectionChange: function (oEvent) {
@@ -39,20 +45,20 @@ sap.ui.define([
     },
 
     onFilterSelect: function (oEvent) {
-      let oBinding = this.byId("heatsTable").getBinding("items");
-      let sKey = oEvent.getParameter("key");
-      // Array to combine filters
-      let aFilters = [];
-      // debugger;
-      aFilters.push(
-        new Filter({
-          path: 'date',
-          operator: FilterOperator.EQ,
-          value1: sKey
-        }));
+      const sKey = oEvent.getParameter("key");
+      this._setFilter(sKey);
+    },
 
+    _setFilter: function (sKey) {
+      // Array to combine filters
+      const aFilters = [new Filter({
+        path: 'date',
+        operator: FilterOperator.EQ,
+        value1: sKey
+      })];
+
+      const oBinding = this.byId("heatsTable").getBinding("items");
       oBinding.filter(aFilters);
     }
-
   });
 });

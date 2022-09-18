@@ -30,7 +30,7 @@
 
     <!-- DynamicPage Content -->
     <f:content>
-      <IconTabBar id="idIconTabBar" select=".onFilterSelect" class="sapUiResponsiveContentPadding">
+      <IconTabBar id="heatsIconTabBar" select=".onFilterSelect" class="sapUiResponsiveContentPadding">
         <items>
           <IconTabFilter text="{
             parts: [
