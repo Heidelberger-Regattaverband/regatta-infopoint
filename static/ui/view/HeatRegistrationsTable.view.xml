@@ -64,6 +64,9 @@
           <Column hAlign="End" width="4em">
             <Text text="{i18n>heatRegistrationTable.column.result}" class="bold" />
           </Column>
+          <Column hAlign="End" width="4em">
+            <Text text="{i18n>heatRegistrationTable.column.delta}" class="bold" />
+          </Column>
         </columns>
 
         <items>
@@ -79,7 +82,8 @@
                   ],
                   formatter: '.formatter.boatLabel'
                 }" />
-              <Text text="{heatRegistration>result}&#13;&#10;{= ${heatRegistration>delta} !== '0.0' ? ${heatRegistration>delta} : '' }" />
+              <Text text="{heatRegistration>result}" />
+              <Text text="{= ${heatRegistration>delta} !== '0.0' ? ${heatRegistration>delta} : '' }" />
             </cells>
           </ColumnListItem>
         </items>

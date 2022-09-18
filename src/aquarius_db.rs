@@ -140,7 +140,7 @@ fn create_heat_registration(row: &Row) -> HeatRegistration {
     let duration = Duration::from_millis(delta as u64);
 
     let seconds = duration.as_secs();
-    let millis = duration.subsec_millis();
+    let millis = duration.subsec_millis() / 10;
 
     HeatRegistration {
         id: Column::get(row, "CE_ID"),
