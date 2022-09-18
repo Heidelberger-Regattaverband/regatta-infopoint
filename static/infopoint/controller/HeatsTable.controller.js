@@ -3,15 +3,12 @@ sap.ui.define([
   "sap/ui/model/json/JSONModel",
   "sap/ui/model/Filter",
   'sap/ui/model/FilterOperator',
-  "../model/StateLabelFormatter",
   "../model/Formatter",
   "../model/HeatLabelFormatter",
   "sap/f/library"
-], function (Controller, JSONModel, Filter, FilterOperator, StateLabelFormatter, Formatter, HeatLabelFormatter, fioriLibrary) {
+], function (Controller, JSONModel, Filter, FilterOperator, Formatter, HeatLabelFormatter, fioriLibrary) {
   "use strict";
   return Controller.extend("de.regatta_hd.infopoint.controller.HeatsTable", {
-
-    stateLabelFormatter: StateLabelFormatter,
 
     formatter: Formatter,
 
