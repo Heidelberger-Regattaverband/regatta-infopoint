@@ -27,8 +27,6 @@ const HEAT_REGISTRATION_QUERY: &str =
     WHERE ce.CE_Comp_ID_FK = @P1 AND r.Result_SplitNr = 64 \
       AND el.EL_RoundFrom <= c.Comp_Round AND c.Comp_Round <= el.EL_RoundTo";
 
-const REGATTA_ID: i32 = 12;
-
 pub async fn get_regattas(client: &mut Client<TcpStream>) -> Result<Vec<Regatta>> {
     debug!("Query {HEATS_QUERY}");
 
@@ -82,11 +80,11 @@ pub async fn get_heat_registrations(
     Ok(heat_registrations)
 }
 
-pub async fn get_heats(client: &mut Client<TcpStream>) -> Result<Vec<Heat>> {
+pub async fn get_heats(client: &mut Client<TcpStream>, regatta_id: i32) -> Result<Vec<Heat>> {
     debug!("Query {HEATS_QUERY}");
 
     let rows = client
-        .query(HEATS_QUERY, &[&REGATTA_ID])
+        .query(HEATS_QUERY, &[&regatta_id])
         .await?
         .into_first_result()
         .await?;

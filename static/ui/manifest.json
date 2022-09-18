@@ -49,7 +49,7 @@
       },
       "heats": {
         "type": "sap.ui.model.json.JSONModel",
-        "uri": "/api/heats"
+        "uri": "/api/regattas/12/heats"
       }
     },
     "resources": {

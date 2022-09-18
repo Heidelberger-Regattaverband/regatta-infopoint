@@ -25,10 +25,13 @@ async fn get_regatta(path: Path<i32>, data: Data<TiberiusPool>) -> Json<Regatta>
     Json(regatta)
 }
 
-#[get("/api/heats")]
-async fn get_heats(data: Data<TiberiusPool>) -> Json<Vec<Heat>> {
+#[get("/api/regattas/{id}/heats")]
+async fn get_heats(path: Path<i32>, data: Data<TiberiusPool>) -> Json<Vec<Heat>> {
+    let regatta_id = path.into_inner();
     let mut client = data.get().await.unwrap();
-    let heats = aquarius_db::get_heats(&mut client).await.unwrap();
+    let heats = aquarius_db::get_heats(&mut client, regatta_id)
+        .await
+        .unwrap();
     Json(heats)
 }
 
