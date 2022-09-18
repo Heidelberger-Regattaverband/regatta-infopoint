@@ -23,17 +23,18 @@ async fn main() -> Result<()> {
             .service(rest_api::get_regatta)
             .service(rest_api::get_heats)
             .service(rest_api::get_heat_registrations)
+            // .service(
+            //     Files::new("/", "./static")
+            //         .show_files_listing()
+            //         .use_last_modified(true)
+            //         .use_etag(true),
+            // )
             .service(
-                Files::new("/", "./static")
-                    .show_files_listing()
-                    .use_last_modified(true)
-                    .use_etag(true),
-            )
-            .service(
-                Files::new("/ui", "./static/ui")
+                Files::new("/infopoint", "./static/infopoint")
                     .index_file("index.html")
                     .use_last_modified(true)
-                    .use_etag(true),
+                    .use_etag(true)
+                    .redirect_to_slash_directory(),
             )
     })
     .bind(get_http_bind())?
@@ -92,7 +93,9 @@ mod tests {
                 .app_data(Data::clone(&app_data)),
         )
         .await;
-        let request = TestRequest::get().uri("/api/regattas/12/heats").to_request();
+        let request = TestRequest::get()
+            .uri("/api/regattas/12/heats")
+            .to_request();
         let response = test::call_service(&app, request).await;
         assert!(response.status().is_success());
     }
