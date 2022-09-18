@@ -2,6 +2,7 @@ use anyhow::{Ok, Result};
 use async_std::net::TcpStream;
 use log::debug;
 use serde::Serialize;
+use std::time::Duration;
 use tiberius::{time::chrono::NaiveDateTime, Client, Row};
 
 const REGATTAS_QUERY: &str = "SELECT * FROM Event e";
@@ -9,7 +10,7 @@ const REGATTAS_QUERY: &str = "SELECT * FROM Event e";
 const REGATTA_QUERY: &str = "SELECT * FROM Event e WHERE e.Event_ID = @P1";
 
 const HEATS_QUERY: &str =
-    "SELECT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, ag.* \
+    "SELECT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, ag.* \
     FROM Comp AS c \
     JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK \
     JOIN AgeClass AS ag ON o.Offer_AgeClass_ID_FK = ag.AgeClass_ID \
@@ -17,7 +18,7 @@ const HEATS_QUERY: &str =
     ORDER BY Comp_DateTime ASC";
 
 const HEAT_REGISTRATION_QUERY: &str =
-    "SELECT	ce.*, e.Entry_Bib, e.Entry_BoatNumber, l.Label_Short, l.Label_Long, r.Result_Rank, r.Result_DisplayValue \
+    "SELECT	ce.*, e.Entry_Bib, e.Entry_BoatNumber, l.Label_Short, l.Label_Long, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta \
     FROM CompEntries AS ce
     JOIN Comp AS c ON ce.CE_Comp_ID_FK = c.Comp_ID
     JOIN Entry AS e ON ce.CE_Entry_ID_FK = e.Entry_ID
@@ -130,10 +131,17 @@ fn create_heat(row: &Row) -> Heat {
         date: date_time.date().to_string(),
         time: date_time.time().to_string(),
         ac_num_sub_classes: Column::get(row, "AgeClass_NumSubClasses"),
+        distance: Column::get(row, "Offer_Distance"),
     }
 }
 
 fn create_heat_registration(row: &Row) -> HeatRegistration {
+    let delta: i32 = Column::get(row, "Result_Delta");
+    let duration = Duration::from_millis(delta as u64);
+
+    let seconds = duration.as_secs();
+    let millis = duration.subsec_millis();
+
     HeatRegistration {
         id: Column::get(row, "CE_ID"),
         lane: Column::get(row, "CE_Lane"),
@@ -143,6 +151,7 @@ fn create_heat_registration(row: &Row) -> HeatRegistration {
         long_label: Column::get(row, "Label_Long"),
         result: Column::get(row, "Result_DisplayValue"),
         boat_number: Column::get(row, "Entry_BoatNumber"),
+        delta: format!("{}.{}", seconds, millis),
     }
 }
 
@@ -171,6 +180,7 @@ pub struct Heat {
     date: String,
     time: String,
     ac_num_sub_classes: u8,
+    distance: i16,
 }
 
 #[derive(Debug, Serialize)]
@@ -183,6 +193,7 @@ pub struct HeatRegistration {
     long_label: String,
     boat_number: i16,
     result: String,
+    delta: String,
 }
 
 // see: https://github.com/prisma/tiberius/issues/101#issuecomment-978144867

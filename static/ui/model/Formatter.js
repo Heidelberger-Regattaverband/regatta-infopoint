@@ -21,7 +21,12 @@ sap.ui.define(function () {
     timeLabel: function (sDate) {
       const aDate = sDate.split(":");
       return aDate[0] + ":" + aDate[1];
-    }
+    },
+
+    dateLabel: function (sDate) {
+      const aDate = sDate.split("-");
+      return aDate[2] + "." + aDate[1] + "." + aDate[0];
+    },
 
   };
 
