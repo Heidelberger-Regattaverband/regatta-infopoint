@@ -46,7 +46,7 @@
           }" key="{regatta>/end_date}" />
         </items>
         <content>
-          <Table id="heatsTable" items="{heats>/}" growing="true" growingScrollToLoad="true" growingThreshold="100" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="ColumnHeaders">
+          <Table id="heatsTable" items="{heats>/}" inset="false" growing="true" growingScrollToLoad="true" growingThreshold="100" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="ColumnHeaders">
             <columns>
               <Column hAlign="Center" width="3em">
                 <Text text="{i18n>heatsTable.column.number}" class="bold" />
