@@ -58,13 +58,13 @@
           <Column hAlign="Center" width="3em">
             <Text text="{i18n>heatRegistrationTable.column.bib}" class="bold" />
           </Column>
-          <Column hAlign="Begin" width="12em">
+          <Column hAlign="Begin" width="12em" importance="High">
             <Text text="{i18n>heatRegistrationTable.column.boat}" class="bold" />
           </Column>
-          <Column hAlign="End" width="4em">
+          <Column hAlign="End" width="4em" importance="High">
             <Text text="{i18n>heatRegistrationTable.column.result}" class="bold" />
           </Column>
-          <Column hAlign="End" width="4em">
+          <Column hAlign="End" width="4em" importance="High">
             <Text text="{i18n>heatRegistrationTable.column.delta}" class="bold" />
           </Column>
         </columns>
