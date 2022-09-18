@@ -1,6 +1,6 @@
 <mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatsTable" xmlns="sap.m" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc">
 
-  <f:DynamicPage id="dynamicPageId" toggleHeaderOnTitleClick="false">
+  <f:DynamicPage id="dynamicPageId" toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
     <!-- DynamicPage Title -->
     <!-- <f:title>
       <f:DynamicPageTitle>
@@ -12,7 +12,7 @@
 
     <!-- DynamicPage Content -->
     <f:content>
-      <IconTabBar id="heatsIconTabBar" select=".onFilterSelect" class="sapUiResponsiveContentPadding">
+      <IconTabBar id="heatsIconTabBar" select=".onFilterSelect" class="sapUiNoContentPadding">
         <items>
           <IconTabFilter text="{
             parts: [
@@ -28,7 +28,7 @@
           }" key="{regatta>/end_date}" />
         </items>
         <content>
-          <Table id="heatsTable" items="{heats>/}" inset="false" growing="true" growingScrollToLoad="true" growingThreshold="100" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="ColumnHeaders">
+          <Table id="heatsTable" items="{heats>/}" inset="false" growing="true" growingScrollToLoad="true" growingThreshold="100" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="ColumnHeaders" class="sapUiNoContentPadding">
             <columns>
               <Column hAlign="Center" width="3em">
                 <Text text="{i18n>heatsTable.column.number}" class="bold" />

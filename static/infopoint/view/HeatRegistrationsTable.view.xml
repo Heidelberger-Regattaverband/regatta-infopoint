@@ -1,6 +1,6 @@
 <mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatRegistrationsTable" xmlns="sap.m" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc">
 
-  <f:DynamicPage id="dynamicPageId" toggleHeaderOnTitleClick="false">
+  <f:DynamicPage id="dynamicPageId" toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
     <!-- DynamicPage Title -->
     <f:title>
       <f:DynamicPageTitle>
@@ -46,7 +46,7 @@
 
     <!-- DynamicPage Content -->
     <f:content>
-      <Table items="{path: 'heatRegistration>/', sorter: {path: 'rank'}}" growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders">
+      <Table items="{path: 'heatRegistration>/', sorter: {path: 'rank'}}" growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
 
         <columns>
           <Column hAlign="Center" width="3em">
