@@ -2,7 +2,7 @@
   <Shell homeIcon="{ 'phone':'', 'phone@2':'', 'tablet':'', 'tablet@2':'', 'precomposed':true, 'favicon':'icon/favicon.ico' }">
     <App class="infopoint">
       <pages>
-        <Page title="Infopoint zur {regatta>/title} - {parts: [{path: 'regatta>/start_date'}],formatter: '.formatter.dateLabel'} bis {parts: [{path: 'regatta>/end_date'}],formatter: '.formatter.dateLabel'}" class="sapUiNoContentPadding">
+        <Page title="Rennen und Ergebnisse der {regatta>/title} - {parts: [{path: 'regatta>/start_date'}],formatter: '.formatter.dateLabel'} bis {parts: [{path: 'regatta>/end_date'}],formatter: '.formatter.dateLabel'}" class="sapUiNoContentPadding">
           <content>
             <f:FlexibleColumnLayout id="flexibleColumnLayout" backgroundDesign="Solid">
               <f:beginColumnPages>
