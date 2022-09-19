@@ -14,18 +14,27 @@ sap.ui.define(function () {
     },
 
     dayLabel: function (sDate) {
-      const aDate = sDate.split("-");
-      return aDate[2] + "." + aDate[1] + ".";
+      if (sDate) {
+        const aDate = sDate.split("-");
+        return aDate[2] + "." + aDate[1] + ".";
+      }
+      return "";
     },
 
     timeLabel: function (sDate) {
-      const aDate = sDate.split(":");
-      return aDate[0] + ":" + aDate[1];
+      if (sDate) {
+        const aDate = sDate.split(":");
+        return aDate[0] + ":" + aDate[1];
+      }
+      return "";
     },
 
     dateLabel: function (sDate) {
-      const aDate = sDate.split("-");
-      return aDate[2] + "." + aDate[1] + "." + aDate[0];
+      if (sDate) {
+        const aDate = sDate.split("-");
+        return aDate[2] + "." + aDate[1] + "." + aDate[0];
+      }
+      return "";
     },
 
     stateLabel: function (iState, bCancelled) {
