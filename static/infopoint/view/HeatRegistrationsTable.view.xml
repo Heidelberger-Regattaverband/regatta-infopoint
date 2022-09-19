@@ -49,22 +49,22 @@
       <Table autoPopinMode="true" items="{path: 'heatRegistration>/', sorter: {path: 'rank'}}" growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
 
         <columns>
-          <Column hAlign="Center" width="3em" importance="High">
+          <Column hAlign="Center" width="3rem" importance="High">
             <Text text="{i18n>heatRegistrationTable.column.rank}" class="bold" wrapping="false" />
           </Column>
-          <Column hAlign="Center" width="3em" importance="Low">
+          <Column hAlign="Center" width="3rem" importance="Low">
             <Text text="{i18n>heatRegistrationTable.column.lane}" class="bold" wrapping="false" />
           </Column>
-          <Column hAlign="Center" width="3em" importance="High">
+          <Column hAlign="Center" width="3rem" importance="High">
             <Text text="{i18n>heatRegistrationTable.column.bib}" class="bold" wrapping="false" />
           </Column>
-          <Column hAlign="Begin" width="12em" importance="High">
+          <Column hAlign="Begin" width="12rem" importance="High">
             <Text text="{i18n>heatRegistrationTable.column.boat}" class="bold" wrapping="false" />
           </Column>
-          <Column hAlign="End" width="4em" importance="High">
+          <Column hAlign="End" width="4rem" importance="High">
             <Text text="{i18n>heatRegistrationTable.column.result}" class="bold" wrapping="false" />
           </Column>
-          <Column hAlign="End" width="4em" importance="Low">
+          <Column hAlign="End" width="4rem" importance="Low">
             <Text text="{i18n>heatRegistrationTable.column.delta}" class="bold" wrapping="false" />
           </Column>
         </columns>
