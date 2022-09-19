@@ -49,23 +49,23 @@
       <Table autoPopinMode="true" items="{path: 'heatRegistration>/', sorter: {path: 'rank'}}" growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
 
         <columns>
-          <Column hAlign="Center" width="3em">
-            <Text text="{i18n>heatRegistrationTable.column.rank}" class="bold" />
+          <Column hAlign="Center" width="3em" importance="High">
+            <Text text="{i18n>heatRegistrationTable.column.rank}" class="bold" wrapping="false" />
           </Column>
-          <Column hAlign="Center" width="3em">
-            <Text text="{i18n>heatRegistrationTable.column.lane}" class="bold" />
+          <Column hAlign="Center" width="3em" importance="Low">
+            <Text text="{i18n>heatRegistrationTable.column.lane}" class="bold" wrapping="false" />
           </Column>
-          <Column hAlign="Center" width="3em">
-            <Text text="{i18n>heatRegistrationTable.column.bib}" class="bold" />
+          <Column hAlign="Center" width="3em" importance="High">
+            <Text text="{i18n>heatRegistrationTable.column.bib}" class="bold" wrapping="false" />
           </Column>
           <Column hAlign="Begin" width="12em" importance="High">
-            <Text text="{i18n>heatRegistrationTable.column.boat}" class="bold" />
+            <Text text="{i18n>heatRegistrationTable.column.boat}" class="bold" wrapping="false" />
           </Column>
           <Column hAlign="End" width="4em" importance="High">
-            <Text text="{i18n>heatRegistrationTable.column.result}" class="bold" />
+            <Text text="{i18n>heatRegistrationTable.column.result}" class="bold" wrapping="false" />
           </Column>
-          <Column hAlign="End" width="4em" importance="High">
-            <Text text="{i18n>heatRegistrationTable.column.delta}" class="bold" />
+          <Column hAlign="End" width="4em" importance="Low">
+            <Text text="{i18n>heatRegistrationTable.column.delta}" class="bold" wrapping="false" />
           </Column>
         </columns>
 
