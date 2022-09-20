@@ -18,6 +18,11 @@ sap.ui.define([
       var oRegattaModel = new JSONModel();
       oRegattaModel.loadData("/api/regattas/13");
       this.setModel(oRegattaModel, "regatta");
+
+      // set device model
+      var oDeviceModel = new JSONModel(Device);
+      oDeviceModel.setDefaultBindingMode("OneWay");
+      this.setModel(oDeviceModel, "device");
     },
 
     getContentDensityClass: function () {
