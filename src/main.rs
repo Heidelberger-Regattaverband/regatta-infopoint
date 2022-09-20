@@ -20,16 +20,16 @@ async fn main() -> Result<()> {
     let data = create_app_data().await;
     // A backend is responsible for storing rate limit data, and choosing whether to allow/deny requests
 
-    HttpServer::new(move || {
-        // Assign a limit of 5 requests per minute per client ip address
-        let input = SimpleInputFunctionBuilder::new(Duration::from_secs(60), 50)
+    let mut http_server = HttpServer::new(move || {
+        let input = SimpleInputFunctionBuilder::new(Duration::from_secs(600), 100)
             .real_ip_key()
             .build();
-        let backend = InMemoryBackend::builder().build();
-        let middleware = RateLimiter::builder(backend, input).add_headers().build();
+        let rate_limiter = RateLimiter::builder(InMemoryBackend::builder().build(), input)
+            .add_headers()
+            .build();
 
         App::new()
-            .wrap(middleware)
+            .wrap(rate_limiter)
             .app_data(Data::clone(&data))
             .service(rest_api::get_regattas)
             .service(rest_api::get_regatta)
@@ -43,10 +43,16 @@ async fn main() -> Result<()> {
                     .redirect_to_slash_directory(),
             )
     })
-    .bind(get_http_bind())?
-    // .workers(get_http_workers())
-    .run()
-    .await
+    .bind(get_http_bind())?;
+
+    // configure number of workers if env. variable is set
+    let workers = get_http_workers();
+    if workers.is_some() {
+        http_server = http_server.workers(workers.unwrap());
+    }
+
+    // finally run http server
+    http_server.run().await
 }
 
 fn get_http_bind() -> (String, u16) {
@@ -64,11 +70,12 @@ fn get_http_port() -> u16 {
         .unwrap()
 }
 
-fn get_http_workers() -> usize {
-    env::var("HTTP_PORT")
-        .unwrap_or_else(|_| "4".to_string())
-        .parse()
-        .unwrap()
+fn get_http_workers() -> Option<usize> {
+    match env::var("HTTP_WORKERS") {
+        // parses the value and panics if it's not a number
+        Ok(workers) => Some(workers.parse().unwrap()),
+        Err(_error) => Option::None,
+    }
 }
 
 async fn create_app_data() -> Data<Pool<TiberiusConnectionManager>> {
