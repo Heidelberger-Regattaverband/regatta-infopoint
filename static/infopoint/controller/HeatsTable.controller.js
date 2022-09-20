@@ -4,15 +4,12 @@ sap.ui.define([
   "sap/ui/model/Filter",
   'sap/ui/model/FilterOperator',
   "../model/Formatter",
-  "../model/HeatLabelFormatter",
   "sap/f/library"
-], function (Controller, JSONModel, Filter, FilterOperator, Formatter, HeatLabelFormatter, fioriLibrary) {
+], function (Controller, JSONModel, Filter, FilterOperator, Formatter, fioriLibrary) {
   "use strict";
   return Controller.extend("de.regatta_hd.infopoint.controller.HeatsTable", {
 
     formatter: Formatter,
-
-    heatLabelFormatter: HeatLabelFormatter,
 
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());

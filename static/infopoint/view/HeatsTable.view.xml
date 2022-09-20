@@ -30,32 +30,32 @@
         <content>
           <Table id="heatsTable" autoPopinMode="true" items="{heats>/}" growing="true" growingScrollToLoad="true" growingThreshold="100" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="ColumnHeaders" class="sapUiNoContentPadding">
             <columns>
-              <Column hAlign="Center" width="3rem" importance="Low">
+              <Column hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
                 <header>
-                  <Text text="{i18n>heatsTable.column.number}" class="bold" wrapping="false" />
+                  <Text text="{i18n>heatsTable.column.heatNumber}" class="bold" wrapping="false" />
                 </header>
               </Column>
-              <Column hAlign="Center" width="4rem" importance="Low" visible="{= !${device>/system/phone}}">
+              <Column hAlign="Center" width="4rem" importance="Low" visible="{= !${device>/system/phone}}" popinDisplay="Inline">
                 <header>
-                  <Text text="{i18n>heatsTable.column.date}" class="bold" wrapping="false" />
+                  <Text text="{i18n>heatsTable.column.day}" class="bold" wrapping="false" />
                 </header>
               </Column>
-              <Column hAlign="Center" width="4rem" importance="High">
+              <Column hAlign="Center" width="4rem" importance="High" popinDisplay="Inline">
                 <header>
                   <Text text="{i18n>heatsTable.column.time}" class="bold" wrapping="false" />
                 </header>
               </Column>
-              <Column hAlign="Begin" width="8rem" importance="High">
+              <Column hAlign="Begin" width="8rem" importance="High" popinDisplay="Inline">
                 <header>
                   <Text text="{i18n>heatsTable.column.race}" class="bold" wrapping="false" />
                 </header>
               </Column>
-              <Column hAlign="Begin" width="8rem" importance="High">
+              <Column hAlign="Begin" width="8rem" importance="High" popinDisplay="Inline">
                 <header>
                   <Text text="{i18n>heatsTable.column.heat}" class="bold" wrapping="false" />
                 </header>
               </Column>
-              <Column hAlign="Center" width="6rem" importance="High">
+              <Column hAlign="Center" width="6rem" importance="High" popinDisplay="Inline">
                 <header>
                   <Text text="{i18n>heatsTable.column.state}" class="bold" wrapping="false" />
                 </header>
@@ -93,7 +93,7 @@
                       {path: 'heats>ac_num_sub_classes'},
                       {path: 'heats>group_value'}
                     ],
-                    formatter: '.heatLabelFormatter.heatLabel'
+                    formatter: '.formatter.heatLabel'
                   }" />
                   <Text text="{
                     parts: [

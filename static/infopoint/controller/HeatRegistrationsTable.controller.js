@@ -1,13 +1,10 @@
 sap.ui.define([
   "sap/ui/core/mvc/Controller",
   "sap/f/library",
-  "../model/HeatLabelFormatter",
   "../model/Formatter"
-], function (Controller, fioriLibrary, HeatLabelFormatter, Formatter) {
+], function (Controller, fioriLibrary, Formatter) {
   "use strict";
   return Controller.extend("de.regatta_hd.infopoint.controller.HeatRegistrationsTable", {
-
-    heatLabelFormatter: HeatLabelFormatter,
 
     formatter: Formatter,
 
