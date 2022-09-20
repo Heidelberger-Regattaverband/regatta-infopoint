@@ -1,6 +1,4 @@
-mod aquarius_db;
 mod db;
-mod db_utils;
 mod rest_api;
 
 use crate::db::TiberiusConnectionManager;
@@ -13,7 +11,7 @@ use std::{env, io::Result};
 #[actix_web::main]
 async fn main() -> Result<()> {
     env_logger::init();
-    info!("Starting infopoint");
+    info!("Starting Infopoint");
 
     let data = create_app_data().await;
 

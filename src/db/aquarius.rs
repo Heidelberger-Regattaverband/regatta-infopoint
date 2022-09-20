@@ -1,4 +1,4 @@
-use crate::db_utils::Column;
+use crate::db::utils::Column;
 use anyhow::{Ok, Result};
 use async_std::net::TcpStream;
 use log::debug;

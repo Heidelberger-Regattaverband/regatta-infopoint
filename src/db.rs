@@ -33,6 +33,10 @@ use log::info;
 use std::env;
 use tiberius::Config;
 
+// exposes sub-modules
+pub mod aquarius;
+pub mod utils;
+
 pub type TiberiusPool = Pool<TiberiusConnectionManager>;
 
 #[derive(Clone, Debug)]
