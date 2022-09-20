@@ -1,8 +1,7 @@
 use crate::{
-    db::aquarius::{self, Heat, HeatRegistration, Regatta},
+    db::aquarius::{self, Aquarius, Heat, HeatRegistration, Regatta},
     db::TiberiusPool,
 };
-
 use actix_web::{
     get,
     web::{Data, Json, Path},
@@ -11,7 +10,7 @@ use actix_web::{
 #[get("/api/regattas")]
 async fn get_regattas(data: Data<TiberiusPool>) -> Json<Vec<Regatta>> {
     let mut client = data.get().await.unwrap();
-    let regattas = aquarius::get_regattas(&mut client).await.unwrap();
+    let regattas = Aquarius::new().get_regattas(&mut client).await.unwrap();
     Json(regattas)
 }
 
@@ -19,7 +18,8 @@ async fn get_regattas(data: Data<TiberiusPool>) -> Json<Vec<Regatta>> {
 async fn get_regatta(path: Path<i32>, data: Data<TiberiusPool>) -> Json<Regatta> {
     let regatta_id = path.into_inner();
     let mut client = data.get().await.unwrap();
-    let regatta = aquarius::get_regatta(&mut client, regatta_id)
+    let regatta = Aquarius::new()
+        .get_regatta(&mut client, regatta_id)
         .await
         .unwrap();
     Json(regatta)

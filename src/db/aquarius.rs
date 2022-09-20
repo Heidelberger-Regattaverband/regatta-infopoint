@@ -4,6 +4,7 @@ use async_std::net::TcpStream;
 use log::debug;
 use serde::Serialize;
 use std::time::Duration;
+use stretto::AsyncCache;
 use tiberius::{time::chrono::NaiveDateTime, Client, Row};
 
 const REGATTAS_QUERY: &str = "SELECT * FROM Event e";
@@ -29,37 +30,54 @@ const HEAT_REGISTRATION_QUERY: &str =
     WHERE ce.CE_Comp_ID_FK = @P1 AND r.Result_SplitNr = 64 \
       AND el.EL_RoundFrom <= c.Comp_Round AND c.Comp_Round <= el.EL_RoundTo";
 
-pub async fn get_regattas(client: &mut Client<TcpStream>) -> Result<Vec<Regatta>> {
-    debug!("Query {HEATS_QUERY}");
-
-    let rows = client
-        .query(REGATTAS_QUERY, &[])
-        .await?
-        .into_first_result()
-        .await?;
-
-    let mut regattas: Vec<Regatta> = Vec::new();
-
-    for row in &rows {
-        let regatta = create_regatta(row);
-        debug!("{:?}", regatta);
-        regattas.push(regatta);
-    }
-    Ok(regattas)
+pub struct Aquarius {
+    cache: AsyncCache<String, String>,
 }
 
-pub async fn get_regatta(client: &mut Client<TcpStream>, regatta_id: i32) -> Result<Regatta> {
-    debug!("Query {REGATTA_QUERY}");
+impl Aquarius {
+    /// Create a new `Aquarius`.
+    pub fn new() -> Aquarius {
+        Aquarius {
+            cache: AsyncCache::new(12960, 1e6 as i64, async_std::task::spawn).unwrap(),
+        }
+    }
 
-    let row = client
-        .query(REGATTA_QUERY, &[&regatta_id])
-        .await?
-        .into_row()
-        .await?
-        .unwrap();
+    pub async fn get_regattas(&self, client: &mut Client<TcpStream>) -> Result<Vec<Regatta>> {
+        debug!("Query {HEATS_QUERY}");
 
-    let regatta = create_regatta(&row);
-    Ok(regatta)
+        let rows = client
+            .query(REGATTAS_QUERY, &[])
+            .await?
+            .into_first_result()
+            .await?;
+
+        let mut regattas: Vec<Regatta> = Vec::new();
+
+        for row in &rows {
+            let regatta = create_regatta(row);
+            debug!("{:?}", regatta);
+            regattas.push(regatta);
+        }
+        Ok(regattas)
+    }
+
+    pub async fn get_regatta(
+        &self,
+        client: &mut Client<TcpStream>,
+        regatta_id: i32,
+    ) -> Result<Regatta> {
+        debug!("Query {REGATTA_QUERY}");
+
+        let row = client
+            .query(REGATTA_QUERY, &[&regatta_id])
+            .await?
+            .into_row()
+            .await?
+            .unwrap();
+
+        let regatta = create_regatta(&row);
+        Ok(regatta)
+    }
 }
 
 pub async fn get_heat_registrations(
