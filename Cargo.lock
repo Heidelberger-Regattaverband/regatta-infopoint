@@ -20,6 +20,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "actix-extensible-rate-limit"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ea990351e38b399d3d1a96eef5e8feba721974a4319f6c66186b05782f6a05b"
+dependencies = [
+ "actix-web",
+ "async-trait",
+ "dashmap",
+ "futures",
+ "log",
+ "once_cell",
+ "thiserror",
+]
+
+[[package]]
 name = "actix-files"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -670,6 +685,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "dashmap"
+version = "5.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "907076dfda823b0b36d2a1bb5f90c96660a5bbcd7729e10727f07858f22c4edc"
+dependencies = [
+ "cfg-if",
+ "hashbrown",
+ "lock_api",
+ "once_cell",
+ "parking_lot_core",
+]
+
+[[package]]
 name = "derive_more"
 version = "0.99.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1108,6 +1136,7 @@ dependencies = [
 name = "infopoint"
 version = "0.1.0"
 dependencies = [
+ "actix-extensible-rate-limit",
  "actix-files",
  "actix-web",
  "anyhow",
@@ -1200,9 +1229,9 @@ checksum = "e34f76eb3611940e0e7d53a9aaa4e6a3151f69541a282fd0dad5571420c53ff1"
 
 [[package]]
 name = "lock_api"
-version = "0.4.8"
+version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f80bf5aacaf25cbfc8210d1cfb718f2bf3b11c4c54e5afe36c236853a8ec390"
+checksum = "435011366fe56583b16cf956f9df0095b405b82d76425bc8981c0e22e60ec4df"
 dependencies = [
  "autocfg",
  "scopeguard",
