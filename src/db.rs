@@ -4,6 +4,5 @@ pub mod pool;
 pub mod utils;
 
 use self::pool::TiberiusConnectionManager;
-use bb8::Pool;
 
-pub type TiberiusPool = Pool<TiberiusConnectionManager>;
+pub type TiberiusPool = bb8::Pool<TiberiusConnectionManager>;
