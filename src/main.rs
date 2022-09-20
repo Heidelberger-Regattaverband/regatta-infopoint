@@ -1,7 +1,7 @@
 mod db;
 mod rest_api;
 
-use crate::db::TiberiusConnectionManager;
+use crate::db::pool::{create_pool, TiberiusConnectionManager};
 use actix_files::Files;
 use actix_web::{web::Data, App, HttpServer};
 use bb8::Pool;
@@ -58,7 +58,7 @@ fn get_http_port() -> u16 {
 }
 
 async fn create_app_data() -> Data<Pool<TiberiusConnectionManager>> {
-    let pool = db::create_pool().await;
+    let pool = create_pool().await;
     Data::new(pool)
 }
 
