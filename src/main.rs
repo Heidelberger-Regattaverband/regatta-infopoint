@@ -1,5 +1,6 @@
 mod aquarius_db;
 mod db;
+mod db_utils;
 mod rest_api;
 
 use crate::db::TiberiusConnectionManager;
