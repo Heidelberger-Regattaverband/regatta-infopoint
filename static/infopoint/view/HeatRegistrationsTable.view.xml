@@ -1,105 +1,92 @@
 <mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatRegistrationsTable" xmlns="sap.m" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc">
+  <mvc:content>
 
-  <f:DynamicPage id="dynamicPageId" toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
-    <!-- DynamicPage Title -->
-    <f:title>
-      <f:DynamicPageTitle>
-        <f:heading>
-          <Text text="Rennen: 
-            {
-              parts: [
-                {path: 'heat>/race_number'},
-                {path: 'heat>/race_short_label'},
-                {path: 'heat>/race_comment'}
-              ],
-              formatter: '.formatter.raceLabel'
-            }&#13;&#10;Lauf: {
+    <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
+      <!-- DynamicPage Title -->
+      <f:title>
+        <f:DynamicPageTitle>
+          <f:heading>
+            <Text text="Rennen: {parts: [{path: 'heat>/'}], formatter: '.formatter.raceLabel'}&#13;&#10;Lauf: {
             parts: [
               {path: 'heat>/round_code'},
               {path: 'heat>/label'},
               {path: 'heat>/ac_num_sub_classes'},
               {path: 'heat>/group_value'}
             ],
-            formatter: '.formatter.heatLabel'
-          } &#13;&#10;Startzeit: {
-            parts: [
-              {path: 'heat>/date'}
-            ],
-            formatter: '.formatter.dateLabel'
-          } - {
-            parts: [
-              {path: 'heat>/time'}
-            ],
-            formatter: '.formatter.timeLabel'
-          }&#13;&#10;Distanz: {heat>/distance}m" />
-        </f:heading>
-        <f:navigationActions>
-          <!-- <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="handlePrevious" tooltip="Previous" />
+            formatter: '.formatter.heatLabel'}&#13;&#10;
+            Startzeit: {parts: [{path: 'heat>/date'}],formatter: '.formatter.dateLabel'} - {
+            parts: [{path: 'heat>/time'}], formatter: '.formatter.timeLabel'}&#13;&#10;
+            Distanz: {heat>/distance}m" />
+          </f:heading>
+          <f:navigationActions>
+            <!-- <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="handlePrevious" tooltip="Previous" />
           <Button type="Transparent" icon="sap-icon://navigation-right-arrow" press="handleNext" tooltip="Next" /> -->
-          <Button type="Transparent" icon="sap-icon://decline" press="handleClose" tooltip="Close middle column" />
-        </f:navigationActions>
-        <f:snappedTitleOnMobile>
-          <Title text="{heat>/race_number} - {heat>/race_short_label} {heat>/race_comment}" />
-        </f:snappedTitleOnMobile>
-      </f:DynamicPageTitle>
-    </f:title>
+            <Button type="Transparent" icon="sap-icon://decline" press="handleClose" tooltip="Close middle column" />
+          </f:navigationActions>
+          <f:snappedTitleOnMobile>
+            <Title text="{heat>/race_number} - {heat>/race_short_label} {heat>/race_comment}" />
+          </f:snappedTitleOnMobile>
+        </f:DynamicPageTitle>
+      </f:title>
 
-    <!-- DynamicPage Content -->
-    <f:content>
-      <Table autoPopinMode="true" items="{path: 'heatRegistration>/', sorter: {path: 'rank'}}" growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
+      <!-- DynamicPage Content -->
+      <f:content>
+        <Table autoPopinMode="true" items="{path: 'heatRegistration>/', sorter: {path: 'rank'}}" growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
 
-        <columns>
-          <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
-            <header>
-              <Text text="{i18n>heatRegistrationTable.column.rank}" class="bold" wrapping="false" />
-            </header>
-          </Column>
-          <Column hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
-            <header>
-              <Text text="{i18n>heatRegistrationTable.column.lane}" class="bold" wrapping="false" />
-            </header>
-          </Column>
-          <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
-            <header>
-              <Text text="{i18n>heatRegistrationTable.column.bib}" class="bold" wrapping="false" />
-            </header>
-          </Column>
-          <Column hAlign="Begin" width="12rem" importance="High" popinDisplay="Inline">
-            <header>
-              <Text text="{i18n>heatRegistrationTable.column.boat}" class="bold" wrapping="false" />
-            </header>
-          </Column>
-          <Column hAlign="End" width="4rem" importance="High" popinDisplay="Inline">
-            <header>
-              <Text text="{i18n>heatRegistrationTable.column.result}" class="bold" wrapping="false" />
-            </header>
-          </Column>
-          <Column hAlign="End" width="4rem" importance="Low" popinDisplay="Inline">
-            <header>
-              <Text text="{i18n>heatRegistrationTable.column.delta}" class="bold" wrapping="false" />
-            </header>
-          </Column>
-        </columns>
+          <columns>
+            <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>heatRegistrationTable.column.rank}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>heatRegistrationTable.column.lane}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>heatRegistrationTable.column.bib}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column hAlign="Begin" width="12rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>heatRegistrationTable.column.boat}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column hAlign="End" width="4rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>heatRegistrationTable.column.result}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column hAlign="End" width="4rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>heatRegistrationTable.column.delta}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+          </columns>
 
-        <items>
-          <ColumnListItem>
-            <cells>
-              <Text text="{heatRegistration>rank}" />
-              <Text text="{heatRegistration>lane}" />
-              <Text text="{heatRegistration>bib}" />
-              <Text text="{
+          <items>
+            <ColumnListItem>
+              <cells>
+                <Text text="{heatRegistration>rank}" />
+                <Text text="{heatRegistration>lane}" />
+                <Text text="{heatRegistration>bib}" />
+                <Text text="{
                   parts: [
                     {path: 'heatRegistration>short_label'},
                     {path: 'heatRegistration>boat_number'}
                   ],
                   formatter: '.formatter.boatLabel'
                 }" />
-              <Text text="{heatRegistration>result}" />
-              <Text text="{= ${heatRegistration>delta} !== '0.0' ? ${heatRegistration>delta} : '' }" />
-            </cells>
-          </ColumnListItem>
-        </items>
-      </Table>
-    </f:content>
-  </f:DynamicPage>
+                <Text text="{heatRegistration>result}" />
+                <Text text="{= ${heatRegistration>delta} !== '0.0' ? ${heatRegistration>delta} : '' }" />
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table>
+      </f:content>
+    </f:DynamicPage>
+
+  </mvc:content>
 </mvc:View>

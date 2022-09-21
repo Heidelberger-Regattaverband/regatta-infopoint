@@ -10,8 +10,11 @@ sap.ui.define(function () {
       return sShortLabel;
     },
 
-    raceLabel: function (sRaceNumber, sRaceShortLabel, sComment) {
-      return sRaceNumber + " - " + sRaceShortLabel + " " + sComment;
+    raceLabel: function (oHeat) {
+      if (oHeat) {
+        return oHeat.race_number + " - " + oHeat.race_short_label + " " + oHeat.race_comment;
+      }
+      return "";
     },
 
     dayLabel: function (sDate) {
@@ -39,7 +42,7 @@ sap.ui.define(function () {
     },
 
     stateLabel: function (iState, bCancelled) {
-      var resourceBundle = this.getView().getModel("i18n").getResourceBundle();
+      const resourceBundle = this.getView().getModel("i18n").getResourceBundle();
 
       if (bCancelled) {
         return resourceBundle.getText("heat.state.cancelled");

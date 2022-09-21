@@ -15,8 +15,11 @@ sap.ui.define([
       // call the init function of the parent
       UIComponent.prototype.init.apply(this, arguments);
 
+      // create the views based on the url/hash
+      this.getRouter().initialize();
+
       var oRegattaModel = new JSONModel();
-      oRegattaModel.loadData("/api/regattas/13");
+      oRegattaModel.loadData("/api/regattas/12");
       this.setModel(oRegattaModel, "regatta");
 
       // set device model

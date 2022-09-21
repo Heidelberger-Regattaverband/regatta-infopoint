@@ -1,0 +1,37 @@
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.Launchpad" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:layout="sap.ui.layout" xmlns:core="sap.ui.core" core:require="{ formatMessage: 'sap/base/strings/formatMessage' }">
+  <mvc:content>
+
+    <Page title="{parts: [{path:'i18n>launchpad.title'}, {path:'regatta>/title'}], formatter: 'formatMessage'}" class="sapUiNoContentPadding">
+      <content>
+
+        <layout:HorizontalLayout allowWrapping="true">
+          <layout:content>
+
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.heatsTile.header}" subheader="{parts: [{path: 'regatta>/start_date'}],formatter: '.formatter.dayLabel'} bis {parts: [{path: 'regatta>/end_date'}],formatter: '.formatter.dayLabel'}" press=".onNavToHeats">
+              <tileContent>
+                <TileContent>
+                  <content>
+                    <ImageContent src="sap-icon://fob-watch" />
+                  </content>
+                </TileContent>
+              </tileContent>
+            </GenericTile>
+
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.scoringTile.header}" press=".onNavToScoring">
+              <tileContent>
+                <TileContent>
+                  <content>
+                    <ImageContent src="sap-icon://competitor" />
+                  </content>
+                </TileContent>
+              </tileContent>
+            </GenericTile>
+
+          </layout:content>
+        </layout:HorizontalLayout>
+
+      </content>
+    </Page>
+
+  </mvc:content>
+</mvc:View>
