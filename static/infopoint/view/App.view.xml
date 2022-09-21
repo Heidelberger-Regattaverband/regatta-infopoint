@@ -1,7 +1,11 @@
-<mvc:View controllerName="de.regatta_hd.infopoint.controller.App" xmlns="sap.m" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc">
-  <Shell homeIcon="{ 'phone':'', 'phone@2':'', 'tablet':'', 'tablet@2':'', 'precomposed':true, 'favicon':'icon/favicon.ico' }">
-    <app>
-      <App id="infopointApp" class="infopoint" />
-    </app>
-  </Shell>
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.App" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
+  <mvc:content>
+
+    <Shell homeIcon="{ 'phone ':'', 'phone@2':'', 'tablet':'', 'tablet@2':'', 'precomposed':true, 'favicon':'icon/favicon.ico' }">
+      <app>
+        <App id="infopointApp" class="infopoint" />
+      </app>
+    </Shell>
+
+  </mvc:content>
 </mvc:View>
