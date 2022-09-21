@@ -57,7 +57,7 @@ fn get_db_host() -> String {
 }
 
 fn get_db_name() -> String {
-    env::var("DB_NAME").unwrap_or_else(|_| "Regatta_2022_Test".to_string())
+    env::var("DB_NAME").unwrap_or_else(|_| "Regatta_2022".to_string())
 }
 
 fn get_db_user() -> String {

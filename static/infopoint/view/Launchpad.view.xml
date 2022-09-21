@@ -1,15 +1,8 @@
 <mvc:View controllerName="de.regatta_hd.infopoint.controller.Launchpad" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:layout="sap.ui.layout" xmlns:core="sap.ui.core" core:require="{ formatMessage: 'sap/base/strings/formatMessage' }">
   <mvc:content>
 
-    <layout:VerticalLayout class="sapUiResponsiveMargin">
-      <layout:content>
-
-        <Title titleStyle="H2" text="{
-          parts: [
-            {path:'i18n>launchpad.title'},
-            {path:'regatta>/title'}
-          ],
-          formatter: 'formatMessage'}" class="sapUiTinyMarginBegin" />
+    <Page title="{parts: [{path:'i18n>launchpad.title'}, {path:'regatta>/title'}], formatter: 'formatMessage'}" class="sapUiNoContentPadding">
+      <content>
 
         <layout:HorizontalLayout allowWrapping="true">
           <layout:content>
@@ -37,8 +30,8 @@
           </layout:content>
         </layout:HorizontalLayout>
 
-      </layout:content>
-    </layout:VerticalLayout>
+      </content>
+    </Page>
 
   </mvc:content>
 </mvc:View>

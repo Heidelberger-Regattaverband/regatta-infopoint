@@ -19,7 +19,7 @@ sap.ui.define([
       this.getRouter().initialize();
 
       var oRegattaModel = new JSONModel();
-      oRegattaModel.loadData("/api/regattas/13");
+      oRegattaModel.loadData("/api/regattas/12");
       this.setModel(oRegattaModel, "regatta");
 
       // set device model
