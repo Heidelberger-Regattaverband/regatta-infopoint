@@ -69,8 +69,7 @@
                     <Text text="{heats>number}" />
                     <Text text="{parts: [{path: 'heats>date'}], formatter: '.formatter.dayLabel'}" />
                     <Text text="{parts: [{path: 'heats>time'}], formatter: '.formatter.timeLabel'}" />
-                    <Text text="{parts: [{path: 'heats>race_number'}, {path: 'heats>race_short_label'}, {path: 'heats>race_comment'}], formatter: '.formatter.raceLabel'
-                    }" />
+                    <Text text="{parts: [{path: 'heats>'}], formatter: '.formatter.raceLabel'}" />
                     <Text text="{
                       parts: [
                         {path: 'heats>round_code'},

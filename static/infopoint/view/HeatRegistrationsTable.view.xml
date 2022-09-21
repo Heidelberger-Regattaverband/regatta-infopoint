@@ -6,33 +6,17 @@
       <f:title>
         <f:DynamicPageTitle>
           <f:heading>
-            <Text text="Rennen: 
-            {
-              parts: [
-                {path: 'heat>/race_number'},
-                {path: 'heat>/race_short_label'},
-                {path: 'heat>/race_comment'}
-              ],
-              formatter: '.formatter.raceLabel'
-            }&#13;&#10;Lauf: {
+            <Text text="Rennen: {parts: [{path: 'heat>/'}], formatter: '.formatter.raceLabel'}&#13;&#10;Lauf: {
             parts: [
               {path: 'heat>/round_code'},
               {path: 'heat>/label'},
               {path: 'heat>/ac_num_sub_classes'},
               {path: 'heat>/group_value'}
             ],
-            formatter: '.formatter.heatLabel'
-          } &#13;&#10;Startzeit: {
-            parts: [
-              {path: 'heat>/date'}
-            ],
-            formatter: '.formatter.dateLabel'
-          } - {
-            parts: [
-              {path: 'heat>/time'}
-            ],
-            formatter: '.formatter.timeLabel'
-          }&#13;&#10;Distanz: {heat>/distance}m" />
+            formatter: '.formatter.heatLabel'}&#13;&#10;
+            Startzeit: {parts: [{path: 'heat>/date'}],formatter: '.formatter.dateLabel'} - {
+            parts: [{path: 'heat>/time'}], formatter: '.formatter.timeLabel'}&#13;&#10;
+            Distanz: {heat>/distance}m" />
           </f:heading>
           <f:navigationActions>
             <!-- <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="handlePrevious" tooltip="Previous" />
