@@ -35,7 +35,7 @@ async fn main() -> Result<()> {
             .service(rest_api::get_regatta)
             .service(rest_api::get_heats)
             .service(rest_api::get_heat_registrations)
-            .service(rest_api::get_scores)
+            .service(rest_api::get_scoring)
             .service(
                 Files::new("/infopoint", "./static/infopoint")
                     .index_file("index.html")

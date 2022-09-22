@@ -103,7 +103,7 @@ pub async fn get_heats(client: &mut Client<TcpStream>, regatta_id: i32) -> Resul
     Ok(heats)
 }
 
-pub async fn get_scores(client: &mut Client<TcpStream>, regatta_id: i32) -> Result<Vec<Score>> {
+pub async fn get_scoring(client: &mut Client<TcpStream>, regatta_id: i32) -> Result<Vec<Score>> {
     debug!("Executing query {SCORES_QUERY}");
 
     let rows = client
