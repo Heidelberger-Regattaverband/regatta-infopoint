@@ -24,10 +24,10 @@ sap.ui.define([
     onSelectionChange: function (oEvent) {
       const oSelectedItem = oEvent.getParameter("listItem");
       if (oSelectedItem) {
-        let oBindingCtx = oSelectedItem.getBindingContext("heats");
-        let oHeat = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
+        const oBindingCtx = oSelectedItem.getBindingContext("heats");
+        const oHeat = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
 
-        let oModel = new JSONModel();
+        const oModel = new JSONModel();
         oModel.loadData("/api/heats/" + oHeat.id + "/registrations");
 
         this.getOwnerComponent().setModel(new JSONModel(oHeat), "heat");

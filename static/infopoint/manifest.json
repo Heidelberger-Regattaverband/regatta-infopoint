@@ -47,10 +47,6 @@
           ],
           "fallbackLocale": ""
         }
-      },
-      "heats": {
-        "type": "sap.ui.model.json.JSONModel",
-        "uri": "/api/regattas/12/heats"
       }
     },
     "routing": {

@@ -8,19 +8,28 @@ sap.ui.define([
   return Controller.extend("de.regatta_hd.infopoint.controller.ScoresTable", {
 
     onInit: function () {
-      this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
+      const oComponent = this.getOwnerComponent();
 
-      let oRegatta = this.getOwnerComponent().getModel("regatta").getData();
+      this.getView().addStyleClass(oComponent.getContentDensityClass());
 
-      let oModel = new JSONModel();
-      oModel.loadData("/api/regattas/" + oRegatta.id + "/scores");
-      this.getOwnerComponent().setModel(oModel, "scoring");
+      this.getOwnerComponent().getRouter().attachRouteMatched(function (oEvent) {
+        if (oEvent.getParameter("name") === "scoring") {
+          const oRegatta = oComponent.getModel("regatta").getData();
+          this._loadScoringModel(oRegatta);
+        }
+      }, this);
     },
 
     onNavBack: function () {
       const oRouter = this.getOwnerComponent().getRouter();
       oRouter.navTo("startpage", {}, true);
-    }
+    },
 
+    _loadScoringModel: function (oRegatta) {
+      const oScoringModel = new JSONModel();
+      oScoringModel.loadData("/api/regattas/" + oRegatta.id + "/scores");
+
+      this.getOwnerComponent().setModel(oScoringModel, "scoring");
+    }
   });
 });
