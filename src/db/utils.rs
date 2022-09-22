@@ -31,6 +31,18 @@ impl Column for i32 {
     }
 }
 
+impl Column for f32 {
+    fn get(row: &Row, col_name: &str) -> f32 {
+        row.try_get::<f32, _>(col_name).unwrap().unwrap_or_default()
+    }
+}
+
+impl Column for f64 {
+    fn get(row: &Row, col_name: &str) -> f64 {
+        row.try_get::<f64, _>(col_name).unwrap().unwrap_or_default()
+    }
+}
+
 impl Column for NaiveDateTime {
     fn get(row: &Row, col_name: &str) -> NaiveDateTime {
         row.try_get::<NaiveDateTime, _>(col_name)
