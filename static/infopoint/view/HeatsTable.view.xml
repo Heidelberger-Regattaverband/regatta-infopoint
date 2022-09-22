@@ -15,20 +15,11 @@
       <f:content>
         <IconTabBar id="heatsIconTabBar" select=".onFilterSelect" class="sapUiNoContentPadding">
           <items>
-            <IconTabFilter text="{
-            parts: [
-              {path: 'regatta>/start_date'}
-            ],
-            formatter: '.formatter.dayLabel'
-          }" key="{regatta>/start_date}" />
-            <IconTabFilter text="{
-            parts: [
-              {path: 'regatta>/end_date'}
-            ],
-            formatter: '.formatter.dayLabel'
-          }" key="{regatta>/end_date}" />
+            <IconTabFilter text="{path: 'regatta>/start_date', formatter: '.formatter.dayLabel'}" key="{regatta>/start_date}" />
+            <IconTabFilter text="{path: 'regatta>/end_date', formatter: '.formatter.dayLabel'}" key="{regatta>/end_date}" />
           </items>
           <content>
+
             <Table id="heatsTable" autoPopinMode="true" items="{heats>/}" growing="true" growingScrollToLoad="true" growingThreshold="100" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="ColumnHeaders" class="sapUiNoContentPadding">
               <columns>
                 <Column hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
@@ -67,25 +58,19 @@
                 <ColumnListItem>
                   <cells>
                     <Text text="{heats>number}" />
-                    <Text text="{parts: [{path: 'heats>date'}], formatter: '.formatter.dayLabel'}" />
-                    <Text text="{parts: [{path: 'heats>time'}], formatter: '.formatter.timeLabel'}" />
-                    <Text text="{parts: [{path: 'heats>'}], formatter: '.formatter.raceLabel'}" />
-                    <Text text="{
-                      parts: [
-                        {path: 'heats>round_code'},
-                        {path: 'heats>label'},
-                        {path: 'heats>ac_num_sub_classes'},
-                        {path: 'heats>group_value'}
-                      ],
-                      formatter: '.formatter.heatLabel'
-                    }" />
-                    <Text text="{parts: [{path: 'heats>state'}, {path: 'heats>cancelled'}], formatter: '.formatter.stateLabel'}" />
+                    <Text text="{path: 'heats>date', formatter: '.formatter.dayLabel'}" />
+                    <Text text="{path: 'heats>time', formatter: '.formatter.timeLabel'}" />
+                    <Text text="{path: 'heats>', formatter: '.formatter.raceLabel'}" />
+                    <Text text="{path: 'heats>', formatter: '.formatter.heatLabel'}" />
+                    <Text text="{path: 'heats>', formatter: '.formatter.stateLabel'}" />
                   </cells>
                 </ColumnListItem>
               </items>
             </Table>
+
           </content>
         </IconTabBar>
+
       </f:content>
     </f:DynamicPage>
 

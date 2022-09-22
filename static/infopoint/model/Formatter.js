@@ -41,13 +41,13 @@ sap.ui.define(function () {
       return "";
     },
 
-    stateLabel: function (iState, bCancelled) {
+    stateLabel: function (oHeat) {
       const resourceBundle = this.getView().getModel("i18n").getResourceBundle();
 
-      if (bCancelled) {
+      if (oHeat.cancelled) {
         return resourceBundle.getText("heat.state.cancelled");
       } else {
-        switch (iState) {
+        switch (oHeat.state) {
           default:
           case 0:
             return resourceBundle.getText("heat.state.initial");
@@ -65,13 +65,12 @@ sap.ui.define(function () {
       }
     },
 
-    heatLabel: function (sRoundCode, sRoundLabel, iNumSubClasses, iGroupValue) {
-      const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
+    heatLabel: function (oHeat) {
       let sGroupValue = "";
 
-      if (iNumSubClasses > 0) {
+      if (oHeat.ac_num_sub_classes > 0) {
         const PREFIX = " - AK ";
-        switch (iGroupValue) {
+        switch (oHeat.group_value) {
           case 0:
             sGroupValue = PREFIX + "A";
             break;
@@ -105,13 +104,14 @@ sap.ui.define(function () {
         }
       }
 
-      switch (sRoundCode) {
+      const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
+      switch (oHeat.round_code) {
         case "A":
-          return oResourceBundle.getText("heat.label.division", [sRoundLabel, sGroupValue]);
+          return oResourceBundle.getText("heat.label.division", [oHeat.label, sGroupValue]);
         case "R":
-          return oResourceBundle.getText("heat.label.mainRace", [sRoundLabel, sGroupValue]);
+          return oResourceBundle.getText("heat.label.mainRace", [oHeat.label, sGroupValue]);
         case "V":
-          return oResourceBundle.getText("heat.label.forerun", [sRoundLabel, sGroupValue]);
+          return oResourceBundle.getText("heat.label.forerun", [oHeat.label, sGroupValue]);
         case "F":
           return oResourceBundle.getText("heat.label.final", [sGroupValue]);
         default:
