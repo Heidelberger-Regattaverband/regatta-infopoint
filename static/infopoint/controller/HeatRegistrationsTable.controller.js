@@ -13,7 +13,7 @@ sap.ui.define([
     },
 
     handleClose: function () {
-      var oFCL = this.getView().getParent().getParent();
+      const oFCL = this.getView().getParent().getParent();
       oFCL.setLayout(fioriLibrary.LayoutType.OneColumn);
     },
 

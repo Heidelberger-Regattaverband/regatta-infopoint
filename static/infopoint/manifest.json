@@ -77,6 +77,11 @@
           "pattern": "heats",
           "name": "heats",
           "target": "heats"
+        },
+        {
+          "pattern": "scoring",
+          "name": "scoring",
+          "target": "scoring"
         }
       ],
       "targets": {
@@ -86,6 +91,10 @@
         },
         "heats": {
           "viewName": "Heats",
+          "viewLevel": 1
+        },
+        "scoring": {
+          "viewName": "ScoringTable",
           "viewLevel": 1
         }
       }

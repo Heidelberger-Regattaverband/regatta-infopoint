@@ -1,7 +1,7 @@
 sap.ui.define(function () {
   "use strict";
 
-  var Formatter = {
+  let Formatter = {
 
     boatLabel: function (sShortLabel, iBoatNumber) {
       if (iBoatNumber > 0) {
