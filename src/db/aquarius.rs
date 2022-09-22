@@ -16,7 +16,7 @@ const HEATS_QUERY: &str =
     JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK \
     JOIN AgeClass AS ag ON o.Offer_AgeClass_ID_FK = ag.AgeClass_ID \
     WHERE c.Comp_Event_ID_FK = @P1 \
-    ORDER BY Comp_DateTime ASC";
+    ORDER BY c.Comp_DateTime ASC";
 
 const HEAT_REGISTRATION_QUERY: &str =
     "SELECT	ce.*, e.Entry_Bib, e.Entry_BoatNumber, l.Label_Short, l.Label_Long, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta \
@@ -29,8 +29,10 @@ const HEAT_REGISTRATION_QUERY: &str =
     WHERE ce.CE_Comp_ID_FK = @P1 AND r.Result_SplitNr = 64 \
       AND el.EL_RoundFrom <= c.Comp_Round AND c.Comp_Round <= el.EL_RoundTo";
 
+const SCORES_QUERY: &str = "SELECT s.rank, s.points, c.Club_Name, c.Club_Abbr FROM HRV_Score s JOIN Club AS c ON s.club_id = c.Club_ID WHERE s.event_id = @P1 ORDER BY s.rank ASC";
+
 pub async fn get_regattas(client: &mut Client<TcpStream>) -> Result<Vec<Regatta>> {
-    debug!("Query {HEATS_QUERY}");
+    debug!("Executing query {REGATTAS_QUERY}");
 
     let rows = client
         .query(REGATTAS_QUERY, &[])
@@ -49,7 +51,7 @@ pub async fn get_regattas(client: &mut Client<TcpStream>) -> Result<Vec<Regatta>
 }
 
 pub async fn get_regatta(client: &mut Client<TcpStream>, regatta_id: i32) -> Result<Regatta> {
-    debug!("Query {REGATTA_QUERY}");
+    debug!("Executing query {REGATTA_QUERY}");
 
     let row = client
         .query(REGATTA_QUERY, &[&regatta_id])
@@ -83,7 +85,7 @@ pub async fn get_heat_registrations(
 }
 
 pub async fn get_heats(client: &mut Client<TcpStream>, regatta_id: i32) -> Result<Vec<Heat>> {
-    debug!("Query {HEATS_QUERY}");
+    debug!("Executing query {HEATS_QUERY}");
 
     let rows = client
         .query(HEATS_QUERY, &[&regatta_id])
@@ -91,7 +93,7 @@ pub async fn get_heats(client: &mut Client<TcpStream>, regatta_id: i32) -> Resul
         .into_first_result()
         .await?;
 
-    let mut heats: Vec<Heat> = Vec::new();
+    let mut heats: Vec<Heat> = Vec::with_capacity(rows.len());
 
     for row in &rows {
         let heat = create_heat(row);
@@ -99,6 +101,33 @@ pub async fn get_heats(client: &mut Client<TcpStream>, regatta_id: i32) -> Resul
         heats.push(heat);
     }
     Ok(heats)
+}
+
+pub async fn get_scoring(client: &mut Client<TcpStream>, regatta_id: i32) -> Result<Vec<Score>> {
+    debug!("Executing query {SCORES_QUERY}");
+
+    let rows = client
+        .query(SCORES_QUERY, &[&regatta_id])
+        .await?
+        .into_first_result()
+        .await?;
+
+    let mut scores: Vec<Score> = Vec::with_capacity(rows.len());
+
+    for row in &rows {
+        let score = create_score(row);
+        debug!("{:?}", score);
+        scores.push(score);
+    }
+    Ok(scores)
+}
+
+fn create_score(row: &Row) -> Score {
+    Score {
+        rank: Column::get(row, "rank"),
+        club_short_label: Column::get(row, "Club_Abbr"),
+        points: Column::get(row, "points"),
+    }
 }
 
 fn create_regatta(row: &Row) -> Regatta {
@@ -154,6 +183,13 @@ fn create_heat_registration(row: &Row) -> HeatRegistration {
         boat_number: Column::get(row, "Entry_BoatNumber"),
         delta: format!("{}.{}", seconds, millis),
     }
+}
+
+#[derive(Debug, Serialize)]
+pub struct Score {
+    rank: i16,
+    club_short_label: String,
+    points: f64,
 }
 
 #[derive(Debug, Serialize)]

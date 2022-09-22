@@ -14,26 +14,26 @@ sap.ui.define([
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      let oRegatta = this.getOwnerComponent().getModel("regatta").getData();
+      // let oRegatta = this.getOwnerComponent().getModel("regatta").getData();
 
-      let oIconTabBar = this.byId("heatsIconTabBar");
-      let sKey = oIconTabBar.getSelectedKey();
+      // let oIconTabBar = this.byId("heatsIconTabBar");
+      // let sKey = oIconTabBar.getSelectedKey();
       // this._setFilter(sKey);
     },
 
     onSelectionChange: function (oEvent) {
-      let oSelectedItem = oEvent.getParameter("listItem");
+      const oSelectedItem = oEvent.getParameter("listItem");
       if (oSelectedItem) {
-        let oBindingCtx = oSelectedItem.getBindingContext("heats");
-        let oHeat = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
+        const oBindingCtx = oSelectedItem.getBindingContext("heats");
+        const oHeat = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
 
-        let oModel = new JSONModel();
+        const oModel = new JSONModel();
         oModel.loadData("/api/heats/" + oHeat.id + "/registrations");
 
         this.getOwnerComponent().setModel(new JSONModel(oHeat), "heat");
         this.getOwnerComponent().setModel(oModel, "heatRegistration");
 
-        let oFCL = this.getView().getParent().getParent();
+        const oFCL = this.getView().getParent().getParent();
         oFCL.setLayout(fioriLibrary.LayoutType.TwoColumnsMidExpanded);
       }
     },

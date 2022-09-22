@@ -18,12 +18,12 @@ sap.ui.define([
       // create the views based on the url/hash
       this.getRouter().initialize();
 
-      var oRegattaModel = new JSONModel();
+      const oRegattaModel = new JSONModel();
       oRegattaModel.loadData("/api/regattas/12");
       this.setModel(oRegattaModel, "regatta");
 
       // set device model
-      var oDeviceModel = new JSONModel(Device);
+      const oDeviceModel = new JSONModel(Device);
       oDeviceModel.setDefaultBindingMode("OneWay");
       this.setModel(oDeviceModel, "device");
     },
