@@ -1,8 +1,9 @@
 <mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatsTable" xmlns="sap.m" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc">
+  <mvc:content>
 
-  <f:DynamicPage id="dynamicPageId" toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
-    <!-- DynamicPage Title -->
-    <!-- <f:title>
+    <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
+      <!-- DynamicPage Title -->
+      <!-- <f:title>
       <f:DynamicPageTitle>
         <f:actions>
           <OverflowToolbarButton type="Transparent" icon="sap-icon://refresh" press="handleRefresh" tooltip="Refresh" />
@@ -10,105 +11,83 @@
       </f:DynamicPageTitle>
     </f:title> -->
 
-    <!-- DynamicPage Content -->
-    <f:content>
-      <IconTabBar id="heatsIconTabBar" select=".onFilterSelect" class="sapUiNoContentPadding">
-        <items>
-          <IconTabFilter text="{
+      <!-- DynamicPage Content -->
+      <f:content>
+        <IconTabBar id="heatsIconTabBar" select=".onFilterSelect" class="sapUiNoContentPadding">
+          <items>
+            <IconTabFilter text="{
             parts: [
               {path: 'regatta>/start_date'}
             ],
             formatter: '.formatter.dayLabel'
           }" key="{regatta>/start_date}" />
-          <IconTabFilter text="{
+            <IconTabFilter text="{
             parts: [
               {path: 'regatta>/end_date'}
             ],
             formatter: '.formatter.dayLabel'
           }" key="{regatta>/end_date}" />
-        </items>
-        <content>
-          <Table id="heatsTable" autoPopinMode="true" items="{heats>/}" growing="true" growingScrollToLoad="true" growingThreshold="100" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="ColumnHeaders" class="sapUiNoContentPadding">
-            <columns>
-              <Column hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
-                <header>
-                  <Text text="{i18n>heatsTable.column.heatNumber}" class="bold" wrapping="false" />
-                </header>
-              </Column>
-              <Column hAlign="Center" width="4rem" importance="Low" visible="{= !${device>/system/phone}}" popinDisplay="Inline">
-                <header>
-                  <Text text="{i18n>heatsTable.column.day}" class="bold" wrapping="false" />
-                </header>
-              </Column>
-              <Column hAlign="Center" width="4rem" importance="High" popinDisplay="Inline">
-                <header>
-                  <Text text="{i18n>heatsTable.column.time}" class="bold" wrapping="false" />
-                </header>
-              </Column>
-              <Column hAlign="Begin" width="8rem" importance="High" popinDisplay="Inline">
-                <header>
-                  <Text text="{i18n>heatsTable.column.race}" class="bold" wrapping="false" />
-                </header>
-              </Column>
-              <Column hAlign="Begin" width="8rem" importance="High" popinDisplay="Inline">
-                <header>
-                  <Text text="{i18n>heatsTable.column.heat}" class="bold" wrapping="false" />
-                </header>
-              </Column>
-              <Column hAlign="Center" width="6rem" importance="High" popinDisplay="Inline">
-                <header>
-                  <Text text="{i18n>heatsTable.column.state}" class="bold" wrapping="false" />
-                </header>
-              </Column>
-            </columns>
+          </items>
+          <content>
+            <Table id="heatsTable" autoPopinMode="true" items="{heats>/}" growing="true" growingScrollToLoad="true" growingThreshold="100" mode="SingleSelectMaster" selectionChange="onSelectionChange" sticky="ColumnHeaders" class="sapUiNoContentPadding">
+              <columns>
+                <Column hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>heatsTable.column.heatNumber}" class="bold" wrapping="false" />
+                  </header>
+                </Column>
+                <Column hAlign="Center" width="4rem" importance="Low" visible="{= !${device>/system/phone}}" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>heatsTable.column.day}" class="bold" wrapping="false" />
+                  </header>
+                </Column>
+                <Column hAlign="Center" width="4rem" importance="High" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>heatsTable.column.time}" class="bold" wrapping="false" />
+                  </header>
+                </Column>
+                <Column hAlign="Begin" width="8rem" importance="High" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>heatsTable.column.race}" class="bold" wrapping="false" />
+                  </header>
+                </Column>
+                <Column hAlign="Begin" width="8rem" importance="High" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>heatsTable.column.heat}" class="bold" wrapping="false" />
+                  </header>
+                </Column>
+                <Column hAlign="Center" width="6rem" importance="High" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>heatsTable.column.state}" class="bold" wrapping="false" />
+                  </header>
+                </Column>
+              </columns>
 
-            <items>
-              <ColumnListItem>
-                <cells>
-                  <Text text="{heats>number}" />
-                  <Text text="{
-                    parts: [
-                      {path: 'heats>date'}
-                    ],
-                    formatter: '.formatter.dayLabel'
-                  }" />
-                  <Text text="{
-                    parts: [
-                      {path: 'heats>time'}
-                    ],
-                    formatter: '.formatter.timeLabel'
-                  }" />
-                  <Text text="{
-                    parts: [
-                      {path: 'heats>race_number'},
-                      {path: 'heats>race_short_label'},
-                      {path: 'heats>race_comment'}
-                    ],
-                    formatter: '.formatter.raceLabel'
-                  }" />
-                  <Text text="{
-                    parts: [
-                      {path: 'heats>round_code'},
-                      {path: 'heats>label'},
-                      {path: 'heats>ac_num_sub_classes'},
-                      {path: 'heats>group_value'}
-                    ],
-                    formatter: '.formatter.heatLabel'
-                  }" />
-                  <Text text="{
-                    parts: [
-                      {path: 'heats>state'},
-                      {path: 'heats>cancelled'}
-                    ],
-                    formatter: '.formatter.stateLabel'
-                  }" />
-                </cells>
-              </ColumnListItem>
-            </items>
-          </Table>
-        </content>
-      </IconTabBar>
-    </f:content>
+              <items>
+                <ColumnListItem>
+                  <cells>
+                    <Text text="{heats>number}" />
+                    <Text text="{parts: [{path: 'heats>date'}], formatter: '.formatter.dayLabel'}" />
+                    <Text text="{parts: [{path: 'heats>time'}], formatter: '.formatter.timeLabel'}" />
+                    <Text text="{parts: [{path: 'heats>'}], formatter: '.formatter.raceLabel'}" />
+                    <Text text="{
+                      parts: [
+                        {path: 'heats>round_code'},
+                        {path: 'heats>label'},
+                        {path: 'heats>ac_num_sub_classes'},
+                        {path: 'heats>group_value'}
+                      ],
+                      formatter: '.formatter.heatLabel'
+                    }" />
+                    <Text text="{parts: [{path: 'heats>state'}, {path: 'heats>cancelled'}], formatter: '.formatter.stateLabel'}" />
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
+          </content>
+        </IconTabBar>
+      </f:content>
+    </f:DynamicPage>
 
-  </f:DynamicPage>
+  </mvc:content>
 </mvc:View>

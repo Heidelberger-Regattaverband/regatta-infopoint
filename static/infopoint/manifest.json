@@ -4,8 +4,8 @@
     "id": "de.regatta_hd.infopoint",
     "type": "application",
     "i18n": "i18n/i18n.properties",
-    "title": "{{appTitle}}",
-    "description": "{{appDescription}}",
+    "title": "{{app.title}}",
+    "description": "{{app.description}}",
     "applicationVersion": {
       "version": "1.0.0"
     }
@@ -33,7 +33,8 @@
       "libs": {
         "sap.ui.core": {},
         "sap.f": {},
-        "sap.m": {}
+        "sap.m": {},
+        "sap.ui.layout": {}
       }
     },
     "models": {
@@ -50,6 +51,43 @@
       "heats": {
         "type": "sap.ui.model.json.JSONModel",
         "uri": "/api/regattas/12/heats"
+      }
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "viewType": "XML",
+        "viewPath": "de.regatta_hd.infopoint.view",
+        "controlId": "infopointApp",
+        "controlAggregation": "pages",
+        "transition": "slide",
+        "bypassed": {
+          "target": [
+            "startpage"
+          ]
+        }
+      },
+      "routes": [
+        {
+          "pattern": "",
+          "name": "startpage",
+          "target": "startpage"
+        },
+        {
+          "pattern": "heats",
+          "name": "heats",
+          "target": "heats"
+        }
+      ],
+      "targets": {
+        "startpage": {
+          "viewName": "Launchpad",
+          "viewLevel": 0
+        },
+        "heats": {
+          "viewName": "Heats",
+          "viewLevel": 1
+        }
       }
     },
     "resources": {
