@@ -38,7 +38,7 @@ pub struct Aquarius {
 
 impl Aquarius {
     /// Create a new `Aquarius`.
-    pub fn new() -> Aquarius {
+    pub fn new() -> Self {
         Aquarius {
             cache: AsyncCache::new(12960, 1e6 as i64, async_std::task::spawn).unwrap(),
         }
