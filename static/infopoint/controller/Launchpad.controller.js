@@ -15,6 +15,10 @@ sap.ui.define([
       this.getRouter().navTo("heats");
     },
 
+    onNavToScoring: function () {
+      this.getRouter().navTo("scoring");
+    },
+
     getRouter: function () {
       return this.getOwnerComponent().getRouter();
     }
