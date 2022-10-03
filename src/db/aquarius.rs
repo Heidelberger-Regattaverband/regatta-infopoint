@@ -34,20 +34,15 @@ const HEAT_REGISTRATION_QUERY: &str =
 const SCORES_QUERY: &str = "SELECT s.rank, s.points, c.Club_Name, c.Club_Abbr FROM HRV_Score s JOIN Club AS c ON s.club_id = c.Club_ID WHERE s.event_id = @P1 ORDER BY s.rank ASC";
 
 pub struct Aquarius {
-    cache: AsyncCache<&'static str, CacheEntry>,
+    regatta_cache: AsyncCache<i32, Regatta>,
     pool: TiberiusPool,
-}
-
-struct CacheEntry {
-    regattas: Vec<Regatta>,
-    regatta: Regatta,
 }
 
 impl Aquarius {
     /// Create a new `Aquarius`.
     pub async fn new() -> Self {
         Aquarius {
-            cache: AsyncCache::new(12960, 1e6 as i64, async_std::task::spawn).unwrap(),
+            regatta_cache: AsyncCache::new(12960, 1e6 as i64, async_std::task::spawn).unwrap(),
             pool: create_pool().await,
         }
     }
@@ -74,14 +69,16 @@ impl Aquarius {
     }
 
     pub async fn get_regatta(&self, regatta_id: i32) -> Result<Regatta> {
-        debug!("Query {REGATTA_QUERY}");
-
-        let opt_value_ref = self.cache.get(REGATTA_QUERY);
+        let opt_value_ref = self.regatta_cache.get(&regatta_id);
         if opt_value_ref.is_some() {
             let value_ref = opt_value_ref.unwrap();
+            let value = value_ref.value().clone();
             value_ref.release();
+            debug!("From cache: {:?}", value);
+            return Ok(value);
         }
 
+        debug!("Execute query {}", REGATTA_QUERY);
         let mut client = self.pool.get().await.unwrap();
 
         let row = client
@@ -92,6 +89,12 @@ impl Aquarius {
             .unwrap();
 
         let regatta = create_regatta(&row);
+
+        self.regatta_cache
+            .insert_with_ttl(regatta_id, regatta.clone(), 1, Duration::from_secs(60))
+            .await;
+        self.regatta_cache.wait().await.unwrap();
+
         Ok(regatta)
     }
 
