@@ -12,8 +12,9 @@ pub struct TiberiusConnectionManager {
 
 impl TiberiusConnectionManager {
     /// Create a new `TiberiusConnectionManager`.
-    fn new(config: Config) -> tiberius::Result<TiberiusConnectionManager> {
-        Ok(TiberiusConnectionManager { config })
+    fn new() -> tiberius::Result<TiberiusConnectionManager> {
+      let config = create_config();
+      Ok(TiberiusConnectionManager { config })
     }
 }
 
@@ -40,9 +41,8 @@ impl bb8::ManageConnection for TiberiusConnectionManager {
 }
 
 pub async fn create_pool() -> Pool<TiberiusConnectionManager> {
-    let config = create_config();
-    let manager = TiberiusConnectionManager::new(config).unwrap();
-    Pool::builder().max_size(20).build(manager).await.unwrap()
+    let manager = TiberiusConnectionManager::new().unwrap();
+    Pool::builder().max_size(5).build(manager).await.unwrap()
 }
 
 fn get_db_port() -> u16 {
