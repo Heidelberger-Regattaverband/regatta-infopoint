@@ -1,10 +1,12 @@
 use crate::db::utils::Column;
 use anyhow::{Ok, Result};
-use async_std::net::TcpStream;
 use log::debug;
 use serde::Serialize;
 use std::time::Duration;
-use tiberius::{time::chrono::NaiveDateTime, Client, Row};
+use stretto::AsyncCache;
+use tiberius::{time::chrono::NaiveDateTime, Row};
+
+use super::{pool::create_pool, TiberiusPool};
 
 const REGATTAS_QUERY: &str = "SELECT * FROM Event e";
 
@@ -31,95 +33,131 @@ const HEAT_REGISTRATION_QUERY: &str =
 
 const SCORES_QUERY: &str = "SELECT s.rank, s.points, c.Club_Name, c.Club_Abbr FROM HRV_Score s JOIN Club AS c ON s.club_id = c.Club_ID WHERE s.event_id = @P1 ORDER BY s.rank ASC";
 
-pub async fn get_regattas(client: &mut Client<TcpStream>) -> Result<Vec<Regatta>> {
-    debug!("Executing query {REGATTAS_QUERY}");
-
-    let rows = client
-        .query(REGATTAS_QUERY, &[])
-        .await?
-        .into_first_result()
-        .await?;
-
-    let mut regattas: Vec<Regatta> = Vec::new();
-
-    for row in &rows {
-        let regatta = create_regatta(row);
-        debug!("{:?}", regatta);
-        regattas.push(regatta);
-    }
-    Ok(regattas)
+pub struct Aquarius {
+    regatta_cache: AsyncCache<i32, Regatta>,
+    pool: TiberiusPool,
 }
 
-pub async fn get_regatta(client: &mut Client<TcpStream>, regatta_id: i32) -> Result<Regatta> {
-    debug!("Executing query {REGATTA_QUERY}");
-
-    let row = client
-        .query(REGATTA_QUERY, &[&regatta_id])
-        .await?
-        .into_row()
-        .await?
-        .unwrap();
-
-    let regatta = create_regatta(&row);
-    Ok(regatta)
-}
-
-pub async fn get_heat_registrations(
-    client: &mut Client<TcpStream>,
-    heat_id: i32,
-) -> Result<Vec<HeatRegistration>> {
-    let rows = client
-        .query(HEAT_REGISTRATION_QUERY, &[&heat_id])
-        .await?
-        .into_first_result()
-        .await?;
-
-    let mut heat_registrations: Vec<HeatRegistration> = Vec::with_capacity(rows.len());
-
-    for row in &rows {
-        let heat_registration = create_heat_registration(row);
-        debug!("{:?}", heat_registration);
-        heat_registrations.push(heat_registration);
+impl Aquarius {
+    /// Create a new `Aquarius`.
+    pub async fn new() -> Self {
+        Aquarius {
+            regatta_cache: AsyncCache::new(12960, 1e6 as i64, async_std::task::spawn).unwrap(),
+            pool: create_pool().await,
+        }
     }
-    Ok(heat_registrations)
-}
 
-pub async fn get_heats(client: &mut Client<TcpStream>, regatta_id: i32) -> Result<Vec<Heat>> {
-    debug!("Executing query {HEATS_QUERY}");
+    pub async fn get_regattas(&self) -> Result<Vec<Regatta>> {
+        debug!("Query {HEATS_QUERY}");
 
-    let rows = client
-        .query(HEATS_QUERY, &[&regatta_id])
-        .await?
-        .into_first_result()
-        .await?;
+        let mut client = self.pool.get().await.unwrap();
 
-    let mut heats: Vec<Heat> = Vec::with_capacity(rows.len());
+        let rows = client
+            .query(REGATTAS_QUERY, &[])
+            .await?
+            .into_first_result()
+            .await?;
 
-    for row in &rows {
-        let heat = create_heat(row);
-        debug!("{:?}", heat);
-        heats.push(heat);
+        let mut regattas: Vec<Regatta> = Vec::with_capacity(rows.len());
+
+        for row in &rows {
+            let regatta = create_regatta(row);
+            debug!("{:?}", regatta);
+            regattas.push(regatta);
+        }
+        Ok(regattas)
     }
-    Ok(heats)
-}
 
-pub async fn get_scoring(client: &mut Client<TcpStream>, regatta_id: i32) -> Result<Vec<Score>> {
-    debug!("Executing query {SCORES_QUERY}");
+    pub async fn get_regatta(&self, regatta_id: i32) -> Result<Regatta> {
+        let opt_value_ref = self.regatta_cache.get(&regatta_id);
+        if opt_value_ref.is_some() {
+            let value_ref = opt_value_ref.unwrap();
+            let value = value_ref.value().clone();
+            value_ref.release();
+            debug!("From cache: {:?}", value);
+            return Ok(value);
+        }
 
-    let rows = client
-        .query(SCORES_QUERY, &[&regatta_id])
-        .await?
-        .into_first_result()
-        .await?;
+        debug!("Execute query {}", REGATTA_QUERY);
+        let mut client = self.pool.get().await.unwrap();
 
-    let mut scores: Vec<Score> = Vec::with_capacity(rows.len());
+        let row = client
+            .query(REGATTA_QUERY, &[&regatta_id])
+            .await?
+            .into_row()
+            .await?
+            .unwrap();
 
-    for row in &rows {
-        let score = create_score(row);
-        debug!("{:?}", score);
-        scores.push(score);
+        let regatta = create_regatta(&row);
+
+        self.regatta_cache
+            .insert_with_ttl(regatta_id, regatta.clone(), 1, Duration::from_secs(60))
+            .await;
+        self.regatta_cache.wait().await.unwrap();
+
+        Ok(regatta)
     }
-    Ok(scores)
+
+    pub async fn get_heats(&self, regatta_id: i32) -> Result<Vec<Heat>> {
+        debug!("Executing query {HEATS_QUERY}");
+
+        let mut client = self.pool.get().await.unwrap();
+
+        let rows = client
+            .query(HEATS_QUERY, &[&regatta_id])
+            .await?
+            .into_first_result()
+            .await?;
+
+        let mut heats: Vec<Heat> = Vec::with_capacity(rows.len());
+
+        for row in &rows {
+            let heat = create_heat(row);
+            debug!("{:?}", heat);
+            heats.push(heat);
+        }
+        Ok(heats)
+    }
+
+    pub async fn get_heat_registrations(&self, heat_id: i32) -> Result<Vec<HeatRegistration>> {
+        let mut client = self.pool.get().await.unwrap();
+
+        let rows = client
+            .query(HEAT_REGISTRATION_QUERY, &[&heat_id])
+            .await?
+            .into_first_result()
+            .await?;
+
+        let mut heat_registrations: Vec<HeatRegistration> = Vec::with_capacity(rows.len());
+
+        for row in &rows {
+            let heat_registration = create_heat_registration(row);
+            debug!("{:?}", heat_registration);
+            heat_registrations.push(heat_registration);
+        }
+        Ok(heat_registrations)
+    }
+
+    pub async fn get_scoring(&self, regatta_id: i32) -> Result<Vec<Score>> {
+        debug!("Executing query {SCORES_QUERY}");
+
+        let mut client = self.pool.get().await.unwrap();
+
+        let rows = client
+            .query(SCORES_QUERY, &[&regatta_id])
+            .await?
+            .into_first_result()
+            .await?;
+
+        let mut scores: Vec<Score> = Vec::with_capacity(rows.len());
+
+        for row in &rows {
+            let score = create_score(row);
+            debug!("{:?}", score);
+            scores.push(score);
+        }
+        Ok(scores)
+    }
 }
 
 fn create_score(row: &Row) -> Score {
@@ -192,7 +230,7 @@ pub struct Score {
     points: f64,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct Regatta {
     id: i32,
     title: String,
