@@ -1,57 +1,42 @@
-use crate::{
-    db::aquarius::{self, Aquarius, Heat, HeatRegistration, Regatta, Score},
-    db::TiberiusPool,
-};
+use crate::db::aquarius::{Aquarius, Heat, HeatRegistration, Regatta, Score};
 use actix_web::{
     get,
     web::{Data, Json, Path},
 };
 
 #[get("/api/regattas")]
-async fn get_regattas(data: Data<TiberiusPool>) -> Json<Vec<Regatta>> {
-    let mut client = data.get().await.unwrap();
-    let regattas = Aquarius::new().get_regattas(&mut client).await.unwrap();
+async fn get_regattas(data: Data<Aquarius>) -> Json<Vec<Regatta>> {
+    let regattas = data.get_regattas().await.unwrap();
     Json(regattas)
 }
 
 #[get("/api/regattas/{id}")]
-async fn get_regatta(path: Path<i32>, data: Data<TiberiusPool>) -> Json<Regatta> {
+async fn get_regatta(path: Path<i32>, data: Data<Aquarius>) -> Json<Regatta> {
     let regatta_id = path.into_inner();
-    let mut client = data.get().await.unwrap();
-    let regatta = Aquarius::new()
-        .get_regatta(&mut client, regatta_id)
-        .await
-        .unwrap();
+    let regatta = data.get_regatta(regatta_id).await.unwrap();
     Json(regatta)
 }
 
 #[get("/api/regattas/{id}/heats")]
-async fn get_heats(path: Path<i32>, data: Data<TiberiusPool>) -> Json<Vec<Heat>> {
+async fn get_heats(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Heat>> {
     let regatta_id = path.into_inner();
-    let mut client = data.get().await.unwrap();
-    let heats = aquarius::get_heats(&mut client, regatta_id).await.unwrap();
+    let heats = data.get_heats(regatta_id).await.unwrap();
     Json(heats)
 }
 
 #[get("/api/regattas/{id}/scoring")]
-async fn get_scoring(path: Path<i32>, data: Data<TiberiusPool>) -> Json<Vec<Score>> {
+async fn get_scoring(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Score>> {
     let regatta_id = path.into_inner();
-    let mut client = data.get().await.unwrap();
-    let scoring = aquarius::get_scoring(&mut client, regatta_id)
-        .await
-        .unwrap();
+    let scoring = data.get_scoring(regatta_id).await.unwrap();
     Json(scoring)
 }
 
 #[get("/api/heats/{id}/registrations")]
 async fn get_heat_registrations(
     path: Path<i32>,
-    data: Data<TiberiusPool>,
+    data: Data<Aquarius>,
 ) -> Json<Vec<HeatRegistration>> {
     let heat_id = path.into_inner();
-    let mut client = data.get().await.unwrap();
-    let heat_registrations = aquarius::get_heat_registrations(&mut client, heat_id)
-        .await
-        .unwrap();
+    let heat_registrations = data.get_heat_registrations(heat_id).await.unwrap();
     Json(heat_registrations)
 }

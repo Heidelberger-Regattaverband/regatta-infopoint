@@ -1,14 +1,13 @@
 mod db;
 mod rest_api;
 
-use crate::db::pool::{create_pool, TiberiusConnectionManager};
 use actix_extensible_rate_limit::{
     backend::{memory::InMemoryBackend, SimpleInputFunctionBuilder},
     RateLimiter,
 };
 use actix_files::Files;
 use actix_web::{web::Data, App, HttpServer};
-use bb8::Pool;
+use db::aquarius::Aquarius;
 use log::info;
 use std::{env, io::Result, time::Duration};
 
@@ -79,9 +78,8 @@ fn get_http_workers() -> Option<usize> {
     }
 }
 
-async fn create_app_data() -> Data<Pool<TiberiusConnectionManager>> {
-    let pool = create_pool().await;
-    Data::new(pool)
+async fn create_app_data() -> Data<Aquarius> {
+    Data::new(Aquarius::new().await)
 }
 
 #[cfg(test)]
