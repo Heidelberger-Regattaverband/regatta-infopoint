@@ -58,7 +58,7 @@ impl Aquarius {
             .into_first_result()
             .await?;
 
-        let mut regattas: Vec<Regatta> = Vec::new();
+        let mut regattas: Vec<Regatta> = Vec::with_capacity(rows.len());
 
         for row in &rows {
             let regatta = create_regatta(row);
