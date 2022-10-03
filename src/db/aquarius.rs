@@ -50,7 +50,7 @@ impl Aquarius {
     pub async fn get_regattas(&self) -> Result<Vec<Regatta>> {
         debug!("Query {HEATS_QUERY}");
 
-        self.cache.get::<_>("key");
+        let cache = self.cache.get::<_>(REGATTAS_QUERY);
 
         let mut client = self.pool.get().await.unwrap();
 
