@@ -34,7 +34,7 @@ const HEAT_REGISTRATION_QUERY: &str =
 const SCORES_QUERY: &str = "SELECT s.rank, s.points, c.Club_Name, c.Club_Abbr FROM HRV_Score s JOIN Club AS c ON s.club_id = c.Club_ID WHERE s.event_id = @P1 ORDER BY s.rank ASC";
 
 pub struct Aquarius {
-    cache: AsyncCache<String, String>,
+    cache: AsyncCache<&'static str, &'static str>,
     pool: TiberiusPool,
 }
 
@@ -49,6 +49,9 @@ impl Aquarius {
 
     pub async fn get_regattas(&self) -> Result<Vec<Regatta>> {
         debug!("Query {HEATS_QUERY}");
+
+        self.cache.get::<_>("key");
+
         let mut client = self.pool.get().await.unwrap();
 
         let rows = client
