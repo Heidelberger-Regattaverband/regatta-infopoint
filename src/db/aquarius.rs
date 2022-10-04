@@ -144,8 +144,12 @@ impl Aquarius {
     }
 
     pub async fn get_scoring(&self, regatta_id: i32) -> Result<Vec<Score>> {
-        debug!("Executing query {SCORES_QUERY}");
+        let opt = self.cache.get_scores(regatta_id).await;
+        if opt.is_some() {
+            return Ok(opt.unwrap());
+        }
 
+        debug!("Executing query {}", SCORES_QUERY);
         let mut client = self.pool.get().await.unwrap();
         let rows = client
             .query(SCORES_QUERY, &[&regatta_id])
@@ -158,6 +162,8 @@ impl Aquarius {
             trace!("{:?}", score);
             scores.push(score);
         }
+
+        self.cache.insert_scores(regatta_id, &scores).await;
 
         Ok(scores)
     }
