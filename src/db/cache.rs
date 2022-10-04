@@ -1,5 +1,5 @@
 use super::aquarius::{Heat, HeatRegistration, Regatta, Score};
-use log::debug;
+use log::{debug, trace};
 use std::time::Duration;
 use stretto::AsyncCache;
 
@@ -29,7 +29,8 @@ impl Cache {
             let value_ref = opt_value_ref.unwrap();
             let value = value_ref.value().clone();
             value_ref.release();
-            debug!("From cache: {:?}", value);
+            debug!("Reading regatta {} from cache.", regatta_id);
+            trace!("From cache: {:?}", value);
             return Some(value);
         }
         None
@@ -57,7 +58,8 @@ impl Cache {
             let value_ref = opt_value_ref.unwrap();
             let value = value_ref.value().clone();
             value_ref.release();
-            debug!("From cache: {:?}", value);
+            debug!("Reading heats of regatta {} from cache.", regatta_id);
+            trace!("From cache: {:?}", value);
             return Some(value);
         }
         None
@@ -78,7 +80,8 @@ impl Cache {
             let value_ref = opt_value_ref.unwrap();
             let value = value_ref.value().clone();
             value_ref.release();
-            debug!("From cache: {:?}", value);
+            debug!("Reading registrations of heat {} from cache.", heat_id);
+            trace!("From cache: {:?}", value);
             return Some(value);
         }
         None
@@ -99,7 +102,8 @@ impl Cache {
             let value_ref = opt_value_ref.unwrap();
             let value = value_ref.value().clone();
             value_ref.release();
-            debug!("From cache: {:?}", value);
+            debug!("Reading scores of regatta {} from cache.", regatta_id);
+            trace!("From cache: {:?}", value);
             return Some(value);
         }
         None
