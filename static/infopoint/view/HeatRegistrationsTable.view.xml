@@ -30,7 +30,7 @@
 
       <!-- DynamicPage Content -->
       <f:content>
-        <Table autoPopinMode="true" items="{path: 'heatRegistration>/', sorter: {path: 'rank'}}" growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
+        <Table autoPopinMode="true" items="{path: 'heatRegistration>/', sorter: {path: 'rank_sort'}}" growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
 
           <columns>
             <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
@@ -68,7 +68,7 @@
           <items>
             <ColumnListItem>
               <cells>
-                <Text text="{heatRegistration>rank}" />
+                <Text text="{heatRegistration>rank_label}" />
                 <Text text="{heatRegistration>lane}" />
                 <Text text="{heatRegistration>bib}" />
                 <Text text="{

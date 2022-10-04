@@ -230,6 +230,7 @@ fn create_heat(row: &Row) -> Heat {
 
 fn create_heat_registration(row: &Row) -> HeatRegistration {
     let rank: u8 = Column::get(row, "Result_Rank");
+    let rank_sort: u8 = if rank == 0 { 99 } else { rank };
     let delta: String = if rank > 0 {
         let delta: i32 = Column::get(row, "Result_Delta");
         let duration = Duration::from_millis(delta as u64);
@@ -240,11 +241,18 @@ fn create_heat_registration(row: &Row) -> HeatRegistration {
         String::from("")
     };
 
+    let rank_label: String = if rank == 0 {
+        String::from("")
+    } else {
+        rank.to_string()
+    };
+
     HeatRegistration {
         id: Column::get(row, "CE_ID"),
         lane: Column::get(row, "CE_Lane"),
         bib: Column::get(row, "Entry_Bib"),
-        rank,
+        rank_sort,
+        rank_label,
         short_label: Column::get(row, "Label_Short"),
         long_label: Column::get(row, "Label_Long"),
         result: Column::get(row, "Result_DisplayValue"),
@@ -293,7 +301,8 @@ pub struct HeatRegistration {
     pub id: i32,
     lane: i16,
     bib: i16,
-    rank: u8,
+    rank_sort: u8,
+    rank_label: String,
     short_label: String,
     long_label: String,
     boat_number: i16,
