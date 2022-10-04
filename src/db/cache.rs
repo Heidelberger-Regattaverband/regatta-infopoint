@@ -65,9 +65,9 @@ impl Cache {
 
     // heat_registrations
 
-    pub async fn insert_heat_regs(&self, heat_id: i32, heat_reg: &[HeatRegistration]) {
+    pub async fn insert_heat_regs(&self, heat_id: i32, heat_regs: &[HeatRegistration]) {
         self.heat_regs_cache
-            .insert_with_ttl(heat_id, heat_reg.to_owned().clone(), 1, TTL)
+            .insert_with_ttl(heat_id, heat_regs.to_owned().clone(), 1, TTL)
             .await;
         self.heat_regs_cache.wait().await.unwrap();
     }
@@ -88,12 +88,7 @@ impl Cache {
 
     pub async fn insert_scores(&self, regatta_id: i32, scores: &[Score]) {
         self.scores_cache
-            .insert_with_ttl(
-                regatta_id,
-                scores.to_owned().clone(),
-                1,
-                Duration::from_secs(60),
-            )
+            .insert_with_ttl(regatta_id, scores.to_owned().clone(), 1, TTL)
             .await;
         self.heat_regs_cache.wait().await.unwrap();
     }
