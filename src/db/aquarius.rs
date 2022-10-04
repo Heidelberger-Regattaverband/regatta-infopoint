@@ -1,12 +1,11 @@
 use crate::db::utils::Column;
 use anyhow::{Ok, Result};
-use log::debug;
+use log::{debug, trace};
 use serde::Serialize;
 use std::time::Duration;
-use stretto::AsyncCache;
 use tiberius::{time::chrono::NaiveDateTime, Row};
 
-use super::{pool::create_pool, TiberiusPool};
+use super::{cache::Cache, pool::create_pool, TiberiusPool};
 
 const REGATTAS_QUERY: &str = "SELECT * FROM Event e";
 
@@ -34,7 +33,7 @@ const HEAT_REGISTRATION_QUERY: &str =
 const SCORES_QUERY: &str = "SELECT s.rank, s.points, c.Club_Name, c.Club_Abbr FROM HRV_Score s JOIN Club AS c ON s.club_id = c.Club_ID WHERE s.event_id = @P1 ORDER BY s.rank ASC";
 
 pub struct Aquarius {
-    regatta_cache: AsyncCache<i32, Regatta>,
+    cache: Cache,
     pool: TiberiusPool,
 }
 
@@ -42,16 +41,15 @@ impl Aquarius {
     /// Create a new `Aquarius`.
     pub async fn new() -> Self {
         Aquarius {
-            regatta_cache: AsyncCache::new(12960, 1e6 as i64, async_std::task::spawn).unwrap(),
+            cache: Cache::new(),
             pool: create_pool().await,
         }
     }
 
     pub async fn get_regattas(&self) -> Result<Vec<Regatta>> {
-        debug!("Query {HEATS_QUERY}");
-
         let mut client = self.pool.get().await.unwrap();
 
+        debug!("Executing query {}", HEATS_QUERY);
         let rows = client
             .query(REGATTAS_QUERY, &[])
             .await?
@@ -62,23 +60,20 @@ impl Aquarius {
 
         for row in &rows {
             let regatta = create_regatta(row);
-            debug!("{:?}", regatta);
+            self.cache.insert_regatta(&regatta).await;
+            trace!("{:?}", regatta);
             regattas.push(regatta);
         }
         Ok(regattas)
     }
 
     pub async fn get_regatta(&self, regatta_id: i32) -> Result<Regatta> {
-        let opt_value_ref = self.regatta_cache.get(&regatta_id);
-        if opt_value_ref.is_some() {
-            let value_ref = opt_value_ref.unwrap();
-            let value = value_ref.value().clone();
-            value_ref.release();
-            debug!("From cache: {:?}", value);
-            return Ok(value);
+        let regatta_opt = self.cache.get_regatta(regatta_id).await;
+        if regatta_opt.is_some() {
+            return Ok(regatta_opt.unwrap());
         }
 
-        debug!("Execute query {}", REGATTA_QUERY);
+        debug!("Executing query {}", REGATTA_QUERY);
         let mut client = self.pool.get().await.unwrap();
 
         let row = client
@@ -89,20 +84,15 @@ impl Aquarius {
             .unwrap();
 
         let regatta = create_regatta(&row);
-
-        self.regatta_cache
-            .insert_with_ttl(regatta_id, regatta.clone(), 1, Duration::from_secs(60))
-            .await;
-        self.regatta_cache.wait().await.unwrap();
+        self.cache.insert_regatta(&regatta).await;
 
         Ok(regatta)
     }
 
     pub async fn get_heats(&self, regatta_id: i32) -> Result<Vec<Heat>> {
-        debug!("Executing query {HEATS_QUERY}");
-
         let mut client = self.pool.get().await.unwrap();
 
+        debug!("Executing query {}", HEATS_QUERY);
         let rows = client
             .query(HEATS_QUERY, &[&regatta_id])
             .await?
@@ -113,13 +103,19 @@ impl Aquarius {
 
         for row in &rows {
             let heat = create_heat(row);
-            debug!("{:?}", heat);
+            trace!("{:?}", heat);
+            self.cache.insert_heat(&heat).await;
             heats.push(heat);
         }
         Ok(heats)
     }
 
     pub async fn get_heat_registrations(&self, heat_id: i32) -> Result<Vec<HeatRegistration>> {
+        let opt = self.cache.get_heat_regs(heat_id).await;
+        if opt.is_some() {
+            return Ok(opt.unwrap());
+        }
+
         let mut client = self.pool.get().await.unwrap();
 
         let rows = client
@@ -128,14 +124,15 @@ impl Aquarius {
             .into_first_result()
             .await?;
 
-        let mut heat_registrations: Vec<HeatRegistration> = Vec::with_capacity(rows.len());
+        let mut heat_regs: Vec<HeatRegistration> = Vec::with_capacity(rows.len());
 
         for row in &rows {
             let heat_registration = create_heat_registration(row);
-            debug!("{:?}", heat_registration);
-            heat_registrations.push(heat_registration);
+            trace!("{:?}", heat_registration);
+            heat_regs.push(heat_registration);
         }
-        Ok(heat_registrations)
+        self.cache.insert_heat_regs(heat_id, &heat_regs).await;
+        Ok(heat_regs)
     }
 
     pub async fn get_scoring(&self, regatta_id: i32) -> Result<Vec<Score>> {
@@ -153,7 +150,7 @@ impl Aquarius {
 
         for row in &rows {
             let score = create_score(row);
-            debug!("{:?}", score);
+            trace!("{:?}", score);
             scores.push(score);
         }
         Ok(scores)
@@ -223,7 +220,7 @@ fn create_heat_registration(row: &Row) -> HeatRegistration {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct Score {
     rank: i16,
     club_short_label: String,
@@ -232,7 +229,7 @@ pub struct Score {
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Regatta {
-    id: i32,
+    pub id: i32,
     title: String,
     sub_title: String,
     venue: String,
@@ -240,7 +237,7 @@ pub struct Regatta {
     end_date: String,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct Heat {
     pub id: i32,
     number: i16,
@@ -258,9 +255,9 @@ pub struct Heat {
     distance: i16,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Clone)]
 pub struct HeatRegistration {
-    id: i32,
+    pub id: i32,
     lane: i16,
     bib: i16,
     rank: u8,
