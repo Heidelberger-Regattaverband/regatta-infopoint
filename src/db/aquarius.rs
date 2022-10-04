@@ -68,45 +68,54 @@ impl Aquarius {
     }
 
     pub async fn get_regatta(&self, regatta_id: i32) -> Result<Regatta> {
+        // 1. try to get regatta from cache
         let regatta_opt = self.cache.get_regatta(regatta_id).await;
         if regatta_opt.is_some() {
             return Ok(regatta_opt.unwrap());
         }
 
+        // 2. read regatta from DB
         debug!("Executing query {}", REGATTA_QUERY);
         let mut client = self.pool.get().await.unwrap();
-
         let row = client
             .query(REGATTA_QUERY, &[&regatta_id])
             .await?
             .into_row()
             .await?
             .unwrap();
-
         let regatta = create_regatta(&row);
+
+        // 3. store regatta in cache
         self.cache.insert_regatta(&regatta).await;
 
         Ok(regatta)
     }
 
     pub async fn get_heats(&self, regatta_id: i32) -> Result<Vec<Heat>> {
-        let mut client = self.pool.get().await.unwrap();
+        // 1. try to get regatta from cache
+        let heats_opt = self.cache.get_heats(regatta_id).await;
+        if heats_opt.is_some() {
+            return Ok(heats_opt.unwrap());
+        }
 
+        // 2. read heats from DB
         debug!("Executing query {}", HEATS_QUERY);
+        let mut client = self.pool.get().await.unwrap();
         let rows = client
             .query(HEATS_QUERY, &[&regatta_id])
             .await?
             .into_first_result()
             .await?;
-
         let mut heats: Vec<Heat> = Vec::with_capacity(rows.len());
-
         for row in &rows {
             let heat = create_heat(row);
             trace!("{:?}", heat);
-            self.cache.insert_heat(&heat).await;
             heats.push(heat);
         }
+
+        // 3. store heats in cache
+        self.cache.insert_heats(regatta_id, &heats).await;
+
         Ok(heats)
     }
 
@@ -117,21 +126,20 @@ impl Aquarius {
         }
 
         let mut client = self.pool.get().await.unwrap();
-
         let rows = client
             .query(HEAT_REGISTRATION_QUERY, &[&heat_id])
             .await?
             .into_first_result()
             .await?;
-
         let mut heat_regs: Vec<HeatRegistration> = Vec::with_capacity(rows.len());
-
         for row in &rows {
             let heat_registration = create_heat_registration(row);
             trace!("{:?}", heat_registration);
             heat_regs.push(heat_registration);
         }
+
         self.cache.insert_heat_regs(heat_id, &heat_regs).await;
+
         Ok(heat_regs)
     }
 
@@ -139,20 +147,18 @@ impl Aquarius {
         debug!("Executing query {SCORES_QUERY}");
 
         let mut client = self.pool.get().await.unwrap();
-
         let rows = client
             .query(SCORES_QUERY, &[&regatta_id])
             .await?
             .into_first_result()
             .await?;
-
         let mut scores: Vec<Score> = Vec::with_capacity(rows.len());
-
         for row in &rows {
             let score = create_score(row);
             trace!("{:?}", score);
             scores.push(score);
         }
+
         Ok(scores)
     }
 }

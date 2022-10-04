@@ -5,7 +5,7 @@ use stretto::AsyncCache;
 
 pub struct Cache {
     regatta_cache: AsyncCache<i32, Regatta>,
-    heats_cache: AsyncCache<i32, Heat>,
+    heats_cache: AsyncCache<i32, Vec<Heat>>,
     heat_regs_cache: AsyncCache<i32, Vec<HeatRegistration>>,
 }
 
@@ -38,11 +38,23 @@ impl Cache {
         self.regatta_cache.wait().await.unwrap();
     }
 
-    pub async fn insert_heat(&self, heat: &Heat) {
+    pub async fn insert_heats(&self, regatta_id: i32, heats: &Vec<Heat>) {
         self.heats_cache
-            .insert_with_ttl(heat.id, heat.clone(), 1, Duration::from_secs(60))
+            .insert_with_ttl(regatta_id, heats.clone(), 1, Duration::from_secs(60))
             .await;
         self.heats_cache.wait().await.unwrap();
+    }
+
+    pub async fn get_heats(&self, regatta_id: i32) -> Option<Vec<Heat>> {
+        let opt_value_ref = self.heats_cache.get(&regatta_id);
+        if opt_value_ref.is_some() {
+            let value_ref = opt_value_ref.unwrap();
+            let value = value_ref.value().clone();
+            value_ref.release();
+            debug!("From cache: {:?}", value);
+            return Some(value);
+        }
+        None
     }
 
     pub async fn insert_heat_regs(&self, heat_id: i32, heat_reg: &Vec<HeatRegistration>) {
