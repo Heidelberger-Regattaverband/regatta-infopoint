@@ -34,22 +34,22 @@
                 </Column>
                 <Column hAlign="Center" width="4rem" importance="High" popinDisplay="Inline">
                   <header>
-                    <Text text="{i18n>heatsTable.column.time}" class="bold" wrapping="false" />
+                    <Text text="{i18n>common.time}" class="bold" wrapping="false" />
                   </header>
                 </Column>
                 <Column hAlign="Begin" width="8rem" importance="High" popinDisplay="Inline">
                   <header>
-                    <Text text="{i18n>heatsTable.column.race}" class="bold" wrapping="false" />
+                    <Text text="{i18n>common.race}" class="bold" wrapping="false" />
                   </header>
                 </Column>
                 <Column hAlign="Begin" width="8rem" importance="High" popinDisplay="Inline">
                   <header>
-                    <Text text="{i18n>heatsTable.column.heat}" class="bold" wrapping="false" />
+                    <Text text="{i18n>common.heat}" class="bold" wrapping="false" />
                   </header>
                 </Column>
                 <Column hAlign="Center" width="6rem" importance="High" popinDisplay="Inline">
                   <header>
-                    <Text text="{i18n>heatsTable.column.state}" class="bold" wrapping="false" />
+                    <Text text="{i18n>common.state}" class="bold" wrapping="false" />
                   </header>
                 </Column>
               </columns>

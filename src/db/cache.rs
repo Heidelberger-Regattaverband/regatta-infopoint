@@ -10,7 +10,7 @@ pub struct Cache {
     scores_cache: AsyncCache<i32, Vec<Score>>,
 }
 
-const TTL: Duration = Duration::from_secs(60);
+const TTL: Duration = Duration::from_secs(120);
 
 impl Cache {
     /// Creates a new `Cache`.
