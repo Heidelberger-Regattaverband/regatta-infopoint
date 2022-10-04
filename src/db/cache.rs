@@ -10,8 +10,10 @@ pub struct Cache {
     scores_cache: AsyncCache<i32, Vec<Score>>,
 }
 
+const TTL: Duration = Duration::from_secs(60);
+
 impl Cache {
-    /// Create a new `Cache`.
+    /// Creates a new `Cache`.
     pub fn new() -> Self {
         Cache {
             regatta_cache: AsyncCache::new(10, 1e6 as i64, async_std::task::spawn).unwrap(),
@@ -35,7 +37,7 @@ impl Cache {
 
     pub async fn insert_regatta(&self, regatta: &Regatta) {
         self.regatta_cache
-            .insert_with_ttl(regatta.id, regatta.clone(), 1, Duration::from_secs(60))
+            .insert_with_ttl(regatta.id, regatta.clone(), 1, TTL)
             .await;
         self.regatta_cache.wait().await.unwrap();
     }
@@ -44,12 +46,7 @@ impl Cache {
 
     pub async fn insert_heats(&self, regatta_id: i32, heats: &[Heat]) {
         self.heats_cache
-            .insert_with_ttl(
-                regatta_id,
-                heats.to_owned().clone(),
-                1,
-                Duration::from_secs(60),
-            )
+            .insert_with_ttl(regatta_id, heats.to_owned().clone(), 1, TTL)
             .await;
         self.heats_cache.wait().await.unwrap();
     }
@@ -70,18 +67,13 @@ impl Cache {
 
     pub async fn insert_heat_regs(&self, heat_id: i32, heat_reg: &[HeatRegistration]) {
         self.heat_regs_cache
-            .insert_with_ttl(
-                heat_id,
-                heat_reg.to_owned().clone(),
-                1,
-                Duration::from_secs(60),
-            )
+            .insert_with_ttl(heat_id, heat_reg.to_owned().clone(), 1, TTL)
             .await;
         self.heat_regs_cache.wait().await.unwrap();
     }
 
-    pub async fn get_heat_regs(&self, heat_reg_id: i32) -> Option<Vec<HeatRegistration>> {
-        let opt_value_ref = self.heat_regs_cache.get(&heat_reg_id);
+    pub async fn get_heat_regs(&self, heat_id: i32) -> Option<Vec<HeatRegistration>> {
+        let opt_value_ref = self.heat_regs_cache.get(&heat_id);
         if opt_value_ref.is_some() {
             let value_ref = opt_value_ref.unwrap();
             let value = value_ref.value().clone();

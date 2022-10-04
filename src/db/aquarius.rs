@@ -120,11 +120,13 @@ impl Aquarius {
     }
 
     pub async fn get_heat_registrations(&self, heat_id: i32) -> Result<Vec<HeatRegistration>> {
+        // 1. try to get heat_registrations from cache
         let opt = self.cache.get_heat_regs(heat_id).await;
         if opt.is_some() {
             return Ok(opt.unwrap());
         }
 
+        // 2. read heat_registrations from DB
         let mut client = self.pool.get().await.unwrap();
         let rows = client
             .query(HEAT_REGISTRATION_QUERY, &[&heat_id])
@@ -138,17 +140,20 @@ impl Aquarius {
             heat_regs.push(heat_registration);
         }
 
+        // 3. store heat_registrations in cache
         self.cache.insert_heat_regs(heat_id, &heat_regs).await;
 
         Ok(heat_regs)
     }
 
     pub async fn get_scoring(&self, regatta_id: i32) -> Result<Vec<Score>> {
+        // 1. try to get heat_registrations from cache
         let opt = self.cache.get_scores(regatta_id).await;
         if opt.is_some() {
             return Ok(opt.unwrap());
         }
 
+        // 2. read scores from DB
         debug!("Executing query {}", SCORES_QUERY);
         let mut client = self.pool.get().await.unwrap();
         let rows = client
@@ -163,6 +168,7 @@ impl Aquarius {
             scores.push(score);
         }
 
+        // 3. store scores in cache
         self.cache.insert_scores(regatta_id, &scores).await;
 
         Ok(scores)
