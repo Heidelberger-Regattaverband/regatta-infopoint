@@ -229,22 +229,27 @@ fn create_heat(row: &Row) -> Heat {
 }
 
 fn create_heat_registration(row: &Row) -> HeatRegistration {
-    let delta: i32 = Column::get(row, "Result_Delta");
-    let duration = Duration::from_millis(delta as u64);
-
-    let seconds = duration.as_secs();
-    let millis = duration.subsec_millis() / 10;
+    let rank: u8 = Column::get(row, "Result_Rank");
+    let delta: String = if rank > 0 {
+        let delta: i32 = Column::get(row, "Result_Delta");
+        let duration = Duration::from_millis(delta as u64);
+        let seconds = duration.as_secs();
+        let millis = duration.subsec_millis() / 10;
+        format!("{}.{}", seconds, millis)
+    } else {
+        String::from("")
+    };
 
     HeatRegistration {
         id: Column::get(row, "CE_ID"),
         lane: Column::get(row, "CE_Lane"),
         bib: Column::get(row, "Entry_Bib"),
-        rank: Column::get(row, "Result_Rank"),
+        rank,
         short_label: Column::get(row, "Label_Short"),
         long_label: Column::get(row, "Label_Long"),
         result: Column::get(row, "Result_DisplayValue"),
         boat_number: Column::get(row, "Entry_BoatNumber"),
-        delta: format!("{}.{}", seconds, millis),
+        delta,
     }
 }
 
