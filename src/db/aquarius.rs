@@ -49,7 +49,8 @@ impl Aquarius {
     pub async fn get_regattas(&self) -> Result<Vec<Regatta>> {
         let mut client = self.pool.get().await.unwrap();
 
-        debug!("Executing query {}", HEATS_QUERY);
+        debug!("Query regattas from DB");
+        trace!("Execute query {}", HEATS_QUERY);
         let rows = client
             .query(REGATTAS_QUERY, &[])
             .await?
@@ -79,7 +80,8 @@ impl Aquarius {
         }
 
         // 2. read regatta from DB
-        debug!("Executing query {}", REGATTA_QUERY);
+        debug!("Query regatta {} from DB", regatta_id);
+        trace!("Execute query {}", REGATTA_QUERY);
         let mut client = self.pool.get().await.unwrap();
         let row = client
             .query(REGATTA_QUERY, &[&regatta_id])
@@ -103,7 +105,8 @@ impl Aquarius {
         }
 
         // 2. read heats from DB
-        debug!("Executing query {}", HEATS_QUERY);
+        debug!("Query heats of regatta {} from DB", regatta_id);
+        trace!("Execute query {}", HEATS_QUERY);
         let mut client = self.pool.get().await.unwrap();
         let rows = client
             .query(HEATS_QUERY, &[&regatta_id])
@@ -131,6 +134,8 @@ impl Aquarius {
         }
 
         // 2. read heat_registrations from DB
+        debug!("Query registrations of heat {} from DB", heat_id);
+        trace!("Execute query {}", HEAT_REGISTRATION_QUERY);
         let mut client = self.pool.get().await.unwrap();
         let rows = client
             .query(HEAT_REGISTRATION_QUERY, &[&heat_id])
@@ -158,7 +163,8 @@ impl Aquarius {
         }
 
         // 2. read scores from DB
-        debug!("Executing query {}", SCORES_QUERY);
+        debug!("Query scores of regatta {} from DB", regatta_id);
+        trace!("Execute query {}", SCORES_QUERY);
         let mut client = self.pool.get().await.unwrap();
         let rows = client
             .query(SCORES_QUERY, &[&regatta_id])
