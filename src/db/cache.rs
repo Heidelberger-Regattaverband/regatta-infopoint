@@ -14,10 +14,10 @@ impl Cache {
     /// Create a new `Cache`.
     pub fn new() -> Self {
         Cache {
-            regatta_cache: AsyncCache::new(1 * 10, 1e6 as i64, async_std::task::spawn).unwrap(),
+            regatta_cache: AsyncCache::new(10, 1e6 as i64, async_std::task::spawn).unwrap(),
             heats_cache: AsyncCache::new(200 * 10, 1e6 as i64, async_std::task::spawn).unwrap(),
             heat_regs_cache: AsyncCache::new(200 * 10, 1e6 as i64, async_std::task::spawn).unwrap(),
-            scores_cache: AsyncCache::new(1 * 10, 1e6 as i64, async_std::task::spawn).unwrap(),
+            scores_cache: AsyncCache::new(10, 1e6 as i64, async_std::task::spawn).unwrap(),
         }
     }
 
@@ -42,9 +42,14 @@ impl Cache {
 
     // heats
 
-    pub async fn insert_heats(&self, regatta_id: i32, heats: &Vec<Heat>) {
+    pub async fn insert_heats(&self, regatta_id: i32, heats: &[Heat]) {
         self.heats_cache
-            .insert_with_ttl(regatta_id, heats.clone(), 1, Duration::from_secs(60))
+            .insert_with_ttl(
+                regatta_id,
+                heats.to_owned().clone(),
+                1,
+                Duration::from_secs(60),
+            )
             .await;
         self.heats_cache.wait().await.unwrap();
     }
@@ -63,9 +68,14 @@ impl Cache {
 
     // heat_registrations
 
-    pub async fn insert_heat_regs(&self, heat_id: i32, heat_reg: &Vec<HeatRegistration>) {
+    pub async fn insert_heat_regs(&self, heat_id: i32, heat_reg: &[HeatRegistration]) {
         self.heat_regs_cache
-            .insert_with_ttl(heat_id, heat_reg.clone(), 1, Duration::from_secs(60))
+            .insert_with_ttl(
+                heat_id,
+                heat_reg.to_owned().clone(),
+                1,
+                Duration::from_secs(60),
+            )
             .await;
         self.heat_regs_cache.wait().await.unwrap();
     }
@@ -84,9 +94,14 @@ impl Cache {
 
     // scores
 
-    pub async fn insert_scores(&self, regatta_id: i32, scores: &Vec<Score>) {
+    pub async fn insert_scores(&self, regatta_id: i32, scores: &[Score]) {
         self.scores_cache
-            .insert_with_ttl(regatta_id, scores.clone(), 1, Duration::from_secs(60))
+            .insert_with_ttl(
+                regatta_id,
+                scores.to_owned().clone(),
+                1,
+                Duration::from_secs(60),
+            )
             .await;
         self.heat_regs_cache.wait().await.unwrap();
     }
