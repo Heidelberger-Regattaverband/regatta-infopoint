@@ -67,6 +67,10 @@ impl Aquarius {
         Ok(regattas)
     }
 
+    /// Tries to get the regatta from the cache.
+    ///
+    /// # Arguments
+    /// * `regatta_id` - The regatta identifier
     pub async fn get_regatta(&self, regatta_id: i32) -> Result<Regatta> {
         // 1. try to get regatta from cache
         let regatta_opt = self.cache.get_regatta(regatta_id).await;
