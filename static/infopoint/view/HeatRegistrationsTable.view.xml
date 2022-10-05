@@ -7,7 +7,7 @@
         <f:DynamicPageTitle>
           <f:heading>
             <VBox>
-              <Title text="{path: 'heat>/', formatter: '.formatter.raceLabel'}, {path: 'heat>/', formatter: '.formatter.heatLabel'}" />
+              <Title text="{path: 'heat>/', formatter: '.formatter.raceLabel'}, {path: 'heat>/', formatter: '.formatter.heatLabel'}" wrapping="true" wrappingType="Normal" />
             </VBox>
           </f:heading>
 
@@ -21,7 +21,7 @@
 
       <!-- DynamicPage Header -->
       <f:header>
-        <f:DynamicPageHeader pinnable="true">
+        <f:DynamicPageHeader>
           <layout:HorizontalLayout allowWrapping="true">
             <layout:VerticalLayout class="sapUiMediumMarginEnd">
               <ObjectAttribute title="{i18n>common.heatNr}" text="{heat>/number}" />
