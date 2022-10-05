@@ -209,12 +209,14 @@ fn create_regatta(row: &Row) -> Regatta {
 
 fn create_heat(row: &Row) -> Heat {
     let date_time: NaiveDateTime = Column::get(row, "Comp_DateTime");
+    let race_short_label: String = Column::get(row, "Offer_ShortLabel");
+    let race_comment: String = Column::get(row, "Offer_Comment");
 
     Heat {
         id: Column::get(row, "Comp_ID"),
         race_number: Column::get(row, "Offer_RaceNumber"),
-        race_short_label: Column::get(row, "Offer_ShortLabel"),
-        race_comment: Column::get(row, "Offer_Comment"),
+        race_short_label: race_short_label.trim().to_owned(),
+        race_comment: race_comment.trim().to_owned(),
         number: Column::get(row, "Comp_Number"),
         round_code: Column::get(row, "Comp_RoundCode"),
         label: Column::get(row, "Comp_Label"),

@@ -12,7 +12,11 @@ sap.ui.define(function () {
 
     raceLabel: function (oHeat) {
       if (oHeat) {
-        return oHeat.race_number + " - " + oHeat.race_short_label + " " + oHeat.race_comment;
+        let label = oHeat.race_number + " - " + oHeat.race_short_label;
+        if (oHeat.race_comment) {
+          label += " " + oHeat.race_comment;
+        }
+        return label;
       }
       return "";
     },
