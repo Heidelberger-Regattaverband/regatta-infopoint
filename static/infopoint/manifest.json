@@ -43,7 +43,7 @@
         "settings": {
           "bundleName": "de.regatta_hd.infopoint.i18n.i18n",
           "supportedLocales": [
-            "de"
+            "de", "en"
           ],
           "fallbackLocale": ""
         }
