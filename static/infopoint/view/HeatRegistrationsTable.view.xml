@@ -1,4 +1,4 @@
-<mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatRegistrationsTable" xmlns="sap.m" xmlns:f="sap.f" xmlns:l="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatRegistrationsTable" xmlns="sap.m" xmlns:f="sap.f" xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
     <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
@@ -7,18 +7,9 @@
         <f:DynamicPageTitle>
           <f:heading>
             <VBox>
-              <Title text="{path: 'heat>/', formatter: '.formatter.raceLabel'}" />
-              <Text text="{path: 'heat>/', formatter: '.formatter.heatLabel'}" />
+              <Title text="{path: 'heat>/', formatter: '.formatter.raceLabel'}, {path: 'heat>/', formatter: '.formatter.heatLabel'}" />
             </VBox>
           </f:heading>
-
-          <f:content>
-            <VBox>
-              <Text text="{i18n>common.dayTime}: {path: 'heat>/date', formatter: '.formatter.dateLabel'} - {path: 'heat>/time', formatter: '.formatter.timeLabel'}" />
-              <Text text="{i18n>common.distance}: {heat>/distance}m" />
-              <Text text="{i18n>common.state}: {path: 'heat>/', formatter: '.formatter.stateLabel'}" />
-            </VBox>
-          </f:content>
 
           <f:navigationActions>
             <!-- <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="handlePrevious" tooltip="Previous" />
@@ -27,6 +18,23 @@
           </f:navigationActions>
         </f:DynamicPageTitle>
       </f:title>
+
+      <!-- DynamicPage Header -->
+      <f:header>
+        <f:DynamicPageHeader pinnable="true">
+          <layout:HorizontalLayout allowWrapping="true">
+            <layout:VerticalLayout class="sapUiMediumMarginEnd">
+              <ObjectAttribute title="{i18n>common.heatNr}" text="{heat>/number}" />
+              <ObjectAttribute title="{i18n>common.dayTime}" text="{path: 'heat>/date', formatter: '.formatter.dateLabel'} - {path: 'heat>/time', formatter: '.formatter.timeLabel'}" />
+            </layout:VerticalLayout>
+
+            <layout:VerticalLayout>
+              <ObjectAttribute title="{i18n>common.distance}" text="{heat>/distance}m" />
+              <ObjectAttribute title="{i18n>common.state}" text="{path: 'heat>/', formatter: '.formatter.stateLabel'}" />
+            </layout:VerticalLayout>
+          </layout:HorizontalLayout>
+        </f:DynamicPageHeader>
+      </f:header>
 
       <!-- DynamicPage Content -->
       <f:content>
