@@ -2,7 +2,7 @@
 <mvc:View controllerName="de.regatta_hd.infopoint.controller.App" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" height="100%" displayBlock="true">
   <mvc:content>
 
-    <Shell homeIcon="{ 'phone ':'', 'phone@2':'', 'tablet':'', 'tablet@2':'', 'precomposed':true, 'favicon':'icon/favicon.ico' }">
+    <Shell homeIcon="{ 'phone ':'', 'phone@2':'', 'tablet':'', 'tablet@2':'', 'precomposed':true, 'favicon':'icon/favicon.ico' }" logo="icon/android-chrome-256x256.png" >
       <app>
         <App id="infopointApp" class="infopoint" />
       </app>
