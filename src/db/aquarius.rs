@@ -98,7 +98,7 @@ impl Aquarius {
     }
 
     pub async fn get_heats(&self, regatta_id: i32) -> Result<Vec<Heat>> {
-        // 1. try to get regatta from cache
+        // 1. try to get heats from cache
         let heats_opt = self.cache.get_heats(regatta_id).await;
         if heats_opt.is_some() {
             return Ok(heats_opt.unwrap());
