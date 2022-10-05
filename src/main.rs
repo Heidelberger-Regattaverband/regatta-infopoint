@@ -14,7 +14,7 @@ use std::{env, io::Result, time::Duration};
 #[actix_web::main]
 async fn main() -> Result<()> {
     env_logger::init();
-    info!("Starting Infopoint");
+    info!("Starting Infoportal");
 
     let data = create_app_data().await;
     // A backend is responsible for storing rate limit data, and choosing whether to allow/deny requests
@@ -36,7 +36,7 @@ async fn main() -> Result<()> {
             .service(rest_api::get_heat_registrations)
             .service(rest_api::get_scoring)
             .service(
-                Files::new("/infopoint", "./static/infopoint")
+                Files::new("/infoportal", "./static/infopoint")
                     .index_file("index.html")
                     .use_last_modified(true)
                     .use_etag(true)
