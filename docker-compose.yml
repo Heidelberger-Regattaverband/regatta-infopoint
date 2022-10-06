@@ -1,0 +1,12 @@
+version: '3.7'
+
+services:
+  infoportal:
+    build: .
+    container_name: ${NAME}
+    hostname: ${NAME}
+    restart: always
+    ports:
+      - "80:8080"
+    environment:
+      - DB_PASSWORD=${DB_PASSWORD}
