@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source .env
+
 if [ -z ${DB_PASSWORD} ]
 then
   echo "\$DB_PASSWORD is empty, exiting image creation."
@@ -18,10 +20,12 @@ fi
 
 git pull -p
 
-docker build -t infopoint .
+docker build -t ${NAME} .
 
-docker stop infopoint
+docker stop ${NAME}
 
-docker run -d --rm --name infopoint -p 80:8080 --env DB_PASSWORD=${DB_PASSWORD} --env RUST_LOG=${RUST_LOG} infopoint
+docker rm ${NAME}
 
-docker logs infopoint --follow
+docker run -d --rm --name ${NAME} -p 80:8080 --env DB_PASSWORD=${DB_PASSWORD} --env RUST_LOG=${RUST_LOG} infopoint
+
+docker logs ${NAME} --follow
