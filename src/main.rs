@@ -7,6 +7,7 @@ use actix_extensible_rate_limit::{
 };
 use actix_files::Files;
 use actix_web::{web::Data, App, HttpServer};
+use actix_web_prometheus::PrometheusMetricsBuilder;
 use db::aquarius::Aquarius;
 use log::info;
 use std::{env, io::Result, time::Duration};
@@ -15,6 +16,11 @@ use std::{env, io::Result, time::Duration};
 async fn main() -> Result<()> {
     env_logger::init();
     info!("Starting Infoportal");
+
+    let prometheus = PrometheusMetricsBuilder::new("api")
+        .endpoint("/metrics")
+        .build()
+        .unwrap();
 
     let data = create_app_data().await;
     // A backend is responsible for storing rate limit data, and choosing whether to allow/deny requests
@@ -29,6 +35,7 @@ async fn main() -> Result<()> {
 
         App::new()
             .wrap(rate_limiter)
+            .wrap(prometheus.clone())
             .app_data(Data::clone(&data))
             .service(rest_api::get_regattas)
             .service(rest_api::get_regatta)
