@@ -3,6 +3,7 @@ version: '3.7'
 services:
   infoportal:
     build: .
+    image: ${NAME}
     container_name: ${NAME}
     hostname: ${NAME}
     restart: always
