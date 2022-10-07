@@ -4,6 +4,8 @@ FROM rust:1.64.0
 
 LABEL maintainer="markus@ofterdinger.de"
 
+RUN apt-get update && apt-get upgrade -y
+
 WORKDIR /usr/src/infopoint
 COPY . .
 
