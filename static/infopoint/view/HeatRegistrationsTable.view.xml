@@ -40,17 +40,12 @@
 
       <!-- DynamicPage Content -->
       <f:content>
-        <Table autoPopinMode="true" items="{path: 'heatRegistration>/', sorter: {path: 'rank_sort'}}" growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
+        <Table autoPopinMode="true" items="{path: 'heatRegistration>/', sorter: [{path: 'rank_sort', descending: false}, {path: 'bib', descending: false} ]}" growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
 
           <columns>
-            <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
+            <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline" visible="{= ${heat>/state} >= 4 }">
               <header>
                 <Text text="{i18n>heatRegistrationTable.column.rank}" class="bold" wrapping="false" />
-              </header>
-            </Column>
-            <Column hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
-              <header>
-                <Text text="{i18n>heatRegistrationTable.column.lane}" class="bold" wrapping="false" />
               </header>
             </Column>
             <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
@@ -63,14 +58,19 @@
                 <Text text="{i18n>heatRegistrationTable.column.boat}" class="bold" wrapping="false" />
               </header>
             </Column>
+            <Column hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>heatRegistrationTable.column.lane}" class="bold" wrapping="false" />
+              </header>
+            </Column>
             <Column hAlign="End" width="4rem" importance="High" popinDisplay="Inline">
               <header>
-                <Text text="{i18n>heatRegistrationTable.column.result}" class="bold" wrapping="false" />
+                <Text text="{i18n>heatRegistrationTable.column.result}" class="bold" wrapping="false" visible="{= ${heat>/state} >= 4 }" />
               </header>
             </Column>
             <Column hAlign="End" width="4rem" importance="Low" popinDisplay="Inline">
               <header>
-                <Text text="{i18n>heatRegistrationTable.column.delta}" class="bold" wrapping="false" />
+                <Text text="{i18n>heatRegistrationTable.column.delta}" class="bold" wrapping="false" visible="{= ${heat>/state} >= 4 }" />
               </header>
             </Column>
           </columns>
@@ -80,14 +80,15 @@
               <cells>
                 <Text text="{heatRegistration>rank_label}" />
                 <Text text="{heatRegistration>lane}" />
-                <Text text="{heatRegistration>bib}" />
                 <Text text="{
                   parts: [
                     {path: 'heatRegistration>short_label'},
-                    {path: 'heatRegistration>boat_number'}
+                    {path: 'heatRegistration>boat_number'},
+                    {path: 'heatRegistration>comment'}
                   ],
                   formatter: '.formatter.boatLabel'
                 }" />
+                <Text text="{heatRegistration>bib}" />
                 <Text text="{heatRegistration>result}" />
                 <Text text="{= ${heatRegistration>delta} !== '0.0' ? ${heatRegistration>delta} : '' }" />
               </cells>
