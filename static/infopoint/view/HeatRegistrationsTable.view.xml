@@ -82,13 +82,13 @@
                 <Text text="{heatRegistration>lane}" />
                 <Text text="{
                   parts: [
-                    {path: 'heatRegistration>short_label'},
-                    {path: 'heatRegistration>boat_number'},
-                    {path: 'heatRegistration>comment'}
+                    {path: 'heatRegistration>registration/shortLabel'},
+                    {path: 'heatRegistration>registration/boatNumber'},
+                    {path: 'heatRegistration>registration/comment'}
                   ],
                   formatter: '.formatter.boatLabel'
                 }" />
-                <Text text="{heatRegistration>bib}" />
+                <Text text="{heatRegistration>registration/bib}" />
                 <Text text="{heatRegistration>result}" />
                 <Text text="{= ${heatRegistration>delta} !== '0.0' ? ${heatRegistration>delta} : '' }" />
               </cells>
