@@ -10,9 +10,12 @@ sap.ui.define(function () {
       return "";
     },
 
-    boatLabel: function (sShortLabel, iBoatNumber) {
+    boatLabel: function (sShortLabel, iBoatNumber, sComment) {
       if (iBoatNumber > 0) {
         return sShortLabel + " - Boot " + iBoatNumber;
+      }
+      if (sComment) {
+        sShortLabel += "  (" + sComment + ")";
       }
       return sShortLabel;
     },

@@ -22,14 +22,14 @@ const HEATS_QUERY: &str =
     ORDER BY c.Comp_DateTime ASC";
 
 const HEAT_REGISTRATION_QUERY: &str =
-    "SELECT	DISTINCT ce.*, e.Entry_Bib, e.Entry_BoatNumber, l.Label_Short, l.Label_Long, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta \
+    "SELECT	DISTINCT ce.*, e.Entry_Bib, e.Entry_BoatNumber, e.Entry_Comment, l.Label_Short, l.Label_Long, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta \
     FROM CompEntries AS ce
     FULL OUTER JOIN Comp AS c ON ce.CE_Comp_ID_FK = c.Comp_ID
     FULL OUTER JOIN Entry AS e ON ce.CE_Entry_ID_FK = e.Entry_ID
     FULL OUTER JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
     FULL OUTER JOIN Label AS l ON el.EL_Label_ID_FK = l.Label_ID
     FULL OUTER JOIN Result AS r ON r.Result_CE_ID_FK = ce.CE_ID
-    WHERE ce.CE_Comp_ID_FK = @P1 AND r.Result_SplitNr = 64 \
+    WHERE ce.CE_Comp_ID_FK = @P1 AND (r.Result_SplitNr = 64 OR r.Result_SplitNr IS NULL) \
       AND el.EL_RoundFrom <= c.Comp_Round AND c.Comp_Round <= el.EL_RoundTo";
 
 const SCORES_QUERY: &str = "SELECT s.rank, s.points, c.Club_Name, c.Club_Abbr FROM HRV_Score s JOIN Club AS c ON s.club_id = c.Club_ID WHERE s.event_id = @P1 ORDER BY s.rank ASC";
@@ -253,7 +253,7 @@ fn create_referee(row: &Row) -> Referee {
 
 fn create_heat_registration(row: &Row) -> HeatRegistration {
     let rank: u8 = Column::get(row, "Result_Rank");
-    let rank_sort: u8 = if rank == 0 { 99 } else { rank };
+    let rank_sort: u8 = if rank == 0 { u8::MAX } else { rank };
     let delta: String = if rank > 0 {
         let delta: i32 = Column::get(row, "Result_Delta");
         let duration = Duration::from_millis(delta as u64);
@@ -261,11 +261,11 @@ fn create_heat_registration(row: &Row) -> HeatRegistration {
         let millis = duration.subsec_millis() / 10;
         format!("{}.{}", seconds, millis)
     } else {
-        String::from("")
+        Default::default()
     };
 
     let rank_label: String = if rank == 0 {
-        String::from("")
+        Default::default()
     } else {
         rank.to_string()
     };
@@ -274,6 +274,7 @@ fn create_heat_registration(row: &Row) -> HeatRegistration {
         id: Column::get(row, "CE_ID"),
         lane: Column::get(row, "CE_Lane"),
         bib: Column::get(row, "Entry_Bib"),
+        comment: Column::get(row, "Entry_Comment"),
         rank_sort,
         rank_label,
         short_label: Column::get(row, "Label_Short"),
@@ -327,6 +328,7 @@ pub struct HeatRegistration {
     short_label: String,
     long_label: String,
     boat_number: i16,
+    comment: String,
     result: String,
     delta: String,
 }
