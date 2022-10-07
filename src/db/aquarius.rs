@@ -22,7 +22,7 @@ const HEATS_QUERY: &str =
     ORDER BY c.Comp_DateTime ASC";
 
 const HEAT_REGISTRATION_QUERY: &str =
-    "SELECT	DISTINCT ce.*, e.Entry_Bib, e.Entry_BoatNumber, e.Entry_Comment, l.Label_Short, l.Label_Long, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta \
+    "SELECT	DISTINCT ce.*, e.Entry_Bib, e.Entry_BoatNumber, e.Entry_Comment, l.Label_Short, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta \
     FROM CompEntries AS ce
     FULL OUTER JOIN Comp AS c ON ce.CE_Comp_ID_FK = c.Comp_ID
     FULL OUTER JOIN Entry AS e ON ce.CE_Entry_ID_FK = e.Entry_ID
@@ -270,17 +270,20 @@ fn create_heat_registration(row: &Row) -> HeatRegistration {
         rank.to_string()
     };
 
+    let registration = Registration {
+        bib: Column::get(row, "Entry_Bib"),
+        comment: Column::get(row, "Entry_Comment"),
+        boat_number: Column::get(row, "Entry_BoatNumber"),
+        short_label: Column::get(row, "Label_Short"),
+    };
+
     HeatRegistration {
         id: Column::get(row, "CE_ID"),
         lane: Column::get(row, "CE_Lane"),
-        bib: Column::get(row, "Entry_Bib"),
-        comment: Column::get(row, "Entry_Comment"),
         rank_sort,
         rank_label,
-        short_label: Column::get(row, "Label_Short"),
-        long_label: Column::get(row, "Label_Long"),
+        registration,
         result: Column::get(row, "Result_DisplayValue"),
-        boat_number: Column::get(row, "Entry_BoatNumber"),
         delta,
     }
 }
@@ -303,6 +306,19 @@ pub struct Regatta {
 }
 
 #[derive(Debug, Serialize, Clone)]
+pub struct Registration {
+    bib: i16,
+
+    #[serde(rename = "boatNumber")]
+    boat_number: i16,
+
+    comment: String,
+
+    #[serde(rename = "shortLabel")]
+    short_label: String,
+}
+
+#[derive(Debug, Serialize, Clone)]
 pub struct Heat {
     pub id: i32,
     number: i16,
@@ -322,15 +338,11 @@ pub struct Heat {
 pub struct HeatRegistration {
     pub id: i32,
     lane: i16,
-    bib: i16,
     rank_sort: u8,
     rank_label: String,
-    short_label: String,
-    long_label: String,
-    boat_number: i16,
-    comment: String,
     result: String,
     delta: String,
+    registration: Registration,
 }
 
 #[derive(Debug, Serialize, Clone, Default)]
