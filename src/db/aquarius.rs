@@ -22,13 +22,13 @@ const HEATS_QUERY: &str =
     ORDER BY c.Comp_DateTime ASC";
 
 const HEAT_REGISTRATION_QUERY: &str =
-    "SELECT	ce.*, e.Entry_Bib, e.Entry_BoatNumber, l.Label_Short, l.Label_Long, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta \
+    "SELECT	DISTINCT ce.*, e.Entry_Bib, e.Entry_BoatNumber, l.Label_Short, l.Label_Long, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta \
     FROM CompEntries AS ce
-    JOIN Comp AS c ON ce.CE_Comp_ID_FK = c.Comp_ID
-    JOIN Entry AS e ON ce.CE_Entry_ID_FK = e.Entry_ID
-    JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
-    JOIN Label AS l ON el.EL_Label_ID_FK = l.Label_ID
-    JOIN Result AS r ON r.Result_CE_ID_FK = ce.CE_ID
+    FULL OUTER JOIN Comp AS c ON ce.CE_Comp_ID_FK = c.Comp_ID
+    FULL OUTER JOIN Entry AS e ON ce.CE_Entry_ID_FK = e.Entry_ID
+    FULL OUTER JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
+    FULL OUTER JOIN Label AS l ON el.EL_Label_ID_FK = l.Label_ID
+    FULL OUTER JOIN Result AS r ON r.Result_CE_ID_FK = ce.CE_ID
     WHERE ce.CE_Comp_ID_FK = @P1 AND r.Result_SplitNr = 64 \
       AND el.EL_RoundFrom <= c.Comp_Round AND c.Comp_Round <= el.EL_RoundTo";
 
