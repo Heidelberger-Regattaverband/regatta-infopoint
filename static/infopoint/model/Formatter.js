@@ -3,6 +3,13 @@ sap.ui.define(function () {
 
   let Formatter = {
 
+    distanceLabel: function (oRace) {
+      if (oRace) {
+        return oRace.distance + "m";
+      }
+      return "";
+    },
+
     boatLabel: function (sShortLabel, iBoatNumber) {
       if (iBoatNumber > 0) {
         return sShortLabel + " - Boot " + iBoatNumber;
@@ -10,11 +17,11 @@ sap.ui.define(function () {
       return sShortLabel;
     },
 
-    raceLabel: function (oHeat) {
-      if (oHeat) {
-        let label = oHeat.race_number + " - " + oHeat.race_short_label;
-        if (oHeat.race_comment) {
-          label += " " + oHeat.race_comment;
+    raceLabel: function (oRace) {
+      if (oRace) {
+        let label = oRace.number + " - " + oRace.shortLabel;
+        if (oRace.comment) {
+          label += " " + oRace.comment;
         }
         return label;
       }

@@ -7,7 +7,7 @@
         <f:DynamicPageTitle>
           <f:heading>
             <VBox>
-              <Title text="{path: 'heat>/', formatter: '.formatter.raceLabel'}, {path: 'heat>/', formatter: '.formatter.heatLabel'}" wrapping="true" wrappingType="Normal" />
+              <Title text="{path: 'heat>/race', formatter: '.formatter.raceLabel'}, {path: 'heat>/', formatter: '.formatter.heatLabel'}" wrapping="true" wrappingType="Normal" />
             </VBox>
           </f:heading>
 
@@ -25,12 +25,14 @@
           <layout:HorizontalLayout allowWrapping="true">
             <layout:VerticalLayout class="sapUiMediumMarginEnd">
               <ObjectAttribute title="{i18n>common.heatNr}" text="{heat>/number}" />
-              <ObjectAttribute title="{i18n>common.dayTime}" text="{path: 'heat>/date', formatter: '.formatter.dateLabel'} - {path: 'heat>/time', formatter: '.formatter.timeLabel'}" />
+              <ObjectAttribute title="{i18n>common.date}" text="{path: 'heat>/date', formatter: '.formatter.dateLabel'}" />
+              <ObjectAttribute title="{i18n>common.time}" text="{path: 'heat>/time', formatter: '.formatter.timeLabel'}" />
             </layout:VerticalLayout>
 
             <layout:VerticalLayout>
-              <ObjectAttribute title="{i18n>common.distance}" text="{heat>/distance}m" />
+              <ObjectAttribute title="{i18n>common.distance}" text="{path: 'heat>/race', formatter: '.formatter.distanceLabel'}" />
               <ObjectAttribute title="{i18n>common.state}" text="{path: 'heat>/', formatter: '.formatter.stateLabel'}" />
+              <ObjectAttribute title="{i18n>common.referee}" text="{heat>/referee/lastName}, {heat>/referee/firstName}" visible="{= ${heat>/referee/firstName} !== '' || ${heat>/referee/lastName} !== ''}" />
             </layout:VerticalLayout>
           </layout:HorizontalLayout>
         </f:DynamicPageHeader>

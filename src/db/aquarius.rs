@@ -12,10 +12,12 @@ const REGATTAS_QUERY: &str = "SELECT * FROM Event e";
 const REGATTA_QUERY: &str = "SELECT * FROM Event e WHERE e.Event_ID = @P1";
 
 const HEATS_QUERY: &str =
-    "SELECT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, ag.* \
+    "SELECT DISTINCT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, ag.*, r.* \
     FROM Comp AS c \
-    JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK \
-    JOIN AgeClass AS ag ON o.Offer_AgeClass_ID_FK = ag.AgeClass_ID \
+    FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK \
+    FULL OUTER JOIN AgeClass AS ag ON o.Offer_AgeClass_ID_FK = ag.AgeClass_ID \
+    FULL OUTER JOIN CompReferee AS cr ON cr.CompReferee_Comp_ID_FK = c.Comp_ID \
+    FULL OUTER JOIN Referee AS r ON r.Referee_ID = cr.CompReferee_Referee_ID_FK \
     WHERE c.Comp_Event_ID_FK = @P1 \
     ORDER BY c.Comp_DateTime ASC";
 
@@ -209,14 +211,10 @@ fn create_regatta(row: &Row) -> Regatta {
 
 fn create_heat(row: &Row) -> Heat {
     let date_time: NaiveDateTime = Column::get(row, "Comp_DateTime");
-    let race_short_label: String = Column::get(row, "Offer_ShortLabel");
-    let race_comment: String = Column::get(row, "Offer_Comment");
 
     Heat {
         id: Column::get(row, "Comp_ID"),
-        race_number: Column::get(row, "Offer_RaceNumber"),
-        race_short_label: race_short_label.trim().to_owned(),
-        race_comment: race_comment.trim().to_owned(),
+        race: create_race(row),
         number: Column::get(row, "Comp_Number"),
         round_code: Column::get(row, "Comp_RoundCode"),
         label: Column::get(row, "Comp_Label"),
@@ -226,7 +224,30 @@ fn create_heat(row: &Row) -> Heat {
         date: date_time.date().to_string(),
         time: date_time.time().to_string(),
         ac_num_sub_classes: Column::get(row, "AgeClass_NumSubClasses"),
+        referee: create_referee(row),
+    }
+}
+
+fn create_race(row: &Row) -> Race {
+    let short_label: String = Column::get(row, "Offer_ShortLabel");
+    let comment: String = Column::get(row, "Offer_Comment");
+    Race {
+        comment: comment.trim().to_owned(),
+        number: Column::get(row, "Offer_RaceNumber"),
+        short_label: short_label.trim().to_owned(),
         distance: Column::get(row, "Offer_Distance"),
+    }
+}
+
+fn create_referee(row: &Row) -> Referee {
+    let last_name: String = Column::get(row, "Referee_LastName");
+    let first_name: String = Column::get(row, "Referee_FirstName");
+    if last_name.is_empty() && first_name.is_empty() {
+        return Default::default();
+    }
+    Referee {
+        last_name,
+        first_name,
     }
 }
 
@@ -284,9 +305,6 @@ pub struct Regatta {
 pub struct Heat {
     pub id: i32,
     number: i16,
-    race_short_label: String,
-    race_comment: String,
-    race_number: String,
     round_code: String,
     label: String,
     group_value: i16,
@@ -295,7 +313,8 @@ pub struct Heat {
     date: String,
     time: String,
     ac_num_sub_classes: u8,
-    distance: i16,
+    race: Race,
+    referee: Referee,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -310,4 +329,22 @@ pub struct HeatRegistration {
     boat_number: i16,
     result: String,
     delta: String,
+}
+
+#[derive(Debug, Serialize, Clone, Default)]
+pub struct Referee {
+    #[serde(rename = "firstName")]
+    first_name: String,
+
+    #[serde(rename = "lastName")]
+    last_name: String,
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct Race {
+    number: String,
+    #[serde(rename = "shortLabel")]
+    short_label: String,
+    comment: String,
+    distance: i16,
 }
