@@ -6,7 +6,7 @@
 
         <Table autoPopinMode="true" items="{scoring>/}" growing="true" growingScrollToLoad="true" growingThreshold="50" sticky="ColumnHeaders" class="sapUiNoContentPadding">
           <columns>
-            <Column hAlign="Center" width="1rem" importance="High" popinDisplay="Inline">
+            <Column hAlign="Center" width="4rem" importance="High" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.rank}" class="bold" wrapping="false" />
               </header>
