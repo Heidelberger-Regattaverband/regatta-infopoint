@@ -19,8 +19,8 @@ pub const HEATS_QUERY: &str =
 pub const HEAT_REGISTRATION_QUERY: &str =
     "SELECT	DISTINCT ce.*, e.Entry_Bib, e.Entry_BoatNumber, e.Entry_Comment, l.Label_Short, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta, bc.BoatClass_NumRowers
     FROM CompEntries AS ce
-    FULL OUTER JOIN Comp AS c ON ce.CE_Comp_ID_FK = c.Comp_ID
-    FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
+    JOIN Comp AS c ON ce.CE_Comp_ID_FK = c.Comp_ID
+    JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
     JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
     FULL OUTER JOIN Entry AS e ON ce.CE_Entry_ID_FK = e.Entry_ID
     FULL OUTER JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
