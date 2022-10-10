@@ -26,7 +26,7 @@ async fn main() -> Result<()> {
     // A backend is responsible for storing rate limit data, and choosing whether to allow/deny requests
 
     let mut http_server = HttpServer::new(move || {
-        let input = SimpleInputFunctionBuilder::new(Duration::from_secs(600), 100)
+        let input = SimpleInputFunctionBuilder::new(Duration::from_secs(600), 200)
             .real_ip_key()
             .build();
         let rate_limiter = RateLimiter::builder(InMemoryBackend::builder().build(), input)

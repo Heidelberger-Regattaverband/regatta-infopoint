@@ -15,8 +15,8 @@
       <f:content>
         <IconTabBar id="heatsIconTabBar" select=".onFilterSelect" class="sapUiNoContentPadding">
           <items>
-            <IconTabFilter text="{path: 'regatta>/start_date', formatter: '.formatter.dayLabel'}" key="{regatta>/start_date}" />
-            <IconTabFilter text="{path: 'regatta>/end_date', formatter: '.formatter.dayLabel'}" key="{regatta>/end_date}" />
+            <IconTabFilter text="{path: 'regatta>/startDate', formatter: '.formatter.dayLabel'}" key="{regatta>/startDate}" />
+            <IconTabFilter text="{path: 'regatta>/endDate', formatter: '.formatter.dayLabel'}" key="{regatta>/endDate}" />
           </items>
           <content>
 
