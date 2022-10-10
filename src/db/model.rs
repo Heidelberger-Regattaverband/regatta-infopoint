@@ -125,19 +125,18 @@ pub struct Regatta {
     title: String,
     sub_title: String,
     venue: String,
+    #[serde(rename = "startDate")]
     start_date: String,
+    #[serde(rename = "endDate")]
     end_date: String,
 }
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Registration {
     bib: i16,
-
     #[serde(rename = "boatNumber")]
     boat_number: i16,
-
     comment: String,
-
     #[serde(rename = "shortLabel")]
     short_label: String,
 }
@@ -181,7 +180,6 @@ pub struct HeatResult {
 pub struct Referee {
     #[serde(rename = "firstName")]
     first_name: String,
-
     #[serde(rename = "lastName")]
     last_name: String,
 }
