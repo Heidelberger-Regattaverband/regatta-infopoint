@@ -1,11 +1,7 @@
 use super::{cache::Cache, model::Regatta, pool::create_pool, TiberiusPool};
-use crate::db::{
-    model::{self, Heat, HeatRegistration, Score},
-    utils::Column,
-};
+use crate::db::model::{self, Heat, HeatRegistration, Score};
 use anyhow::{Ok, Result};
 use log::{debug, trace};
-use tiberius::{time::chrono::NaiveDateTime, Row};
 
 const REGATTAS_QUERY: &str = "SELECT * FROM Event e";
 
