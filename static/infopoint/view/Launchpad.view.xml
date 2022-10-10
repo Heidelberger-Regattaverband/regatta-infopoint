@@ -7,7 +7,7 @@
         <layout:HorizontalLayout allowWrapping="true">
           <layout:content>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.heatsTile.header}" subheader="{path: 'regatta>/start_date',formatter: '.formatter.dayLabel'} bis {path: 'regatta>/end_date',formatter: '.formatter.dayLabel'}" press=".onNavToHeats">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.heatsTile.header}" subheader="{path: 'regatta>/startDate',formatter: '.formatter.dayLabel'} bis {path: 'regatta>/endDate',formatter: '.formatter.dayLabel'}" press=".onNavToHeats">
               <tileContent>
                 <TileContent>
                   <content>

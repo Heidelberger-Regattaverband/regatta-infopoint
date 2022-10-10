@@ -1,4 +1,7 @@
-use crate::db::aquarius::{Aquarius, Heat, HeatRegistration, Regatta, Score};
+use crate::db::{
+    aquarius::Aquarius,
+    model::{Heat, HeatRegistration, Regatta, Score},
+};
 use actix_web::{
     get,
     web::{Data, Json, Path},
