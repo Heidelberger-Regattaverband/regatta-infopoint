@@ -1,5 +1,9 @@
-use super::{cache::Cache, model::Regatta, pool::create_pool, TiberiusPool};
-use crate::db::model::{self, Heat, HeatRegistration, Score};
+use super::{
+    cache::Cache,
+    model::{self, Heat, HeatRegistration, Regatta, Score},
+    pool::create_pool,
+    TiberiusPool,
+};
 use anyhow::{Ok, Result};
 use log::{debug, trace};
 
