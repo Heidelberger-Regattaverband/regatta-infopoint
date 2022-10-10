@@ -128,13 +128,12 @@ pub fn create_heat_registration(row: &Row) -> HeatRegistration {
 }
 
 fn create_registration(row: &Row) -> Registration {
-    let registration = Registration {
+    Registration {
         bib: Column::get(row, "Entry_Bib"),
         comment: Column::get(row, "Entry_Comment"),
         boat_number: Column::get(row, "Entry_BoatNumber"),
         short_label: Column::get(row, "Label_Short"),
-    };
-    registration
+    }
 }
 
 #[derive(Debug, Serialize, Clone)]
