@@ -84,7 +84,7 @@
             <ColumnListItem>
               <cells>
                 <Text text="{heatRegistration>result/rankLabel}" />
-                <Text text="{heatRegistration>lane}" />
+                <Text text="{heatRegistration>registration/bib}" />
                 <Text text="{
                   parts: [
                     {path: 'heatRegistration>registration/shortLabel'},
@@ -93,7 +93,7 @@
                   ],
                   formatter: '.formatter.boatLabel'
                 }" />
-                <Text text="{heatRegistration>registration/bib}" />
+                <Text text="{heatRegistration>lane}" />
                 <Text text="{heatRegistration>result/result}" />
                 <Text text="{= ${heatRegistration>result/delta} !== '0.0' ? ${heatRegistration>result/delta} : '-' }" />
                 <Text text="{heatRegistration>result/points}" />
