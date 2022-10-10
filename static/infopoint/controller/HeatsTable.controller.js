@@ -12,7 +12,16 @@ sap.ui.define([
     formatter: Formatter,
 
     onInit: function () {
-      this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
+      const oComponent = this.getOwnerComponent();
+
+      this.getView().addStyleClass(oComponent.getContentDensityClass());
+
+      oComponent.getRouter().attachRouteMatched(function (oEvent) {
+        if (oEvent.getParameter("name") === "heats") {
+          const oRegatta = oComponent.getModel("regatta").getData();
+          this._loadHeatsModel(oRegatta);
+        }
+      }, this);
 
       // let oRegatta = this.getOwnerComponent().getModel("regatta").getData();
 
@@ -33,8 +42,10 @@ sap.ui.define([
         this.getOwnerComponent().setModel(new JSONModel(oHeat), "heat");
         this.getOwnerComponent().setModel(oModel, "heatRegistration");
 
-        const oFCL = this.getView().getParent().getParent();
-        oFCL.setLayout(fioriLibrary.LayoutType.TwoColumnsMidExpanded);
+        this.getOwnerComponent().getRouter().navTo("heatRegistrations");
+
+        // const oFCL = this.getView().getParent().getParent();
+        // oFCL.setLayout(fioriLibrary.LayoutType.TwoColumnsMidExpanded);
       }
     },
 
@@ -55,6 +66,18 @@ sap.ui.define([
 
       const oBinding = this.byId("heatsTable").getBinding("items");
       oBinding.filter(aFilters);
+    },
+
+    onNavBack: function () {
+      const oRouter = this.getOwnerComponent().getRouter();
+      oRouter.navTo("startpage", {}, true);
+    },
+
+    _loadHeatsModel: function (oRegatta) {
+      const oHeatsModel = new JSONModel();
+      oHeatsModel.loadData("/api/regattas/" + oRegatta.id + "/heats");
+
+      this.getOwnerComponent().setModel(oHeatsModel, "heats");
     }
   });
 });

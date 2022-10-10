@@ -12,9 +12,9 @@ sap.ui.define([
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
     },
 
-    handleClose: function () {
-      const oFCL = this.getView().getParent().getParent();
-      oFCL.setLayout(fioriLibrary.LayoutType.OneColumn);
+    onNavBack: function () {
+      const oRouter = this.getOwnerComponent().getRouter();
+      oRouter.navTo("heats", {}, true);
     },
 
     handlePrevious: function () {
