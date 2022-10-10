@@ -44,12 +44,14 @@ sap.ui.define([
     },
 
     _setFilter: function (sKey) {
-      // Array to combine filters
-      const aFilters = [new Filter({
-        path: 'date',
-        operator: FilterOperator.EQ,
-        value1: sKey
-      })];
+      let aFilters = [];
+      if (sKey != "all") {
+        aFilters.push(new Filter({
+          path: 'date',
+          operator: FilterOperator.EQ,
+          value1: sKey
+        }));
+      }
 
       const oBinding = this.byId("heatsTable").getBinding("items");
       oBinding.filter(aFilters);
