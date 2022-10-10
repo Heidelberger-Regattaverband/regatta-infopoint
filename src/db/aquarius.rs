@@ -2,8 +2,8 @@ use super::{
     cache::Cache,
     model::{
         create_heat, create_heat_registration, create_regatta, create_score, Heat,
-        HeatRegistration, Regatta, Score, HEATS_QUERY, HEAT_REGISTRATION_QUERY, REGATTA_QUERY,
-        SCORES_QUERY,
+        HeatRegistration, Regatta, Score, HEATS_QUERY, HEAT_REGISTRATION_QUERY, REGATTAS_QUERY,
+        REGATTA_QUERY, SCORES_QUERY,
     },
     pool::create_pool,
     TiberiusPool,
@@ -31,7 +31,7 @@ impl Aquarius {
         debug!("Query regattas from DB");
         trace!("Execute query {}", HEATS_QUERY);
         let rows = client
-            .query(REGATTA_QUERY, &[])
+            .query(REGATTAS_QUERY, &[])
             .await?
             .into_first_result()
             .await?;
