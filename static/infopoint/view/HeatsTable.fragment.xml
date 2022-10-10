@@ -1,0 +1,56 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+
+  <Table id="heatsTable" autoPopinMode="true" items="{heats>/}" growing="true" growingScrollToLoad="true" growingThreshold="100" mode="SingleSelectMaster" itemPress="onSelectionChange" sticky="ColumnHeaders" class="sapUiNoContentPadding">
+    <columns>
+      <Column hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
+        <header>
+          <Text text="{i18n>heatsTable.column.heatNumber}" class="bold" wrapping="false" />
+        </header>
+      </Column>
+      <Column hAlign="Center" width="4rem" importance="Low" visible="{= !${device>/system/phone}}" popinDisplay="Inline">
+        <header>
+          <Text text="{i18n>heatsTable.column.day}" class="bold" wrapping="false" />
+        </header>
+      </Column>
+      <Column hAlign="Center" width="4rem" importance="High" popinDisplay="Inline">
+        <header>
+          <Text text="{i18n>common.time}" class="bold" wrapping="false" />
+        </header>
+      </Column>
+      <Column hAlign="Begin" width="8rem" importance="High" popinDisplay="Inline">
+        <header>
+          <Text text="{i18n>common.race}" class="bold" wrapping="false" />
+        </header>
+      </Column>
+      <Column hAlign="Begin" width="8rem" importance="High" popinDisplay="Inline">
+        <header>
+          <Text text="{i18n>common.heat}" class="bold" wrapping="false" />
+        </header>
+      </Column>
+      <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+        <header>
+          <Text text="{i18n>common.distance}" class="bold" wrapping="false" />
+        </header>
+      </Column>
+      <Column hAlign="Center" width="6rem" importance="High" popinDisplay="Inline">
+        <header>
+          <Text text="{i18n>common.state}" class="bold" wrapping="false" />
+        </header>
+      </Column>
+    </columns>
+
+    <items>
+      <ColumnListItem type="Active">
+        <cells>
+          <Text text="{heats>number}" />
+          <Text text="{path: 'heats>date', formatter: '.formatter.dayLabel'}" />
+          <Text text="{path: 'heats>time', formatter: '.formatter.timeLabel'}" />
+          <Text text="{path: 'heats>race', formatter: '.formatter.raceLabel'}" />
+          <Text text="{path: 'heats>', formatter: '.formatter.heatLabel'}" />
+          <Text text="{path: 'heats>race', formatter: '.formatter.distanceLabel'}" />
+          <Text text="{path: 'heats>', formatter: '.formatter.stateLabel'}" />
+        </cells>
+      </ColumnListItem>
+    </items>
+  </Table>
+</core:FragmentDefinition>
