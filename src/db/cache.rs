@@ -1,4 +1,4 @@
-use super::aquarius::{Heat, HeatRegistration, Regatta, Score};
+use super::model::{Heat, HeatRegistration, Regatta, Score};
 use log::{debug, trace};
 use std::time::Duration;
 use stretto::AsyncCache;
