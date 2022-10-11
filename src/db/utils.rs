@@ -8,7 +8,7 @@ pub trait Column {
 impl Column for bool {
     fn get(row: &Row, col_name: &str) -> bool {
         row.try_get::<bool, _>(col_name)
-            .unwrap()
+            .unwrap_or_default()
             .unwrap_or_default()
     }
 }
