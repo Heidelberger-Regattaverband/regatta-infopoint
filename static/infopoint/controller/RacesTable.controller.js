@@ -1,10 +1,13 @@
 sap.ui.define([
   "sap/ui/core/mvc/Controller",
-  "sap/ui/model/json/JSONModel"
-], function (Controller, JSONModel) {
+  "sap/ui/model/json/JSONModel",
+  "../model/Formatter"
+], function (Controller, JSONModel, Formatter) {
   "use strict";
 
   return Controller.extend("de.regatta_hd.infopoint.controller.RacesTable", {
+
+    formatter: Formatter,
 
     onInit: function () {
       const oComponent = this.getOwnerComponent();

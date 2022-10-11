@@ -26,6 +26,11 @@
                 <Text text="{i18n>common.comment}" class="bold" wrapping="false" />
               </header>
             </Column>
+            <Column hAlign="Center" width="6rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.distance}" class="bold" wrapping="false" />
+              </header>
+            </Column>
           </columns>
 
           <items>
@@ -35,6 +40,7 @@
                 <Text text="{races>shortLabel}" />
                 <Text text="{races>longLabel}" />
                 <Text text="{races>comment}" />
+                <Text text="{path: 'races>', formatter: '.formatter.distanceLabel'}" />
               </cells>
             </ColumnListItem>
           </items>
