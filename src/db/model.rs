@@ -7,6 +7,8 @@ pub const REGATTAS_QUERY: &str = "SELECT * FROM Event e";
 
 pub const REGATTA_QUERY: &str = "SELECT * FROM Event e WHERE e.Event_ID = @P1";
 
+pub const RACES_QUERY: &str = "SELECT * FROM Offer o WHERE o.Offer_Event_ID_FK = @P1";
+
 pub const HEATS_QUERY: &str =
     "SELECT DISTINCT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, ac.*, r.*
     FROM Comp AS c
@@ -29,7 +31,10 @@ pub const HEAT_REGISTRATION_QUERY: &str =
     WHERE ce.CE_Comp_ID_FK = @P1 AND (r.Result_SplitNr = 64 OR r.Result_SplitNr IS NULL)
       AND el.EL_RoundFrom <= c.Comp_Round AND c.Comp_Round <= el.EL_RoundTo";
 
-pub const SCORES_QUERY: &str = "SELECT s.rank, s.points, c.Club_Name, c.Club_Abbr FROM HRV_Score s JOIN Club AS c ON s.club_id = c.Club_ID WHERE s.event_id = @P1 ORDER BY s.rank ASC";
+pub const SCORES_QUERY: &str = "SELECT s.rank, s.points, c.Club_Name, c.Club_Abbr
+    FROM HRV_Score s
+    JOIN Club AS c ON s.club_id = c.Club_ID
+    WHERE s.event_id = @P1 ORDER BY s.rank ASC";
 
 pub fn create_score(row: &Row) -> Score {
     Score {
@@ -74,12 +79,15 @@ pub fn create_heat(row: &Row) -> Heat {
 
 pub fn create_race(row: &Row) -> Race {
     let short_label: String = Column::get(row, "Offer_ShortLabel");
+    let long_label: String = Column::get(row, "Offer_LongLabel");
     let comment: String = Column::get(row, "Offer_Comment");
     Race {
         comment: comment.trim().to_owned(),
         number: Column::get(row, "Offer_RaceNumber"),
         short_label: short_label.trim().to_owned(),
+        long_label: long_label.trim().to_owned(),
         distance: Column::get(row, "Offer_Distance"),
+        lightweight: Column::get(row, "Offer_IsLightweight"),
     }
 }
 
@@ -219,6 +227,9 @@ pub struct Race {
     number: String,
     #[serde(rename = "shortLabel")]
     short_label: String,
+    #[serde(rename = "longLabel")]
+    long_label: String,
     comment: String,
     distance: i16,
+    lightweight: bool,
 }
