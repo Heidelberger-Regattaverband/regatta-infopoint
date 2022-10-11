@@ -1,9 +1,11 @@
+use crate::db::model::{create_race, RACES_QUERY};
+
 use super::{
     cache::Cache,
     model::{
         create_heat, create_heat_registration, create_regatta, create_score, Heat,
-        HeatRegistration, Regatta, Score, HEATS_QUERY, HEAT_REGISTRATION_QUERY, REGATTAS_QUERY,
-        REGATTA_QUERY, SCORES_QUERY,
+        HeatRegistration, Race, Regatta, Score, HEATS_QUERY, HEAT_REGISTRATION_QUERY,
+        REGATTAS_QUERY, REGATTA_QUERY, SCORES_QUERY,
     },
     pool::create_pool,
     TiberiusPool,
@@ -74,6 +76,27 @@ impl Aquarius {
         self.cache.insert_regatta(&regatta).await;
 
         Ok(regatta)
+    }
+
+    pub async fn get_races(&self, regatta_id: i32) -> Result<Vec<Race>> {
+        let mut client = self.pool.get().await.unwrap();
+
+        debug!("Query races from DB");
+        trace!("Execute query {}", RACES_QUERY);
+        let rows = client
+            .query(RACES_QUERY, &[&regatta_id])
+            .await?
+            .into_first_result()
+            .await?;
+
+        let mut races: Vec<Race> = Vec::with_capacity(rows.len());
+
+        for row in &rows {
+            let race = create_race(row);
+            trace!("{:?}", race);
+            races.push(race);
+        }
+        Ok(races)
     }
 
     pub async fn get_heats(&self, regatta_id: i32) -> Result<Vec<Heat>> {

@@ -39,6 +39,7 @@ async fn main() -> Result<()> {
             .app_data(Data::clone(&data))
             .service(rest_api::get_regattas)
             .service(rest_api::get_regatta)
+            .service(rest_api::get_races)
             .service(rest_api::get_heats)
             .service(rest_api::get_heat_registrations)
             .service(rest_api::get_scoring)
