@@ -7,7 +7,10 @@ pub const REGATTAS_QUERY: &str = "SELECT * FROM Event e";
 
 pub const REGATTA_QUERY: &str = "SELECT * FROM Event e WHERE e.Event_ID = @P1";
 
-pub const RACES_QUERY: &str = "SELECT * FROM Offer o WHERE o.Offer_Event_ID_FK = @P1";
+pub const RACES_QUERY: &str = "SELECT o.*, rm.RaceMode_Title
+    FROM Offer o 
+    JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
+    WHERE o.Offer_Event_ID_FK = @P1 ORDER BY o.Offer_SortValue ASC";
 
 pub const HEATS_QUERY: &str =
     "SELECT DISTINCT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, ac.*, r.*
@@ -58,6 +61,21 @@ pub fn create_regatta(row: &Row) -> Regatta {
     }
 }
 
+pub fn create_race(row: &Row) -> Race {
+    let short_label: String = Column::get(row, "Offer_ShortLabel");
+    let long_label: String = Column::get(row, "Offer_LongLabel");
+    let comment: String = Column::get(row, "Offer_Comment");
+    Race {
+        comment: comment.trim().to_owned(),
+        number: Column::get(row, "Offer_RaceNumber"),
+        short_label: short_label.trim().to_owned(),
+        long_label: long_label.trim().to_owned(),
+        distance: Column::get(row, "Offer_Distance"),
+        lightweight: Column::get(row, "Offer_IsLightweight"),
+        race_mode: Column::get(row, "RaceMode_Title"),
+    }
+}
+
 pub fn create_heat(row: &Row) -> Heat {
     let date_time: NaiveDateTime = Column::get(row, "Comp_DateTime");
 
@@ -74,20 +92,6 @@ pub fn create_heat(row: &Row) -> Heat {
         time: date_time.time().to_string(),
         ac_num_sub_classes: Column::get(row, "AgeClass_NumSubClasses"),
         referee: create_referee(row),
-    }
-}
-
-pub fn create_race(row: &Row) -> Race {
-    let short_label: String = Column::get(row, "Offer_ShortLabel");
-    let long_label: String = Column::get(row, "Offer_LongLabel");
-    let comment: String = Column::get(row, "Offer_Comment");
-    Race {
-        comment: comment.trim().to_owned(),
-        number: Column::get(row, "Offer_RaceNumber"),
-        short_label: short_label.trim().to_owned(),
-        long_label: long_label.trim().to_owned(),
-        distance: Column::get(row, "Offer_Distance"),
-        lightweight: Column::get(row, "Offer_IsLightweight"),
     }
 }
 
@@ -232,4 +236,6 @@ pub struct Race {
     comment: String,
     distance: i16,
     lightweight: bool,
+    #[serde(rename = "raceMode")]
+    race_mode: String,
 }
