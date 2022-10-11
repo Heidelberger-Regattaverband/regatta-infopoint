@@ -1,0 +1,47 @@
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.RacesTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
+  <mvc:content>
+
+    <Page title="{i18n>common.offer}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
+      <content>
+
+        <Table autoPopinMode="true" items="{races>/}" growing="true" growingScrollToLoad="true" growingThreshold="50" sticky="ColumnHeaders" class="sapUiNoContentPadding">
+          <columns>
+            <Column hAlign="Center" width="4rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.number}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column hAlign="Begin" width="10rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.shortLabel}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column hAlign="Begin" width="15rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.label}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column hAlign="Begin" width="6rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.comment}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+          </columns>
+
+          <items>
+            <ColumnListItem>
+              <cells>
+                <Text text="{races>number}" />
+                <Text text="{races>shortLabel}" />
+                <Text text="{races>longLabel}" />
+                <Text text="{races>comment}" />
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table>
+
+      </content>
+    </Page>
+
+  </mvc:content>
+</mvc:View>
