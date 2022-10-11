@@ -79,8 +79,14 @@ impl Aquarius {
     }
 
     pub async fn get_races(&self, regatta_id: i32) -> Result<Vec<Race>> {
-        let mut client = self.pool.get().await.unwrap();
+        // 1. try to get races from cache
+        let regatta_opt = self.cache.get_races(regatta_id).await;
+        if regatta_opt.is_some() {
+            return Ok(regatta_opt.unwrap());
+        }
 
+        // 2. read races from DB
+        let mut client = self.pool.get().await.unwrap();
         debug!("Query races from DB");
         trace!("Execute query {}", RACES_QUERY);
         let rows = client
@@ -88,14 +94,16 @@ impl Aquarius {
             .await?
             .into_first_result()
             .await?;
-
         let mut races: Vec<Race> = Vec::with_capacity(rows.len());
-
         for row in &rows {
             let race = create_race(row);
             trace!("{:?}", race);
             races.push(race);
         }
+
+        // 3. store races in cache
+        self.cache.insert_races(regatta_id, &races).await;
+
         Ok(races)
     }
 
