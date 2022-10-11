@@ -43,7 +43,8 @@
         "settings": {
           "bundleName": "de.regatta_hd.infopoint.i18n.i18n",
           "supportedLocales": [
-            "de", "en"
+            "de",
+            "en"
           ],
           "fallbackLocale": ""
         }
@@ -78,6 +79,11 @@
           "pattern": "scoring",
           "name": "scoring",
           "target": "scoring"
+        },
+        {
+          "pattern": "races",
+          "name": "races",
+          "target": "races"
         }
       ],
       "targets": {
@@ -91,6 +97,10 @@
         },
         "scoring": {
           "viewName": "ScoringTable",
+          "viewLevel": 1
+        },
+        "races": {
+          "viewName": "RacesTable",
           "viewLevel": 1
         }
       }

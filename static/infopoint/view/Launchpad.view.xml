@@ -27,6 +27,16 @@
               </tileContent>
             </GenericTile>
 
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>common.offer}" press=".onNavToRaces">
+              <tileContent>
+                <TileContent>
+                  <content>
+                    <ImageContent src="sap-icon://list" />
+                  </content>
+                </TileContent>
+              </tileContent>
+            </GenericTile>
+
           </layout:content>
         </layout:HorizontalLayout>
 
