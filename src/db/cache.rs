@@ -27,10 +27,10 @@ impl Cache {
 
     // regattas
 
-    pub async fn get_regatta(&self, regatta_id: i32) -> Option<Regatta> {
+    pub fn get_regatta(&self, regatta_id: i32) -> Option<Regatta> {
         let opt_value_ref = self.regatta_cache.get(&regatta_id);
-        if opt_value_ref.is_some() {
-            let value_ref = opt_value_ref.unwrap();
+        // see also: https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html
+        if let Some(value_ref) = opt_value_ref {
             let value = value_ref.value().clone();
             value_ref.release();
             debug!("Reading regatta {} from cache.", regatta_id);
@@ -56,10 +56,10 @@ impl Cache {
         self.heats_cache.wait().await.unwrap();
     }
 
-    pub async fn get_heats(&self, regatta_id: i32) -> Option<Vec<Heat>> {
+    pub fn get_heats(&self, regatta_id: i32) -> Option<Vec<Heat>> {
         let opt_value_ref = self.heats_cache.get(&regatta_id);
-        if opt_value_ref.is_some() {
-            let value_ref = opt_value_ref.unwrap();
+        // see also: https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html
+        if let Some(value_ref) = opt_value_ref {
             let value = value_ref.value().clone();
             value_ref.release();
             debug!("Reading heats of regatta {} from cache.", regatta_id);
@@ -80,6 +80,7 @@ impl Cache {
 
     pub fn get_heat_regs(&self, heat_id: i32) -> Option<Vec<HeatRegistration>> {
         let opt_value_ref = self.heat_regs_cache.get(&heat_id);
+        // see also: https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html
         if let Some(value_ref) = opt_value_ref {
             let value = value_ref.value().clone();
             value_ref.release();
@@ -101,6 +102,7 @@ impl Cache {
 
     pub fn get_scores(&self, regatta_id: i32) -> Option<Vec<Score>> {
         let opt_value_ref = self.scores_cache.get(&regatta_id);
+        // see also: https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html
         if let Some(value_ref) = opt_value_ref {
             let value = value_ref.value().clone();
             value_ref.release();
