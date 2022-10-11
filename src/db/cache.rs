@@ -25,6 +25,8 @@ impl Cache {
         }
     }
 
+    // regattas
+
     pub async fn get_regatta(&self, regatta_id: i32) -> Option<Regatta> {
         let opt_value_ref = self.regatta_cache.get(&regatta_id);
         if opt_value_ref.is_some() {
