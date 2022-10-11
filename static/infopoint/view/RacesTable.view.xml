@@ -39,7 +39,7 @@
           </columns>
 
           <items>
-            <ColumnListItem>
+            <ColumnListItem type="Navigation">
               <cells>
                 <Text text="{races>number}" />
                 <Text text="{races>shortLabel}" />

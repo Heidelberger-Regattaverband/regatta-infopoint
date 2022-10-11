@@ -12,8 +12,15 @@ pub const RACES_QUERY: &str = "SELECT o.*, rm.RaceMode_Title
     JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
     WHERE o.Offer_Event_ID_FK = @P1 ORDER BY o.Offer_SortValue ASC";
 
+pub const REGISTRATIONS_QUERY: &str = "SELECT e.*, l.Label_Short
+    FROM Entry e
+    JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
+    JOIN Label AS l ON el.EL_Label_ID_FK = l.Label_ID
+    WHERE e.Entry_Race_ID_FK = @P1 AND el.EL_RoundFrom = 0
+    ORDER BY e.Entry_Bib ASC";
+
 pub const HEATS_QUERY: &str =
-    "SELECT DISTINCT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, ac.*, r.*
+    "SELECT DISTINCT c.*, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, ac.*, r.*
     FROM Comp AS c
     FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
     FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
@@ -65,7 +72,9 @@ pub fn create_race(row: &Row) -> Race {
     let short_label: String = Column::get(row, "Offer_ShortLabel");
     let long_label: String = Column::get(row, "Offer_LongLabel");
     let comment: String = Column::get(row, "Offer_Comment");
+
     Race {
+        id: Column::get(row, "Offer_ID"),
         comment: comment.trim().to_owned(),
         number: Column::get(row, "Offer_RaceNumber"),
         short_label: short_label.trim().to_owned(),
@@ -145,7 +154,7 @@ pub fn create_heat_registration(row: &Row) -> HeatRegistration {
     }
 }
 
-fn create_registration(row: &Row) -> Registration {
+pub fn create_registration(row: &Row) -> Registration {
     Registration {
         bib: Column::get(row, "Entry_Bib"),
         comment: Column::get(row, "Entry_Comment"),
@@ -228,6 +237,7 @@ pub struct Referee {
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Race {
+    pub id: i32,
     number: String,
     #[serde(rename = "shortLabel")]
     short_label: String,
