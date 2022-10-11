@@ -6,7 +6,7 @@
 
         <Table autoPopinMode="true" items="{races>/}" growing="true" growingScrollToLoad="true" growingThreshold="50" sticky="ColumnHeaders" class="sapUiNoContentPadding">
           <columns>
-            <Column hAlign="Center" width="4rem" importance="High" popinDisplay="Inline">
+            <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.number}" class="bold" wrapping="false" />
               </header>
@@ -21,12 +21,12 @@
                 <Text text="{i18n>common.label}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column hAlign="Begin" width="5rem" importance="High" popinDisplay="Inline">
+            <Column hAlign="Begin" width="4rem" importance="High" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.comment}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">
+            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.distance}" class="bold" wrapping="false" />
               </header>
