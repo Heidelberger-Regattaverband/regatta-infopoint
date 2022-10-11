@@ -19,6 +19,10 @@ sap.ui.define([
       this.getRouter().navTo("scoring");
     },
 
+    onNavToRaces: function () {
+      this.getRouter().navTo("races");
+    },
+
     getRouter: function () {
       return this.getOwnerComponent().getRouter();
     }
