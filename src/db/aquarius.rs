@@ -138,7 +138,7 @@ impl Aquarius {
 
     pub async fn get_heat_registrations(&self, heat_id: i32) -> Result<Vec<HeatRegistration>> {
         // 1. try to get heat_registrations from cache
-        let opt = self.cache.get_heat_regs(heat_id).await;
+        let opt = self.cache.get_heat_regs(heat_id);
         if opt.is_some() {
             return Ok(opt.unwrap());
         }
