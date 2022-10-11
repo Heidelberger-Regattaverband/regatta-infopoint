@@ -98,7 +98,7 @@ impl Cache {
         self.scores_cache.wait().await.unwrap();
     }
 
-    pub async fn get_scores(&self, regatta_id: i32) -> Option<Vec<Score>> {
+    pub fn get_scores(&self, regatta_id: i32) -> Option<Vec<Score>> {
         let opt_value_ref = self.scores_cache.get(&regatta_id);
         if opt_value_ref.is_some() {
             let value_ref = opt_value_ref.unwrap();
@@ -120,7 +120,7 @@ impl Cache {
         self.races_cache.wait().await.unwrap();
     }
 
-    pub(crate) async fn get_races(&self, regatta_id: i32) -> Option<Vec<Race>> {
+    pub(crate) fn get_races(&self, regatta_id: i32) -> Option<Vec<Race>> {
         let opt_value_ref = self.races_cache.get(&regatta_id);
         if opt_value_ref.is_some() {
             let value_ref = opt_value_ref.unwrap();
