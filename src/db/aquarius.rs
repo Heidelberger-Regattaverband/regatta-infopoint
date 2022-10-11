@@ -80,7 +80,7 @@ impl Aquarius {
 
     pub async fn get_races(&self, regatta_id: i32) -> Result<Vec<Race>> {
         // 1. try to get races from cache
-        let regatta_opt = self.cache.get_races(regatta_id).await;
+        let regatta_opt = self.cache.get_races(regatta_id);
         if regatta_opt.is_some() {
             return Ok(regatta_opt.unwrap());
         }
@@ -167,7 +167,7 @@ impl Aquarius {
 
     pub async fn get_scoring(&self, regatta_id: i32) -> Result<Vec<Score>> {
         // 1. try to get heat_registrations from cache
-        let opt = self.cache.get_scores(regatta_id).await;
+        let opt = self.cache.get_scores(regatta_id);
         if opt.is_some() {
             return Ok(opt.unwrap());
         }
