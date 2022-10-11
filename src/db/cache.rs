@@ -18,7 +18,7 @@ impl Cache {
     pub fn new() -> Self {
         Cache {
             regatta_cache: AsyncCache::new(10, 1e6 as i64, async_std::task::spawn).unwrap(),
-            races_cache: AsyncCache::new(200 * 10, 1e6 as i64, async_std::task::spawn).unwrap(),
+            races_cache: AsyncCache::new(10, 1e6 as i64, async_std::task::spawn).unwrap(),
             heats_cache: AsyncCache::new(200 * 10, 1e6 as i64, async_std::task::spawn).unwrap(),
             heat_regs_cache: AsyncCache::new(200 * 10, 1e6 as i64, async_std::task::spawn).unwrap(),
             scores_cache: AsyncCache::new(10, 1e6 as i64, async_std::task::spawn).unwrap(),
