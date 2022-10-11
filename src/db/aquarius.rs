@@ -1,9 +1,11 @@
+use crate::db::model::{create_race, RACES_QUERY};
+
 use super::{
     cache::Cache,
     model::{
         create_heat, create_heat_registration, create_regatta, create_score, Heat,
-        HeatRegistration, Regatta, Score, HEATS_QUERY, HEAT_REGISTRATION_QUERY, REGATTAS_QUERY,
-        REGATTA_QUERY, SCORES_QUERY,
+        HeatRegistration, Race, Regatta, Score, HEATS_QUERY, HEAT_REGISTRATION_QUERY,
+        REGATTAS_QUERY, REGATTA_QUERY, SCORES_QUERY,
     },
     pool::create_pool,
     TiberiusPool,
@@ -53,7 +55,7 @@ impl Aquarius {
     /// * `regatta_id` - The regatta identifier
     pub async fn get_regatta(&self, regatta_id: i32) -> Result<Regatta> {
         // 1. try to get regatta from cache
-        let regatta_opt = self.cache.get_regatta(regatta_id).await;
+        let regatta_opt = self.cache.get_regatta(regatta_id);
         if regatta_opt.is_some() {
             return Ok(regatta_opt.unwrap());
         }
@@ -76,9 +78,38 @@ impl Aquarius {
         Ok(regatta)
     }
 
+    pub async fn get_races(&self, regatta_id: i32) -> Result<Vec<Race>> {
+        // 1. try to get races from cache
+        let regatta_opt = self.cache.get_races(regatta_id);
+        if regatta_opt.is_some() {
+            return Ok(regatta_opt.unwrap());
+        }
+
+        // 2. read races from DB
+        let mut client = self.pool.get().await.unwrap();
+        debug!("Query races from DB");
+        trace!("Execute query {}", RACES_QUERY);
+        let rows = client
+            .query(RACES_QUERY, &[&regatta_id])
+            .await?
+            .into_first_result()
+            .await?;
+        let mut races: Vec<Race> = Vec::with_capacity(rows.len());
+        for row in &rows {
+            let race = create_race(row);
+            trace!("{:?}", race);
+            races.push(race);
+        }
+
+        // 3. store races in cache
+        self.cache.insert_races(regatta_id, &races).await;
+
+        Ok(races)
+    }
+
     pub async fn get_heats(&self, regatta_id: i32) -> Result<Vec<Heat>> {
         // 1. try to get heats from cache
-        let heats_opt = self.cache.get_heats(regatta_id).await;
+        let heats_opt = self.cache.get_heats(regatta_id);
         if heats_opt.is_some() {
             return Ok(heats_opt.unwrap());
         }
@@ -107,7 +138,7 @@ impl Aquarius {
 
     pub async fn get_heat_registrations(&self, heat_id: i32) -> Result<Vec<HeatRegistration>> {
         // 1. try to get heat_registrations from cache
-        let opt = self.cache.get_heat_regs(heat_id).await;
+        let opt = self.cache.get_heat_regs(heat_id);
         if opt.is_some() {
             return Ok(opt.unwrap());
         }
@@ -136,7 +167,7 @@ impl Aquarius {
 
     pub async fn get_scoring(&self, regatta_id: i32) -> Result<Vec<Score>> {
         // 1. try to get heat_registrations from cache
-        let opt = self.cache.get_scores(regatta_id).await;
+        let opt = self.cache.get_scores(regatta_id);
         if opt.is_some() {
             return Ok(opt.unwrap());
         }

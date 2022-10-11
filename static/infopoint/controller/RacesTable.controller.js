@@ -1,10 +1,13 @@
 sap.ui.define([
   "sap/ui/core/mvc/Controller",
-  "sap/ui/model/json/JSONModel"
-], function (Controller, JSONModel) {
+  "sap/ui/model/json/JSONModel",
+  "../model/Formatter"
+], function (Controller, JSONModel, Formatter) {
   "use strict";
 
-  return Controller.extend("de.regatta_hd.infopoint.controller.ScoresTable", {
+  return Controller.extend("de.regatta_hd.infopoint.controller.RacesTable", {
+
+    formatter: Formatter,
 
     onInit: function () {
       const oComponent = this.getOwnerComponent();
@@ -12,9 +15,9 @@ sap.ui.define([
       this.getView().addStyleClass(oComponent.getContentDensityClass());
 
       this.getOwnerComponent().getRouter().attachRouteMatched(function (oEvent) {
-        if (oEvent.getParameter("name") === "scoring") {
+        if (oEvent.getParameter("name") === "races") {
           const oRegatta = oComponent.getModel("regatta").getData();
-          this._loadScoringModel(oRegatta);
+          this._loadRacesModel(oRegatta);
         }
       }, this);
     },
@@ -24,10 +27,10 @@ sap.ui.define([
       oRouter.navTo("startpage", {}, true);
     },
 
-    _loadScoringModel: function (oRegatta) {
-      const oScoringModel = new JSONModel();
-      oScoringModel.loadData("/api/regattas/" + oRegatta.id + "/scoring");
-      this.getOwnerComponent().setModel(oScoringModel, "scoring");
+    _loadRacesModel: function (oRegatta) {
+      const oRacesModel = new JSONModel();
+      oRacesModel.loadData("/api/regattas/" + oRegatta.id + "/races");
+      this.getOwnerComponent().setModel(oRacesModel, "races");
     }
   });
 });
