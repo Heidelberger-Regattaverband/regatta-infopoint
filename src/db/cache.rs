@@ -78,10 +78,9 @@ impl Cache {
         self.heat_regs_cache.wait().await.unwrap();
     }
 
-    pub async fn get_heat_regs(&self, heat_id: i32) -> Option<Vec<HeatRegistration>> {
+    pub fn get_heat_regs(&self, heat_id: i32) -> Option<Vec<HeatRegistration>> {
         let opt_value_ref = self.heat_regs_cache.get(&heat_id);
-        if opt_value_ref.is_some() {
-            let value_ref = opt_value_ref.unwrap();
+        if let Some(value_ref) = opt_value_ref {
             let value = value_ref.value().clone();
             value_ref.release();
             debug!("Reading registrations of heat {} from cache.", heat_id);
@@ -102,8 +101,7 @@ impl Cache {
 
     pub fn get_scores(&self, regatta_id: i32) -> Option<Vec<Score>> {
         let opt_value_ref = self.scores_cache.get(&regatta_id);
-        if opt_value_ref.is_some() {
-            let value_ref = opt_value_ref.unwrap();
+        if let Some(value_ref) = opt_value_ref {
             let value = value_ref.value().clone();
             value_ref.release();
             debug!("Reading scores of regatta {} from cache.", regatta_id);
@@ -124,8 +122,7 @@ impl Cache {
 
     pub(crate) fn get_races(&self, regatta_id: i32) -> Option<Vec<Race>> {
         let opt_value_ref = self.races_cache.get(&regatta_id);
-        if opt_value_ref.is_some() {
-            let value_ref = opt_value_ref.unwrap();
+        if let Some(value_ref) = opt_value_ref {
             let value = value_ref.value().clone();
             value_ref.release();
             debug!("Reading scores of regatta {} from cache.", regatta_id);
