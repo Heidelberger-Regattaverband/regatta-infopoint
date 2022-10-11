@@ -1,6 +1,6 @@
 use crate::db::{
     aquarius::Aquarius,
-    model::{Heat, HeatRegistration, Regatta, Score, Race},
+    model::{Heat, HeatRegistration, Race, Regatta, Registration, Score},
 };
 use actix_web::{
     get,
@@ -24,6 +24,13 @@ async fn get_regatta(path: Path<i32>, data: Data<Aquarius>) -> Json<Regatta> {
 async fn get_races(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Race>> {
     let regatta_id = path.into_inner();
     let races = data.get_races(regatta_id).await.unwrap();
+    Json(races)
+}
+
+#[get("/api/races/{id}/registrations")]
+async fn get_registrations(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Registration>> {
+    let race_id = path.into_inner();
+    let races = data.get_registrations(race_id).await.unwrap();
     Json(races)
 }
 
