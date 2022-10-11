@@ -54,7 +54,7 @@ impl Column for NaiveDateTime {
 impl Column for String {
     fn get(row: &Row, col_name: &str) -> String {
         row.try_get::<&str, _>(col_name)
-            .unwrap()
+            .unwrap_or_default()
             .unwrap_or_default()
             .to_string()
     }
