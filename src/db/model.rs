@@ -16,7 +16,7 @@ pub const REGISTRATIONS_QUERY: &str = "SELECT e.*, l.Label_Short
     FROM Entry e
     JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
     JOIN Label AS l ON el.EL_Label_ID_FK = l.Label_ID
-    WHERE e.Entry_Race_ID_FK = @P1 AND el.EL_RoundFrom = 0
+    WHERE e.Entry_Race_ID_FK = @P1 AND el.EL_RoundFrom <= 64 AND 64 <= el.EL_RoundTo
     ORDER BY e.Entry_Bib ASC";
 
 pub const HEATS_QUERY: &str =
@@ -29,7 +29,7 @@ pub const HEATS_QUERY: &str =
     WHERE c.Comp_Event_ID_FK = @P1 ORDER BY c.Comp_DateTime ASC";
 
 pub const HEAT_REGISTRATION_QUERY: &str =
-    "SELECT	DISTINCT ce.*, e.Entry_Bib, e.Entry_BoatNumber, e.Entry_Comment, l.Label_Short, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta, bc.BoatClass_NumRowers
+    "SELECT	DISTINCT ce.*, e.Entry_Bib, e.Entry_ID, e.Entry_BoatNumber, e.Entry_Comment, l.Label_Short, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta, bc.BoatClass_NumRowers
     FROM CompEntries AS ce
     JOIN Comp AS c ON ce.CE_Comp_ID_FK = c.Comp_ID
     JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
@@ -156,6 +156,7 @@ pub fn create_heat_registration(row: &Row) -> HeatRegistration {
 
 pub fn create_registration(row: &Row) -> Registration {
     Registration {
+        id: Column::get(row, "Entry_ID"),
         bib: Column::get(row, "Entry_Bib"),
         comment: Column::get(row, "Entry_Comment"),
         boat_number: Column::get(row, "Entry_BoatNumber"),
@@ -184,6 +185,7 @@ pub struct Regatta {
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Registration {
+    id: i32,
     bib: i16,
     #[serde(rename = "boatNumber")]
     boat_number: i16,
