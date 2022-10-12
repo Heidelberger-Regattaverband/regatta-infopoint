@@ -11,12 +11,7 @@ sap.ui.define([
 
       this.getView().addStyleClass(oComponent.getContentDensityClass());
 
-      this.getOwnerComponent().getRouter().attachRouteMatched(function (oEvent) {
-        if (oEvent.getParameter("name") === "scoring") {
-          const oRegatta = oComponent.getModel("regatta").getData();
-          this._loadScoringModel(oRegatta);
-        }
-      }, this);
+      oComponent.getRouter().getRoute("scoring").attachPatternMatched(this._loadScoringModel, this);
     },
 
     onNavBack: function () {
@@ -24,10 +19,12 @@ sap.ui.define([
       oRouter.navTo("startpage", {}, true);
     },
 
-    _loadScoringModel: function (oRegatta) {
+    _loadScoringModel: function () {
+      const oRegatta = this.getOwnerComponent().getModel("regatta").getData();
       const oScoringModel = new JSONModel();
       oScoringModel.loadData("/api/regattas/" + oRegatta.id + "/scoring");
       this.getOwnerComponent().setModel(oScoringModel, "scoring");
     }
+
   });
 });

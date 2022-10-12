@@ -14,12 +14,8 @@ sap.ui.define([
 
       this.getView().addStyleClass(oComponent.getContentDensityClass());
 
-      this.getOwnerComponent().getRouter().attachRouteMatched(function (oEvent) {
-        if (oEvent.getParameter("name") === "races") {
-          const oRegatta = oComponent.getModel("regatta").getData();
-          this._loadRacesModel(oRegatta);
-        }
-      }, this);
+      oComponent.getRouter().getRoute("races")
+        .attachPatternMatched(this._loadRacesModel, this);
     },
 
     onNavBack: function () {
@@ -27,10 +23,12 @@ sap.ui.define([
       oRouter.navTo("startpage", {}, true);
     },
 
-    _loadRacesModel: function (oRegatta) {
+    _loadRacesModel: function () {
+      const oRegatta = this.getOwnerComponent().getModel("regatta").getData();
       const oRacesModel = new JSONModel();
       oRacesModel.loadData("/api/regattas/" + oRegatta.id + "/races");
       this.getOwnerComponent().setModel(oRacesModel, "races");
     }
+
   });
 });
