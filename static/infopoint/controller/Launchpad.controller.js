@@ -12,15 +12,15 @@ sap.ui.define([
     },
 
     onNavToHeats: function () {
-      this.getRouter().navTo("heats");
+      this.getRouter().navTo("heats", {}, false /* history */);
     },
 
     onNavToScoring: function () {
-      this.getRouter().navTo("scoring");
+      this.getRouter().navTo("scoring", {}, false /* history */);
     },
 
     onNavToRaces: function () {
-      this.getRouter().navTo("races");
+      this.getRouter().navTo("races", {}, false /* history */);
     },
 
     getRouter: function () {

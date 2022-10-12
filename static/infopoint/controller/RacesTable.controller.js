@@ -1,8 +1,9 @@
 sap.ui.define([
   "sap/ui/core/mvc/Controller",
   "sap/ui/model/json/JSONModel",
+  "sap/ui/core/routing/History",
   "../model/Formatter"
-], function (Controller, JSONModel, Formatter) {
+], function (Controller, JSONModel, History, Formatter) {
   "use strict";
 
   return Controller.extend("de.regatta_hd.infopoint.controller.RacesTable", {
@@ -14,13 +15,27 @@ sap.ui.define([
 
       this.getView().addStyleClass(oComponent.getContentDensityClass());
 
-      oComponent.getRouter().getRoute("races")
-        .attachPatternMatched(this._loadRacesModel, this);
+      oComponent.getRouter().getRoute("races").attachPatternMatched(this._loadRacesModel, this);
+    },
+
+    onItemPress: function (oEvent) {
+      const oSelectedItem = oEvent.getParameter("listItem");
+      if (oSelectedItem) {
+        const oBindingCtx = oSelectedItem.getBindingContext("races");
+        const oRace = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
+        this.getOwnerComponent().setModel(new JSONModel(oRace), "race");
+
+        this.getOwnerComponent().getRouter().navTo("raceRegistrations", {}, false /* history */);
+      }
     },
 
     onNavBack: function () {
-      const oRouter = this.getOwnerComponent().getRouter();
-      oRouter.navTo("startpage", {}, true);
+      const sPreviousHash = History.getInstance().getPreviousHash();
+      if (sPreviousHash) {
+        window.history.go(-1);
+      } else {
+        this.getOwnerComponent().getRouter().navTo("startpage", {}, false /* history */);
+      }
     },
 
     _loadRacesModel: function () {

@@ -1,0 +1,73 @@
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.RaceRegistrationsTable" xmlns="sap.m" xmlns:f="sap.f" xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
+  <mvc:content>
+    <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
+    <Page title="{i18n>common.registrations}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
+      <content>
+
+        <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
+          <!-- DynamicPage Title -->
+          <f:title>
+            <f:DynamicPageTitle>
+              <f:heading>
+                <Title text="{path: 'race>/', formatter: '.formatter.nrRaceLabel'}" wrapping="true" wrappingType="Normal" />
+              </f:heading>
+
+              <f:expandedContent>
+                <Label text="{race>/longLabel} {race>/comment}" />
+              </f:expandedContent>
+            </f:DynamicPageTitle>
+          </f:title>
+
+          <!-- DynamicPage Header -->
+          <f:header>
+            <f:DynamicPageHeader>
+              <layout:HorizontalLayout allowWrapping="true">
+                <layout:VerticalLayout>
+                  <ObjectAttribute title="{i18n>common.distance}" text="{path: 'race>/', formatter: '.formatter.distanceLabel'}" />
+                </layout:VerticalLayout>
+              </layout:HorizontalLayout>
+            </f:DynamicPageHeader>
+          </f:header>
+
+          <!-- DynamicPage Content -->
+          <f:content>
+            <Table autoPopinMode="true" items="{path: 'raceRegistrations>/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}" growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
+
+              <columns>
+                <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>common.bib}" class="bold" wrapping="false" />
+                  </header>
+                </Column>
+                <Column hAlign="Begin" width="7rem" importance="High" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>common.boat}" class="bold" wrapping="false" />
+                  </header>
+                </Column>
+              </columns>
+
+              <items>
+                <ColumnListItem>
+                  <cells>
+                    <Text text="{raceRegistrations>bib}" />
+                    <Text text="{
+                  parts: [
+                    {path: 'raceRegistrations>shortLabel'},
+                    {path: 'raceRegistrations>boatNumber'},
+                    {path: 'raceRegistrations>comment'}
+                  ],
+                  formatter: '.formatter.boatLabel'
+                }" />
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
+
+          </f:content>
+        </f:DynamicPage>
+
+      </content>
+    </Page>
+
+  </mvc:content>
+</mvc:View>

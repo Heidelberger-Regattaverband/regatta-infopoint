@@ -84,6 +84,11 @@
           "pattern": "races",
           "name": "races",
           "target": "races"
+        },
+        {
+          "pattern": "raceRegistrations",
+          "name": "raceRegistrations",
+          "target": "raceRegistrations"
         }
       ],
       "targets": {
@@ -102,6 +107,10 @@
         "races": {
           "viewName": "RacesTable",
           "viewLevel": 1
+        },
+        "raceRegistrations": {
+          "viewName": "RaceRegistrationsTable",
+          "viewLevel": 2
         }
       }
     },
