@@ -14,11 +14,11 @@ sap.ui.define([
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      // let oRegatta = this.getOwnerComponent().getModel("regatta").getData();
-
-      // let oIconTabBar = this.byId("heatsIconTabBar");
-      // let sKey = oIconTabBar.getSelectedKey();
-      // this._setFilter(sKey);
+      this.getOwnerComponent().getRouter().getRoute("heats")
+        .attachPatternMatched(function () {
+          const oIconTabBar = this.byId("heatsIconTabBar");
+          oIconTabBar.setSelectedKey("all");
+        }, this);
     },
 
     onSelectionChange: function (oEvent) {

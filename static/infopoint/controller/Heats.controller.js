@@ -13,12 +13,8 @@ sap.ui.define([
 
       this.getView().addStyleClass(oComponent.getContentDensityClass());
 
-      oComponent.getRouter().attachRouteMatched(function (oEvent) {
-        if (oEvent.getParameter("name") === "heats") {
-          const oRegatta = oComponent.getModel("regatta").getData();
-          this._loadHeatsModel(oRegatta);
-        }
-      }, this);
+      oComponent.getRouter().getRoute("heats")
+        .attachPatternMatched(this._loadHeatsModel, this);
     },
 
     onNavBack: function () {
@@ -26,10 +22,10 @@ sap.ui.define([
       oRouter.navTo("startpage", {}, true);
     },
 
-    _loadHeatsModel: function (oRegatta) {
+    _loadHeatsModel: function () {
+      const oRegatta = this.getOwnerComponent().getModel("regatta").getData();
       const oHeatsModel = new JSONModel();
       oHeatsModel.loadData("/api/regattas/" + oRegatta.id + "/heats");
-
       this.getOwnerComponent().setModel(oHeatsModel, "heats");
     }
 
