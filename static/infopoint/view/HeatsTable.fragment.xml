@@ -45,7 +45,7 @@
           <Text text="{heats>number}" />
           <Text text="{path: 'heats>date', formatter: '.formatter.dayLabel'}" />
           <Text text="{path: 'heats>time', formatter: '.formatter.timeLabel'}" />
-          <Text text="{path: 'heats>race', formatter: '.formatter.raceLabel'}" />
+          <Text text="{path: 'heats>race', formatter: '.formatter.nrRaceLabel'}" />
           <Text text="{path: 'heats>', formatter: '.formatter.heatLabel'}" />
           <Text text="{path: 'heats>race', formatter: '.formatter.distanceLabel'}" />
           <Text text="{path: 'heats>', formatter: '.formatter.stateLabel'}" />
