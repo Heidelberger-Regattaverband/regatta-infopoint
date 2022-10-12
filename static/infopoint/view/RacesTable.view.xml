@@ -32,7 +32,7 @@
             <ColumnListItem type="Navigation">
               <cells>
                 <Text text="{races>number}" />
-                <ObjectIdentifier title="{races>shortLabel} {races>comment}" text="{races>longLabel} {races>comment}" />
+                <ObjectIdentifier title="{path: 'races>', formatter: '.formatter.raceLabel'}" text="{races>longLabel} {races>comment}" />
                 <Text text="{path: 'races>', formatter: '.formatter.distanceLabel'}" />
                 <Text text="{races>raceMode}" />
               </cells>
