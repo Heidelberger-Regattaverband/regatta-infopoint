@@ -11,6 +11,7 @@ WORKDIR /usr/src/infopoint
 COPY Cargo.toml .
 COPY Cargo.lock .
 COPY src/ ./src/
+COPY static/ ./static/
 
 EXPOSE 8080
 
