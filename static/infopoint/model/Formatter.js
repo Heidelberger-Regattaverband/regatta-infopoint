@@ -22,6 +22,17 @@ sap.ui.define(function () {
 
     raceLabel: function (oRace) {
       if (oRace) {
+        let label = oRace.shortLabel;
+        if (oRace.comment) {
+          label += " " + oRace.comment;
+        }
+        return label;
+      }
+      return "";
+    },
+
+    nrRaceLabel: function (oRace) {
+      if (oRace) {
         let label = oRace.number + " - " + oRace.shortLabel;
         if (oRace.comment) {
           label += " " + oRace.comment;

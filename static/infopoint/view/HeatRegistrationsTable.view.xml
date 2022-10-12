@@ -7,7 +7,7 @@
         <f:DynamicPageTitle>
           <f:heading>
             <VBox>
-              <Title text="{path: 'heat>/race', formatter: '.formatter.raceLabel'}, {path: 'heat>/', formatter: '.formatter.heatLabel'}" wrapping="true" wrappingType="Normal" />
+              <Title text="{path: 'heat>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heat>/', formatter: '.formatter.heatLabel'}" wrapping="true" wrappingType="Normal" />
             </VBox>
           </f:heading>
 
