@@ -4,7 +4,7 @@
     <Page title="{i18n>common.offer}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <content>
 
-        <Table autoPopinMode="true" items="{races>/}" growing="true" growingScrollToLoad="true" growingThreshold="50" sticky="ColumnHeaders" class="sapUiNoContentPadding">
+        <Table autoPopinMode="true" items="{races>/}" itemPress="onItemPress" growing="true" growingScrollToLoad="true" growingThreshold="50" sticky="ColumnHeaders" class="sapUiNoContentPadding">
           <columns>
             <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
               <header>
@@ -29,7 +29,7 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation">
+            <ColumnListItem type="Navigation" vAlign="Top" >
               <cells>
                 <Text text="{races>number}" />
                 <ObjectIdentifier title="{path: 'races>', formatter: '.formatter.raceLabel'}" text="{races>longLabel} {races>comment}" />

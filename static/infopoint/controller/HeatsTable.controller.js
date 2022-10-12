@@ -14,11 +14,10 @@ sap.ui.define([
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this.getOwnerComponent().getRouter().getRoute("heats")
-        .attachPatternMatched(function () {
-          const oIconTabBar = this.byId("heatsIconTabBar");
-          oIconTabBar.setSelectedKey("all");
-        }, this);
+      this.getOwnerComponent().getRouter().getRoute("heats").attachPatternMatched(function () {
+        const oIconTabBar = this.byId("heatsIconTabBar");
+        oIconTabBar.setSelectedKey("all");
+      }, this);
     },
 
     onSelectionChange: function (oEvent) {
