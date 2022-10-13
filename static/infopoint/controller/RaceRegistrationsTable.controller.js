@@ -12,7 +12,7 @@ sap.ui.define([
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this.getOwnerComponent().getRouter().getRoute("raceRegistrations").attachPatternMatched(this._loadModel, this);
+      this.getOwnerComponent().getRouter().getRoute("raceRegistrations").attachMatched(this._loadModel, this);
     },
 
     onNavBack: function () {
