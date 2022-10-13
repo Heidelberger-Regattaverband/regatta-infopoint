@@ -4,7 +4,7 @@
     <Page title="{i18n>common.offer}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <content>
 
-        <Table autoPopinMode="true" items="{races>/}" itemPress="onItemPress" growing="true" growingScrollToLoad="true" growingThreshold="50" sticky="ColumnHeaders" class="sapUiNoContentPadding">
+        <Table autoPopinMode="true" items="{races>/}" itemPress="onItemPress" growing="true" growingScrollToLoad="true" growingThreshold="50" sticky="ColumnHeaders" mode="SingleSelectMaster" class="sapUiNoContentPadding">
           <columns>
             <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
               <header>
@@ -47,7 +47,7 @@
                 <Text text="{races>raceMode}" />
                 <core:Icon src="sap-icon://cancel" size="15px" visible="{races>cancelled}" alt="{i18n>common.cancelled}" />
                 <Text text="{races>registrations}" />
-                </cells>
+              </cells>
             </ColumnListItem>
           </items>
         </Table>
