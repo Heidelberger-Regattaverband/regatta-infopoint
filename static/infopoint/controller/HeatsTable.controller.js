@@ -14,7 +14,7 @@ sap.ui.define([
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this.getOwnerComponent().getRouter().getRoute("heats").attachPatternMatched(function () {
+      this.getOwnerComponent().getRouter().getRoute("heats").attachMatched(function () {
         const oIconTabBar = this.byId("heatsIconTabBar");
         oIconTabBar.setSelectedKey("all");
       }, this);

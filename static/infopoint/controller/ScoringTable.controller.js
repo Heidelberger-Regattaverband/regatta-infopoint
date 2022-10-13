@@ -12,7 +12,7 @@ sap.ui.define([
 
       this.getView().addStyleClass(oComponent.getContentDensityClass());
 
-      oComponent.getRouter().getRoute("scoring").attachPatternMatched(this._loadScoringModel, this);
+      oComponent.getRouter().getRoute("scoring").attachMatched(this._loadScoringModel, this);
     },
 
     onNavBack: function () {

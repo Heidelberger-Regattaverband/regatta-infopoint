@@ -14,7 +14,7 @@ sap.ui.define([
 
       this.getView().addStyleClass(oComponent.getContentDensityClass());
 
-      oComponent.getRouter().getRoute("heats").attachPatternMatched(this._loadHeatsModel, this);
+      oComponent.getRouter().getRoute("heats").attachMatched(this._loadHeatsModel, this);
     },
 
     onNavBack: function () {
