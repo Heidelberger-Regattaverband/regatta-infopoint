@@ -22,11 +22,13 @@
           <f:header>
             <f:DynamicPageHeader>
               <layout:HorizontalLayout allowWrapping="true">
-                <layout:VerticalLayout>
+                <layout:VerticalLayout class="sapUiMediumMarginEnd">
                   <ObjectAttribute title="{i18n>common.distance}" text="{path: 'race>/', formatter: '.formatter.distanceLabel'}" />
-                  <ObjectAttribute title="{i18n>common.state}" text="{= ${race>/cancelled} ? ${i18n>common.raceCancelled} : ${i18n>common.raceDriven}}" />
                 </layout:VerticalLayout>
               </layout:HorizontalLayout>
+              <layout:VerticalLayout>
+                <ObjectAttribute title="{i18n>common.state}" text="{= ${race>/cancelled} ? ${i18n>common.raceCancelled} : ${i18n>common.raceDriven}}" />
+              </layout:VerticalLayout>
             </f:DynamicPageHeader>
           </f:header>
 
