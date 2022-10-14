@@ -33,7 +33,7 @@
             </Column>
             <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
               <header>
-                <Text text="{i18n>common.registrations}" class="bold" />
+                <Text text="{i18n>common.registrations}" class="bold" wrapping="false" />
               </header>
             </Column>
           </columns>
