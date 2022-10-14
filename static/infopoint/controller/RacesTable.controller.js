@@ -48,19 +48,21 @@ sap.ui.define([
     previousRace: function (channelId, eventId, parametersMap) {
       const iIndex = this.racesTable.indexOfItem(this.racesTable.getSelectedItem());
       const iPreviousIndex = iIndex > 1 ? iIndex - 1 : 0;
-      this.racesTable.setSelectedItem(this.racesTable.getItems()[iPreviousIndex]);
 
+      this.racesTable.setSelectedItem(this.racesTable.getItems()[iPreviousIndex]);
       const oRace = this.getViewModel("races").getData()[iPreviousIndex];
       this.getOwnerComponent().getModel("race").setData(oRace);
     },
 
     nextRace: function (channelId, eventId, parametersMap) {
+      const aRaces = this.getViewModel("races").getData();
       const iIndex = this.racesTable.indexOfItem(this.racesTable.getSelectedItem());
-      const iPreviousIndex = iIndex + 1;
-      this.racesTable.setSelectedItem(this.racesTable.getItems()[iPreviousIndex]);
+      const iNextIndex = iIndex < aRaces.length - 1 ? iIndex + 1 : iIndex;
 
-      const oRace = this.getViewModel("races").getData()[iPreviousIndex];
+      this.racesTable.setSelectedItem(this.racesTable.getItems()[iNextIndex]);
+      const oRace = aRaces[iNextIndex];
       this.getOwnerComponent().getModel("race").setData(oRace);
     }
+
   });
 });
