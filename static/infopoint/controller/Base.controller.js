@@ -5,6 +5,16 @@ sap.ui.define([
   "use strict";
 
   return Controller.extend("de.regatta_hd.infopoint.controller.Base", {
+
+    /**
+     * Convenience method for accessing the event bus for this component.
+     * @public
+     * @returns {sap.ui.core.EventBus} the event bus for this component
+     */
+    getEventBus: function () {
+      return this.getOwnerComponent().getEventBus();
+    },
+
     /**
      * Convenience method for accessing the router.
      * @public
