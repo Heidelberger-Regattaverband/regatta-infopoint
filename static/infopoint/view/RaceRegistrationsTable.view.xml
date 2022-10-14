@@ -36,12 +36,17 @@
               <columns>
                 <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
                   <header>
-                    <Text text="{i18n>common.bib}" class="bold" wrapping="false" />
+                    <Text text="{i18n>common.bib}" class="bold" />
                   </header>
                 </Column>
-                <Column hAlign="Begin" width="7rem" importance="High" popinDisplay="Inline">
+                <Column hAlign="Begin" width="8rem" importance="High" popinDisplay="Inline">
                   <header>
-                    <Text text="{i18n>common.boat}" class="bold" wrapping="false" />
+                    <Text text="{i18n>common.boat}" class="bold" />
+                  </header>
+                </Column>
+                <Column hAlign="Begin" width="7rem" importance="Low" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>common.clubRegistration}" class="bold" />
                   </header>
                 </Column>
                 <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
@@ -60,6 +65,7 @@
                       {path: 'raceRegistrations>boatNumber'},
                       {path: 'raceRegistrations>comment'}
                     ], formatter: '.formatter.boatLabel'}" />
+                    <Text text="{raceRegistrations>club/shortName}" />
                     <core:Icon src="sap-icon://cancel" size="15px" visible="{raceRegistrations>cancelled}" alt="{i18n>common.cancelled}" />
                   </cells>
                 </ColumnListItem>
