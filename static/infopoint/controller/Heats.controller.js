@@ -1,29 +1,22 @@
 sap.ui.define([
-  "sap/ui/core/mvc/Controller",
+  "de/regatta_hd/infopoint/controller/Base.controller",
   "sap/ui/model/json/JSONModel",
-  "sap/ui/core/routing/History",
   "../model/Formatter"
-], function (Controller, JSONModel, History, Formatter) {
+], function (BaseController, JSONModel, Formatter) {
   "use strict";
-  return Controller.extend("de.regatta_hd.infopoint.controller.Heats", {
+
+  return BaseController.extend("de.regatta_hd.infopoint.controller.Heats", {
 
     formatter: Formatter,
 
     onInit: function () {
-      const oComponent = this.getOwnerComponent();
+      this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this.getView().addStyleClass(oComponent.getContentDensityClass());
-
-      oComponent.getRouter().getRoute("heats").attachMatched(this._loadHeatsModel, this);
+      this.getRouter().getRoute("heats").attachMatched(this._loadHeatsModel, this);
     },
 
     onNavBack: function () {
-      const sPreviousHash = History.getInstance().getPreviousHash();
-      if (sPreviousHash) {
-        window.history.go(-1);
-      } else {
-        this.getOwnerComponent().getRouter().navTo("startpage", {}, false /* history*/);
-      }
+      this.navBack("startpage");
     },
 
     _loadHeatsModel: function () {
