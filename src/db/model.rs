@@ -7,17 +7,32 @@ pub const REGATTAS_QUERY: &str = "SELECT * FROM Event e";
 
 pub const REGATTA_QUERY: &str = "SELECT * FROM Event e WHERE e.Event_ID = @P1";
 
+pub const RACES_QUERY: &str = "SELECT o.*, rm.RaceMode_Title,
+    (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Count_Registrations
+    FROM Offer o
+    JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
+    WHERE o.Offer_Event_ID_FK = @P1 ORDER BY o.Offer_SortValue ASC";
+
+pub const REGISTRATIONS_QUERY: &str = "SELECT DISTINCT e.*, l.Label_Short
+    FROM Entry e
+    JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
+    JOIN Label AS l ON el.EL_Label_ID_FK = l.Label_ID
+    WHERE e.Entry_Race_ID_FK = @P1 AND el.EL_RoundFrom <= 64 AND 64 <= el.EL_RoundTo
+    ORDER BY e.Entry_Bib ASC";
+
 pub const HEATS_QUERY: &str =
-    "SELECT DISTINCT c.*, o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, ac.*, r.*
+    "SELECT DISTINCT c.*, ac.*, r.*, rm.RaceMode_Title,
+      o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
     FROM Comp AS c
     FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
+    JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
     FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
     FULL OUTER JOIN CompReferee AS cr ON cr.CompReferee_Comp_ID_FK = c.Comp_ID
     FULL OUTER JOIN Referee AS r ON r.Referee_ID = cr.CompReferee_Referee_ID_FK
     WHERE c.Comp_Event_ID_FK = @P1 ORDER BY c.Comp_DateTime ASC";
 
 pub const HEAT_REGISTRATION_QUERY: &str =
-    "SELECT	DISTINCT ce.*, e.Entry_Bib, e.Entry_BoatNumber, e.Entry_Comment, l.Label_Short, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta, bc.BoatClass_NumRowers
+    "SELECT	DISTINCT ce.*, e.Entry_Bib, e.Entry_ID, e.Entry_BoatNumber, e.Entry_Comment, e.Entry_CancelValue, l.Label_Short, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta, bc.BoatClass_NumRowers
     FROM CompEntries AS ce
     JOIN Comp AS c ON ce.CE_Comp_ID_FK = c.Comp_ID
     JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
@@ -29,7 +44,10 @@ pub const HEAT_REGISTRATION_QUERY: &str =
     WHERE ce.CE_Comp_ID_FK = @P1 AND (r.Result_SplitNr = 64 OR r.Result_SplitNr IS NULL)
       AND el.EL_RoundFrom <= c.Comp_Round AND c.Comp_Round <= el.EL_RoundTo";
 
-pub const SCORES_QUERY: &str = "SELECT s.rank, s.points, c.Club_Name, c.Club_Abbr FROM HRV_Score s JOIN Club AS c ON s.club_id = c.Club_ID WHERE s.event_id = @P1 ORDER BY s.rank ASC";
+pub const SCORES_QUERY: &str = "SELECT s.rank, s.points, c.Club_Name, c.Club_Abbr
+    FROM HRV_Score s
+    JOIN Club AS c ON s.club_id = c.Club_ID
+    WHERE s.event_id = @P1 ORDER BY s.rank ASC";
 
 pub fn create_score(row: &Row) -> Score {
     Score {
@@ -53,6 +71,25 @@ pub fn create_regatta(row: &Row) -> Regatta {
     }
 }
 
+pub fn create_race(row: &Row) -> Race {
+    let short_label: String = Column::get(row, "Offer_ShortLabel");
+    let long_label: String = Column::get(row, "Offer_LongLabel");
+    let comment: String = Column::get(row, "Offer_Comment");
+
+    Race {
+        id: Column::get(row, "Offer_ID"),
+        comment: comment.trim().to_owned(),
+        number: Column::get(row, "Offer_RaceNumber"),
+        short_label: short_label.trim().to_owned(),
+        long_label: long_label.trim().to_owned(),
+        distance: Column::get(row, "Offer_Distance"),
+        lightweight: Column::get(row, "Offer_IsLightweight"),
+        race_mode: Column::get(row, "RaceMode_Title"),
+        cancelled: Column::get(row, "Offer_Cancelled"),
+        registrations: Column::get(row, "Count_Registrations"),
+    }
+}
+
 pub fn create_heat(row: &Row) -> Heat {
     let date_time: NaiveDateTime = Column::get(row, "Comp_DateTime");
 
@@ -69,17 +106,6 @@ pub fn create_heat(row: &Row) -> Heat {
         time: date_time.time().to_string(),
         ac_num_sub_classes: Column::get(row, "AgeClass_NumSubClasses"),
         referee: create_referee(row),
-    }
-}
-
-pub fn create_race(row: &Row) -> Race {
-    let short_label: String = Column::get(row, "Offer_ShortLabel");
-    let comment: String = Column::get(row, "Offer_Comment");
-    Race {
-        comment: comment.trim().to_owned(),
-        number: Column::get(row, "Offer_RaceNumber"),
-        short_label: short_label.trim().to_owned(),
-        distance: Column::get(row, "Offer_Distance"),
     }
 }
 
@@ -133,12 +159,17 @@ pub fn create_heat_registration(row: &Row) -> HeatRegistration {
     }
 }
 
-fn create_registration(row: &Row) -> Registration {
+pub fn create_registration(row: &Row) -> Registration {
+    let cancel_value: u8 = Column::get(row, "Entry_CancelValue");
+    let cancelled = cancel_value > 0;
+
     Registration {
+        id: Column::get(row, "Entry_ID"),
         bib: Column::get(row, "Entry_Bib"),
         comment: Column::get(row, "Entry_Comment"),
         boat_number: Column::get(row, "Entry_BoatNumber"),
         short_label: Column::get(row, "Label_Short"),
+        cancelled,
     }
 }
 
@@ -163,12 +194,14 @@ pub struct Regatta {
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Registration {
+    id: i32,
     bib: i16,
     #[serde(rename = "boatNumber")]
     boat_number: i16,
     comment: String,
     #[serde(rename = "shortLabel")]
     short_label: String,
+    cancelled: bool,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -216,9 +249,17 @@ pub struct Referee {
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Race {
+    pub id: i32,
     number: String,
     #[serde(rename = "shortLabel")]
     short_label: String,
+    #[serde(rename = "longLabel")]
+    long_label: String,
     comment: String,
     distance: i16,
+    lightweight: bool,
+    #[serde(rename = "raceMode")]
+    race_mode: String,
+    cancelled: bool,
+    registrations: i32,
 }

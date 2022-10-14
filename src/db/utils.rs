@@ -27,7 +27,9 @@ impl Column for i16 {
 
 impl Column for i32 {
     fn get(row: &Row, col_name: &str) -> i32 {
-        row.try_get::<i32, _>(col_name).unwrap().unwrap_or_default()
+        row.try_get::<i32, _>(col_name)
+            .unwrap_or_default()
+            .unwrap_or_default()
     }
 }
 

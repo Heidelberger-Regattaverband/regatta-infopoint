@@ -1,10 +1,11 @@
-use super::model::{Heat, HeatRegistration, Regatta, Score};
+use super::model::{Heat, HeatRegistration, Race, Regatta, Score};
 use log::{debug, trace};
 use std::time::Duration;
 use stretto::AsyncCache;
 
 pub struct Cache {
     regatta_cache: AsyncCache<i32, Regatta>,
+    races_cache: AsyncCache<i32, Vec<Race>>,
     heats_cache: AsyncCache<i32, Vec<Heat>>,
     heat_regs_cache: AsyncCache<i32, Vec<HeatRegistration>>,
     scores_cache: AsyncCache<i32, Vec<Score>>,
@@ -17,16 +18,19 @@ impl Cache {
     pub fn new() -> Self {
         Cache {
             regatta_cache: AsyncCache::new(10, 1e6 as i64, async_std::task::spawn).unwrap(),
+            races_cache: AsyncCache::new(10, 1e6 as i64, async_std::task::spawn).unwrap(),
             heats_cache: AsyncCache::new(200 * 10, 1e6 as i64, async_std::task::spawn).unwrap(),
             heat_regs_cache: AsyncCache::new(200 * 10, 1e6 as i64, async_std::task::spawn).unwrap(),
             scores_cache: AsyncCache::new(10, 1e6 as i64, async_std::task::spawn).unwrap(),
         }
     }
 
-    pub async fn get_regatta(&self, regatta_id: i32) -> Option<Regatta> {
+    // regattas
+
+    pub fn get_regatta(&self, regatta_id: i32) -> Option<Regatta> {
         let opt_value_ref = self.regatta_cache.get(&regatta_id);
-        if opt_value_ref.is_some() {
-            let value_ref = opt_value_ref.unwrap();
+        // see also: https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html
+        if let Some(value_ref) = opt_value_ref {
             let value = value_ref.value().clone();
             value_ref.release();
             debug!("Reading regatta {} from cache.", regatta_id);
@@ -52,10 +56,10 @@ impl Cache {
         self.heats_cache.wait().await.unwrap();
     }
 
-    pub async fn get_heats(&self, regatta_id: i32) -> Option<Vec<Heat>> {
+    pub fn get_heats(&self, regatta_id: i32) -> Option<Vec<Heat>> {
         let opt_value_ref = self.heats_cache.get(&regatta_id);
-        if opt_value_ref.is_some() {
-            let value_ref = opt_value_ref.unwrap();
+        // see also: https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html
+        if let Some(value_ref) = opt_value_ref {
             let value = value_ref.value().clone();
             value_ref.release();
             debug!("Reading heats of regatta {} from cache.", regatta_id);
@@ -74,10 +78,10 @@ impl Cache {
         self.heat_regs_cache.wait().await.unwrap();
     }
 
-    pub async fn get_heat_regs(&self, heat_id: i32) -> Option<Vec<HeatRegistration>> {
+    pub fn get_heat_regs(&self, heat_id: i32) -> Option<Vec<HeatRegistration>> {
         let opt_value_ref = self.heat_regs_cache.get(&heat_id);
-        if opt_value_ref.is_some() {
-            let value_ref = opt_value_ref.unwrap();
+        // see also: https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html
+        if let Some(value_ref) = opt_value_ref {
             let value = value_ref.value().clone();
             value_ref.release();
             debug!("Reading registrations of heat {} from cache.", heat_id);
@@ -93,13 +97,34 @@ impl Cache {
         self.scores_cache
             .insert_with_ttl(regatta_id, scores.to_owned().clone(), 1, TTL)
             .await;
-        self.heat_regs_cache.wait().await.unwrap();
+        self.scores_cache.wait().await.unwrap();
     }
 
-    pub async fn get_scores(&self, regatta_id: i32) -> Option<Vec<Score>> {
+    pub fn get_scores(&self, regatta_id: i32) -> Option<Vec<Score>> {
         let opt_value_ref = self.scores_cache.get(&regatta_id);
-        if opt_value_ref.is_some() {
-            let value_ref = opt_value_ref.unwrap();
+        // see also: https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html
+        if let Some(value_ref) = opt_value_ref {
+            let value = value_ref.value().clone();
+            value_ref.release();
+            debug!("Reading scores of regatta {} from cache.", regatta_id);
+            trace!("From cache: {:?}", value);
+            return Some(value);
+        }
+        None
+    }
+
+    // races
+
+    pub async fn insert_races(&self, regatta_id: i32, races: &[Race]) {
+        self.races_cache
+            .insert_with_ttl(regatta_id, races.to_owned().clone(), 1, TTL)
+            .await;
+        self.races_cache.wait().await.unwrap();
+    }
+
+    pub(crate) fn get_races(&self, regatta_id: i32) -> Option<Vec<Race>> {
+        let opt_value_ref = self.races_cache.get(&regatta_id);
+        if let Some(value_ref) = opt_value_ref {
             let value = value_ref.value().clone();
             value_ref.release();
             debug!("Reading scores of regatta {} from cache.", regatta_id);
