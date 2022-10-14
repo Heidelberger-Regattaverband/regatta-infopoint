@@ -19,6 +19,16 @@ sap.ui.define([
       this.navBack("races");
     },
 
+    handlePrevious: function () {
+      this.getEventBus().publish("race", "previous", {});
+      this._loadModel();
+    },
+
+    handleNext: function () {
+      this.getEventBus().publish("race", "next", {});
+      this._loadModel();
+    },
+
     _loadModel: function () {
       const oRace = this.getOwnerComponent().getModel("race").getData();
       const oModel = new JSONModel();
