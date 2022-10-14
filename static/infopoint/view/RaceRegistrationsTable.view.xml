@@ -15,6 +15,11 @@
               <f:expandedContent>
                 <Label text="{race>/longLabel} {race>/comment}" />
               </f:expandedContent>
+
+              <f:navigationActions>
+                <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="handlePrevious" tooltip="Previous" />
+                <Button type="Transparent" icon="sap-icon://navigation-right-arrow" press="handleNext" tooltip="Next" />
+              </f:navigationActions>
             </f:DynamicPageTitle>
           </f:title>
 
@@ -34,8 +39,7 @@
 
           <!-- DynamicPage Content -->
           <f:content>
-            <Table autoPopinMode="true" items="{path: 'raceRegistrations>/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}" growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
-
+            <Table id="registrationsTable" autoPopinMode="true" items="{path: 'raceRegistrations>/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}" growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
               <columns>
                 <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
                   <header>

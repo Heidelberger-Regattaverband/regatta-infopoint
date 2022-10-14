@@ -10,15 +10,20 @@ sap.ui.define([
     formatter: Formatter,
 
     onInit: function () {
-      const oComponent = this.getOwnerComponent();
-      this.getView().addStyleClass(oComponent.getContentDensityClass());
-      oComponent.getRouter().getRoute("races").attachMatched(this._loadRacesModel, this);
+      this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
+      this.getRouter().getRoute("races").attachMatched(this._loadRacesModel, this);
+
+      this.getEventBus().subscribe("race", "previous", this.previousRace, this);
+      this.getEventBus().subscribe("race", "next", this.nextRace, this);
+
+      this.racesTable = this.getView().byId("racesTable");
     },
 
     onItemPress: function (oEvent) {
       const oSelectedItem = oEvent.getParameter("listItem");
       if (oSelectedItem) {
         const oBindingCtx = oSelectedItem.getBindingContext("races");
+
         const oRace = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
         this.getOwnerComponent().setModel(new JSONModel(oRace), "race");
 
@@ -36,9 +41,26 @@ sap.ui.define([
         const oRegatta = this.getOwnerComponent().getModel("regatta").getData();
         this.oRacesModel = new JSONModel();
         this.oRacesModel.loadData("/api/regattas/" + oRegatta.id + "/races");
-        this.getView().setModel(this.oRacesModel, "races");
+        this.setViewModel(this.oRacesModel, "races");
       }
-    }
+    },
 
+    previousRace: function (channelId, eventId, parametersMap) {
+      const iIndex = this.racesTable.indexOfItem(this.racesTable.getSelectedItem());
+      const iPreviousIndex = iIndex > 1 ? iIndex - 1 : 0;
+      this.racesTable.setSelectedItem(this.racesTable.getItems()[iPreviousIndex]);
+
+      const oRace = this.getViewModel("races").getData()[iPreviousIndex];
+      this.getOwnerComponent().getModel("race").setData(oRace);
+    },
+
+    nextRace: function (channelId, eventId, parametersMap) {
+      const iIndex = this.racesTable.indexOfItem(this.racesTable.getSelectedItem());
+      const iPreviousIndex = iIndex + 1;
+      this.racesTable.setSelectedItem(this.racesTable.getItems()[iPreviousIndex]);
+
+      const oRace = this.getViewModel("races").getData()[iPreviousIndex];
+      this.getOwnerComponent().getModel("race").setData(oRace);
+    }
   });
 });
