@@ -7,6 +7,16 @@
         <layout:HorizontalLayout allowWrapping="true">
           <layout:content>
 
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>common.offer}" press=".onNavToRaces">
+              <tileContent>
+                <TileContent>
+                  <content>
+                    <ImageContent src="sap-icon://list" />
+                  </content>
+                </TileContent>
+              </tileContent>
+            </GenericTile>
+
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.heatsTile.header}" subheader="{path: 'regatta>/startDate',formatter: '.formatter.dayLabel'} bis {path: 'regatta>/endDate',formatter: '.formatter.dayLabel'}" press=".onNavToHeats">
               <tileContent>
                 <TileContent>

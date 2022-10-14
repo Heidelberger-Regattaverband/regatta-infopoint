@@ -4,10 +4,14 @@ FROM rust:1.64.0
 
 LABEL maintainer="markus@ofterdinger.de"
 
-RUN apt-get update && apt-get upgrade -y
+RUN apt-get update && apt-get upgrade -y && rustup update stable
 
 WORKDIR /usr/src/infopoint
-COPY . .
+
+COPY Cargo.toml .
+COPY Cargo.lock .
+COPY src/ ./src/
+COPY static/ ./static/
 
 EXPOSE 8080
 

@@ -23,11 +23,10 @@ sap.ui.define([
         }
       }, this);
 
-      // let oRegatta = this.getOwnerComponent().getModel("regatta").getData();
-
-      // let oIconTabBar = this.byId("heatsIconTabBar");
-      // let sKey = oIconTabBar.getSelectedKey();
-      // this._setFilter(sKey);
+      this.getOwnerComponent().getRouter().getRoute("heats").attachMatched(function () {
+        const oIconTabBar = this.byId("heatsIconTabBar");
+        oIconTabBar.setSelectedKey("all");
+      }, this);
     },
 
     onSelectionChange: function (oEvent) {

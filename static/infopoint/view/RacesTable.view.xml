@@ -1,0 +1,59 @@
+<mvc:View xmlns:core="sap.ui.core" controllerName="de.regatta_hd.infopoint.controller.RacesTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
+  <mvc:content>
+
+    <Page title="{i18n>common.offer}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
+      <content>
+
+        <Table autoPopinMode="true" items="{races>/}" itemPress="onItemPress" growing="true" growingScrollToLoad="true" growingThreshold="50" sticky="ColumnHeaders" mode="SingleSelectMaster" class="sapUiNoContentPadding">
+          <columns>
+            <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.number}" class="bold" />
+              </header>
+            </Column>
+            <Column hAlign="Begin" width="12rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.race}" class="bold" />
+              </header>
+            </Column>
+            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.distance}" class="bold" />
+              </header>
+            </Column>
+            <Column hAlign="Center" width="7rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.raceMode}" class="bold" />
+              </header>
+            </Column>
+            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.state}" class="bold" />
+              </header>
+            </Column>
+            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.registrations}" class="bold" />
+              </header>
+            </Column>
+          </columns>
+
+          <items>
+            <ColumnListItem type="Navigation" vAlign="Top">
+              <cells>
+                <Text text="{races>number}" />
+                <ObjectIdentifier title="{path: 'races>', formatter: '.formatter.raceLabel'}" text="{races>longLabel} {races>comment}" />
+                <Text text="{path: 'races>', formatter: '.formatter.distanceLabel'}" />
+                <Text text="{races>raceMode}" />
+                <core:Icon src="sap-icon://cancel" size="15px" visible="{races>cancelled}" alt="{i18n>common.cancelled}" />
+                <Text text="{races>registrations}" />
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table>
+
+      </content>
+    </Page>
+
+  </mvc:content>
+</mvc:View>

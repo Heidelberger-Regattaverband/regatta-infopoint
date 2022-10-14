@@ -1,5 +1,5 @@
 {
-  "_version": "1.12.0",
+  "_version": "1.46.0",
   "sap.app": {
     "id": "de.regatta_hd.infopoint",
     "type": "application",
@@ -26,7 +26,8 @@
     "rootView": {
       "viewName": "de.regatta_hd.infopoint.view.App",
       "type": "XML",
-      "id": "app"
+      "id": "app",
+      "async": true
     },
     "dependencies": {
       "minUI5Version": "1.105.0",
@@ -54,7 +55,7 @@
       "config": {
         "routerClass": "sap.m.routing.Router",
         "viewType": "XML",
-        "viewPath": "de.regatta_hd.infopoint.view",
+        "path": "de.regatta_hd.infopoint.view",
         "controlId": "infopointApp",
         "controlAggregation": "pages",
         "transition": "slide",
@@ -62,7 +63,8 @@
           "target": [
             "startpage"
           ]
-        }
+        },
+        "async": true
       },
       "routes": [
         {
@@ -84,6 +86,16 @@
           "pattern": "scoring",
           "name": "scoring",
           "target": "scoring"
+        },
+        {
+          "pattern": "races",
+          "name": "races",
+          "target": "races"
+        },
+        {
+          "pattern": "raceRegistrations",
+          "name": "raceRegistrations",
+          "target": "raceRegistrations"
         }
       ],
       "targets": {
@@ -102,6 +114,14 @@
         "scoring": {
           "viewName": "ScoringTable",
           "viewLevel": 1
+        },
+        "races": {
+          "viewName": "RacesTable",
+          "viewLevel": 1
+        },
+        "raceRegistrations": {
+          "viewName": "RaceRegistrationsTable",
+          "viewLevel": 2
         }
       }
     },
