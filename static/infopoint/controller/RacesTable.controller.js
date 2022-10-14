@@ -49,9 +49,11 @@ sap.ui.define([
       const iIndex = this.racesTable.indexOfItem(this.racesTable.getSelectedItem());
       const iPreviousIndex = iIndex > 1 ? iIndex - 1 : 0;
 
-      this.racesTable.setSelectedItem(this.racesTable.getItems()[iPreviousIndex]);
-      const oRace = this.getViewModel("races").getData()[iPreviousIndex];
-      this.getOwnerComponent().getModel("race").setData(oRace);
+      if (iIndex != iPreviousIndex) {
+        this.racesTable.setSelectedItem(this.racesTable.getItems()[iPreviousIndex]);
+        const oRace = this.getViewModel("races").getData()[iPreviousIndex];
+        this.getOwnerComponent().getModel("race").setData(oRace);
+      }
     },
 
     nextRace: function (channelId, eventId, parametersMap) {
@@ -59,9 +61,11 @@ sap.ui.define([
       const iIndex = this.racesTable.indexOfItem(this.racesTable.getSelectedItem());
       const iNextIndex = iIndex < aRaces.length - 1 ? iIndex + 1 : iIndex;
 
-      this.racesTable.setSelectedItem(this.racesTable.getItems()[iNextIndex]);
-      const oRace = aRaces[iNextIndex];
-      this.getOwnerComponent().getModel("race").setData(oRace);
+      if (iIndex != iNextIndex) {
+        this.racesTable.setSelectedItem(this.racesTable.getItems()[iNextIndex]);
+        const oRace = aRaces[iNextIndex];
+        this.getOwnerComponent().getModel("race").setData(oRace);
+      }
     }
 
   });
