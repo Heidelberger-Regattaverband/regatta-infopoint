@@ -1,18 +1,10 @@
 <mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatsTable" xmlns="sap.m" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core">
   <mvc:content>
 
-    <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
-      <!-- DynamicPage Title -->
-      <!-- <f:title>
-      <f:DynamicPageTitle>
-        <f:actions>
-          <OverflowToolbarButton type="Transparent" icon="sap-icon://refresh" press="handleRefresh" tooltip="Refresh" />
-        </f:actions>
-      </f:DynamicPageTitle>
-    </f:title> -->
+    <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
+    <Page title="{i18n>launchpad.heatsTile.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
+      <content>
 
-      <!-- DynamicPage Content -->
-      <f:content>
         <IconTabBar id="heatsIconTabBar" select=".onFilterSelect" stretchContentHeight="true" class="sapUiNoContentPadding">
           <items>
             <IconTabFilter text="{i18n>common.all}" key="all" />
@@ -26,8 +18,8 @@
           </content>
         </IconTabBar>
 
-      </f:content>
-    </f:DynamicPage>
+      </content>
+    </Page>
 
   </mvc:content>
 </mvc:View>

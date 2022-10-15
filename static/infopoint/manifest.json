@@ -78,6 +78,11 @@
           "target": "heats"
         },
         {
+          "pattern": "heatRegistrations",
+          "name": "heatRegistrations",
+          "target": "heatRegistrations"
+        },
+        {
           "pattern": "scoring",
           "name": "scoring",
           "target": "scoring"
@@ -99,8 +104,12 @@
           "viewLevel": 0
         },
         "heats": {
-          "viewName": "Heats",
+          "viewName": "HeatsTable",
           "viewLevel": 1
+        },
+        "heatRegistrations": {
+          "viewName": "HeatRegistrationsTable",
+          "viewLevel": 2
         },
         "scoring": {
           "viewName": "ScoringTable",

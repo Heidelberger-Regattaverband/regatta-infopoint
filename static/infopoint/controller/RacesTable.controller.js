@@ -11,6 +11,7 @@ sap.ui.define([
 
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
+
       this.getRouter().getRoute("races").attachMatched(this._loadRacesModel, this);
 
       this.getEventBus().subscribe("race", "previous", this.previousRace, this);
@@ -36,15 +37,6 @@ sap.ui.define([
       this.navBack("startpage");
     },
 
-    _loadRacesModel: function () {
-      if (!this.oRacesModel) {
-        const oRegatta = this.getOwnerComponent().getModel("regatta").getData();
-        this.oRacesModel = new JSONModel();
-        this.oRacesModel.loadData("/api/regattas/" + oRegatta.id + "/races");
-        this.setViewModel(this.oRacesModel, "races");
-      }
-    },
-
     previousRace: function (channelId, eventId, parametersMap) {
       const iIndex = this.racesTable.indexOfItem(this.racesTable.getSelectedItem());
       const iPreviousIndex = iIndex > 1 ? iIndex - 1 : 0;
@@ -66,8 +58,16 @@ sap.ui.define([
 
       if (iIndex != iNextIndex) {
         this.racesTable.setSelectedItem(this.racesTable.getItems()[iNextIndex]);
-        const oRace = aRaces[iNextIndex];
-        this.getOwnerComponent().getModel("race").setData(oRace);
+        this.getOwnerComponent().getModel("race").setData(aRaces[iNextIndex]);
+      }
+    },
+
+    _loadRacesModel: function () {
+      if (!this.oRacesModel) {
+        const oRegatta = this.getOwnerComponent().getModel("regatta").getData();
+        this.oRacesModel = new JSONModel();
+        this.oRacesModel.loadData("/api/regattas/" + oRegatta.id + "/races");
+        this.setViewModel(this.oRacesModel, "races");
       }
     },
 

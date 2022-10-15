@@ -1,26 +1,38 @@
 sap.ui.define([
-  "sap/ui/core/mvc/Controller",
-  "sap/f/library",
+  "de/regatta_hd/infopoint/controller/Base.controller",
+  "sap/ui/model/json/JSONModel",
   "../model/Formatter"
-], function (Controller, fioriLibrary, Formatter) {
+], function (BaseController, JSONModel, Formatter) {
   "use strict";
-  return Controller.extend("de.regatta_hd.infopoint.controller.HeatRegistrationsTable", {
+
+  return BaseController.extend("de.regatta_hd.infopoint.controller.HeatRegistrationsTable", {
 
     formatter: Formatter,
 
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
+      this.getRouter().getRoute("heatRegistrations").attachMatched(this._loadModel, this);
     },
 
-    handleClose: function () {
-      const oFCL = this.getView().getParent().getParent();
-      oFCL.setLayout(fioriLibrary.LayoutType.OneColumn);
+    onNavBack: function () {
+      this.navBack("heats");
     },
 
     handlePrevious: function () {
+      this.getEventBus().publish("heat", "previous", {});
+      this._loadModel();
     },
 
     handleNext: function () {
+      this.getEventBus().publish("heat", "next", {});
+      this._loadModel();
+    },
+
+    _loadModel: function () {
+      const oHeat = this.getOwnerComponent().getModel("heat").getData();
+      const oModel = new JSONModel();
+      oModel.loadData("/api/heats/" + oHeat.id + "/registrations");
+      this.getOwnerComponent().setModel(oModel, "heatRegistrations");
     }
 
   });
