@@ -1,11 +1,11 @@
 sap.ui.define([
-  "sap/ui/core/mvc/Controller",
+  "de/regatta_hd/infopoint/controller/Base.controller",
   "sap/ui/model/json/JSONModel",
-  "sap/ui/core/routing/History",
   "../model/Formatter"
-], function (Controller, JSONModel, History, Formatter) {
+], function (BaseController, JSONModel, Formatter) {
   "use strict";
-  return Controller.extend("de.regatta_hd.infopoint.controller.RaceRegistrationsTable", {
+
+  return BaseController.extend("de.regatta_hd.infopoint.controller.RaceRegistrationsTable", {
 
     formatter: Formatter,
 
@@ -16,12 +16,17 @@ sap.ui.define([
     },
 
     onNavBack: function () {
-      const sPreviousHash = History.getInstance().getPreviousHash();
-      if (sPreviousHash) {
-        window.history.go(-1);
-      } else {
-        this.getOwnerComponent().getRouter().navTo("races", {}, false /* history */);
-      }
+      this.navBack("races");
+    },
+
+    handlePrevious: function () {
+      this.getEventBus().publish("race", "previous", {});
+      this._loadModel();
+    },
+
+    handleNext: function () {
+      this.getEventBus().publish("race", "next", {});
+      this._loadModel();
     },
 
     _loadModel: function () {

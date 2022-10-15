@@ -1,27 +1,19 @@
 sap.ui.define([
-  "sap/ui/core/mvc/Controller",
-  "sap/ui/model/json/JSONModel",
-  "sap/ui/core/routing/History"
-], function (Controller, JSONModel, History) {
+  "de/regatta_hd/infopoint/controller/Base.controller",
+  "sap/ui/model/json/JSONModel"
+], function (BaseController, JSONModel) {
   "use strict";
 
-  return Controller.extend("de.regatta_hd.infopoint.controller.ScoresTable", {
+  return BaseController.extend("de.regatta_hd.infopoint.controller.ScoresTable", {
 
     onInit: function () {
-      const oComponent = this.getOwnerComponent();
+      this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this.getView().addStyleClass(oComponent.getContentDensityClass());
-
-      oComponent.getRouter().getRoute("scoring").attachMatched(this._loadScoringModel, this);
+      this.getRouter().getRoute("scoring").attachMatched(this._loadScoringModel, this);
     },
 
     onNavBack: function () {
-      const sPreviousHash = History.getInstance().getPreviousHash();
-      if (sPreviousHash) {
-        window.history.go(-1);
-      } else {
-        this.getOwnerComponent().getRouter().navTo("startpage", {}, false /* history */);
-      }
+      this.navBack("startpage");
     },
 
     _loadScoringModel: function () {
