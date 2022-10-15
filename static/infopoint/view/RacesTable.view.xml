@@ -45,7 +45,7 @@
                 <ObjectIdentifier title="{path: 'races>', formatter: '.formatter.raceLabel'}" text="{races>longLabel} {races>comment}" />
                 <Text text="{path: 'races>', formatter: '.formatter.distanceLabel'}" />
                 <Text text="{races>raceMode}" />
-                <core:Icon src="{= ${races>cancelled} ? 'sap-icon://cancel' : 'sap-icon://accept'}" size="15px" alt="{i18n>common.cancelled}" />
+                <core:Icon src="{= ${races>cancelled} ? 'sap-icon://cancel' : 'sap-icon://accept'}" alt="{i18n>common.cancelled}" />
                 <Text text="{races>registrations}" />
               </cells>
             </ColumnListItem>
