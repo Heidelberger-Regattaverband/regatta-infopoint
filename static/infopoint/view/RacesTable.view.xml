@@ -4,7 +4,7 @@
     <Page title="{i18n>common.offer}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <content>
 
-        <Table id="racesTable" autoPopinMode="true" items="{races>/}" itemPress="onItemPress" growing="true" growingScrollToLoad="true" growingThreshold="50" sticky="ColumnHeaders" mode="SingleSelectMaster" class="sapUiNoContentPadding">
+        <Table id="racesTable" autoPopinMode="true" items="{races>/}" itemPress="onItemPress" growing="true" growingScrollToLoad="true" growingThreshold="200" sticky="ColumnHeaders" mode="SingleSelectMaster" class="sapUiNoContentPadding">
           <columns>
             <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
               <header>
