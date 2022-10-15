@@ -1,5 +1,6 @@
 <mvc:View xmlns:core="sap.ui.core" controllerName="de.regatta_hd.infopoint.controller.RaceRegistrationsTable" xmlns="sap.m" xmlns:f="sap.f" xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
+
     <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
     <Page title="{i18n>common.registrations}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <content>
@@ -72,10 +73,10 @@
                     <cells>
                       <Text text="{raceRegistrations>bib}" />
                       <Text text="{parts:[
-                      {path: 'raceRegistrations>shortLabel'},
-                      {path: 'raceRegistrations>boatNumber'},
-                      {path: 'raceRegistrations>comment'}
-                    ], formatter: '.formatter.boatLabel'}" />
+                        {path: 'raceRegistrations>shortLabel'},
+                        {path: 'raceRegistrations>boatNumber'},
+                        {path: 'raceRegistrations>comment'}],
+                        formatter: '.formatter.boatLabel'}" />
                       <Text text="{raceRegistrations>club/shortName}" />
                       <core:Icon src="{= ${raceRegistrations>cancelled} ? 'sap-icon://cancel' : 'sap-icon://accept'}" size="15px" alt="{i18n>common.cancelled}" />
                     </cells>
