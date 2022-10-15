@@ -13,10 +13,11 @@ pub const RACES_QUERY: &str = "SELECT o.*, rm.RaceMode_Title,
     JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
     WHERE o.Offer_Event_ID_FK = @P1 ORDER BY o.Offer_SortValue ASC";
 
-pub const REGISTRATIONS_QUERY: &str = "SELECT DISTINCT e.*, l.Label_Short
+pub const REGISTRATIONS_QUERY: &str = "SELECT DISTINCT e.*, l.Label_Short, c.Club_ID, c.Club_Abbr, c.Club_City
     FROM Entry e
     JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
     JOIN Label AS l ON el.EL_Label_ID_FK = l.Label_ID
+    JOIN Club AS c ON c.Club_ID = e.Entry_OwnerClub_ID_FK
     WHERE e.Entry_Race_ID_FK = @P1 AND el.EL_RoundFrom <= 64 AND 64 <= el.EL_RoundTo
     ORDER BY e.Entry_Bib ASC";
 
@@ -32,7 +33,7 @@ pub const HEATS_QUERY: &str =
     WHERE c.Comp_Event_ID_FK = @P1 ORDER BY c.Comp_DateTime ASC";
 
 pub const HEAT_REGISTRATION_QUERY: &str =
-    "SELECT	DISTINCT ce.*, e.Entry_Bib, e.Entry_ID, e.Entry_BoatNumber, e.Entry_Comment, e.Entry_CancelValue, l.Label_Short, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta, bc.BoatClass_NumRowers
+    "SELECT	DISTINCT ce.*, e.Entry_Bib, e.Entry_ID, e.Entry_BoatNumber, e.Entry_Comment, e.Entry_CancelValue, l.Label_Short, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta, bc.BoatClass_NumRowers, cl.Club_ID, cl.Club_Abbr, cl.Club_City
     FROM CompEntries AS ce
     JOIN Comp AS c ON ce.CE_Comp_ID_FK = c.Comp_ID
     JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
@@ -41,19 +42,30 @@ pub const HEAT_REGISTRATION_QUERY: &str =
     FULL OUTER JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
     FULL OUTER JOIN Label AS l ON el.EL_Label_ID_FK = l.Label_ID
     FULL OUTER JOIN Result AS r ON r.Result_CE_ID_FK = ce.CE_ID
+    JOIN Club AS cl ON cl.Club_ID = e.Entry_OwnerClub_ID_FK
     WHERE ce.CE_Comp_ID_FK = @P1 AND (r.Result_SplitNr = 64 OR r.Result_SplitNr IS NULL)
       AND el.EL_RoundFrom <= c.Comp_Round AND c.Comp_Round <= el.EL_RoundTo";
 
-pub const SCORES_QUERY: &str = "SELECT s.rank, s.points, c.Club_Name, c.Club_Abbr
+pub const SCORES_QUERY: &str = "SELECT s.rank, s.points, c.Club_Name, c.Club_Abbr, c.Club_City
     FROM HRV_Score s
     JOIN Club AS c ON s.club_id = c.Club_ID
     WHERE s.event_id = @P1 ORDER BY s.rank ASC";
 
 pub fn create_score(row: &Row) -> Score {
+    let club = create_club(row);
+
     Score {
         rank: Column::get(row, "rank"),
-        club_short_label: Column::get(row, "Club_Abbr"),
         points: Column::get(row, "points"),
+        club,
+    }
+}
+
+pub fn create_club(row: &Row) -> Club {
+    Club {
+        id: Column::get(row, "Club_ID"),
+        short_name: Column::get(row, "Club_Abbr"),
+        city: Column::get(row, "Club_City"),
     }
 }
 
@@ -170,14 +182,23 @@ pub fn create_registration(row: &Row) -> Registration {
         boat_number: Column::get(row, "Entry_BoatNumber"),
         short_label: Column::get(row, "Label_Short"),
         cancelled,
+        club: create_club(row),
     }
 }
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Score {
     rank: i16,
-    club_short_label: String,
     points: f64,
+    club: Club,
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct Club {
+    id: i32,
+    #[serde(rename = "shortName")]
+    short_name: String,
+    city: String,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -201,6 +222,7 @@ pub struct Registration {
     comment: String,
     #[serde(rename = "shortLabel")]
     short_label: String,
+    club: Club,
     cancelled: bool,
 }
 

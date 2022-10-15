@@ -7,7 +7,7 @@
         <layout:HorizontalLayout allowWrapping="true">
           <layout:content>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>common.offer}" press=".onNavToRaces">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>common.offerAndRegistrations}" press=".onNavToRaces">
               <tileContent>
                 <TileContent>
                   <content>

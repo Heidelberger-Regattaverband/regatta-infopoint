@@ -1,25 +1,29 @@
 sap.ui.define([
-  "sap/ui/core/mvc/Controller",
+  "de/regatta_hd/infopoint/controller/Base.controller",
   "sap/ui/model/json/JSONModel",
-  "sap/ui/core/routing/History",
   "../model/Formatter"
-], function (Controller, JSONModel, History, Formatter) {
+], function (BaseController, JSONModel, Formatter) {
   "use strict";
 
-  return Controller.extend("de.regatta_hd.infopoint.controller.RacesTable", {
+  return BaseController.extend("de.regatta_hd.infopoint.controller.RacesTable", {
 
     formatter: Formatter,
 
     onInit: function () {
-      const oComponent = this.getOwnerComponent();
-      this.getView().addStyleClass(oComponent.getContentDensityClass());
-      oComponent.getRouter().getRoute("races").attachMatched(this._loadRacesModel, this);
+      this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
+      this.getRouter().getRoute("races").attachMatched(this._loadRacesModel, this);
+
+      this.getEventBus().subscribe("race", "previous", this.previousRace, this);
+      this.getEventBus().subscribe("race", "next", this.nextRace, this);
+
+      this.racesTable = this.getView().byId("racesTable");
     },
 
     onItemPress: function (oEvent) {
       const oSelectedItem = oEvent.getParameter("listItem");
       if (oSelectedItem) {
         const oBindingCtx = oSelectedItem.getBindingContext("races");
+
         const oRace = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
         this.getOwnerComponent().setModel(new JSONModel(oRace), "race");
 
@@ -29,13 +33,7 @@ sap.ui.define([
 
     onNavBack: function () {
       this.oRacesModel = undefined;
-
-      const sPreviousHash = History.getInstance().getPreviousHash();
-      if (sPreviousHash) {
-        window.history.go(-1);
-      } else {
-        this.getOwnerComponent().getRouter().navTo("startpage", {}, false /* history */);
-      }
+      this.navBack("startpage");
     },
 
     _loadRacesModel: function () {
@@ -43,9 +41,42 @@ sap.ui.define([
         const oRegatta = this.getOwnerComponent().getModel("regatta").getData();
         this.oRacesModel = new JSONModel();
         this.oRacesModel.loadData("/api/regattas/" + oRegatta.id + "/races");
-        this.getView().setModel(this.oRacesModel, "races");
+        this.setViewModel(this.oRacesModel, "races");
+      }
+    },
+
+    previousRace: function (channelId, eventId, parametersMap) {
+      const iIndex = this.racesTable.indexOfItem(this.racesTable.getSelectedItem());
+      const iPreviousIndex = iIndex > 1 ? iIndex - 1 : 0;
+
+      if (iIndex != iPreviousIndex) {
+        this.racesTable.setSelectedItem(this.racesTable.getItems()[iPreviousIndex]);
+        const oRace = this.getViewModel("races").getData()[iPreviousIndex];
+        this.getOwnerComponent().getModel("race").setData(oRace);
+      }
+    },
+
+    nextRace: function (channelId, eventId, parametersMap) {
+      const aRaces = this.getViewModel("races").getData();
+
+      this._fetchAll(aRaces);
+
+      const iIndex = this.racesTable.indexOfItem(this.racesTable.getSelectedItem());
+      const iNextIndex = iIndex < aRaces.length - 1 ? iIndex + 1 : iIndex;
+
+      if (iIndex != iNextIndex) {
+        this.racesTable.setSelectedItem(this.racesTable.getItems()[iNextIndex]);
+        const oRace = aRaces[iNextIndex];
+        this.getOwnerComponent().getModel("race").setData(oRace);
+      }
+    },
+
+    _fetchAll: function (aRaces) {
+      const iActual = this.racesTable.getGrowingInfo().actual;
+      if (aRaces.length > iActual) {
+        this.racesTable.setGrowingThreshold(aRaces.length);
+        this.racesTable.getBinding("items").filter([]);
       }
     }
-
   });
 });

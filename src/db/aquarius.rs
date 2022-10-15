@@ -1,11 +1,10 @@
-use crate::db::model::{create_race, create_registration, RACES_QUERY, REGISTRATIONS_QUERY};
-
 use super::{
     cache::Cache,
     model::{
-        create_heat, create_heat_registration, create_regatta, create_score, Heat,
-        HeatRegistration, Race, Regatta, Registration, Score, HEATS_QUERY, HEAT_REGISTRATION_QUERY,
-        REGATTAS_QUERY, REGATTA_QUERY, SCORES_QUERY,
+        create_heat, create_heat_registration, create_race, create_regatta, create_registration,
+        create_score, Heat, HeatRegistration, Race, Regatta, Registration, Score, HEATS_QUERY,
+        HEAT_REGISTRATION_QUERY, RACES_QUERY, REGATTAS_QUERY, REGATTA_QUERY, REGISTRATIONS_QUERY,
+        SCORES_QUERY,
     },
     pool::create_pool,
     TiberiusPool,
