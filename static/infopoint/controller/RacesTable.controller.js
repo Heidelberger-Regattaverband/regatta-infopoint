@@ -51,7 +51,7 @@ sap.ui.define([
     nextRace: function (channelId, eventId, parametersMap) {
       const aRaces = this.getViewModel("races").getData();
 
-      this._fetchAll(aRaces);
+      this._growTable(aRaces);
 
       const iIndex = this.racesTable.indexOfItem(this.racesTable.getSelectedItem());
       const iNextIndex = iIndex < aRaces.length - 1 ? iIndex + 1 : iIndex;
@@ -71,10 +71,10 @@ sap.ui.define([
       }
     },
 
-    _fetchAll: function (aRaces) {
+    _growTable: function (aRaces) {
       const iActual = this.racesTable.getGrowingInfo().actual;
       if (aRaces.length > iActual) {
-        this.racesTable.setGrowingThreshold(aRaces.length);
+        this.racesTable.setGrowingThreshold(iActual + 20);
         this.racesTable.getBinding("items").filter([]);
       }
     }
