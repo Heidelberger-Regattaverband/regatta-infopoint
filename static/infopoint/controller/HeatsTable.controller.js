@@ -74,7 +74,7 @@ sap.ui.define([
     nextHeat: function (channelId, eventId, parametersMap) {
       const aHeats = this.getViewModel("heats").getData();
 
-      this._fetchAll(aHeats);
+      this._growTable(aHeats);
 
       const iIndex = this.heatsTable.indexOfItem(this.heatsTable.getSelectedItem());
       const iNextIndex = iIndex < aHeats.length - 1 ? iIndex + 1 : iIndex;
@@ -94,10 +94,10 @@ sap.ui.define([
       }
     },
 
-    _fetchAll: function (aHeats) {
+    _growTable: function (aHeats) {
       const iActual = this.heatsTable.getGrowingInfo().actual;
       if (aHeats.length > iActual) {
-        this.heatsTable.setGrowingThreshold(aHeats.length);
+        this.heatsTable.setGrowingThreshold(iActual + 20);
         this.heatsTable.getBinding("items").filter([]);
       }
     }
