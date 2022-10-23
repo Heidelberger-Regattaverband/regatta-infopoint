@@ -1,8 +1,7 @@
 use super::{
     cache::Cache,
     model::{
-        create_heat, create_heat_registration, create_race, create_regatta, create_registration,
-        create_score, Heat, HeatRegistration, Race, Regatta, Registration, Score, HEATS_QUERY,
+        Heat, HeatRegistration, Race, Regatta, Registration, Score, HEATS_QUERY,
         HEAT_REGISTRATION_QUERY, RACES_QUERY, REGATTAS_QUERY, REGATTA_QUERY, REGISTRATIONS_QUERY,
         SCORES_QUERY,
     },
@@ -40,7 +39,7 @@ impl Aquarius {
         let mut regattas: Vec<Regatta> = Vec::with_capacity(rows.len());
 
         for row in &rows {
-            let regatta = create_regatta(row);
+            let regatta = Regatta::new(row);
             self.cache.insert_regatta(&regatta).await;
             trace!("{:?}", regatta);
             regattas.push(regatta);
@@ -69,7 +68,7 @@ impl Aquarius {
             .into_row()
             .await?
             .unwrap();
-        let regatta = create_regatta(&row);
+        let regatta = Regatta::new(&row);
 
         // 3. store regatta in cache
         self.cache.insert_regatta(&regatta).await;
@@ -86,7 +85,7 @@ impl Aquarius {
 
         // 2. read races from DB
         let mut client = self.pool.get().await.unwrap();
-        debug!("Query races from DB");
+        debug!("Query races for regatta {} from DB", regatta_id);
         trace!("Execute query {}", RACES_QUERY);
         let rows = client
             .query(RACES_QUERY, &[&regatta_id])
@@ -95,7 +94,7 @@ impl Aquarius {
             .await?;
         let mut races: Vec<Race> = Vec::with_capacity(rows.len());
         for row in &rows {
-            let race = create_race(row);
+            let race = Race::new(row);
             trace!("{:?}", race);
             races.push(race);
         }
@@ -106,9 +105,9 @@ impl Aquarius {
         Ok(races)
     }
 
-    pub async fn get_registrations(&self, race_id: i32) -> Result<Vec<Registration>> {
+    pub async fn get_race_registrations(&self, race_id: i32) -> Result<Vec<Registration>> {
         let mut client = self.pool.get().await.unwrap();
-        debug!("Query races from DB");
+        debug!("Query registrations for race {} from DB", race_id);
         trace!("Execute query {}", REGISTRATIONS_QUERY);
         let rows = client
             .query(REGISTRATIONS_QUERY, &[&race_id])
@@ -117,7 +116,7 @@ impl Aquarius {
             .await?;
         let mut registrations: Vec<Registration> = Vec::with_capacity(rows.len());
         for row in &rows {
-            let registration = create_registration(row);
+            let registration = Registration::new(row);
             trace!("{:?}", registration);
             registrations.push(registration);
         }
@@ -143,7 +142,7 @@ impl Aquarius {
             .await?;
         let mut heats: Vec<Heat> = Vec::with_capacity(rows.len());
         for row in &rows {
-            let heat = create_heat(row);
+            let heat = Heat::new(row);
             trace!("{:?}", heat);
             heats.push(heat);
         }
@@ -172,7 +171,7 @@ impl Aquarius {
             .await?;
         let mut heat_regs: Vec<HeatRegistration> = Vec::with_capacity(rows.len());
         for row in &rows {
-            let heat_registration = create_heat_registration(row);
+            let heat_registration = HeatRegistration::new(row);
             trace!("{:?}", heat_registration);
             heat_regs.push(heat_registration);
         }
@@ -201,7 +200,7 @@ impl Aquarius {
             .await?;
         let mut scores: Vec<Score> = Vec::with_capacity(rows.len());
         for row in &rows {
-            let score = create_score(row);
+            let score = Score::new(row);
             trace!("{:?}", score);
             scores.push(score);
         }

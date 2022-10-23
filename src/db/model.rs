@@ -13,7 +13,8 @@ pub const RACES_QUERY: &str = "SELECT o.*, rm.RaceMode_Title,
     JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
     WHERE o.Offer_Event_ID_FK = @P1 ORDER BY o.Offer_SortValue ASC";
 
-pub const REGISTRATIONS_QUERY: &str = "SELECT DISTINCT e.*, l.Label_Short, c.Club_ID, c.Club_Abbr, c.Club_City
+pub const REGISTRATIONS_QUERY: &str =
+    "SELECT DISTINCT e.*, l.Label_Short, c.Club_ID, c.Club_Abbr, c.Club_City
     FROM Entry e
     JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
     JOIN Label AS l ON el.EL_Label_ID_FK = l.Label_ID
@@ -51,146 +52,20 @@ pub const SCORES_QUERY: &str = "SELECT s.rank, s.points, c.Club_Name, c.Club_Abb
     JOIN Club AS c ON s.club_id = c.Club_ID
     WHERE s.event_id = @P1 ORDER BY s.rank ASC";
 
-pub fn create_score(row: &Row) -> Score {
-    let club = create_club(row);
-
-    Score {
-        rank: Column::get(row, "rank"),
-        points: Column::get(row, "points"),
-        club,
-    }
-}
-
-pub fn create_club(row: &Row) -> Club {
-    Club {
-        id: Column::get(row, "Club_ID"),
-        short_name: Column::get(row, "Club_Abbr"),
-        city: Column::get(row, "Club_City"),
-    }
-}
-
-pub fn create_regatta(row: &Row) -> Regatta {
-    let start_date: NaiveDateTime = Column::get(row, "Event_StartDate");
-    let end_date: NaiveDateTime = Column::get(row, "Event_EndDate");
-
-    Regatta {
-        id: Column::get(row, "Event_ID"),
-        title: Column::get(row, "Event_Title"),
-        sub_title: Column::get(row, "Event_SubTitle"),
-        venue: Column::get(row, "Event_Venue"),
-        start_date: start_date.date().to_string(),
-        end_date: end_date.date().to_string(),
-    }
-}
-
-pub fn create_race(row: &Row) -> Race {
-    let short_label: String = Column::get(row, "Offer_ShortLabel");
-    let long_label: String = Column::get(row, "Offer_LongLabel");
-    let comment: String = Column::get(row, "Offer_Comment");
-
-    Race {
-        id: Column::get(row, "Offer_ID"),
-        comment: comment.trim().to_owned(),
-        number: Column::get(row, "Offer_RaceNumber"),
-        short_label: short_label.trim().to_owned(),
-        long_label: long_label.trim().to_owned(),
-        distance: Column::get(row, "Offer_Distance"),
-        lightweight: Column::get(row, "Offer_IsLightweight"),
-        race_mode: Column::get(row, "RaceMode_Title"),
-        cancelled: Column::get(row, "Offer_Cancelled"),
-        registrations: Column::get(row, "Count_Registrations"),
-    }
-}
-
-pub fn create_heat(row: &Row) -> Heat {
-    let date_time: NaiveDateTime = Column::get(row, "Comp_DateTime");
-
-    Heat {
-        id: Column::get(row, "Comp_ID"),
-        race: create_race(row),
-        number: Column::get(row, "Comp_Number"),
-        round_code: Column::get(row, "Comp_RoundCode"),
-        label: Column::get(row, "Comp_Label"),
-        group_value: Column::get(row, "Comp_GroupValue"),
-        state: Column::get(row, "Comp_State"),
-        cancelled: Column::get(row, "Comp_Cancelled"),
-        date: date_time.date().to_string(),
-        time: date_time.time().to_string(),
-        ac_num_sub_classes: Column::get(row, "AgeClass_NumSubClasses"),
-        referee: create_referee(row),
-    }
-}
-
-fn create_referee(row: &Row) -> Referee {
-    let last_name: String = Column::get(row, "Referee_LastName");
-    let first_name: String = Column::get(row, "Referee_FirstName");
-    if last_name.is_empty() && first_name.is_empty() {
-        return Default::default();
-    }
-    Referee {
-        last_name,
-        first_name,
-    }
-}
-
-pub fn create_heat_registration(row: &Row) -> HeatRegistration {
-    let rank: u8 = Column::get(row, "Result_Rank");
-    let rank_sort: u8 = if rank == 0 { u8::MAX } else { rank };
-    let delta: String = if rank > 0 {
-        let delta: i32 = Column::get(row, "Result_Delta");
-        let duration = Duration::from_millis(delta as u64);
-        let seconds = duration.as_secs();
-        let millis = duration.subsec_millis() / 10;
-        format!("{}.{}", seconds, millis)
-    } else {
-        Default::default()
-    };
-
-    let rank_label: String = if rank == 0 {
-        Default::default()
-    } else {
-        rank.to_string()
-    };
-
-    let num_rowers: u8 = Column::get(row, "BoatClass_NumRowers");
-    let points: u8 = if rank > 0 { num_rowers + (5 - rank) } else { 0 };
-
-    let result = HeatResult {
-        delta,
-        rank_label,
-        rank_sort,
-        result: Column::get(row, "Result_DisplayValue"),
-        points,
-    };
-
-    HeatRegistration {
-        id: Column::get(row, "CE_ID"),
-        lane: Column::get(row, "CE_Lane"),
-        registration: create_registration(row),
-        result,
-    }
-}
-
-pub fn create_registration(row: &Row) -> Registration {
-    let cancel_value: u8 = Column::get(row, "Entry_CancelValue");
-    let cancelled = cancel_value > 0;
-
-    Registration {
-        id: Column::get(row, "Entry_ID"),
-        bib: Column::get(row, "Entry_Bib"),
-        comment: Column::get(row, "Entry_Comment"),
-        boat_number: Column::get(row, "Entry_BoatNumber"),
-        short_label: Column::get(row, "Label_Short"),
-        cancelled,
-        club: create_club(row),
-    }
-}
-
 #[derive(Debug, Serialize, Clone)]
 pub struct Score {
     rank: i16,
     points: f64,
     club: Club,
+}
+impl Score {
+    pub fn new(row: &Row) -> Self {
+        Score {
+            rank: Column::get(row, "rank"),
+            points: Column::get(row, "points"),
+            club: Club::new(row),
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -199,6 +74,15 @@ pub struct Club {
     #[serde(rename = "shortName")]
     short_name: String,
     city: String,
+}
+impl Club {
+    pub fn new(row: &Row) -> Self {
+        Club {
+            id: Column::get(row, "Club_ID"),
+            short_name: Column::get(row, "Club_Abbr"),
+            city: Column::get(row, "Club_City"),
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -212,6 +96,21 @@ pub struct Regatta {
     #[serde(rename = "endDate")]
     end_date: String,
 }
+impl Regatta {
+    pub fn new(row: &Row) -> Self {
+        let start_date: NaiveDateTime = Column::get(row, "Event_StartDate");
+        let end_date: NaiveDateTime = Column::get(row, "Event_EndDate");
+
+        Regatta {
+            id: Column::get(row, "Event_ID"),
+            title: Column::get(row, "Event_Title"),
+            sub_title: Column::get(row, "Event_SubTitle"),
+            venue: Column::get(row, "Event_Venue"),
+            start_date: start_date.date().to_string(),
+            end_date: end_date.date().to_string(),
+        }
+    }
+}
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Registration {
@@ -224,6 +123,22 @@ pub struct Registration {
     short_label: String,
     club: Club,
     cancelled: bool,
+}
+impl Registration {
+    pub fn new(row: &Row) -> Registration {
+        let cancel_value: u8 = Column::get(row, "Entry_CancelValue");
+        let cancelled = cancel_value > 0;
+
+        Registration {
+            id: Column::get(row, "Entry_ID"),
+            bib: Column::get(row, "Entry_Bib"),
+            comment: Column::get(row, "Entry_Comment"),
+            boat_number: Column::get(row, "Entry_BoatNumber"),
+            short_label: Column::get(row, "Label_Short"),
+            cancelled,
+            club: Club::new(row),
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -241,6 +156,26 @@ pub struct Heat {
     race: Race,
     referee: Referee,
 }
+impl Heat {
+    pub fn new(row: &Row) -> Self {
+        let date_time: NaiveDateTime = Column::get(row, "Comp_DateTime");
+
+        Heat {
+            id: Column::get(row, "Comp_ID"),
+            race: Race::new(row),
+            number: Column::get(row, "Comp_Number"),
+            round_code: Column::get(row, "Comp_RoundCode"),
+            label: Column::get(row, "Comp_Label"),
+            group_value: Column::get(row, "Comp_GroupValue"),
+            state: Column::get(row, "Comp_State"),
+            cancelled: Column::get(row, "Comp_Cancelled"),
+            date: date_time.date().to_string(),
+            time: date_time.time().to_string(),
+            ac_num_sub_classes: Column::get(row, "AgeClass_NumSubClasses"),
+            referee: Referee::new(row),
+        }
+    }
+}
 
 #[derive(Debug, Serialize, Clone)]
 pub struct HeatRegistration {
@@ -248,6 +183,16 @@ pub struct HeatRegistration {
     lane: i16,
     result: HeatResult,
     registration: Registration,
+}
+impl HeatRegistration {
+    pub fn new(row: &Row) -> Self {
+        HeatRegistration {
+            id: Column::get(row, "CE_ID"),
+            lane: Column::get(row, "CE_Lane"),
+            registration: Registration::new(row),
+            result: HeatResult::new(row),
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -260,6 +205,38 @@ pub struct HeatResult {
     delta: String,
     points: u8,
 }
+impl HeatResult {
+    fn new(row: &Row) -> Self {
+        let rank: u8 = Column::get(row, "Result_Rank");
+        let rank_sort: u8 = if rank == 0 { u8::MAX } else { rank };
+        let delta: String = if rank > 0 {
+            let delta: i32 = Column::get(row, "Result_Delta");
+            let duration = Duration::from_millis(delta as u64);
+            let seconds = duration.as_secs();
+            let millis = duration.subsec_millis() / 10;
+            format!("{}.{}", seconds, millis)
+        } else {
+            Default::default()
+        };
+
+        let rank_label: String = if rank == 0 {
+            Default::default()
+        } else {
+            rank.to_string()
+        };
+
+        let num_rowers: u8 = Column::get(row, "BoatClass_NumRowers");
+        let points: u8 = if rank > 0 { num_rowers + (5 - rank) } else { 0 };
+
+        HeatResult {
+            delta,
+            rank_label,
+            rank_sort,
+            result: Column::get(row, "Result_DisplayValue"),
+            points,
+        }
+    }
+}
 
 #[derive(Debug, Serialize, Clone, Default)]
 pub struct Referee {
@@ -267,6 +244,19 @@ pub struct Referee {
     first_name: String,
     #[serde(rename = "lastName")]
     last_name: String,
+}
+impl Referee {
+    fn new(row: &Row) -> Self {
+        let last_name: String = Column::get(row, "Referee_LastName");
+        let first_name: String = Column::get(row, "Referee_FirstName");
+        if last_name.is_empty() && first_name.is_empty() {
+            return Default::default();
+        }
+        Referee {
+            last_name,
+            first_name,
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -284,4 +274,24 @@ pub struct Race {
     race_mode: String,
     cancelled: bool,
     registrations: i32,
+}
+impl Race {
+    pub fn new(row: &Row) -> Self {
+        let short_label: String = Column::get(row, "Offer_ShortLabel");
+        let long_label: String = Column::get(row, "Offer_LongLabel");
+        let comment: String = Column::get(row, "Offer_Comment");
+
+        Race {
+            id: Column::get(row, "Offer_ID"),
+            comment: comment.trim().to_owned(),
+            number: Column::get(row, "Offer_RaceNumber"),
+            short_label: short_label.trim().to_owned(),
+            long_label: long_label.trim().to_owned(),
+            distance: Column::get(row, "Offer_Distance"),
+            lightweight: Column::get(row, "Offer_IsLightweight"),
+            race_mode: Column::get(row, "RaceMode_Title"),
+            cancelled: Column::get(row, "Offer_Cancelled"),
+            registrations: Column::get(row, "Count_Registrations"),
+        }
+    }
 }
