@@ -6,11 +6,16 @@ use actix_extensible_rate_limit::{
     RateLimiter,
 };
 use actix_files::Files;
-use actix_web::{web::Data, App, HttpServer};
+use actix_web::{
+    web::{scope, Data},
+    App, HttpServer,
+};
 use actix_web_prometheus::PrometheusMetricsBuilder;
 use db::aquarius::Aquarius;
 use log::info;
 use std::{env, io::Result, time::Duration};
+
+static SCOPE_API: &str = "/api";
 
 #[actix_web::main]
 async fn main() -> Result<()> {
@@ -37,13 +42,16 @@ async fn main() -> Result<()> {
             .wrap(rate_limiter)
             .wrap(prometheus.clone())
             .app_data(Data::clone(&data))
-            .service(rest_api::get_regattas)
-            .service(rest_api::get_regatta)
-            .service(rest_api::get_races)
-            .service(rest_api::get_heats)
-            .service(rest_api::get_registrations)
-            .service(rest_api::get_heat_registrations)
-            .service(rest_api::get_scoring)
+            .service(
+                scope(SCOPE_API)
+                    .service(rest_api::get_regattas)
+                    .service(rest_api::get_regatta)
+                    .service(rest_api::get_races)
+                    .service(rest_api::get_heats)
+                    .service(rest_api::get_registrations)
+                    .service(rest_api::get_heat_registrations)
+                    .service(rest_api::get_scoring),
+            )
             .service(
                 Files::new("/infoportal", "./static/infopoint")
                     .index_file("index.html")
@@ -101,11 +109,14 @@ mod tests {
         let app_data = create_app_data().await;
 
         let app = test::init_service(
-            App::new()
-                .service(rest_api::get_regattas)
-                .app_data(Data::clone(&app_data)),
+            App::new().service(
+                scope(SCOPE_API)
+                    .service(rest_api::get_regattas)
+                    .app_data(Data::clone(&app_data)),
+            ),
         )
         .await;
+
         let request = TestRequest::get().uri("/api/regattas").to_request();
         let response = test::call_service(&app, request).await;
         assert!(response.status().is_success());
@@ -116,11 +127,14 @@ mod tests {
         let app_data = create_app_data().await;
 
         let app = test::init_service(
-            App::new()
-                .service(rest_api::get_heats)
-                .app_data(Data::clone(&app_data)),
+            App::new().service(
+                scope(SCOPE_API)
+                    .service(rest_api::get_heats)
+                    .app_data(Data::clone(&app_data)),
+            ),
         )
         .await;
+
         let request = TestRequest::get()
             .uri("/api/regattas/12/heats")
             .to_request();
