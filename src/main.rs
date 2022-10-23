@@ -7,10 +7,13 @@ use actix_extensible_rate_limit::{
 };
 use actix_files::Files;
 use actix_web::{
+    body::MessageBody,
+    dev::{ServiceFactory, ServiceRequest, ServiceResponse},
     web::{scope, Data},
     App, HttpServer,
 };
 use actix_web_prometheus::PrometheusMetricsBuilder;
+use async_std::task::block_on;
 use db::aquarius::Aquarius;
 use log::info;
 use std::{env, io::Result, time::Duration};
@@ -22,21 +25,40 @@ async fn main() -> Result<()> {
     env_logger::init();
     info!("Starting Infoportal");
 
-    let prometheus = PrometheusMetricsBuilder::new("api")
-        .endpoint("/metrics")
-        .build()
-        .unwrap();
+    let mut http_server = HttpServer::new(create_app).bind(get_http_bind())?;
 
-    let data = create_app_data().await;
-    // A backend is responsible for storing rate limit data, and choosing whether to allow/deny requests
+    // configure number of workers if env. variable is set
+    let workers = get_http_workers();
+    if workers.is_some() {
+        http_server = http_server.workers(workers.unwrap());
+    }
 
-    let mut http_server = HttpServer::new(move || {
+    // finally run http server
+    http_server.run().await
+}
+
+fn create_app() -> App<
+    impl ServiceFactory<
+        ServiceRequest,
+        Response = ServiceResponse<impl MessageBody>,
+        Config = (),
+        InitError = (),
+        Error = actix_web::Error,
+    >,
+> {
+    block_on(async {
+        let data = create_app_data().await;
+
         let input = SimpleInputFunctionBuilder::new(Duration::from_secs(600), 200)
             .real_ip_key()
             .build();
         let rate_limiter = RateLimiter::builder(InMemoryBackend::builder().build(), input)
             .add_headers()
             .build();
+        let prometheus = PrometheusMetricsBuilder::new("api")
+            .endpoint("/metrics")
+            .build()
+            .unwrap();
 
         App::new()
             .wrap(rate_limiter)
@@ -60,16 +82,6 @@ async fn main() -> Result<()> {
                     .redirect_to_slash_directory(),
             )
     })
-    .bind(get_http_bind())?;
-
-    // configure number of workers if env. variable is set
-    let workers = get_http_workers();
-    if workers.is_some() {
-        http_server = http_server.workers(workers.unwrap());
-    }
-
-    // finally run http server
-    http_server.run().await
 }
 
 fn get_http_bind() -> (String, u16) {
@@ -106,16 +118,7 @@ mod tests {
 
     #[actix_web::test]
     async fn test_get_regattas() {
-        let app_data = create_app_data().await;
-
-        let app = test::init_service(
-            App::new().service(
-                scope(SCOPE_API)
-                    .service(rest_api::get_regattas)
-                    .app_data(Data::clone(&app_data)),
-            ),
-        )
-        .await;
+        let app = test::init_service(create_app()).await;
 
         let request = TestRequest::get().uri("/api/regattas").to_request();
         let response = test::call_service(&app, request).await;
