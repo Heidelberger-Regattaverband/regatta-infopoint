@@ -51,7 +51,7 @@ impl Cache {
 
     pub async fn insert_heats(&self, regatta_id: i32, heats: &[Heat]) {
         self.heats_cache
-            .insert_with_ttl(regatta_id, heats.to_owned().clone(), 1, TTL)
+            .insert_with_ttl(regatta_id, heats.to_owned(), 1, TTL)
             .await;
         self.heats_cache.wait().await.unwrap();
     }
@@ -73,7 +73,7 @@ impl Cache {
 
     pub async fn insert_heat_regs(&self, heat_id: i32, heat_regs: &[HeatRegistration]) {
         self.heat_regs_cache
-            .insert_with_ttl(heat_id, heat_regs.to_owned().clone(), 1, TTL)
+            .insert_with_ttl(heat_id, heat_regs.to_owned(), 1, TTL)
             .await;
         self.heat_regs_cache.wait().await.unwrap();
     }
@@ -95,7 +95,7 @@ impl Cache {
 
     pub async fn insert_scores(&self, regatta_id: i32, scores: &[Score]) {
         self.scores_cache
-            .insert_with_ttl(regatta_id, scores.to_owned().clone(), 1, TTL)
+            .insert_with_ttl(regatta_id, scores.to_owned(), 1, TTL)
             .await;
         self.scores_cache.wait().await.unwrap();
     }
@@ -117,7 +117,7 @@ impl Cache {
 
     pub async fn insert_races(&self, regatta_id: i32, races: &[Race]) {
         self.races_cache
-            .insert_with_ttl(regatta_id, races.to_owned().clone(), 1, TTL)
+            .insert_with_ttl(regatta_id, races.to_owned(), 1, TTL)
             .await;
         self.races_cache.wait().await.unwrap();
     }
@@ -127,7 +127,7 @@ impl Cache {
         if let Some(value_ref) = opt_value_ref {
             let value = value_ref.value().clone();
             value_ref.release();
-            debug!("Reading scores of regatta {} from cache.", regatta_id);
+            debug!("Reading races of regatta {} from cache.", regatta_id);
             trace!("From cache: {:?}", value);
             return Some(value);
         }
