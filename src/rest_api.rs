@@ -7,48 +7,48 @@ use actix_web::{
     web::{Data, Json, Path},
 };
 
-#[get("/api/regattas")]
+#[get("/regattas")]
 async fn get_regattas(data: Data<Aquarius>) -> Json<Vec<Regatta>> {
     let regattas = data.get_regattas().await.unwrap();
     Json(regattas)
 }
 
-#[get("/api/regattas/{id}")]
+#[get("/regattas/{id}")]
 async fn get_regatta(path: Path<i32>, data: Data<Aquarius>) -> Json<Regatta> {
     let regatta_id = path.into_inner();
     let regatta = data.get_regatta(regatta_id).await.unwrap();
     Json(regatta)
 }
 
-#[get("/api/regattas/{id}/races")]
+#[get("/regattas/{id}/races")]
 async fn get_races(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Race>> {
     let regatta_id = path.into_inner();
     let races = data.get_races(regatta_id).await.unwrap();
     Json(races)
 }
 
-#[get("/api/races/{id}/registrations")]
+#[get("/races/{id}/registrations")]
 async fn get_registrations(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Registration>> {
     let race_id = path.into_inner();
     let races = data.get_registrations(race_id).await.unwrap();
     Json(races)
 }
 
-#[get("/api/regattas/{id}/heats")]
+#[get("/regattas/{id}/heats")]
 async fn get_heats(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Heat>> {
     let regatta_id = path.into_inner();
     let heats = data.get_heats(regatta_id).await.unwrap();
     Json(heats)
 }
 
-#[get("/api/regattas/{id}/scoring")]
+#[get("/regattas/{id}/scoring")]
 async fn get_scoring(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Score>> {
     let regatta_id = path.into_inner();
     let scoring = data.get_scoring(regatta_id).await.unwrap();
     Json(scoring)
 }
 
-#[get("/api/heats/{id}/registrations")]
+#[get("/heats/{id}/registrations")]
 async fn get_heat_registrations(
     path: Path<i32>,
     data: Data<Aquarius>,
