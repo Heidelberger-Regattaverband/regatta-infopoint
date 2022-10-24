@@ -59,11 +59,11 @@ pub struct Score {
     club: Club,
 }
 impl Score {
-    pub fn new(row: &Row) -> Self {
+    pub fn from(row: &Row) -> Self {
         Score {
             rank: Column::get(row, "rank"),
             points: Column::get(row, "points"),
-            club: Club::new(row),
+            club: Club::from(row),
         }
     }
 }
@@ -76,7 +76,7 @@ pub struct Club {
     city: String,
 }
 impl Club {
-    pub fn new(row: &Row) -> Self {
+    pub fn from(row: &Row) -> Self {
         Club {
             id: Column::get(row, "Club_ID"),
             short_name: Column::get(row, "Club_Abbr"),
@@ -97,7 +97,7 @@ pub struct Regatta {
     end_date: String,
 }
 impl Regatta {
-    pub fn new(row: &Row) -> Self {
+    pub fn from(row: &Row) -> Self {
         let start_date: NaiveDateTime = Column::get(row, "Event_StartDate");
         let end_date: NaiveDateTime = Column::get(row, "Event_EndDate");
 
@@ -125,7 +125,7 @@ pub struct Registration {
     cancelled: bool,
 }
 impl Registration {
-    pub fn new(row: &Row) -> Registration {
+    pub fn from(row: &Row) -> Registration {
         let cancel_value: u8 = Column::get(row, "Entry_CancelValue");
         let cancelled = cancel_value > 0;
 
@@ -136,7 +136,7 @@ impl Registration {
             boat_number: Column::get(row, "Entry_BoatNumber"),
             short_label: Column::get(row, "Label_Short"),
             cancelled,
-            club: Club::new(row),
+            club: Club::from(row),
         }
     }
 }
@@ -157,12 +157,12 @@ pub struct Heat {
     referee: Referee,
 }
 impl Heat {
-    pub fn new(row: &Row) -> Self {
+    pub fn from(row: &Row) -> Self {
         let date_time: NaiveDateTime = Column::get(row, "Comp_DateTime");
 
         Heat {
             id: Column::get(row, "Comp_ID"),
-            race: Race::new(row),
+            race: Race::from(row),
             number: Column::get(row, "Comp_Number"),
             round_code: Column::get(row, "Comp_RoundCode"),
             label: Column::get(row, "Comp_Label"),
@@ -172,7 +172,7 @@ impl Heat {
             date: date_time.date().to_string(),
             time: date_time.time().to_string(),
             ac_num_sub_classes: Column::get(row, "AgeClass_NumSubClasses"),
-            referee: Referee::new(row),
+            referee: Referee::from(row),
         }
     }
 }
@@ -185,12 +185,12 @@ pub struct HeatRegistration {
     registration: Registration,
 }
 impl HeatRegistration {
-    pub fn new(row: &Row) -> Self {
+    pub fn from(row: &Row) -> Self {
         HeatRegistration {
             id: Column::get(row, "CE_ID"),
             lane: Column::get(row, "CE_Lane"),
-            registration: Registration::new(row),
-            result: HeatResult::new(row),
+            registration: Registration::from(row),
+            result: HeatResult::from(row),
         }
     }
 }
@@ -206,7 +206,7 @@ pub struct HeatResult {
     points: u8,
 }
 impl HeatResult {
-    fn new(row: &Row) -> Self {
+    fn from(row: &Row) -> Self {
         let rank: u8 = Column::get(row, "Result_Rank");
         let rank_sort: u8 = if rank == 0 { u8::MAX } else { rank };
         let delta: String = if rank > 0 {
@@ -246,7 +246,7 @@ pub struct Referee {
     last_name: String,
 }
 impl Referee {
-    fn new(row: &Row) -> Self {
+    fn from(row: &Row) -> Self {
         let last_name: String = Column::get(row, "Referee_LastName");
         let first_name: String = Column::get(row, "Referee_FirstName");
         if last_name.is_empty() && first_name.is_empty() {
@@ -276,7 +276,7 @@ pub struct Race {
     registrations: i32,
 }
 impl Race {
-    pub fn new(row: &Row) -> Self {
+    pub fn from(row: &Row) -> Self {
         let short_label: String = Column::get(row, "Offer_ShortLabel");
         let long_label: String = Column::get(row, "Offer_LongLabel");
         let comment: String = Column::get(row, "Offer_Comment");
