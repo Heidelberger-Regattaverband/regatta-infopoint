@@ -30,10 +30,15 @@ async fn main() -> Result<()> {
     let data = create_app_data().await;
     // A backend is responsible for storing rate limit data, and choosing whether to allow/deny requests
 
+    let http_rate_limiter = get_http_rate_limiter();
+
     let mut http_server = HttpServer::new(move || {
-        let input = SimpleInputFunctionBuilder::new(Duration::from_secs(600), 200)
-            .real_ip_key()
-            .build();
+        let input = SimpleInputFunctionBuilder::new(
+            Duration::from_secs(http_rate_limiter.1),
+            http_rate_limiter.0,
+        )
+        .real_ip_key()
+        .build();
         let rate_limiter = RateLimiter::builder(InMemoryBackend::builder().build(), input)
             .add_headers()
             .build();
@@ -93,6 +98,23 @@ fn get_http_workers() -> Option<usize> {
         Ok(workers) => Some(workers.parse().unwrap()),
         Err(_error) => Option::None,
     }
+}
+
+fn get_http_rate_limiter() -> (u64, u64) {
+    let max_requests = env::var("HTTP_RL_MAX_REQUESTS")
+        .unwrap_or_else(|_| "200".to_string())
+        .parse()
+        .unwrap();
+    let interval = env::var("HTTP_RL_INTERVAL")
+        .unwrap_or_else(|_| "600".to_string())
+        .parse()
+        .unwrap();
+    log::debug!(
+        "HTTP Server rate limiter max. requests {} in {} seconds.",
+        max_requests,
+        interval
+    );
+    (max_requests, interval)
 }
 
 async fn create_app_data() -> Data<Aquarius> {
