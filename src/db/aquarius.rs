@@ -39,7 +39,7 @@ impl Aquarius {
         let mut regattas: Vec<Regatta> = Vec::with_capacity(rows.len());
 
         for row in &rows {
-            let regatta = Regatta::new(row);
+            let regatta = Regatta::from(row);
             self.cache.insert_regatta(&regatta).await;
             trace!("{:?}", regatta);
             regattas.push(regatta);
@@ -68,7 +68,7 @@ impl Aquarius {
             .into_row()
             .await?
             .unwrap();
-        let regatta = Regatta::new(&row);
+        let regatta = Regatta::from(&row);
 
         // 3. store regatta in cache
         self.cache.insert_regatta(&regatta).await;
@@ -94,7 +94,7 @@ impl Aquarius {
             .await?;
         let mut races: Vec<Race> = Vec::with_capacity(rows.len());
         for row in &rows {
-            let race = Race::new(row);
+            let race = Race::from(row);
             trace!("{:?}", race);
             races.push(race);
         }
@@ -116,7 +116,7 @@ impl Aquarius {
             .await?;
         let mut registrations: Vec<Registration> = Vec::with_capacity(rows.len());
         for row in &rows {
-            let registration = Registration::new(row);
+            let registration = Registration::from(row);
             trace!("{:?}", registration);
             registrations.push(registration);
         }
@@ -142,7 +142,7 @@ impl Aquarius {
             .await?;
         let mut heats: Vec<Heat> = Vec::with_capacity(rows.len());
         for row in &rows {
-            let heat = Heat::new(row);
+            let heat = Heat::from(row);
             trace!("{:?}", heat);
             heats.push(heat);
         }
@@ -171,7 +171,7 @@ impl Aquarius {
             .await?;
         let mut heat_regs: Vec<HeatRegistration> = Vec::with_capacity(rows.len());
         for row in &rows {
-            let heat_registration = HeatRegistration::new(row);
+            let heat_registration = HeatRegistration::from(row);
             trace!("{:?}", heat_registration);
             heat_regs.push(heat_registration);
         }
@@ -200,7 +200,7 @@ impl Aquarius {
             .await?;
         let mut scores: Vec<Score> = Vec::with_capacity(rows.len());
         for row in &rows {
-            let score = Score::new(row);
+            let score = Score::from(row);
             trace!("{:?}", score);
             scores.push(score);
         }
