@@ -12,6 +12,7 @@ use actix_web::{
 };
 use actix_web_prometheus::PrometheusMetricsBuilder;
 use db::aquarius::Aquarius;
+use dotenv::dotenv;
 use log::info;
 use std::{env, io::Result, time::Duration};
 
@@ -19,6 +20,7 @@ static SCOPE_API: &str = "/api";
 
 #[actix_web::main]
 async fn main() -> Result<()> {
+    dotenv().ok();
     env_logger::init();
     info!("Starting Infoportal");
 
@@ -128,6 +130,7 @@ mod tests {
 
     #[actix_web::test]
     async fn test_get_regattas() {
+        dotenv().ok();
         let app_data = create_app_data().await;
 
         let app = test::init_service(
@@ -146,6 +149,7 @@ mod tests {
 
     #[actix_web::test]
     async fn test_get_heats() {
+        dotenv().ok();
         let app_data = create_app_data().await;
 
         let app = test::init_service(

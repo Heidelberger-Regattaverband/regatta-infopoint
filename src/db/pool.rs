@@ -13,8 +13,8 @@ pub struct TiberiusConnectionManager {
 impl TiberiusConnectionManager {
     /// Create a new `TiberiusConnectionManager`.
     fn new() -> tiberius::Result<TiberiusConnectionManager> {
-      let config = create_config();
-      Ok(TiberiusConnectionManager { config })
+        let config = create_config();
+        Ok(TiberiusConnectionManager { config })
     }
 }
 
@@ -45,34 +45,18 @@ pub async fn create_pool() -> Pool<TiberiusConnectionManager> {
     Pool::builder().max_size(5).build(manager).await.unwrap()
 }
 
-fn get_db_port() -> u16 {
-    env::var("DB_PORT")
-        .unwrap_or_else(|_| "1433".to_string())
-        .parse()
-        .unwrap()
-}
-
-fn get_db_host() -> String {
-    env::var("DB_HOST").unwrap_or_else(|_| "8e835d.online-server.cloud".to_string())
-}
-
-fn get_db_name() -> String {
-    env::var("DB_NAME").unwrap_or_else(|_| "Regatta_2022".to_string())
-}
-
-fn get_db_user() -> String {
-    env::var("DB_USER").unwrap_or_else(|_| "sa".to_string())
-}
-
 fn get_db_password() -> String {
-    env::var("DB_PASSWORD").unwrap_or_default()
+    env::var("DB_PASSWORD").expect("env variable `DB_PASSWORD` should be set")
 }
 
 fn create_config() -> tiberius::Config {
-    let db_host = get_db_host();
-    let db_port = get_db_port();
-    let db_name = get_db_name();
-    let db_user = get_db_user();
+    let db_host = env::var("DB_HOST").expect("env variable `DB_HOST` should be set");
+    let db_port = env::var("DB_PORT")
+        .expect("env variable `DB_PORT` should be set")
+        .parse()
+        .unwrap();
+    let db_name = env::var("DB_NAME").expect("env variable `DB_NAME` should be set");
+    let db_user = env::var("DB_USER").expect("env variable `DB_USER` should be set");
 
     info!(
         "Database configuration: host={}, port={}, name={}, user={}",
