@@ -35,7 +35,7 @@ impl Server {
 
             App::new()
                 .wrap(rate_limiter)
-                .wrap(Self::_create_prometeus().clone())
+                .wrap(Self::_get_prometeus())
                 .app_data(Data::clone(&data))
                 .service(
                     scope(SCOPE_API)
@@ -68,7 +68,7 @@ impl Server {
         http_server.run().await
     }
 
-    fn _create_prometeus() -> PrometheusMetrics {
+    fn _get_prometeus() -> PrometheusMetrics {
         let prometheus = PrometheusMetricsBuilder::new("api")
             .endpoint("/metrics")
             .build()
