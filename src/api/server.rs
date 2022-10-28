@@ -8,8 +8,8 @@ use actix_web::{
     web::{scope, Data},
     App, HttpServer,
 };
-use actix_web_prometheus::PrometheusMetricsBuilder;
-use log::info;
+use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
+use log::{debug, info};
 use std::{env, io::Result, time::Duration};
 
 pub static SCOPE_API: &str = "/api";
@@ -18,13 +18,7 @@ pub struct Server {}
 
 impl Server {
     pub async fn start() -> Result<()> {
-        let prometheus = PrometheusMetricsBuilder::new("api")
-            .endpoint("/metrics")
-            .build()
-            .unwrap();
-
         let data = create_app_data().await;
-        // A backend is responsible for storing rate limit data, and choosing whether to allow/deny requests
 
         let http_rate_limiter = get_http_rate_limiter();
 
@@ -41,7 +35,7 @@ impl Server {
 
             App::new()
                 .wrap(rate_limiter)
-                .wrap(prometheus.clone())
+                .wrap(Self::_create_prometeus().clone())
                 .app_data(Data::clone(&data))
                 .service(
                     scope(SCOPE_API)
@@ -73,6 +67,14 @@ impl Server {
         // finally run http server
         http_server.run().await
     }
+
+    fn _create_prometeus() -> PrometheusMetrics {
+        let prometheus = PrometheusMetricsBuilder::new("api")
+            .endpoint("/metrics")
+            .build()
+            .unwrap();
+        prometheus
+    }
 }
 
 fn get_http_bind() -> (String, u16) {
@@ -81,7 +83,7 @@ fn get_http_bind() -> (String, u16) {
         .parse()
         .unwrap();
     let host = env::var("HTTP_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
-    info!("HTTP server is listening on: {host}:{port}");
+    debug!("HTTP server is listening on: {host}:{port}");
 
     (host, port)
 }
@@ -103,10 +105,9 @@ fn get_http_rate_limiter() -> (u64, u64) {
         .expect("env variable `HTTP_RL_INTERVAL` should be set")
         .parse()
         .unwrap();
-    log::debug!(
+    debug!(
         "HTTP Server rate limiter max. requests {} in {} seconds.",
-        max_requests,
-        interval
+        max_requests, interval
     );
     (max_requests, interval)
 }
