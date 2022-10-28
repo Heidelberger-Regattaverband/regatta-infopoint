@@ -1,4 +1,4 @@
-use crate::{api::rest_api, db::aquarius::Aquarius};
+use crate::{db::aquarius::Aquarius, http::rest_api};
 use actix_extensible_rate_limit::{
     backend::{memory::InMemoryBackend, SimpleInputFunctionBuilder},
     RateLimiter,
@@ -69,11 +69,10 @@ impl Server {
     }
 
     fn _get_prometeus() -> PrometheusMetrics {
-        let prometheus = PrometheusMetricsBuilder::new("api")
+        PrometheusMetricsBuilder::new("api")
             .endpoint("/metrics")
             .build()
-            .unwrap();
-        prometheus
+            .unwrap()
     }
 }
 
