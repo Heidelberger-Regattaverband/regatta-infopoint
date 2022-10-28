@@ -1,7 +1,7 @@
-mod api;
+mod http;
 mod db;
 
-use crate::api::server::Server;
+use crate::http::server::Server;
 use dotenv::dotenv;
 use std::io::Result;
 
@@ -16,7 +16,7 @@ async fn main() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::api::{
+    use crate::http::{
         rest_api,
         server::{create_app_data, SCOPE_API},
     };
