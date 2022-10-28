@@ -1,16 +1,17 @@
 use crate::{db::aquarius::Aquarius, http::rest_api};
 use actix_extensible_rate_limit::{
-    backend::{memory::InMemoryBackend, SimpleInputFunctionBuilder},
+    backend::{memory::InMemoryBackend, SimpleInput, SimpleInputFunctionBuilder, SimpleOutput},
     RateLimiter,
 };
 use actix_files::Files;
 use actix_web::{
+    dev::ServiceRequest,
     web::{scope, Data},
-    App, HttpServer,
+    App, Error, HttpServer,
 };
 use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
 use log::{debug, info};
-use std::{env, io::Result, time::Duration};
+use std::{env, future::Ready, io::Result, time::Duration};
 
 pub static SCOPE_API: &str = "/api";
 
@@ -20,21 +21,9 @@ impl Server {
     pub async fn start() -> Result<()> {
         let data = create_app_data().await;
 
-        let http_rate_limiter = get_http_rate_limiter();
-
         let mut http_server = HttpServer::new(move || {
-            let input = SimpleInputFunctionBuilder::new(
-                Duration::from_secs(http_rate_limiter.1),
-                http_rate_limiter.0,
-            )
-            .real_ip_key()
-            .build();
-            let rate_limiter = RateLimiter::builder(InMemoryBackend::builder().build(), input)
-                .add_headers()
-                .build();
-
             App::new()
-                .wrap(rate_limiter)
+                .wrap(Self::_get_rate_limiter())
                 .wrap(Self::_get_prometeus())
                 .app_data(Data::clone(&data))
                 .service(
@@ -73,6 +62,25 @@ impl Server {
             .endpoint("/metrics")
             .build()
             .unwrap()
+    }
+
+    fn _get_rate_limiter() -> RateLimiter<
+        InMemoryBackend,
+        SimpleOutput,
+        impl Fn(&ServiceRequest) -> Ready<core::result::Result<SimpleInput, Error>>,
+    > {
+        let http_rate_limiter = get_http_rate_limiter();
+
+        let input = SimpleInputFunctionBuilder::new(
+            Duration::from_secs(http_rate_limiter.1),
+            http_rate_limiter.0,
+        )
+        .real_ip_key()
+        .build();
+
+        RateLimiter::builder(InMemoryBackend::builder().build(), input)
+            .add_headers()
+            .build()
     }
 }
 
