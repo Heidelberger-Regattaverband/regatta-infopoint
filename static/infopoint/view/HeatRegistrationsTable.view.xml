@@ -8,10 +8,12 @@
           <f:title>
             <f:DynamicPageTitle>
               <f:heading>
-                <VBox>
-                  <Title text="{path: 'heat>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heat>/', formatter: '.formatter.heatLabel'}" wrapping="true" wrappingType="Normal" />
-                </VBox>
+                <Title text="{path: 'heat>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heat>/', formatter: '.formatter.heatLabel'}" wrapping="true" wrappingType="Normal" />
               </f:heading>
+
+              <f:expandedContent>
+                <Label text="{heat>/race/longLabel} {heat>/race/comment}" />
+              </f:expandedContent>
 
               <f:navigationActions>
                 <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="handlePrevious" tooltip="Previous" />
