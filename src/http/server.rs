@@ -21,9 +21,11 @@ impl Server {
     pub async fn start() -> Result<()> {
         let data = create_app_data().await;
 
+        let rl_config = get_rate_limiter_config();
+
         let mut http_server = HttpServer::new(move || {
             App::new()
-                .wrap(Self::_get_rate_limiter())
+                .wrap(Self::_get_rate_limiter(rl_config))
                 .wrap(Self::_get_prometeus())
                 .app_data(Data::clone(&data))
                 .service(
@@ -64,19 +66,16 @@ impl Server {
             .unwrap()
     }
 
-    fn _get_rate_limiter() -> RateLimiter<
+    fn _get_rate_limiter(
+        rl_config: (u64, u64),
+    ) -> RateLimiter<
         InMemoryBackend,
         SimpleOutput,
         impl Fn(&ServiceRequest) -> Ready<core::result::Result<SimpleInput, Error>>,
     > {
-        let http_rate_limiter = get_http_rate_limiter();
-
-        let input = SimpleInputFunctionBuilder::new(
-            Duration::from_secs(http_rate_limiter.1),
-            http_rate_limiter.0,
-        )
-        .real_ip_key()
-        .build();
+        let input = SimpleInputFunctionBuilder::new(Duration::from_secs(rl_config.1), rl_config.0)
+            .real_ip_key()
+            .build();
 
         RateLimiter::builder(InMemoryBackend::builder().build(), input)
             .add_headers()
@@ -103,7 +102,7 @@ fn get_http_workers() -> Option<usize> {
     }
 }
 
-fn get_http_rate_limiter() -> (u64, u64) {
+fn get_rate_limiter_config() -> (u64, u64) {
     let max_requests = env::var("HTTP_RL_MAX_REQUESTS")
         .expect("env variable `HTTP_RL_MAX_REQUESTS` should be set")
         .parse()
