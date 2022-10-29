@@ -39,7 +39,7 @@ impl Server {
                         .service(rest_api::get_scoring),
                 )
                 .service(
-                    Files::new("/infoportal", "./static/infopoint")
+                    Files::new("/infoportal", "./static/infoportal")
                         .index_file("index.html")
                         .use_last_modified(true)
                         .use_etag(true)
