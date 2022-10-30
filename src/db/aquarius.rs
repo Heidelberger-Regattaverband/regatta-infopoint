@@ -2,8 +2,8 @@ use super::{
     cache::Cache,
     model::{
         Heat, HeatRegistration, Race, Regatta, Registration, Score, HEATS_QUERY,
-        HEAT_REGISTRATION_QUERY, RACES_QUERY, REGATTAS_QUERY, REGATTA_QUERY, REGISTRATIONS_QUERY,
-        SCORES_QUERY,
+        HEAT_REGISTRATION_QUERY, RACES_QUERY, RACE_QUERY, REGATTAS_QUERY, REGATTA_QUERY,
+        REGISTRATIONS_QUERY,
     },
     pool::create_pool,
     TiberiusPool,
@@ -105,6 +105,22 @@ impl Aquarius {
         Ok(races)
     }
 
+    pub async fn get_race(&self, race_id: i32) -> Result<Race> {
+        let mut client = self.pool.get().await.unwrap();
+
+        debug!("Query race {} from DB", race_id);
+        trace!("Execute query {}", RACES_QUERY);
+        let row = client
+            .query(RACE_QUERY, &[&race_id])
+            .await?
+            .into_row()
+            .await?
+            .unwrap();
+        let race = Race::from(&row);
+
+        Ok(race)
+    }
+
     pub async fn get_race_registrations(&self, race_id: i32) -> Result<Vec<Registration>> {
         let mut client = self.pool.get().await.unwrap();
         debug!("Query registrations for race {} from DB", race_id);
@@ -191,10 +207,10 @@ impl Aquarius {
 
         // 2. read scores from DB
         debug!("Query scores of regatta {} from DB", regatta_id);
-        trace!("Execute query {}", SCORES_QUERY);
+        trace!("Execute query {}", Score::query_all());
         let mut client = self.pool.get().await.unwrap();
         let rows = client
-            .query(SCORES_QUERY, &[&regatta_id])
+            .query(Score::query_all(), &[&regatta_id])
             .await?
             .into_first_result()
             .await?;

@@ -7,11 +7,17 @@ pub const REGATTAS_QUERY: &str = "SELECT * FROM Event e";
 
 pub const REGATTA_QUERY: &str = "SELECT * FROM Event e WHERE e.Event_ID = @P1";
 
-pub const RACES_QUERY: &str = "SELECT o.*, rm.RaceMode_Title,
-    (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Count_Registrations
+pub const RACES_QUERY: &str = "SELECT o.*, rm.*,
+    (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count
     FROM Offer o
     JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
     WHERE o.Offer_Event_ID_FK = @P1 ORDER BY o.Offer_SortValue ASC";
+
+pub const RACE_QUERY: &str = "SELECT o.*, rm.*,
+    (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count
+    FROM Offer o
+    JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
+    WHERE o.Offer_ID = @P1";
 
 pub const REGISTRATIONS_QUERY: &str =
     "SELECT DISTINCT e.*, l.Label_Short, c.Club_ID, c.Club_Abbr, c.Club_City
@@ -46,27 +52,6 @@ pub const HEAT_REGISTRATION_QUERY: &str =
     JOIN Club AS cl ON cl.Club_ID = e.Entry_OwnerClub_ID_FK
     WHERE ce.CE_Comp_ID_FK = @P1 AND (r.Result_SplitNr = 64 OR r.Result_SplitNr IS NULL)
       AND el.EL_RoundFrom <= c.Comp_Round AND c.Comp_Round <= el.EL_RoundTo";
-
-pub const SCORES_QUERY: &str = "SELECT s.rank, s.points, c.Club_Name, c.Club_Abbr, c.Club_City
-    FROM HRV_Score s
-    JOIN Club AS c ON s.club_id = c.Club_ID
-    WHERE s.event_id = @P1 ORDER BY s.rank ASC";
-
-#[derive(Debug, Serialize, Clone)]
-pub struct Score {
-    rank: i16,
-    points: f64,
-    club: Club,
-}
-impl Score {
-    pub fn from(row: &Row) -> Self {
-        Score {
-            rank: Column::get(row, "rank"),
-            points: Column::get(row, "points"),
-            club: Club::from(row),
-        }
-    }
-}
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Club {
@@ -108,6 +93,43 @@ impl Regatta {
             venue: Column::get(row, "Event_Venue"),
             start_date: start_date.date().to_string(),
             end_date: end_date.date().to_string(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct Race {
+    pub id: i32,
+    number: String,
+    #[serde(rename = "shortLabel")]
+    short_label: String,
+    #[serde(rename = "longLabel")]
+    long_label: String,
+    comment: String,
+    distance: i16,
+    lightweight: bool,
+    #[serde(rename = "raceMode")]
+    race_mode: String,
+    cancelled: bool,
+    registrations_count: i32,
+}
+impl Race {
+    pub fn from(row: &Row) -> Self {
+        let short_label: String = Column::get(row, "Offer_ShortLabel");
+        let long_label: String = Column::get(row, "Offer_LongLabel");
+        let comment: String = Column::get(row, "Offer_Comment");
+
+        Race {
+            id: Column::get(row, "Offer_ID"),
+            comment: comment.trim().to_owned(),
+            number: Column::get(row, "Offer_RaceNumber"),
+            short_label: short_label.trim().to_owned(),
+            long_label: long_label.trim().to_owned(),
+            distance: Column::get(row, "Offer_Distance"),
+            lightweight: Column::get(row, "Offer_IsLightweight"),
+            race_mode: Column::get(row, "RaceMode_Title"),
+            cancelled: Column::get(row, "Offer_Cancelled"),
+            registrations_count: Column::get(row, "Registrations_Count"),
         }
     }
 }
@@ -260,38 +282,24 @@ impl Referee {
 }
 
 #[derive(Debug, Serialize, Clone)]
-pub struct Race {
-    pub id: i32,
-    number: String,
-    #[serde(rename = "shortLabel")]
-    short_label: String,
-    #[serde(rename = "longLabel")]
-    long_label: String,
-    comment: String,
-    distance: i16,
-    lightweight: bool,
-    #[serde(rename = "raceMode")]
-    race_mode: String,
-    cancelled: bool,
-    registrations: i32,
+pub struct Score {
+    rank: i16,
+    points: f64,
+    club: Club,
 }
-impl Race {
+impl Score {
     pub fn from(row: &Row) -> Self {
-        let short_label: String = Column::get(row, "Offer_ShortLabel");
-        let long_label: String = Column::get(row, "Offer_LongLabel");
-        let comment: String = Column::get(row, "Offer_Comment");
-
-        Race {
-            id: Column::get(row, "Offer_ID"),
-            comment: comment.trim().to_owned(),
-            number: Column::get(row, "Offer_RaceNumber"),
-            short_label: short_label.trim().to_owned(),
-            long_label: long_label.trim().to_owned(),
-            distance: Column::get(row, "Offer_Distance"),
-            lightweight: Column::get(row, "Offer_IsLightweight"),
-            race_mode: Column::get(row, "RaceMode_Title"),
-            cancelled: Column::get(row, "Offer_Cancelled"),
-            registrations: Column::get(row, "Count_Registrations"),
+        Score {
+            rank: Column::get(row, "rank"),
+            points: Column::get(row, "points"),
+            club: Club::from(row),
         }
+    }
+
+    pub fn query_all<'life>() -> &'life str {
+        "SELECT s.rank, s.points, c.Club_Name, c.Club_Abbr, c.Club_City
+          FROM HRV_Score s
+          JOIN Club AS c ON s.club_id = c.Club_ID
+          WHERE s.event_id = @P1 ORDER BY s.rank ASC"
     }
 }
