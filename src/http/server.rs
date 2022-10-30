@@ -32,6 +32,7 @@ impl Server {
                     scope(SCOPE_API)
                         .service(rest_api::get_regattas)
                         .service(rest_api::get_regatta)
+                        .service(rest_api::get_race)
                         .service(rest_api::get_races)
                         .service(rest_api::get_heats)
                         .service(rest_api::get_registrations)
