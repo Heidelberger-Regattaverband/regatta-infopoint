@@ -93,7 +93,7 @@
           "target": "races"
         },
         {
-          "pattern": "raceRegistrations",
+          "pattern": "race/{raceId}/registrations",
           "name": "raceRegistrations",
           "target": "raceRegistrations"
         }

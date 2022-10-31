@@ -14,8 +14,8 @@ sap.ui.define([
 
       this.getRouter().getRoute("races").attachMatched(this._loadRacesModel, this);
 
-      this.getEventBus().subscribe("race", "previous", this.previousRace, this);
-      this.getEventBus().subscribe("race", "next", this.nextRace, this);
+      this.getEventBus().subscribe("race", "previous", this._onPreviousRace, this);
+      this.getEventBus().subscribe("race", "next", this._onNextRace, this);
 
       this.racesTable = this.getView().byId("racesTable");
     },
@@ -26,9 +26,11 @@ sap.ui.define([
         const oBindingCtx = oSelectedItem.getBindingContext("races");
 
         const oRace = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
-        this.getOwnerComponent().setModel(new JSONModel(oRace), "race");
+        // this.getOwnerComponent().setModel(new JSONModel(oRace), "race");
 
-        this.getOwnerComponent().getRouter().navTo("raceRegistrations", {}, false /* history */);
+        this.getRouter().navTo("raceRegistrations", {
+          raceId: oRace.id
+        }, false /* history */);
       }
     },
 
@@ -37,18 +39,18 @@ sap.ui.define([
       this.navBack("startpage");
     },
 
-    previousRace: function (channelId, eventId, parametersMap) {
+    _onPreviousRace: function (channelId, eventId, parametersMap) {
       const iIndex = this.racesTable.indexOfItem(this.racesTable.getSelectedItem());
       const iPreviousIndex = iIndex > 1 ? iIndex - 1 : 0;
 
       if (iIndex != iPreviousIndex) {
         this.racesTable.setSelectedItem(this.racesTable.getItems()[iPreviousIndex]);
         const oRace = this.getViewModel("races").getData()[iPreviousIndex];
-        this.getOwnerComponent().getModel("race").setData(oRace);
+        // this.getOwnerComponent().getModel("race").setData(oRace);
       }
     },
 
-    nextRace: function (channelId, eventId, parametersMap) {
+    _onNextRace: function (channelId, eventId, parametersMap) {
       const aRaces = this.getViewModel("races").getData();
 
       this._growTable(aRaces);
@@ -58,7 +60,7 @@ sap.ui.define([
 
       if (iIndex != iNextIndex) {
         this.racesTable.setSelectedItem(this.racesTable.getItems()[iNextIndex]);
-        this.getOwnerComponent().getModel("race").setData(aRaces[iNextIndex]);
+        // this.getOwnerComponent().getModel("race").setData(aRaces[iNextIndex]);
       }
     },
 
