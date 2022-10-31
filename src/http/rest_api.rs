@@ -27,6 +27,13 @@ async fn get_races(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Race>> {
     Json(races)
 }
 
+#[get("/races/{id}")]
+async fn get_race(path: Path<i32>, data: Data<Aquarius>) -> Json<Race> {
+    let race_id = path.into_inner();
+    let race = data.get_race(race_id).await.unwrap();
+    Json(race)
+}
+
 #[get("/races/{id}/registrations")]
 async fn get_registrations(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Registration>> {
     let race_id = path.into_inner();

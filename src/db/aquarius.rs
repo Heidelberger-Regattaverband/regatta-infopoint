@@ -1,10 +1,6 @@
 use super::{
     cache::Cache,
-    model::{
-        Heat, HeatRegistration, Race, Regatta, Registration, Score, HEATS_QUERY,
-        HEAT_REGISTRATION_QUERY, RACES_QUERY, REGATTAS_QUERY, REGATTA_QUERY, REGISTRATIONS_QUERY,
-        SCORES_QUERY,
-    },
+    model::{Heat, HeatRegistration, Race, Regatta, Registration, Score},
     pool::create_pool,
     TiberiusPool,
 };
@@ -26,18 +22,15 @@ impl Aquarius {
     }
 
     pub async fn get_regattas(&self) -> Result<Vec<Regatta>> {
-        let mut client = self.pool.get().await.unwrap();
+        let mut client = self.pool.get().await?;
 
-        debug!("Query regattas from DB");
-        trace!("Execute query {}", HEATS_QUERY);
-        let rows = client
-            .query(REGATTAS_QUERY, &[])
+        debug!("Query all regattas from DB");
+        let rows = Regatta::query_all()
+            .query(&mut client)
             .await?
             .into_first_result()
             .await?;
-
         let mut regattas: Vec<Regatta> = Vec::with_capacity(rows.len());
-
         for row in &rows {
             let regatta = Regatta::from(row);
             self.cache.insert_regatta(&regatta).await;
@@ -60,10 +53,9 @@ impl Aquarius {
 
         // 2. read regatta from DB
         debug!("Query regatta {} from DB", regatta_id);
-        trace!("Execute query {}", REGATTA_QUERY);
-        let mut client = self.pool.get().await.unwrap();
-        let row = client
-            .query(REGATTA_QUERY, &[&regatta_id])
+        let mut client = self.pool.get().await?;
+        let row = Regatta::query_single(regatta_id)
+            .query(&mut client)
             .await?
             .into_row()
             .await?
@@ -84,11 +76,10 @@ impl Aquarius {
         }
 
         // 2. read races from DB
-        let mut client = self.pool.get().await.unwrap();
         debug!("Query races for regatta {} from DB", regatta_id);
-        trace!("Execute query {}", RACES_QUERY);
-        let rows = client
-            .query(RACES_QUERY, &[&regatta_id])
+        let mut client = self.pool.get().await?;
+        let rows = Race::query_all(regatta_id)
+            .query(&mut client)
             .await?
             .into_first_result()
             .await?;
@@ -105,12 +96,26 @@ impl Aquarius {
         Ok(races)
     }
 
+    pub async fn get_race(&self, race_id: i32) -> Result<Race> {
+        let mut client = self.pool.get().await?;
+
+        debug!("Query race {} from DB", race_id);
+        let row = Race::query_single(race_id)
+            .query(&mut client)
+            .await?
+            .into_row()
+            .await?
+            .unwrap();
+        let race = Race::from(&row);
+
+        Ok(race)
+    }
+
     pub async fn get_race_registrations(&self, race_id: i32) -> Result<Vec<Registration>> {
-        let mut client = self.pool.get().await.unwrap();
         debug!("Query registrations for race {} from DB", race_id);
-        trace!("Execute query {}", REGISTRATIONS_QUERY);
-        let rows = client
-            .query(REGISTRATIONS_QUERY, &[&race_id])
+        let mut client = self.pool.get().await?;
+        let rows = Registration::query_all(race_id)
+            .query(&mut client)
             .await?
             .into_first_result()
             .await?;
@@ -133,10 +138,9 @@ impl Aquarius {
 
         // 2. read heats from DB
         debug!("Query heats of regatta {} from DB", regatta_id);
-        trace!("Execute query {}", HEATS_QUERY);
-        let mut client = self.pool.get().await.unwrap();
-        let rows = client
-            .query(HEATS_QUERY, &[&regatta_id])
+        let mut client = self.pool.get().await?;
+        let rows = Heat::query_all(regatta_id)
+            .query(&mut client)
             .await?
             .into_first_result()
             .await?;
@@ -162,10 +166,9 @@ impl Aquarius {
 
         // 2. read heat_registrations from DB
         debug!("Query registrations of heat {} from DB", heat_id);
-        trace!("Execute query {}", HEAT_REGISTRATION_QUERY);
-        let mut client = self.pool.get().await.unwrap();
-        let rows = client
-            .query(HEAT_REGISTRATION_QUERY, &[&heat_id])
+        let mut client = self.pool.get().await?;
+        let rows = HeatRegistration::query_all(heat_id)
+            .query(&mut client)
             .await?
             .into_first_result()
             .await?;
@@ -191,13 +194,18 @@ impl Aquarius {
 
         // 2. read scores from DB
         debug!("Query scores of regatta {} from DB", regatta_id);
-        trace!("Execute query {}", SCORES_QUERY);
-        let mut client = self.pool.get().await.unwrap();
-        let rows = client
-            .query(SCORES_QUERY, &[&regatta_id])
-            .await?
+        //trace!("Execute query {}", Score::query_all());
+        let mut client = self.pool.get().await?;
+
+        let query = Score::query_all(regatta_id);
+        let rows = query
+            .query(&mut client)
+            .await
+            .unwrap()
             .into_first_result()
-            .await?;
+            .await
+            .unwrap();
+
         let mut scores: Vec<Score> = Vec::with_capacity(rows.len());
         for row in &rows {
             let score = Score::from(row);
