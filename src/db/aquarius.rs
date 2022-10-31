@@ -6,6 +6,7 @@ use super::{
 };
 use anyhow::{Ok, Result};
 use log::{debug, trace};
+use tiberius::{Query, Row};
 
 pub struct Aquarius {
     cache: Cache,
@@ -22,14 +23,8 @@ impl Aquarius {
     }
 
     pub async fn get_regattas(&self) -> Result<Vec<Regatta>> {
-        let mut client = self.pool.get().await?;
-
         debug!("Query all regattas from DB");
-        let rows = Regatta::query_all()
-            .query(&mut client)
-            .await?
-            .into_first_result()
-            .await?;
+        let rows = self._execute_query(Regatta::query_all()).await;
         let mut regattas: Vec<Regatta> = Vec::with_capacity(rows.len());
         for row in &rows {
             let regatta = Regatta::from(row);
@@ -46,9 +41,8 @@ impl Aquarius {
     /// * `regatta_id` - The regatta identifier
     pub async fn get_regatta(&self, regatta_id: i32) -> Result<Regatta> {
         // 1. try to get regatta from cache
-        let regatta_opt = self.cache.get_regatta(regatta_id);
-        if regatta_opt.is_some() {
-            return Ok(regatta_opt.unwrap());
+        if let Some(regatta) = self.cache.get_regatta(regatta_id) {
+            return Ok(regatta);
         }
 
         // 2. read regatta from DB
@@ -70,19 +64,13 @@ impl Aquarius {
 
     pub async fn get_races(&self, regatta_id: i32) -> Result<Vec<Race>> {
         // 1. try to get races from cache
-        let regatta_opt = self.cache.get_races(regatta_id);
-        if regatta_opt.is_some() {
-            return Ok(regatta_opt.unwrap());
+        if let Some(races) = self.cache.get_races(regatta_id) {
+            return Ok(races);
         }
 
         // 2. read races from DB
         debug!("Query races for regatta {} from DB", regatta_id);
-        let mut client = self.pool.get().await?;
-        let rows = Race::query_all(regatta_id)
-            .query(&mut client)
-            .await?
-            .into_first_result()
-            .await?;
+        let rows = self._execute_query(Race::query_all(regatta_id)).await;
         let mut races: Vec<Race> = Vec::with_capacity(rows.len());
         for row in &rows {
             let race = Race::from(row);
@@ -97,8 +85,13 @@ impl Aquarius {
     }
 
     pub async fn get_race(&self, race_id: i32) -> Result<Race> {
-        let mut client = self.pool.get().await?;
+        // 1. try to get race from cache
+        if let Some(race) = self.cache.get_race(race_id) {
+            return Ok(race);
+        }
 
+        // 2. read race from DB
+        let mut client = self.pool.get().await?;
         debug!("Query race {} from DB", race_id);
         let row = Race::query_single(race_id)
             .query(&mut client)
@@ -108,17 +101,15 @@ impl Aquarius {
             .unwrap();
         let race = Race::from(&row);
 
+        // 3. store race in cache
+        self.cache.insert_race(&race).await;
+
         Ok(race)
     }
 
     pub async fn get_race_registrations(&self, race_id: i32) -> Result<Vec<Registration>> {
         debug!("Query registrations for race {} from DB", race_id);
-        let mut client = self.pool.get().await?;
-        let rows = Registration::query_all(race_id)
-            .query(&mut client)
-            .await?
-            .into_first_result()
-            .await?;
+        let rows = self._execute_query(Registration::query_all(race_id)).await;
         let mut registrations: Vec<Registration> = Vec::with_capacity(rows.len());
         for row in &rows {
             let registration = Registration::from(row);
@@ -131,19 +122,13 @@ impl Aquarius {
 
     pub async fn get_heats(&self, regatta_id: i32) -> Result<Vec<Heat>> {
         // 1. try to get heats from cache
-        let heats_opt = self.cache.get_heats(regatta_id);
-        if heats_opt.is_some() {
-            return Ok(heats_opt.unwrap());
+        if let Some(heats) = self.cache.get_heats(regatta_id) {
+            return Ok(heats);
         }
 
         // 2. read heats from DB
         debug!("Query heats of regatta {} from DB", regatta_id);
-        let mut client = self.pool.get().await?;
-        let rows = Heat::query_all(regatta_id)
-            .query(&mut client)
-            .await?
-            .into_first_result()
-            .await?;
+        let rows = self._execute_query(Heat::query_all(regatta_id)).await;
         let mut heats: Vec<Heat> = Vec::with_capacity(rows.len());
         for row in &rows {
             let heat = Heat::from(row);
@@ -159,19 +144,15 @@ impl Aquarius {
 
     pub async fn get_heat_registrations(&self, heat_id: i32) -> Result<Vec<HeatRegistration>> {
         // 1. try to get heat_registrations from cache
-        let opt = self.cache.get_heat_regs(heat_id);
-        if opt.is_some() {
-            return Ok(opt.unwrap());
+        if let Some(heat_regs) = self.cache.get_heat_regs(heat_id) {
+            return Ok(heat_regs);
         }
 
         // 2. read heat_registrations from DB
         debug!("Query registrations of heat {} from DB", heat_id);
-        let mut client = self.pool.get().await?;
-        let rows = HeatRegistration::query_all(heat_id)
-            .query(&mut client)
-            .await?
-            .into_first_result()
-            .await?;
+        let rows = self
+            ._execute_query(HeatRegistration::query_all(heat_id))
+            .await;
         let mut heat_regs: Vec<HeatRegistration> = Vec::with_capacity(rows.len());
         for row in &rows {
             let heat_registration = HeatRegistration::from(row);
@@ -187,25 +168,13 @@ impl Aquarius {
 
     pub async fn get_scoring(&self, regatta_id: i32) -> Result<Vec<Score>> {
         // 1. try to get heat_registrations from cache
-        let opt = self.cache.get_scores(regatta_id);
-        if opt.is_some() {
-            return Ok(opt.unwrap());
+        if let Some(scores) = self.cache.get_scores(regatta_id) {
+            return Ok(scores);
         }
 
         // 2. read scores from DB
         debug!("Query scores of regatta {} from DB", regatta_id);
-        //trace!("Execute query {}", Score::query_all());
-        let mut client = self.pool.get().await?;
-
-        let query = Score::query_all(regatta_id);
-        let rows = query
-            .query(&mut client)
-            .await
-            .unwrap()
-            .into_first_result()
-            .await
-            .unwrap();
-
+        let rows = self._execute_query(Score::query_all(regatta_id)).await;
         let mut scores: Vec<Score> = Vec::with_capacity(rows.len());
         for row in &rows {
             let score = Score::from(row);
@@ -217,5 +186,17 @@ impl Aquarius {
         self.cache.insert_scores(regatta_id, &scores).await;
 
         Ok(scores)
+    }
+
+    async fn _execute_query(&self, query: Query<'_>) -> Vec<Row> {
+        let mut client = self.pool.get().await.unwrap();
+
+        query
+            .query(&mut client)
+            .await
+            .unwrap()
+            .into_first_result()
+            .await
+            .unwrap()
     }
 }
