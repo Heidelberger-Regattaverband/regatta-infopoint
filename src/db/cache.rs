@@ -6,6 +6,7 @@ use stretto::AsyncCache;
 pub struct Cache {
     regatta_cache: AsyncCache<i32, Regatta>,
     races_cache: AsyncCache<i32, Vec<Race>>,
+    race_cache: AsyncCache<i32, Race>,
     heats_cache: AsyncCache<i32, Vec<Heat>>,
     heat_regs_cache: AsyncCache<i32, Vec<HeatRegistration>>,
     scores_cache: AsyncCache<i32, Vec<Score>>,
@@ -19,6 +20,7 @@ impl Cache {
         Cache {
             regatta_cache: AsyncCache::new(10, 1e6 as i64, async_std::task::spawn).unwrap(),
             races_cache: AsyncCache::new(10, 1e6 as i64, async_std::task::spawn).unwrap(),
+            race_cache: AsyncCache::new(100 * 10, 1e6 as i64, async_std::task::spawn).unwrap(),
             heats_cache: AsyncCache::new(200 * 10, 1e6 as i64, async_std::task::spawn).unwrap(),
             heat_regs_cache: AsyncCache::new(200 * 10, 1e6 as i64, async_std::task::spawn).unwrap(),
             scores_cache: AsyncCache::new(10, 1e6 as i64, async_std::task::spawn).unwrap(),
@@ -114,7 +116,6 @@ impl Cache {
     }
 
     // races
-
     pub async fn insert_races(&self, regatta_id: i32, races: &[Race]) {
         self.races_cache
             .insert_with_ttl(regatta_id, races.to_owned(), 1, TTL)
@@ -128,6 +129,26 @@ impl Cache {
             let value = value_ref.value().clone();
             value_ref.release();
             debug!("Reading races of regatta {} from cache.", regatta_id);
+            trace!("From cache: {:?}", value);
+            return Some(value);
+        }
+        None
+    }
+
+    // race
+    pub async fn insert_race(&self, race: &Race) {
+        self.race_cache
+            .insert_with_ttl(race.id, race.to_owned(), 1, TTL)
+            .await;
+        self.race_cache.wait().await.unwrap();
+    }
+
+    pub(crate) fn get_race(&self, race_id: i32) -> Option<Race> {
+        let opt_value_ref = self.race_cache.get(&race_id);
+        if let Some(value_ref) = opt_value_ref {
+            let value = value_ref.value().clone();
+            value_ref.release();
+            debug!("Reading race {} from cache.", race_id);
             trace!("From cache: {:?}", value);
             return Some(value);
         }
