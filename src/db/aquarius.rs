@@ -69,7 +69,7 @@ impl Aquarius {
         }
 
         // 2. read races from DB
-        debug!("Query races for regatta {} from DB", regatta_id);
+        debug!("Query races of regatta {} from DB", regatta_id);
         let rows = self._execute_query(Race::query_all(regatta_id)).await;
         let mut races: Vec<Race> = Vec::with_capacity(rows.len());
         for row in &rows {
@@ -107,8 +107,14 @@ impl Aquarius {
         Ok(race)
     }
 
-    pub async fn get_race_registrations(&self, race_id: i32) -> Result<Vec<Registration>> {
-        debug!("Query registrations for race {} from DB", race_id);
+    pub async fn get_registrations(&self, race_id: i32) -> Result<Vec<Registration>> {
+        // 1. try to get registrations from cache
+        if let Some(race_regs) = self.cache.get_registrations(race_id) {
+            return Ok(race_regs);
+        }
+
+        // 2. read registrations from DB
+        debug!("Query registrations of race {} from DB", race_id);
         let rows = self._execute_query(Registration::query_all(race_id)).await;
         let mut registrations: Vec<Registration> = Vec::with_capacity(rows.len());
         for row in &rows {
@@ -116,6 +122,11 @@ impl Aquarius {
             trace!("{:?}", registration);
             registrations.push(registration);
         }
+
+        // 3. store registrations in cache
+        self.cache
+            .insert_registrations(race_id, &registrations)
+            .await;
 
         Ok(registrations)
     }

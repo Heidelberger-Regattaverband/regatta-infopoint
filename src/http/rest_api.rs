@@ -37,7 +37,7 @@ async fn get_race(path: Path<i32>, data: Data<Aquarius>) -> Json<Race> {
 #[get("/races/{id}/registrations")]
 async fn get_registrations(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Registration>> {
     let race_id = path.into_inner();
-    let races = data.get_race_registrations(race_id).await.unwrap();
+    let races = data.get_registrations(race_id).await.unwrap();
     Json(races)
 }
 
