@@ -1,12 +1,12 @@
-# build image: docker build -t infopoint .
-# run container: docker run -it --rm --name infopoint -p 80:8080 --env DB_PASSWORD= infopoint
+# build image: docker build -t infoportal .
+# run container: docker run -it --rm --name infoportal -p 80:8080 --env DB_PASSWORD= infoportal
 FROM rust:1.64.0
 
 LABEL maintainer="markus@ofterdinger.de"
 
 RUN apt-get update && apt-get upgrade -y && rustup update stable
 
-WORKDIR /usr/src/infopoint
+WORKDIR /usr/src/infoportal
 
 COPY Cargo.toml .
 COPY Cargo.lock .
@@ -16,7 +16,7 @@ COPY static/ ./static/
 EXPOSE 8080
 
 RUN cargo build --release
-CMD ["./target/release/infopoint"]
+CMD ["./target/release/infoportal"]
 
 #RUN cargo install --git https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git --branch main
 #CMD ["infopoint"]
