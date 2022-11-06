@@ -28,6 +28,11 @@
             </Column>
             <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
               <header>
+                <Text text="{i18n>common.seeded}" class="bold" />
+              </header>
+            </Column>
+            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+              <header>
                 <Text text="{i18n>common.state}" class="bold" />
               </header>
             </Column>
@@ -45,6 +50,7 @@
                 <ObjectIdentifier title="{path: 'races>', formatter: '.formatter.raceLabel'}" text="{races>longLabel} {races>comment}" />
                 <Text text="{path: 'races>', formatter: '.formatter.distanceLabel'}" />
                 <Text text="{races>raceMode}" />
+                <core:Icon src="{= ${races>seeded} ? 'sap-icon://accept' : 'sap-icon://cancel' }" alt="{i18n>common.seeded}" />
                 <core:Icon src="{= ${races>cancelled} ? 'sap-icon://cancel' : 'sap-icon://accept'}" alt="{i18n>common.cancelled}" />
                 <Text text="{races>registrations_count}" />
               </cells>
