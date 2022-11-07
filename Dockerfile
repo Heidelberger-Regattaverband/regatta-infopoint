@@ -1,6 +1,6 @@
 # build image: docker build -t infoportal .
 # run container: docker run -it --rm --name infoportal -p 80:8080 --env DB_PASSWORD= infoportal
-FROM rust:1.64.0
+FROM rust:1.65.0
 
 LABEL maintainer="markus@ofterdinger.de"
 
