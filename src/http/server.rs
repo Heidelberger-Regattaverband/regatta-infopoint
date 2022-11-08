@@ -14,8 +14,10 @@ use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
 use log::{debug, info};
 use std::{env, future::Ready, io::Result, time::Duration};
 
-pub static SCOPE_API: &str = "/api";
-static PATH_INFOPORTAL: &str = "/infoportal/";
+/// Path to REST API
+pub const PATH_REST_API: &str = "/api";
+/// Path to Infoportal UI
+const PATH_INFOPORTAL: &str = "/infoportal/";
 
 pub struct Server {}
 
@@ -31,7 +33,7 @@ impl Server {
                 .wrap(Self::get_prometeus())
                 .app_data(Data::clone(&data))
                 .service(
-                    scope(SCOPE_API)
+                    scope(PATH_REST_API)
                         .service(rest_api::get_regattas)
                         .service(rest_api::get_regatta)
                         .service(rest_api::get_race)
