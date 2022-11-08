@@ -1,5 +1,5 @@
-mod http;
 mod db;
+mod http;
 
 use crate::http::server::Server;
 use dotenv::dotenv;
@@ -18,7 +18,7 @@ mod tests {
     use super::*;
     use crate::http::{
         rest_api,
-        server::{create_app_data, SCOPE_API},
+        server::{create_app_data, PATH_REST_API},
     };
     use actix_web::{
         test,
@@ -34,7 +34,7 @@ mod tests {
 
         let app = test::init_service(
             App::new().service(
-                scope(SCOPE_API)
+                scope(PATH_REST_API)
                     .service(rest_api::get_regattas)
                     .app_data(Data::clone(&app_data)),
             ),
@@ -53,7 +53,7 @@ mod tests {
 
         let app = test::init_service(
             App::new().service(
-                scope(SCOPE_API)
+                scope(PATH_REST_API)
                     .service(rest_api::get_heats)
                     .app_data(Data::clone(&app_data)),
             ),
