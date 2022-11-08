@@ -9,11 +9,13 @@ use actix_web::{
     web::{scope, Data},
     App, Error, HttpServer,
 };
+use actix_web_lab::web as web_lab;
 use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
 use log::{debug, info};
 use std::{env, future::Ready, io::Result, time::Duration};
 
 pub static SCOPE_API: &str = "/api";
+static PATH_INFOPORTAL: &str = "/infoportal/";
 
 pub struct Server {}
 
@@ -21,12 +23,12 @@ impl Server {
     pub async fn start() -> Result<()> {
         let data = create_app_data().await;
 
-        let rl_config = get_rate_limiter_config();
+        let rl_config = Self::get_rate_limiter_config();
 
         let mut http_server = HttpServer::new(move || {
             App::new()
-                .wrap(Self::_get_rate_limiter(rl_config))
-                .wrap(Self::_get_prometeus())
+                .wrap(Self::get_rate_limiter(rl_config))
+                .wrap(Self::get_prometeus())
                 .app_data(Data::clone(&data))
                 .service(
                     scope(SCOPE_API)
@@ -40,12 +42,13 @@ impl Server {
                         .service(rest_api::get_scoring),
                 )
                 .service(
-                    Files::new("/infoportal", "./static/infoportal")
+                    Files::new(PATH_INFOPORTAL, "./static/infoportal")
                         .index_file("index.html")
                         .use_last_modified(true)
                         .use_etag(true)
                         .redirect_to_slash_directory(),
                 )
+                .service(web_lab::redirect("/", PATH_INFOPORTAL))
         })
         .bind(get_http_bind())?;
 
@@ -60,14 +63,16 @@ impl Server {
         http_server.run().await
     }
 
-    fn _get_prometeus() -> PrometheusMetrics {
+    /// Returns a new PrometheusMetrics instance.
+    fn get_prometeus() -> PrometheusMetrics {
         PrometheusMetricsBuilder::new("api")
             .endpoint("/metrics")
             .build()
             .unwrap()
     }
 
-    fn _get_rate_limiter(
+    /// Returns a new RateLimiter instance.
+    fn get_rate_limiter(
         rl_config: (u64, u64),
     ) -> RateLimiter<
         InMemoryBackend,
@@ -81,6 +86,23 @@ impl Server {
         RateLimiter::builder(InMemoryBackend::builder().build(), input)
             .add_headers()
             .build()
+    }
+
+    /// Returns the rate limiter configuration taken from the environment.
+    fn get_rate_limiter_config() -> (u64, u64) {
+        let max_requests = env::var("HTTP_RL_MAX_REQUESTS")
+            .expect("env variable `HTTP_RL_MAX_REQUESTS` should be set")
+            .parse()
+            .unwrap();
+        let interval = env::var("HTTP_RL_INTERVAL")
+            .expect("env variable `HTTP_RL_INTERVAL` should be set")
+            .parse()
+            .unwrap();
+        debug!(
+            "HTTP Server rate limiter max. requests {} in {} seconds.",
+            max_requests, interval
+        );
+        (max_requests, interval)
     }
 }
 
@@ -101,22 +123,6 @@ fn get_http_workers() -> Option<usize> {
         Ok(workers) => Some(workers.parse().unwrap()),
         Err(_error) => Option::None,
     }
-}
-
-fn get_rate_limiter_config() -> (u64, u64) {
-    let max_requests = env::var("HTTP_RL_MAX_REQUESTS")
-        .expect("env variable `HTTP_RL_MAX_REQUESTS` should be set")
-        .parse()
-        .unwrap();
-    let interval = env::var("HTTP_RL_INTERVAL")
-        .expect("env variable `HTTP_RL_INTERVAL` should be set")
-        .parse()
-        .unwrap();
-    debug!(
-        "HTTP Server rate limiter max. requests {} in {} seconds.",
-        max_requests, interval
-    );
-    (max_requests, interval)
 }
 
 pub async fn create_app_data() -> Data<Aquarius> {
