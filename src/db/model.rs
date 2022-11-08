@@ -55,6 +55,7 @@ pub struct Race {
     race_mode: String,
     cancelled: bool,
     registrations_count: i32,
+    seeded: bool,
 }
 impl Race {
     pub fn from(row: &Row) -> Self {
@@ -73,14 +74,16 @@ impl Race {
             race_mode: Column::get(row, "RaceMode_Title"),
             cancelled: Column::get(row, "Offer_Cancelled"),
             registrations_count: Column::get(row, "Registrations_Count"),
+            seeded:  Column::get(row, "isSet"),
         }
     }
 
     pub(super) fn query_all<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT o.*, rm.*,
+        let mut query = Query::new("SELECT DISTINCT o.*, rm.*, hrv_o.*,
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count
             FROM Offer o
             JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
+            FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
             WHERE o.Offer_Event_ID_FK = @P1 ORDER BY o.Offer_SortValue ASC");
         query.bind(regatta_id);
         query
@@ -176,11 +179,12 @@ impl Heat {
     }
 
     pub(super) fn query_all<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT c.*, ac.*, r.*, rm.RaceMode_Title,
+        let mut query = Query::new("SELECT DISTINCT c.*, ac.*, r.*, rm.RaceMode_Title, hrv_o.*,
             o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
             FROM Comp AS c
             FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
             JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
+            FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
             FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
             FULL OUTER JOIN CompReferee AS cr ON cr.CompReferee_Comp_ID_FK = c.Comp_ID
             FULL OUTER JOIN Referee AS r ON r.Referee_ID = cr.CompReferee_Referee_ID_FK

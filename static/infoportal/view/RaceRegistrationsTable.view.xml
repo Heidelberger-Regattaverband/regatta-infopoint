@@ -31,6 +31,7 @@
                 <layout:VerticalLayout class="sapUiMediumMarginEnd">
                   <ObjectAttribute title="{i18n>common.distance}" text="{path: 'race>/', formatter: '.formatter.distanceLabel'}" />
                   <ObjectAttribute title="{i18n>common.raceMode}" text="{race>/raceMode}" />
+                  <ObjectAttribute title="{i18n>common.seeded}" text="{race>/seeded}" />
                 </layout:VerticalLayout>
               </layout:HorizontalLayout>
               <layout:VerticalLayout>
@@ -42,7 +43,7 @@
 
           <!-- DynamicPage Content -->
           <f:content>
-            <ScrollContainer height="100%" vertical="true">
+            <!-- <ScrollContainer height="100%" vertical="true"> -->
 
               <Table id="registrationsTable" autoPopinMode="true" items="{path: 'raceRegistrations>/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}" growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
                 <columns>
@@ -56,7 +57,7 @@
                       <Text text="{i18n>common.boat}" class="bold" />
                     </header>
                   </Column>
-                  <Column hAlign="Begin" width="7rem" importance="Low" popinDisplay="Inline">
+                  <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline">
                     <header>
                       <Text text="{i18n>common.clubRegistration}" class="bold" />
                     </header>
@@ -83,7 +84,7 @@
                   </ColumnListItem>
                 </items>
               </Table>
-            </ScrollContainer>
+            <!-- </ScrollContainer> -->
 
           </f:content>
         </f:DynamicPage>
