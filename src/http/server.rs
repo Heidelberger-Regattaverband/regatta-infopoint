@@ -41,7 +41,8 @@ impl Server {
                         .service(rest_api::get_heats)
                         .service(rest_api::get_registrations)
                         .service(rest_api::get_heat_registrations)
-                        .service(rest_api::get_scoring),
+                        .service(rest_api::get_scoring)
+                        .service(rest_api::get_statistics),
                 )
                 .service(
                     Files::new(PATH_INFOPORTAL, "./static/infoportal")
