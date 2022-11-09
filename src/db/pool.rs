@@ -68,7 +68,7 @@ impl bb8::ManageConnection for TiberiusConnectionManager {
 pub struct PoolFactory {}
 
 impl PoolFactory {
-    pub async fn new() -> TiberiusPool {
+    pub async fn create_pool() -> TiberiusPool {
         let db_pool_size: u32 = env::var("DB_POOL_MAX_SIZE")
             .expect("env variable `DB_POOL_MAX_SIZE` should be set")
             .parse()

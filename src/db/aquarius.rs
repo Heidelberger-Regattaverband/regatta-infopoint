@@ -18,7 +18,7 @@ impl Aquarius {
     pub async fn new() -> Self {
         Aquarius {
             cache: Cache::new(),
-            pool: PoolFactory::new().await,
+            pool: PoolFactory::create_pool().await,
         }
     }
 
