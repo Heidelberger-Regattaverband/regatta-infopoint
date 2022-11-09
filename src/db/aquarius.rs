@@ -1,7 +1,7 @@
 use super::{
     cache::Cache,
     model::{Heat, HeatRegistration, Race, Regatta, Registration, Score},
-    pool::create_pool,
+    pool::PoolFactory,
     TiberiusPool,
 };
 use anyhow::{Ok, Result};
@@ -18,7 +18,7 @@ impl Aquarius {
     pub async fn new() -> Self {
         Aquarius {
             cache: Cache::new(),
-            pool: create_pool().await,
+            pool: PoolFactory::new().await,
         }
     }
 

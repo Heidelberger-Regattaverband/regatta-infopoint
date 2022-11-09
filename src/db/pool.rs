@@ -1,9 +1,10 @@
 use async_std::net::TcpStream;
 use async_trait::async_trait;
-use bb8::Pool;
 use log::info;
 use std::env;
 use tiberius::Config;
+
+use super::TiberiusPool;
 
 #[derive(Clone, Debug)]
 pub struct TiberiusConnectionManager {
@@ -64,7 +65,20 @@ impl bb8::ManageConnection for TiberiusConnectionManager {
     }
 }
 
-pub async fn create_pool() -> Pool<TiberiusConnectionManager> {
-    let manager = TiberiusConnectionManager::new();
-    Pool::builder().max_size(5).build(manager).await.unwrap()
+pub struct PoolFactory {}
+
+impl PoolFactory {
+    pub async fn new() -> TiberiusPool {
+        let db_pool_size: u32 = env::var("DB_POOL_MAX_SIZE")
+            .expect("env variable `DB_POOL_MAX_SIZE` should be set")
+            .parse()
+            .unwrap();
+
+        let manager = TiberiusConnectionManager::new();
+        bb8::Pool::builder()
+            .max_size(db_pool_size)
+            .build(manager)
+            .await
+            .unwrap()
+    }
 }
