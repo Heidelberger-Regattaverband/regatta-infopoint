@@ -1,6 +1,6 @@
 use super::{
     cache::Cache,
-    model::{Heat, HeatRegistration, Race, Regatta, Registration, Score},
+    model::{Heat, HeatRegistration, Race, Regatta, Registration, Score, Statistics},
     pool::PoolFactory,
     TiberiusPool,
 };
@@ -82,6 +82,21 @@ impl Aquarius {
         self.cache.insert_races(regatta_id, &races).await;
 
         Ok(races)
+    }
+
+    pub async fn get_statistics(&self, regatta_id: i32) -> Result<Statistics> {
+        let mut client = self.pool.get().await?;
+
+        debug!("Query statistics of regatta {} from DB", regatta_id);
+        let row = Statistics::query_all(regatta_id)
+            .query(&mut client)
+            .await?
+            .into_row()
+            .await?
+            .unwrap();
+        let stats = Statistics::from(&row);
+
+        Ok(stats)
     }
 
     pub async fn get_race(&self, race_id: i32) -> Result<Race> {
