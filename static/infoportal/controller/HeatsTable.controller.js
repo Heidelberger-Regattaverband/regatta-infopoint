@@ -14,8 +14,8 @@ sap.ui.define([
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this.getEventBus().subscribe("heat", "previous", this.previousHeat, this);
-      this.getEventBus().subscribe("heat", "next", this.nextHeat, this);
+      this.getEventBus().subscribe("heat", "previous", this._onPreviousHeatEvent, this);
+      this.getEventBus().subscribe("heat", "next", this._onNextHeatEvent, this);
 
       this.getRouter().getRoute("heats").attachMatched(function () {
         this.byId("heatsIconTabBar").setSelectedKey("all");
@@ -60,7 +60,7 @@ sap.ui.define([
       this.navBack("startpage");
     },
 
-    previousHeat: function (channelId, eventId, parametersMap) {
+    _onPreviousHeatEvent: function (channelId, eventId, parametersMap) {
       const iIndex = this.heatsTable.indexOfItem(this.heatsTable.getSelectedItem());
       const iPreviousIndex = iIndex > 1 ? iIndex - 1 : 0;
 
@@ -71,7 +71,7 @@ sap.ui.define([
       }
     },
 
-    nextHeat: function (channelId, eventId, parametersMap) {
+    _onNextHeatEvent: function (channelId, eventId, parametersMap) {
       const aHeats = this.getViewModel("heats").getData();
 
       this._growTable(aHeats);
@@ -87,9 +87,9 @@ sap.ui.define([
 
     _loadHeatsModel: function () {
       if (!this.oHeatsModel) {
-        const oRegatta = this.getOwnerComponent().getModel("regatta").getData();
+        const iRegattaId = this.getOwnerComponent().getRegattaId();
         this.oHeatsModel = new JSONModel();
-        this.oHeatsModel.loadData("/api/regattas/" + oRegatta.id + "/heats");
+        this.oHeatsModel.loadData("/api/regattas/" + iRegattaId + "/heats");
         this.setViewModel(this.oHeatsModel, "heats");
       }
     },
