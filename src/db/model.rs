@@ -74,7 +74,7 @@ impl Race {
             race_mode: Column::get(row, "RaceMode_Title"),
             cancelled: Column::get(row, "Offer_Cancelled"),
             registrations_count: Column::get(row, "Registrations_Count"),
-            seeded:  Column::get(row, "isSet"),
+            seeded: Column::get(row, "isSet"),
         }
     }
 
@@ -331,6 +331,50 @@ impl Score {
               FROM HRV_Score s
               JOIN Club AS c ON s.club_id = c.Club_ID
               WHERE s.event_id = @P1 ORDER BY s.rank ASC",
+        );
+        query.bind(regatta_id);
+        query
+    }
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct Statistics {
+    races: i32,
+    races_cancelled: i32,
+    heats: i32,
+    heats_cancelled: i32,
+    heats_pending: i32,
+    heats_started: i32,
+    heats_finished: i32,
+    heats_official: i32,
+}
+
+impl Statistics {
+    pub(super) fn from(row: &Row) -> Self {
+        Statistics {
+            races: Column::get(row, "races"),
+            races_cancelled: Column::get(row, "races_cancelled"),
+            heats: Column::get(row, "heats"),
+            heats_cancelled: Column::get(row, "heats_cancelled"),
+            heats_finished: Column::get(row, "heats_finished"),
+            heats_official: Column::get(row, "heats_official"),
+            heats_pending: Column::get(row, "heats_pending"),
+            heats_started: Column::get(row, "heats_started"),
+        }
+    }
+
+    pub(super) fn query_all<'a>(regatta_id: i32) -> Query<'a> {
+        let mut query = Query::new(
+            "SELECT
+            (SELECT COUNT(*) FROM Offer o WHERE o.Offer_Event_ID_FK = @P1) AS races,
+            (SELECT COUNT(*) FROM Offer o WHERE o.Offer_Event_ID_FK = @P1 AND o.Offer_Cancelled > 0) AS races_cancelled,
+            (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 ) AS heats,
+            (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_Cancelled > 0 ) AS heats_cancelled,
+            (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 4 ) AS heats_official,
+            (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 5 ) AS heats_finished,
+            (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 2 ) AS heats_started,
+            (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State < 2 AND c.Comp_Cancelled = 0 ) AS heats_pending
+          ",
         );
         query.bind(regatta_id);
         query
