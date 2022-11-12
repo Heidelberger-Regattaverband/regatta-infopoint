@@ -19,7 +19,7 @@ sap.ui.define([
       this.getRouter().initialize();
 
       const oRegattaModel = new JSONModel();
-      oRegattaModel.loadData("/api/regattas/12");
+      oRegattaModel.loadData("/api/regattas/" + this.getRegattaId());
       this.setModel(oRegattaModel, "regatta");
 
       // set device model
@@ -37,6 +37,10 @@ sap.ui.define([
         }
       }
       return this._sContentDensityClass;
+    },
+
+    getRegattaId: function () {
+      return 12;
     }
 
   });
