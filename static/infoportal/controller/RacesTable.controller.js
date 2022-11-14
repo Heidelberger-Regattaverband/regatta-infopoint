@@ -66,7 +66,7 @@ sap.ui.define([
       if (!this.oRacesModel) {
         const iRegattaId = this.getOwnerComponent().getRegattaId();
         const sNoDataText = this.racesTable.getNoDataText();
-        this.racesTable.setNoDataText("Lade Rennen ...");
+        this.racesTable.setNoDataText(this.i18n("common.loadingData"));
         this.oRacesModel = new JSONModel();
         await this.oRacesModel.loadData("/api/regattas/" + iRegattaId + "/races");
         this.setViewModel(this.oRacesModel, "races");

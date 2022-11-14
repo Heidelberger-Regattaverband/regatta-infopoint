@@ -61,6 +61,12 @@ sap.ui.define([
       } else {
         this.getOwnerComponent().getRouter().navTo(sTarget, {}, true /* no history*/);
       }
+    },
+
+    i18n: function (sKey) {
+      var oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+      var sTxt = oResourceBundle.getText(sKey);
+      return sTxt;
     }
 
   });
