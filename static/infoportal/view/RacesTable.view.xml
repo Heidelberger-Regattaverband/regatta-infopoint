@@ -18,7 +18,7 @@
             </Column>
             <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
               <header>
-                <Text text="{i18n>common.distance}" class="bold" />
+                <Text text="{i18n>common.distance}" class="bold" wrapping="false" />
               </header>
             </Column>
             <Column hAlign="Center" width="7rem" importance="Low" popinDisplay="Inline">
