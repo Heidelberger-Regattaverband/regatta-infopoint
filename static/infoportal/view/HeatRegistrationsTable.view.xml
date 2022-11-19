@@ -28,7 +28,7 @@
               <layout:HorizontalLayout allowWrapping="true">
                 <layout:VerticalLayout class="sapUiMediumMarginEnd">
                   <ObjectAttribute title="{i18n>common.heatNr}" text="{heat>/number}" />
-                  <ObjectAttribute title="{i18n>common.date}" text="{path: 'heat>/date', formatter: '.formatter.dateLabel'}" />
+                  <ObjectAttribute title="{i18n>common.day}" text="{path: 'heat>/date', formatter: '.formatter.dateLabel'}" />
                   <ObjectAttribute title="{i18n>common.time}" text="{path: 'heat>/time', formatter: '.formatter.timeLabel'}" />
                 </layout:VerticalLayout>
 

@@ -17,10 +17,9 @@ sap.ui.define([
     },
 
     _loadScoringModel: function () {
-      const iRegattaId = this.getOwnerComponent().getRegattaId();
       const oScoringModel = new JSONModel();
-      oScoringModel.loadData("/api/regattas/" + iRegattaId + "/scoring");
-      this.getOwnerComponent().setModel(oScoringModel, "scoring");
+      oScoringModel.loadData("/api/regattas/" + this.getRegattaId() + "/scoring");
+      this.setViewModel(oScoringModel, "scoring");
     }
 
   });

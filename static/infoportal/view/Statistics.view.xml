@@ -1,0 +1,55 @@
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.Statistics" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:l="sap.ui.layout">
+  <mvc:content>
+
+    <Page title="{i18n>launchpad.statistics.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
+      <content>
+        <!-- <Table autoPopinMode="true" items="{statistics>/items/}" growing="true" growingScrollToLoad="true" growingThreshold="50" sticky="ColumnHeaders" class="sapUiNoContentPadding">
+          <columns>
+            <Column hAlign="Begin" width="4rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="Parameter" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column hAlign="Begin" width="5rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="Wert" class="bold" wrapping="false" />
+              </header>
+            </Column>
+          </columns>
+
+          <items>
+            <ColumnListItem>
+              <cells>
+                <Text text="{statistics>name}" />
+                <Text text="{statistics>value}" />
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table> -->
+
+        <List items="{statistics>/items/}">
+          <ObjectListItem title="{statistics>name}" number="{statistics>value}"></ObjectListItem>
+        </List>
+
+        <!-- <l:Grid defaultSpan="XL6 L6 M6 S6">
+          <Title text="Rennen insgesamt:" class="sapUiTinyMarginBegin sapUiSmallMarginTop" />
+          <Text text="{statistics>/races/all}" class="sapUiTinyMarginBegin sapUiSmallMarginTop" />
+          <Title text="Rennen abgesagt:" />
+          <Text text="{statistics>/races/cancelled}" />
+          <Title text="Laeufe insgesamt:" />
+          <Text text="{statistics>/heats/all}" />
+          <Title text="Laeufe abgesagt:" />
+          <Text text="{statistics>/heats/cancelled}" />
+          <Title text="Laeufe gestartet:" />
+          <Text text="{statistics>/heats/started}" />
+          <Title text="Laeufe beendet:" />
+          <Text text="{statistics>/heats/finished}" />
+          <Title text="Laeufe official:" />
+          <Text text="{statistics>/heats/official}" />
+        </l:Grid> -->
+
+      </content>
+    </Page>
+
+  </mvc:content>
+</mvc:View>

@@ -59,16 +59,17 @@ sap.ui.define([
       if (sPreviousHash) {
         window.history.go(-1);
       } else {
-        this.getOwnerComponent().getRouter().navTo(sTarget, {}, true /* no history*/);
+        this.getRouter().navTo(sTarget, {}, true /* no history*/);
       }
     },
 
-    i18n: function (sKey) {
-      var oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-      var sTxt = oResourceBundle.getText(sKey);
-      return sTxt;
-    }
+    i18n: function (sKey, aArgs) {
+      return this.getResourceBundle().getText(sKey, aArgs);
+    },
 
+    getRegattaId: function () {
+      return this.getOwnerComponent().getRegattaId();
+    }
   });
 
 });
