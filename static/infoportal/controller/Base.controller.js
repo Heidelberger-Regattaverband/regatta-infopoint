@@ -63,9 +63,8 @@ sap.ui.define([
       }
     },
 
-    i18n: function (sKey) {
-      const oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-      return oResourceBundle.getText(sKey);
+    i18n: function (sKey, aArgs) {
+      return this.getResourceBundle().getText(sKey, aArgs);
     },
 
     getRegattaId: function () {
