@@ -127,16 +127,15 @@ sap.ui.define(function () {
         }
       }
 
-      const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
       switch (oHeat.round_code) {
         case "A":
-          return oResourceBundle.getText("heat.label.division", [oHeat.label, sGroupValue]);
+          return this.i18n("heat.label.division", [oHeat.label, sGroupValue]);
         case "R":
-          return oResourceBundle.getText("heat.label.mainRace", [oHeat.label, sGroupValue]);
+          return this.i18n("heat.label.mainRace", [oHeat.label, sGroupValue]);
         case "V":
-          return oResourceBundle.getText("heat.label.forerun", [oHeat.label, sGroupValue]);
+          return this.i18n("heat.label.forerun", [oHeat.label, sGroupValue]);
         case "F":
-          return oResourceBundle.getText("heat.label.final", [sGroupValue]);
+          return this.i18n("heat.label.final", [sGroupValue]);
         default:
           return "";
       }
