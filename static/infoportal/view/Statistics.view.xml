@@ -1,38 +1,25 @@
-<mvc:View controllerName="de.regatta_hd.infopoint.controller.Statistics" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.Statistics" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:l="sap.ui.layout">
   <mvc:content>
 
     <Page title="{i18n>launchpad.statistics.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <content>
 
-        <Table autoPopinMode="true" items="{scoring>/}" growing="true" growingScrollToLoad="true" growingThreshold="50" sticky="ColumnHeaders" class="sapUiNoContentPadding">
-          <columns>
-            <Column hAlign="Center" width="4rem" importance="High" popinDisplay="Inline">
-              <header>
-                <Text text="{i18n>common.rank}" class="bold" wrapping="false" />
-              </header>
-            </Column>
-            <Column hAlign="End" width="5rem" importance="Low" popinDisplay="Inline">
-              <header>
-                <Text text="{i18n>scoringTable.column.points}" class="bold" wrapping="false" />
-              </header>
-            </Column>
-            <Column hAlign="Begin" width="auto" importance="High" popinDisplay="Inline">
-              <header>
-                <Text text="{i18n>scoringTable.column.club}" class="bold" wrapping="false" />
-              </header>
-            </Column>
-          </columns>
-
-          <items>
-            <ColumnListItem>
-              <cells>
-                <Text text="{scoring>rank}" />
-                <Text text="{path: 'scoring>points', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 3} }" />
-                <Text text="{scoring>club/shortName}" />
-              </cells>
-            </ColumnListItem>
-          </items>
-        </Table>
+        <l:Grid defaultSpan="XL6 L6 M6 S6">
+          <Title text="Rennen insgesamt:" />
+          <Text text="{statistics>/races/all}" />
+          <Title text="Rennen abgesagt:" />
+          <Text text="{statistics>/races/cancelled}" />
+          <Title text="Laeufe insgesamt:" />
+          <Text text="{statistics>/heats/all}" />
+          <Title text="Laeufe abgesagt:" />
+          <Text text="{statistics>/heats/cancelled}" />
+          <Title text="Laeufe gestartet:" />
+          <Text text="{statistics>/heats/started}" />
+          <Title text="Laeufe beendet:" />
+          <Text text="{statistics>/heats/finished}" />
+          <Title text="Laeufe official:" />
+          <Text text="{statistics>/heats/official}" />
+        </l:Grid>
 
       </content>
     </Page>
