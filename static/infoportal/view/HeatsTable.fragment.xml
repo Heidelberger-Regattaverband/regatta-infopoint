@@ -8,7 +8,7 @@
       </Column>
       <Column hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
         <header>
-          <Text text="{i18n>heatsTable.column.day}" class="bold" wrapping="false" />
+          <Text text="{i18n>common.day}" class="bold" wrapping="false" />
         </header>
       </Column>
       <Column hAlign="Center" width="4rem" importance="High" popinDisplay="Inline">
