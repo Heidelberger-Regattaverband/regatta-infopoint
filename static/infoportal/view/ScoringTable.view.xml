@@ -13,12 +13,12 @@
             </Column>
             <Column hAlign="End" width="5rem" importance="Low" popinDisplay="Inline">
               <header>
-                <Text text="{i18n>scoringTable.column.points}" class="bold" wrapping="false" />
+                <Text text="{i18n>common.points}" class="bold" wrapping="false" />
               </header>
             </Column>
             <Column hAlign="Begin" width="auto" importance="High" popinDisplay="Inline">
               <header>
-                <Text text="{i18n>scoringTable.column.club}" class="bold" wrapping="false" />
+                <Text text="{i18n>common.club}" class="bold" wrapping="false" />
               </header>
             </Column>
           </columns>

@@ -68,7 +68,7 @@ sap.ui.define(function () {
 
     stateLabel: function (oHeat) {
       if (oHeat.cancelled) {
-        return this.i18n("heat.state.cancelled");
+        return this.i18n("common.cancelled");
       } else {
         switch (oHeat.state) {
           default:
