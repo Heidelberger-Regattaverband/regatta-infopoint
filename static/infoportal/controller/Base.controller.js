@@ -59,7 +59,7 @@ sap.ui.define([
       if (sPreviousHash) {
         window.history.go(-1);
       } else {
-        this.getOwnerComponent().getRouter().navTo(sTarget, {}, true /* no history*/);
+        this.getRouter().navTo(sTarget, {}, true /* no history*/);
       }
     },
 
