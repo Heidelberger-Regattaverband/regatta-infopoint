@@ -67,25 +67,23 @@ sap.ui.define(function () {
     },
 
     stateLabel: function (oHeat) {
-      const resourceBundle = this.getView().getModel("i18n").getResourceBundle();
-
       if (oHeat.cancelled) {
-        return resourceBundle.getText("heat.state.cancelled");
+        return this.i18n("heat.state.cancelled");
       } else {
         switch (oHeat.state) {
           default:
           case 0:
-            return resourceBundle.getText("heat.state.initial");
+            return this.i18n("heat.state.initial");
           case 1:
-            return resourceBundle.getText("heat.state.scheduled");
+            return this.i18n("heat.state.scheduled");
           case 2:
-            return resourceBundle.getText("heat.state.started");
+            return this.i18n("heat.state.started");
           case 4:
-            return resourceBundle.getText("heat.state.official");
+            return this.i18n("heat.state.official");
           case 5:
-            return resourceBundle.getText("heat.state.finished");
+            return this.i18n("heat.state.finished");
           case 6:
-            return resourceBundle.getText("heat.state.photoFinish");
+            return this.i18n("heat.state.photoFinish");
         }
       }
     },
