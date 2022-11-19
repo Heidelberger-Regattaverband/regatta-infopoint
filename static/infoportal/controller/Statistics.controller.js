@@ -21,15 +21,17 @@ sap.ui.define([
       await oStatisticsModel.loadData("/api/regattas/" + this.getRegattaId() + "/statistics");
 
       const oStatistics = oStatisticsModel.getData();
-      oStatistics.items = [];
-      oStatistics.items.push({ name: this.i18n("statistics.races.all"), value: oStatistics.races.all });
-      oStatistics.items.push({ name: this.i18n("statistics.races.cancelled"), value: oStatistics.races.cancelled });
-      oStatistics.items.push({ name: this.i18n("statistics.heats.all"), value: oStatistics.heats.all });
-      oStatistics.items.push({ name: this.i18n("statistics.heats.official"), value: oStatistics.heats.official });
-      oStatistics.items.push({ name: this.i18n("statistics.heats.finished"), value: oStatistics.heats.finished });
-      oStatistics.items.push({ name: this.i18n("statistics.heats.started"), value: oStatistics.heats.started });
-      oStatistics.items.push({ name: this.i18n("statistics.heats.pending"), value: oStatistics.heats.pending });
-      oStatistics.items.push({ name: this.i18n("statistics.heats.cancelled"), value: oStatistics.heats.cancelled });
+      oStatistics.items = { registrations: [], races: [], heats: [] };
+      oStatistics.items.registrations.push({ name: this.i18n("common.all"), value: oStatistics.registrations.all });
+      oStatistics.items.registrations.push({ name: this.i18n("common.cancelled"), value: oStatistics.registrations.cancelled });
+      oStatistics.items.races.push({ name: this.i18n("common.all"), value: oStatistics.races.all });
+      oStatistics.items.races.push({ name: this.i18n("common.cancelled"), value: oStatistics.races.cancelled });
+      oStatistics.items.heats.push({ name: this.i18n("common.all"), value: oStatistics.heats.all });
+      oStatistics.items.heats.push({ name: this.i18n("heat.state.official"), value: oStatistics.heats.official });
+      oStatistics.items.heats.push({ name: this.i18n("heat.state.finished"), value: oStatistics.heats.finished });
+      oStatistics.items.heats.push({ name: this.i18n("heat.state.started"), value: oStatistics.heats.started });
+      oStatistics.items.heats.push({ name: this.i18n("statistics.heats.pending"), value: oStatistics.heats.pending });
+      oStatistics.items.heats.push({ name: this.i18n("common.cancelled"), value: oStatistics.heats.cancelled });
 
       this.setViewModel(oStatisticsModel, "statistics");
     }

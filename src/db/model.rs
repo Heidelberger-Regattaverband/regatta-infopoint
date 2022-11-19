@@ -341,6 +341,7 @@ impl Score {
 pub struct Statistics {
     races: RacesStatistics,
     heats: HeatsStatistics,
+    registrations: RegistrationsStatistics,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -359,6 +360,12 @@ struct HeatsStatistics {
     official: i32,
 }
 
+#[derive(Debug, Serialize, Clone)]
+struct RegistrationsStatistics {
+    all: i32,
+    cancelled: i32,
+}
+
 impl Statistics {
     pub(super) fn from(row: &Row) -> Self {
         let races = RacesStatistics {
@@ -373,7 +380,15 @@ impl Statistics {
             pending: Column::get(row, "heats_pending"),
             started: Column::get(row, "heats_started"),
         };
-        Statistics { races, heats }
+        let registrations = RegistrationsStatistics {
+            all: Column::get(row, "registrations_all"),
+            cancelled: Column::get(row, "registrations_cancelled"),
+        };
+        Statistics {
+            races,
+            heats,
+            registrations,
+        }
     }
 
     pub(super) fn query_all<'a>(regatta_id: i32) -> Query<'a> {
@@ -386,7 +401,9 @@ impl Statistics {
             (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 4 ) AS heats_official,
             (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 5 OR c.Comp_State = 6 ) AS heats_finished,
             (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 2 ) AS heats_started,
-            (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State < 2 AND c.Comp_Cancelled = 0 ) AS heats_pending
+            (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State < 2 AND c.Comp_Cancelled = 0 ) AS heats_pending,
+            (SELECT COUNT(*) FROM Entry e WHERE e.Entry_Event_ID_FK = @P1) AS registrations_all,
+            (SELECT COUNT(*) FROM Entry e WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue > 0) AS registrations_cancelled
           ",
         );
         query.bind(regatta_id);
