@@ -88,7 +88,7 @@ sap.ui.define([
     _loadHeatsModel: function () {
       if (!this.oHeatsModel) {
         this.oHeatsModel = new JSONModel();
-        this.oHeatsModel.loadData("/api/regattas/" + this.getOwnerComponent().getRegattaId() + "/heats");
+        this.oHeatsModel.loadData("/api/regattas/" + this.getRegattaId() + "/heats");
         this.setViewModel(this.oHeatsModel, "heats");
       }
     },

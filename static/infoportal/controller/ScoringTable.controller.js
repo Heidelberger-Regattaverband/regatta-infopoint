@@ -18,7 +18,7 @@ sap.ui.define([
 
     _loadScoringModel: function () {
       const oScoringModel = new JSONModel();
-      oScoringModel.loadData("/api/regattas/" + this.getOwnerComponent().getRegattaId() + "/scoring");
+      oScoringModel.loadData("/api/regattas/" + this.getRegattaId() + "/scoring");
       this.setViewModel(oScoringModel, "scoring");
     }
 
