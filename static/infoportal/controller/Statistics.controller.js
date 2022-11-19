@@ -22,14 +22,14 @@ sap.ui.define([
 
       const oStatistics = oStatisticsModel.getData();
       oStatistics.items = [];
-      oStatistics.items.push({ name: "Rennen gesamnt", value: oStatistics.races.all });
-      oStatistics.items.push({ name: "Rennen abgesagt", value: oStatistics.races.cancelled });
-      oStatistics.items.push({ name: "Laeufe gesamnt", value: oStatistics.heats.all });
-      oStatistics.items.push({ name: "Laeufe abgesagt", value: oStatistics.heats.cancelled });
-      oStatistics.items.push({ name: "Laeufe gestarted", value: oStatistics.heats.started });
-      oStatistics.items.push({ name: "Laeufe beendet", value: oStatistics.heats.finished });
-      oStatistics.items.push({ name: "Laeufe offizielle", value: oStatistics.heats.official });
-      oStatistics.items.push({ name: "Laeufe bevorstehend", value: oStatistics.heats.pending });
+      oStatistics.items.push({ name: this.i18n("statistics.races.all"), value: oStatistics.races.all });
+      oStatistics.items.push({ name: this.i18n("statistics.races.cancelled"), value: oStatistics.races.cancelled });
+      oStatistics.items.push({ name: this.i18n("statistics.heats.all"), value: oStatistics.heats.all });
+      oStatistics.items.push({ name: this.i18n("statistics.heats.official"), value: oStatistics.heats.official });
+      oStatistics.items.push({ name: this.i18n("statistics.heats.finished"), value: oStatistics.heats.finished });
+      oStatistics.items.push({ name: this.i18n("statistics.heats.started"), value: oStatistics.heats.started });
+      oStatistics.items.push({ name: this.i18n("statistics.heats.pending"), value: oStatistics.heats.pending });
+      oStatistics.items.push({ name: this.i18n("statistics.heats.cancelled"), value: oStatistics.heats.cancelled });
 
       this.setViewModel(oStatisticsModel, "statistics");
     }

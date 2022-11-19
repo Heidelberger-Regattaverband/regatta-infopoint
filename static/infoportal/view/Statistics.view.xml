@@ -3,8 +3,32 @@
 
     <Page title="{i18n>launchpad.statistics.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <content>
+        <!-- <Table autoPopinMode="true" items="{statistics>/items/}" growing="true" growingScrollToLoad="true" growingThreshold="50" sticky="ColumnHeaders" class="sapUiNoContentPadding">
+          <columns>
+            <Column hAlign="Begin" width="4rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="Parameter" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column hAlign="Begin" width="5rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="Wert" class="bold" wrapping="false" />
+              </header>
+            </Column>
+          </columns>
+
+          <items>
+            <ColumnListItem>
+              <cells>
+                <Text text="{statistics>name}" />
+                <Text text="{statistics>value}" />
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table> -->
+
         <List items="{statistics>/items/}">
-          <ObjectListItem title="{name}" type="Active" number="{value}"></ObjectListItem>
+          <ObjectListItem title="{statistics>name}" number="{statistics>value}"></ObjectListItem>
         </List>
 
         <!-- <l:Grid defaultSpan="XL6 L6 M6 S6">
