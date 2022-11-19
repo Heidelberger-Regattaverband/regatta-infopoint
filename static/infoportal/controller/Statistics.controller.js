@@ -24,6 +24,8 @@ sap.ui.define([
       oStatistics.items = { registrations: [], races: [], heats: [] };
       oStatistics.items.registrations.push({ name: this.i18n("common.all"), value: oStatistics.registrations.all });
       oStatistics.items.registrations.push({ name: this.i18n("common.cancelled"), value: oStatistics.registrations.cancelled });
+      oStatistics.items.registrations.push({ name: this.i18n("common.ownerClubs"), value: oStatistics.registrations.clubs });
+      oStatistics.items.registrations.push({ name: this.i18n("common.athletes"), value: oStatistics.registrations.athletes });
       oStatistics.items.races.push({ name: this.i18n("common.all"), value: oStatistics.races.all });
       oStatistics.items.races.push({ name: this.i18n("common.cancelled"), value: oStatistics.races.cancelled });
       oStatistics.items.heats.push({ name: this.i18n("common.all"), value: oStatistics.heats.all });
