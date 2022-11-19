@@ -364,8 +364,10 @@ struct HeatsStatistics {
 struct RegistrationsStatistics {
     all: i32,
     cancelled: i32,
-    clubs: i32,
+    #[serde(rename = "registeringClubs")]
+    registering_clubs: i32,
     athletes: i32,
+    clubs: i32,
 }
 
 impl Statistics {
@@ -385,8 +387,9 @@ impl Statistics {
         let registrations = RegistrationsStatistics {
             all: Column::get(row, "registrations_all"),
             cancelled: Column::get(row, "registrations_cancelled"),
-            clubs: Column::get(row, "registrations_clubs"),
+            registering_clubs: Column::get(row, "registrations_owner_clubs"),
             athletes: Column::get(row, "registrations_athletes"),
+            clubs: Column::get(row, "registrations_clubs"),
         };
         Statistics {
             races,
@@ -408,8 +411,9 @@ impl Statistics {
             (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State < 2 AND c.Comp_Cancelled = 0 ) AS heats_pending,
             (SELECT COUNT(*) FROM Entry e WHERE e.Entry_Event_ID_FK = @P1) AS registrations_all,
             (SELECT COUNT(*) FROM Entry e WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue > 0) AS registrations_cancelled,
-            (SELECT COUNT(*) FROM (SELECT DISTINCT c.Club_ID FROM Club c JOIN Entry e ON e.Entry_OwnerClub_ID_FK = c.Club_ID WHERE e.Entry_Event_ID_FK = @P1) AS club_count) AS registrations_clubs,
-            (SELECT COUNT(*) FROM (SELECT DISTINCT c.Crew_Athlete_ID_FK FROM Entry e JOIN Crew c ON c.Crew_Entry_ID_FK = e.Entry_ID WHERE e.Entry_Event_ID_FK = @P1) AS count) AS registrations_athletes
+            (SELECT COUNT(*) FROM (SELECT DISTINCT c.Club_ID FROM Club c JOIN Entry e ON e.Entry_OwnerClub_ID_FK = c.Club_ID WHERE e.Entry_Event_ID_FK = @P1) AS count) AS registrations_owner_clubs,
+            (SELECT COUNT(*) FROM (SELECT DISTINCT c.Crew_Athlete_ID_FK FROM Entry e JOIN Crew c ON c.Crew_Entry_ID_FK = e.Entry_ID WHERE e.Entry_Event_ID_FK = @P1) AS count) AS registrations_athletes,
+            (SELECT COUNT(*) FROM (SELECT DISTINCT c.Crew_Club_ID_FK FROM Entry e JOIN Crew c ON c.Crew_Entry_ID_FK = e.Entry_ID WHERE e.Entry_Event_ID_FK = @P1) AS count) AS registrations_clubs
           ",
         );
         query.bind(regatta_id);
