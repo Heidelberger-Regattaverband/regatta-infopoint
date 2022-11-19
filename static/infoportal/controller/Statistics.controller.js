@@ -18,7 +18,7 @@ sap.ui.define([
 
     _loadStatistics: async function () {
       const oStatisticsModel = new JSONModel();
-      await oStatisticsModel.loadData("/api/regattas/" + this.getOwnerComponent().getRegattaId() + "/statistics");
+      await oStatisticsModel.loadData("/api/regattas/" + this.getRegattaId() + "/statistics");
 
       const oStatistics = oStatisticsModel.getData();
       oStatistics.items = [];

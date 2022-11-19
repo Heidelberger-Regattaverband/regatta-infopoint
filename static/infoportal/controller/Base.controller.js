@@ -64,11 +64,13 @@ sap.ui.define([
     },
 
     i18n: function (sKey) {
-      var oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-      var sTxt = oResourceBundle.getText(sKey);
-      return sTxt;
-    }
+      const oResourceBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+      return oResourceBundle.getText(sKey);
+    },
 
+    getRegattaId: function () {
+      return this.getOwnerComponent().getRegattaId();
+    }
   });
 
 });
