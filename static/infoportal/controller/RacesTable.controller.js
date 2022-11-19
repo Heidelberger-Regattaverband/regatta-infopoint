@@ -64,11 +64,10 @@ sap.ui.define([
 
     _loadRacesModel: async function () {
       if (!this.oRacesModel) {
-        const iRegattaId = this.getOwnerComponent().getRegattaId();
         const sNoDataText = this.racesTable.getNoDataText();
         this.racesTable.setNoDataText(this.i18n("common.loadingData"));
         this.oRacesModel = new JSONModel();
-        await this.oRacesModel.loadData("/api/regattas/" + iRegattaId + "/races");
+        await this.oRacesModel.loadData("/api/regattas/" + this.getRegattaId() + "/races");
         this.setViewModel(this.oRacesModel, "races");
         this.racesTable.setNoDataText(sNoDataText);
       }

@@ -37,6 +37,16 @@
               </tileContent>
             </GenericTile>
 
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.statistics.header}" press=".onNavToStatistics">
+              <tileContent>
+                <TileContent>
+                  <content>
+                    <ImageContent src="sap-icon://bar-chart" />
+                  </content>
+                </TileContent>
+              </tileContent>
+            </GenericTile>
+
           </layout:content>
         </layout:HorizontalLayout>
 

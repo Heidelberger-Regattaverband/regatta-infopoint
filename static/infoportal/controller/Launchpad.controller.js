@@ -23,6 +23,10 @@ sap.ui.define([
       this.getRouter().navTo("races", {}, false /* history */);
     },
 
+    onNavToStatistics: function () {
+      this.getRouter().navTo("statistics", {}, false /* history */);
+    },
+
     getRouter: function () {
       return this.getOwnerComponent().getRouter();
     }
