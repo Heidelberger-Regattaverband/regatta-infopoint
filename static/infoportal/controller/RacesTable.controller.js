@@ -28,7 +28,7 @@ sap.ui.define([
         const oRace = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
         this.getOwnerComponent().setModel(new JSONModel(oRace), "race");
 
-        this.getOwnerComponent().getRouter().navTo("raceRegistrations", {}, false /* history */);
+        this.getRouter().navTo("raceRegistrations", {}, false /* history */);
       }
     },
 
