@@ -33,7 +33,7 @@ sap.ui.define([
       const oRace = this.getOwnerComponent().getModel("race").getData();
       const oModel = new JSONModel();
       oModel.loadData("/api/races/" + oRace.id + "/registrations");
-      this.getOwnerComponent().setModel(oModel, "raceRegistrations");
+      this.setViewModel(oModel, "raceRegistrations");
     }
 
   });
