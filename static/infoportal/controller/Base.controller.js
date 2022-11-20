@@ -63,6 +63,10 @@ sap.ui.define([
       }
     },
 
+    displayTarget: function (sTarget) {
+      this.getRouter().getTargets().display(sTarget);
+    },
+
     i18n: function (sKey, aArgs) {
       return this.getResourceBundle().getText(sKey, aArgs);
     },
