@@ -1,9 +1,10 @@
 sap.ui.define([
-  "sap/ui/core/mvc/Controller",
+  "de/regatta_hd/infopoint/controller/Base.controller",
   "../model/Formatter"
-], function (Controller, Formatter) {
+], function (BaseController, Formatter) {
   "use strict";
-  return Controller.extend("de.regatta_hd.infopoint.controller.Launchpad", {
+
+  return BaseController.extend("de.regatta_hd.infopoint.controller.Launchpad", {
 
     formatter: Formatter,
 
@@ -25,10 +26,6 @@ sap.ui.define([
 
     onNavToStatistics: function () {
       this.getRouter().navTo("statistics", {}, false /* history */);
-    },
-
-    getRouter: function () {
-      return this.getOwnerComponent().getRouter();
     }
 
   });
