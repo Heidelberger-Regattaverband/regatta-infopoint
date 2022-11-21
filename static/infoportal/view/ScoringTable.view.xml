@@ -4,7 +4,7 @@
     <Page title="{i18n>launchpad.scoringTile.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <content>
 
-        <Table autoPopinMode="true" items="{scoring>/}" growing="true" growingScrollToLoad="true" growingThreshold="50" sticky="ColumnHeaders" class="sapUiNoContentPadding">
+        <Table id="ScoringTable" autoPopinMode="true" items="{scoring>/}" growing="true" growingScrollToLoad="true" growingThreshold="50" sticky="ColumnHeaders" class="sapUiNoContentPadding">
           <columns>
             <Column hAlign="Center" width="4rem" importance="High" popinDisplay="Inline">
               <header>

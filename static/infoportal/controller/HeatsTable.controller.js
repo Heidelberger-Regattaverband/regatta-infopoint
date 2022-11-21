@@ -85,10 +85,9 @@ sap.ui.define([
       }
     },
 
-    _loadHeatsModel: function () {
+    _loadHeatsModel: async function () {
       if (!this.oHeatsModel) {
-        this.oHeatsModel = new JSONModel();
-        this.oHeatsModel.loadData("/api/regattas/" + this.getRegattaId() + "/heats");
+        this.oHeatsModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/heats", this.heatsTable);
         this.setViewModel(this.oHeatsModel, "heats");
       }
     },
