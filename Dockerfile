@@ -4,17 +4,30 @@ FROM rust:1.65.0
 
 LABEL maintainer="markus@ofterdinger.de"
 
-RUN apt-get update && apt-get upgrade -y && rustup update stable
-
+# central configuration
 WORKDIR /usr/src/infoportal
+EXPOSE 8080
 
+# copy required resources into image
 COPY Cargo.toml .
 COPY Cargo.lock .
 COPY src/ ./src/
 COPY static/ ./static/
 
-EXPOSE 8080
+# add node repository
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 
+# install required software
+RUN apt-get update && apt-get upgrade -y 
+RUN rustup update stable
+RUN apt-get install curl sudo nodejs -y
+
+# build UI
+RUN sudo npm install -g grunt-cli
+RUN npm install --prefix ./static/
+RUN grunt --gruntfile ./static/Gruntfile.js
+
+# build rust application
 RUN cargo build --release
 CMD ["./target/release/infoportal"]
 
