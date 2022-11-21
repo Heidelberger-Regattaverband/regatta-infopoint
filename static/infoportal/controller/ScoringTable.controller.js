@@ -1,7 +1,6 @@
 sap.ui.define([
-  "de/regatta_hd/infopoint/controller/Base.controller",
-  "sap/ui/model/json/JSONModel"
-], function (BaseController, JSONModel) {
+  "de/regatta_hd/infopoint/controller/Base.controller"
+], function (BaseController) {
   "use strict";
 
   return BaseController.extend("de.regatta_hd.infopoint.controller.ScoresTable", {
@@ -10,15 +9,16 @@ sap.ui.define([
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
       this.getRouter().getRoute("scoring").attachMatched(this._loadScoringModel, this);
+
+      this.scoringTable = this.getView().byId("racesTable");
     },
 
     onNavBack: function () {
       this.navBack("startpage");
     },
 
-    _loadScoringModel: function () {
-      const oScoringModel = new JSONModel();
-      oScoringModel.loadData("/api/regattas/" + this.getRegattaId() + "/scoring");
+    _loadScoringModel: async function () {
+      const oScoringModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/scoring", this.scoringTable);
       this.setViewModel(oScoringModel, "scoring");
     }
 

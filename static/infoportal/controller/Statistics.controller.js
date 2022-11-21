@@ -1,7 +1,6 @@
 sap.ui.define([
-  "de/regatta_hd/infopoint/controller/Base.controller",
-  "sap/ui/model/json/JSONModel"
-], function (BaseController, JSONModel) {
+  "de/regatta_hd/infopoint/controller/Base.controller"
+], function (BaseController) {
   "use strict";
 
   return BaseController.extend("de.regatta_hd.infopoint.controller.ScoresTable", {
@@ -10,6 +9,10 @@ sap.ui.define([
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
       this.getRouter().getRoute("statistics").attachMatched(this._loadStatistics, this);
+
+      this.registrationsList = this.getView().byId("registrationsList");
+      this.racesList = this.getView().byId("racesList");
+      this.heatsList = this.getView().byId("heatsList");
     },
 
     onNavBack: function () {
@@ -17,8 +20,9 @@ sap.ui.define([
     },
 
     _loadStatistics: async function () {
-      const oStatisticsModel = new JSONModel();
-      await oStatisticsModel.loadData("/api/regattas/" + this.getRegattaId() + "/statistics");
+      this._setBusy(true);
+
+      const oStatisticsModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/statistics");
 
       const oStatistics = oStatisticsModel.getData();
       oStatistics.items = { registrations: [], races: [], heats: [] };
@@ -37,6 +41,14 @@ sap.ui.define([
       oStatistics.items.heats.push({ name: this.i18n("statistics.heats.cancelled"), value: oStatistics.heats.cancelled });
 
       this.setViewModel(oStatisticsModel, "statistics");
+
+      this._setBusy(false);
+    },
+
+    _setBusy: function (bBusy) {
+      this.registrationsList.setBusy(bBusy);
+      this.racesList.setBusy(bBusy);
+      this.heatsList.setBusy(bBusy);
     }
 
   });
