@@ -2,6 +2,7 @@ module.exports = function (grunt) {
 
   // Project configuration.
   grunt.initConfig({
+    // see: https://github.com/SAP/grunt-openui5#openui5_preload
     openui5_preload: {
 
       component: {
@@ -18,7 +19,7 @@ module.exports = function (grunt) {
     }
   });
 
-  // Load the plugin that provides the "uglify" task.
+  // Load the plugin that provides the "openui5_preload" task.
   grunt.loadNpmTasks('grunt-openui5');
 
   // Default task(s).
