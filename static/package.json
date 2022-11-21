@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "grunt": "^1.5",
+    "grunt-openui5": "^0.18"
+  }
+}
