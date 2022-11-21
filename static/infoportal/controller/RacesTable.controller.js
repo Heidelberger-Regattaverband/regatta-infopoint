@@ -64,12 +64,8 @@ sap.ui.define([
 
     _loadRacesModel: async function () {
       if (!this.oRacesModel) {
-        const sNoDataText = this.racesTable.getNoDataText();
-        this.racesTable.setNoDataText(this.i18n("common.loadingData"));
-        this.oRacesModel = new JSONModel();
-        await this.oRacesModel.loadData("/api/regattas/" + this.getRegattaId() + "/races");
+        this.oRacesModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/races", this.racesTable);
         this.setViewModel(this.oRacesModel, "races");
-        this.racesTable.setNoDataText(sNoDataText);
       }
     },
 
@@ -80,5 +76,6 @@ sap.ui.define([
         this.racesTable.getBinding("items").filter([]);
       }
     }
+
   });
 });

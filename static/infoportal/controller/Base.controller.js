@@ -1,7 +1,8 @@
 sap.ui.define([
   "sap/ui/core/mvc/Controller",
-  "sap/ui/core/routing/History"
-], function (Controller, History) {
+  "sap/ui/core/routing/History",
+  "sap/ui/model/json/JSONModel"
+], function (Controller, History, JSONModel) {
   "use strict";
 
   return Controller.extend("de.regatta_hd.infopoint.controller.Base", {
@@ -73,6 +74,18 @@ sap.ui.define([
 
     getRegattaId: function () {
       return this.getOwnerComponent().getRegattaId();
+    },
+
+    getJSONModel: async function (sURL, oControl) {
+      if (oControl) {
+        oControl.setBusy(true);
+      }
+      const oModel = new JSONModel();
+      await oModel.loadData(sURL);
+      if (oControl) {
+        oControl.setBusy(false);
+      }
+      return oModel;
     }
   });
 
