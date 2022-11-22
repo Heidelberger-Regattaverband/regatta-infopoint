@@ -32,7 +32,8 @@ sap.ui.define([
         const oHeat = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
         this.getOwnerComponent().setModel(new JSONModel(oHeat), "heat");
 
-        this.getRouter().navTo("heatRegistrations");
+        this._loadRegistrationsModel(oHeat.id);
+        this.displayTarget("heatRegistrations");
       }
     },
 
@@ -68,6 +69,7 @@ sap.ui.define([
         this.heatsTable.setSelectedItem(this.heatsTable.getItems()[iPreviousIndex]);
         const oHeat = this.getViewModel("heats").getData()[iPreviousIndex];
         this.getOwnerComponent().getModel("heat").setData(oHeat);
+        this._loadRegistrationsModel(oHeat.id);
       }
     },
 
@@ -81,7 +83,9 @@ sap.ui.define([
 
       if (iIndex != iNextIndex) {
         this.heatsTable.setSelectedItem(this.heatsTable.getItems()[iNextIndex]);
-        this.getOwnerComponent().getModel("heat").setData(aHeats[iNextIndex]);
+        const oHeat = aHeats[iNextIndex];
+        this.getOwnerComponent().getModel("heat").setData(oHeat);
+        this._loadRegistrationsModel(oHeat.id);
       }
     },
 
@@ -90,6 +94,11 @@ sap.ui.define([
         this.oHeatsModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/heats", this.heatsTable);
         this.setViewModel(this.oHeatsModel, "heats");
       }
+    },
+
+    _loadRegistrationsModel: async function (sHeatId) {
+      const oModel = await this.getJSONModel("/api/heats/" + sHeatId + "/registrations");
+      this.getOwnerComponent().setModel(oModel, "heatRegistrations");
     },
 
     _growTable: function (aHeats) {
