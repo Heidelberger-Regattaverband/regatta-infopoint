@@ -28,7 +28,8 @@ sap.ui.define([
         const oRace = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
         this.getOwnerComponent().setModel(new JSONModel(oRace), "race");
 
-        this.getRouter().navTo("raceRegistrations", {}, false /* history */);
+        this._loadRegistrationsModel(oRace.id);
+        this.displayTarget("raceRegistrations");
       }
     },
 
@@ -45,6 +46,7 @@ sap.ui.define([
         this.racesTable.setSelectedItem(this.racesTable.getItems()[iPreviousIndex]);
         const oRace = this.getViewModel("races").getData()[iPreviousIndex];
         this.getOwnerComponent().getModel("race").setData(oRace);
+        this._loadRegistrationsModel(oRace.id);
       }
     },
 
@@ -58,7 +60,9 @@ sap.ui.define([
 
       if (iIndex != iNextIndex) {
         this.racesTable.setSelectedItem(this.racesTable.getItems()[iNextIndex]);
-        this.getOwnerComponent().getModel("race").setData(aRaces[iNextIndex]);
+        const oRace = aRaces[iNextIndex];
+        this.getOwnerComponent().getModel("race").setData(oRace);
+        this._loadRegistrationsModel(oRace.id);
       }
     },
 
@@ -67,6 +71,11 @@ sap.ui.define([
         this.oRacesModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/races", this.racesTable);
         this.setViewModel(this.oRacesModel, "races");
       }
+    },
+
+    _loadRegistrationsModel: async function (sRaceId) {
+      const oModel = await this.getJSONModel("/api/races/" + sRaceId + "/registrations");
+      this.getOwnerComponent().setModel(oModel, "raceRegistrations");
     },
 
     _growTable: function (aRaces) {
