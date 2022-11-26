@@ -1,7 +1,7 @@
 use async_std::net::TcpStream;
 use async_trait::async_trait;
 use log::{debug, info};
-use std::{cell::Cell, env, sync::Mutex};
+use std::env;
 use tiberius::Config;
 
 use super::TiberiusPool;
