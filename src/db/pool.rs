@@ -1,12 +1,12 @@
 use async_std::net::TcpStream;
 use async_trait::async_trait;
-use log::info;
-use std::env;
+use log::{debug, info};
+use std::{cell::Cell, env, sync::Mutex};
 use tiberius::Config;
 
 use super::TiberiusPool;
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct TiberiusConnectionManager {
     config: Config,
 }
@@ -51,7 +51,9 @@ impl bb8::ManageConnection for TiberiusConnectionManager {
     async fn connect(&self) -> Result<Self::Connection, Self::Error> {
         let tcp = TcpStream::connect(self.config.get_addr()).await?;
         tcp.set_nodelay(true)?;
-        tiberius::Client::connect(self.config.clone(), tcp).await
+        debug!("Creating new DB connection.");
+        let result = tiberius::Client::connect(self.config.clone(), tcp).await;
+        result
     }
 
     async fn is_valid(&self, connection: &mut Self::Connection) -> Result<(), Self::Error> {
@@ -60,7 +62,7 @@ impl bb8::ManageConnection for TiberiusConnectionManager {
         Ok(())
     }
 
-    fn has_broken(&self, _: &mut Self::Connection) -> bool {
+    fn has_broken(&self, _connection: &mut Self::Connection) -> bool {
         false
     }
 }
@@ -75,6 +77,12 @@ impl PoolFactory {
             .unwrap();
 
         let manager = TiberiusConnectionManager::new();
+
+        debug!(
+            "Creating DB pool with configuration: max_size={}",
+            db_pool_size
+        );
+
         bb8::Pool::builder()
             .max_size(db_pool_size)
             .build(manager)
