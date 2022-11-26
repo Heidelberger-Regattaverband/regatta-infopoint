@@ -16,8 +16,10 @@
               </f:expandedContent>
 
               <f:navigationActions>
-                <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="handlePrevious" tooltip="Previous" />
-                <Button type="Transparent" icon="sap-icon://navigation-right-arrow" press="handleNext" tooltip="Next" />
+                <Button type="Transparent" icon="sap-icon://close-command-field" press="onFirstPress" tooltip="First" />
+                <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="onPreviousPress" tooltip="Previous" />
+                <Button type="Transparent" icon="sap-icon://navigation-right-arrow" press="onNextPress" tooltip="Next" />
+                <Button type="Transparent" icon="sap-icon://open-command-field" press="onLastPress" tooltip="Last" />
               </f:navigationActions>
             </f:DynamicPageTitle>
           </f:title>

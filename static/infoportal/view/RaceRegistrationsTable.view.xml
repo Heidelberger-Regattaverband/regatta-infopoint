@@ -18,8 +18,10 @@
               </f:expandedContent>
 
               <f:navigationActions>
-                <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="handlePrevious" tooltip="Previous" />
-                <Button type="Transparent" icon="sap-icon://navigation-right-arrow" press="handleNext" tooltip="Next" />
+                <Button type="Transparent" icon="sap-icon://close-command-field" press="onFirstPress" tooltip="First" />
+                <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="onPreviousPress" tooltip="Previous" />
+                <Button type="Transparent" icon="sap-icon://navigation-right-arrow" press="onNextPress" tooltip="Next" />
+                <Button type="Transparent" icon="sap-icon://open-command-field" press="onLastPress" tooltip="Last" />
               </f:navigationActions>
             </f:DynamicPageTitle>
           </f:title>
@@ -45,45 +47,45 @@
           <f:content>
             <!-- <ScrollContainer height="100%" vertical="true"> -->
 
-              <Table id="registrationsTable" autoPopinMode="true" items="{path: 'raceRegistrations>/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}" growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
-                <columns>
-                  <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
-                    <header>
-                      <Text text="{i18n>common.bib}" class="bold" />
-                    </header>
-                  </Column>
-                  <Column hAlign="Begin" width="12rem" importance="High" popinDisplay="Inline">
-                    <header>
-                      <Text text="{i18n>common.boat}" class="bold" />
-                    </header>
-                  </Column>
-                  <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline">
-                    <header>
-                      <Text text="{i18n>common.clubRegistration}" class="bold" />
-                    </header>
-                  </Column>
-                  <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
-                    <header>
-                      <Text text="{i18n>common.state}" class="bold" />
-                    </header>
-                  </Column>
-                </columns>
+            <Table id="registrationsTable" autoPopinMode="true" items="{path: 'raceRegistrations>/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}" growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
+              <columns>
+                <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>common.bib}" class="bold" />
+                  </header>
+                </Column>
+                <Column hAlign="Begin" width="12rem" importance="High" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>common.boat}" class="bold" />
+                  </header>
+                </Column>
+                <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>common.clubRegistration}" class="bold" />
+                  </header>
+                </Column>
+                <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>common.state}" class="bold" />
+                  </header>
+                </Column>
+              </columns>
 
-                <items>
-                  <ColumnListItem>
-                    <cells>
-                      <Text text="{raceRegistrations>bib}" />
-                      <Text text="{parts:[
+              <items>
+                <ColumnListItem>
+                  <cells>
+                    <Text text="{raceRegistrations>bib}" />
+                    <Text text="{parts:[
                         {path: 'raceRegistrations>shortLabel'},
                         {path: 'raceRegistrations>boatNumber'},
                         {path: 'raceRegistrations>comment'}],
                         formatter: '.formatter.boatLabel'}" />
-                      <Text text="{raceRegistrations>club/shortName}" />
-                      <core:Icon src="{= ${raceRegistrations>cancelled} ? 'sap-icon://cancel' : 'sap-icon://accept'}" alt="{i18n>common.cancelled}" />
-                    </cells>
-                  </ColumnListItem>
-                </items>
-              </Table>
+                    <Text text="{raceRegistrations>club/shortName}" />
+                    <core:Icon src="{= ${raceRegistrations>cancelled} ? 'sap-icon://cancel' : 'sap-icon://accept'}" alt="{i18n>common.cancelled}" />
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
             <!-- </ScrollContainer> -->
 
           </f:content>

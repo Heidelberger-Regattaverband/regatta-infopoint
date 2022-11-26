@@ -14,8 +14,10 @@ sap.ui.define([
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
+      this.getEventBus().subscribe("heat", "first", this._onFirstHeatEvent, this);
       this.getEventBus().subscribe("heat", "previous", this._onPreviousHeatEvent, this);
       this.getEventBus().subscribe("heat", "next", this._onNextHeatEvent, this);
+      this.getEventBus().subscribe("heat", "last", this._onLastHeatEvent, this);
 
       this.getRouter().getRoute("heats").attachMatched(function () {
         this.byId("heatsIconTabBar").setSelectedKey("all");
@@ -61,32 +63,42 @@ sap.ui.define([
       this.navBack("startpage");
     },
 
+    _setCurrentHeat: function (iIndex) {
+      this.heatsTable.setSelectedItem(this.heatsTable.getItems()[iIndex]);
+      const oHeat = this.getViewModel("heats").getData()[iIndex];
+      this.getOwnerComponent().getModel("heat").setData(oHeat);
+      this._loadRegistrationsModel(oHeat.id);
+    },
+
+    _onFirstHeatEvent: function (channelId, eventId, parametersMap) {
+      this._setCurrentHeat(0);
+    },
+
     _onPreviousHeatEvent: function (channelId, eventId, parametersMap) {
       const iIndex = this.heatsTable.indexOfItem(this.heatsTable.getSelectedItem());
       const iPreviousIndex = iIndex > 1 ? iIndex - 1 : 0;
 
       if (iIndex != iPreviousIndex) {
-        this.heatsTable.setSelectedItem(this.heatsTable.getItems()[iPreviousIndex]);
-        const oHeat = this.getViewModel("heats").getData()[iPreviousIndex];
-        this.getOwnerComponent().getModel("heat").setData(oHeat);
-        this._loadRegistrationsModel(oHeat.id);
+        this._setCurrentHeat(iPreviousIndex);
       }
     },
 
     _onNextHeatEvent: function (channelId, eventId, parametersMap) {
       const aHeats = this.getViewModel("heats").getData();
-
       this._growTable(aHeats);
 
       const iIndex = this.heatsTable.indexOfItem(this.heatsTable.getSelectedItem());
       const iNextIndex = iIndex < aHeats.length - 1 ? iIndex + 1 : iIndex;
 
       if (iIndex != iNextIndex) {
-        this.heatsTable.setSelectedItem(this.heatsTable.getItems()[iNextIndex]);
-        const oHeat = aHeats[iNextIndex];
-        this.getOwnerComponent().getModel("heat").setData(oHeat);
-        this._loadRegistrationsModel(oHeat.id);
+        this._setCurrentHeat(iNextIndex);
       }
+    },
+
+    _onLastHeatEvent: function (channelId, eventId, parametersMap) {
+      const aHeats = this.getViewModel("heats").getData();
+      this._growTable(aHeats);
+      this._setCurrentHeat(aHeats.length - 1);
     },
 
     _loadHeatsModel: async function () {
@@ -104,7 +116,7 @@ sap.ui.define([
     _growTable: function (aHeats) {
       const iActual = this.heatsTable.getGrowingInfo().actual;
       if (aHeats.length > iActual) {
-        this.heatsTable.setGrowingThreshold(iActual + 20);
+        this.heatsTable.setGrowingThreshold(iActual + 30);
         this.heatsTable.getBinding("items").filter([]);
       }
     }

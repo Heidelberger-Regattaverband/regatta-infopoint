@@ -16,12 +16,20 @@ sap.ui.define([
       this.displayTarget("races");
     },
 
-    handlePrevious: function () {
+    onFirstPress: function () {
+      this.getEventBus().publish("race", "first", {});
+    },
+
+    onPreviousPress: function () {
       this.getEventBus().publish("race", "previous", {});
     },
 
-    handleNext: function () {
+    onNextPress: function () {
       this.getEventBus().publish("race", "next", {});
+    },
+
+    onLastPress: function () {
+      this.getEventBus().publish("race", "last", {});
     }
 
   });
