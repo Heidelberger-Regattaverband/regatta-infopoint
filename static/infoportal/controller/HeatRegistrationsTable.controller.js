@@ -16,12 +16,20 @@ sap.ui.define([
       this.displayTarget("heats");
     },
 
-    handlePrevious: function () {
+    onFirstPress: function () {
+      this.getEventBus().publish("heat", "first", {});
+    },
+
+    onPreviousPress: function () {
       this.getEventBus().publish("heat", "previous", {});
     },
 
-    handleNext: function () {
+    onNextPress: function () {
       this.getEventBus().publish("heat", "next", {});
+    },
+
+    onLastPress: function () {
+      this.getEventBus().publish("heat", "last", {});
     }
 
   });
