@@ -12,7 +12,7 @@ use actix_web::{
 use actix_web_lab::web as web_lab;
 use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
 use log::{debug, info};
-use std::{env, future::Ready, io::Result, time::Duration};
+use std::{env, future::Ready, io, time::Duration};
 
 /// Path to REST API
 pub const PATH_REST_API: &str = "/api";
@@ -22,7 +22,7 @@ const PATH_INFOPORTAL: &str = "/infoportal/";
 pub struct Server {}
 
 impl Server {
-    pub async fn start() -> Result<()> {
+    pub async fn start() -> io::Result<()> {
         let data = create_app_data().await;
 
         let rl_config = Self::get_rate_limiter_config();
@@ -80,7 +80,7 @@ impl Server {
     ) -> RateLimiter<
         InMemoryBackend,
         SimpleOutput,
-        impl Fn(&ServiceRequest) -> Ready<core::result::Result<SimpleInput, Error>>,
+        impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>,
     > {
         let input = SimpleInputFunctionBuilder::new(Duration::from_secs(rl_config.1), rl_config.0)
             .real_ip_key()
