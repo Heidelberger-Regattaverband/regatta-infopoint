@@ -1,5 +1,5 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
-  <Table id="heatsTable" autoPopinMode="true" items="{heats>/}" growing="true" growingScrollToLoad="true" growingThreshold="50" mode="SingleSelectMaster" itemPress="onSelectionChange" sticky="ColumnHeaders" class="sapUiNoContentPadding">
+  <Table id="heatsTable" autoPopinMode="true" items="{heats>/}" growing="true" growingScrollToLoad="true" growingThreshold="30" mode="SingleSelectMaster" itemPress="onSelectionChange" sticky="ColumnHeaders" class="sapUiNoContentPadding">
     <columns>
       <Column hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
         <header>
