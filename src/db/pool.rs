@@ -52,8 +52,8 @@ impl bb8::ManageConnection for TiberiusConnectionManager {
         let tcp = TcpStream::connect(self.config.get_addr()).await?;
         tcp.set_nodelay(true)?;
         debug!("Creating new DB connection.");
-        let result = tiberius::Client::connect(self.config.clone(), tcp).await;
-        result
+        
+        tiberius::Client::connect(self.config.clone(), tcp).await
     }
 
     async fn is_valid(&self, connection: &mut Self::Connection) -> Result<(), Self::Error> {
