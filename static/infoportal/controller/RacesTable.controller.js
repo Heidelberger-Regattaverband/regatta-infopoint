@@ -40,13 +40,6 @@ sap.ui.define([
       this.navBack("startpage");
     },
 
-    _setCurrentRace: function (iIndex) {
-      this.racesTable.setSelectedItem(this.racesTable.getItems()[iIndex]);
-      const oRace = this.getViewModel("races").getData()[iIndex];
-      this.getOwnerComponent().getModel("race").setData(oRace);
-      this._loadRegistrationsModel(oRace.id);
-    },
-
     _onFirstRaceEvent: function (channelId, eventId, parametersMap) {
       this._setCurrentRace(0);
     },
@@ -62,20 +55,21 @@ sap.ui.define([
 
     _onNextRaceEvent: function (channelId, eventId, parametersMap) {
       const aRaces = this.getViewModel("races").getData();
-      this._growTable(aRaces);
 
       const iIndex = this.racesTable.indexOfItem(this.racesTable.getSelectedItem());
       const iNextIndex = iIndex < aRaces.length - 1 ? iIndex + 1 : iIndex;
 
       if (iIndex != iNextIndex) {
+        this._growTable(iNextIndex);
         this._setCurrentRace(iNextIndex);
       }
     },
 
     _onLastRaceEvent: function (channelId, eventId, parametersMap) {
       const aRaces = this.getViewModel("races").getData();
-      this._growTable(aRaces);
-      this._setCurrentRace(aRaces.length - 1);
+      const iIndex = aRaces.length - 1;
+      this._growTable(iIndex);
+      this._setCurrentRace(iIndex);
     },
 
     _loadRacesModel: async function () {
@@ -90,10 +84,17 @@ sap.ui.define([
       this.getOwnerComponent().setModel(oModel, "raceRegistrations");
     },
 
-    _growTable: function (aRaces) {
+    _setCurrentRace: function (iIndex) {
+      this.racesTable.setSelectedItem(this.racesTable.getItems()[iIndex]);
+      const oRace = this.getViewModel("races").getData()[iIndex];
+      this.getOwnerComponent().getModel("race").setData(oRace);
+      this._loadRegistrationsModel(oRace.id);
+    },
+
+    _growTable: function (iIndex) {
       const iActual = this.racesTable.getGrowingInfo().actual;
-      if (aRaces.length > iActual) {
-        this.racesTable.setGrowingThreshold(iActual + 30);
+      if (iIndex >= iActual) {
+        this.racesTable.setGrowingThreshold(iIndex + 10);
         this.racesTable.getBinding("items").filter([]);
       }
     }
