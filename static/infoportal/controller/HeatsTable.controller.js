@@ -63,13 +63,6 @@ sap.ui.define([
       this.navBack("startpage");
     },
 
-    _setCurrentHeat: function (iIndex) {
-      this.heatsTable.setSelectedItem(this.heatsTable.getItems()[iIndex]);
-      const oHeat = this.getViewModel("heats").getData()[iIndex];
-      this.getOwnerComponent().getModel("heat").setData(oHeat);
-      this._loadRegistrationsModel(oHeat.id);
-    },
-
     _onFirstHeatEvent: function (channelId, eventId, parametersMap) {
       this._setCurrentHeat(0);
     },
@@ -85,20 +78,21 @@ sap.ui.define([
 
     _onNextHeatEvent: function (channelId, eventId, parametersMap) {
       const aHeats = this.getViewModel("heats").getData();
-      this._growTable(aHeats);
 
       const iIndex = this.heatsTable.indexOfItem(this.heatsTable.getSelectedItem());
       const iNextIndex = iIndex < aHeats.length - 1 ? iIndex + 1 : iIndex;
 
       if (iIndex != iNextIndex) {
+        this._growTable(iNextIndex);
         this._setCurrentHeat(iNextIndex);
       }
     },
 
     _onLastHeatEvent: function (channelId, eventId, parametersMap) {
       const aHeats = this.getViewModel("heats").getData();
-      this._growTable(aHeats);
-      this._setCurrentHeat(aHeats.length - 1);
+      const iIndex = aHeats.length - 1;
+      this._growTable(iIndex);
+      this._setCurrentHeat(iIndex);
     },
 
     _loadHeatsModel: async function () {
@@ -113,12 +107,20 @@ sap.ui.define([
       this.getOwnerComponent().setModel(oModel, "heatRegistrations");
     },
 
-    _growTable: function (aHeats) {
+    _setCurrentHeat: function (iIndex) {
+      this.heatsTable.setSelectedItem(this.heatsTable.getItems()[iIndex]);
+      const oHeat = this.getViewModel("heats").getData()[iIndex];
+      this.getOwnerComponent().getModel("heat").setData(oHeat);
+      this._loadRegistrationsModel(oHeat.id);
+    },
+
+    _growTable: function (iIndex) {
       const iActual = this.heatsTable.getGrowingInfo().actual;
-      if (aHeats.length > iActual) {
-        this.heatsTable.setGrowingThreshold(iActual + 30);
+      if (iIndex >= iActual) {
+        this.heatsTable.setGrowingThreshold(iIndex + 10);
         this.heatsTable.getBinding("items").filter([]);
       }
     }
+
   });
 });
