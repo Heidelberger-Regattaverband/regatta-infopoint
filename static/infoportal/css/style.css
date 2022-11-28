@@ -1,3 +1,7 @@
 .infopoint .bold {
   font-weight: bold;
 }
+
+tr[data-state="cancelled"]{
+  background: lightcoral;
+}

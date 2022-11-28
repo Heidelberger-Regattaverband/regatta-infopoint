@@ -21,6 +21,16 @@
                 <Text text="{i18n>common.distance}" class="bold" wrapping="false" />
               </header>
             </Column>
+            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.registrations}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.state}" class="bold" />
+              </header>
+            </Column>
             <Column hAlign="Center" width="7rem" importance="Low" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.raceMode}" class="bold" />
@@ -31,28 +41,21 @@
                 <Text text="{i18n>common.seeded}" class="bold" />
               </header>
             </Column>
-            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
-              <header>
-                <Text text="{i18n>common.state}" class="bold" />
-              </header>
-            </Column>
-            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
-              <header>
-                <Text text="{i18n>common.registrations}" class="bold" wrapping="false" />
-              </header>
-            </Column>
           </columns>
 
           <items>
             <ColumnListItem type="Navigation" vAlign="Top">
+              <customData>
+                <core:CustomData key="state" value="{= ${races>cancelled} ? 'cancelled' : 'ok'}" writeToDom="true" />
+              </customData>
               <cells>
                 <Text text="{races>number}" />
                 <ObjectIdentifier title="{path: 'races>', formatter: '.formatter.raceLabel'}" text="{races>longLabel} {races>comment}" />
                 <Text text="{path: 'races>', formatter: '.formatter.distanceLabel'}" />
-                <Text text="{races>raceMode}" />
-                <core:Icon src="{= ${races>seeded} ? 'sap-icon://accept' : 'sap-icon://cancel' }" alt="{i18n>common.seeded}" />
-                <core:Icon src="{= ${races>cancelled} ? 'sap-icon://cancel' : 'sap-icon://accept'}" alt="{i18n>common.cancelled}" />
                 <Text text="{races>registrations_count}" />
+                <core:Icon src="{= ${races>cancelled} ? 'sap-icon://decline' : 'sap-icon://accept'}" alt="{i18n>common.cancelled}" />
+                <Text text="{races>raceMode}" />
+                <core:Icon src="{= ${races>seeded} ? 'sap-icon://accept' : 'sap-icon://decline' }" alt="{i18n>common.seeded}" />
               </cells>
             </ColumnListItem>
           </items>
