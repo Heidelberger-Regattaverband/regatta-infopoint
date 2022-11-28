@@ -73,6 +73,9 @@
 
               <items>
                 <ColumnListItem>
+                  <customData>
+                    <core:CustomData key="state" value="{= ${raceRegistrations>cancelled} ? 'cancelled' : 'ok'}" writeToDom="true" />
+                  </customData>
                   <cells>
                     <Text text="{raceRegistrations>bib}" />
                     <Text text="{parts:[
@@ -81,7 +84,7 @@
                         {path: 'raceRegistrations>comment'}],
                         formatter: '.formatter.boatLabel'}" />
                     <Text text="{raceRegistrations>club/shortName}" />
-                    <core:Icon src="{= ${raceRegistrations>cancelled} ? 'sap-icon://cancel' : 'sap-icon://accept'}" alt="{i18n>common.cancelled}" />
+                    <core:Icon src="{= ${raceRegistrations>cancelled} ? 'sap-icon://decline' : 'sap-icon://accept'}" alt="{i18n>common.cancelled}" />
                   </cells>
                 </ColumnListItem>
               </items>
