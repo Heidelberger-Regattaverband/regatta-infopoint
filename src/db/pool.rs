@@ -52,7 +52,7 @@ impl bb8::ManageConnection for TiberiusConnectionManager {
         let tcp = TcpStream::connect(self.config.get_addr()).await?;
         tcp.set_nodelay(true)?;
         debug!("Creating new DB connection.");
-        
+
         tiberius::Client::connect(self.config.clone(), tcp).await
     }
 
