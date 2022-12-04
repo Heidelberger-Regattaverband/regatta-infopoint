@@ -72,10 +72,7 @@
               </columns>
 
               <items>
-                <ColumnListItem>
-                  <customData>
-                    <core:CustomData key="state" value="{= ${raceRegistrations>cancelled} ? 'cancelled' : 'ok'}" writeToDom="true" />
-                  </customData>
+                <ColumnListItem highlight="{= ${raceRegistrations>cancelled} ? 'Error' : undefined }">
                   <cells>
                     <Text text="{raceRegistrations>bib}" />
                     <Text text="{parts:[

@@ -34,10 +34,7 @@
     </columns>
 
     <items>
-      <ColumnListItem type="Navigation" vAlign="Top">
-        <customData>
-          <core:CustomData key="state" value="{= ${heats>cancelled} ? 'cancelled' : 'ok'}" writeToDom="true" />
-        </customData>
+      <ColumnListItem type="Navigation" vAlign="Top" highlight="{= ${heats>cancelled} ? 'Error' : undefined }">
         <cells>
           <Text text="{heats>number}" />
           <Text text="{path: 'heats>date', formatter: '.formatter.dayLabel'}" />
