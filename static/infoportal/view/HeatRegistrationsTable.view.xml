@@ -1,6 +1,6 @@
 <mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatRegistrationsTable" xmlns="sap.m" xmlns:f="sap.f" xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
-    <Page title="Einteilung und Ergebnis" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
+    <Page title="{i18n>launchpad.heatsTile.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <content>
 
         <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
