@@ -44,7 +44,7 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation" vAlign="Top" highlight="{= ${races>cancelled} ? 'Error' : undefined }">
+            <ColumnListItem type="Navigation" vAlign="Top" highlight="{= ${races>cancelled} ? 'Indication01' : undefined }">
               <cells>
                 <Text text="{races>number}" />
                 <ObjectIdentifier title="{path: 'races>', formatter: '.formatter.raceLabel'}" text="{races>longLabel} {races>comment}" />

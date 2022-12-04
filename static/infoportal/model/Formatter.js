@@ -1,4 +1,6 @@
-sap.ui.define(function () {
+sap.ui.define([
+  "sap/ui/core/IndicationColor"
+], function (IndicationColor) {
   "use strict";
 
   let Formatter = {
@@ -84,6 +86,29 @@ sap.ui.define(function () {
             return this.i18n("heat.state.finished");
           case 6:
             return this.i18n("heat.state.photoFinish");
+        }
+      }
+    },
+
+    heatStateHighlight: function (oHeat) {
+      // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
+      if (oHeat.cancelled) {
+        return IndicationColor.Indication01;
+      } else {
+        switch (oHeat.state) {
+          default:
+          case 0:
+            return undefined; // initial -> no color
+          case 1:
+            return IndicationColor.Indication05; // scheduled -> blue
+          case 2:
+            return IndicationColor.Indication03; // started -> orange
+          case 4:
+            return IndicationColor.Indication04; // official -> green
+          case 5:
+            return IndicationColor.Indication06; // finished -> dark green
+          case 6:
+            return IndicationColor.Indication07; // photo finish -> ???
         }
       }
     },
