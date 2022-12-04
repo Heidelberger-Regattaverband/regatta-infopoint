@@ -34,7 +34,7 @@
     </columns>
 
     <items>
-      <ColumnListItem type="Navigation" vAlign="Top" highlight="{= ${heats>cancelled} ? 'Error' : undefined }">
+      <ColumnListItem type="Navigation" vAlign="Top" highlight="{path: 'heats>', formatter: '.formatter.heatStateHighlight'}">
         <cells>
           <Text text="{heats>number}" />
           <Text text="{path: 'heats>date', formatter: '.formatter.dayLabel'}" />
