@@ -37,6 +37,8 @@ sap.ui.define([
 
     onNavBack: function () {
       this.oRacesModel = undefined;
+      // reduce table growing threshold to improve performance next time table is shown
+      this.racesTable.setGrowingThreshold(30);
       this.navBack("startpage");
     },
 

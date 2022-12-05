@@ -60,6 +60,8 @@ sap.ui.define([
 
     onNavBack: function () {
       this.oHeatsModel = undefined;
+      // reduce table growing threshold to improve performance next time table is shown
+      this.heatsTable.setGrowingThreshold(30);
       this.navBack("startpage");
     },
 
