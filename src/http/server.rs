@@ -11,6 +11,7 @@ use actix_web::{
 };
 use actix_web_lab::web as web_lab;
 use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
+use colored::Colorize;
 use log::{debug, info};
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
@@ -104,17 +105,18 @@ impl Server {
 
     /// Returns the rate limiter configuration taken from the environment.
     fn get_rate_limiter_config() -> (u64, u64) {
-        let max_requests = env::var("HTTP_RL_MAX_REQUESTS")
+        let max_requests: u64 = env::var("HTTP_RL_MAX_REQUESTS")
             .expect("env variable `HTTP_RL_MAX_REQUESTS` should be set")
             .parse()
             .unwrap();
-        let interval = env::var("HTTP_RL_INTERVAL")
+        let interval: u64 = env::var("HTTP_RL_INTERVAL")
             .expect("env variable `HTTP_RL_INTERVAL` should be set")
             .parse()
             .unwrap();
         debug!(
             "HTTP Server rate limiter max. requests {} in {} seconds.",
-            max_requests, interval
+            max_requests.to_string().green(),
+            interval.to_string().green()
         );
         (max_requests, interval)
     }
@@ -125,13 +127,22 @@ impl Server {
             .with_safe_defaults()
             .with_no_client_auth();
 
-        let cert_pem_path = env::var("CERT_PEM_PATH").unwrap_or_else(|_| "cert.pem".to_string());
-        let key_pem_path = env::var("KEY_PEM_PATH").unwrap_or_else(|_| "key.pem".to_string());
+        let cert_pem_path = env::var("CERT_PEM_PATH").unwrap_or_else(|_| "./cert.pem".to_string());
+        let key_pem_path = env::var("KEY_PEM_PATH").unwrap_or_else(|_| "./key.pem".to_string());
+
+        debug!(
+            "Current working directory is {}",
+            std::env::current_dir()
+                .unwrap()
+                .display()
+                .to_string()
+                .green()
+        );
 
         // load TLS key/cert files
-        debug!("Loading certificate from {}", cert_pem_path);
+        debug!("Loading certificate from {}", cert_pem_path.green());
         let cert_file = &mut BufReader::new(File::open(cert_pem_path).unwrap());
-        debug!("Loading key from {}", key_pem_path);
+        debug!("Loading key from {}", key_pem_path.green());
         let key_file = &mut BufReader::new(File::open(key_pem_path).unwrap());
 
         // convert files to key/cert objects

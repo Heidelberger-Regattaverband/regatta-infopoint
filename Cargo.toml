@@ -33,3 +33,6 @@ async-trait = "0.1"
 # https://github.com/prisma/tiberius#feature-flags
 tiberius = { version = "0.11", features = ["chrono"] }
 stretto = { version = "0.7", features = ["async"] }
+
+# Utils
+colored = "2"

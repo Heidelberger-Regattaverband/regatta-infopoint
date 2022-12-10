@@ -13,6 +13,8 @@ COPY Cargo.toml .
 COPY Cargo.lock .
 COPY src/ ./src/
 COPY static/ ./static/
+COPY cert.pem .
+COPY key.pem .
 
 # add node repository
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
