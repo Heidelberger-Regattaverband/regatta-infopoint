@@ -25,4 +25,4 @@ services:
     volumes:
       - type: volume
         source: /etc/letsencrypt/live/8e835d.online-server.cloud
-        target: /letsencrypt
+        target: /data
