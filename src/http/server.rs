@@ -127,8 +127,8 @@ impl Server {
             .with_safe_defaults()
             .with_no_client_auth();
 
-        let cert_pem_path = env::var("CERT_PEM_PATH").unwrap_or_else(|_| "./cert.pem".to_string());
-        let key_pem_path = env::var("KEY_PEM_PATH").unwrap_or_else(|_| "./key.pem".to_string());
+        let cert_pem_path = env::var("HTTPS_CERT_PATH").unwrap_or_else(|_| "./cert.pem".to_string());
+        let key_pem_path = env::var("HTTPS_KEY_PATH").unwrap_or_else(|_| "./key.pem".to_string());
 
         debug!(
             "Current working directory is {}",
