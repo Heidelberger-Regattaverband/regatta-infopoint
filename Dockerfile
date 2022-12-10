@@ -8,6 +8,8 @@ LABEL maintainer="markus@ofterdinger.de"
 WORKDIR /usr/src/infoportal
 EXPOSE 8080
 
+VOLUME [ "/data" ]
+
 # copy required resources into image
 COPY Cargo.toml .
 COPY Cargo.lock .
