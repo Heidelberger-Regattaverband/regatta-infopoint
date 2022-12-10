@@ -12,7 +12,15 @@ use actix_web::{
 use actix_web_lab::web as web_lab;
 use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
 use log::{debug, info};
-use std::{env, future::Ready, io, time::Duration};
+use rustls::{Certificate, PrivateKey, ServerConfig};
+use rustls_pemfile::{certs, pkcs8_private_keys};
+use std::{
+    env,
+    fs::File,
+    future::Ready,
+    io::{self, BufReader},
+    time::Duration,
+};
 
 /// Path to REST API
 pub const PATH_REST_API: &str = "/api";
@@ -24,12 +32,12 @@ pub struct Server {}
 impl Server {
     pub async fn start() -> io::Result<()> {
         let data = create_app_data().await;
-
-        let rl_config = Self::get_rate_limiter_config();
+        let rustls_cfg = Self::get_rustls_config();
+        let rl_cfg = Self::get_rate_limiter_config();
 
         let mut http_server = HttpServer::new(move || {
             App::new()
-                .wrap(Self::get_rate_limiter(rl_config))
+                .wrap(Self::get_rate_limiter(rl_cfg))
                 .wrap(Self::get_prometeus())
                 .app_data(Data::clone(&data))
                 .service(
@@ -53,7 +61,10 @@ impl Server {
                 )
                 .service(web_lab::redirect("/", PATH_INFOPORTAL))
         })
-        .bind(get_http_bind())?;
+        // bind http
+        .bind(get_http_bind())?
+        // bind https
+        .bind_rustls(get_https_bind(), rustls_cfg)?;
 
         // configure number of workers if env. variable is set
         let workers = get_http_workers();
@@ -107,6 +118,42 @@ impl Server {
         );
         (max_requests, interval)
     }
+
+    fn get_rustls_config() -> ServerConfig {
+        // init server config builder with safe defaults
+        let config = ServerConfig::builder()
+            .with_safe_defaults()
+            .with_no_client_auth();
+
+        let cert_pem_path = env::var("CERT_PEM_PATH").unwrap_or_else(|_| "cert.pem".to_string());
+        debug!("Loading certificate from {}", cert_pem_path);
+        let key_pem_path = env::var("KEY_PEM_PATH").unwrap_or_else(|_| "key.pem".to_string());
+        debug!("Loading key from {}", key_pem_path);
+
+        // load TLS key/cert files
+        let cert_file = &mut BufReader::new(File::open(cert_pem_path).unwrap());
+        let key_file = &mut BufReader::new(File::open(key_pem_path).unwrap());
+
+        // convert files to key/cert objects
+        let cert_chain = certs(cert_file)
+            .unwrap()
+            .into_iter()
+            .map(Certificate)
+            .collect();
+        let mut keys: Vec<PrivateKey> = pkcs8_private_keys(key_file)
+            .unwrap()
+            .into_iter()
+            .map(PrivateKey)
+            .collect();
+
+        // exit if no keys could be parsed
+        if keys.is_empty() {
+            eprintln!("Could not locate PKCS 8 private keys.");
+            std::process::exit(1);
+        }
+
+        config.with_single_cert(cert_chain, keys.remove(0)).unwrap()
+    }
 }
 
 fn get_http_bind() -> (String, u16) {
@@ -116,6 +163,17 @@ fn get_http_bind() -> (String, u16) {
         .unwrap();
     let host = env::var("HTTP_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
     debug!("HTTP server is listening on: {host}:{port}");
+
+    (host, port)
+}
+
+fn get_https_bind() -> (String, u16) {
+    let port = env::var("HTTPS_PORT")
+        .expect("env variable `HTTPS_PORT` should be set")
+        .parse()
+        .unwrap();
+    let host = env::var("HTTPS_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
+    debug!("HTTPS server is listening on: {host}:{port}");
 
     (host, port)
 }
