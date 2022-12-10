@@ -18,11 +18,13 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_POOL_MAX_SIZE=${DB_POOL_MAX_SIZE}
       - HTTP_PORT=${HTTP_PORT}
-      - HTTPS_PORT=${HTTPS_PORT}
       - HTTP_RL_MAX_REQUESTS=${HTTP_RL_MAX_REQUESTS}
       - HTTP_RL_INTERVAL=${HTTP_RL_INTERVAL}
+      - HTTPS_PORT=${HTTPS_PORT}
+      - HTTPS_CERT_PATH=/data/cert6.pem
+      - HTTPS_KEY_PATH=/data/privkey6.pem
       - RUST_LOG=${RUST_LOG}
     volumes:
       - type: bind
-        source: /etc/letsencrypt/live/8e835d.online-server.cloud/
+        source: /etc/letsencrypt/archive/8e835d.online-server.cloud/
         target: /data
