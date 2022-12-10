@@ -126,12 +126,12 @@ impl Server {
             .with_no_client_auth();
 
         let cert_pem_path = env::var("CERT_PEM_PATH").unwrap_or_else(|_| "cert.pem".to_string());
-        debug!("Loading certificate from {}", cert_pem_path);
         let key_pem_path = env::var("KEY_PEM_PATH").unwrap_or_else(|_| "key.pem".to_string());
-        debug!("Loading key from {}", key_pem_path);
 
         // load TLS key/cert files
+        debug!("Loading certificate from {}", cert_pem_path);
         let cert_file = &mut BufReader::new(File::open(cert_pem_path).unwrap());
+        debug!("Loading key from {}", key_pem_path);
         let key_file = &mut BufReader::new(File::open(key_pem_path).unwrap());
 
         // convert files to key/cert objects
