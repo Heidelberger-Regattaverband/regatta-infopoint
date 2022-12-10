@@ -18,12 +18,14 @@ log = "0.4"
 dotenv = "0.15"
 
 # Web
-actix-web = "4"
+actix-web = { version = "4", features = ["rustls"] }
 actix-files = "0.6"
 serde = { version = "1", features = ["derive"] }
 actix-extensible-rate-limit = "0.2"
 actix-web-lab = "0.18"
 actix-web-prometheus = { version = "0.1", features = ["process"] }
+rustls = "0.20"
+rustls-pemfile = "1"
 
 # Database
 bb8 = "0.8"
