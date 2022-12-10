@@ -23,6 +23,6 @@ services:
       - HTTP_RL_INTERVAL=${HTTP_RL_INTERVAL}
       - RUST_LOG=${RUST_LOG}
     volumes:
-      - type: volume
+      - type: bind
         source: /etc/letsencrypt/live/8e835d.online-server.cloud
         target: /data
