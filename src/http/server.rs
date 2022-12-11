@@ -34,11 +34,11 @@ impl Server {
     pub async fn start() -> io::Result<()> {
         let data = create_app_data().await;
         let rustls_cfg = Self::get_rustls_config();
-        let rl_cfg = Self::get_rate_limiter_config();
+        let (max_requests, interval) = Self::get_rate_limiter_config();
 
         let mut http_server = HttpServer::new(move || {
             App::new()
-                .wrap(Self::get_rate_limiter(rl_cfg))
+                .wrap(Self::get_rate_limiter(max_requests, interval))
                 .wrap(Self::get_prometeus())
                 .app_data(Data::clone(&data))
                 .service(
@@ -88,13 +88,14 @@ impl Server {
 
     /// Returns a new RateLimiter instance.
     fn get_rate_limiter(
-        rl_config: (u64, u64),
+        max_requests: u64,
+        interval: u64,
     ) -> RateLimiter<
         InMemoryBackend,
         SimpleOutput,
         impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>,
     > {
-        let input = SimpleInputFunctionBuilder::new(Duration::from_secs(rl_config.1), rl_config.0)
+        let input = SimpleInputFunctionBuilder::new(Duration::from_secs(interval), max_requests)
             .real_ip_key()
             .build();
 
