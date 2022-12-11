@@ -114,9 +114,9 @@ impl Server {
             .parse()
             .unwrap();
         debug!(
-            "HTTP Server rate limiter max. requests {} in {} seconds.",
-            max_requests.to_string().green(),
-            interval.to_string().green()
+            "HTTP/S Server rate limiter max. requests {} in {} seconds.",
+            max_requests.to_string().bold(),
+            interval.to_string().bold()
         );
         (max_requests, interval)
     }
@@ -137,13 +137,13 @@ impl Server {
                 .unwrap()
                 .display()
                 .to_string()
-                .green()
+                .bold()
         );
 
         // load TLS key/cert files
-        debug!("Loading certificate from {}", cert_pem_path.green());
+        debug!("Loading certificate from {}", cert_pem_path.bold());
         let cert_file = &mut BufReader::new(File::open(cert_pem_path).unwrap());
-        debug!("Loading key from {}", key_pem_path.green());
+        debug!("Loading key from {}", key_pem_path.bold());
         let key_file = &mut BufReader::new(File::open(key_pem_path).unwrap());
 
         // convert files to key/cert objects
