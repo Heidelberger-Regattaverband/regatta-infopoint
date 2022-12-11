@@ -241,9 +241,9 @@ dependencies = [
 
 [[package]]
 name = "actix-web-lab"
-version = "0.18.6"
+version = "0.18.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8885c3c4cccc56ddd1bcc5bd331d7934f40589c4501ff81ed5d9dcafad0b7475"
+checksum = "caab4099eb0a9d1de2982b6687488b60fc2846600e9f4bcf5b249bde1879613f"
 dependencies = [
  "actix-files",
  "actix-http",
@@ -262,6 +262,7 @@ dependencies = [
  "futures-core",
  "futures-util",
  "http",
+ "impl-more",
  "itertools",
  "local-channel",
  "mediatype",
@@ -278,9 +279,9 @@ dependencies = [
 
 [[package]]
 name = "actix-web-lab-derive"
-version = "0.16.0"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a44a15d9ddb31a4f41decd22f743a154e519fb326120e8133ef9ea6283335ad2"
+checksum = "e4419acd7924ac473ccd00a6efea324dd382b0b7ae31b8e06cd2c58d4d7afae6"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1392,6 +1393,12 @@ dependencies = [
  "unicode-bidi",
  "unicode-normalization",
 ]
+
+[[package]]
+name = "impl-more"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d14c422088773284a62e155b3e2f700a52cd3731dabe2cffd914e13f71b6bd4e"
 
 [[package]]
 name = "indexmap"
