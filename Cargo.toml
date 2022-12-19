@@ -12,7 +12,7 @@ license = "Apache-2.0"
 
 [dependencies]
 anyhow = "1"
-async-std =  {version = "1.12.0", features = ["attributes"]}
+async-std =  {version = "1.12", features = ["attributes"]}
 env_logger = "0.10"
 log = "0.4"
 dotenv = "0.15"
