@@ -4,8 +4,9 @@ use crate::db::{
 };
 use actix_web::{
     get,
-    web::{Data, Json, Path},
+    web::{Data, Json, Path, Query},
 };
+use serde::Deserialize;
 
 #[get("/regattas")]
 async fn get_regattas(data: Data<Aquarius>) -> Json<Vec<Regatta>> {
@@ -49,8 +50,17 @@ async fn get_registrations(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Re
 }
 
 #[get("/regattas/{id}/heats")]
-async fn get_heats(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Heat>> {
+async fn get_heats(
+    path: Path<i32>,
+    odataParams: Query<OData>,
+    data: Data<Aquarius>,
+) -> Json<Vec<Heat>> {
     let regatta_id = path.into_inner();
+
+    if let Some(expand) = odataParams.into_inner().expand {
+        println!("{}", expand);
+    }
+
     let heats = data.get_heats(regatta_id).await.unwrap();
     Json(heats)
 }
@@ -70,4 +80,10 @@ async fn get_heat_registrations(
     let heat_id = path.into_inner();
     let heat_registrations = data.get_heat_registrations(heat_id).await.unwrap();
     Json(heat_registrations)
+}
+
+#[derive(Debug, Deserialize)]
+struct OData {
+    #[serde(rename = "$expand")]
+    expand: Option<String>,
 }
