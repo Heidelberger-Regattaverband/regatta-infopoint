@@ -170,23 +170,31 @@ impl Server {
 }
 
 fn get_http_bind() -> (String, u16) {
-    let port = env::var("HTTP_PORT")
+    let port: u16 = env::var("HTTP_PORT")
         .expect("env variable `HTTP_PORT` should be set")
         .parse()
         .unwrap();
     let host = env::var("HTTP_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
-    debug!("HTTP server is listening on: {host}:{port}");
+    debug!(
+        "HTTP server is listening on: {}:{}",
+        host.bold(),
+        port.to_string().bold()
+    );
 
     (host, port)
 }
 
 fn get_https_bind() -> (String, u16) {
-    let port = env::var("HTTPS_PORT")
+    let port: u16 = env::var("HTTPS_PORT")
         .expect("env variable `HTTPS_PORT` should be set")
         .parse()
         .unwrap();
     let host = env::var("HTTPS_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
-    debug!("HTTPS server is listening on: {host}:{port}");
+    debug!(
+        "HTTPS server is listening on: {}:{}",
+        host.bold(),
+        port.to_string().bold()
+    );
 
     (host, port)
 }
