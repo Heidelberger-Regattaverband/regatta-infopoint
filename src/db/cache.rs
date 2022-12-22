@@ -19,18 +19,18 @@ impl Cache {
     /// Creates a new `Cache`.
     pub(super) fn new() -> Self {
         const MAX_COST: i64 = 1e6 as i64;
-        const MAX_RAGATTA_COUNT: usize = 5;
+        const MAX_REGATTAS_COUNT: usize = 5;
         const MAX_RACES_COUNT: usize = 200;
         const MAX_HEATS_COUNT: usize = 350;
 
         Cache {
-            regatta: AsyncCache::new(MAX_RAGATTA_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
-            races: AsyncCache::new(MAX_RAGATTA_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
+            regatta: AsyncCache::new(MAX_REGATTAS_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
+            races: AsyncCache::new(MAX_REGATTAS_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
             race: AsyncCache::new(MAX_RACES_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
             regs: AsyncCache::new(MAX_RACES_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
-            heats: AsyncCache::new(MAX_RAGATTA_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
+            heats: AsyncCache::new(MAX_REGATTAS_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
             heat_regs: AsyncCache::new(MAX_HEATS_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
-            scores: AsyncCache::new(MAX_RAGATTA_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
+            scores: AsyncCache::new(MAX_REGATTAS_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
         }
     }
 
