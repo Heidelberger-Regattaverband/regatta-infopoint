@@ -52,12 +52,12 @@ async fn get_registrations(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Re
 #[get("/regattas/{id}/heats")]
 async fn get_heats(
     path: Path<i32>,
-    odataParams: Query<OData>,
+    odata_params: Query<OData>,
     data: Data<Aquarius>,
 ) -> Json<Vec<Heat>> {
     let regatta_id = path.into_inner();
 
-    if let Some(expand) = odataParams.into_inner().expand {
+    if let Some(expand) = odata_params.into_inner().expand {
         println!("{}", expand);
     }
 
