@@ -9,6 +9,7 @@ use actix_web::{
     web::{scope, Data},
     App, Error, HttpServer,
 };
+use actix_web_lab::middleware::RedirectHttps;
 use actix_web_lab::web as web_lab;
 use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
 use colored::Colorize;
@@ -35,11 +36,16 @@ impl Server {
         let data = create_app_data().await;
         let rustls_cfg = Self::get_rustls_config();
         let (max_requests, interval) = Self::get_rate_limiter_config();
+        let https_bind = get_https_bind();
 
         let mut http_server = HttpServer::new(move || {
             App::new()
+                // add rate limiter middleware
                 .wrap(Self::get_rate_limiter(max_requests, interval))
+                // collect metrics about requests and responses
                 .wrap(Self::get_prometeus())
+                // enable redirect from http -> https
+                .wrap(RedirectHttps::default().to_port(https_bind.1))
                 .app_data(Data::clone(&data))
                 .service(
                     scope(PATH_REST_API)
@@ -65,7 +71,7 @@ impl Server {
         // bind http
         .bind(get_http_bind())?
         // bind https
-        .bind_rustls(get_https_bind(), rustls_cfg)?;
+        .bind_rustls(https_bind, rustls_cfg)?;
 
         // configure number of workers if env. variable is set
         let workers = get_http_workers();
