@@ -36,7 +36,8 @@ impl Server {
         let data = create_app_data().await;
         let rustls_cfg = Self::get_rustls_config();
         let (max_requests, interval) = Self::get_rate_limiter_config();
-        let https_bind = get_https_bind();
+        let http_bind = Self::get_http_bind();
+        let https_bind = Self::get_https_bind();
 
         let mut http_server = HttpServer::new(move || {
             App::new()
@@ -69,14 +70,13 @@ impl Server {
                 .service(web_lab::redirect("/", PATH_INFOPORTAL))
         })
         // bind http
-        .bind(get_http_bind())?
+        .bind(http_bind)?
         // bind https
         .bind_rustls(https_bind, rustls_cfg)?;
 
         // configure number of workers if env. variable is set
-        let workers = get_http_workers();
-        if workers.is_some() {
-            http_server = http_server.workers(workers.unwrap());
+        if let Some(workers) = get_http_workers() {
+            http_server = http_server.workers(workers);
         }
 
         info!("Starting Infoportal");
@@ -148,9 +148,12 @@ impl Server {
         );
 
         // load TLS key/cert files
-        debug!("Loading certificate from {}", cert_pem_path.bold());
+        debug!(
+            "Loading TLS config: certificate {} and private key {}.",
+            cert_pem_path.bold(),
+            key_pem_path.bold()
+        );
         let cert_file = &mut BufReader::new(File::open(cert_pem_path).unwrap());
-        debug!("Loading key from {}", key_pem_path.bold());
         let key_file = &mut BufReader::new(File::open(key_pem_path).unwrap());
 
         // convert files to key/cert objects
@@ -165,7 +168,8 @@ impl Server {
             .map(PrivateKey)
             .collect();
 
-        // exit if no keys could be parsed
+        // exit if no keys could be parsedpter for each variant
+        /////////////////
         if keys.is_empty() {
             eprintln!("Could not locate PKCS 8 private keys.");
             std::process::exit(1);
@@ -173,36 +177,36 @@ impl Server {
 
         config.with_single_cert(cert_chain, keys.remove(0)).unwrap()
     }
-}
 
-fn get_http_bind() -> (String, u16) {
-    let port: u16 = env::var("HTTP_PORT")
-        .expect("env variable `HTTP_PORT` should be set")
-        .parse()
-        .unwrap();
-    let host = env::var("HTTP_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
-    debug!(
-        "HTTP server is listening on: {}:{}",
-        host.bold(),
-        port.to_string().bold()
-    );
+    fn get_http_bind() -> (String, u16) {
+        let port: u16 = env::var("HTTP_PORT")
+            .expect("env variable `HTTP_PORT` should be set")
+            .parse()
+            .unwrap();
+        let host = env::var("HTTP_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
+        debug!(
+            "HTTP server is listening on: {}:{}",
+            host.bold(),
+            port.to_string().bold()
+        );
 
-    (host, port)
-}
+        (host, port)
+    }
 
-fn get_https_bind() -> (String, u16) {
-    let port: u16 = env::var("HTTPS_PORT")
-        .expect("env variable `HTTPS_PORT` should be set")
-        .parse()
-        .unwrap();
-    let host = env::var("HTTPS_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
-    debug!(
-        "HTTPS server is listening on: {}:{}",
-        host.bold(),
-        port.to_string().bold()
-    );
+    fn get_https_bind() -> (String, u16) {
+        let port: u16 = env::var("HTTPS_PORT")
+            .expect("env variable `HTTPS_PORT` should be set")
+            .parse()
+            .unwrap();
+        let host = env::var("HTTPS_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
+        debug!(
+            "HTTPS server is listening on: {}:{}",
+            host.bold(),
+            port.to_string().bold()
+        );
 
-    (host, port)
+        (host, port)
+    }
 }
 
 fn get_http_workers() -> Option<usize> {
