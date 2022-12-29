@@ -38,6 +38,7 @@ impl Server {
         let (max_requests, interval) = Self::get_rate_limiter_config();
         let http_bind = Self::get_http_bind();
         let https_bind = Self::get_https_bind();
+        let https_public_port = Self::get_https_public_port();
 
         let mut http_server = HttpServer::new(move || {
             App::new()
@@ -46,7 +47,7 @@ impl Server {
                 // collect metrics about requests and responses
                 .wrap(Self::get_prometeus())
                 // enable redirect from http -> https
-                .wrap(RedirectHttps::default().to_port(https_bind.1))
+                .wrap(RedirectHttps::default().to_port(https_public_port))
                 .app_data(Data::clone(&data))
                 .service(
                     scope(PATH_REST_API)
@@ -206,6 +207,16 @@ impl Server {
         );
 
         (host, port)
+    }
+
+    fn get_https_public_port() -> u16 {
+        let public_port: u16 = env::var("HTTPS_PUBLIC_PORT")
+            .expect("env variable `HTTPS_PUBLIC_PORT` should be set")
+            .parse()
+            .unwrap();
+        debug!("HTTPS public port is: {}", public_port.to_string().bold());
+
+        public_port
     }
 }
 
