@@ -93,7 +93,7 @@ sap.ui.define([
     heatStateHighlight: function (oHeat) {
       // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
       if (oHeat.cancelled) {
-        return IndicationColor.Indication01;
+        return IndicationColor.Indication02; // cancelled -> red
       } else {
         switch (oHeat.state) {
           default:
