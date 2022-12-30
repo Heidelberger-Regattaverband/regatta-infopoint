@@ -72,7 +72,7 @@
               </columns>
 
               <items>
-                <ColumnListItem highlight="{= ${raceRegistrations>cancelled} ? 'Error' : undefined }">
+                <ColumnListItem highlight="{= ${raceRegistrations>cancelled} ? 'Indication02' : 'Indication04' }">
                   <cells>
                     <Text text="{raceRegistrations>bib}" />
                     <Text text="{parts:[
