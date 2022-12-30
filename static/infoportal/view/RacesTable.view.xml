@@ -5,7 +5,17 @@
       <content>
 
         <Table id="racesTable" autoPopinMode="true" items="{races>/}" itemPress="onItemPress" growing="true" growingScrollToLoad="true" growingThreshold="30" sticky="ColumnHeaders" mode="SingleSelectMaster" class="sapUiNoContentPadding">
-          <columns>
+          <headerToolbar>
+            <OverflowToolbar>
+              <Title text="{i18n>common.race}" level="H2"/>
+              <ToolbarSpacer/>
+              <Button
+                tooltip="Filter"
+                icon="sap-icon://filter"
+                press="handleFilterButtonPressed"/>
+            </OverflowToolbar>
+          </headerToolbar>
+            <columns>
             <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.number}" class="bold" />

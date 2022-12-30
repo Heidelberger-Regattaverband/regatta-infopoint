@@ -1,8 +1,10 @@
 sap.ui.define([
   "de/regatta_hd/infopoint/controller/Base.controller",
   "sap/ui/model/json/JSONModel",
+  'sap/ui/core/Fragment',
+  "sap/ui/model/Filter",
   "../model/Formatter"
-], function (BaseController, JSONModel, Formatter) {
+], function (BaseController, JSONModel, Fragment, Filter, Formatter) {
   "use strict";
 
   return BaseController.extend("de.regatta_hd.infopoint.controller.RacesTable", {
@@ -20,6 +22,9 @@ sap.ui.define([
       this.getEventBus().subscribe("race", "last", this._onLastRaceEvent, this);
 
       this.racesTable = this.getView().byId("racesTable");
+
+      // Keeps reference to any of the created sap.m.ViewSettingsDialog-s in this sample
+			this._mViewSettingsDialogs = {};
     },
 
     onItemPress: function (oEvent) {
@@ -36,11 +41,36 @@ sap.ui.define([
     },
 
     onNavBack: function () {
-      this.oRacesModel = undefined;
+      this._oRacesModel = undefined;
       // reduce table growing threshold to improve performance next time table is shown
       this.racesTable.setGrowingThreshold(30);
       this.navBack("startpage");
     },
+
+		handleFilterButtonPressed: function(oEvent) {
+      this._getViewSettingsDialog("de.regatta_hd.infopoint.view.RacesFilterDialog")
+        .then(function (oViewSettingsDialog) {
+          oViewSettingsDialog.open();
+        });
+		},
+
+    _getViewSettingsDialog: function (sDialogFragmentName) {
+			let pDialog = this._mViewSettingsDialogs[sDialogFragmentName];
+
+			if (!pDialog) {
+        const sStyleClass = this.getOwnerComponent().getContentDensityClass();
+				pDialog = Fragment.load({
+					id: this.getView().getId(),
+					name: sDialogFragmentName,
+					controller: this
+				}).then(function (oDialog) {
+					oDialog.addStyleClass(sStyleClass);
+					return oDialog;
+				});
+				this._mViewSettingsDialogs[sDialogFragmentName] = pDialog;
+			}
+			return pDialog;
+		},
 
     _onFirstRaceEvent: function (channelId, eventId, parametersMap) {
       this._setCurrentRace(0);
@@ -75,14 +105,14 @@ sap.ui.define([
     },
 
     _loadRacesModel: async function () {
-      if (!this.oRacesModel) {
-        this.oRacesModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/races", this.racesTable);
-        this.setViewModel(this.oRacesModel, "races");
+      if (!this._oRacesModel) {
+        this._oRacesModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/races", this.racesTable);
+        this.setViewModel(this._oRacesModel, "races");
       }
     },
 
     _loadRegistrationsModel: async function (sRaceId) {
-      const oModel = await this.getJSONModel("/api/races/" + sRaceId + "/registrations");
+      const oModel = await this.getJSONModel("/api/races/" + sRaceId + "/registrations", undefined);
       this.getOwnerComponent().setModel(oModel, "raceRegistrations");
     },
 
@@ -99,7 +129,30 @@ sap.ui.define([
         this.racesTable.setGrowingThreshold(iIndex + 10);
         this.racesTable.getBinding("items").filter([]);
       }
-    }
+    },
+
+		handleFilterDialogConfirm: function(oEvent) {
+			const mParams = oEvent.getParameters();
+			const oBinding = this.racesTable.getBinding("items");
+			const aFilters = [];
+
+			mParams.filterItems.forEach(function(oItem) {
+				const aSplit = oItem.getKey().split("___"),
+					sPath = aSplit[0],
+					sOperator = aSplit[1],
+					sValue1 = true, //aSplit[2],
+//					sValue2 = aSplit[3],
+					oFilter = new Filter(sPath, sOperator, sValue1);
+				aFilters.push(oFilter);
+			});
+
+			// apply filter settings
+			oBinding.filter(aFilters);
+
+			// update filter bar
+			// this.byId("vsdFilterBar").setVisible(aFilters.length > 0);
+			// this.byId("vsdFilterLabel").setText(mParams.filterString);
+		}
 
   });
 });
