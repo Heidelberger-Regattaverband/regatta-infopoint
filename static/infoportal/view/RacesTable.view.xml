@@ -64,7 +64,7 @@
                 <Text text="{races>number}" />
                 <ObjectIdentifier title="{path: 'races>', formatter: '.formatter.raceLabel'}" text="{races>longLabel} {races>comment}" />
                 <Text text="{path: 'races>', formatter: '.formatter.distanceLabel'}" />
-                <Text text="{races>registrations_count}" />
+                <Text text="{races>registrationsCount}" />
                 <Text text="{= ${races>cancelled} ? ${i18n>common.raceCancelled} : ${i18n>common.raceDriven}}" />
                 <Text text="{races>raceMode}" />
                 <core:Icon src="{= ${races>seeded} ? 'sap-icon://accept' : 'sap-icon://decline' }" alt="{i18n>common.seeded}" />
