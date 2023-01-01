@@ -59,12 +59,14 @@ sap.ui.define([
 
 			if (!pDialog) {
         const sStyleClass = this.getOwnerComponent().getContentDensityClass();
+        const oView = this.getView();
 				pDialog = Fragment.load({
 					id: this.getView().getId(),
 					name: sDialogFragmentName,
 					controller: this
 				}).then(function (oDialog) {
 					oDialog.addStyleClass(sStyleClass);
+          oView.addDependent(oDialog);
 					return oDialog;
 				});
 				this._mViewSettingsDialogs[sDialogFragmentName] = pDialog;
@@ -140,7 +142,7 @@ sap.ui.define([
 				const aSplit = oItem.getKey().split("___"),
 					sPath = aSplit[0],
 					sOperator = aSplit[1],
-					sValue1 = true, //aSplit[2],
+					sValue1 = aSplit[2],
 //					sValue2 = aSplit[3],
 					oFilter = new Filter(sPath, sOperator, sValue1);
 				aFilters.push(oFilter);
