@@ -4,6 +4,22 @@
 	<ViewSettingsDialog confirm="handleFilterDialogConfirm">
 		<filterItems>
 			<ViewSettingsFilterItem
+				text="{i18n>common.boatClass}"
+				key="gender"
+				multiSelect="true">
+				<items>
+					<ViewSettingsItem text="Einer (1x)" key="boatClass/abbreviation___EQ___1x" />
+					<ViewSettingsItem text="Doppelzweier (2x)" key="boatClass/abbreviation___EQ___2x" />
+					<ViewSettingsItem text="Zweier ohne St. (2-)" key="boatClass/abbreviation___EQ___2-" />
+					<ViewSettingsItem text="Zweier mit St. (2+)" key="boatClass/abbreviation___EQ___2+" />
+					<ViewSettingsItem text="Doppelvierer (4x)" key="boatClass/abbreviation___EQ___4x" />
+					<ViewSettingsItem text="Vierer ohne St. (4-)" key="boatClass/abbreviation___EQ___4-" />
+					<ViewSettingsItem text="Doppelvierer mit St. (4x+)" key="boatClass/abbreviation___EQ___4x+" />
+					<ViewSettingsItem text="Vierer mit St. (4+)" key="boatClass/abbreviation___EQ___4+" />
+					<ViewSettingsItem text="Achter mit St. (8+)" key="boatClass/abbreviation___EQ___8+" />
+				</items>
+			</ViewSettingsFilterItem>
+			<ViewSettingsFilterItem
 				text="{i18n>common.gender}"
 				key="gender"
 				multiSelect="false">
