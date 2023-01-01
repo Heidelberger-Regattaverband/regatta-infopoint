@@ -142,7 +142,7 @@ sap.ui.define([
 				const aSplit = oItem.getKey().split("___"),
 					sPath = aSplit[0],
 					sOperator = aSplit[1],
-					sValue1 = aSplit[2],
+					sValue1 = aSplit[2] === 'true' || (aSplit[2] === 'false' ? false : aSplit[2]),
 //					sValue2 = aSplit[3],
 					oFilter = new Filter(sPath, sOperator, sValue1);
 				aFilters.push(oFilter);
@@ -152,8 +152,8 @@ sap.ui.define([
 			oBinding.filter(aFilters);
 
 			// update filter bar
-			// this.byId("vsdFilterBar").setVisible(aFilters.length > 0);
-			// this.byId("vsdFilterLabel").setText(mParams.filterString);
+			this.byId("vsdFilterBar").setVisible(aFilters.length > 0);
+			this.byId("vsdFilterLabel").setText(mParams.filterString);
 		}
 
   });
