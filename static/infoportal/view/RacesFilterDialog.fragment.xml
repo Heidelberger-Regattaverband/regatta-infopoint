@@ -9,8 +9,8 @@
 				key="cancelled"
 				multiSelect="false">
 				<items>
-					<ViewSettingsItem text="{i18n>common.raceDriven}" key="cancelled___EQ___false" />
-					<ViewSettingsItem text="{i18n>common.raceCancelled}" key="cancelled___EQ___true" />
+					<ViewSettingsItem text="{i18n>common.raceDriven}" key="cancelled___EQ___bool:false" />
+					<ViewSettingsItem text="{i18n>common.raceCancelled}" key="cancelled___EQ___bool:true" />
 				</items>
 			</ViewSettingsFilterItem>
 			<ViewSettingsFilterItem

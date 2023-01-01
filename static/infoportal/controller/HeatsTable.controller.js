@@ -105,7 +105,7 @@ sap.ui.define([
     },
 
     _loadRegistrationsModel: async function (sHeatId) {
-      const oModel = await this.getJSONModel("/api/heats/" + sHeatId + "/registrations");
+      const oModel = await this.getJSONModel("/api/heats/" + sHeatId + "/registrations", null);
       this.getOwnerComponent().setModel(oModel, "heatRegistrations");
     },
 
