@@ -66,11 +66,9 @@ sap.ui.define([
     },
 
     _onNextRaceEvent: function (channelId, eventId, parametersMap) {
-      const aRaces = this.getViewModel("races").getData();
-
       const iIndex = this.racesTable.indexOfItem(this.racesTable.getSelectedItem());
-      const iNextIndex = iIndex < aRaces.length - 1 ? iIndex + 1 : iIndex;
-
+      let aItems = this.racesTable.getItems();
+      const iNextIndex = iIndex < aItems.length - 1 ? iIndex + 1 : iIndex;
       if (iIndex != iNextIndex) {
         this._growTable(iNextIndex);
         this._setCurrentRace(iNextIndex);
@@ -78,7 +76,7 @@ sap.ui.define([
     },
 
     _onLastRaceEvent: function (channelId, eventId, parametersMap) {
-      const aRaces = this.getViewModel("races").getData();
+      const aRaces = this.racesTable.getItems();
       const iIndex = aRaces.length - 1;
       this._growTable(iIndex);
       this._setCurrentRace(iIndex);
@@ -98,7 +96,7 @@ sap.ui.define([
 
     _setCurrentRace: function (iIndex) {
       this.racesTable.setSelectedItem(this.racesTable.getItems()[iIndex]);
-      const oRace = this.getViewModel("races").getData()[iIndex];
+      const oRace = this.racesTable.getSelectedItem().getBindingContext("races").getObject();
       this.getOwnerComponent().getModel("race").setData(oRace);
       this._loadRegistrationsModel(oRace.id);
     },
