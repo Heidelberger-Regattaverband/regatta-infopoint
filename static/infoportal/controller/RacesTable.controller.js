@@ -1,17 +1,18 @@
 sap.ui.define([
-  "de/regatta_hd/infopoint/controller/Base.controller",
+  "de/regatta_hd/infopoint/controller/BaseTable.controller",
   "sap/ui/model/json/JSONModel",
-  'sap/ui/core/Fragment',
   "sap/ui/model/Filter",
   "../model/Formatter"
-], function (BaseController, JSONModel, Fragment, Filter, Formatter) {
+], function (BaseTableController, JSONModel, Filter, Formatter) {
   "use strict";
 
-  return BaseController.extend("de.regatta_hd.infopoint.controller.RacesTable", {
+  return BaseTableController.extend("de.regatta_hd.infopoint.controller.RacesTable", {
 
     formatter: Formatter,
 
     onInit: function () {
+      BaseTableController.prototype.onInit();
+
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
       this.getRouter().getRoute("races").attachMatched(this._loadRacesModel, this);
@@ -22,9 +23,6 @@ sap.ui.define([
       this.getEventBus().subscribe("race", "last", this._onLastRaceEvent, this);
 
       this.racesTable = this.getView().byId("racesTable");
-
-      // Keeps reference to any of the created sap.m.ViewSettingsDialog-s in this sample
-			this._mViewSettingsDialogs = {};
     },
 
     onItemPress: function (oEvent) {
@@ -47,32 +45,12 @@ sap.ui.define([
       this.navBack("startpage");
     },
 
-		handleFilterButtonPressed: function(oEvent) {
-      this._getViewSettingsDialog("de.regatta_hd.infopoint.view.RacesFilterDialog")
+    handleFilterButtonPressed: function (oEvent) {
+      this.getViewSettingsDialog("de.regatta_hd.infopoint.view.RacesFilterDialog")
         .then(function (oViewSettingsDialog) {
           oViewSettingsDialog.open();
         });
-		},
-
-    _getViewSettingsDialog: function (sDialogFragmentName) {
-			let pDialog = this._mViewSettingsDialogs[sDialogFragmentName];
-
-			if (!pDialog) {
-        const sStyleClass = this.getOwnerComponent().getContentDensityClass();
-        const oView = this.getView();
-				pDialog = Fragment.load({
-					id: this.getView().getId(),
-					name: sDialogFragmentName,
-					controller: this
-				}).then(function (oDialog) {
-					oDialog.addStyleClass(sStyleClass);
-          oView.addDependent(oDialog);
-					return oDialog;
-				});
-				this._mViewSettingsDialogs[sDialogFragmentName] = pDialog;
-			}
-			return pDialog;
-		},
+    },
 
     _onFirstRaceEvent: function (channelId, eventId, parametersMap) {
       this._setCurrentRace(0);
@@ -133,28 +111,28 @@ sap.ui.define([
       }
     },
 
-		handleFilterDialogConfirm: function(oEvent) {
-			const mParams = oEvent.getParameters();
-			const oBinding = this.racesTable.getBinding("items");
-			const aFilters = [];
+    handleFilterDialogConfirm: function (oEvent) {
+      const mParams = oEvent.getParameters();
+      const oBinding = this.racesTable.getBinding("items");
+      const aFilters = [];
 
-			mParams.filterItems.forEach(function(oItem) {
-				const aSplit = oItem.getKey().split("___"),
-					sPath = aSplit[0],
-					sOperator = aSplit[1],
-					sValue1 = aSplit[2] === 'true' || (aSplit[2] === 'false' ? false : aSplit[2]),
-//					sValue2 = aSplit[3],
-					oFilter = new Filter(sPath, sOperator, sValue1);
-				aFilters.push(oFilter);
-			});
+      mParams.filterItems.forEach(function (oItem) {
+        const aSplit = oItem.getKey().split("___"),
+          sPath = aSplit[0],
+          sOperator = aSplit[1],
+          sValue1 = aSplit[2] === 'true' || (aSplit[2] === 'false' ? false : aSplit[2]),
+          //					sValue2 = aSplit[3],
+          oFilter = new Filter(sPath, sOperator, sValue1);
+        aFilters.push(oFilter);
+      });
 
-			// apply filter settings
-			oBinding.filter(aFilters);
+      // apply filter settings
+      oBinding.filter(aFilters);
 
-			// update filter bar
-			this.byId("vsdFilterBar").setVisible(aFilters.length > 0);
-			this.byId("vsdFilterLabel").setText(mParams.filterString);
-		}
+      // update filter bar
+      this.byId("vsdFilterBar").setVisible(aFilters.length > 0);
+      this.byId("vsdFilterLabel").setText(mParams.filterString);
+    }
 
   });
 });
