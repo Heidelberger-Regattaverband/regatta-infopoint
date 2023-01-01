@@ -41,6 +41,31 @@ impl Regatta {
 }
 
 #[derive(Debug, Serialize, Clone)]
+pub struct AgeClass {
+    id: i32,
+    caption: String,
+    abbreviation: String,
+    suffix: String,
+    gender: String,
+}
+impl AgeClass {
+    pub fn from(row: &Row) -> Self {
+        let id = Column::get(row, "AgeClass_ID");
+        let caption = Column::get(row, "AgeClass_Caption");
+        let abbreviation = Column::get(row, "AgeClass_Abbr");
+        let suffix = Column::get(row, "AgeClass_Suffix");
+        let gender = Column::get(row, "AgeClass_Gender");
+        AgeClass {
+            id,
+            caption,
+            abbreviation,
+            suffix,
+            gender,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Clone)]
 pub struct Race {
     pub id: i32,
     number: String,
@@ -54,8 +79,11 @@ pub struct Race {
     #[serde(rename = "raceMode")]
     race_mode: String,
     cancelled: bool,
+    #[serde(rename = "registrationsCount")]
     registrations_count: i32,
     seeded: bool,
+    #[serde(rename = "ageClass")]
+    age_class: AgeClass,
 }
 impl Race {
     pub fn from(row: &Row) -> Self {
@@ -75,14 +103,16 @@ impl Race {
             cancelled: Column::get(row, "Offer_Cancelled"),
             registrations_count: Column::get(row, "Registrations_Count"),
             seeded: Column::get(row, "isSet"),
+            age_class: AgeClass::from(row),
         }
     }
 
     pub(super) fn query_all<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT o.*, rm.*, hrv_o.*,
+        let mut query = Query::new("SELECT DISTINCT o.*, ac.*, rm.*, hrv_o.*,
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count
             FROM Offer o
             JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
+            JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
             FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
             WHERE o.Offer_Event_ID_FK = @P1 ORDER BY o.Offer_SortValue ASC");
         query.bind(regatta_id);

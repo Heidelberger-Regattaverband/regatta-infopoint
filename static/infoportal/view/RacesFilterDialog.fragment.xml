@@ -4,6 +4,16 @@
 	<ViewSettingsDialog confirm="handleFilterDialogConfirm">
 		<filterItems>
 			<ViewSettingsFilterItem
+				text="{i18n>common.gender}"
+				key="gender"
+				multiSelect="false">
+				<items>
+					<ViewSettingsItem text="{i18n>common.men}" key="ageClass/gender___EQ___M" />
+					<ViewSettingsItem text="{i18n>common.women}" key="ageClass/gender___EQ___W" />
+					<ViewSettingsItem text="{i18n>common.mixed}" key="ageClass/gender___EQ___X" />
+				</items>
+			</ViewSettingsFilterItem>
+			<ViewSettingsFilterItem
 				text="{i18n>common.state}"
 				key="cancelled"
 				multiSelect="false">
