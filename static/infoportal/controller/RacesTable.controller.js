@@ -57,7 +57,7 @@ sap.ui.define([
       this.getOwnerComponent().setModel(oModel, "raceRegistrations");
     },
 
-    onItemChanged: function(oItem){
+    onItemChanged: function (oItem) {
       this.getOwnerComponent().getModel("race").setData(oItem);
       this._loadRegistrationsModel(oItem.id);
     },
