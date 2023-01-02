@@ -1,7 +1,8 @@
 sap.ui.define([
   "de/regatta_hd/infopoint/controller/Base.controller",
+  "sap/ui/model/Filter",
   "sap/ui/core/Fragment"
-], function (BaseController, Fragment) {
+], function (BaseController, Filter, Fragment) {
   "use strict";
 
   return BaseController.extend("de.regatta_hd.infopoint.controller.BaseTable", {
@@ -20,7 +21,10 @@ sap.ui.define([
     },
 
     _onFirstItemEvent: function (channelId, eventId, parametersMap) {
-      this._setCurrentItem(0);
+      const iIndex = this.oTable.indexOfItem(this.oTable.getSelectedItem());
+      if (iIndex != 0) {
+        this._setCurrentItem(0);
+      }
     },
 
     _onLastItemEvent: function (channelId, eventId, parametersMap) {
@@ -67,6 +71,33 @@ sap.ui.define([
         this._mViewSettingsDialogs[sDialogFragmentName] = pDialog;
       }
       return pDialog;
+    },
+
+    onHandleFilterDialogConfirm: function (oEvent) {
+      const mParams = oEvent.getParameters(),
+        oBinding = this.oTable.getBinding("items"),
+        aFilters = [];
+
+      mParams.filterItems.forEach(function (oItem) {
+        const aSplit = oItem.getKey().split("___"),
+          sPath = aSplit[0],
+          sOperator = aSplit[1],
+          sValue1 = aSplit[2] === 'true' || (aSplit[2] === 'false' ? false : aSplit[2]),
+          // sValue2 = aSplit[3],
+          oFilter = new Filter(sPath, sOperator, sValue1);
+        aFilters.push(oFilter);
+      });
+
+      // apply filter settings
+      oBinding.filter(aFilters);
+      this.setFilters(aFilters);
+
+      // update filter bar
+      const oInfoToolbar = this.oTable.getInfoToolbar();
+      if (oInfoToolbar && oInfoToolbar.getContent()[0]) {
+        oInfoToolbar.setVisible(aFilters.length > 0);
+        oInfoToolbar.getContent()[0].setText(mParams.filterString);
+      }
     },
 
     setFilters: function (aFilters = []) {
