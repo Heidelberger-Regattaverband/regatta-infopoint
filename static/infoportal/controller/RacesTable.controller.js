@@ -1,9 +1,8 @@
 sap.ui.define([
   "de/regatta_hd/infopoint/controller/BaseTable.controller",
   "sap/ui/model/json/JSONModel",
-  "sap/ui/model/Filter",
   "../model/Formatter"
-], function (BaseTableController, JSONModel, Filter, Formatter) {
+], function (BaseTableController, JSONModel, Formatter) {
   "use strict";
 
   return BaseTableController.extend("de.regatta_hd.infopoint.controller.RacesTable", {
@@ -38,7 +37,7 @@ sap.ui.define([
       this.navBack("startpage");
     },
 
-    handleFilterButtonPressed: function (oEvent) {
+    onHandleFilterButtonPressed: function (oEvent) {
       this.getViewSettingsDialog("de.regatta_hd.infopoint.view.RacesFilterDialog")
         .then(function (oViewSettingsDialog) {
           oViewSettingsDialog.open();
@@ -49,6 +48,7 @@ sap.ui.define([
       if (!this._oRacesModel) {
         this._oRacesModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
         this.setViewModel(this._oRacesModel, "races");
+        this.applyFilters();
       }
     },
 
@@ -57,33 +57,9 @@ sap.ui.define([
       this.getOwnerComponent().setModel(oModel, "raceRegistrations");
     },
 
-    onItemChanged: function(oItem){
+    onItemChanged: function (oItem) {
       this.getOwnerComponent().getModel("race").setData(oItem);
       this._loadRegistrationsModel(oItem.id);
-    },
-
-    handleFilterDialogConfirm: function (oEvent) {
-      const mParams = oEvent.getParameters();
-      const oBinding = this.oTable.getBinding("items");
-      const aFilters = [];
-
-      mParams.filterItems.forEach(function (oItem) {
-        const aSplit = oItem.getKey().split("___"),
-          sPath = aSplit[0],
-          sOperator = aSplit[1],
-          sValue1 = aSplit[2] === 'true' || (aSplit[2] === 'false' ? false : aSplit[2]),
-          //					sValue2 = aSplit[3],
-          oFilter = new Filter(sPath, sOperator, sValue1);
-        aFilters.push(oFilter);
-      });
-
-      // apply filter settings
-      oBinding.filter(aFilters);
-      this.setFilters(aFilters);
-
-      // update filter bar
-      this.byId("vsdFilterBar").setVisible(aFilters.length > 0);
-      this.byId("vsdFilterLabel").setText(mParams.filterString);
     }
 
   });
