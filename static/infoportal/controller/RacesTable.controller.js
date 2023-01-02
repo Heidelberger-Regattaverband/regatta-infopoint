@@ -57,11 +57,9 @@ sap.ui.define([
       this.getOwnerComponent().setModel(oModel, "raceRegistrations");
     },
 
-    setCurrentItem: function (iIndex) {
-      this.oTable.setSelectedItem(this.oTable.getItems()[iIndex]);
-      const oRace = this.oTable.getSelectedItem().getBindingContext("races").getObject();
-      this.getOwnerComponent().getModel("race").setData(oRace);
-      this._loadRegistrationsModel(oRace.id);
+    onItemChanged: function(oItem){
+      this.getOwnerComponent().getModel("race").setData(oItem);
+      this._loadRegistrationsModel(oItem.id);
     },
 
     handleFilterDialogConfirm: function (oEvent) {
