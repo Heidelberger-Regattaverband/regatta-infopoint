@@ -47,6 +47,8 @@ pub struct AgeClass {
     abbreviation: String,
     suffix: String,
     gender: String,
+    #[serde(rename = "numSubClasses")]
+    num_sub_classes: u8,
 }
 impl AgeClass {
     pub fn from(row: &Row) -> Self {
@@ -55,12 +57,14 @@ impl AgeClass {
         let abbreviation = Column::get(row, "AgeClass_Abbr");
         let suffix = Column::get(row, "AgeClass_Suffix");
         let gender = Column::get(row, "AgeClass_Gender");
+        let num_sub_classes = Column::get(row, "AgeClass_NumSubClasses");
         AgeClass {
             id,
             caption,
             abbreviation,
             suffix,
             gender,
+            num_sub_classes,
         }
     }
 }
@@ -214,7 +218,6 @@ pub struct Heat {
     cancelled: bool,
     date: String,
     time: String,
-    ac_num_sub_classes: u8,
     race: Race,
     referee: Referee,
 }
@@ -233,7 +236,6 @@ impl Heat {
             cancelled: Column::get(row, "Comp_Cancelled"),
             date: date_time.date().to_string(),
             time: date_time.time().to_string(),
-            ac_num_sub_classes: Column::get(row, "AgeClass_NumSubClasses"),
             referee: Referee::from(row),
         }
     }

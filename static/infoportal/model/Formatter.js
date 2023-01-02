@@ -116,7 +116,7 @@ sap.ui.define([
     heatLabel: function (oHeat) {
       let sGroupValue = "";
 
-      if (oHeat.ac_num_sub_classes > 0) {
+      if (oHeat.race.ageClass.numSubClasses > 0) {
         const PREFIX = " - AK ";
         switch (oHeat.group_value) {
           case 0:
