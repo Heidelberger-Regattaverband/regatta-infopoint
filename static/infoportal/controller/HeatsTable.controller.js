@@ -12,14 +12,9 @@ sap.ui.define([
     formatter: Formatter,
 
     onInit: function () {
-      BaseTableController.prototype.onInit(this.getView().byId("heatsTable"));
+      this.init(this.getView().byId("heatsTable"), "heat");
 
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
-
-      this.getEventBus().subscribe("heat", "first", this.onFirstItemEvent, this);
-      this.getEventBus().subscribe("heat", "previous", this.onPreviousItemEvent, this);
-      this.getEventBus().subscribe("heat", "next", this.onNextItemEvent, this);
-      this.getEventBus().subscribe("heat", "last", this.onLastItemEvent, this);
 
       this.getRouter().getRoute("heats").attachMatched(function () {
         this.byId("heatsIconTabBar").setSelectedKey("all");

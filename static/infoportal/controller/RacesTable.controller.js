@@ -11,16 +11,11 @@ sap.ui.define([
     formatter: Formatter,
 
     onInit: function () {
-      BaseTableController.prototype.onInit(this.getView().byId("racesTable"));
+      this.init(this.getView().byId("racesTable"), "race");
 
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
       this.getRouter().getRoute("races").attachMatched(this._loadRacesModel, this);
-
-      this.getEventBus().subscribe("race", "first", this.onFirstItemEvent, this);
-      this.getEventBus().subscribe("race", "previous", this.onPreviousItemEvent, this);
-      this.getEventBus().subscribe("race", "next", this.onNextItemEvent, this);
-      this.getEventBus().subscribe("race", "last", this.onLastItemEvent, this);
     },
 
     onItemPress: function (oEvent) {

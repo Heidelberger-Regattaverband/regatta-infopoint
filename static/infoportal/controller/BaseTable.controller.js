@@ -6,26 +6,31 @@ sap.ui.define([
 
   return BaseController.extend("de.regatta_hd.infopoint.controller.BaseTable", {
 
-    onInit: function (oTable) {
+    init: function (oTable, sChannelId) {
       // Keeps reference to any of the created sap.m.ViewSettingsDialog-s in this sample
       this._mViewSettingsDialogs = {};
 
       this.oTable = oTable;
       this._aFilters = [];
+
+      this.getEventBus().subscribe(sChannelId, "first", this._onFirstItemEvent, this);
+      this.getEventBus().subscribe(sChannelId, "previous", this._onPreviousItemEvent, this);
+      this.getEventBus().subscribe(sChannelId, "next", this._onNextItemEvent, this);
+      this.getEventBus().subscribe(sChannelId, "last", this._onLastItemEvent, this);
     },
 
-    onFirstItemEvent: function (channelId, eventId, parametersMap) {
+    _onFirstItemEvent: function (channelId, eventId, parametersMap) {
       this.setCurrentItem(0);
     },
 
-    onLastItemEvent: function (channelId, eventId, parametersMap) {
+    _onLastItemEvent: function (channelId, eventId, parametersMap) {
       this._growTable(400);
 
       const iIndex = this.oTable.getItems().length - 1;
       this.setCurrentItem(iIndex);
     },
 
-    onPreviousItemEvent: function (channelId, eventId, parametersMap) {
+    _onPreviousItemEvent: function (channelId, eventId, parametersMap) {
       const iIndex = this.oTable.indexOfItem(this.oTable.getSelectedItem());
       const iPreviousIndex = iIndex > 1 ? iIndex - 1 : 0;
 
@@ -34,7 +39,7 @@ sap.ui.define([
       }
     },
 
-    onNextItemEvent: function (channelId, eventId, parametersMap) {
+    _onNextItemEvent: function (channelId, eventId, parametersMap) {
       const iIndex = this.oTable.indexOfItem(this.oTable.getSelectedItem());
       let aItems = this.oTable.getItems();
       const iNextIndex = iIndex < aItems.length - 1 ? iIndex + 1 : iIndex;
