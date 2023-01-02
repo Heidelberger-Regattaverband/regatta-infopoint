@@ -13,6 +13,7 @@ sap.ui.define([
 
       this.oTable = oTable;
       this._aFilters = [];
+      this._sBindingModel = this.oTable.getBindingInfo("items").model;
 
       this.getEventBus().subscribe(sChannelId, "first", this._onFirstItemEvent, this);
       this.getEventBus().subscribe(sChannelId, "previous", this._onPreviousItemEvent, this);
@@ -29,9 +30,11 @@ sap.ui.define([
 
     _onLastItemEvent: function (channelId, eventId, parametersMap) {
       this._growTable(400);
-
-      const iIndex = this.oTable.getItems().length - 1;
-      this._setCurrentItem(iIndex);
+      const iIndex = this.oTable.indexOfItem(this.oTable.getSelectedItem());
+      const iLastIndex = this.oTable.getItems().length - 1;
+      if (iIndex != iLastIndex) {
+        this._setCurrentItem(iLastIndex);
+      }
     },
 
     _onPreviousItemEvent: function (channelId, eventId, parametersMap) {
@@ -45,7 +48,7 @@ sap.ui.define([
 
     _onNextItemEvent: function (channelId, eventId, parametersMap) {
       const iIndex = this.oTable.indexOfItem(this.oTable.getSelectedItem());
-      let aItems = this.oTable.getItems();
+      const aItems = this.oTable.getItems();
       const iNextIndex = iIndex < aItems.length - 1 ? iIndex + 1 : iIndex;
       if (iIndex != iNextIndex) {
         this._growTable(iNextIndex);
@@ -88,7 +91,7 @@ sap.ui.define([
         that._aFilters.push(oFilter);
       });
 
-      // apply filter settings
+      // apply filters
       this.applyFilters();
 
       // update filter bar
@@ -106,8 +109,7 @@ sap.ui.define([
 
     _setCurrentItem: function (iIndex) {
       this.oTable.setSelectedItem(this.oTable.getItems()[iIndex]);
-      const sBindingModel = this.oTable.getBindingInfo("items").model;
-      const oItem = this.oTable.getSelectedItem().getBindingContext(sBindingModel).getObject();
+      const oItem = this.oTable.getSelectedItem().getBindingContext(this._sBindingModel).getObject();
       this.onItemChanged(oItem);
     },
 
