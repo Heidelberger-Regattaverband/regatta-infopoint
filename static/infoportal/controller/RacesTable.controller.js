@@ -11,18 +11,18 @@ sap.ui.define([
     formatter: Formatter,
 
     onInit: function () {
-      BaseTableController.prototype.onInit();
+      this.racesTable = this.getView().byId("racesTable");
+
+      BaseTableController.prototype.onInit(this.racesTable);
 
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
       this.getRouter().getRoute("races").attachMatched(this._loadRacesModel, this);
 
-      this.getEventBus().subscribe("race", "first", this._onFirstRaceEvent, this);
-      this.getEventBus().subscribe("race", "previous", this._onPreviousRaceEvent, this);
-      this.getEventBus().subscribe("race", "next", this._onNextRaceEvent, this);
-      this.getEventBus().subscribe("race", "last", this._onLastRaceEvent, this);
-
-      this.racesTable = this.getView().byId("racesTable");
+      this.getEventBus().subscribe("race", "first", this.onFirstItemEvent, this);
+      this.getEventBus().subscribe("race", "previous", this.onPreviousItemEvent, this);
+      this.getEventBus().subscribe("race", "next", this.onNextItemEvent, this);
+      this.getEventBus().subscribe("race", "last", this.onLastItemEvent, this);
     },
 
     onItemPress: function (oEvent) {
@@ -52,36 +52,6 @@ sap.ui.define([
         });
     },
 
-    _onFirstRaceEvent: function (channelId, eventId, parametersMap) {
-      this._setCurrentRace(0);
-    },
-
-    _onPreviousRaceEvent: function (channelId, eventId, parametersMap) {
-      const iIndex = this.racesTable.indexOfItem(this.racesTable.getSelectedItem());
-      const iPreviousIndex = iIndex > 1 ? iIndex - 1 : 0;
-
-      if (iIndex != iPreviousIndex) {
-        this._setCurrentRace(iPreviousIndex);
-      }
-    },
-
-    _onNextRaceEvent: function (channelId, eventId, parametersMap) {
-      const iIndex = this.racesTable.indexOfItem(this.racesTable.getSelectedItem());
-      let aItems = this.racesTable.getItems();
-      const iNextIndex = iIndex < aItems.length - 1 ? iIndex + 1 : iIndex;
-      if (iIndex != iNextIndex) {
-        this._growTable(iNextIndex);
-        this._setCurrentRace(iNextIndex);
-      }
-    },
-
-    _onLastRaceEvent: function (channelId, eventId, parametersMap) {
-      const aRaces = this.racesTable.getItems();
-      const iIndex = aRaces.length - 1;
-      this._growTable(iIndex);
-      this._setCurrentRace(iIndex);
-    },
-
     _loadRacesModel: async function () {
       if (!this._oRacesModel) {
         this._oRacesModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/races", this.racesTable);
@@ -94,19 +64,11 @@ sap.ui.define([
       this.getOwnerComponent().setModel(oModel, "raceRegistrations");
     },
 
-    _setCurrentRace: function (iIndex) {
+    setCurrentItem: function (iIndex) {
       this.racesTable.setSelectedItem(this.racesTable.getItems()[iIndex]);
       const oRace = this.racesTable.getSelectedItem().getBindingContext("races").getObject();
       this.getOwnerComponent().getModel("race").setData(oRace);
       this._loadRegistrationsModel(oRace.id);
-    },
-
-    _growTable: function (iIndex) {
-      const iActual = this.racesTable.getGrowingInfo().actual;
-      if (iIndex >= iActual) {
-        this.racesTable.setGrowingThreshold(iIndex + 10);
-        this.racesTable.getBinding("items").filter([]);
-      }
     },
 
     handleFilterDialogConfirm: function (oEvent) {
@@ -126,6 +88,7 @@ sap.ui.define([
 
       // apply filter settings
       oBinding.filter(aFilters);
+      this.setFilters(aFilters);
 
       // update filter bar
       this.byId("vsdFilterBar").setVisible(aFilters.length > 0);
