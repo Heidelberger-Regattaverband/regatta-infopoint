@@ -73,12 +73,10 @@ sap.ui.define([
       this.getOwnerComponent().setModel(oModel, "heatRegistrations");
     },
 
-    setCurrentItem: function (iIndex) {
-      this.oTable.setSelectedItem(this.oTable.getItems()[iIndex]);
-      const oHeat = this.getViewModel("heats").getData()[iIndex];
-      this.getOwnerComponent().getModel("heat").setData(oHeat);
-      this._loadRegistrationsModel(oHeat.id);
-    },
-
+    onItemChanged: function (oItem) {
+      this.getOwnerComponent().getModel("heat").setData(oItem);
+      this._loadRegistrationsModel(oItem.id);
+    }
   });
+
 });

@@ -20,14 +20,14 @@ sap.ui.define([
     },
 
     _onFirstItemEvent: function (channelId, eventId, parametersMap) {
-      this.setCurrentItem(0);
+      this._setCurrentItem(0);
     },
 
     _onLastItemEvent: function (channelId, eventId, parametersMap) {
       this._growTable(400);
 
       const iIndex = this.oTable.getItems().length - 1;
-      this.setCurrentItem(iIndex);
+      this._setCurrentItem(iIndex);
     },
 
     _onPreviousItemEvent: function (channelId, eventId, parametersMap) {
@@ -35,7 +35,7 @@ sap.ui.define([
       const iPreviousIndex = iIndex > 1 ? iIndex - 1 : 0;
 
       if (iIndex != iPreviousIndex) {
-        this.setCurrentItem(iPreviousIndex);
+        this._setCurrentItem(iPreviousIndex);
       }
     },
 
@@ -45,7 +45,7 @@ sap.ui.define([
       const iNextIndex = iIndex < aItems.length - 1 ? iIndex + 1 : iIndex;
       if (iIndex != iNextIndex) {
         this._growTable(iNextIndex);
-        this.setCurrentItem(iNextIndex);
+        this._setCurrentItem(iNextIndex);
       }
     },
 
@@ -73,7 +73,14 @@ sap.ui.define([
       this._aFilters = aFilters;
     },
 
-    setCurrentItem: function (iIndex) {
+    _setCurrentItem: function (iIndex) {
+      this.oTable.setSelectedItem(this.oTable.getItems()[iIndex]);
+      const sBindingModel = this.oTable.getBindingInfo("items").model;
+      const oItem = this.oTable.getSelectedItem().getBindingContext(sBindingModel).getObject();
+      this.onItemChanged(oItem);
+    },
+
+    onItemChanged: function (oItem) {
     },
 
     _growTable: function (iIndex) {
