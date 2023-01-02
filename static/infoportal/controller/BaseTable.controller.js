@@ -74,9 +74,9 @@ sap.ui.define([
     },
 
     onHandleFilterDialogConfirm: function (oEvent) {
-      const mParams = oEvent.getParameters(),
-        oBinding = this.oTable.getBinding("items"),
-        aFilters = [];
+      const mParams = oEvent.getParameters();
+      this._aFilters = [];
+      const that = this;
 
       mParams.filterItems.forEach(function (oItem) {
         const aSplit = oItem.getKey().split("___"),
@@ -85,23 +85,23 @@ sap.ui.define([
           sValue1 = aSplit[2] === 'true' || (aSplit[2] === 'false' ? false : aSplit[2]),
           // sValue2 = aSplit[3],
           oFilter = new Filter(sPath, sOperator, sValue1);
-        aFilters.push(oFilter);
+        that._aFilters.push(oFilter);
       });
 
       // apply filter settings
-      oBinding.filter(aFilters);
-      this.setFilters(aFilters);
+      this.applyFilters();
 
       // update filter bar
       const oInfoToolbar = this.oTable.getInfoToolbar();
       if (oInfoToolbar && oInfoToolbar.getContent()[0]) {
-        oInfoToolbar.setVisible(aFilters.length > 0);
+        oInfoToolbar.setVisible(this._aFilters.length > 0);
         oInfoToolbar.getContent()[0].setText(mParams.filterString);
       }
     },
 
-    setFilters: function (aFilters = []) {
-      this._aFilters = aFilters;
+    applyFilters: function () {
+      const oBinding = this.oTable.getBinding("items");
+      oBinding.filter(this._aFilters);
     },
 
     _setCurrentItem: function (iIndex) {
