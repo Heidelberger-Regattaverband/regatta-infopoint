@@ -1,23 +1,14 @@
 <mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatsTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core">
   <mvc:content>
 
-    <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
+    <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
+    https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
     <Page title="{i18n>launchpad.heatsTile.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <content>
 
-        <IconTabBar id="heatsIconTabBar" select=".onFilterSelect" stretchContentHeight="true" class="sapUiNoContentPadding">
-          <items>
-            <IconTabFilter text="{i18n>common.all}" key="all" />
-            <IconTabSeparator/>
-            <IconTabFilter text="{path: 'regatta>/startDate', formatter: '.formatter.dayLabel'}" key="{regatta>/startDate}" />
-            <IconTabFilter text="{path: 'regatta>/endDate', formatter: '.formatter.dayLabel'}" key="{regatta>/endDate}" />
-          </items>
-          <content>
-            <ScrollContainer horizontal="false" vertical="true" height="100%" width="100%">
-              <core:Fragment fragmentName="de.regatta_hd.infopoint.view.HeatsTable" type="XML" />
-            </ScrollContainer>
-          </content>
-        </IconTabBar>
+        <ScrollContainer horizontal="false" vertical="true" height="100%" width="100%">
+          <core:Fragment fragmentName="de.regatta_hd.infopoint.view.HeatsTable" type="XML" />
+        </ScrollContainer>
 
       </content>
     </Page>

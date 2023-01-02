@@ -1,7 +1,7 @@
 <core:FragmentDefinition
 	xmlns="sap.m"
 	xmlns:core="sap.ui.core">
-	<ViewSettingsDialog confirm="handleFilterDialogConfirm">
+	<ViewSettingsDialog confirm="onHandleFilterDialogConfirm">
 		<filterItems>
 			<ViewSettingsFilterItem
 				text="{i18n>common.boatClass}"
@@ -24,8 +24,8 @@
 				key="gender"
 				multiSelect="false">
 				<items>
-					<ViewSettingsItem text="{i18n>common.men}" key="ageClass/gender___EQ___M" />
-					<ViewSettingsItem text="{i18n>common.women}" key="ageClass/gender___EQ___W" />
+					<ViewSettingsItem text="{i18n>common.male}" key="ageClass/gender___EQ___M" />
+					<ViewSettingsItem text="{i18n>common.female}" key="ageClass/gender___EQ___W" />
 					<ViewSettingsItem text="{i18n>common.mixed}" key="ageClass/gender___EQ___X" />
 				</items>
 			</ViewSettingsFilterItem>

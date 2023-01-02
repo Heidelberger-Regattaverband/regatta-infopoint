@@ -4,23 +4,29 @@
     <Page title="{i18n>common.offer}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <content>
 
-        <Table id="racesTable" autoPopinMode="true" items="{races>/}" itemPress="onItemPress" growing="true" growingScrollToLoad="true" growingThreshold="30" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" mode="SingleSelectMaster" class="sapUiNoContentPadding">
+        <Table id="racesTable" autoPopinMode="true" items="{races>/}" itemPress="onItemPress" growing="true" growingScrollToLoad="true"
+          growingThreshold="30" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" mode="SingleSelectMaster" class="sapUiNoContentPadding">
+          <!-- The HeaderToolbar shows a title and the filter button -->
           <headerToolbar>
             <OverflowToolbar>
-              <Title text="{i18n>common.race}" level="H2"/>
-              <ToolbarSpacer/>
-              <Button
-                tooltip="Filter"
-                icon="sap-icon://filter"
-                press="handleFilterButtonPressed"/>
+              <content>
+                <Title text="{i18n>common.race}" level="H2" />
+                <ToolbarSpacer />
+                <Button tooltip="Filter" icon="sap-icon://filter" press="onHandleFilterButtonPressed" />
+              </content>
             </OverflowToolbar>
           </headerToolbar>
+
+          <!-- The InfoToolbar shows active filters -->
           <infoToolbar>
-            <OverflowToolbar id="vsdFilterBar" visible="false">
-              <Text id="vsdFilterLabel" />
+            <OverflowToolbar visible="false">
+              <content>
+                <Text />
+              </content>
             </OverflowToolbar>
           </infoToolbar>
-            <columns>
+
+          <columns>
             <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.number}" class="bold" />

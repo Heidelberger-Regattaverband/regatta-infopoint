@@ -1,0 +1,71 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+	<ViewSettingsDialog confirm="onHandleFilterDialogConfirm">
+		<filterItems>
+			<ViewSettingsFilterItem
+				text="{i18n>common.boatClass}"
+				key="gender"
+				multiSelect="true">
+				<items>
+					<ViewSettingsItem text="Einer (1x)" key="race/boatClass/abbreviation___EQ___1x" />
+					<ViewSettingsItem text="Doppelzweier (2x)" key="race/boatClass/abbreviation___EQ___2x" />
+					<ViewSettingsItem text="Zweier ohne St. (2-)" key="race/boatClass/abbreviation___EQ___2-" />
+					<ViewSettingsItem text="Zweier mit St. (2+)" key="race/boatClass/abbreviation___EQ___2+" />
+					<ViewSettingsItem text="Doppelvierer (4x)" key="race/boatClass/abbreviation___EQ___4x" />
+					<ViewSettingsItem text="Vierer ohne St. (4-)" key="race/boatClass/abbreviation___EQ___4-" />
+					<ViewSettingsItem text="Doppelvierer mit St. (4x+)" key="race/boatClass/abbreviation___EQ___4x+" />
+					<ViewSettingsItem text="Vierer mit St. (4+)" key="race/boatClass/abbreviation___EQ___4+" />
+					<ViewSettingsItem text="Achter mit St. (8+)" key="race/boatClass/abbreviation___EQ___8+" />
+				</items>
+			</ViewSettingsFilterItem>
+			<ViewSettingsFilterItem
+				text="{i18n>common.gender}"
+				key="gender"
+				multiSelect="false">
+				<items>
+					<ViewSettingsItem text="{i18n>common.male}" key="race/ageClass/gender___EQ___M" />
+					<ViewSettingsItem text="{i18n>common.female}" key="race/ageClass/gender___EQ___W" />
+					<ViewSettingsItem text="{i18n>common.mixed}" key="race/ageClass/gender___EQ___X" />
+				</items>
+			</ViewSettingsFilterItem>
+			<ViewSettingsFilterItem
+				text="{i18n>common.state}"
+				key="cancelled"
+				multiSelect="false">
+				<items>
+					<ViewSettingsItem text="{i18n>common.raceDriven}" key="cancelled___EQ___false" />
+					<ViewSettingsItem text="{i18n>common.raceCancelled}" key="cancelled___EQ___true" />
+				</items>
+			</ViewSettingsFilterItem>
+			<ViewSettingsFilterItem
+				text="{i18n>common.distance}"
+				key="distance"
+				multiSelect="false">
+				<items>
+					<ViewSettingsItem text="1000m" key="race/distance___EQ___1000" />
+					<ViewSettingsItem text="1500m" key="race/distance___EQ___1500" />
+					<ViewSettingsItem text="350m" key="race/distance___EQ___350" />
+				</items>
+			</ViewSettingsFilterItem>
+			<ViewSettingsFilterItem
+				text="{i18n>common.lightweight}"
+				key="lightweight"
+				multiSelect="false">
+				<items>
+					<ViewSettingsItem text="{i18n>common.yes}" key="race/lightweight___EQ___true" />
+					<ViewSettingsItem text="{i18n>common.no}" key="race/lightweight___EQ___false" />
+				</items>
+			</ViewSettingsFilterItem>
+			<ViewSettingsFilterItem
+				text="{i18n>common.seeded}"
+				key="seeded"
+				multiSelect="false">
+				<items>
+					<ViewSettingsItem text="{i18n>common.yes}" key="race/seeded___EQ___true" />
+					<ViewSettingsItem text="{i18n>common.no}" key="race/seeded___EQ___false" />
+				</items>
+			</ViewSettingsFilterItem>
+		</filterItems>
+	</ViewSettingsDialog>
+</core:FragmentDefinition>
