@@ -16,10 +16,7 @@ sap.ui.define([
 
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this.getRouter().getRoute("heats").attachMatched(function () {
-        this.byId("heatsIconTabBar").setSelectedKey("all");
-        this._loadHeatsModel();
-      }, this);
+      this.getRouter().getRoute("heats").attachMatched(this._loadHeatsModel, this);
     },
 
     onSelectionChange: function (oEvent) {
@@ -34,26 +31,6 @@ sap.ui.define([
       }
     },
 
-    onFilterSelect: function (oEvent) {
-      const sKey = oEvent.getParameter("key");
-      this._setFilter(sKey);
-    },
-
-    _setFilter: function (sKey) {
-      let aFilters = [];
-      if (sKey != "all") {
-        aFilters.push(new Filter({
-          path: 'date',
-          operator: FilterOperator.EQ,
-          value1: sKey
-        }));
-      }
-
-      const oBinding = this.byId("heatsTable").getBinding("items");
-      oBinding.filter(aFilters);
-      this.setFilters(aFilters);
-    },
-
     onNavBack: function () {
       this._oHeatsModel = undefined;
       // reduce table growing threshold to improve performance next time table is shown
@@ -65,6 +42,7 @@ sap.ui.define([
       if (!this._oHeatsModel) {
         this._oHeatsModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
         this.setViewModel(this._oHeatsModel, "heats");
+        this.applyFilters();
       }
     },
 
@@ -76,6 +54,13 @@ sap.ui.define([
     onItemChanged: function (oItem) {
       this.getOwnerComponent().getModel("heat").setData(oItem);
       this._loadRegistrationsModel(oItem.id);
+    },
+
+    onHandleFilterButtonPressed: function (oEvent) {
+      this.getViewSettingsDialog("de.regatta_hd.infopoint.view.HeatsFilterDialog")
+        .then(function (oViewSettingsDialog) {
+          oViewSettingsDialog.open();
+        });
     }
   });
 

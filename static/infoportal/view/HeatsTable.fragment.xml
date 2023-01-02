@@ -1,5 +1,27 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
-  <Table id="heatsTable" autoPopinMode="true" items="{heats>/}" growing="true" growingScrollToLoad="true" growingThreshold="30" mode="SingleSelectMaster" itemPress="onSelectionChange" sticky="ColumnHeaders" class="sapUiNoContentPadding">
+  <Table id="heatsTable" autoPopinMode="true" items="{heats>/}" growing="true" growingScrollToLoad="true" growingThreshold="30"
+    mode="SingleSelectMaster" itemPress="onSelectionChange" sticky="ColumnHeaders" class="sapUiNoContentPadding">
+
+    <!-- The HeaderToolbar shows a title and the filter button -->
+    <headerToolbar>
+      <OverflowToolbar>
+        <content>
+          <Title text="{i18n>common.heats}" level="H2" />
+          <ToolbarSpacer />
+          <Button tooltip="Filter" icon="sap-icon://filter" press="onHandleFilterButtonPressed" />
+        </content>
+      </OverflowToolbar>
+    </headerToolbar>
+
+    <!-- The InfoToolbar shows active filters -->
+    <infoToolbar>
+      <OverflowToolbar visible="false">
+        <content>
+          <Text />
+        </content>
+      </OverflowToolbar>
+    </infoToolbar>
+
     <columns>
       <Column hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
         <header>
@@ -16,7 +38,7 @@
           <Text text="{i18n>common.time}" class="bold" wrapping="false" />
         </header>
       </Column>
-      <Column hAlign="Begin" width="7rem" importance="High" popinDisplay="Inline">
+      <Column width="7rem" importance="High" popinDisplay="Inline">
         <header>
           <Text text="{i18n>common.heat}" class="bold" wrapping="false" />
         </header>
@@ -39,7 +61,8 @@
           <Text text="{heats>number}" />
           <Text text="{path: 'heats>date', formatter: '.formatter.dayLabel'}" />
           <Text text="{path: 'heats>time', formatter: '.formatter.timeLabel'}" />
-          <ObjectIdentifier title="{path: 'heats>race', formatter: '.formatter.nrRaceLabel'}" text="{path: 'heats>', formatter: '.formatter.heatLabel'}" />
+          <ObjectIdentifier title="{path: 'heats>race', formatter: '.formatter.nrRaceLabel'}"
+            text="{path: 'heats>', formatter: '.formatter.heatLabel'}" />
           <Text text="{path: 'heats>race', formatter: '.formatter.distanceLabel'}" />
           <Text text="{path: 'heats>', formatter: '.formatter.stateLabel'}" />
         </cells>
