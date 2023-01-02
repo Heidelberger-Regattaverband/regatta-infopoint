@@ -93,7 +93,7 @@ sap.ui.define([
     heatStateHighlight: function (oHeat) {
       // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
       if (oHeat.cancelled) {
-        return IndicationColor.Indication01;
+        return IndicationColor.Indication02; // cancelled -> red
       } else {
         switch (oHeat.state) {
           default:
@@ -116,7 +116,7 @@ sap.ui.define([
     heatLabel: function (oHeat) {
       let sGroupValue = "";
 
-      if (oHeat.ac_num_sub_classes > 0) {
+      if (oHeat.race.ageClass.numSubClasses > 0) {
         const PREFIX = " - AK ";
         switch (oHeat.group_value) {
           case 0:

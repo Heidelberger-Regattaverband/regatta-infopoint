@@ -41,6 +41,61 @@ impl Regatta {
 }
 
 #[derive(Debug, Serialize, Clone)]
+pub struct AgeClass {
+    id: i32,
+    caption: String,
+    abbreviation: String,
+    suffix: String,
+    gender: String,
+    #[serde(rename = "numSubClasses")]
+    num_sub_classes: u8,
+}
+impl AgeClass {
+    pub fn from(row: &Row) -> Self {
+        let id = Column::get(row, "AgeClass_ID");
+        let caption = Column::get(row, "AgeClass_Caption");
+        let abbreviation = Column::get(row, "AgeClass_Abbr");
+        let suffix = Column::get(row, "AgeClass_Suffix");
+        let gender = Column::get(row, "AgeClass_Gender");
+        let num_sub_classes = Column::get(row, "AgeClass_NumSubClasses");
+        AgeClass {
+            id,
+            caption,
+            abbreviation,
+            suffix,
+            gender,
+            num_sub_classes,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct BoatClass {
+    id: i32,
+    caption: String,
+    abbreviation: String,
+    #[serde(rename = "numRowers")]
+    num_rowers: i32,
+    coxed: bool,
+}
+impl BoatClass {
+    pub fn from(row: &Row) -> Self {
+        let id = Column::get(row, "BoatClass_ID");
+        let caption = Column::get(row, "BoatClass_Caption");
+        let abbreviation = Column::get(row, "BoatClass_Abbr");
+        let num_rowers = Column::get(row, "BoatClass_NumRowers");
+        let coxed: u8 = Column::get(row, "BoatClass_Coxed");
+        BoatClass {
+            id,
+            caption,
+            abbreviation,
+            num_rowers,
+            coxed: coxed > 0,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Clone)]
 pub struct Race {
     pub id: i32,
     number: String,
@@ -54,8 +109,13 @@ pub struct Race {
     #[serde(rename = "raceMode")]
     race_mode: String,
     cancelled: bool,
+    #[serde(rename = "registrationsCount")]
     registrations_count: i32,
     seeded: bool,
+    #[serde(rename = "ageClass")]
+    age_class: AgeClass,
+    #[serde(rename = "boatClass")]
+    boat_class: BoatClass,
 }
 impl Race {
     pub fn from(row: &Row) -> Self {
@@ -75,14 +135,18 @@ impl Race {
             cancelled: Column::get(row, "Offer_Cancelled"),
             registrations_count: Column::get(row, "Registrations_Count"),
             seeded: Column::get(row, "isSet"),
+            age_class: AgeClass::from(row),
+            boat_class: BoatClass::from(row),
         }
     }
 
     pub(super) fn query_all<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT o.*, rm.*, hrv_o.*,
+        let mut query = Query::new("SELECT DISTINCT o.*, ac.*, bc.*, rm.*, hrv_o.*,
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count
             FROM Offer o
             JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
+            JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
+            JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
             FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
             WHERE o.Offer_Event_ID_FK = @P1 ORDER BY o.Offer_SortValue ASC");
         query.bind(regatta_id);
@@ -154,7 +218,6 @@ pub struct Heat {
     cancelled: bool,
     date: String,
     time: String,
-    ac_num_sub_classes: u8,
     race: Race,
     referee: Referee,
 }
@@ -173,19 +236,19 @@ impl Heat {
             cancelled: Column::get(row, "Comp_Cancelled"),
             date: date_time.date().to_string(),
             time: date_time.time().to_string(),
-            ac_num_sub_classes: Column::get(row, "AgeClass_NumSubClasses"),
             referee: Referee::from(row),
         }
     }
 
     pub(super) fn query_all<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT c.*, ac.*, r.*, rm.RaceMode_Title, hrv_o.*,
+        let mut query = Query::new("SELECT DISTINCT c.*, ac.*, bc.*, r.*, rm.RaceMode_Title, hrv_o.*,
             o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
             FROM Comp AS c
             FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
             JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
             FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
             FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
+            JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
             FULL OUTER JOIN CompReferee AS cr ON cr.CompReferee_Comp_ID_FK = c.Comp_ID
             FULL OUTER JOIN Referee AS r ON r.Referee_ID = cr.CompReferee_Referee_ID_FK
             WHERE c.Comp_Event_ID_FK = @P1 ORDER BY c.Comp_DateTime ASC");
