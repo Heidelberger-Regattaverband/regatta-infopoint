@@ -3,7 +3,7 @@ sap.ui.define([
 ], function (BaseController) {
   "use strict";
 
-  return BaseController.extend("de.regatta_hd.infopoint.controller.ScoresTable", {
+  return BaseController.extend("de.regatta_hd.infopoint.controller.ScoringTable", {
 
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());

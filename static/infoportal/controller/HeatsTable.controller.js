@@ -1,10 +1,8 @@
 sap.ui.define([
   "de/regatta_hd/infopoint/controller/BaseTable.controller",
   "sap/ui/model/json/JSONModel",
-  "sap/ui/model/Filter",
-  'sap/ui/model/FilterOperator',
   "../model/Formatter"
-], function (BaseTableController, JSONModel, Filter, FilterOperator, Formatter) {
+], function (BaseTableController, JSONModel, Formatter) {
   "use strict";
 
   return BaseTableController.extend("de.regatta_hd.infopoint.controller.HeatsTable", {
