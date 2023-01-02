@@ -1,30 +1,30 @@
 sap.ui.define([
-  "de/regatta_hd/infopoint/controller/Base.controller",
+  "de/regatta_hd/infopoint/controller/BaseTable.controller",
   "sap/ui/model/json/JSONModel",
   "sap/ui/model/Filter",
   'sap/ui/model/FilterOperator',
   "../model/Formatter"
-], function (BaseController, JSONModel, Filter, FilterOperator, Formatter) {
+], function (BaseTableController, JSONModel, Filter, FilterOperator, Formatter) {
   "use strict";
 
-  return BaseController.extend("de.regatta_hd.infopoint.controller.HeatsTable", {
+  return BaseTableController.extend("de.regatta_hd.infopoint.controller.HeatsTable", {
 
     formatter: Formatter,
 
     onInit: function () {
+      BaseTableController.prototype.onInit(this.getView().byId("heatsTable"));
+
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this.getEventBus().subscribe("heat", "first", this._onFirstHeatEvent, this);
-      this.getEventBus().subscribe("heat", "previous", this._onPreviousHeatEvent, this);
-      this.getEventBus().subscribe("heat", "next", this._onNextHeatEvent, this);
-      this.getEventBus().subscribe("heat", "last", this._onLastHeatEvent, this);
+      this.getEventBus().subscribe("heat", "first", this.onFirstItemEvent, this);
+      this.getEventBus().subscribe("heat", "previous", this.onPreviousItemEvent, this);
+      this.getEventBus().subscribe("heat", "next", this.onNextItemEvent, this);
+      this.getEventBus().subscribe("heat", "last", this.onLastItemEvent, this);
 
       this.getRouter().getRoute("heats").attachMatched(function () {
         this.byId("heatsIconTabBar").setSelectedKey("all");
         this._loadHeatsModel();
       }, this);
-
-      this.heatsTable = this.getView().byId("heatsTable");
     },
 
     onSelectionChange: function (oEvent) {
@@ -56,50 +56,19 @@ sap.ui.define([
 
       const oBinding = this.byId("heatsTable").getBinding("items");
       oBinding.filter(aFilters);
+      this.setFilters(aFilters);
     },
 
     onNavBack: function () {
       this.oHeatsModel = undefined;
       // reduce table growing threshold to improve performance next time table is shown
-      this.heatsTable.setGrowingThreshold(30);
+      this.oTable.setGrowingThreshold(30);
       this.navBack("startpage");
-    },
-
-    _onFirstHeatEvent: function (channelId, eventId, parametersMap) {
-      this._setCurrentHeat(0);
-    },
-
-    _onPreviousHeatEvent: function (channelId, eventId, parametersMap) {
-      const iIndex = this.heatsTable.indexOfItem(this.heatsTable.getSelectedItem());
-      const iPreviousIndex = iIndex > 1 ? iIndex - 1 : 0;
-
-      if (iIndex != iPreviousIndex) {
-        this._setCurrentHeat(iPreviousIndex);
-      }
-    },
-
-    _onNextHeatEvent: function (channelId, eventId, parametersMap) {
-      const aHeats = this.getViewModel("heats").getData();
-
-      const iIndex = this.heatsTable.indexOfItem(this.heatsTable.getSelectedItem());
-      const iNextIndex = iIndex < aHeats.length - 1 ? iIndex + 1 : iIndex;
-
-      if (iIndex != iNextIndex) {
-        this._growTable(iNextIndex);
-        this._setCurrentHeat(iNextIndex);
-      }
-    },
-
-    _onLastHeatEvent: function (channelId, eventId, parametersMap) {
-      const aHeats = this.getViewModel("heats").getData();
-      const iIndex = aHeats.length - 1;
-      this._growTable(iIndex);
-      this._setCurrentHeat(iIndex);
     },
 
     _loadHeatsModel: async function () {
       if (!this.oHeatsModel) {
-        this.oHeatsModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/heats", this.heatsTable);
+        this.oHeatsModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
         this.setViewModel(this.oHeatsModel, "heats");
       }
     },
@@ -109,20 +78,12 @@ sap.ui.define([
       this.getOwnerComponent().setModel(oModel, "heatRegistrations");
     },
 
-    _setCurrentHeat: function (iIndex) {
-      this.heatsTable.setSelectedItem(this.heatsTable.getItems()[iIndex]);
+    setCurrentItem: function (iIndex) {
+      this.oTable.setSelectedItem(this.oTable.getItems()[iIndex]);
       const oHeat = this.getViewModel("heats").getData()[iIndex];
       this.getOwnerComponent().getModel("heat").setData(oHeat);
       this._loadRegistrationsModel(oHeat.id);
     },
-
-    _growTable: function (iIndex) {
-      const iActual = this.heatsTable.getGrowingInfo().actual;
-      if (iIndex >= iActual) {
-        this.heatsTable.setGrowingThreshold(iIndex + 10);
-        this.heatsTable.getBinding("items").filter([]);
-      }
-    }
 
   });
 });

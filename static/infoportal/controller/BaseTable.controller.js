@@ -10,7 +10,7 @@ sap.ui.define([
       // Keeps reference to any of the created sap.m.ViewSettingsDialog-s in this sample
       this._mViewSettingsDialogs = {};
 
-      this._oTable = oTable;
+      this.oTable = oTable;
       this._aFilters = [];
     },
 
@@ -19,14 +19,14 @@ sap.ui.define([
     },
 
     onLastItemEvent: function (channelId, eventId, parametersMap) {
-      this._growTable(300);
+      this._growTable(400);
 
-      const iIndex = this._oTable.getItems().length - 1;
+      const iIndex = this.oTable.getItems().length - 1;
       this.setCurrentItem(iIndex);
     },
 
     onPreviousItemEvent: function (channelId, eventId, parametersMap) {
-      const iIndex = this._oTable.indexOfItem(this._oTable.getSelectedItem());
+      const iIndex = this.oTable.indexOfItem(this.oTable.getSelectedItem());
       const iPreviousIndex = iIndex > 1 ? iIndex - 1 : 0;
 
       if (iIndex != iPreviousIndex) {
@@ -35,8 +35,8 @@ sap.ui.define([
     },
 
     onNextItemEvent: function (channelId, eventId, parametersMap) {
-      const iIndex = this._oTable.indexOfItem(this._oTable.getSelectedItem());
-      let aItems = this._oTable.getItems();
+      const iIndex = this.oTable.indexOfItem(this.oTable.getSelectedItem());
+      let aItems = this.oTable.getItems();
       const iNextIndex = iIndex < aItems.length - 1 ? iIndex + 1 : iIndex;
       if (iIndex != iNextIndex) {
         this._growTable(iNextIndex);
@@ -64,7 +64,7 @@ sap.ui.define([
       return pDialog;
     },
 
-    setFilters: function (aFilters) {
+    setFilters: function (aFilters = []) {
       this._aFilters = aFilters;
     },
 
@@ -72,13 +72,12 @@ sap.ui.define([
     },
 
     _growTable: function (iIndex) {
-      const iActual = this._oTable.getGrowingInfo().actual;
+      const iActual = this.oTable.getGrowingInfo().actual;
       if (iIndex >= iActual) {
-        this._oTable.setGrowingThreshold(iIndex + 10);
-        this._oTable.getBinding("items").filter(this._aFilters);
+        this.oTable.setGrowingThreshold(iIndex + 10);
+        this.oTable.getBinding("items").filter(this._aFilters);
       }
-    },
-
+    }
   });
 
 });
