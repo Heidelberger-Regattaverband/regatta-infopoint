@@ -60,16 +60,16 @@ sap.ui.define([
     },
 
     onNavBack: function () {
-      this.oHeatsModel = undefined;
+      this._oHeatsModel = undefined;
       // reduce table growing threshold to improve performance next time table is shown
       this.oTable.setGrowingThreshold(30);
       this.navBack("startpage");
     },
 
     _loadHeatsModel: async function () {
-      if (!this.oHeatsModel) {
-        this.oHeatsModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
-        this.setViewModel(this.oHeatsModel, "heats");
+      if (!this._oHeatsModel) {
+        this._oHeatsModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
+        this.setViewModel(this._oHeatsModel, "heats");
       }
     },
 
