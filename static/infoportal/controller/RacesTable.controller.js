@@ -11,9 +11,7 @@ sap.ui.define([
     formatter: Formatter,
 
     onInit: function () {
-      this.racesTable = this.getView().byId("racesTable");
-
-      BaseTableController.prototype.onInit(this.racesTable);
+      BaseTableController.prototype.onInit(this.getView().byId("racesTable"));
 
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
@@ -41,7 +39,7 @@ sap.ui.define([
     onNavBack: function () {
       this._oRacesModel = undefined;
       // reduce table growing threshold to improve performance next time table is shown
-      this.racesTable.setGrowingThreshold(30);
+      this.oTable.setGrowingThreshold(30);
       this.navBack("startpage");
     },
 
@@ -54,7 +52,7 @@ sap.ui.define([
 
     _loadRacesModel: async function () {
       if (!this._oRacesModel) {
-        this._oRacesModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/races", this.racesTable);
+        this._oRacesModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
         this.setViewModel(this._oRacesModel, "races");
       }
     },
@@ -65,15 +63,15 @@ sap.ui.define([
     },
 
     setCurrentItem: function (iIndex) {
-      this.racesTable.setSelectedItem(this.racesTable.getItems()[iIndex]);
-      const oRace = this.racesTable.getSelectedItem().getBindingContext("races").getObject();
+      this.oTable.setSelectedItem(this.oTable.getItems()[iIndex]);
+      const oRace = this.oTable.getSelectedItem().getBindingContext("races").getObject();
       this.getOwnerComponent().getModel("race").setData(oRace);
       this._loadRegistrationsModel(oRace.id);
     },
 
     handleFilterDialogConfirm: function (oEvent) {
       const mParams = oEvent.getParameters();
-      const oBinding = this.racesTable.getBinding("items");
+      const oBinding = this.oTable.getBinding("items");
       const aFilters = [];
 
       mParams.filterItems.forEach(function (oItem) {
