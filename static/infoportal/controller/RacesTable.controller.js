@@ -48,6 +48,7 @@ sap.ui.define([
       if (!this._oRacesModel) {
         this._oRacesModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
         this.setViewModel(this._oRacesModel, "races");
+        this.applyFilters();
       }
     },
 
