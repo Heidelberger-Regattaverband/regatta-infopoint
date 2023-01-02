@@ -4,8 +4,23 @@
     <Page title="{i18n>common.offer}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <content>
 
-        <Table id="racesTable" autoPopinMode="true" items="{races>/}" itemPress="onItemPress" growing="true" growingScrollToLoad="true" growingThreshold="30" sticky="ColumnHeaders" mode="SingleSelectMaster" class="sapUiNoContentPadding">
-          <columns>
+        <Table id="racesTable" autoPopinMode="true" items="{races>/}" itemPress="onItemPress" growing="true" growingScrollToLoad="true" growingThreshold="30" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" mode="SingleSelectMaster" class="sapUiNoContentPadding">
+          <headerToolbar>
+            <OverflowToolbar>
+              <Title text="{i18n>common.race}" level="H2"/>
+              <ToolbarSpacer/>
+              <Button
+                tooltip="Filter"
+                icon="sap-icon://filter"
+                press="handleFilterButtonPressed"/>
+            </OverflowToolbar>
+          </headerToolbar>
+          <infoToolbar>
+            <OverflowToolbar id="vsdFilterBar" visible="false">
+              <Text id="vsdFilterLabel" />
+            </OverflowToolbar>
+          </infoToolbar>
+            <columns>
             <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.number}" class="bold" />
@@ -44,13 +59,13 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation" vAlign="Top" highlight="{= ${races>cancelled} ? 'Indication01' : undefined }">
+            <ColumnListItem type="Navigation" vAlign="Top" highlight="{= ${races>cancelled} ? 'Indication02' : 'Indication04' }">
               <cells>
                 <Text text="{races>number}" />
                 <ObjectIdentifier title="{path: 'races>', formatter: '.formatter.raceLabel'}" text="{races>longLabel} {races>comment}" />
                 <Text text="{path: 'races>', formatter: '.formatter.distanceLabel'}" />
-                <Text text="{races>registrations_count}" />
-                <core:Icon src="{= ${races>cancelled} ? 'sap-icon://decline' : 'sap-icon://accept'}" alt="{i18n>common.cancelled}" />
+                <Text text="{races>registrationsCount}" />
+                <Text text="{= ${races>cancelled} ? ${i18n>common.raceCancelled} : ${i18n>common.raceDriven}}" />
                 <Text text="{races>raceMode}" />
                 <core:Icon src="{= ${races>seeded} ? 'sap-icon://accept' : 'sap-icon://decline' }" alt="{i18n>common.seeded}" />
               </cells>
