@@ -92,7 +92,7 @@ sap.ui.define([
       });
 
       // apply filters
-      this.applyFilters();
+      this.applyFilters([]);
 
       // update filter bar
       const oInfoToolbar = this.oTable.getInfoToolbar();
@@ -102,9 +102,10 @@ sap.ui.define([
       }
     },
 
-    applyFilters: function () {
+    applyFilters: function (aSearchFilters = []) {
+      const aAllFilters = this._aFilters.concat(aSearchFilters)
       const oBinding = this.oTable.getBinding("items");
-      oBinding.filter(this._aFilters);
+      oBinding.filter(aAllFilters);
     },
 
     _setCurrentItem: function (iIndex) {
