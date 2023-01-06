@@ -1,8 +1,10 @@
 sap.ui.define([
   "de/regatta_hd/infopoint/controller/BaseTable.controller",
   "sap/ui/model/json/JSONModel",
+  "sap/ui/model/Filter",
+  "sap/ui/model/FilterOperator",
   "../model/Formatter"
-], function (BaseTableController, JSONModel, Formatter) {
+], function (BaseTableController, JSONModel, Filter, FilterOperator, Formatter) {
   "use strict";
 
   return BaseTableController.extend("de.regatta_hd.infopoint.controller.RacesTable", {
@@ -48,7 +50,7 @@ sap.ui.define([
       if (!this._oRacesModel) {
         this._oRacesModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
         this.setViewModel(this._oRacesModel, "races");
-        this.applyFilters();
+        this.applyFilters([]);
       }
     },
 
@@ -60,6 +62,24 @@ sap.ui.define([
     onItemChanged: function (oItem) {
       this.getOwnerComponent().getModel("race").setData(oItem);
       this._loadRegistrationsModel(oItem.id);
+    },
+
+    onFilterSearch: function (oEvent) {
+      const aSearchFilters = [];
+      const sQuery = oEvent.getParameter("query");
+      if (sQuery) {
+        aSearchFilters.push(
+          new Filter({
+            filters: [
+              new Filter("number", FilterOperator.Contains, sQuery),
+              new Filter("shortLabel", FilterOperator.Contains, sQuery),
+              new Filter("longLabel", FilterOperator.Contains, sQuery)
+            ],
+            and: false
+          }))
+      }
+
+      this.applyFilters(aSearchFilters)
     }
 
   });

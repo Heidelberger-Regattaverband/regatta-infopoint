@@ -12,7 +12,9 @@
               <content>
                 <Title text="{i18n>common.race}" level="H2" />
                 <ToolbarSpacer />
-                <Button text="{i18n>common.filter}" tooltip="{i18n>common.filter}" icon="sap-icon://filter" press="onHandleFilterButtonPressed" />
+                <SearchField width="auto" search=".onFilterSearch" />
+                <Button text="{i18n>common.filter}" tooltip="{i18n>common.filter}" icon="sap-icon://filter"
+                  press="onHandleFilterButtonPressed" />
               </content>
             </OverflowToolbar>
           </headerToolbar>

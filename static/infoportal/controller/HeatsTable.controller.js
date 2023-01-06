@@ -1,8 +1,10 @@
 sap.ui.define([
   "de/regatta_hd/infopoint/controller/BaseTable.controller",
   "sap/ui/model/json/JSONModel",
+  "sap/ui/model/Filter",
+  "sap/ui/model/FilterOperator",
   "../model/Formatter"
-], function (BaseTableController, JSONModel, Formatter) {
+], function (BaseTableController, JSONModel, Filter, FilterOperator, Formatter) {
   "use strict";
 
   return BaseTableController.extend("de.regatta_hd.infopoint.controller.HeatsTable", {
@@ -40,7 +42,7 @@ sap.ui.define([
       if (!this._oHeatsModel) {
         this._oHeatsModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
         this.setViewModel(this._oHeatsModel, "heats");
-        this.applyFilters();
+        this.applyFilters([]);
       }
     },
 
@@ -59,6 +61,24 @@ sap.ui.define([
         .then(function (oViewSettingsDialog) {
           oViewSettingsDialog.open();
         });
+    },
+
+    onFilterSearch: function (oEvent) {
+      const aSearchFilters = [];
+      const sQuery = oEvent.getParameter("query");
+      if (sQuery) {
+        aSearchFilters.push(
+          new Filter({
+            filters: [
+              new Filter("race/number", FilterOperator.Contains, sQuery),
+              new Filter("race/shortLabel", FilterOperator.Contains, sQuery),
+              new Filter("race/longLabel", FilterOperator.Contains, sQuery)
+            ],
+            and: false
+          }))
+      }
+
+      this.applyFilters(aSearchFilters)
     }
   });
 
