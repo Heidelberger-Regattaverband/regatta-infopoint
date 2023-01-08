@@ -21,7 +21,7 @@ impl TiberiusConnectionManager {
 
     fn create_config() -> tiberius::Config {
         let db_host = env::var("DB_HOST").expect("env variable `DB_HOST` should be set");
-        let db_port = env::var("DB_PORT")
+        let db_port: u16 = env::var("DB_PORT")
             .expect("env variable `DB_PORT` should be set")
             .parse()
             .unwrap();
@@ -36,8 +36,8 @@ impl TiberiusConnectionManager {
         info!(
             "Database configuration: host={}, port={}, encryption={}, name={}, user={}",
             db_host.bold(),
-            db_port,
-            db_encryption,
+            db_port.to_string().bold(),
+            db_encryption.to_string().bold(),
             db_name.bold(),
             db_user.bold()
         );
@@ -94,7 +94,7 @@ impl PoolFactory {
 
         debug!(
             "Creating DB pool with configuration: max_size={}",
-            db_pool_size
+            db_pool_size.to_string().bold()
         );
 
         bb8::Pool::builder()
