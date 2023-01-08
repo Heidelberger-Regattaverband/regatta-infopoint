@@ -12,7 +12,7 @@ license = "Apache-2.0"
 
 [dependencies]
 anyhow = "1"
-async-std =  {version = "1.12", features = ["attributes"]}
+async-std = { version = "1.12", features = ["attributes"] }
 env_logger = "0.10"
 log = "0.4"
 dotenv = "0.15"
@@ -31,7 +31,11 @@ rustls-pemfile = "1"
 bb8 = "0.8"
 async-trait = "0.1"
 # https://github.com/prisma/tiberius#feature-flags
-tiberius = { version = "0.11", features = ["chrono"] }
+tiberius = { version = "0.11", features = [
+  "chrono",
+  "rustls",
+  "tds73",
+], default-features = false }
 stretto = { version = "0.7", features = ["async"] }
 
 # Utils

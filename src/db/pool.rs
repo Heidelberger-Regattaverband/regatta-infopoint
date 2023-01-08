@@ -1,5 +1,6 @@
 use async_std::net::TcpStream;
 use async_trait::async_trait;
+use colored::Colorize;
 use log::{debug, info};
 use std::env;
 use tiberius::Config;
@@ -28,9 +29,17 @@ impl TiberiusConnectionManager {
         let db_user = env::var("DB_USER").expect("env variable `DB_USER` should be set");
         let db_password =
             env::var("DB_PASSWORD").expect("env variable `DB_PASSWORD` should be set");
+        let db_encryption: bool = env::var("DB_ENCRYPTION")
+            .expect("env variable `DB_ENCRYPTION` should be set")
+            .parse()
+            .unwrap();
         info!(
-            "Database configuration: host={}, port={}, name={}, user={}",
-            db_host, db_port, db_name, db_user
+            "Database configuration: host={}, port={}, encryption={}, name={}, user={}",
+            db_host.bold(),
+            db_port,
+            db_encryption,
+            db_name.bold(),
+            db_user.bold()
         );
 
         let mut config = tiberius::Config::new();
@@ -38,7 +47,12 @@ impl TiberiusConnectionManager {
         config.port(db_port);
         config.database(db_name);
         config.authentication(tiberius::AuthMethod::sql_server(db_user, db_password));
-        config.encryption(tiberius::EncryptionLevel::NotSupported);
+        if db_encryption {
+            config.encryption(tiberius::EncryptionLevel::Required);
+        } else {
+            config.encryption(tiberius::EncryptionLevel::NotSupported);
+        }
+        config.trust_cert();
         config
     }
 }
