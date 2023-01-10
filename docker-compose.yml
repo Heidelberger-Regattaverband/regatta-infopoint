@@ -22,11 +22,10 @@ services:
       - HTTP_RL_MAX_REQUESTS=${HTTP_RL_MAX_REQUESTS}
       - HTTP_RL_INTERVAL=${HTTP_RL_INTERVAL}
       - HTTPS_PORT=${HTTPS_PORT}
-      - HTTPS_CERT_PATH=/data/cert6.pem
-      - HTTPS_KEY_PATH=/data/privkey6.pem
+      - HTTPS_CERT_PATH=/data/ssl/cert.pem
+      - HTTPS_KEY_PATH=/data/ssl/privkey.pem
       - HTTPS_PUBLIC_PORT=443
       - RUST_LOG=${RUST_LOG}
     volumes:
-      - type: bind
-        source: /etc/letsencrypt/archive/8e835d.online-server.cloud/
-        target: /data
+      - '/etc/letsencrypt/live/8e835d.online-server.cloud/cert.pem:/data/ssl/cert.pem:ro'
+      - '/etc/letsencrypt/live/8e835d.online-server.cloud/privkey.pem:/data/ssl/privkey.pem:ro'
