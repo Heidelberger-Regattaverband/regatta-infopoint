@@ -13,6 +13,7 @@ sap.ui.define([
 
       this.oTable = oTable;
       this._aFilters = [];
+      this._aSearchFilters = [];
       this._sBindingModel = this.oTable.getBindingInfo("items").model;
 
       this.getEventBus().subscribe(sChannelId, "first", this._onFirstItemEvent, this);
@@ -103,7 +104,8 @@ sap.ui.define([
     },
 
     applyFilters: function (aSearchFilters = []) {
-      const aAllFilters = this._aFilters.concat(aSearchFilters)
+      this._aSearchFilters = aSearchFilters;
+      const aAllFilters = this._aFilters.concat(this._aSearchFilters)
       const oBinding = this.oTable.getBinding("items");
       oBinding.filter(aAllFilters);
     },
@@ -121,7 +123,8 @@ sap.ui.define([
       const iActual = this.oTable.getGrowingInfo().actual;
       if (iIndex >= iActual) {
         this.oTable.setGrowingThreshold(iIndex + 10);
-        this.oTable.getBinding("items").filter(this._aFilters);
+        const aAllFilters = this._aFilters.concat(this._aSearchFilters)
+        this.oTable.getBinding("items").filter(aAllFilters);
       }
     }
   });
