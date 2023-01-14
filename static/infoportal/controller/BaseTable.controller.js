@@ -93,7 +93,7 @@ sap.ui.define([
       });
 
       // apply filters
-      this.applyFilters([]);
+      this.applyFilters();
 
       // update filter bar
       const oInfoToolbar = this.oTable.getInfoToolbar();
@@ -103,8 +103,12 @@ sap.ui.define([
       }
     },
 
-    applyFilters: function (aSearchFilters = []) {
-      this._aSearchFilters = aSearchFilters;
+    setSearchFilters: function (aSearchFilters = []) {
+      this._aSearchFilters = aSearchFilters
+    },
+
+    applyFilters: function () {
+      // combine search and filters from dialog
       const aAllFilters = this._aFilters.concat(this._aSearchFilters)
       const oBinding = this.oTable.getBinding("items");
       oBinding.filter(aAllFilters);

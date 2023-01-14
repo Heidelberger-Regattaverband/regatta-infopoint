@@ -50,7 +50,7 @@ sap.ui.define([
       if (!this._oRacesModel) {
         this._oRacesModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
         this.setViewModel(this._oRacesModel, "races");
-        this.applyFilters([]);
+        this.applyFilters();
       }
     },
 
@@ -78,8 +78,8 @@ sap.ui.define([
             and: false
           }))
       }
-
-      this.applyFilters(aSearchFilters)
+      this.setSearchFilters(aSearchFilters);
+      this.applyFilters();
     }
 
   });
