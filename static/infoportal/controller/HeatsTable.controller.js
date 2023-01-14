@@ -42,7 +42,7 @@ sap.ui.define([
       if (!this._oHeatsModel) {
         this._oHeatsModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
         this.setViewModel(this._oHeatsModel, "heats");
-        this.applyFilters([]);
+        this.applyFilters();
       }
     },
 
@@ -77,8 +77,8 @@ sap.ui.define([
             and: false
           }))
       }
-
-      this.applyFilters(aSearchFilters)
+      this.setSearchFilters(aSearchFilters);
+      this.applyFilters();
     }
   });
 
