@@ -83,12 +83,16 @@ sap.ui.define([
       const that = this;
 
       mParams.filterItems.forEach(function (oItem) {
-        const aSplit = oItem.getKey().split("___"),
-          sPath = aSplit[0],
-          sOperator = aSplit[1],
-          sValue1 = aSplit[2] === 'true' || (aSplit[2] === 'false' ? false : aSplit[2]),
-          // sValue2 = aSplit[3],
-          oFilter = new Filter(sPath, sOperator, sValue1);
+        const aCustomData = oItem.getCustomData();
+        if (aCustomData) {
+          aCustomData.forEach(function (oData) {
+            if (oData.getKey() == "filter") {
+              const oFilter = that._createFilter(oData.getValue());
+              that._aFilters.push(oFilter);
+            }
+          });
+        }
+        const oFilter = that._createFilter(oItem.getKey());
         that._aFilters.push(oFilter);
       });
 
@@ -101,6 +105,16 @@ sap.ui.define([
         oInfoToolbar.setVisible(this._aFilters.length > 0);
         oInfoToolbar.getContent()[0].setText(mParams.filterString);
       }
+    },
+
+    _createFilter: function (sValue) {
+      const aSplit = sValue.split("___"),
+        sPath = aSplit[0],
+        sOperator = aSplit[1],
+        sValue1 = aSplit[2] === 'true' || (aSplit[2] === 'false' ? false : aSplit[2]),
+        // sValue2 = aSplit[3],
+        oFilter = new Filter(sPath, sOperator, sValue1);
+      return oFilter;
     },
 
     setSearchFilters: function (aSearchFilters = []) {
