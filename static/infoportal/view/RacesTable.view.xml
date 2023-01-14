@@ -75,7 +75,7 @@
                 <Text text="{races>registrationsCount}" />
                 <Text text="{= ${races>cancelled} ? ${i18n>common.raceCancelled} : ${i18n>common.raceDriven}}" />
                 <Text text="{races>raceMode}" />
-                <core:Icon src="{= ${races>seeded} ? 'sap-icon://accept' : 'sap-icon://decline' }" alt="{i18n>common.seeded}" />
+                <Text text="{= ${races>seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
               </cells>
             </ColumnListItem>
           </items>
