@@ -137,7 +137,8 @@ impl Server {
 
         let cert_pem_path =
             env::var("HTTPS_CERT_PATH").unwrap_or_else(|_| "./ssl/cert.pem".to_string());
-        let key_pem_path = env::var("HTTPS_KEY_PATH").unwrap_or_else(|_| "./ssl/key.pem".to_string());
+        let key_pem_path =
+            env::var("HTTPS_KEY_PATH").unwrap_or_else(|_| "./ssl/key.pem".to_string());
 
         debug!(
             "Current working directory is {}",
