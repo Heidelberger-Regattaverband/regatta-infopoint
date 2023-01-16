@@ -18,10 +18,14 @@
               </f:expandedContent>
 
               <f:navigationActions>
-                <Button type="Transparent" icon="sap-icon://close-command-field" press="onFirstPress" tooltip="First" />
-                <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="onPreviousPress" tooltip="Previous" />
-                <Button type="Transparent" icon="sap-icon://navigation-right-arrow" press="onNextPress" tooltip="Next" />
-                <Button type="Transparent" icon="sap-icon://open-command-field" press="onLastPress" tooltip="Last" />
+                <Button type="Transparent" icon="sap-icon://close-command-field" press="onFirstPress" tooltip="First"
+                  enabled="{= ${heat>/_nav/isFirst} ? false : true }" />
+                <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="onPreviousPress" tooltip="Previous"
+                  enabled="{= ${heat>/_nav/isFirst} ? false : true }" />
+                <Button type="Transparent" icon="sap-icon://navigation-right-arrow" press="onNextPress" tooltip="Next"
+                  enabled="{= ${heat>/_nav/isLast} ? false : true }" />
+                <Button type="Transparent" icon="sap-icon://open-command-field" press="onLastPress" tooltip="Last"
+                  enabled="{= ${heat>/_nav/isLast} ? false : true }" />
               </f:navigationActions>
             </f:DynamicPageTitle>
           </f:title>
