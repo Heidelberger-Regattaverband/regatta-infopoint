@@ -1,7 +1,9 @@
-<mvc:View xmlns:core="sap.ui.core" controllerName="de.regatta_hd.infopoint.controller.RaceRegistrationsTable" xmlns="sap.m" xmlns:f="sap.f" xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View xmlns:core="sap.ui.core" controllerName="de.regatta_hd.infopoint.controller.RaceRegistrationsTable" xmlns="sap.m" xmlns:f="sap.f"
+  xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
-    <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
+    <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
+    https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
     <Page title="{i18n>common.registrations}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <content>
 
@@ -18,10 +20,14 @@
               </f:expandedContent>
 
               <f:navigationActions>
-                <Button type="Transparent" icon="sap-icon://close-command-field" press="onFirstPress" tooltip="First" />
-                <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="onPreviousPress" tooltip="Previous" />
-                <Button type="Transparent" icon="sap-icon://navigation-right-arrow" press="onNextPress" tooltip="Next" />
-                <Button type="Transparent" icon="sap-icon://open-command-field" press="onLastPress" tooltip="Last" />
+                <Button type="Transparent" icon="sap-icon://close-command-field" press="onFirstPress" tooltip="First"
+                  enabled="{= ${race>/_nav/isFirst} ? false : true }" />
+                <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="onPreviousPress" tooltip="Previous"
+                  enabled="{= ${race>/_nav/isFirst} ? false : true }" />
+                <Button type="Transparent" icon="sap-icon://navigation-right-arrow" press="onNextPress" tooltip="Next"
+                  enabled="{= ${race>/_nav/isLast} ? false : true }" />
+                <Button type="Transparent" icon="sap-icon://open-command-field" press="onLastPress" tooltip="Last"
+                  enabled="{= ${race>/_nav/isLast} ? false : true }" />
               </f:navigationActions>
             </f:DynamicPageTitle>
           </f:title>
@@ -37,7 +43,8 @@
                 </layout:VerticalLayout>
               </layout:HorizontalLayout>
               <layout:VerticalLayout>
-                <ObjectAttribute title="{i18n>common.state}" text="{= ${race>/cancelled} ? ${i18n>common.raceCancelled} : ${i18n>common.raceDriven}}" />
+                <ObjectAttribute title="{i18n>common.state}"
+                  text="{= ${race>/cancelled} ? ${i18n>common.raceCancelled} : ${i18n>common.raceDriven}}" />
                 <ObjectAttribute title="{i18n>common.registrations}" text="{race>/registrations_count}" />
               </layout:VerticalLayout>
             </f:DynamicPageHeader>
@@ -47,7 +54,10 @@
           <f:content>
             <!-- <ScrollContainer height="100%" vertical="true"> -->
 
-            <Table id="registrationsTable" autoPopinMode="true" items="{path: 'raceRegistrations>/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}" growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
+            <Table id="registrationsTable" autoPopinMode="true"
+              items="{path: 'raceRegistrations>/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}"
+              growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders"
+              class="sapUiNoContentPadding">
               <columns>
                 <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
                   <header>
@@ -75,13 +85,15 @@
                 <ColumnListItem highlight="{= ${raceRegistrations>cancelled} ? 'Indication02' : 'Indication04' }">
                   <cells>
                     <Text text="{raceRegistrations>bib}" />
-                    <Text text="{parts:[
+                    <Text
+                      text="{parts:[
                         {path: 'raceRegistrations>shortLabel'},
                         {path: 'raceRegistrations>boatNumber'},
                         {path: 'raceRegistrations>comment'}],
                         formatter: '.formatter.boatLabel'}" />
                     <Text text="{raceRegistrations>club/shortName}" />
-                    <core:Icon src="{= ${raceRegistrations>cancelled} ? 'sap-icon://decline' : 'sap-icon://accept'}" alt="{i18n>common.cancelled}" />
+                    <core:Icon src="{= ${raceRegistrations>cancelled} ? 'sap-icon://decline' : 'sap-icon://accept'}"
+                      alt="{i18n>common.cancelled}" />
                   </cells>
                 </ColumnListItem>
               </items>
