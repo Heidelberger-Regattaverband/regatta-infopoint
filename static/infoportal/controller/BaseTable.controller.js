@@ -14,6 +14,8 @@ sap.ui.define([
       this.oTable = oTable;
       this._aFilters = [];
       this._aSearchFilters = [];
+
+      // return the path of the model that is bound to the items, e.g. races or heats
       this._sBindingModel = this.oTable.getBindingInfo("items").model;
 
       this.getEventBus().subscribe(sChannelId, "first", this._onFirstItemEvent, this);
@@ -129,8 +131,15 @@ sap.ui.define([
     },
 
     _setCurrentItem: function (iIndex) {
-      this.oTable.setSelectedItem(this.oTable.getItems()[iIndex]);
+      const aItems = this.oTable.getItems();
+      this.oTable.setSelectedItem(aItems[iIndex]);
+
+      // gets the selected item in a generic way
       const oItem = this.oTable.getSelectedItem().getBindingContext(this._sBindingModel).getObject();
+
+      // store navigation meta information in selected item
+      oItem._nav = { isFirst: iIndex == 0, isLast: iIndex == aItems.length - 1 };
+
       this.onItemChanged(oItem);
     },
 
