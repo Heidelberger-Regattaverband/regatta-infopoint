@@ -23,8 +23,13 @@ sap.ui.define([
       const oSelectedItem = oEvent.getParameter("listItem");
       if (oSelectedItem) {
         const oBindingCtx = oSelectedItem.getBindingContext("races");
-
         const oRace = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
+
+        const iIndex = this.oTable.indexOfItem(oSelectedItem);
+        const iCount = this.oTable.getItems();
+        // store navigation meta information in selected item
+        oRace._nav = { isFirst: iIndex == 0, isLast: iIndex == iCount - 1 };
+
         this.getOwnerComponent().setModel(new JSONModel(oRace), "race");
 
         this._loadRegistrationsModel(oRace.id);
