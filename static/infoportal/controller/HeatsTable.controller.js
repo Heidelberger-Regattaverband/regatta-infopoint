@@ -24,6 +24,12 @@ sap.ui.define([
       if (oSelectedItem) {
         const oBindingCtx = oSelectedItem.getBindingContext("heats");
         const oHeat = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
+
+        const iIndex = this.oTable.indexOfItem(oSelectedItem);
+        const iCount = this.oTable.getItems();
+        // store navigation meta information in selected item
+        oHeat._nav = { isFirst: iIndex == 0, isLast: iIndex == iCount - 1 };
+
         this.getOwnerComponent().setModel(new JSONModel(oHeat), "heat");
 
         this._loadRegistrationsModel(oHeat.id);
