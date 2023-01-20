@@ -26,7 +26,7 @@ sap.ui.define([
         const oHeat = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
 
         const iIndex = this.oTable.indexOfItem(oSelectedItem);
-        const iCount = this.oTable.getItems();
+        const iCount = this.oTable.getItems().length;
         // store navigation meta information in selected item
         oHeat._nav = { isFirst: iIndex == 0, isLast: iIndex == iCount - 1 };
 
