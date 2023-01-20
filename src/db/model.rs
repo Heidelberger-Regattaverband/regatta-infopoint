@@ -165,6 +165,13 @@ impl Race {
 }
 
 #[derive(Debug, Serialize, Clone)]
+pub struct Crew {
+    id: i32,
+    pos: i16,
+    cox: bool,
+}
+
+#[derive(Debug, Serialize, Clone)]
 pub struct Registration {
     id: i32,
     bib: i16,
@@ -175,6 +182,7 @@ pub struct Registration {
     short_label: String,
     club: Club,
     cancelled: bool,
+    crew: Vec<Crew>,
 }
 impl Registration {
     pub fn from(row: &Row) -> Registration {
@@ -189,6 +197,7 @@ impl Registration {
             short_label: Column::get(row, "Label_Short"),
             cancelled,
             club: Club::from(row),
+            crew: Vec::new(),
         }
     }
 
