@@ -9,6 +9,13 @@ use actix_web::{
     web::{scope, Data},
     App, Error, HttpServer,
 };
+use actix_web_httpauth::{
+    extractors::{
+        basic::{BasicAuth, Config},
+        AuthenticationError,
+    },
+    middleware::HttpAuthentication,
+};
 use actix_web_lab::middleware::RedirectHttps;
 use actix_web_lab::web as web_lab;
 use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
@@ -20,7 +27,7 @@ use std::{
     env,
     fs::File,
     future::Ready,
-    io::{self, BufReader},
+    io::{self, BufReader, ErrorKind::Other},
     time::Duration,
 };
 
@@ -48,6 +55,8 @@ impl Server {
                 .wrap(Self::get_prometeus())
                 // enable redirect from http -> https
                 .wrap(RedirectHttps::default().to_port(https_public_port))
+                // enable basic authentication
+                .wrap(HttpAuthentication::basic(Self::validator))
                 .app_data(Data::clone(&data))
                 .service(
                     scope(PATH_REST_API)
@@ -85,6 +94,24 @@ impl Server {
         http_server.run().await
     }
 
+    async fn validator(
+        request: ServiceRequest,
+        credentials: BasicAuth,
+    ) -> Result<ServiceRequest, (Error, ServiceRequest)> {
+        let config = request
+            .app_data::<Config>()
+            .map(|data| data.as_ref().clone())
+            .unwrap_or_else(Default::default);
+
+        if let Some(user_password) = credentials.password() {
+            match Self::validate_credentials(credentials.user_id(), user_password.trim()) {
+                Ok(_) => Ok(request),
+                Err(_) => Err((AuthenticationError::new(config).into(), request)),
+            }
+        } else {
+            Err((AuthenticationError::new(config).into(), request))
+        }
+    }
     /// Returns a new PrometheusMetrics instance.
     fn get_prometeus() -> PrometheusMetrics {
         PrometheusMetricsBuilder::new("api")
@@ -218,6 +245,14 @@ impl Server {
         debug!("HTTPS public port is: {}", public_port.to_string().bold());
 
         public_port
+    }
+
+    fn validate_credentials(user_id: &str, user_password: &str) -> Result<(), std::io::Error> {
+        debug!("Validate credentials: {}:{}", user_id, user_password);
+        if user_id.eq("karl") && user_password.eq("password") {
+            return Ok(());
+        }
+        Err(std::io::Error::new(Other, "Authentication failed!"))
     }
 }
 

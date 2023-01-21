@@ -26,6 +26,7 @@ actix-web-lab = "0.18"
 actix-web-prometheus = { version = "0.1", features = ["process"] }
 rustls = "0.20"
 rustls-pemfile = "1"
+actix-web-httpauth = "0.8"
 
 # Database
 bb8 = "0.8"
