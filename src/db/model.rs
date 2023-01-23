@@ -165,10 +165,21 @@ impl Race {
 }
 
 #[derive(Debug, Serialize, Clone)]
+pub struct Athlete {
+    id: i32,
+    #[serde(rename = "firstName")]
+    first_name: String,
+    #[serde(rename = "lastName")]
+    last_name: String,
+    club: Club,
+}
+
+#[derive(Debug, Serialize, Clone)]
 pub struct Crew {
     id: i32,
     pos: i16,
     cox: bool,
+    athlete: Athlete,
 }
 
 #[derive(Debug, Serialize, Clone)]
