@@ -4,7 +4,19 @@
     <Page title="{i18n>launchpad.scoringTile.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <content>
 
-        <Table id="ScoringTable" autoPopinMode="true" items="{scoring>/}" growing="true" growingScrollToLoad="true" growingThreshold="50" sticky="ColumnHeaders" class="sapUiNoContentPadding">
+        <Table id="scoringTable" autoPopinMode="true" items="{scoring>/}" growing="true" growingScrollToLoad="true" growingThreshold="50"
+          sticky="ColumnHeaders" class="sapUiNoContentPadding">
+          <!-- The HeaderToolbar shows a title and the filter button -->
+          <headerToolbar>
+            <OverflowToolbar>
+              <content>
+                <SearchField width="12rem" search=".onFilterSearch" />
+                <ToolbarSpacer />
+                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
+              </content>
+            </OverflowToolbar>
+          </headerToolbar>
+
           <columns>
             <Column hAlign="Center" width="4rem" importance="High" popinDisplay="Inline">
               <header>
