@@ -57,8 +57,12 @@ sap.ui.define([
     },
 
     _loadRegistrationsModel: async function (sHeatId) {
-      const oModel = await this.getJSONModel("/api/heats/" + sHeatId + "/registrations", null);
-      this.getOwnerComponent().setModel(oModel, "heatRegistrations");
+      if (!this._oRegistrationsModel) {
+        this._oRegistrationsModel = await this.getJSONModel("/api/heats/" + sHeatId + "/registrations", undefined);
+        this.getOwnerComponent().setModel(this._oRegistrationsModel, "heatRegistrations");
+      } else {
+        await this.updateJSONModel(this._oRegistrationsModel, "/api/heats/" + sHeatId + "/registrations", undefined);
+      }
     },
 
     onItemChanged: function (oItem) {
