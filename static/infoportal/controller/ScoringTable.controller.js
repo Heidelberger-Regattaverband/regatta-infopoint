@@ -21,7 +21,7 @@ sap.ui.define([
 
     onFilterSearch: function (oEvent) {
       const aSearchFilters = [];
-      const sQuery = oEvent.getParameter("query");
+      const sQuery = oEvent.getParameter("query").trim();
       if (sQuery) {
         aSearchFilters.push(
           new Filter({
