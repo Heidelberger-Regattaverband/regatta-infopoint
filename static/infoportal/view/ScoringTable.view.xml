@@ -5,7 +5,7 @@
       <content>
 
         <Table id="scoringTable" autoPopinMode="true" items="{scoring>/}" growing="true" growingScrollToLoad="true" growingThreshold="50"
-          sticky="ColumnHeaders" class="sapUiNoContentPadding">
+          sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
           <!-- The HeaderToolbar shows a title and the filter button -->
           <headerToolbar>
             <OverflowToolbar>
