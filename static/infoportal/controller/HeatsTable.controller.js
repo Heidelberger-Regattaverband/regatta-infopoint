@@ -44,6 +44,10 @@ sap.ui.define([
       this.navBack("startpage");
     },
 
+    onRefreshButtonPress: function (oEvent) {
+      this.updateJSONModel(this._oHeatsModel, "/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
+    },
+
     _loadHeatsModel: async function () {
       if (!this._oHeatsModel) {
         this._oHeatsModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
@@ -62,7 +66,7 @@ sap.ui.define([
       this._loadRegistrationsModel(oItem.id);
     },
 
-    onHandleFilterButtonPressed: function (oEvent) {
+    onFilterButtonPress: function (oEvent) {
       this.getViewSettingsDialog("de.regatta_hd.infopoint.view.HeatsFilterDialog")
         .then(function (oViewSettingsDialog) {
           oViewSettingsDialog.open();
