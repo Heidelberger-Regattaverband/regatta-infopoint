@@ -64,8 +64,12 @@ sap.ui.define([
     },
 
     _loadRegistrationsModel: async function (sRaceId) {
-      const oModel = await this.getJSONModel("/api/races/" + sRaceId + "/registrations", undefined);
-      this.getOwnerComponent().setModel(oModel, "raceRegistrations");
+      if (!this._oRegistrationsModel) {
+        this._oRegistrationsModel = await this.getJSONModel("/api/races/" + sRaceId + "/registrations", undefined);
+        this.getOwnerComponent().setModel(this._oRegistrationsModel, "raceRegistrations");
+      } else {
+        await this.updateJSONModel(this._oRegistrationsModel, "/api/races/" + sRaceId + "/registrations", undefined);
+      }
     },
 
     onItemChanged: function (oItem) {
