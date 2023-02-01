@@ -44,11 +44,15 @@ sap.ui.define([
       this.navBack("startpage");
     },
 
-    onHandleFilterButtonPressed: function (oEvent) {
+    onFilterButtonPress: function (oEvent) {
       this.getViewSettingsDialog("de.regatta_hd.infopoint.view.RacesFilterDialog")
         .then(function (oViewSettingsDialog) {
           oViewSettingsDialog.open();
         });
+    },
+
+    onRefreshButtonPress: function (oEvent) {
+      this.updateJSONModel(this._oRacesModel, "/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
     },
 
     _loadRacesModel: async function () {
