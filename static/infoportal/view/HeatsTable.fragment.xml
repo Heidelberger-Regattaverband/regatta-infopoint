@@ -6,10 +6,10 @@
     <headerToolbar>
       <OverflowToolbar>
         <content>
-          <Title text="{i18n>common.heats}" level="H2" />
+          <SearchField width="10rem" search="onFilterSearch" />
+          <Button text="{i18n>common.filter}" tooltip="{i18n>common.filter}" icon="sap-icon://filter" press="onFilterButtonPress" />
           <ToolbarSpacer />
-          <SearchField width="10rem" search=".onFilterSearch" />
-          <Button text="{i18n>common.filter}" tooltip="{i18n>common.filter}" icon="sap-icon://filter" press="onHandleFilterButtonPressed" />
+          <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
         </content>
       </OverflowToolbar>
     </headerToolbar>
