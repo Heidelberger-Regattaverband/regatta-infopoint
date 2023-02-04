@@ -77,15 +77,19 @@ sap.ui.define([
     },
 
     getJSONModel: async function (sURL, oControl) {
+      const oModel = new JSONModel();
+      await this.updateJSONModel(oModel, sURL, oControl);
+      return oModel;
+    },
+
+    updateJSONModel: async function (oModel, sURL, oControl) {
       if (oControl) {
         oControl.setBusy(true);
       }
-      const oModel = new JSONModel();
       await oModel.loadData(sURL);
       if (oControl) {
         oControl.setBusy(false);
       }
-      return oModel;
     }
   });
 

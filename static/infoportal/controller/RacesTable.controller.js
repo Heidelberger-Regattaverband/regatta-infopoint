@@ -44,11 +44,15 @@ sap.ui.define([
       this.navBack("startpage");
     },
 
-    onHandleFilterButtonPressed: function (oEvent) {
+    onFilterButtonPress: function (oEvent) {
       this.getViewSettingsDialog("de.regatta_hd.infopoint.view.RacesFilterDialog")
         .then(function (oViewSettingsDialog) {
           oViewSettingsDialog.open();
         });
+    },
+
+    onRefreshButtonPress: function (oEvent) {
+      this.updateJSONModel(this._oRacesModel, "/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
     },
 
     _loadRacesModel: async function () {
@@ -60,8 +64,12 @@ sap.ui.define([
     },
 
     _loadRegistrationsModel: async function (sRaceId) {
-      const oModel = await this.getJSONModel("/api/races/" + sRaceId + "/registrations", undefined);
-      this.getOwnerComponent().setModel(oModel, "raceRegistrations");
+      if (!this._oRegistrationsModel) {
+        this._oRegistrationsModel = await this.getJSONModel("/api/races/" + sRaceId + "/registrations", undefined);
+        this.getOwnerComponent().setModel(this._oRegistrationsModel, "raceRegistrations");
+      } else {
+        await this.updateJSONModel(this._oRegistrationsModel, "/api/races/" + sRaceId + "/registrations", undefined);
+      }
     },
 
     onItemChanged: function (oItem) {
@@ -71,7 +79,7 @@ sap.ui.define([
 
     onFilterSearch: function (oEvent) {
       const aSearchFilters = [];
-      const sQuery = oEvent.getParameter("query");
+      const sQuery = oEvent.getParameter("query").trim();
       if (sQuery) {
         aSearchFilters.push(
           new Filter({

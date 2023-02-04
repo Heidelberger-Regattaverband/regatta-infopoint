@@ -44,6 +44,10 @@ sap.ui.define([
       this.navBack("startpage");
     },
 
+    onRefreshButtonPress: function (oEvent) {
+      this.updateJSONModel(this._oHeatsModel, "/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
+    },
+
     _loadHeatsModel: async function () {
       if (!this._oHeatsModel) {
         this._oHeatsModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
@@ -53,8 +57,12 @@ sap.ui.define([
     },
 
     _loadRegistrationsModel: async function (sHeatId) {
-      const oModel = await this.getJSONModel("/api/heats/" + sHeatId + "/registrations", null);
-      this.getOwnerComponent().setModel(oModel, "heatRegistrations");
+      if (!this._oRegistrationsModel) {
+        this._oRegistrationsModel = await this.getJSONModel("/api/heats/" + sHeatId + "/registrations", undefined);
+        this.getOwnerComponent().setModel(this._oRegistrationsModel, "heatRegistrations");
+      } else {
+        await this.updateJSONModel(this._oRegistrationsModel, "/api/heats/" + sHeatId + "/registrations", undefined);
+      }
     },
 
     onItemChanged: function (oItem) {
@@ -62,7 +70,7 @@ sap.ui.define([
       this._loadRegistrationsModel(oItem.id);
     },
 
-    onHandleFilterButtonPressed: function (oEvent) {
+    onFilterButtonPress: function (oEvent) {
       this.getViewSettingsDialog("de.regatta_hd.infopoint.view.HeatsFilterDialog")
         .then(function (oViewSettingsDialog) {
           oViewSettingsDialog.open();
@@ -71,7 +79,7 @@ sap.ui.define([
 
     onFilterSearch: function (oEvent) {
       const aSearchFilters = [];
-      const sQuery = oEvent.getParameter("query");
+      const sQuery = oEvent.getParameter("query").trim();
       if (sQuery) {
         aSearchFilters.push(
           new Filter({

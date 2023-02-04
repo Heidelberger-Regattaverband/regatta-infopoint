@@ -10,11 +10,11 @@
           <headerToolbar>
             <OverflowToolbar>
               <content>
-                <Title text="{i18n>common.race}" level="H2" />
-                <ToolbarSpacer />
                 <SearchField width="10rem" search=".onFilterSearch" />
                 <Button text="{i18n>common.filter}" tooltip="{i18n>common.filter}" icon="sap-icon://filter"
-                  press="onHandleFilterButtonPressed" />
+                  press="onFilterButtonPress" />
+                <ToolbarSpacer />
+                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
               </content>
             </OverflowToolbar>
           </headerToolbar>
