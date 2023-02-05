@@ -171,20 +171,46 @@ pub struct Athlete {
     first_name: String,
     #[serde(rename = "lastName")]
     last_name: String,
-    club: Club,
+    gender: String,
 }
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Crew {
     id: i32,
-    pos: i16,
+    pos: u8,
     cox: bool,
     athlete: Athlete,
+}
+impl Crew {
+    pub fn from(row: &Row) -> Crew {
+        Crew {
+            id: Column::get(row, "Crew_ID"),
+            pos: Column::get(row, "Crew_Pos"),
+            cox: Column::get(row, "Crew_IsCox"),
+            athlete: Athlete {
+                id: Column::get(row, "Athlet_ID"),
+                first_name: Column::get(row, "Athlet_FirstName"),
+                last_name: Column::get(row, "Athlet_LastName"),
+                gender: Column::get(row, "Athlet_Gender"),
+            },
+        }
+    }
+    pub fn query_all<'a>(registration_id: i32) -> Query<'a> {
+        let mut query = Query::new(
+            "SELECT DISTINCT c.Crew_ID, c.Crew_Pos, c.Crew_IsCox, a.Athlet_ID, a.Athlet_FirstName, a.Athlet_LastName, a.Athlet_Gender
+            FROM Crew c
+            JOIN Athlet AS a ON c.Crew_Athlete_ID_FK = a.Athlet_ID
+            WHERE c.Crew_Entry_ID_FK = @P1 AND c.Crew_RoundFrom <= 64 AND 64 <= c.Crew_RoundTo
+            ORDER BY c.Crew_pos ASC",
+        );
+        query.bind(registration_id);
+        query
+    }
 }
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Registration {
-    id: i32,
+    pub(crate) id: i32,
     bib: i16,
     #[serde(rename = "boatNumber")]
     boat_number: i16,
@@ -193,26 +219,27 @@ pub struct Registration {
     short_label: String,
     club: Club,
     cancelled: bool,
-    crew: Vec<Crew>,
+    pub(crate) crew: Option<Vec<Crew>>,
 }
 impl Registration {
     pub fn from(row: &Row) -> Registration {
         let cancel_value: u8 = Column::get(row, "Entry_CancelValue");
         let cancelled = cancel_value > 0;
-
+        let id = Column::get(row, "Entry_ID");
+        Crew::query_all(id);
         Registration {
-            id: Column::get(row, "Entry_ID"),
+            id,
             bib: Column::get(row, "Entry_Bib"),
             comment: Column::get(row, "Entry_Comment"),
             boat_number: Column::get(row, "Entry_BoatNumber"),
             short_label: Column::get(row, "Label_Short"),
             cancelled,
             club: Club::from(row),
-            crew: Vec::new(),
+            crew: Option::None,
         }
     }
 
-    pub(super) fn query_all<'a>(race_id: i32) -> Query<'a> {
+    pub fn query_all<'a>(race_id: i32) -> Query<'a> {
         let mut query = Query::new(
             "SELECT DISTINCT e.*, l.Label_Short, c.Club_ID, c.Club_Abbr, c.Club_City
             FROM Entry e
