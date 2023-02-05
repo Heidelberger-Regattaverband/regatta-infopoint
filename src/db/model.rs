@@ -172,6 +172,7 @@ pub struct Athlete {
     #[serde(rename = "lastName")]
     last_name: String,
     gender: String,
+    year: String,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -183,6 +184,8 @@ pub struct Crew {
 }
 impl Crew {
     pub fn from(row: &Row) -> Crew {
+        let dob: NaiveDateTime = Column::get(row, "Athlet_DOB");
+
         Crew {
             id: Column::get(row, "Crew_ID"),
             pos: Column::get(row, "Crew_Pos"),
@@ -192,12 +195,13 @@ impl Crew {
                 first_name: Column::get(row, "Athlet_FirstName"),
                 last_name: Column::get(row, "Athlet_LastName"),
                 gender: Column::get(row, "Athlet_Gender"),
+                year: dob.date().format("%Y").to_string(),
             },
         }
     }
     pub fn query_all<'a>(registration_id: i32) -> Query<'a> {
         let mut query = Query::new(
-            "SELECT DISTINCT c.Crew_ID, c.Crew_Pos, c.Crew_IsCox, a.Athlet_ID, a.Athlet_FirstName, a.Athlet_LastName, a.Athlet_Gender
+            "SELECT DISTINCT c.Crew_ID, c.Crew_Pos, c.Crew_IsCox, a.Athlet_ID, a.Athlet_FirstName, a.Athlet_LastName, a.Athlet_Gender, Athlet_DOB
             FROM Crew c
             JOIN Athlet AS a ON c.Crew_Athlete_ID_FK = a.Athlet_ID
             WHERE c.Crew_Entry_ID_FK = @P1 AND c.Crew_RoundFrom <= 64 AND 64 <= c.Crew_RoundTo
