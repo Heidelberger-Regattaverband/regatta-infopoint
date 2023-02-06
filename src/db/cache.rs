@@ -1,4 +1,4 @@
-use super::model::{Heat, HeatRegistration, Race, Regatta, Registration, Score};
+use super::model::{race::Race, Heat, HeatRegistration, Regatta, Registration, Score};
 use log::{debug, trace};
 use std::time::Duration;
 use stretto::AsyncCache;
