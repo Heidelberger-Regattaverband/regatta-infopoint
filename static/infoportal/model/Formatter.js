@@ -9,7 +9,8 @@ sap.ui.define([
       let label = "";
       if (aCrew) {
         for (const oCrew of aCrew) {
-          label += (oCrew.cox ? "St" : oCrew.pos) + ": " + oCrew.athlete.firstName + " " + oCrew.athlete.lastName + " (" + oCrew.athlete.year + "), ";
+          const athlete = oCrew.athlete;
+          label += (oCrew.cox ? "St" : oCrew.pos) + ": " + athlete.firstName + " " + athlete.lastName + " (" + athlete.year + ", " + athlete.club + "), ";
         }
         label = label.substring(0, label.length - 2);
       }
