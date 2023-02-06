@@ -26,6 +26,10 @@ sap.ui.define([
 
     onNavToStatistics: function () {
       this.getRouter().navTo("statistics", {}, false /* history */);
+    },
+
+    onNavToKiosk: function () {
+      this.getRouter().navTo("kiosk", {}, false /* history */);
     }
 
   });

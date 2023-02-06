@@ -1,0 +1,11 @@
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.Kiosk" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:l="sap.ui.layout">
+  <mvc:content>
+
+    <Page title="Kiosk" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
+      <content>
+
+      </content>
+    </Page>
+
+  </mvc:content>
+</mvc:View>
