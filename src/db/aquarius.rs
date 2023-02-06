@@ -1,8 +1,8 @@
-use crate::db::model::Crew;
-
 use super::{
     cache::Cache,
-    model::{Heat, HeatRegistration, Race, Regatta, Registration, Score, Statistics},
+    model::{
+        statistics::Statistics, Crew, Heat, HeatRegistration, Race, Regatta, Registration, Score,
+    },
     pool::PoolFactory,
     TiberiusPool,
 };
@@ -140,7 +140,7 @@ impl Aquarius {
             let crew_rows = self._execute_query(Crew::query_all(registration.id)).await;
             let mut crews: Vec<Crew> = Vec::with_capacity(crew_rows.len());
             for crew_row in &crew_rows {
-              crews.push(Crew::from(crew_row));
+                crews.push(Crew::from(crew_row));
             }
             registration.crew = Option::Some(crews);
             trace!("{:?}", registration);
