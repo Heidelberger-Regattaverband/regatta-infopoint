@@ -58,7 +58,7 @@ pub struct HeatRegistration {
     pub id: i32,
     lane: i16,
     result: HeatResult,
-    registration: Registration,
+    pub registration: Registration,
 }
 impl HeatRegistration {
     pub fn from(row: &Row) -> Self {

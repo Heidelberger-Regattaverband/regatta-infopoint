@@ -191,7 +191,18 @@ impl Aquarius {
             .await;
         let mut heat_regs: Vec<HeatRegistration> = Vec::with_capacity(rows.len());
         for row in &rows {
-            let heat_registration = HeatRegistration::from(row);
+            let mut heat_registration = HeatRegistration::from(row);
+
+            let crew_rows = self
+                ._execute_query(Crew::query_all(heat_registration.registration.id))
+                .await;
+            let mut crews: Vec<Crew> = Vec::with_capacity(crew_rows.len());
+
+            for crew_row in &crew_rows {
+                crews.push(Crew::from(crew_row));
+            }
+            heat_registration.registration.crew = Some(crews);
+
             trace!("{:?}", heat_registration);
             heat_regs.push(heat_registration);
         }
