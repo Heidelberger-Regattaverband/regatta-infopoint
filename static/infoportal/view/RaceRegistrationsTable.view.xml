@@ -82,7 +82,7 @@
               </columns>
 
               <items>
-                <ColumnListItem highlight="{= ${raceRegistrations>cancelled} ? 'Indication02' : 'Indication04' }" vAlign="Top" >
+                <ColumnListItem highlight="{= ${raceRegistrations>cancelled} ? 'Indication02' : 'Indication04' }" vAlign="Top">
                   <cells>
                     <Text text="{raceRegistrations>bib}" />
                     <ObjectIdentifier
