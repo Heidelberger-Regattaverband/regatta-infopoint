@@ -11,8 +11,9 @@ sap.ui.define([
         for (const oCrew of aCrew) {
           label += (oCrew.cox ? "St" : oCrew.pos) + ": " + oCrew.athlete.firstName + " " + oCrew.athlete.lastName + " (" + oCrew.athlete.year + "), ";
         }
+        label = label.substring(0, label.length - 2);
       }
-      return label.substring(0, label.length - 2);
+      return label;
     },
 
     distanceLabel: function (oRace) {
