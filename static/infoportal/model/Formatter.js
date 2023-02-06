@@ -7,8 +7,10 @@ sap.ui.define([
 
     crewLabel: function (aCrew) {
       let label = "";
-      for (const oCrew of aCrew) {
-        label += (oCrew.cox ? "St" : oCrew.pos) + ": " + oCrew.athlete.firstName + " " + oCrew.athlete.lastName + " (" + oCrew.athlete.year + "), ";
+      if (aCrew) {
+        for (const oCrew of aCrew) {
+          label += (oCrew.cox ? "St" : oCrew.pos) + ": " + oCrew.athlete.firstName + " " + oCrew.athlete.lastName + " (" + oCrew.athlete.year + "), ";
+        }
       }
       return label.substring(0, label.length - 2);
     },

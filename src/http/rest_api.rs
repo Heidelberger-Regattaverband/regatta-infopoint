@@ -1,7 +1,8 @@
 use crate::db::{
     aquarius::Aquarius,
     model::{
-        race::Race, statistics::Statistics, Heat, HeatRegistration, Regatta, Registration, Score,
+        heat::Heat, heat::HeatRegistration, race::Race, statistics::Statistics, Regatta,
+        Registration, Score,
     },
 };
 use actix_web::{
