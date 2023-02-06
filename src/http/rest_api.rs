@@ -1,6 +1,6 @@
 use crate::db::{
     aquarius::Aquarius,
-    model::{Heat, HeatRegistration, Race, Regatta, Registration, Score, Statistics},
+    model::{statistics::Statistics, Heat, HeatRegistration, Race, Regatta, Registration, Score},
 };
 use actix_web::{
     get,
@@ -58,7 +58,7 @@ async fn get_heats(
     let regatta_id = path.into_inner();
 
     if let Some(expand) = odata_params.into_inner().expand {
-        println!("{}", expand);
+        println!("{expand}");
     }
 
     let heats = data.get_heats(regatta_id).await.unwrap();
