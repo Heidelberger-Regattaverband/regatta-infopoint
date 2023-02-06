@@ -1,7 +1,9 @@
-<mvc:View controllerName="de.regatta_hd.infopoint.controller.Launchpad" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:layout="sap.ui.layout" xmlns:core="sap.ui.core" core:require="{ formatMessage: 'sap/base/strings/formatMessage' }">
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.Launchpad" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m"
+  xmlns:layout="sap.ui.layout" xmlns:core="sap.ui.core" core:require="{ formatMessage: 'sap/base/strings/formatMessage' }">
   <mvc:content>
 
-    <Page title="{parts: [{path:'i18n>launchpad.title'}, {path:'regatta>/title'}], formatter: 'formatMessage'}" class="sapUiNoContentPadding">
+    <Page title="{parts: [{path:'i18n>launchpad.title'}, {path:'regatta>/title'}], formatter: 'formatMessage'}"
+      class="sapUiNoContentPadding">
       <content>
 
         <layout:HorizontalLayout allowWrapping="true">
@@ -17,7 +19,9 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.heatsTile.header}" subheader="{path: 'regatta>/startDate',formatter: '.formatter.dayLabel'} bis {path: 'regatta>/endDate',formatter: '.formatter.dayLabel'}" press=".onNavToHeats">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.heatsTile.header}"
+              subheader="{path: 'regatta>/startDate',formatter: '.formatter.dayLabel'} bis {path: 'regatta>/endDate',formatter: '.formatter.dayLabel'}"
+              press=".onNavToHeats">
               <tileContent>
                 <TileContent>
                   <content>
@@ -27,7 +31,8 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.scoringTile.header}" press=".onNavToScoring">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.scoringTile.header}"
+              press=".onNavToScoring">
               <tileContent>
                 <TileContent>
                   <content>
@@ -37,7 +42,8 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.statistics.header}" press=".onNavToStatistics">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.statistics.header}"
+              press=".onNavToStatistics">
               <tileContent>
                 <TileContent>
                   <content>
