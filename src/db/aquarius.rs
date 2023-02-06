@@ -1,8 +1,8 @@
 use super::{
     cache::Cache,
     model::{
-        heat::Heat, heat::HeatRegistration, race::Race, statistics::Statistics, Crew, Regatta,
-        Registration, Score,
+        crew::Crew, heat::Heat, heat::HeatRegistration, race::Race, statistics::Statistics,
+        Regatta, Registration, Score,
     },
     pool::PoolFactory,
     TiberiusPool,
