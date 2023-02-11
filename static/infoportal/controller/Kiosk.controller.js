@@ -18,28 +18,32 @@ sap.ui.define([
       this.navBack("startpage");
     },
 
+    onRefreshButtonPress: function (oEvent) {
+      this._loadKioskModel();
+    },
+
     _loadKioskModel: async function () {
       if (!this._oKioskModel) {
-        this._oKioskModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/heats_kiosk", undefined);
+        this._oKioskModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/heats_kiosk", this.getView());
         this.getOwnerComponent().setModel(this._oKioskModel, "heats");
       } else {
-        await this.updateJSONModel(this._oKioskModel, "/api/regattas/" + this.getRegattaId() + "/heats_kiosk", undefined);
+        await this.updateJSONModel(this._oKioskModel, "/api/regattas/" + this.getRegattaId() + "/heats_kiosk", this.getView());
       }
 
       const oData = this._oKioskModel.getData();
 
       if (!this._oFinishedModel) {
-        this._oFinishedModel = await this.getJSONModel("/api/heats/" + oData[0].id + "/registrations", undefined);
+        this._oFinishedModel = await this.getJSONModel("/api/heats/" + oData[0].id + "/registrations", this.getView());
         this.getOwnerComponent().setModel(this._oFinishedModel, "finished");
       } else {
-        await this.updateJSONModel(this._oFinishedModel, "/api/heats/" + oData[0].id + "/registrations", undefined);
+        await this.updateJSONModel(this._oFinishedModel, "/api/heats/" + oData[0].id + "/registrations", this.getView());
       }
 
       if (!this._oNextModel) {
-        this._oNextModel = await this.getJSONModel("/api/heats/" + oData[1].id + "/registrations", undefined);
+        this._oNextModel = await this.getJSONModel("/api/heats/" + oData[1].id + "/registrations", this.getView());
         this.getOwnerComponent().setModel(this._oNextModel, "next");
       } else {
-        await this.updateJSONModel(this._oNextModel, "/api/heats/" + oData[1].id + "/registrations", undefined);
+        await this.updateJSONModel(this._oNextModel, "/api/heats/" + oData[1].id + "/registrations", this.getView());
       }
     }
 
