@@ -95,7 +95,7 @@
               </columns>
 
               <items>
-                <ColumnListItem vAlign="Top">
+                <ColumnListItem highlight="{= ${heat>cancelled} &amp;&amp; ${heatRegistrations>registration/cancelled} ? 'Indication02' : undefined }" vAlign="Top">
                   <cells>
                     <Text text="{heatRegistrations>result/rankLabel}" />
                     <Text text="{heatRegistrations>registration/bib}" />
