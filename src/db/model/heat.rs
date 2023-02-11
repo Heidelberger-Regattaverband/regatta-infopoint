@@ -7,8 +7,10 @@ use tiberius::{time::chrono::NaiveDateTime, Query, Row};
 pub struct Heat {
     pub id: i32,
     number: i16,
+    #[serde(rename = "roundCode")]
     round_code: String,
     label: String,
+    #[serde(rename = "groupValue")]
     group_value: i16,
     state: u8,
     cancelled: bool,
