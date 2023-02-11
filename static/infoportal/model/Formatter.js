@@ -130,7 +130,7 @@ sap.ui.define([
 
       if (oHeat.race.ageClass.numSubClasses > 0) {
         const PREFIX = " - AK ";
-        switch (oHeat.group_value) {
+        switch (oHeat.groupValue) {
           case 0:
             sGroupValue = PREFIX + "A";
             break;
@@ -164,7 +164,7 @@ sap.ui.define([
         }
       }
 
-      switch (oHeat.round_code) {
+      switch (oHeat.roundCode) {
         case "A":
           return this.i18n("heat.label.division", [oHeat.label, sGroupValue]);
         case "R":
