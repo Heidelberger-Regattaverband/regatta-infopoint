@@ -55,7 +55,7 @@ impl Heat {
     }
 
     pub(crate) fn query_kiosk_finished<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, bc.*, r.*, rm.RaceMode_Title, hrv_o.*,
+        let mut query = Query::new("SELECT DISTINCT TOP 1 c.*, ac.*, bc.*, r.*, rm.RaceMode_Title, hrv_o.*,
           o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
           FROM Comp AS c
           FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
@@ -71,7 +71,7 @@ impl Heat {
     }
 
     pub(crate) fn query_kiosk_next<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, bc.*, r.*, rm.RaceMode_Title, hrv_o.*,
+        let mut query = Query::new("SELECT DISTINCT TOP 1 c.*, ac.*, bc.*, r.*, rm.RaceMode_Title, hrv_o.*,
         o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
         FROM Comp AS c
         FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
