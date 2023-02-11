@@ -7,7 +7,7 @@
     <Page title="{i18n>common.registrations}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <content>
 
-        <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
+        <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding" >
           <!-- DynamicPage Title -->
           <f:title>
             <f:DynamicPageTitle>

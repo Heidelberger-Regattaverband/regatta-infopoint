@@ -50,6 +50,9 @@
           ],
           "fallbackLocale": ""
         }
+      },
+      "": {
+        "type": "sap.ui.model.json.JSONModel"
       }
     },
     "routing": {
@@ -102,6 +105,11 @@
           "pattern": "statistics",
           "name": "statistics",
           "target": "statistics"
+        },
+        {
+          "pattern": "kiosk",
+          "name": "kiosk",
+          "target": "kiosk"
         }
       ],
       "targets": {
@@ -131,6 +139,10 @@
         },
         "statistics": {
           "viewName": "Statistics",
+          "viewLevel": 1
+        },
+        "kiosk": {
+          "viewName": "Kiosk",
           "viewLevel": 1
         }
       }

@@ -53,6 +53,17 @@
               </tileContent>
             </GenericTile>
 
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="Kiosk"
+              press=".onNavToKiosk">
+              <tileContent>
+                <TileContent>
+                  <content>
+                    <ImageContent src="sap-icon://synchronize" />
+                  </content>
+                </TileContent>
+              </tileContent>
+            </GenericTile>
+
           </layout:content>
         </layout:HorizontalLayout>
 

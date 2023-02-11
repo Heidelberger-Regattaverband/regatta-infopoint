@@ -68,6 +68,14 @@ async fn get_heats(
     Json(heats)
 }
 
+#[get("/regattas/{id}/heats_kiosk")]
+async fn get_heats_for_kiosk(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Heat>> {
+    let regatta_id = path.into_inner();
+
+    let heats = data.get_heats_for_kiosk(regatta_id).await.unwrap();
+    Json(heats)
+}
+
 #[get("/regattas/{id}/scoring")]
 async fn get_scoring(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Score>> {
     let regatta_id = path.into_inner();
