@@ -178,6 +178,29 @@ impl Aquarius {
         Ok(heats)
     }
 
+    pub async fn get_heats_for_kiosk(&self, regatta_id: i32) -> Result<Vec<Heat>> {
+        debug!("Query kiosk heats of regatta {} from DB", regatta_id);
+        let finished = self
+            ._execute_query(Heat::query_kiosk_finished(regatta_id))
+            .await;
+        let next = self
+            ._execute_query(Heat::query_kiosk_next(regatta_id))
+            .await;
+        let mut heats: Vec<Heat> = Vec::with_capacity(finished.len() + next.len());
+        for row in &finished {
+            let heat = Heat::from(row);
+            trace!("{:?}", heat);
+            heats.push(heat);
+        }
+        for row in &next {
+            let heat = Heat::from(row);
+            trace!("{:?}", heat);
+            heats.push(heat);
+        }
+
+        Ok(heats)
+    }
+
     pub async fn get_heat_registrations(&self, heat_id: i32) -> Result<Vec<HeatRegistration>> {
         // 1. try to get heat_registrations from cache
         if let Some(heat_regs) = self.cache.get_heat_regs(heat_id) {
