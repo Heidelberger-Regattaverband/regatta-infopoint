@@ -18,7 +18,7 @@
                 <layout:VerticalLayout width="100%">
                   <Title
                     text="Ergebnis Lauf: {path: 'heatFinished>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heatFinished', formatter: '.formatter.heatLabel'}" />
-                  <Label text="{heatFinished>/race/longLabel} {kiosk>finished/0/race/comment}" />
+                  <Label text="{heatFinished>/race/longLabel} {heatFinished>/race/comment}" />
 
                   <layout:HorizontalLayout class="sapUiContentPadding">
                     <ObjectAttribute title="{i18n>common.heatNr}" text="{heatFinished>/number}" />
@@ -26,7 +26,7 @@
                     <ObjectAttribute title="{i18n>common.time}" text="{path: 'heatFinished>/time', formatter: '.formatter.timeLabel'}" />
                     <ObjectAttribute title="{i18n>common.distance}"
                       text="{path: 'heatFinished>/race', formatter: '.formatter.distanceLabel'}" />
-                    <ObjectAttribute title="{i18n>common.state}" text="{path: 'heatFinished', formatter: '.formatter.stateLabel'}" />
+                    <ObjectAttribute title="{i18n>common.state}" text="{path: 'heatFinished>/state', formatter: '.formatter.stateLabel'}" />
                     <ObjectAttribute title="{i18n>common.refereeAbr}"
                       text="{heatFinished>/referee/lastName}, {heatFinished>/referee/firstName}" />
                   </layout:HorizontalLayout>
