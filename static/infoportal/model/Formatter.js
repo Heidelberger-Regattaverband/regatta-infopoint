@@ -82,6 +82,9 @@ sap.ui.define([
     },
 
     stateLabel: function (oHeat) {
+      if (!oHeat) {
+        return "";
+      }
       if (oHeat.cancelled) {
         return this.i18n("common.cancelled");
       } else {
@@ -104,6 +107,9 @@ sap.ui.define([
     },
 
     heatStateHighlight: function (oHeat) {
+      if (!oHeat) {
+        return "";
+      }
       // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
       if (oHeat.cancelled) {
         return IndicationColor.Indication02; // cancelled -> red
@@ -127,6 +133,9 @@ sap.ui.define([
     },
 
     heatLabel: function (oHeat) {
+      if (!oHeat) {
+        return "";
+      }
       let sGroupValue = "";
 
       if (oHeat.race.ageClass.numSubClasses > 0) {
