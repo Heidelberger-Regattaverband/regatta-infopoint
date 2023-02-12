@@ -11,18 +11,20 @@
       <content>
         <layout:ResponsiveSplitter defaultPane="default">
           <layout:PaneContainer orientation="Vertical">
+            <!-- Finished heat -->
             <layout:SplitPane>
+              <layout:layoutData>
+                <layout:SplitterLayoutData size="50%" resizable="true" />
+              </layout:layoutData>
 
-              <!-- Finished heat -->
               <Panel class="sapUiNoContentPadding">
-                <layout:VerticalLayout width="100%">
+                <layout:VerticalLayout>
                   <Title
                     text="Ergebnis Lauf: {path: 'heatFinished>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heatFinished>/', formatter: '.formatter.heatLabel'}" />
                   <Label text="{heatFinished>/race/longLabel} {heatFinished>/race/comment}" />
                 </layout:VerticalLayout>
 
-                <Table autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
-                  sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding"
+                <Table autoPopinMode="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding"
                   items="{path: 'regsFinished>/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}">
 
                   <columns>
@@ -86,14 +88,13 @@
             <layout:SplitPane>
               <Panel class="sapUiNoContentPadding">
                 <content>
-                  <layout:VerticalLayout width="100%">
+                  <layout:VerticalLayout>
                     <Title
                       text="Nächster Lauf: {path: 'heatNext>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heatNext>/', formatter: '.formatter.heatLabel'}" />
                     <Label text="{heatNext>/race/longLabel} {heatNext>/race/comment}" />
                   </layout:VerticalLayout>
 
-                  <Table autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
-                    sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding"
+                  <Table autoPopinMode="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding"
                     items="{path: 'regsNext>/', sorter: [{path: 'bib', descending: false}]}">
 
                     <columns>

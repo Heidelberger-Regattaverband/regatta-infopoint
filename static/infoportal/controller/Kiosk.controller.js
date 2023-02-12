@@ -15,6 +15,11 @@ sap.ui.define([
       this._iIndexFinished = 0;
       this._iIndexNext = 0;
 
+      this._oHeatFinishedModel = new JSONModel();
+      this.getView().setModel(this._oHeatFinishedModel, "heatFinished");
+      this._oHeatNextModel = new JSONModel();
+      this.getView().setModel(this._oHeatNextModel, "heatNext");
+
       this.getRouter().getRoute("kiosk").attachMatched(_ => {
         this._loadKioskModel();
         this._iIntervalId = setInterval(this._updateModels.bind(this), 10000);
@@ -45,8 +50,8 @@ sap.ui.define([
       }
 
       const oData = this._oKioskModel.getData();
-      this._updateHeatFinishedModel(oData.finished[this._iIndexFinished]);
-      this._updateHeatNextModel(oData.next[this._iIndexNext]);
+      this._oHeatFinishedModel.setData(oData.finished[this._iIndexFinished]);
+      this._oHeatNextModel.setData(oData.next[this._iIndexNext]);
 
       await Promise.all([this._loadRegsFinishedModel(oData.finished[this._iIndexFinished].id), this._loadRegsNextModel(oData.next[this._iIndexNext].id)]);
     },
@@ -78,22 +83,6 @@ sap.ui.define([
       }
 
       this._updateModels();
-    },
-
-    _updateHeatFinishedModel(oFinished) {
-      if (!this._oHeatFinishedModel) {
-        this._oHeatFinishedModel = new JSONModel();
-        this.getView().setModel(this._oHeatFinishedModel, "heatFinished");
-      }
-      this._oHeatFinishedModel.setData(oFinished);
-    },
-
-    _updateHeatNextModel(oNext) {
-      if (!this._oHeatNextModel) {
-        this._oHeatNextModel = new JSONModel();
-        this.getView().setModel(this._oHeatNextModel, "heatNext");
-      }
-      this._oHeatNextModel.setData(oNext);
     },
 
     _getKioskUrl: function () {
