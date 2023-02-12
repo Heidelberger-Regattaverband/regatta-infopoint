@@ -17,7 +17,7 @@ sap.ui.define([
 
       this.getRouter().getRoute("kiosk").attachMatched(_ => {
         this._loadKioskModel();
-        this._iIntervalId = setInterval(this._updateModels.bind(this), 5000);
+        this._iIntervalId = setInterval(this._updateModels.bind(this), 10000);
       }, this);
 
     },

@@ -138,7 +138,7 @@ sap.ui.define([
       }
       let sGroupValue = "";
 
-      if (oHeat.race.ageClass.numSubClasses > 0) {
+      if (oHeat.race && oHeat.race.ageClass.numSubClasses > 0) {
         const PREFIX = " - AK ";
         switch (oHeat.groupValue) {
           case 0:
