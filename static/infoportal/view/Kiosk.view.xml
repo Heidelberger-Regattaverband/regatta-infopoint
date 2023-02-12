@@ -19,17 +19,6 @@
                   <Title
                     text="Ergebnis Lauf: {path: 'heatFinished>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heatFinished', formatter: '.formatter.heatLabel'}" />
                   <Label text="{heatFinished>/race/longLabel} {heatFinished>/race/comment}" />
-
-                  <layout:HorizontalLayout class="sapUiContentPadding">
-                    <ObjectAttribute title="{i18n>common.heatNr}" text="{heatFinished>/number}" />
-                    <ObjectAttribute title="{i18n>common.day}" text="{path: 'heatFinished>/date', formatter: '.formatter.dateLabel'}" />
-                    <ObjectAttribute title="{i18n>common.time}" text="{path: 'heatFinished>/time', formatter: '.formatter.timeLabel'}" />
-                    <ObjectAttribute title="{i18n>common.distance}"
-                      text="{path: 'heatFinished>/race', formatter: '.formatter.distanceLabel'}" />
-                    <ObjectAttribute title="{i18n>common.state}" text="{path: 'heatFinished>/state', formatter: '.formatter.stateLabel'}" />
-                    <ObjectAttribute title="{i18n>common.refereeAbr}"
-                      text="{heatFinished>/referee/lastName}, {heatFinished>/referee/firstName}" />
-                  </layout:HorizontalLayout>
                 </layout:VerticalLayout>
 
                 <Table autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
@@ -99,21 +88,13 @@
                 <content>
                   <layout:VerticalLayout width="100%">
                     <Title
-                      text="Nächster Lauf: {path: 'heatNext>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heatNext', formatter: '.formatter.heatLabel'}" />
+                      text="Nächster Lauf: {path: 'heatNext>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heatNext>', formatter: '.formatter.heatLabel'}" />
                     <Label text="{heatNext>/race/longLabel} {heatNext>/race/comment}" />
-
-                    <layout:HorizontalLayout class="sapUiContentPadding">
-                      <ObjectAttribute title="{i18n>common.heatNr}" text="{heatNext>/number}" />
-                      <ObjectAttribute title="{i18n>common.day}" text="{path: 'heatNext>/date', formatter: '.formatter.dateLabel'}" />
-                      <ObjectAttribute title="{i18n>common.time}" text="{path: 'heatNext>/time', formatter: '.formatter.timeLabel'}" />
-                      <ObjectAttribute title="{i18n>common.distance}" text="{path: 'heatNext>/race', formatter: '.formatter.distanceLabel'}" />
-                      <ObjectAttribute title="{i18n>common.state}" text="{path: 'heatNext>/state', formatter: '.formatter.stateLabel'}" />
-                    </layout:HorizontalLayout>
                   </layout:VerticalLayout>
 
                   <Table autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
                     sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding"
-                    items="{path: 'regsNext>/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}">
+                    items="{path: 'regsNext>/', sorter: [{path: 'bib', descending: false}]}">
 
                     <columns>
                       <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
