@@ -17,7 +17,7 @@
               <Panel class="sapUiNoContentPadding">
                 <layout:VerticalLayout width="100%">
                   <Title
-                    text="Ergebnis Lauf: {path: 'heatFinished>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heatFinished', formatter: '.formatter.heatLabel'}" />
+                    text="Ergebnis Lauf: {path: 'heatFinished>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heatFinished>/', formatter: '.formatter.heatLabel'}" />
                   <Label text="{heatFinished>/race/longLabel} {heatFinished>/race/comment}" />
                 </layout:VerticalLayout>
 
@@ -88,7 +88,7 @@
                 <content>
                   <layout:VerticalLayout width="100%">
                     <Title
-                      text="Nächster Lauf: {path: 'heatNext>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heatNext>', formatter: '.formatter.heatLabel'}" />
+                      text="Nächster Lauf: {path: 'heatNext>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heatNext>/', formatter: '.formatter.heatLabel'}" />
                     <Label text="{heatNext>/race/longLabel} {heatNext>/race/comment}" />
                   </layout:VerticalLayout>
 
