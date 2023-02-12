@@ -24,14 +24,15 @@ sap.ui.define([
       return "";
     },
 
-    boatLabel: function (sShortLabel, iBoatNumber, sComment) {
-      if (iBoatNumber > 0) {
-        return sShortLabel + " - Boot " + iBoatNumber;
+    boatLabel: function (oRegistration) {
+      let sLabel = "" + oRegistration.shortLabel;
+      if (oRegistration.boatNumber > 0) {
+        sLabel += " - Boot " + oRegistration.boatNumber;
       }
-      if (sComment) {
-        sShortLabel += "  (" + sComment + ")";
+      if (oRegistration.comment) {
+        sLabel += "  (" + oRegistration.comment + ")";
       }
-      return sShortLabel;
+      return sLabel;
     },
 
     raceLabel: function (oRace) {

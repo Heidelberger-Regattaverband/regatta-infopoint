@@ -12,18 +12,18 @@
         <!-- Finished heat -->
         <layout:VerticalLayout width="100%">
           <Title
-            text="Ergebnis Lauf: {path: 'heats>/0/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heats>/0/', formatter: '.formatter.heatLabel'}"
-            wrapping="true" />
-          <Label text="{heats>/0/race/longLabel} {heats>/0/race/comment}" />
+            text="Ergebnis Lauf: {path: 'kiosk>/finished/0/race', formatter: '.formatter.nrRaceLabel'}, {path: 'kiosk>/finished/0/', formatter: '.formatter.heatLabel'}" />
+          <Label text="{kiosk>/finished/0/race/longLabel} {kiosk>finished/0/race/comment}" />
 
           <layout:HorizontalLayout class="sapUiContentPadding">
-            <ObjectAttribute title="{i18n>common.heatNr}" text="{heats>/0/number}" />
-            <ObjectAttribute title="{i18n>common.day}" text="{path: 'heats>/0/date', formatter: '.formatter.dateLabel'}" />
-            <ObjectAttribute title="{i18n>common.time}" text="{path: 'heats>/0/time', formatter: '.formatter.timeLabel'}" />
-            <ObjectAttribute title="{i18n>common.distance}" text="{path: 'heats>/0/race', formatter: '.formatter.distanceLabel'}" />
-            <ObjectAttribute title="{i18n>common.state}" text="{path: 'heats>/0/', formatter: '.formatter.stateLabel'}" />
-            <ObjectAttribute title="{i18n>common.refereeAbr}" text="{heats>/0/referee/lastName}, {heats>/0/referee/firstName}"
-              visible="{= ${heats>/0/referee/firstName} !== '' || ${heats>/0/referee/lastName} !== ''}" />
+            <ObjectAttribute title="{i18n>common.heatNr}" text="{kiosk>/finished/0/number}" />
+            <ObjectAttribute title="{i18n>common.day}" text="{path: 'kiosk>/finished/0/date', formatter: '.formatter.dateLabel'}" />
+            <ObjectAttribute title="{i18n>common.time}" text="{path: 'kiosk>/finished/0/time', formatter: '.formatter.timeLabel'}" />
+            <ObjectAttribute title="{i18n>common.distance}" text="{path: 'kiosk>/finished/0/race', formatter: '.formatter.distanceLabel'}" />
+            <ObjectAttribute title="{i18n>common.state}" text="{path: 'kiosk>/finished/0/', formatter: '.formatter.stateLabel'}" />
+            <ObjectAttribute title="{i18n>common.refereeAbr}"
+              text="{kiosk>/finished/0/referee/lastName}, {kiosk>/finished/0/referee/firstName}"
+              visible="{= ${kiosk>/finished/0/referee/firstName} !== '' || ${kiosk>/finished/0/referee/lastName} !== ''}" />
           </layout:HorizontalLayout>
         </layout:VerticalLayout>
 
@@ -32,7 +32,7 @@
           items="{path: 'finished>/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}">
 
           <columns>
-            <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline" visible="{= ${heats>/0/state} >= 4 }">
+            <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.rank}" class="bold" wrapping="false" />
               </header>
@@ -52,17 +52,17 @@
                 <Text text="{i18n>heatRegistrationTable.column.lane}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column hAlign="End" width="4rem" importance="High" popinDisplay="Inline" visible="{= ${heats>/0/state} >= 4 }">
+            <Column hAlign="End" width="4rem" importance="High" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>heatRegistrationTable.column.result}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column hAlign="End" width="4rem" importance="Low" popinDisplay="Inline" visible="{= ${heats>/0/state} >= 4 }">
+            <Column hAlign="End" width="4rem" importance="Low" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>heatRegistrationTable.column.delta}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline" visible="{= ${heats>/0/state} >= 4 }">
+            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.points}" class="bold" wrapping="false" />
               </header>
@@ -75,7 +75,7 @@
                 <Text text="{finished>result/rankLabel}" />
                 <Text text="{finished>registration/bib}" />
                 <ObjectIdentifier
-                  title="{parts: [{path:'finished>registration/shortLabel'},{path:'finished>registration/boatNumber'},{path:'finished>registration/comment'}],formatter: '.formatter.boatLabel'}"
+                  title="{path: 'finished>registration',formatter: '.formatter.boatLabel'}"
                   text="{path: 'finished>registration/crew', formatter: '.formatter.crewLabel'} " />
                 <Text text="{finished>lane}" />
                 <Text text="{finished>result/result}" />
@@ -91,18 +91,17 @@
         <layout:VerticalLayout>
 
           <Title
-            text="Nächster Lauf: {path: 'heats>/1/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heats>/1/', formatter: '.formatter.heatLabel'}"
-            wrapping="true" />
-          <Label text="{heats>/1/race/longLabel} {heats>/1/race/comment}" />
+            text="Nächster Lauf: {path: 'kiosk>/next/0/race', formatter: '.formatter.nrRaceLabel'}, {path: 'kiosk>/next/0/', formatter: '.formatter.heatLabel'}" />
+          <Label text="{kiosk>/next/0/race/longLabel} {kiosk>/next/0/race/comment}" />
 
           <layout:HorizontalLayout class="sapUiContentPadding">
-            <ObjectAttribute title="{i18n>common.heatNr}" text="{heats>/1/number}" />
-            <ObjectAttribute title="{i18n>common.day}" text="{path: 'heats>/1/date', formatter: '.formatter.dateLabel'}" />
-            <ObjectAttribute title="{i18n>common.time}" text="{path: 'heats>/1/time', formatter: '.formatter.timeLabel'}" />
-            <ObjectAttribute title="{i18n>common.distance}" text="{path: 'heats>/1/race', formatter: '.formatter.distanceLabel'}" />
-            <ObjectAttribute title="{i18n>common.state}" text="{path: 'heats>/1/', formatter: '.formatter.stateLabel'}" />
-            <ObjectAttribute title="{i18n>common.refereeAbr}" text="{heats>/1/referee/lastName}, {heats>/1/referee/firstName}"
-              visible="{= ${heats>/1/referee/firstName} !== '' || ${heats>/1/referee/lastName} !== ''}" />
+            <ObjectAttribute title="{i18n>common.heatNr}" text="{kiosk>/next/0/number}" />
+            <ObjectAttribute title="{i18n>common.day}" text="{path: 'kiosk>/next/0/date', formatter: '.formatter.dateLabel'}" />
+            <ObjectAttribute title="{i18n>common.time}" text="{path: 'kiosk>/next/0/time', formatter: '.formatter.timeLabel'}" />
+            <ObjectAttribute title="{i18n>common.distance}" text="{path: 'kiosk>/next/0/race', formatter: '.formatter.distanceLabel'}" />
+            <ObjectAttribute title="{i18n>common.state}" text="{path: 'kiosk>/next/0/', formatter: '.formatter.stateLabel'}" />
+            <ObjectAttribute title="{i18n>common.refereeAbr}" text="{kiosk>/next/0/referee/lastName}, {kiosk>/next/0/referee/firstName}"
+              visible="{= ${kiosk>/next/0/referee/firstName} !== '' || ${kiosk>/next/0/referee/lastName} !== ''}" />
           </layout:HorizontalLayout>
         </layout:VerticalLayout>
 
@@ -111,11 +110,6 @@
           items="{path: 'next>/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}">
 
           <columns>
-            <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline" visible="{= ${heats>/1/state} >= 4 }">
-              <header>
-                <Text text="{i18n>common.rank}" class="bold" wrapping="false" />
-              </header>
-            </Column>
             <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.bib}" class="bold" wrapping="false" />
@@ -131,35 +125,15 @@
                 <Text text="{i18n>heatRegistrationTable.column.lane}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column hAlign="End" width="4rem" importance="High" popinDisplay="Inline" visible="{= ${heats>/1/state} >= 4 }">
-              <header>
-                <Text text="{i18n>heatRegistrationTable.column.result}" class="bold" wrapping="false" />
-              </header>
-            </Column>
-            <Column hAlign="End" width="4rem" importance="Low" popinDisplay="Inline" visible="{= ${heats>/1/state} >= 4 }">
-              <header>
-                <Text text="{i18n>heatRegistrationTable.column.delta}" class="bold" wrapping="false" />
-              </header>
-            </Column>
-            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline" visible="{= ${heats>/1/state} >= 4 }">
-              <header>
-                <Text text="{i18n>common.points}" class="bold" wrapping="false" />
-              </header>
-            </Column>
           </columns>
 
           <items>
             <ColumnListItem vAlign="Top">
               <cells>
-                <Text text="{next>result/rankLabel}" />
                 <Text text="{next>registration/bib}" />
-                <ObjectIdentifier
-                  title="{parts: [{path:'next>registration/shortLabel'},{path:'next>registration/boatNumber'},{path:'next>registration/comment'}],formatter: '.formatter.boatLabel'}"
+                <ObjectIdentifier title="{path: 'next>registration', formatter: '.formatter.boatLabel'}"
                   text="{path: 'next>registration/crew', formatter: '.formatter.crewLabel'} " />
                 <Text text="{next>lane}" />
-                <Text text="{next>result/result}" />
-                <Text text="{= ${next>result/delta} !== '0.0' ? ${next>result/delta} : '-' }" />
-                <Text text="{next>result/points}" />
               </cells>
             </ColumnListItem>
           </items>

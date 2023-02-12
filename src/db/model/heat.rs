@@ -55,33 +55,33 @@ impl Heat {
     }
 
     pub(crate) fn query_kiosk_finished<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT TOP 1 c.*, ac.*, bc.*, r.*, rm.RaceMode_Title, hrv_o.*,
-          o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
-          FROM Comp AS c
-          FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
-          JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
-          FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
-          FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
-          JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
-          FULL OUTER JOIN CompReferee AS cr ON cr.CompReferee_Comp_ID_FK = c.Comp_ID
-          FULL OUTER JOIN Referee AS r ON r.Referee_ID = cr.CompReferee_Referee_ID_FK
-          WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 4 ORDER BY c.Comp_DateTime DESC");
+        let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, bc.*, r.*, rm.RaceMode_Title, hrv_o.*,
+            o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
+            FROM Comp AS c
+            FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
+            JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
+            FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
+            FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
+            JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
+            FULL OUTER JOIN CompReferee AS cr ON cr.CompReferee_Comp_ID_FK = c.Comp_ID
+            FULL OUTER JOIN Referee AS r ON r.Referee_ID = cr.CompReferee_Referee_ID_FK
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 4 ORDER BY c.Comp_DateTime DESC");
         query.bind(regatta_id);
         query
     }
 
     pub(crate) fn query_kiosk_next<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT TOP 1 c.*, ac.*, bc.*, r.*, rm.RaceMode_Title, hrv_o.*,
-        o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
-        FROM Comp AS c
-        FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
-        JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
-        FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
-        FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
-        JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
-        FULL OUTER JOIN CompReferee AS cr ON cr.CompReferee_Comp_ID_FK = c.Comp_ID
-        FULL OUTER JOIN Referee AS r ON r.Referee_ID = cr.CompReferee_Referee_ID_FK
-        WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 1 AND c.Comp_Cancelled = 0 ORDER BY c.Comp_DateTime ASC");
+        let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, bc.*, r.*, rm.RaceMode_Title, hrv_o.*,
+            o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
+            FROM Comp AS c
+            FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
+            JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
+            FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
+            FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
+            JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
+            FULL OUTER JOIN CompReferee AS cr ON cr.CompReferee_Comp_ID_FK = c.Comp_ID
+            FULL OUTER JOIN Referee AS r ON r.Referee_ID = cr.CompReferee_Referee_ID_FK
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 1 AND c.Comp_Cancelled = 0 ORDER BY c.Comp_DateTime ASC");
         query.bind(regatta_id);
         query
     }
@@ -105,7 +105,7 @@ impl HeatRegistration {
     }
 
     pub(crate) fn query_all<'a>(heat_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT	DISTINCT ce.*, e.Entry_Bib, e.Entry_ID, e.Entry_BoatNumber, e.Entry_Comment, e.Entry_CancelValue, l.Label_Short, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta, bc.BoatClass_NumRowers, cl.Club_ID, cl.Club_Abbr, cl.Club_City
+        let mut query = Query::new("SELECT DISTINCT ce.*, e.Entry_Bib, e.Entry_ID, e.Entry_BoatNumber, e.Entry_Comment, e.Entry_CancelValue, l.Label_Short, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta, bc.BoatClass_NumRowers, cl.Club_ID, cl.Club_Abbr, cl.Club_City
           FROM CompEntries AS ce
           JOIN Comp AS c ON ce.CE_Comp_ID_FK = c.Comp_ID
           JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
@@ -184,4 +184,11 @@ impl Referee {
             first_name,
         }
     }
+}
+
+#[derive(Debug, Serialize, Clone)]
+pub struct Kiosk {
+    pub finished: Vec<Heat>,
+    pub running: Vec<Heat>,
+    pub next: Vec<Heat>,
 }
