@@ -40,6 +40,12 @@ sap.ui.define([
     },
 
     _updateModels: async function () {
+      const oData = this._oKioskModel.getData();
+      this._oHeatFinishedModel.setData(oData.finished[this._iIndexFinished]);
+      this._oHeatNextModel.setData(oData.next[this._iIndexNext]);
+
+      await Promise.all([this._loadRegsFinishedModel(oData.finished[this._iIndexFinished].id), this._loadRegsNextModel(oData.next[this._iIndexNext].id)]);
+
       this._iIndexFinished += 1;
       this._iIndexNext += 1;
       if (this._iIndexFinished >= this._oKioskModel.getData().finished.length) {
@@ -48,12 +54,6 @@ sap.ui.define([
       if (this._iIndexNext >= this._oKioskModel.getData().next.length) {
         this._iIndexNext = 0;
       }
-
-      const oData = this._oKioskModel.getData();
-      this._oHeatFinishedModel.setData(oData.finished[this._iIndexFinished]);
-      this._oHeatNextModel.setData(oData.next[this._iIndexNext]);
-
-      await Promise.all([this._loadRegsFinishedModel(oData.finished[this._iIndexFinished].id), this._loadRegsNextModel(oData.next[this._iIndexNext].id)]);
     },
 
     _loadRegsFinishedModel: async function (iHeatId) {
