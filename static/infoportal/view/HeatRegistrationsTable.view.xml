@@ -99,9 +99,8 @@
                   <cells>
                     <Text text="{heatRegistrations>result/rankLabel}" />
                     <Text text="{heatRegistrations>registration/bib}" />
-                    <ObjectIdentifier
-                      title="{parts: [{path:'heatRegistrations>registration/shortLabel'},{path:'heatRegistrations>registration/boatNumber'},{path:'heatRegistrations>registration/comment'}],formatter: '.formatter.boatLabel'}"
-                      text="{path: 'heatRegistrations>registration/crew', formatter: '.formatter.crewLabel'} " />
+                    <ObjectIdentifier title="{path: 'heatRegistrations>registration', formatter: '.formatter.boatLabel'}"
+                      text="{path: 'heatRegistrations>registration/crew', formatter: '.formatter.crewLabel'}" />
                     <Text text="{heatRegistrations>lane}" />
                     <Text text="{heatRegistrations>result/result}" />
                     <Text text="{= ${heatRegistrations>result/delta} !== '0.0' ? ${heatRegistrations>result/delta} : '-' }" />

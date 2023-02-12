@@ -7,7 +7,7 @@
     <Page title="{i18n>common.registrations}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <content>
 
-        <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding" >
+        <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
           <!-- DynamicPage Title -->
           <f:title>
             <f:DynamicPageTitle>
@@ -85,9 +85,8 @@
                 <ColumnListItem highlight="{= ${raceRegistrations>cancelled} ? 'Indication02' : 'Indication04' }" vAlign="Top">
                   <cells>
                     <Text text="{raceRegistrations>bib}" />
-                    <ObjectIdentifier
-                      title="{parts:[{path: 'raceRegistrations>shortLabel'},{path: 'raceRegistrations>boatNumber'},{path: 'raceRegistrations>comment'}], formatter: '.formatter.boatLabel'}"
-                      text="{path: 'raceRegistrations>crew', formatter: '.formatter.crewLabel'} " />
+                    <ObjectIdentifier title="{path: 'raceRegistrations>', formatter: '.formatter.boatLabel'}"
+                      text="{path: 'raceRegistrations>crew', formatter: '.formatter.crewLabel'}" />
                     <Text text="{raceRegistrations>club/shortName}" />
                     <core:Icon src="{= ${raceRegistrations>cancelled} ? 'sap-icon://decline' : 'sap-icon://accept'}"
                       alt="{i18n>common.cancelled}" />

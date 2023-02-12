@@ -1,3 +1,5 @@
+use crate::db::model::heat::Kiosk;
+
 use super::{
     cache::Cache,
     model::{
@@ -178,27 +180,31 @@ impl Aquarius {
         Ok(heats)
     }
 
-    pub async fn get_heats_for_kiosk(&self, regatta_id: i32) -> Result<Vec<Heat>> {
-        debug!("Query kiosk heats of regatta {} from DB", regatta_id);
+    pub async fn get_kiosk(&self, regatta_id: i32) -> Result<Kiosk> {
         let finished = self
             ._execute_query(Heat::query_kiosk_finished(regatta_id))
             .await;
         let next = self
             ._execute_query(Heat::query_kiosk_next(regatta_id))
             .await;
-        let mut heats: Vec<Heat> = Vec::with_capacity(finished.len() + next.len());
+        let mut finished_heats: Vec<Heat> = Vec::with_capacity(finished.len());
         for row in &finished {
             let heat = Heat::from(row);
             trace!("{:?}", heat);
-            heats.push(heat);
+            finished_heats.push(heat);
         }
+        let mut next_heats: Vec<Heat> = Vec::with_capacity(next.len());
         for row in &next {
             let heat = Heat::from(row);
             trace!("{:?}", heat);
-            heats.push(heat);
+            next_heats.push(heat);
         }
 
-        Ok(heats)
+        Ok(Kiosk {
+            finished: finished_heats,
+            next: next_heats,
+            running: Vec::with_capacity(0),
+        })
     }
 
     pub async fn get_heat_registrations(&self, heat_id: i32) -> Result<Vec<HeatRegistration>> {
