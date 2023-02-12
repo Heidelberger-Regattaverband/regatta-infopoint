@@ -2,7 +2,7 @@
   xmlns:layout="sap.ui.layout">
   <mvc:content>
 
-    <Page title="Kiosk" class="sapUiContentPadding" showNavButton="true" navButtonPress="onNavBack">
+    <Page title="Kiosk" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
 
       <headerContent>
         <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
