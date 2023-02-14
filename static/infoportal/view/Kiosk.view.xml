@@ -18,14 +18,19 @@
               </layout:layoutData>
 
               <Panel class="sapUiNoContentPadding">
-                <layout:VerticalLayout>
-                  <Title
-                    text="Ergebnis Lauf: {path: 'heatFinished>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heatFinished>/', formatter: '.formatter.heatLabel'}" />
-                  <Label text="{heatFinished>/race/longLabel} {heatFinished>/race/comment}" />
-                </layout:VerticalLayout>
 
                 <Table autoPopinMode="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding"
                   items="{path: 'regsFinished>/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}">
+
+                  <headerToolbar>
+                    <OverflowToolbar>
+                      <layout:VerticalLayout>
+                        <Title
+                          text="Ergebnis Lauf: {path: 'heatFinished>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heatFinished>/', formatter: '.formatter.heatLabel'}" />
+                        <Label text="{heatFinished>/race/longLabel} {heatFinished>/race/comment}" />
+                      </layout:VerticalLayout>
+                    </OverflowToolbar>
+                  </headerToolbar>
 
                   <columns>
                     <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
@@ -88,15 +93,19 @@
             <layout:SplitPane>
               <Panel class="sapUiNoContentPadding">
                 <content>
-                  <layout:VerticalLayout>
-                    <Title
-                      text="Nächster Lauf: {path: 'heatNext>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heatNext>/', formatter: '.formatter.heatLabel'}" />
-                    <Label text="{heatNext>/race/longLabel} {heatNext>/race/comment}" />
-                  </layout:VerticalLayout>
 
                   <Table autoPopinMode="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding"
                     items="{path: 'regsNext>/', sorter: [{path: 'bib', descending: false}]}">
+                    <headerToolbar>
+                      <OverflowToolbar>
+                        <layout:VerticalLayout>
+                          <Title
+                            text="{path: 'heatNext>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heatNext>/', formatter: '.formatter.heatLabel'} um {path: 'heatNext>/time', formatter: '.formatter.timeLabel'}" />
+                          <Label text="{heatNext>/race/longLabel} {heatNext>/race/comment}" />
+                        </layout:VerticalLayout>
+                      </OverflowToolbar>
 
+                    </headerToolbar>
                     <columns>
                       <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
                         <header>
