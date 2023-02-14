@@ -181,12 +181,8 @@ impl Aquarius {
     }
 
     pub async fn get_kiosk(&self, regatta_id: i32) -> Result<Kiosk> {
-        let finished = self
-            ._execute_query(Heat::query_kiosk_finished(regatta_id))
-            .await;
-        let next = self
-            ._execute_query(Heat::query_kiosk_next(regatta_id))
-            .await;
+        let finished = self._execute_query(Kiosk::query_finished(regatta_id)).await;
+        let next = self._execute_query(Kiosk::query_next(regatta_id)).await;
         let mut finished_heats: Vec<Heat> = Vec::with_capacity(finished.len());
         for row in &finished {
             let heat = Heat::from(row);
