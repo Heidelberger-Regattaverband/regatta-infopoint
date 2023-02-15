@@ -100,7 +100,7 @@
                       <OverflowToolbar>
                         <layout:VerticalLayout>
                           <Title
-                            text="{path: 'heatNext>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heatNext>/', formatter: '.formatter.heatLabel'} um {path: 'heatNext>/time', formatter: '.formatter.timeLabel'}" />
+                            text="Lauf um {path: 'heatNext>/time', formatter: '.formatter.timeLabel'}: {path: 'heatNext>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heatNext>/', formatter: '.formatter.heatLabel'}" />
                           <Label text="{heatNext>/race/longLabel} {heatNext>/race/comment}" />
                         </layout:VerticalLayout>
                       </OverflowToolbar>
