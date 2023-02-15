@@ -1,4 +1,6 @@
 use crate::db::{model::race::Race, model::Registration, utils::Column};
+use actix_web_lab::__reexports::tracing::info;
+use log::trace;
 use serde::Serialize;
 use std::time::Duration;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
@@ -21,12 +23,22 @@ pub struct Heat {
     referee: Option<Referee>,
 }
 impl Heat {
-    pub fn from(row: &Row) -> Self {
+    pub fn from_rows(rows: &Vec<Row>) -> Vec<Heat> {
+        let mut heats: Vec<Heat> = Vec::with_capacity(rows.len());
+        for row in rows {
+            let heat = Heat::from_row(row);
+            trace!("{:?}", heat);
+            heats.push(heat);
+        }
+        heats
+    }
+
+    pub fn from_row(row: &Row) -> Self {
         let date_time: NaiveDateTime = Column::get(row, "Comp_DateTime");
 
         Heat {
             id: Column::get(row, "Comp_ID"),
-            race: Race::from(row),
+            race: Race::from_row(row),
             number: Column::get(row, "Comp_Number"),
             round_code: Column::get(row, "Comp_RoundCode"),
             label: Column::get(row, "Comp_Label"),
@@ -54,6 +66,25 @@ impl Heat {
         query.bind(regatta_id);
         query
     }
+
+    pub(crate) fn search<'a>(regatta_id: i32, filter: String) -> Query<'a> {
+        let sql = format!("SELECT DISTINCT c.*, ac.*, bc.*, r.*, rm.RaceMode_Title, hrv_o.*,
+          o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
+          FROM Comp AS c
+          FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
+          JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
+          FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
+          FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
+          JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
+          FULL OUTER JOIN CompReferee AS cr ON cr.CompReferee_Comp_ID_FK = c.Comp_ID
+          FULL OUTER JOIN Referee AS r ON r.Referee_ID = cr.CompReferee_Referee_ID_FK
+          WHERE c.Comp_Event_ID_FK = @P1 AND o.Offer_RaceNumber LIKE '{filter}'
+          ORDER BY c.Comp_DateTime ASC");
+        info!(sql);
+        let mut query = Query::new(sql);
+        query.bind(regatta_id);
+        query
+    }
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -68,23 +99,23 @@ impl HeatRegistration {
         HeatRegistration {
             id: Column::get(row, "CE_ID"),
             lane: Column::get(row, "CE_Lane"),
-            registration: Registration::from(row),
+            registration: Registration::from_row(row),
             result: HeatResult::from(row),
         }
     }
 
     pub(crate) fn query_all<'a>(heat_id: i32) -> Query<'a> {
         let mut query = Query::new("SELECT DISTINCT ce.*, e.Entry_Bib, e.Entry_ID, e.Entry_BoatNumber, e.Entry_Comment, e.Entry_CancelValue, l.Label_Short, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta, bc.BoatClass_NumRowers, cl.Club_ID, cl.Club_Abbr, cl.Club_City
-          FROM CompEntries AS ce
-          JOIN Comp AS c ON ce.CE_Comp_ID_FK = c.Comp_ID
-          JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
-          JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
-          FULL OUTER JOIN Entry AS e ON ce.CE_Entry_ID_FK = e.Entry_ID
-          FULL OUTER JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
-          FULL OUTER JOIN Label AS l ON el.EL_Label_ID_FK = l.Label_ID
-          FULL OUTER JOIN Result AS r ON r.Result_CE_ID_FK = ce.CE_ID
-          JOIN Club AS cl ON cl.Club_ID = e.Entry_OwnerClub_ID_FK
-          WHERE ce.CE_Comp_ID_FK = @P1 AND (r.Result_SplitNr = 64 OR r.Result_SplitNr IS NULL)
+            FROM CompEntries AS ce
+            JOIN Comp AS c ON ce.CE_Comp_ID_FK = c.Comp_ID
+            JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
+            JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
+            FULL OUTER JOIN Entry AS e ON ce.CE_Entry_ID_FK = e.Entry_ID
+            FULL OUTER JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
+            FULL OUTER JOIN Label AS l ON el.EL_Label_ID_FK = l.Label_ID
+            FULL OUTER JOIN Result AS r ON r.Result_CE_ID_FK = ce.CE_ID
+            JOIN Club AS cl ON cl.Club_ID = e.Entry_OwnerClub_ID_FK
+            WHERE ce.CE_Comp_ID_FK = @P1 AND (r.Result_SplitNr = 64 OR r.Result_SplitNr IS NULL)
             AND el.EL_RoundFrom <= c.Comp_Round AND c.Comp_Round <= el.EL_RoundTo");
         query.bind(heat_id);
         query

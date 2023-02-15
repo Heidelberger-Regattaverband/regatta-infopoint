@@ -36,7 +36,7 @@ pub struct Statistics {
 }
 
 impl Statistics {
-    pub(crate) fn from(row: &Row) -> Self {
+    pub(crate) fn from_row(row: &Row) -> Self {
         let races = RacesStatistics {
             all: Column::get(row, "races_all"),
             cancelled: Column::get(row, "races_cancelled"),
@@ -63,7 +63,7 @@ impl Statistics {
         }
     }
 
-    pub(crate) fn query_all<'a>(regatta_id: i32) -> Query<'a> {
+    pub(crate) fn query<'a>(regatta_id: i32) -> Query<'a> {
         let mut query = Query::new(
             "SELECT
             (SELECT COUNT(*) FROM Offer o WHERE o.Offer_Event_ID_FK = @P1) AS races_all,

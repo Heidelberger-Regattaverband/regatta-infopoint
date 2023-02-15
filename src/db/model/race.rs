@@ -13,7 +13,7 @@ pub struct AgeClass {
     num_sub_classes: u8,
 }
 impl AgeClass {
-    pub fn from(row: &Row) -> Option<Self> {
+    pub fn from_row(row: &Row) -> Option<Self> {
         if let Some(id) = Column::get(row, "AgeClass_ID") {
             let caption = Column::get(row, "AgeClass_Caption");
             let abbreviation = Column::get(row, "AgeClass_Abbr");
@@ -44,7 +44,7 @@ pub struct BoatClass {
     coxed: bool,
 }
 impl BoatClass {
-    pub fn from(row: &Row) -> Option<Self> {
+    pub fn from_row(row: &Row) -> Option<Self> {
         if let Some(id) = Column::get(row, "BoatClass_ID") {
             let caption = Column::get(row, "BoatClass_Caption");
             let abbreviation = Column::get(row, "BoatClass_Abbr");
@@ -86,7 +86,15 @@ pub struct Race {
     boat_class: Option<BoatClass>,
 }
 impl Race {
-    pub fn from(row: &Row) -> Self {
+    pub fn from_rows(rows: &Vec<Row>) -> Vec<Self> {
+        let mut races: Vec<Race> = Vec::with_capacity(rows.len());
+        for row in rows {
+            races.push(Race::from_row(row));
+        }
+        races
+    }
+
+    pub fn from_row(row: &Row) -> Self {
         let short_label: String = Column::get(row, "Offer_ShortLabel");
         let long_label: String = Column::get(row, "Offer_LongLabel");
         let comment: String = Column::get(row, "Offer_Comment");
@@ -103,8 +111,8 @@ impl Race {
             cancelled: Column::get(row, "Offer_Cancelled"),
             registrations_count: Column::get(row, "Registrations_Count"),
             seeded: Column::get(row, "isSet"),
-            age_class: AgeClass::from(row),
-            boat_class: BoatClass::from(row),
+            age_class: AgeClass::from_row(row),
+            boat_class: BoatClass::from_row(row),
         }
     }
 
