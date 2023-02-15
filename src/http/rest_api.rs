@@ -4,8 +4,9 @@ use crate::db::{
         heat::HeatRegistration,
         heat::{Heat, Kiosk},
         race::Race,
+        score::Score,
         statistics::Statistics,
-        Regatta, Registration, Score,
+        Regatta, Registration,
     },
 };
 use actix_web::{
@@ -16,29 +17,25 @@ use serde::Deserialize;
 
 #[get("/regattas")]
 async fn get_regattas(data: Data<Aquarius>) -> Json<Vec<Regatta>> {
-    let regattas = data.get_regattas().await.unwrap();
-    Json(regattas)
+    Json(data.get_regattas().await)
 }
 
 #[get("/regattas/{id}")]
 async fn get_regatta(path: Path<i32>, data: Data<Aquarius>) -> Json<Regatta> {
     let regatta_id = path.into_inner();
-    let regatta = data.get_regatta(regatta_id).await.unwrap();
-    Json(regatta)
+    Json(data.get_regatta(regatta_id).await)
 }
 
 #[get("/regattas/{id}/races")]
 async fn get_races(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Race>> {
     let regatta_id = path.into_inner();
-    let races = data.get_races(regatta_id).await.unwrap();
-    Json(races)
+    Json(data.get_races(regatta_id).await)
 }
 
 #[get("/regattas/{id}/statistics")]
 async fn get_statistics(path: Path<i32>, data: Data<Aquarius>) -> Json<Statistics> {
     let regatta_id = path.into_inner();
-    let stats = data.get_statistics(regatta_id).await.unwrap();
-    Json(stats)
+    Json(data.get_statistics(regatta_id).await)
 }
 
 #[get("/races/{id}")]
@@ -51,7 +48,7 @@ async fn get_race(path: Path<i32>, data: Data<Aquarius>) -> Json<Race> {
 #[get("/races/{id}/registrations")]
 async fn get_registrations(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Registration>> {
     let race_id = path.into_inner();
-    let races = data.get_registrations(race_id).await.unwrap();
+    let races = data.get_registrations(race_id).await;
     Json(races)
 }
 
@@ -62,12 +59,13 @@ async fn get_heats(
     data: Data<Aquarius>,
 ) -> Json<Vec<Heat>> {
     let regatta_id = path.into_inner();
+    let inner = odata_params.into_inner();
 
-    if let Some(expand) = odata_params.into_inner().expand {
+    if let Some(expand) = inner.expand {
         println!("{expand}");
     }
 
-    let heats = data.get_heats(regatta_id).await.unwrap();
+    let heats = data.get_heats(regatta_id, inner.filter).await;
     Json(heats)
 }
 
@@ -75,15 +73,14 @@ async fn get_heats(
 async fn get_kiosk(path: Path<i32>, data: Data<Aquarius>) -> Json<Kiosk> {
     let regatta_id = path.into_inner();
 
-    let kiosk = data.get_kiosk(regatta_id).await.unwrap();
+    let kiosk = data.get_kiosk(regatta_id).await;
     Json(kiosk)
 }
 
 #[get("/regattas/{id}/scoring")]
 async fn get_scoring(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Score>> {
     let regatta_id = path.into_inner();
-    let scoring = data.get_scoring(regatta_id).await.unwrap();
-    Json(scoring)
+    Json(data.get_scoring(regatta_id).await)
 }
 
 #[get("/heats/{id}/registrations")]
@@ -100,4 +97,7 @@ async fn get_heat_registrations(
 struct OData {
     #[serde(rename = "$expand")]
     expand: Option<String>,
+
+    #[serde(rename = "$filter")]
+    filter: Option<String>,
 }

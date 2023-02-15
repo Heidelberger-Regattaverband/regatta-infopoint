@@ -1,6 +1,7 @@
 pub mod crew;
 pub mod heat;
 pub mod race;
+pub mod score;
 pub mod statistics;
 
 use super::utils::Column;
@@ -20,7 +21,16 @@ pub struct Regatta {
     end_date: String,
 }
 impl Regatta {
-    pub fn from(row: &Row) -> Self {
+    pub fn from_rows(rows: &Vec<Row>) -> Vec<Self> {
+        let mut regattas: Vec<Regatta> = Vec::with_capacity(rows.len());
+        for row in rows {
+            let regatta = Regatta::from_row(row);
+            regattas.push(regatta);
+        }
+        regattas
+    }
+
+    pub fn from_row(row: &Row) -> Self {
         let start_date: NaiveDateTime = Column::get(row, "Event_StartDate");
         let end_date: NaiveDateTime = Column::get(row, "Event_EndDate");
 
@@ -59,7 +69,7 @@ pub struct Registration {
     pub(crate) crew: Option<Vec<Crew>>,
 }
 impl Registration {
-    pub fn from(row: &Row) -> Registration {
+    pub fn from_row(row: &Row) -> Registration {
         let cancel_value: u8 = Column::get(row, "Entry_CancelValue");
         let cancelled = cancel_value > 0;
         let id = Column::get(row, "Entry_ID");
@@ -105,33 +115,5 @@ impl Club {
             short_name: Column::get(row, "Club_Abbr"),
             city: Column::get(row, "Club_City"),
         }
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
-pub struct Score {
-    rank: i16,
-    points: f64,
-    club: Club,
-}
-impl Score {
-    pub(super) fn from(row: &Row) -> Self {
-        Score {
-            rank: Column::get(row, "rank"),
-            points: Column::get(row, "points"),
-            club: Club::from(row),
-        }
-    }
-
-    pub(super) fn query_all<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new(
-            "SELECT s.rank, s.points, c.Club_Name, c.Club_Abbr, c.Club_City
-            FROM HRV_Score s
-            JOIN Club AS c ON s.club_id = c.Club_ID
-            WHERE s.event_id = @P1
-            ORDER BY s.rank ASC",
-        );
-        query.bind(regatta_id);
-        query
     }
 }

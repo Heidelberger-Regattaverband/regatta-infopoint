@@ -1,4 +1,6 @@
-use super::model::{heat::Heat, heat::HeatRegistration, race::Race, Regatta, Registration, Score};
+use super::model::{
+    heat::Heat, heat::HeatRegistration, race::Race, score::Score, Regatta, Registration,
+};
 use log::{debug, trace};
 use std::time::Duration;
 use stretto::AsyncCache;
@@ -13,7 +15,7 @@ pub(super) struct Cache {
     scores: AsyncCache<i32, Vec<Score>>,
 }
 
-const TTL: Duration = Duration::from_secs(120);
+const TTL: Duration = Duration::from_secs(30);
 
 impl Cache {
     /// Creates a new `Cache`.
