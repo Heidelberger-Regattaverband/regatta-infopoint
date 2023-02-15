@@ -44,7 +44,7 @@
                   <ObjectAttribute title="{i18n>common.distance}" text="{path: 'heat>/race', formatter: '.formatter.distanceLabel'}" />
                   <ObjectAttribute title="{i18n>common.state}" text="{path: 'heat>/', formatter: '.formatter.stateLabel'}" />
                   <ObjectAttribute title="{i18n>common.refereeAbr}" text="{heat>/referee/lastName}, {heat>/referee/firstName}"
-                    visible="{= ${heat>/referee/firstName} !== '' || ${heat>/referee/lastName} !== ''}" />
+                    visible="{= ${heat>/referee} !== undefined }" />
                 </layout:VerticalLayout>
               </layout:HorizontalLayout>
             </f:DynamicPageHeader>

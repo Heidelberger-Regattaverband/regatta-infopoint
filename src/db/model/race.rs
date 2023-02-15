@@ -13,20 +13,23 @@ pub struct AgeClass {
     num_sub_classes: u8,
 }
 impl AgeClass {
-    pub fn from(row: &Row) -> Self {
-        let id = Column::get(row, "AgeClass_ID");
-        let caption = Column::get(row, "AgeClass_Caption");
-        let abbreviation = Column::get(row, "AgeClass_Abbr");
-        let suffix = Column::get(row, "AgeClass_Suffix");
-        let gender = Column::get(row, "AgeClass_Gender");
-        let num_sub_classes = Column::get(row, "AgeClass_NumSubClasses");
-        AgeClass {
-            id,
-            caption,
-            abbreviation,
-            suffix,
-            gender,
-            num_sub_classes,
+    pub fn from(row: &Row) -> Option<Self> {
+        if let Some(id) = Column::get(row, "AgeClass_ID") {
+            let caption = Column::get(row, "AgeClass_Caption");
+            let abbreviation = Column::get(row, "AgeClass_Abbr");
+            let suffix = Column::get(row, "AgeClass_Suffix");
+            let gender = Column::get(row, "AgeClass_Gender");
+            let num_sub_classes = Column::get(row, "AgeClass_NumSubClasses");
+            Some(AgeClass {
+                id,
+                caption,
+                abbreviation,
+                suffix,
+                gender,
+                num_sub_classes,
+            })
+        } else {
+            None
         }
     }
 }
@@ -41,18 +44,21 @@ pub struct BoatClass {
     coxed: bool,
 }
 impl BoatClass {
-    pub fn from(row: &Row) -> Self {
-        let id = Column::get(row, "BoatClass_ID");
-        let caption = Column::get(row, "BoatClass_Caption");
-        let abbreviation = Column::get(row, "BoatClass_Abbr");
-        let num_rowers = Column::get(row, "BoatClass_NumRowers");
-        let coxed: u8 = Column::get(row, "BoatClass_Coxed");
-        BoatClass {
-            id,
-            caption,
-            abbreviation,
-            num_rowers,
-            coxed: coxed > 0,
+    pub fn from(row: &Row) -> Option<Self> {
+        if let Some(id) = Column::get(row, "BoatClass_ID") {
+            let caption = Column::get(row, "BoatClass_Caption");
+            let abbreviation = Column::get(row, "BoatClass_Abbr");
+            let num_rowers = Column::get(row, "BoatClass_NumRowers");
+            let coxed: u8 = Column::get(row, "BoatClass_Coxed");
+            Some(BoatClass {
+                id,
+                caption,
+                abbreviation,
+                num_rowers,
+                coxed: coxed > 0,
+            })
+        } else {
+            None
         }
     }
 }
@@ -68,16 +74,16 @@ pub struct Race {
     comment: String,
     distance: i16,
     lightweight: bool,
-    #[serde(rename = "raceMode")]
-    race_mode: String,
+    #[serde(rename = "raceMode", skip_serializing_if = "Option::is_none")]
+    race_mode: Option<String>,
     cancelled: bool,
     #[serde(rename = "registrationsCount")]
     registrations_count: i32,
     seeded: bool,
-    #[serde(rename = "ageClass")]
-    age_class: AgeClass,
-    #[serde(rename = "boatClass")]
-    boat_class: BoatClass,
+    #[serde(rename = "ageClass", skip_serializing_if = "Option::is_none")]
+    age_class: Option<AgeClass>,
+    #[serde(rename = "boatClass", skip_serializing_if = "Option::is_none")]
+    boat_class: Option<BoatClass>,
 }
 impl Race {
     pub fn from(row: &Row) -> Self {

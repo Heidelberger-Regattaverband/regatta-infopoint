@@ -10,13 +10,17 @@ sap.ui.define([
 
       this.getRouter().getRoute("statistics").attachMatched(this._loadStatistics, this);
 
-      this.registrationsList = this.getView().byId("registrationsList");
-      this.racesList = this.getView().byId("racesList");
-      this.heatsList = this.getView().byId("heatsList");
+      this._oRegistrationsList = this.getView().byId("registrationsList");
+      this._oRacesList = this.getView().byId("racesList");
+      this._oHeatsList = this.getView().byId("heatsList");
     },
 
     onNavBack: function () {
       this.navBack("startpage");
+    },
+
+    onRefreshButtonPress: async function (oEvent) {
+      await this._loadStatistics();
     },
 
     _loadStatistics: async function () {
@@ -46,9 +50,9 @@ sap.ui.define([
     },
 
     _setBusy: function (bBusy) {
-      this.registrationsList.setBusy(bBusy);
-      this.racesList.setBusy(bBusy);
-      this.heatsList.setBusy(bBusy);
+      this._oRegistrationsList.setBusy(bBusy);
+      this._oRacesList.setBusy(bBusy);
+      this._oHeatsList.setBusy(bBusy);
     }
 
   });
