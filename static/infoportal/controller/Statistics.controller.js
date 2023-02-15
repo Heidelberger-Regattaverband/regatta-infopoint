@@ -1,6 +1,7 @@
 sap.ui.define([
-  "de/regatta_hd/infopoint/controller/Base.controller"
-], function (BaseController) {
+  "de/regatta_hd/infopoint/controller/Base.controller",
+  "sap/ui/model/json/JSONModel"
+], function (BaseController, JSONModel) {
   "use strict";
 
   return BaseController.extend("de.regatta_hd.infopoint.controller.Statistics", {
@@ -44,7 +45,7 @@ sap.ui.define([
       oStatistics.items.heats.push({ name: this.i18n("statistics.heats.pending"), value: oStatistics.heats.pending });
       oStatistics.items.heats.push({ name: this.i18n("statistics.heats.cancelled"), value: oStatistics.heats.cancelled });
 
-      this.setViewModel(oStatisticsModel, "statistics");
+      this.setViewModel(new JSONModel(oStatistics), "statistics");
 
       this._setBusy(false);
     },
