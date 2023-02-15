@@ -17,7 +17,8 @@ pub struct Heat {
     date: String,
     time: String,
     race: Race,
-    referee: Referee,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    referee: Option<Referee>,
 }
 impl Heat {
     pub fn from(row: &Row) -> Self {
@@ -135,21 +136,27 @@ impl HeatResult {
 
 #[derive(Debug, Serialize, Clone, Default)]
 pub struct Referee {
+    id: i32,
     #[serde(rename = "firstName")]
     first_name: String,
     #[serde(rename = "lastName")]
     last_name: String,
 }
 impl Referee {
-    fn from(row: &Row) -> Self {
-        let last_name: String = Column::get(row, "Referee_LastName");
-        let first_name: String = Column::get(row, "Referee_FirstName");
-        if last_name.is_empty() && first_name.is_empty() {
-            return Default::default();
-        }
-        Referee {
-            last_name,
-            first_name,
+    fn from(row: &Row) -> Option<Self> {
+        if let Some(id) = Column::get(row, "Referee_ID") {
+            let last_name: String = Column::get(row, "Referee_LastName");
+            let first_name: String = Column::get(row, "Referee_FirstName");
+            if last_name.is_empty() && first_name.is_empty() {
+                return None;
+            }
+            Some(Referee {
+                id,
+                last_name,
+                first_name,
+            })
+        } else {
+            None
         }
     }
 }
@@ -162,33 +169,25 @@ pub struct Kiosk {
 }
 impl Kiosk {
     pub(crate) fn query_finished<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, bc.*, r.*, rm.RaceMode_Title, hrv_o.*,
-        o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
-        FROM Comp AS c
-        FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
-        JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
-        FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
-        FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
-        JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
-        FULL OUTER JOIN CompReferee AS cr ON cr.CompReferee_Comp_ID_FK = c.Comp_ID
-        FULL OUTER JOIN Referee AS r ON r.Referee_ID = cr.CompReferee_Referee_ID_FK
-        WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 4 ORDER BY c.Comp_DateTime DESC");
+        let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, hrv_o.*,
+            o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
+            FROM Comp AS c
+            FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
+            FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
+            FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 4 ORDER BY c.Comp_DateTime DESC");
         query.bind(regatta_id);
         query
     }
 
     pub(crate) fn query_next<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, bc.*, r.*, rm.RaceMode_Title, hrv_o.*,
-        o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
-        FROM Comp AS c
-        FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
-        JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
-        FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
-        FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
-        JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
-        FULL OUTER JOIN CompReferee AS cr ON cr.CompReferee_Comp_ID_FK = c.Comp_ID
-        FULL OUTER JOIN Referee AS r ON r.Referee_ID = cr.CompReferee_Referee_ID_FK
-        WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 1 AND c.Comp_Cancelled = 0 ORDER BY c.Comp_DateTime ASC");
+        let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, hrv_o.*,
+            o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
+            FROM Comp AS c
+            FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
+            FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
+            FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 1 AND c.Comp_Cancelled = 0 ORDER BY c.Comp_DateTime ASC");
         query.bind(regatta_id);
         query
     }

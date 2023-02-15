@@ -51,8 +51,8 @@ sap.ui.define([
         });
     },
 
-    onRefreshButtonPress: function (oEvent) {
-      this.updateJSONModel(this._oRacesModel, "/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
+    onRefreshButtonPress: async function (oEvent) {
+      await this.updateJSONModel(this._oRacesModel, "/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
     },
 
     _loadRacesModel: async function () {

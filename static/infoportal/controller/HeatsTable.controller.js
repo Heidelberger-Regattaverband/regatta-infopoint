@@ -44,8 +44,8 @@ sap.ui.define([
       this.navBack("startpage");
     },
 
-    onRefreshButtonPress: function (oEvent) {
-      this.updateJSONModel(this._oHeatsModel, "/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
+    onRefreshButtonPress: async function (oEvent) {
+      await this.updateJSONModel(this._oHeatsModel, "/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
     },
 
     _loadHeatsModel: async function () {
