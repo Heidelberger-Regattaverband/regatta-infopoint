@@ -148,8 +148,8 @@ sap.ui.define([
 
     _growTable: function (iIndex) {
       const iActual = this.oTable.getGrowingInfo().actual;
-      if (iIndex >= iActual) {
-        this.oTable.setGrowingThreshold(iIndex + 10);
+      if (iIndex >= iActual - 5) {
+        this.oTable.setGrowingThreshold(iIndex + 5);
         const aAllFilters = this._aFilters.concat(this._aSearchFilters)
         this.oTable.getBinding("items").filter(aAllFilters);
       }
