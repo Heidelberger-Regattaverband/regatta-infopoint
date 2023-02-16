@@ -1,3 +1,4 @@
+pub mod column;
 pub mod crew;
 pub mod heat;
 pub mod race;

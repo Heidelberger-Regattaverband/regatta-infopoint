@@ -1,5 +1,4 @@
-use super::registration::Club;
-use crate::db::utils::Column;
+use super::{column::Column, registration::Club};
 use serde::Serialize;
 use tiberius::{Query, Row};
 

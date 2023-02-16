@@ -1,5 +1,4 @@
-use super::crew::Crew;
-use crate::db::utils::Column;
+use super::{column::Column, crew::Crew};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
