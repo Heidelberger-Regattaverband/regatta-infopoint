@@ -4,9 +4,10 @@ use crate::db::{
         heat::HeatRegistration,
         heat::{Heat, Kiosk},
         race::Race,
+        regatta::Regatta,
+        registration::Registration,
         score::Score,
         statistics::Statistics,
-        Regatta, Registration,
     },
 };
 use actix_web::{

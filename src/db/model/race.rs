@@ -12,6 +12,7 @@ pub struct AgeClass {
     #[serde(rename = "numSubClasses")]
     num_sub_classes: u8,
 }
+
 impl AgeClass {
     pub fn from_row(row: &Row) -> Option<Self> {
         if let Some(id) = Column::get(row, "AgeClass_ID") {
@@ -43,6 +44,7 @@ pub struct BoatClass {
     num_rowers: i32,
     coxed: bool,
 }
+
 impl BoatClass {
     pub fn from_row(row: &Row) -> Option<Self> {
         if let Some(id) = Column::get(row, "BoatClass_ID") {
@@ -85,6 +87,7 @@ pub struct Race {
     #[serde(rename = "boatClass", skip_serializing_if = "Option::is_none")]
     boat_class: Option<BoatClass>,
 }
+
 impl Race {
     pub fn from_rows(rows: &Vec<Row>) -> Vec<Self> {
         let mut races: Vec<Race> = Vec::with_capacity(rows.len());
@@ -116,7 +119,7 @@ impl Race {
         }
     }
 
-    pub(crate) fn query_all<'a>(regatta_id: i32) -> Query<'a> {
+    pub fn query_all<'a>(regatta_id: i32) -> Query<'a> {
         let mut query = Query::new("SELECT DISTINCT o.*, ac.*, bc.*, rm.*, hrv_o.*,
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count
             FROM Offer o
@@ -129,7 +132,7 @@ impl Race {
         query
     }
 
-    pub(crate) fn query_single<'a>(race_id: i32) -> Query<'a> {
+    pub fn query_single<'a>(race_id: i32) -> Query<'a> {
         let mut query = Query::new("SELECT o.*, rm.*,
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count
             FROM Offer o
