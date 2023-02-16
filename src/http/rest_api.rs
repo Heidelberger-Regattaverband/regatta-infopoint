@@ -41,8 +41,7 @@ async fn get_statistics(path: Path<i32>, data: Data<Aquarius>) -> Json<Statistic
 #[get("/races/{id}")]
 async fn get_race(path: Path<i32>, data: Data<Aquarius>) -> Json<Race> {
     let race_id = path.into_inner();
-    let race = data.get_race(race_id).await.unwrap();
-    Json(race)
+    Json(data.get_race(race_id).await)
 }
 
 #[get("/races/{id}/registrations")]
@@ -89,7 +88,7 @@ async fn get_heat_registrations(
     data: Data<Aquarius>,
 ) -> Json<Vec<HeatRegistration>> {
     let heat_id = path.into_inner();
-    let heat_registrations = data.get_heat_registrations(heat_id).await.unwrap();
+    let heat_registrations = data.get_heat_registrations(heat_id).await;
     Json(heat_registrations)
 }
 
