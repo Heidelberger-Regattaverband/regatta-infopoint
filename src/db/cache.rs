@@ -1,5 +1,6 @@
 use super::model::{
-    heat::Heat, heat::HeatRegistration, race::Race, score::Score, Regatta, Registration,
+    heat::Heat, heat::HeatRegistration, race::Race, regatta::Regatta, registration::Registration,
+    score::Score,
 };
 use log::{debug, trace};
 use std::time::Duration;

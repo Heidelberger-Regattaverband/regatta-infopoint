@@ -1,4 +1,7 @@
-use crate::db::{model::race::Race, model::Registration, utils::Column};
+use crate::db::{
+    model::{race::Race, registration::Registration},
+    utils::Column,
+};
 use actix_web_lab::__reexports::tracing::info;
 use log::trace;
 use serde::Serialize;
@@ -22,6 +25,7 @@ pub struct Heat {
     #[serde(skip_serializing_if = "Option::is_none")]
     referee: Option<Referee>,
 }
+
 impl Heat {
     pub fn from_rows(rows: &Vec<Row>) -> Vec<Heat> {
         let mut heats: Vec<Heat> = Vec::with_capacity(rows.len());
@@ -94,6 +98,7 @@ pub struct HeatRegistration {
     result: HeatResult,
     pub registration: Registration,
 }
+
 impl HeatRegistration {
     pub fn from(row: &Row) -> Self {
         HeatRegistration {

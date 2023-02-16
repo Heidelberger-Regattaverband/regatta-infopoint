@@ -1,4 +1,4 @@
-use super::Club;
+use super::registration::Club;
 use crate::db::utils::Column;
 use serde::Serialize;
 use tiberius::{Query, Row};
@@ -23,7 +23,7 @@ impl Score {
         Score {
             rank: Column::get(row, "rank"),
             points: Column::get(row, "points"),
-            club: Club::from(row),
+            club: Club::from_row(row),
         }
     }
 
