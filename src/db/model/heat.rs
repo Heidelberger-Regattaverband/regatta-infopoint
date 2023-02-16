@@ -1,7 +1,4 @@
-use crate::db::{
-    model::{race::Race, registration::Registration},
-    utils::Column,
-};
+use super::{column::Column, race::Race, registration::Registration};
 use actix_web_lab::__reexports::tracing::info;
 use log::trace;
 use serde::Serialize;

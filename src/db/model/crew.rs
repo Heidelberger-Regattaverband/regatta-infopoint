@@ -1,4 +1,4 @@
-use crate::db::utils::Column;
+use super::column::Column;
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
 
