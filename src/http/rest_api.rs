@@ -48,8 +48,7 @@ async fn get_race(path: Path<i32>, data: Data<Aquarius>) -> Json<Race> {
 #[get("/races/{id}/registrations")]
 async fn get_registrations(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Registration>> {
     let race_id = path.into_inner();
-    let races = data.get_registrations(race_id).await;
-    Json(races)
+    Json(data.get_registrations(race_id).await)
 }
 
 #[get("/regattas/{id}/heats")]
@@ -59,22 +58,14 @@ async fn get_heats(
     data: Data<Aquarius>,
 ) -> Json<Vec<Heat>> {
     let regatta_id = path.into_inner();
-    let inner = odata_params.into_inner();
-
-    if let Some(expand) = inner.expand {
-        println!("{expand}");
-    }
-
-    let heats = data.get_heats(regatta_id, inner.filter).await;
-    Json(heats)
+    let odata = odata_params.into_inner();
+    Json(data.get_heats(regatta_id, odata.filter).await)
 }
 
 #[get("/regattas/{id}/kiosk")]
 async fn get_kiosk(path: Path<i32>, data: Data<Aquarius>) -> Json<Kiosk> {
     let regatta_id = path.into_inner();
-
-    let kiosk = data.get_kiosk(regatta_id).await;
-    Json(kiosk)
+    Json(data.get_kiosk(regatta_id).await)
 }
 
 #[get("/regattas/{id}/scoring")]
@@ -89,14 +80,13 @@ async fn get_heat_registrations(
     data: Data<Aquarius>,
 ) -> Json<Vec<HeatRegistration>> {
     let heat_id = path.into_inner();
-    let heat_registrations = data.get_heat_registrations(heat_id).await;
-    Json(heat_registrations)
+    Json(data.get_heat_registrations(heat_id).await)
 }
 
 #[derive(Debug, Deserialize)]
 struct OData {
-    #[serde(rename = "$expand")]
-    expand: Option<String>,
+    // #[serde(rename = "$expand")]
+    // expand: Option<String>,
 
     #[serde(rename = "$filter")]
     filter: Option<String>,
