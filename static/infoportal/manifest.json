@@ -50,9 +50,6 @@
           ],
           "fallbackLocale": ""
         }
-      },
-      "": {
-        "type": "sap.ui.model.json.JSONModel"
       }
     },
     "routing": {
