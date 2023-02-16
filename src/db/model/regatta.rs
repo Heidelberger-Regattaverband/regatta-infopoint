@@ -1,4 +1,5 @@
 use super::column::Column;
+use crate::db::cache::CacheTrait;
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
 
@@ -15,10 +16,11 @@ pub struct Regatta {
 }
 
 impl Regatta {
-    pub fn from_rows(rows: &Vec<Row>) -> Vec<Self> {
+    pub async fn from_rows(rows: &Vec<Row>, cache: &dyn CacheTrait<i32, Regatta>) -> Vec<Self> {
         let mut regattas: Vec<Regatta> = Vec::with_capacity(rows.len());
         for row in rows {
             let regatta = Regatta::from_row(row);
+            cache.set(&regatta.id, &regatta).await;
             regattas.push(regatta);
         }
         regattas
