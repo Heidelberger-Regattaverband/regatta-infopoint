@@ -2,12 +2,55 @@ use super::model::{
     heat::Heat, heat::HeatRegistration, race::Race, regatta::Regatta, registration::Registration,
     score::Score,
 };
+use async_std::task;
+use async_trait::async_trait;
 use log::{debug, trace};
 use std::time::Duration;
 use stretto::AsyncCache;
 
+const MAX_COST: i64 = 1e6 as i64;
+
+#[async_trait]
+pub trait CacheTrait<K, T> {
+    fn get(&self, key: &K) -> Option<T>;
+
+    async fn set(&self, key: &K, value: &T);
+}
+
+pub struct RegattaCache {
+    cache: AsyncCache<i32, Regatta>,
+}
+impl RegattaCache {
+    pub fn new(size: usize) -> Self {
+        RegattaCache {
+            cache: AsyncCache::new(size, MAX_COST, task::spawn).unwrap(),
+        }
+    }
+}
+
+#[async_trait]
+impl CacheTrait<i32, Regatta> for RegattaCache {
+    fn get(self: &Self, key: &i32) -> Option<Regatta> {
+        let opt_value_ref = self.cache.get(&key);
+        if let Some(value_ref) = opt_value_ref {
+            let value = value_ref.value().clone();
+            value_ref.release();
+            Some(value)
+        } else {
+            None
+        }
+    }
+
+    async fn set(&self, key: &i32, value: &Regatta) {
+        self.cache
+            .insert_with_ttl(*key, value.clone(), 1, TTL)
+            .await;
+        self.cache.wait().await.unwrap();
+    }
+}
+
 pub(super) struct Cache {
-    regatta: AsyncCache<i32, Regatta>,
+    pub regatta: RegattaCache,
     races: AsyncCache<i32, Vec<Race>>,
     race: AsyncCache<i32, Race>,
     regs: AsyncCache<i32, Vec<Registration>>,
@@ -21,41 +64,19 @@ const TTL: Duration = Duration::from_secs(30);
 impl Cache {
     /// Creates a new `Cache`.
     pub(super) fn new() -> Self {
-        const MAX_COST: i64 = 1e6 as i64;
         const MAX_REGATTAS_COUNT: usize = 5;
         const MAX_RACES_COUNT: usize = 200;
         const MAX_HEATS_COUNT: usize = 350;
 
         Cache {
-            regatta: AsyncCache::new(MAX_REGATTAS_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
-            races: AsyncCache::new(MAX_REGATTAS_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
-            race: AsyncCache::new(MAX_RACES_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
-            regs: AsyncCache::new(MAX_RACES_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
-            heats: AsyncCache::new(MAX_REGATTAS_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
-            heat_regs: AsyncCache::new(MAX_HEATS_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
-            scores: AsyncCache::new(MAX_REGATTAS_COUNT, MAX_COST, async_std::task::spawn).unwrap(),
+            regatta: RegattaCache::new(MAX_REGATTAS_COUNT),
+            races: AsyncCache::new(MAX_REGATTAS_COUNT, MAX_COST, task::spawn).unwrap(),
+            race: AsyncCache::new(MAX_RACES_COUNT, MAX_COST, task::spawn).unwrap(),
+            regs: AsyncCache::new(MAX_RACES_COUNT, MAX_COST, task::spawn).unwrap(),
+            heats: AsyncCache::new(MAX_REGATTAS_COUNT, MAX_COST, task::spawn).unwrap(),
+            heat_regs: AsyncCache::new(MAX_HEATS_COUNT, MAX_COST, task::spawn).unwrap(),
+            scores: AsyncCache::new(MAX_REGATTAS_COUNT, MAX_COST, task::spawn).unwrap(),
         }
-    }
-
-    // regattas
-    pub(super) fn get_regatta(&self, regatta_id: i32) -> Option<Regatta> {
-        let opt_value_ref = self.regatta.get(&regatta_id);
-        // see also: https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html
-        if let Some(value_ref) = opt_value_ref {
-            let value = value_ref.value().clone();
-            value_ref.release();
-            debug!("Reading regatta {} from cache.", regatta_id);
-            trace!("From cache: {:?}", value);
-            return Some(value);
-        }
-        None
-    }
-
-    pub(super) async fn insert_regatta(&self, regatta: &Regatta) {
-        self.regatta
-            .insert_with_ttl(regatta.id, regatta.clone(), 1, TTL)
-            .await;
-        self.regatta.wait().await.unwrap();
     }
 
     // heats

@@ -1,5 +1,5 @@
 use super::{
-    cache::Cache,
+    cache::{Cache, CacheTrait},
     model::{
         crew::Crew, heat::Heat, heat::HeatRegistration, heat::Kiosk, race::Race, regatta::Regatta,
         registration::Registration, score::Score, statistics::Statistics,
@@ -28,7 +28,7 @@ impl Aquarius {
     pub async fn get_regattas(&self) -> Vec<Regatta> {
         debug!("Query all regattas from DB");
         let rows = self._execute_query(Regatta::query_all()).await;
-        Regatta::from_rows(&rows)
+        Regatta::from_rows(&rows, &self.cache.regatta).await
     }
 
     /// Tries to get the regatta from the cache or database
@@ -37,19 +37,20 @@ impl Aquarius {
     /// * `regatta_id` - The regatta identifier
     pub async fn get_regatta(&self, regatta_id: i32) -> Regatta {
         // 1. try to get regatta from cache
-        if let Some(regatta) = self.cache.get_regatta(regatta_id) {
+        if let Some(regatta) = self.cache.regatta.get(&regatta_id) {
+            info!("Getting regatta {} from cache.", regatta_id);
             return regatta;
         }
 
         // 2. read regatta from DB
-        debug!("Query regatta {} from DB", regatta_id);
+        info!("Query regatta {} from DB", regatta_id);
         let row = self
             ._execute_single_query(Regatta::query_single(regatta_id))
             .await;
         let regatta = Regatta::from_row(&row);
 
         // 3. store regatta in cache
-        self.cache.insert_regatta(&regatta).await;
+        self.cache.regatta.set(&regatta.id, &regatta).await;
 
         regatta
     }
