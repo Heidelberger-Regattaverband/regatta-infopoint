@@ -8,7 +8,6 @@ use super::{
     TiberiusPool,
 };
 use actix_web_lab::__reexports::tracing::info;
-use anyhow::{Ok, Result};
 use log::{debug, trace};
 use tiberius::{Query, Row};
 
@@ -81,10 +80,10 @@ impl Aquarius {
         Statistics::from_row(&row)
     }
 
-    pub async fn get_race(&self, race_id: i32) -> Result<Race> {
+    pub async fn get_race(&self, race_id: i32) -> Race {
         // 1. try to get race from cache
         if let Some(race) = self.cache.get_race(race_id) {
-            return Ok(race);
+            return race;
         }
 
         // 2. read race from DB
@@ -97,7 +96,7 @@ impl Aquarius {
         // 3. store race in cache
         self.cache.insert_race(&race).await;
 
-        Ok(race)
+        race
     }
 
     pub async fn get_registrations(&self, race_id: i32) -> Vec<Registration> {
@@ -114,11 +113,9 @@ impl Aquarius {
             let mut registration = Registration::from_row(row);
 
             let crew_rows = self._execute_query(Crew::query_all(registration.id)).await;
-            let mut crews: Vec<Crew> = Vec::with_capacity(crew_rows.len());
-            for crew_row in &crew_rows {
-                crews.push(Crew::from(crew_row));
-            }
-            registration.crew = Option::Some(crews);
+            let crews = Crew::from_rows(&crew_rows);
+
+            registration.crew = Some(crews);
             trace!("{:?}", registration);
             registrations.push(registration);
         }
@@ -167,10 +164,10 @@ impl Aquarius {
         }
     }
 
-    pub async fn get_heat_registrations(&self, heat_id: i32) -> Result<Vec<HeatRegistration>> {
+    pub async fn get_heat_registrations(&self, heat_id: i32) -> Vec<HeatRegistration> {
         // 1. try to get heat_registrations from cache
         if let Some(heat_regs) = self.cache.get_heat_regs(heat_id) {
-            return Ok(heat_regs);
+            return heat_regs;
         }
 
         // 2. read heat_registrations from DB
@@ -185,21 +182,16 @@ impl Aquarius {
             let crew_rows = self
                 ._execute_query(Crew::query_all(heat_registration.registration.id))
                 .await;
-            let mut crews: Vec<Crew> = Vec::with_capacity(crew_rows.len());
-
-            for crew_row in &crew_rows {
-                crews.push(Crew::from(crew_row));
-            }
+            let crews = Crew::from_rows(&crew_rows);
             heat_registration.registration.crew = Some(crews);
 
-            trace!("{:?}", heat_registration);
             heat_regs.push(heat_registration);
         }
 
         // 3. store heat_registrations in cache
         self.cache.insert_heat_regs(heat_id, &heat_regs).await;
 
-        Ok(heat_regs)
+        heat_regs
     }
 
     pub async fn get_scoring(&self, regatta_id: i32) -> Vec<Score> {
