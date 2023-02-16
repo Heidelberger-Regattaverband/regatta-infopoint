@@ -11,6 +11,9 @@ sap.ui.define([
 
       this.getRouter().getRoute("statistics").attachMatched(this._loadStatistics, this);
 
+      this._oStatisticsModel = new JSONModel();
+      this.setViewModel(this._oStatisticsModel, "statistics");
+
       this._oRegistrationsList = this.getView().byId("registrationsList");
       this._oRacesList = this.getView().byId("racesList");
       this._oHeatsList = this.getView().byId("heatsList");
@@ -45,7 +48,7 @@ sap.ui.define([
       oStatistics.items.heats.push({ name: this.i18n("statistics.heats.pending"), value: oStatistics.heats.pending });
       oStatistics.items.heats.push({ name: this.i18n("statistics.heats.cancelled"), value: oStatistics.heats.cancelled });
 
-      this.setViewModel(new JSONModel(oStatistics), "statistics");
+      this._oStatisticsModel.setData(oStatistics);
 
       this._setBusy(false);
     },
