@@ -16,10 +16,7 @@ pub struct Regatta {
 }
 
 impl Regatta {
-    pub async fn from_rows(
-        rows: &Vec<Row>,
-        cache: &dyn CacheTrait<Key = i32, Value = Regatta>,
-    ) -> Vec<Self> {
+    pub async fn from_rows(rows: &Vec<Row>, cache: &dyn CacheTrait<i32, Regatta>) -> Vec<Self> {
         let mut regattas: Vec<Regatta> = Vec::with_capacity(rows.len());
         for row in rows {
             let regatta = Regatta::from_row(row);
