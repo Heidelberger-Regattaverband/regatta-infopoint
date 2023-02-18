@@ -10,7 +10,7 @@ sap.ui.define([
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this.getRouter().getRoute("scoring").attachMatched(this._loadScoringModel, this);
+      this.getRouter().getRoute("scoring").attachMatched(async (_) => await this._loadScoringModel(), this);
 
       this.oTable = this.getView().byId("scoringTable");
     },

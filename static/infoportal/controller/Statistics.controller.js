@@ -9,7 +9,7 @@ sap.ui.define([
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this.getRouter().getRoute("statistics").attachMatched(this._loadStatistics, this);
+      this.getRouter().getRoute("statistics").attachMatched(async (_) => await this._loadStatistics(), this);
 
       this._oStatisticsModel = new JSONModel();
       this.setViewModel(this._oStatisticsModel, "statistics");
