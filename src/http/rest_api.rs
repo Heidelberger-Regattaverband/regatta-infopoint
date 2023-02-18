@@ -87,7 +87,6 @@ async fn get_heat_registrations(
 struct OData {
     // #[serde(rename = "$expand")]
     // expand: Option<String>,
-
     #[serde(rename = "$filter")]
     filter: Option<String>,
 }
