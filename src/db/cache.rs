@@ -4,7 +4,7 @@ use super::model::{
 };
 use async_std::task;
 use async_trait::async_trait;
-use log::{debug, trace};
+
 use std::{hash::Hash, time::Duration};
 use stretto::AsyncCache;
 
