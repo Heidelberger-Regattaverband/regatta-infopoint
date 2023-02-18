@@ -49,8 +49,8 @@ where
     type Key = K;
     type Value = V;
 
-    fn get(self: &Self, key: &K) -> Option<V> {
-        let opt_value_ref = self.cache.get(&key);
+    fn get(&self, key: &K) -> Option<V> {
+        let opt_value_ref = self.cache.get(key);
         if let Some(value_ref) = opt_value_ref {
             let value = value_ref.value().clone();
             value_ref.release();
