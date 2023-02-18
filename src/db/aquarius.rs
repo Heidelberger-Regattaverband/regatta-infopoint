@@ -57,7 +57,8 @@ impl Aquarius {
 
     pub async fn get_races(&self, regatta_id: i32) -> Vec<Race> {
         // 1. try to get races from cache
-        if let Some(races) = self.cache.get_races(regatta_id) {
+        if let Some(races) = self.cache.races.get(&regatta_id) {
+            info!("Getting races of regatta {} from cache.", regatta_id);
             return races;
         }
 
@@ -67,7 +68,7 @@ impl Aquarius {
         let races = Race::from_rows(&rows);
 
         // 3. store races in cache
-        self.cache.insert_races(regatta_id, &races).await;
+        self.cache.races.set(&regatta_id, &races).await;
 
         races
     }
@@ -83,7 +84,8 @@ impl Aquarius {
 
     pub async fn get_race(&self, race_id: i32) -> Race {
         // 1. try to get race from cache
-        if let Some(race) = self.cache.get_race(race_id) {
+        if let Some(race) = self.cache.race.get(&race_id) {
+            info!("Getting race {} from cache.", race_id);
             return race;
         }
 
@@ -95,14 +97,14 @@ impl Aquarius {
         let race = Race::from_row(&row);
 
         // 3. store race in cache
-        self.cache.insert_race(&race).await;
+        self.cache.race.set(&race.id, &race).await;
 
         race
     }
 
     pub async fn get_registrations(&self, race_id: i32) -> Vec<Registration> {
         // 1. try to get registrations from cache
-        if let Some(race_regs) = self.cache.get_registrations(race_id) {
+        if let Some(race_regs) = self.cache.regs.get(&race_id) {
             return race_regs;
         }
 
@@ -122,9 +124,7 @@ impl Aquarius {
         }
 
         // 3. store registrations in cache
-        self.cache
-            .insert_registrations(race_id, &registrations)
-            .await;
+        self.cache.regs.set(&race_id, &registrations).await;
 
         registrations
     }
@@ -168,7 +168,7 @@ impl Aquarius {
 
     pub async fn get_heat_registrations(&self, heat_id: i32) -> Vec<HeatRegistration> {
         // 1. try to get heat_registrations from cache
-        if let Some(heat_regs) = self.cache.get_heat_regs(heat_id) {
+        if let Some(heat_regs) = self.cache.heat_regs.get(&heat_id) {
             return heat_regs;
         }
 
@@ -191,14 +191,14 @@ impl Aquarius {
         }
 
         // 3. store heat_registrations in cache
-        self.cache.insert_heat_regs(heat_id, &heat_regs).await;
+        self.cache.heat_regs.set(&heat_id, &heat_regs).await;
 
         heat_regs
     }
 
     pub async fn get_scoring(&self, regatta_id: i32) -> Vec<Score> {
         // 1. try to get heat_registrations from cache
-        if let Some(scores) = self.cache.get_scores(regatta_id) {
+        if let Some(scores) = self.cache.scores.get(&regatta_id) {
             return scores;
         }
 
@@ -208,7 +208,7 @@ impl Aquarius {
         let scores = Score::from_rows(&rows);
 
         // 3. store scores in cache
-        self.cache.insert_scores(regatta_id, &scores).await;
+        self.cache.scores.set(&regatta_id, &scores).await;
 
         scores
     }
