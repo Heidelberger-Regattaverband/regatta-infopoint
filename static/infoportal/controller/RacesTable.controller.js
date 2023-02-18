@@ -16,7 +16,7 @@ sap.ui.define([
 
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this.getRouter().getRoute("races").attachMatched(this._loadRacesModel, this);
+      this.getRouter().getRoute("races").attachMatched(async (_) => await this._loadRacesModel(), this);
     },
 
     onItemPress: function (oEvent) {

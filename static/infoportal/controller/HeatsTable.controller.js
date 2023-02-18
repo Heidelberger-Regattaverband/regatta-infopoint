@@ -16,7 +16,7 @@ sap.ui.define([
 
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this.getRouter().getRoute("heats").attachMatched(this._loadHeatsModel, this);
+      this.getRouter().getRoute("heats").attachMatched(async (_) => await this._loadHeatsModel(), this);
     },
 
     onSelectionChange: function (oEvent) {
