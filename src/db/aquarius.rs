@@ -1,5 +1,5 @@
 use super::{
-    cache::{Cache, CacheTrait},
+    cache::{CacheTrait, Caches},
     model::{
         crew::Crew, heat::Heat, heat::HeatRegistration, heat::Kiosk, race::Race, regatta::Regatta,
         registration::Registration, score::Score, statistics::Statistics,
@@ -12,7 +12,7 @@ use log::{debug, trace};
 use tiberius::{Query, Row};
 
 pub struct Aquarius {
-    cache: Cache,
+    cache: Caches,
     pool: TiberiusPool,
 }
 
@@ -20,7 +20,7 @@ impl Aquarius {
     /// Create a new `Aquarius`.
     pub async fn new() -> Self {
         Aquarius {
-            cache: Cache::new(),
+            cache: Caches::new(),
             pool: PoolFactory::create_pool().await,
         }
     }
@@ -137,17 +137,18 @@ impl Aquarius {
         }
 
         // 1. try to get heats from cache
-        if let Some(heats) = self.cache.get_heats(regatta_id) {
+        if let Some(heats) = self.cache.heats.get(&regatta_id) {
+            info!("Getting heats of regatta {} from cache.", regatta_id);
             return heats;
         }
 
         // 2. read heats from DB
-        debug!("Query heats of regatta {} from DB", regatta_id);
+        info!("Query heats of regatta {} from DB", regatta_id);
         let rows = self._execute_query(Heat::query_all(regatta_id)).await;
         let heats: Vec<Heat> = Heat::from_rows(&rows);
 
         // 3. store heats in cache
-        self.cache.insert_heats(regatta_id, &heats).await;
+        self.cache.heats.set(&regatta_id, &heats).await;
 
         heats
     }
