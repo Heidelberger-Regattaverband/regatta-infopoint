@@ -53,11 +53,10 @@ impl Heat {
     }
 
     pub(crate) fn query_all<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT c.*, ac.*, bc.*, r.*, rm.RaceMode_Title, hrv_o.*,
+        let mut query = Query::new("SELECT DISTINCT c.*, ac.*, bc.*, r.*, hrv_o.*,
             o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
             FROM Comp AS c
             FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
-            JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
             FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
             FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
             JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
@@ -69,11 +68,10 @@ impl Heat {
     }
 
     pub(crate) fn search<'a>(regatta_id: i32, filter: String) -> Query<'a> {
-        let sql = format!("SELECT DISTINCT c.*, ac.*, bc.*, r.*, rm.RaceMode_Title, hrv_o.*,
+        let sql = format!("SELECT DISTINCT c.*, ac.*, bc.*, r.*, hrv_o.*,
           o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
           FROM Comp AS c
           FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
-          JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
           FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
           FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
           JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
