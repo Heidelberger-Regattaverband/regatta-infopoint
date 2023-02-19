@@ -38,7 +38,6 @@
               <layout:HorizontalLayout allowWrapping="true">
                 <layout:VerticalLayout class="sapUiMediumMarginEnd">
                   <ObjectAttribute title="{i18n>common.distance}" text="{path: 'race>/', formatter: '.formatter.distanceLabel'}" />
-                  <ObjectAttribute title="{i18n>common.raceMode}" text="{race>/raceMode}" />
                   <ObjectAttribute title="{i18n>common.seeded}" text="{= ${race>/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
                 </layout:VerticalLayout>
               </layout:HorizontalLayout>
@@ -74,22 +73,32 @@
                     <Text text="{i18n>common.clubRegistration}" class="bold" />
                   </header>
                 </Column>
-                <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
-                  <header>
-                    <Text text="{i18n>common.state}" class="bold" />
-                  </header>
-                </Column>
               </columns>
 
               <items>
                 <ColumnListItem highlight="{= ${raceRegistrations>cancelled} ? 'Indication02' : 'Indication04' }" vAlign="Top">
                   <cells>
-                    <Text text="{raceRegistrations>bib}" />
-                    <ObjectIdentifier title="{path: 'raceRegistrations>', formatter: '.formatter.boatLabel'}"
-                      text="{path: 'raceRegistrations>crew', formatter: '.formatter.crewLabel'}" />
-                    <Text text="{raceRegistrations>club/shortName}" />
-                    <core:Icon src="{= ${raceRegistrations>cancelled} ? 'sap-icon://decline' : 'sap-icon://accept'}"
-                      alt="{i18n>common.cancelled}" />
+                    <layout:VerticalLayout>
+                      <Text text="{raceRegistrations>bib}" visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />
+                      <Text text="{raceRegistrations>bib}" visible="{= !${raceRegistrations>cancelled}}" />
+                    </layout:VerticalLayout>
+
+                    <layout:VerticalLayout>
+                      <Text text="{path: 'raceRegistrations>', formatter: '.formatter.boatLabel'}"
+                        class="boldCancelled sapUiTinyMarginBottom" visible="{= ${raceRegistrations>cancelled}}" />
+                      <Text text="{path: 'raceRegistrations>', formatter: '.formatter.boatLabel'}"
+                        class="bold sapUiTinyMarginBottom" visible="{= !${raceRegistrations>cancelled}}" />
+
+                      <Text text="{path: 'raceRegistrations>crew', formatter: '.formatter.crewLabel'}"
+                        visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />
+                      <Text text="{path: 'raceRegistrations>crew', formatter: '.formatter.crewLabel'}"
+                        visible="{= !${raceRegistrations>cancelled}}" />
+                    </layout:VerticalLayout>
+
+                    <layout:VerticalLayout>
+                      <Text text="{raceRegistrations>club/shortName}" visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />
+                      <Text text="{raceRegistrations>club/shortName}" visible="{= !${raceRegistrations>cancelled}}" />
+                    </layout:VerticalLayout>
                   </cells>
                 </ColumnListItem>
               </items>

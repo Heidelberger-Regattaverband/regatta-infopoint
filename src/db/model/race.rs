@@ -76,8 +76,6 @@ pub struct Race {
     comment: String,
     distance: i16,
     lightweight: bool,
-    #[serde(rename = "raceMode", skip_serializing_if = "Option::is_none")]
-    race_mode: Option<String>,
     cancelled: bool,
     #[serde(rename = "registrationsCount")]
     registrations_count: i32,
@@ -110,7 +108,6 @@ impl Race {
             long_label: long_label.trim().to_owned(),
             distance: Column::get(row, "Offer_Distance"),
             lightweight: Column::get(row, "Offer_IsLightweight"),
-            race_mode: Column::get(row, "RaceMode_Title"),
             cancelled: Column::get(row, "Offer_Cancelled"),
             registrations_count: Column::get(row, "Registrations_Count"),
             seeded: Column::get(row, "isSet"),
@@ -120,10 +117,9 @@ impl Race {
     }
 
     pub fn query_all<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT o.*, ac.*, bc.*, rm.*, hrv_o.*,
+        let mut query = Query::new("SELECT DISTINCT o.*, ac.*, bc.*, hrv_o.*,
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count
             FROM Offer o
-            JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
             JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
             JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
             FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
@@ -133,10 +129,9 @@ impl Race {
     }
 
     pub fn query_single<'a>(race_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT o.*, rm.*,
+        let mut query = Query::new("SELECT o.*,
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count
             FROM Offer o
-            JOIN RaceMode AS rm ON o.Offer_RaceMode_ID_FK = rm.RaceMode_ID
             WHERE o.Offer_ID = @P1");
         query.bind(race_id);
         query
