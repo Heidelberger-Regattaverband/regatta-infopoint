@@ -2,6 +2,13 @@
   font-weight: bold;
 }
 
-tr[data-state="cancelled"]{
-  background: lightcoral;
+.infopoint .cancelled {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;;
+}
+
+.infopoint .boldCancelled {
+  font-weight: bold;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;;
 }
