@@ -1,14 +1,6 @@
 use crate::db::{
     aquarius::Aquarius,
-    model::{
-        heat::HeatRegistration,
-        heat::{Heat, Kiosk},
-        race::Race,
-        regatta::Regatta,
-        registration::Registration,
-        score::Score,
-        statistics::Statistics,
-    },
+    model::{Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
 };
 use actix_web::{
     get,

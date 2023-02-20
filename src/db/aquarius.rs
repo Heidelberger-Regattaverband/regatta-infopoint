@@ -1,9 +1,6 @@
 use super::{
     cache::{CacheTrait, Caches},
-    model::{
-        crew::Crew, heat::Heat, heat::HeatRegistration, heat::Kiosk, race::Race, regatta::Regatta,
-        registration::Registration, score::Score, statistics::Statistics,
-    },
+    model::{Crew, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
     pool::PoolFactory,
     TiberiusPool,
 };
