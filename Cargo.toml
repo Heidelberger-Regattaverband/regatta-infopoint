@@ -19,12 +19,12 @@ dotenv = "0.15"
 
 # Web
 actix-web = { version = "4", features = ["rustls"] }
-actix-files = "0.6"
+actix-files = "0"
 serde = { version = "1", features = ["derive"] }
-actix-extensible-rate-limit = "0.2"
-actix-web-lab = "0.18"
-actix-web-prometheus = { version = "0.1", features = ["process"] }
-rustls = "0.20"
+actix-extensible-rate-limit = "0"
+actix-web-lab = "0"
+actix-web-prometheus = { version = "0", features = ["process"] }
+rustls = "0"
 rustls-pemfile = "1"
 
 # Database
