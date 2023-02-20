@@ -1,5 +1,5 @@
 use super::{column::Column, race::Race, registration::Registration};
-use log::{info, trace};
+use log::info;
 use serde::Serialize;
 use std::time::Duration;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
@@ -27,7 +27,6 @@ impl Heat {
         let mut heats: Vec<Heat> = Vec::with_capacity(rows.len());
         for row in rows {
             let heat = Heat::from_row(row);
-            trace!("{:?}", heat);
             heats.push(heat);
         }
         heats
@@ -94,7 +93,7 @@ pub struct HeatRegistration {
 }
 
 impl HeatRegistration {
-    pub fn from(row: &Row) -> Self {
+    pub fn from_row(row: &Row) -> Self {
         HeatRegistration {
             id: Column::get(row, "CE_ID"),
             lane: Column::get(row, "CE_Lane"),
@@ -102,6 +101,14 @@ impl HeatRegistration {
             result: HeatResult::from(row),
         }
     }
+
+    // pub fn from_rows(rows: &Vec<Row>) -> Vec<HeatRegistration> {
+    //     let mut heat_regs: Vec<HeatRegistration> = Vec::with_capacity(rows.len());
+    //     for row in rows {
+    //         heat_regs.push(HeatRegistration::from_row(row));
+    //     }
+    //     heat_regs
+    // }
 
     pub(crate) fn query_all<'a>(heat_id: i32) -> Query<'a> {
         let mut query = Query::new("SELECT DISTINCT ce.*, e.Entry_Bib, e.Entry_ID, e.Entry_BoatNumber, e.Entry_Comment, e.Entry_CancelValue, l.Label_Short, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta, bc.BoatClass_NumRowers, cl.Club_ID, cl.Club_Abbr, cl.Club_City
