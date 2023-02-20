@@ -1,6 +1,5 @@
 use super::{column::Column, race::Race, registration::Registration};
-use actix_web_lab::__reexports::tracing::info;
-use log::trace;
+use log::{info, trace};
 use serde::Serialize;
 use std::time::Duration;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
@@ -79,7 +78,7 @@ impl Heat {
           FULL OUTER JOIN Referee AS r ON r.Referee_ID = cr.CompReferee_Referee_ID_FK
           WHERE c.Comp_Event_ID_FK = @P1 AND o.Offer_RaceNumber LIKE '{filter}'
           ORDER BY c.Comp_DateTime ASC");
-        info!(sql);
+        info!("{}", sql);
         let mut query = Query::new(sql);
         query.bind(regatta_id);
         query

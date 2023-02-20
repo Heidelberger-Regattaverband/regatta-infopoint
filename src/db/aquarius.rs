@@ -7,8 +7,7 @@ use super::{
     pool::PoolFactory,
     TiberiusPool,
 };
-use actix_web_lab::__reexports::tracing::info;
-use log::{debug, trace};
+use log::{debug, info, trace};
 use tiberius::{Query, Row};
 
 pub struct Aquarius {
