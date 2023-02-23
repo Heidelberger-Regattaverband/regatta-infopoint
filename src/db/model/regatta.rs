@@ -1,5 +1,5 @@
-use super::column::Column;
-use crate::db::cache::CacheTrait;
+use super::{utils, Column};
+use crate::db::aquarius::AquariusClient;
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
 
@@ -15,38 +15,36 @@ pub struct Regatta {
     end_date: String,
 }
 
-impl Regatta {
-    pub async fn from_rows(rows: &Vec<Row>, cache: &dyn CacheTrait<i32, Regatta>) -> Vec<Self> {
-        let mut regattas: Vec<Regatta> = Vec::with_capacity(rows.len());
-        for row in rows {
-            let regatta = Regatta::from_row(row);
-            cache.set(&regatta.id, &regatta).await;
-            regattas.push(regatta);
-        }
-        regattas
-    }
-
-    pub fn from_row(row: &Row) -> Self {
-        let start_date: NaiveDateTime = Column::get(row, "Event_StartDate");
-        let end_date: NaiveDateTime = Column::get(row, "Event_EndDate");
+impl From<Row> for Regatta {
+    fn from(row: Row) -> Self {
+        let start_date: NaiveDateTime = Column::get(&row, "Event_StartDate");
+        let end_date: NaiveDateTime = Column::get(&row, "Event_EndDate");
 
         Regatta {
-            id: Column::get(row, "Event_ID"),
-            title: Column::get(row, "Event_Title"),
-            sub_title: Column::get(row, "Event_SubTitle"),
-            venue: Column::get(row, "Event_Venue"),
+            id: Column::get(&row, "Event_ID"),
+            title: Column::get(&row, "Event_Title"),
+            sub_title: Column::get(&row, "Event_SubTitle"),
+            venue: Column::get(&row, "Event_Venue"),
             start_date: start_date.date().to_string(),
             end_date: end_date.date().to_string(),
         }
     }
+}
 
-    pub fn query_all<'a>() -> Query<'a> {
-        Query::new("SELECT * FROM Event e")
+impl Regatta {
+    pub async fn query_all(client: &mut AquariusClient<'_>) -> Vec<Regatta> {
+        let stream = Query::new("SELECT * FROM Event e")
+            .query(client)
+            .await
+            .unwrap();
+        let regattas = utils::get_rows(stream).await;
+        regattas.into_iter().map(|row| row.into()).collect()
     }
 
-    pub fn query_single<'a>(regatta_id: i32) -> Query<'a> {
+    pub async fn query(regatta_id: i32, client: &mut AquariusClient<'_>) -> Regatta {
         let mut query = Query::new("SELECT * FROM Event e WHERE e.Event_ID = @P1");
         query.bind(regatta_id);
-        query
+        let stream = query.query(client).await.unwrap();
+        utils::get_row(stream).await.into()
     }
 }

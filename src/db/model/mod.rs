@@ -1,4 +1,4 @@
-pub mod column;
+mod column;
 mod crew;
 mod heat;
 mod race;
@@ -6,7 +6,9 @@ mod regatta;
 mod registration;
 mod score;
 mod statistics;
+mod utils;
 
+pub use column::Column;
 pub use crew::Crew;
 pub use heat::{Heat, HeatRegistration, HeatResult, Kiosk};
 pub use race::{AgeClass, BoatClass, Race};

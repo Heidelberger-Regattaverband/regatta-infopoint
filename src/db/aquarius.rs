@@ -1,12 +1,15 @@
 use super::{
     cache::{CacheTrait, Caches},
     model::{Crew, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
-    pool::PoolFactory,
+    pool::{PoolFactory, TiberiusConnectionManager},
     TiberiusPool,
 };
+use bb8::PooledConnection;
 use log::debug;
 use std::time::Instant;
 use tiberius::{Query, Row};
+
+pub type AquariusClient<'a> = PooledConnection<'a, TiberiusConnectionManager>;
 
 pub struct Aquarius {
     caches: Caches,
@@ -24,8 +27,7 @@ impl Aquarius {
 
     pub async fn get_regattas(&self) -> Vec<Regatta> {
         let start = Instant::now();
-        let rows = self._execute_query(Regatta::query_all()).await;
-        let regattas = Regatta::from_rows(&rows, &self.caches.regatta).await;
+        let regattas = Regatta::query_all(&mut self.pool.get().await.unwrap()).await;
         debug!("Query all regattas from DB: {:?}", start.elapsed());
 
         regattas
@@ -49,10 +51,7 @@ impl Aquarius {
             regatta
         } else {
             // 2. read regatta from DB
-            let row = self
-                ._execute_single_query(Regatta::query_single(regatta_id))
-                .await;
-            let regatta = Regatta::from_row(&row);
+            let regatta = Regatta::query(regatta_id, &mut self.pool.get().await.unwrap()).await;
 
             // 3. store regatta in cache
             self.caches.regatta.set(&regatta.id, &regatta).await;
