@@ -1,69 +1,9 @@
-use super::column::Column;
+use super::{
+    column::{Column, TryRowToEntity},
+    AgeClass, BoatClass,
+};
 use serde::Serialize;
 use tiberius::{Query, Row};
-
-#[derive(Debug, Serialize, Clone)]
-pub struct AgeClass {
-    id: i32,
-    caption: String,
-    abbreviation: String,
-    suffix: String,
-    gender: String,
-    #[serde(rename = "numSubClasses")]
-    num_sub_classes: u8,
-}
-
-impl AgeClass {
-    pub fn from_row(row: &Row) -> Option<Self> {
-        if let Some(id) = Column::get(row, "AgeClass_ID") {
-            let caption = Column::get(row, "AgeClass_Caption");
-            let abbreviation = Column::get(row, "AgeClass_Abbr");
-            let suffix = Column::get(row, "AgeClass_Suffix");
-            let gender = Column::get(row, "AgeClass_Gender");
-            let num_sub_classes = Column::get(row, "AgeClass_NumSubClasses");
-            Some(AgeClass {
-                id,
-                caption,
-                abbreviation,
-                suffix,
-                gender,
-                num_sub_classes,
-            })
-        } else {
-            None
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
-pub struct BoatClass {
-    id: i32,
-    caption: String,
-    abbreviation: String,
-    #[serde(rename = "numRowers")]
-    num_rowers: i32,
-    coxed: bool,
-}
-
-impl BoatClass {
-    pub fn from_row(row: &Row) -> Option<Self> {
-        if let Some(id) = Column::get(row, "BoatClass_ID") {
-            let caption = Column::get(row, "BoatClass_Caption");
-            let abbreviation = Column::get(row, "BoatClass_Abbr");
-            let num_rowers = Column::get(row, "BoatClass_NumRowers");
-            let coxed: u8 = Column::get(row, "BoatClass_Coxed");
-            Some(BoatClass {
-                id,
-                caption,
-                abbreviation,
-                num_rowers,
-                coxed: coxed > 0,
-            })
-        } else {
-            None
-        }
-    }
-}
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Race {
@@ -111,8 +51,8 @@ impl Race {
             cancelled: Column::get(row, "Offer_Cancelled"),
             registrations_count: Column::get(row, "Registrations_Count"),
             seeded: Column::get(row, "isSet"),
-            age_class: AgeClass::from_row(row),
-            boat_class: BoatClass::from_row(row),
+            age_class: row.try_to_entity(),
+            boat_class: row.try_to_entity(),
         }
     }
 

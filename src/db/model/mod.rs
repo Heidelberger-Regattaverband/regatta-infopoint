@@ -1,4 +1,6 @@
+mod age_class;
 mod athlete;
+mod boat_class;
 mod club;
 mod column;
 mod crew;
@@ -10,12 +12,14 @@ mod score;
 mod statistics;
 mod utils;
 
+pub use age_class::AgeClass;
 pub use athlete::Athlete;
+pub use boat_class::BoatClass;
 pub use club::Club;
 pub use column::Column;
 pub use crew::Crew;
 pub use heat::{Heat, HeatRegistration, HeatResult, Kiosk};
-pub use race::{AgeClass, BoatClass, Race};
+pub use race::Race;
 pub use regatta::Regatta;
 pub use registration::Registration;
 pub use score::Score;
