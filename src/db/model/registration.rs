@@ -21,7 +21,7 @@ impl Registration {
         let cancel_value: u8 = Column::get(row, "Entry_CancelValue");
         let cancelled = cancel_value > 0;
         let id = Column::get(row, "Entry_ID");
-        Crew::query_all(id);
+
         Registration {
             id,
             bib: Column::get(row, "Entry_Bib"),
@@ -29,7 +29,7 @@ impl Registration {
             boat_number: Column::get(row, "Entry_BoatNumber"),
             short_label: Column::get(row, "Label_Short"),
             cancelled,
-            club: row.into(),
+            club: Club::from_row(row),
             crew: Option::None,
         }
     }
@@ -57,12 +57,12 @@ pub struct Club {
     city: String,
 }
 
-impl From<Row> for Club {
-    fn from(row: Row) -> Self {
+impl Club {
+    pub fn from_row(row: &Row) -> Self {
         Club {
-            id: Column::get(&row, "Club_ID"),
-            short_name: Column::get(&row, "Club_Abbr"),
-            city: Column::get(&row, "Club_City"),
+            id: Column::get(row, "Club_ID"),
+            short_name: Column::get(row, "Club_Abbr"),
+            city: Column::get(row, "Club_City"),
         }
     }
 }
