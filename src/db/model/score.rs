@@ -1,4 +1,7 @@
-use super::{column::Column, registration::Club};
+use super::{
+    column::{Column, RowToEntity},
+    Club,
+};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -22,7 +25,7 @@ impl Score {
         Score {
             rank: Column::get(row, "rank"),
             points: Column::get(row, "points"),
-            club: Club::from_row(row),
+            club: row.to_entity(),
         }
     }
 

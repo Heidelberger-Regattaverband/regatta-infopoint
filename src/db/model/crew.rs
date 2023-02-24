@@ -1,18 +1,9 @@
-use super::column::Column;
+use super::{
+    column::{Column, RowToEntity},
+    Athlete,
+};
 use serde::Serialize;
-use tiberius::{time::chrono::NaiveDateTime, Query, Row};
-
-#[derive(Debug, Serialize, Clone)]
-pub struct Athlete {
-    id: i32,
-    #[serde(rename = "firstName")]
-    first_name: String,
-    #[serde(rename = "lastName")]
-    last_name: String,
-    gender: String,
-    year: String,
-    club: String,
-}
+use tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
 pub struct Crew {
@@ -22,31 +13,24 @@ pub struct Crew {
     athlete: Athlete,
 }
 
+impl RowToEntity<Crew> for Row {
+    fn to_entity(&self) -> Crew {
+        Crew {
+            id: Column::get(self, "Crew_ID"),
+            pos: Column::get(self, "Crew_Pos"),
+            cox: Column::get(self, "Crew_IsCox"),
+            athlete: self.to_entity(),
+        }
+    }
+}
+
 impl Crew {
     pub fn from_rows(rows: &Vec<Row>) -> Vec<Crew> {
         let mut crews: Vec<Crew> = Vec::with_capacity(rows.len());
-        for crew_row in rows {
-            crews.push(Crew::from_row(crew_row));
+        for row in rows {
+            crews.push(row.to_entity());
         }
         crews
-    }
-
-    fn from_row(row: &Row) -> Crew {
-        let dob: NaiveDateTime = Column::get(row, "Athlet_DOB");
-
-        Crew {
-            id: Column::get(row, "Crew_ID"),
-            pos: Column::get(row, "Crew_Pos"),
-            cox: Column::get(row, "Crew_IsCox"),
-            athlete: Athlete {
-                id: Column::get(row, "Athlet_ID"),
-                first_name: Column::get(row, "Athlet_FirstName"),
-                last_name: Column::get(row, "Athlet_LastName"),
-                gender: Column::get(row, "Athlet_Gender"),
-                year: dob.date().format("%Y").to_string(),
-                club: Column::get(row, "Club_UltraAbbr"),
-            },
-        }
     }
 
     pub fn query_all<'a>(registration_id: i32) -> Query<'a> {
