@@ -29,7 +29,7 @@ impl Registration {
             boat_number: Column::get(row, "Entry_BoatNumber"),
             short_label: Column::get(row, "Label_Short"),
             cancelled,
-            club: Club::from_row(row),
+            club: row.into(),
             crew: Option::None,
         }
     }
@@ -57,12 +57,12 @@ pub struct Club {
     city: String,
 }
 
-impl Club {
-    pub fn from_row(row: &Row) -> Self {
+impl From<Row> for Club {
+    fn from(row: Row) -> Self {
         Club {
-            id: Column::get(row, "Club_ID"),
-            short_name: Column::get(row, "Club_Abbr"),
-            city: Column::get(row, "Club_City"),
+            id: Column::get(&row, "Club_ID"),
+            short_name: Column::get(&row, "Club_Abbr"),
+            city: Column::get(&row, "Club_City"),
         }
     }
 }
