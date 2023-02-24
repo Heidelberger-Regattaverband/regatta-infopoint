@@ -1,4 +1,7 @@
-use super::{column::Column, crew::Crew};
+use super::{
+    column::{Column, RowToEntity},
+    Club, Crew,
+};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -29,7 +32,7 @@ impl Registration {
             boat_number: Column::get(row, "Entry_BoatNumber"),
             short_label: Column::get(row, "Label_Short"),
             cancelled,
-            club: Club::from_row(row),
+            club: row.to_entity(),
             crew: Option::None,
         }
     }
@@ -46,23 +49,5 @@ impl Registration {
         );
         query.bind(race_id);
         query
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
-pub struct Club {
-    id: i32,
-    #[serde(rename = "shortName")]
-    short_name: String,
-    city: String,
-}
-
-impl Club {
-    pub fn from_row(row: &Row) -> Self {
-        Club {
-            id: Column::get(row, "Club_ID"),
-            short_name: Column::get(row, "Club_Abbr"),
-            city: Column::get(row, "Club_City"),
-        }
     }
 }
