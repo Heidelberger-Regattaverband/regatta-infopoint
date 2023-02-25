@@ -5,7 +5,7 @@ sap.ui.define([
 ], function (BaseController, JSONModel, Formatter) {
   "use strict";
 
-  return BaseController.extend("de.regatta_hd.infopoint.controller.Statistics", {
+  return BaseController.extend("de.regatta_hd.infopoint.controller.Kiosk", {
 
     formatter: Formatter,
 
