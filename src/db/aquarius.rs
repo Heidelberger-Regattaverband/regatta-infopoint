@@ -102,7 +102,7 @@ impl Aquarius {
         let row = self
             ._execute_single_query(Statistics::query(regatta_id))
             .await;
-        let stats = Statistics::from_row(&row);
+        let stats = row.to_entity();
         debug!(
             "Query statistics of regatta {} from DB: {:?}",
             regatta_id,
@@ -153,7 +153,7 @@ impl Aquarius {
             let rows = self._execute_query(Registration::query_all(race_id)).await;
             let mut registrations: Vec<Registration> = Vec::with_capacity(rows.len());
             for row in &rows {
-                let mut registration = Registration::from_row(row);
+                let mut registration: Registration = row.to_entity();
 
                 let crew_rows = self._execute_query(Crew::query_all(registration.id)).await;
                 registration.crew = Some(Crew::from_rows(&crew_rows));
