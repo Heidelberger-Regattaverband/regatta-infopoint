@@ -1,4 +1,4 @@
-use super::{Column, Race, Referee, TryRowToEntity};
+use super::{Column, Race, Referee, RowToEntity, TryRowToEntity};
 use log::info;
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
@@ -36,7 +36,7 @@ impl Heat {
 
         Heat {
             id: Column::get(row, "Comp_ID"),
-            race: Race::from_row(row),
+            race: row.to_entity(),
             number: Column::get(row, "Comp_Number"),
             round_code: Column::get(row, "Comp_RoundCode"),
             label: Column::get(row, "Comp_Label"),

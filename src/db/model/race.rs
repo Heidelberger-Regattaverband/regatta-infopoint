@@ -1,4 +1,4 @@
-use super::{AgeClass, BoatClass, Column, TryRowToEntity};
+use super::{AgeClass, BoatClass, Column, RowToEntity, TryRowToEntity};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -23,34 +23,36 @@ pub struct Race {
     boat_class: Option<BoatClass>,
 }
 
+impl RowToEntity<Race> for Row {
+    fn to_entity(&self) -> Race {
+        let short_label: String = Column::get(self, "Offer_ShortLabel");
+        let long_label: String = Column::get(self, "Offer_LongLabel");
+        let comment: String = Column::get(self, "Offer_Comment");
+
+        Race {
+            id: Column::get(self, "Offer_ID"),
+            comment: comment.trim().to_owned(),
+            number: Column::get(self, "Offer_RaceNumber"),
+            short_label: short_label.trim().to_owned(),
+            long_label: long_label.trim().to_owned(),
+            distance: Column::get(self, "Offer_Distance"),
+            lightweight: Column::get(self, "Offer_IsLightweight"),
+            cancelled: Column::get(self, "Offer_Cancelled"),
+            registrations_count: Column::get(self, "Registrations_Count"),
+            seeded: Column::get(self, "isSet"),
+            age_class: self.try_to_entity(),
+            boat_class: self.try_to_entity(),
+        }
+    }
+}
+
 impl Race {
     pub fn from_rows(rows: &Vec<Row>) -> Vec<Self> {
         let mut races: Vec<Race> = Vec::with_capacity(rows.len());
         for row in rows {
-            races.push(Race::from_row(row));
+            races.push(row.to_entity());
         }
         races
-    }
-
-    pub fn from_row(row: &Row) -> Self {
-        let short_label: String = Column::get(row, "Offer_ShortLabel");
-        let long_label: String = Column::get(row, "Offer_LongLabel");
-        let comment: String = Column::get(row, "Offer_Comment");
-
-        Race {
-            id: Column::get(row, "Offer_ID"),
-            comment: comment.trim().to_owned(),
-            number: Column::get(row, "Offer_RaceNumber"),
-            short_label: short_label.trim().to_owned(),
-            long_label: long_label.trim().to_owned(),
-            distance: Column::get(row, "Offer_Distance"),
-            lightweight: Column::get(row, "Offer_IsLightweight"),
-            cancelled: Column::get(row, "Offer_Cancelled"),
-            registrations_count: Column::get(row, "Registrations_Count"),
-            seeded: Column::get(row, "isSet"),
-            age_class: row.try_to_entity(),
-            boat_class: row.try_to_entity(),
-        }
     }
 
     pub fn query_all<'a>(regatta_id: i32) -> Query<'a> {
