@@ -15,7 +15,7 @@ impl RowToEntity<HeatRegistration> for Row {
         HeatRegistration {
             id: Column::get(self, "CE_ID"),
             lane: Column::get(self, "CE_Lane"),
-            registration: Registration::from_row(self),
+            registration: self.to_entity(),
             result: self.to_entity(),
         }
     }

@@ -9,21 +9,23 @@ pub struct Score {
     club: Club,
 }
 
+impl RowToEntity<Score> for Row {
+    fn to_entity(&self) -> Score {
+        Score {
+            rank: Column::get(self, "rank"),
+            points: Column::get(self, "points"),
+            club: self.to_entity(),
+        }
+    }
+}
+
 impl Score {
     pub fn from_rows(rows: &Vec<Row>) -> Vec<Self> {
         let mut scores: Vec<Score> = Vec::with_capacity(rows.len());
         for row in rows {
-            scores.push(Score::from_row(row));
+            scores.push(row.to_entity());
         }
         scores
-    }
-
-    pub fn from_row(row: &Row) -> Self {
-        Score {
-            rank: Column::get(row, "rank"),
-            points: Column::get(row, "points"),
-            club: row.to_entity(),
-        }
     }
 
     pub fn query_all<'a>(regatta_id: i32) -> Query<'a> {
