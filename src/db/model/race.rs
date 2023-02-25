@@ -30,7 +30,7 @@ impl RowToEntity<Race> for Row {
         let comment: String = Column::get(self, "Offer_Comment");
 
         Race {
-            id: Column::get(self, "Offer_ID"),
+            id: self.get_column("Offer_ID"),
             comment: comment.trim().to_owned(),
             number: Column::get(self, "Offer_RaceNumber"),
             short_label: short_label.trim().to_owned(),
@@ -38,7 +38,7 @@ impl RowToEntity<Race> for Row {
             distance: self.get_column("Offer_Distance"),
             lightweight: self.get_column("Offer_IsLightweight"),
             cancelled: self.get_column("Offer_Cancelled"),
-            registrations_count: Column::get(self, "Registrations_Count"),
+            registrations_count: self.get_column("Registrations_Count"),
             seeded: self.get_column("isSet"),
             age_class: self.try_to_entity(),
             boat_class: self.try_to_entity(),

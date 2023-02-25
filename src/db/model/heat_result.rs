@@ -19,7 +19,7 @@ impl RowToEntity<HeatResult> for Row {
         let rank: u8 = self.get_column("Result_Rank");
         let rank_sort: u8 = if rank == 0 { u8::MAX } else { rank };
         let delta: String = if rank > 0 {
-            let delta: i32 = Column::get(self, "Result_Delta");
+            let delta: i32 = self.get_column("Result_Delta");
             let duration = Duration::from_millis(delta as u64);
             let seconds = duration.as_secs();
             let millis = duration.subsec_millis() / 10;

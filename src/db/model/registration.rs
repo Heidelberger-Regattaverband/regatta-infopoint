@@ -20,7 +20,7 @@ impl RowToEntity<Registration> for Row {
     fn to_entity(&self) -> Registration {
         let cancel_value: u8 = self.get_column("Entry_CancelValue");
         let cancelled = cancel_value > 0;
-        let id = Column::get(self, "Entry_ID");
+        let id = self.get_column("Entry_ID");
 
         Registration {
             id,

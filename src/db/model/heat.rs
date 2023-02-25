@@ -23,10 +23,10 @@ pub struct Heat {
 
 impl RowToEntity<Heat> for Row {
     fn to_entity(&self) -> Heat {
-        let date_time: NaiveDateTime = Column::get(self, "Comp_DateTime");
+        let date_time: NaiveDateTime = self.get_column("Comp_DateTime");
 
         Heat {
-            id: Column::get(self, "Comp_ID"),
+            id: self.get_column("Comp_ID"),
             race: self.to_entity(),
             number: self.get_column("Comp_Number"),
             round_code: Column::get(self, "Comp_RoundCode"),
