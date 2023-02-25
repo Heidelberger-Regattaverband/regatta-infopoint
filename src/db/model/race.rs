@@ -1,7 +1,4 @@
-use super::{
-    column::{Column, TryRowToEntity},
-    AgeClass, BoatClass,
-};
+use super::{AgeClass, BoatClass, Column, TryRowToEntity};
 use serde::Serialize;
 use tiberius::{Query, Row};
 

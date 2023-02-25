@@ -1,4 +1,4 @@
-use super::column::{Column, RowToEntity};
+use super::{Column, RowToEntity};
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Row};
 

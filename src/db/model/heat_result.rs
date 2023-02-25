@@ -1,4 +1,4 @@
-use super::{column::RowToEntity, Column};
+use super::{Column, RowToEntity};
 use serde::Serialize;
 use std::time::Duration;
 use tiberius::Row;

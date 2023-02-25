@@ -1,13 +1,5 @@
 use tiberius::{time::chrono::NaiveDateTime, Row};
 
-pub trait RowToEntity<T> {
-    fn to_entity(&self) -> T;
-}
-
-pub trait TryRowToEntity<T> {
-    fn try_to_entity(&self) -> Option<T>;
-}
-
 // see: https://github.com/prisma/tiberius/issues/101#issuecomment-978144867
 pub trait Column {
     fn get(row: &Row, col_name: &str) -> Self;
