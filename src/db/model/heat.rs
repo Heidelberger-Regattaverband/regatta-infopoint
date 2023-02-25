@@ -1,7 +1,9 @@
-use super::{column::Column, race::Race, registration::Registration};
+use super::{
+    column::{Column, RowToEntity, TryRowToEntity},
+    HeatResult, Race, Referee, Registration,
+};
 use log::info;
 use serde::Serialize;
-use std::time::Duration;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
@@ -46,7 +48,7 @@ impl Heat {
             cancelled: Column::get(row, "Comp_Cancelled"),
             date: date_time.date().to_string(),
             time: date_time.time().to_string(),
-            referee: Referee::from(row),
+            referee: row.try_to_entity(),
         }
     }
 
@@ -98,7 +100,7 @@ impl HeatRegistration {
             id: Column::get(row, "CE_ID"),
             lane: Column::get(row, "CE_Lane"),
             registration: Registration::from_row(row),
-            result: HeatResult::from(row),
+            result: row.to_entity(),
         }
     }
 
@@ -125,76 +127,6 @@ impl HeatRegistration {
             AND el.EL_RoundFrom <= c.Comp_Round AND c.Comp_Round <= el.EL_RoundTo");
         query.bind(heat_id);
         query
-    }
-}
-
-#[derive(Debug, Serialize, Clone)]
-pub struct HeatResult {
-    #[serde(rename = "rankSort")]
-    rank_sort: u8,
-    #[serde(rename = "rankLabel")]
-    rank_label: String,
-    result: String,
-    delta: String,
-    points: u8,
-}
-impl HeatResult {
-    fn from(row: &Row) -> Self {
-        let rank: u8 = Column::get(row, "Result_Rank");
-        let rank_sort: u8 = if rank == 0 { u8::MAX } else { rank };
-        let delta: String = if rank > 0 {
-            let delta: i32 = Column::get(row, "Result_Delta");
-            let duration = Duration::from_millis(delta as u64);
-            let seconds = duration.as_secs();
-            let millis = duration.subsec_millis() / 10;
-            format!("{seconds}.{millis}")
-        } else {
-            Default::default()
-        };
-
-        let rank_label: String = if rank == 0 {
-            Default::default()
-        } else {
-            rank.to_string()
-        };
-
-        let num_rowers: u8 = Column::get(row, "BoatClass_NumRowers");
-        let points: u8 = if rank > 0 { num_rowers + (5 - rank) } else { 0 };
-
-        HeatResult {
-            delta,
-            rank_label,
-            rank_sort,
-            result: Column::get(row, "Result_DisplayValue"),
-            points,
-        }
-    }
-}
-
-#[derive(Debug, Serialize, Clone, Default)]
-pub struct Referee {
-    id: i32,
-    #[serde(rename = "firstName")]
-    first_name: String,
-    #[serde(rename = "lastName")]
-    last_name: String,
-}
-impl Referee {
-    fn from(row: &Row) -> Option<Self> {
-        if let Some(id) = Column::get(row, "Referee_ID") {
-            let last_name: String = Column::get(row, "Referee_LastName");
-            let first_name: String = Column::get(row, "Referee_FirstName");
-            if last_name.is_empty() && first_name.is_empty() {
-                return None;
-            }
-            Some(Referee {
-                id,
-                last_name,
-                first_name,
-            })
-        } else {
-            None
-        }
     }
 }
 
