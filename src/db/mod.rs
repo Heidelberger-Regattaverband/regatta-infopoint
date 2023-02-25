@@ -3,6 +3,7 @@ pub mod aquarius;
 pub mod cache;
 pub mod model;
 pub mod pool;
+pub mod tiberius;
 
 use self::pool::TiberiusConnectionManager;
 

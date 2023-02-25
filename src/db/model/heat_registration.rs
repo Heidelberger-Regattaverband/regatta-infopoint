@@ -1,4 +1,5 @@
-use super::{HeatResult, Registration, RowColumn, ToEntity};
+use super::{HeatResult, Registration, ToEntity};
+use crate::db::tiberius::RowColumn;
 use serde::Serialize;
 use tiberius::{Query, Row};
 

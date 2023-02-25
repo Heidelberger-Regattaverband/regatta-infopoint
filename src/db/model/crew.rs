@@ -1,4 +1,5 @@
-use super::{Athlete, RowColumn, ToEntity};
+use super::{Athlete, ToEntity};
+use crate::db::tiberius::RowColumn;
 use serde::Serialize;
 use tiberius::{Query, Row};
 
