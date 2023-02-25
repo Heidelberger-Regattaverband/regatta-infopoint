@@ -1,4 +1,4 @@
-use super::{Column, TryRowToEntity};
+use super::{Column, RowColumn, TryRowToEntity};
 use serde::Serialize;
 use tiberius::Row;
 
@@ -22,7 +22,7 @@ impl TryRowToEntity<AgeClass> for Row {
             abbreviation: Column::get(self, "AgeClass_Abbr"),
             suffix: Column::get(self, "AgeClass_Suffix"),
             gender: Column::get(self, "AgeClass_Gender"),
-            num_sub_classes: Column::get(self, "AgeClass_NumSubClasses"),
+            num_sub_classes: self.get_column("AgeClass_NumSubClasses"),
         })
     }
 }

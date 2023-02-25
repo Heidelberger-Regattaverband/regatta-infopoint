@@ -1,4 +1,4 @@
-use super::{Column, RowToEntity};
+use super::{Column, RowColumn, RowToEntity};
 use serde::Serialize;
 use std::time::Duration;
 use tiberius::Row;
@@ -16,7 +16,7 @@ pub struct HeatResult {
 
 impl RowToEntity<HeatResult> for Row {
     fn to_entity(&self) -> HeatResult {
-        let rank: u8 = Column::get(self, "Result_Rank");
+        let rank: u8 = self.get_column("Result_Rank");
         let rank_sort: u8 = if rank == 0 { u8::MAX } else { rank };
         let delta: String = if rank > 0 {
             let delta: i32 = Column::get(self, "Result_Delta");
@@ -34,7 +34,7 @@ impl RowToEntity<HeatResult> for Row {
             rank.to_string()
         };
 
-        let num_rowers: u8 = Column::get(self, "BoatClass_NumRowers");
+        let num_rowers: u8 = self.get_column("BoatClass_NumRowers");
         let points: u8 = if rank > 0 { num_rowers + (5 - rank) } else { 0 };
 
         HeatResult {

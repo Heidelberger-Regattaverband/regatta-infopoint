@@ -1,4 +1,4 @@
-use super::{AgeClass, BoatClass, Column, RowToEntity, TryRowToEntity};
+use super::{AgeClass, BoatClass, Column, RowColumn, RowToEntity, TryRowToEntity};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -35,11 +35,11 @@ impl RowToEntity<Race> for Row {
             number: Column::get(self, "Offer_RaceNumber"),
             short_label: short_label.trim().to_owned(),
             long_label: long_label.trim().to_owned(),
-            distance: Column::get(self, "Offer_Distance"),
-            lightweight: Column::get(self, "Offer_IsLightweight"),
-            cancelled: Column::get(self, "Offer_Cancelled"),
+            distance: self.get_column("Offer_Distance"),
+            lightweight: self.get_column("Offer_IsLightweight"),
+            cancelled: self.get_column("Offer_Cancelled"),
             registrations_count: Column::get(self, "Registrations_Count"),
-            seeded: Column::get(self, "isSet"),
+            seeded: self.get_column("isSet"),
             age_class: self.try_to_entity(),
             boat_class: self.try_to_entity(),
         }

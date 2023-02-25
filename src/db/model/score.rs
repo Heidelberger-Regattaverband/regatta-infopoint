@@ -1,4 +1,4 @@
-use super::{Club, Column, RowToEntity};
+use super::{Club, Column, RowColumn, RowToEntity};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -12,7 +12,7 @@ pub struct Score {
 impl RowToEntity<Score> for Row {
     fn to_entity(&self) -> Score {
         Score {
-            rank: Column::get(self, "rank"),
+            rank: self.get_column("rank"),
             points: Column::get(self, "points"),
             club: self.to_entity(),
         }

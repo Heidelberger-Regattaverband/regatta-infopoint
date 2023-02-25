@@ -30,6 +30,7 @@ pub use regatta::Regatta;
 pub use registration::Registration;
 pub use score::Score;
 pub use statistics::Statistics;
+use tiberius::Row;
 
 pub trait RowToEntity<T> {
     fn to_entity(&self) -> T;
@@ -37,4 +38,30 @@ pub trait RowToEntity<T> {
 
 pub trait TryRowToEntity<T> {
     fn try_to_entity(&self) -> Option<T>;
+}
+
+pub trait RowColumn<T> {
+    fn get_column(&self, col_name: &str) -> T;
+}
+
+impl RowColumn<bool> for Row {
+    fn get_column(&self, col_name: &str) -> bool {
+        self.try_get::<bool, _>(col_name)
+            .unwrap()
+            .unwrap_or_default()
+    }
+}
+
+impl RowColumn<u8> for Row {
+    fn get_column(&self, col_name: &str) -> u8 {
+        self.try_get::<u8, _>(col_name).unwrap().unwrap_or_default()
+    }
+}
+
+impl RowColumn<i16> for Row {
+    fn get_column(&self, col_name: &str) -> i16 {
+        self.try_get::<i16, _>(col_name)
+            .unwrap()
+            .unwrap_or_default()
+    }
 }
