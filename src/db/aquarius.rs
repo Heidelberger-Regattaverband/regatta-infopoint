@@ -127,7 +127,7 @@ impl Aquarius {
         let row = self
             ._execute_single_query(Race::query_single(race_id))
             .await;
-        let race = Race::from_row(&row);
+        let race: Race = row.to_entity();
 
         // 3. store race in cache
         self.caches.race.set(&race.id, &race).await;
