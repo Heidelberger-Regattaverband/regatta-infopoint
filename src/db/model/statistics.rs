@@ -1,4 +1,4 @@
-use super::{RowColumn, RowToEntity};
+use super::{RowColumn, ToEntity};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -35,7 +35,7 @@ pub struct Statistics {
     registrations: RegistrationsStatistics,
 }
 
-impl RowToEntity<Statistics> for Row {
+impl ToEntity<Statistics> for Row {
     fn to_entity(&self) -> Statistics {
         let races = RacesStatistics {
             all: self.get_column("races_all"),

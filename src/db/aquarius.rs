@@ -1,8 +1,8 @@
 use super::{
     cache::{CacheTrait, Caches},
     model::{
-        Crew, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, RowToEntity, Score,
-        Statistics,
+        Crew, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics,
+        ToEntity,
     },
     pool::{PoolFactory, TiberiusConnectionManager},
     TiberiusPool,

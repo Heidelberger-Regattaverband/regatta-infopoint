@@ -1,4 +1,4 @@
-use super::{Column, RowColumn, RowToEntity};
+use super::{Column, RowColumn, ToEntity};
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Row};
 
@@ -14,7 +14,7 @@ pub struct Athlete {
     club: String,
 }
 
-impl RowToEntity<Athlete> for Row {
+impl ToEntity<Athlete> for Row {
     fn to_entity(&self) -> Athlete {
         let dob: NaiveDateTime = self.get_column("Athlet_DOB");
         Athlete {

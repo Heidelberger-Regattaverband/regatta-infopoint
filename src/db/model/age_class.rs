@@ -1,4 +1,4 @@
-use super::{Column, RowColumn, TryRowToEntity};
+use super::{Column, RowColumn, TryToEntity};
 use serde::Serialize;
 use tiberius::Row;
 
@@ -13,7 +13,7 @@ pub struct AgeClass {
     num_sub_classes: u8,
 }
 
-impl TryRowToEntity<AgeClass> for Row {
+impl TryToEntity<AgeClass> for Row {
     fn try_to_entity(&self) -> Option<AgeClass> {
         let it: Option<i32> = Column::get(self, "AgeClass_ID");
         it.map(|id| AgeClass {

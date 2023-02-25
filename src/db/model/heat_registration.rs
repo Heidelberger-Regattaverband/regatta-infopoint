@@ -1,4 +1,4 @@
-use super::{HeatResult, Registration, RowColumn, RowToEntity};
+use super::{HeatResult, Registration, RowColumn, ToEntity};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -10,7 +10,7 @@ pub struct HeatRegistration {
     pub registration: Registration,
 }
 
-impl RowToEntity<HeatRegistration> for Row {
+impl ToEntity<HeatRegistration> for Row {
     fn to_entity(&self) -> HeatRegistration {
         HeatRegistration {
             id: self.get_column("CE_ID"),

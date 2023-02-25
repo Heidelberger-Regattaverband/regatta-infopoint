@@ -1,4 +1,4 @@
-use super::{Athlete, RowColumn, RowToEntity};
+use super::{Athlete, RowColumn, ToEntity};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -10,7 +10,7 @@ pub struct Crew {
     athlete: Athlete,
 }
 
-impl RowToEntity<Crew> for Row {
+impl ToEntity<Crew> for Row {
     fn to_entity(&self) -> Crew {
         Crew {
             id: self.get_column("Crew_ID"),

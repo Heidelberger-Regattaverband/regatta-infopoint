@@ -32,11 +32,11 @@ pub use score::Score;
 pub use statistics::Statistics;
 use tiberius::{time::chrono::NaiveDateTime, Row};
 
-pub trait RowToEntity<T> {
+pub trait ToEntity<T> {
     fn to_entity(&self) -> T;
 }
 
-pub trait TryRowToEntity<T> {
+pub trait TryToEntity<T> {
     fn try_to_entity(&self) -> Option<T>;
 }
 

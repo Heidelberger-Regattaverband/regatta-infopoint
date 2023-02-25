@@ -1,4 +1,4 @@
-use super::{Club, Column, Crew, RowColumn, RowToEntity};
+use super::{Club, Column, Crew, RowColumn, ToEntity};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -16,7 +16,7 @@ pub struct Registration {
     pub(crate) crew: Option<Vec<Crew>>,
 }
 
-impl RowToEntity<Registration> for Row {
+impl ToEntity<Registration> for Row {
     fn to_entity(&self) -> Registration {
         let cancel_value: u8 = self.get_column("Entry_CancelValue");
         let cancelled = cancel_value > 0;
