@@ -18,10 +18,10 @@ impl TryToEntity<AgeClass> for Row {
         let it: Option<i32> = Column::get(self, "AgeClass_ID");
         it.map(|id| AgeClass {
             id,
-            caption: Column::get(self, "AgeClass_Caption"),
-            abbreviation: Column::get(self, "AgeClass_Abbr"),
-            suffix: Column::get(self, "AgeClass_Suffix"),
-            gender: Column::get(self, "AgeClass_Gender"),
+            caption: self.get_column("AgeClass_Caption"),
+            abbreviation: self.get_column("AgeClass_Abbr"),
+            suffix: self.get_column("AgeClass_Suffix"),
+            gender: self.get_column("AgeClass_Gender"),
             num_sub_classes: self.get_column("AgeClass_NumSubClasses"),
         })
     }

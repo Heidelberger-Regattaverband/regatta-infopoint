@@ -1,4 +1,4 @@
-use super::{Club, Column, Crew, RowColumn, ToEntity};
+use super::{Club, Crew, RowColumn, ToEntity};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -25,9 +25,9 @@ impl ToEntity<Registration> for Row {
         Registration {
             id,
             bib: self.get_column("Entry_Bib"),
-            comment: Column::get(self, "Entry_Comment"),
+            comment: self.get_column("Entry_Comment"),
             boat_number: self.get_column("Entry_BoatNumber"),
-            short_label: Column::get(self, "Label_Short"),
+            short_label: self.get_column("Label_Short"),
             cancelled,
             club: self.to_entity(),
             crew: Option::None,

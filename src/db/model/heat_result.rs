@@ -1,4 +1,4 @@
-use super::{Column, RowColumn, ToEntity};
+use super::{RowColumn, ToEntity};
 use serde::Serialize;
 use std::time::Duration;
 use tiberius::Row;
@@ -41,7 +41,7 @@ impl ToEntity<HeatResult> for Row {
             delta,
             rank_label,
             rank_sort,
-            result: Column::get(self, "Result_DisplayValue"),
+            result: self.get_column("Result_DisplayValue"),
             points,
         }
     }

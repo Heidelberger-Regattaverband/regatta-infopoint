@@ -5,15 +5,6 @@ pub trait Column {
     fn get(row: &Row, col_name: &str) -> Self;
 }
 
-impl Column for String {
-    fn get(row: &Row, col_name: &str) -> String {
-        row.try_get::<&str, _>(col_name)
-            .unwrap()
-            .unwrap_or_default()
-            .to_string()
-    }
-}
-
 impl Column for Option<String> {
     fn get(row: &Row, col_name: &str) -> Option<String> {
         match row.try_get::<&str, _>(col_name) {
