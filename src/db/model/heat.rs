@@ -1,4 +1,4 @@
-use super::{Column, Race, Referee, RowColumn, RowToEntity, TryRowToEntity};
+use super::{Column, Race, Referee, RowColumn, ToEntity, TryToEntity};
 use log::info;
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
@@ -21,7 +21,7 @@ pub struct Heat {
     referee: Option<Referee>,
 }
 
-impl RowToEntity<Heat> for Row {
+impl ToEntity<Heat> for Row {
     fn to_entity(&self) -> Heat {
         let date_time: NaiveDateTime = self.get_column("Comp_DateTime");
 

@@ -1,4 +1,4 @@
-use super::{Column, RowColumn, RowToEntity};
+use super::{Column, RowColumn, ToEntity};
 use serde::Serialize;
 use tiberius::Row;
 
@@ -10,7 +10,7 @@ pub struct Club {
     city: String,
 }
 
-impl RowToEntity<Club> for Row {
+impl ToEntity<Club> for Row {
     fn to_entity(&self) -> Club {
         Club {
             id: self.get_column("Club_ID"),

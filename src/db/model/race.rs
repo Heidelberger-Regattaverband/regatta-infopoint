@@ -1,4 +1,4 @@
-use super::{AgeClass, BoatClass, Column, RowColumn, RowToEntity, TryRowToEntity};
+use super::{AgeClass, BoatClass, Column, RowColumn, ToEntity, TryToEntity};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -23,7 +23,7 @@ pub struct Race {
     boat_class: Option<BoatClass>,
 }
 
-impl RowToEntity<Race> for Row {
+impl ToEntity<Race> for Row {
     fn to_entity(&self) -> Race {
         let short_label: String = Column::get(self, "Offer_ShortLabel");
         let long_label: String = Column::get(self, "Offer_LongLabel");

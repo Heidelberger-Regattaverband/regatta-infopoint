@@ -1,4 +1,4 @@
-use super::{Column, TryRowToEntity};
+use super::{Column, TryToEntity};
 use serde::Serialize;
 use tiberius::Row;
 
@@ -11,7 +11,7 @@ pub struct Referee {
     last_name: String,
 }
 
-impl TryRowToEntity<Referee> for Row {
+impl TryToEntity<Referee> for Row {
     fn try_to_entity(&self) -> Option<Referee> {
         if let Some(id) = Column::get(self, "Referee_ID") {
             let last_name: String = Column::get(self, "Referee_LastName");

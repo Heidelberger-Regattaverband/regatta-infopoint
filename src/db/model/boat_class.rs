@@ -1,4 +1,4 @@
-use super::{Column, RowColumn, TryRowToEntity};
+use super::{Column, RowColumn, TryToEntity};
 use serde::Serialize;
 use tiberius::Row;
 
@@ -12,7 +12,7 @@ pub struct BoatClass {
     coxed: bool,
 }
 
-impl TryRowToEntity<BoatClass> for Row {
+impl TryToEntity<BoatClass> for Row {
     fn try_to_entity(&self) -> Option<BoatClass> {
         if let Some(id) = Column::get(self, "BoatClass_ID") {
             let coxed: u8 = self.get_column("BoatClass_Coxed");
