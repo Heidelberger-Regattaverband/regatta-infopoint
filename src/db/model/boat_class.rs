@@ -20,7 +20,7 @@ impl TryRowToEntity<BoatClass> for Row {
                 id,
                 caption: Column::get(self, "BoatClass_Caption"),
                 abbreviation: Column::get(self, "BoatClass_Abbr"),
-                num_rowers: Column::get(self, "BoatClass_NumRowers"),
+                num_rowers: self.get_column("BoatClass_NumRowers"),
                 coxed: coxed > 0,
             })
         } else {

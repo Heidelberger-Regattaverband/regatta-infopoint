@@ -1,4 +1,4 @@
-use super::{column::Column, RowToEntity};
+use super::{RowColumn, RowToEntity};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -38,23 +38,23 @@ pub struct Statistics {
 impl RowToEntity<Statistics> for Row {
     fn to_entity(&self) -> Statistics {
         let races = RacesStatistics {
-            all: Column::get(self, "races_all"),
-            cancelled: Column::get(self, "races_cancelled"),
+            all: self.get_column("races_all"),
+            cancelled: self.get_column("races_cancelled"),
         };
         let heats = HeatsStatistics {
-            all: Column::get(self, "heats_all"),
-            cancelled: Column::get(self, "heats_cancelled"),
-            finished: Column::get(self, "heats_finished"),
-            official: Column::get(self, "heats_official"),
-            pending: Column::get(self, "heats_pending"),
-            started: Column::get(self, "heats_started"),
+            all: self.get_column("heats_all"),
+            cancelled: self.get_column("heats_cancelled"),
+            finished: self.get_column("heats_finished"),
+            official: self.get_column("heats_official"),
+            pending: self.get_column("heats_pending"),
+            started: self.get_column("heats_started"),
         };
         let registrations = RegistrationsStatistics {
-            all: Column::get(self, "registrations_all"),
-            cancelled: Column::get(self, "registrations_cancelled"),
-            registering_clubs: Column::get(self, "registrations_owner_clubs"),
-            athletes: Column::get(self, "registrations_athletes"),
-            clubs: Column::get(self, "registrations_clubs"),
+            all: self.get_column("registrations_all"),
+            cancelled: self.get_column("registrations_cancelled"),
+            registering_clubs: self.get_column("registrations_owner_clubs"),
+            athletes: self.get_column("registrations_athletes"),
+            clubs: self.get_column("registrations_clubs"),
         };
         Statistics {
             races,

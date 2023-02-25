@@ -1,4 +1,4 @@
-use super::{Column, RowToEntity};
+use super::{Column, RowColumn, RowToEntity};
 use serde::Serialize;
 use tiberius::Row;
 
@@ -13,7 +13,7 @@ pub struct Club {
 impl RowToEntity<Club> for Row {
     fn to_entity(&self) -> Club {
         Club {
-            id: Column::get(self, "Club_ID"),
+            id: self.get_column("Club_ID"),
             short_name: Column::get(self, "Club_Abbr"),
             city: Column::get(self, "Club_City"),
         }

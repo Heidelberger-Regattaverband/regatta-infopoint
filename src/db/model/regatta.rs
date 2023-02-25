@@ -1,4 +1,4 @@
-use super::{utils, Column, RowToEntity};
+use super::{utils, Column, RowColumn, RowToEntity};
 use crate::db::aquarius::AquariusClient;
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
@@ -17,11 +17,11 @@ pub struct Regatta {
 
 impl RowToEntity<Regatta> for Row {
     fn to_entity(&self) -> Regatta {
-        let start_date: NaiveDateTime = Column::get(self, "Event_StartDate");
-        let end_date: NaiveDateTime = Column::get(self, "Event_EndDate");
+        let start_date: NaiveDateTime = self.get_column("Event_StartDate");
+        let end_date: NaiveDateTime = self.get_column("Event_EndDate");
 
         Regatta {
-            id: Column::get(self, "Event_ID"),
+            id: self.get_column("Event_ID"),
             title: Column::get(self, "Event_Title"),
             sub_title: Column::get(self, "Event_SubTitle"),
             venue: Column::get(self, "Event_Venue"),

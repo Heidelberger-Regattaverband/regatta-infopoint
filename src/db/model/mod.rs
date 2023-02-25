@@ -30,7 +30,7 @@ pub use regatta::Regatta;
 pub use registration::Registration;
 pub use score::Score;
 pub use statistics::Statistics;
-use tiberius::Row;
+use tiberius::{time::chrono::NaiveDateTime, Row};
 
 pub trait RowToEntity<T> {
     fn to_entity(&self) -> T;
@@ -61,6 +61,30 @@ impl RowColumn<u8> for Row {
 impl RowColumn<i16> for Row {
     fn get_column(&self, col_name: &str) -> i16 {
         self.try_get::<i16, _>(col_name)
+            .unwrap()
+            .unwrap_or_default()
+    }
+}
+
+impl RowColumn<i32> for Row {
+    fn get_column(&self, col_name: &str) -> i32 {
+        self.try_get::<i32, _>(col_name)
+            .unwrap_or_default()
+            .unwrap_or_default()
+    }
+}
+
+impl RowColumn<f64> for Row {
+    fn get_column(&self, col_name: &str) -> f64 {
+        self.try_get::<f64, _>(col_name)
+            .unwrap()
+            .unwrap_or_default()
+    }
+}
+
+impl RowColumn<NaiveDateTime> for Row {
+    fn get_column(&self, col_name: &str) -> NaiveDateTime {
+        self.try_get::<NaiveDateTime, _>(col_name)
             .unwrap()
             .unwrap_or_default()
     }
