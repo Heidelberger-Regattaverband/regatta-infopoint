@@ -1,4 +1,4 @@
-use super::{Club, Column, Crew, RowToEntity};
+use super::{Club, Column, Crew, RowColumn, RowToEntity};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -18,15 +18,15 @@ pub struct Registration {
 
 impl RowToEntity<Registration> for Row {
     fn to_entity(&self) -> Registration {
-        let cancel_value: u8 = Column::get(self, "Entry_CancelValue");
+        let cancel_value: u8 = self.get_column("Entry_CancelValue");
         let cancelled = cancel_value > 0;
         let id = Column::get(self, "Entry_ID");
 
         Registration {
             id,
-            bib: Column::get(self, "Entry_Bib"),
+            bib: self.get_column("Entry_Bib"),
             comment: Column::get(self, "Entry_Comment"),
-            boat_number: Column::get(self, "Entry_BoatNumber"),
+            boat_number: self.get_column("Entry_BoatNumber"),
             short_label: Column::get(self, "Label_Short"),
             cancelled,
             club: self.to_entity(),

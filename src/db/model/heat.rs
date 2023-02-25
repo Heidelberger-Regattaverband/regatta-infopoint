@@ -1,4 +1,4 @@
-use super::{Column, Race, Referee, RowToEntity, TryRowToEntity};
+use super::{Column, Race, Referee, RowColumn, RowToEntity, TryRowToEntity};
 use log::info;
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
@@ -28,12 +28,12 @@ impl RowToEntity<Heat> for Row {
         Heat {
             id: Column::get(self, "Comp_ID"),
             race: self.to_entity(),
-            number: Column::get(self, "Comp_Number"),
+            number: self.get_column("Comp_Number"),
             round_code: Column::get(self, "Comp_RoundCode"),
             label: Column::get(self, "Comp_Label"),
-            group_value: Column::get(self, "Comp_GroupValue"),
-            state: Column::get(self, "Comp_State"),
-            cancelled: Column::get(self, "Comp_Cancelled"),
+            group_value: self.get_column("Comp_GroupValue"),
+            state: self.get_column("Comp_State"),
+            cancelled: self.get_column("Comp_Cancelled"),
             date: date_time.date().to_string(),
             time: date_time.time().to_string(),
             referee: self.try_to_entity(),

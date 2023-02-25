@@ -1,4 +1,4 @@
-use super::{Column, HeatResult, Registration, RowToEntity};
+use super::{Column, HeatResult, Registration, RowColumn, RowToEntity};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -14,7 +14,7 @@ impl RowToEntity<HeatRegistration> for Row {
     fn to_entity(&self) -> HeatRegistration {
         HeatRegistration {
             id: Column::get(self, "CE_ID"),
-            lane: Column::get(self, "CE_Lane"),
+            lane: self.get_column("CE_Lane"),
             registration: self.to_entity(),
             result: self.to_entity(),
         }
