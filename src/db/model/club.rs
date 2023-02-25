@@ -1,4 +1,5 @@
-use super::{RowColumn, ToEntity};
+use super::ToEntity;
+use crate::db::tiberius::RowColumn;
 use serde::Serialize;
 use tiberius::Row;
 

@@ -1,4 +1,5 @@
-use super::{AgeClass, BoatClass, RowColumn, ToEntity, TryToEntity};
+use super::{AgeClass, BoatClass, ToEntity, TryToEntity};
+use crate::db::tiberius::RowColumn;
 use serde::Serialize;
 use tiberius::{Query, Row};
 

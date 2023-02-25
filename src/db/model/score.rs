@@ -1,4 +1,5 @@
-use super::{Club, RowColumn, ToEntity};
+use super::{Club, ToEntity};
+use crate::db::tiberius::RowColumn;
 use serde::Serialize;
 use tiberius::{Query, Row};
 

@@ -1,4 +1,5 @@
-use super::{Column, RowColumn, TryToEntity};
+use super::TryToEntity;
+use crate::db::tiberius::{RowColumn, TryRowColumn};
 use serde::Serialize;
 use tiberius::Row;
 
@@ -15,7 +16,7 @@ pub struct AgeClass {
 
 impl TryToEntity<AgeClass> for Row {
     fn try_to_entity(&self) -> Option<AgeClass> {
-        let it: Option<i32> = Column::get(self, "AgeClass_ID");
+        let it: Option<i32> = self.try_get_column("AgeClass_ID");
         it.map(|id| AgeClass {
             id,
             caption: self.get_column("AgeClass_Caption"),

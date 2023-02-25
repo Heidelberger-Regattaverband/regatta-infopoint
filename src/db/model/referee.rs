@@ -1,4 +1,5 @@
-use super::{Column, RowColumn, TryToEntity};
+use super::TryToEntity;
+use crate::db::tiberius::{RowColumn, TryRowColumn};
 use serde::Serialize;
 use tiberius::Row;
 
@@ -13,7 +14,7 @@ pub struct Referee {
 
 impl TryToEntity<Referee> for Row {
     fn try_to_entity(&self) -> Option<Referee> {
-        if let Some(id) = Column::get(self, "Referee_ID") {
+        if let Some(id) = self.try_get_column("Referee_ID") {
             let last_name: String = self.get_column("Referee_LastName");
             let first_name: String = self.get_column("Referee_FirstName");
             if last_name.is_empty() && first_name.is_empty() {

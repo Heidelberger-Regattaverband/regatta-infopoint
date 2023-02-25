@@ -1,5 +1,5 @@
-use super::{utils, RowColumn, ToEntity};
-use crate::db::aquarius::AquariusClient;
+use super::{utils, ToEntity};
+use crate::db::{aquarius::AquariusClient, tiberius::RowColumn};
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
 

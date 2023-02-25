@@ -1,4 +1,5 @@
-use super::{Race, Referee, RowColumn, ToEntity, TryToEntity};
+use super::{Race, Referee, ToEntity, TryToEntity};
+use crate::db::tiberius::RowColumn;
 use log::info;
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
