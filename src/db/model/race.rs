@@ -1,4 +1,4 @@
-use super::{AgeClass, BoatClass, Column, RowColumn, ToEntity, TryToEntity};
+use super::{AgeClass, BoatClass, RowColumn, ToEntity, TryToEntity};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -25,14 +25,14 @@ pub struct Race {
 
 impl ToEntity<Race> for Row {
     fn to_entity(&self) -> Race {
-        let short_label: String = Column::get(self, "Offer_ShortLabel");
-        let long_label: String = Column::get(self, "Offer_LongLabel");
-        let comment: String = Column::get(self, "Offer_Comment");
+        let short_label: String = self.get_column("Offer_ShortLabel");
+        let long_label: String = self.get_column("Offer_LongLabel");
+        let comment: String = self.get_column("Offer_Comment");
 
         Race {
             id: self.get_column("Offer_ID"),
             comment: comment.trim().to_owned(),
-            number: Column::get(self, "Offer_RaceNumber"),
+            number: self.get_column("Offer_RaceNumber"),
             short_label: short_label.trim().to_owned(),
             long_label: long_label.trim().to_owned(),
             distance: self.get_column("Offer_Distance"),

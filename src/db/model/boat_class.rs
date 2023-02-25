@@ -18,8 +18,8 @@ impl TryToEntity<BoatClass> for Row {
             let coxed: u8 = self.get_column("BoatClass_Coxed");
             Some(BoatClass {
                 id,
-                caption: Column::get(self, "BoatClass_Caption"),
-                abbreviation: Column::get(self, "BoatClass_Abbr"),
+                caption: self.get_column("BoatClass_Caption"),
+                abbreviation: self.get_column("BoatClass_Abbr"),
                 num_rowers: self.get_column("BoatClass_NumRowers"),
                 coxed: coxed > 0,
             })

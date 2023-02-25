@@ -89,3 +89,12 @@ impl RowColumn<NaiveDateTime> for Row {
             .unwrap_or_default()
     }
 }
+
+impl RowColumn<String> for Row {
+    fn get_column(&self, col_name: &str) -> String {
+        self.try_get::<&str, _>(col_name)
+            .unwrap()
+            .unwrap_or_default()
+            .to_string()
+    }
+}

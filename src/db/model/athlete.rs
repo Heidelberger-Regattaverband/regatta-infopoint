@@ -1,4 +1,4 @@
-use super::{Column, RowColumn, ToEntity};
+use super::{RowColumn, ToEntity};
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Row};
 
@@ -19,11 +19,11 @@ impl ToEntity<Athlete> for Row {
         let dob: NaiveDateTime = self.get_column("Athlet_DOB");
         Athlete {
             id: self.get_column("Athlet_ID"),
-            first_name: Column::get(self, "Athlet_FirstName"),
-            last_name: Column::get(self, "Athlet_LastName"),
-            gender: Column::get(self, "Athlet_Gender"),
+            first_name: self.get_column("Athlet_FirstName"),
+            last_name: self.get_column("Athlet_LastName"),
+            gender: self.get_column("Athlet_Gender"),
             year: dob.date().format("%Y").to_string(),
-            club: Column::get(self, "Club_UltraAbbr"),
+            club: self.get_column("Club_UltraAbbr"),
         }
     }
 }
