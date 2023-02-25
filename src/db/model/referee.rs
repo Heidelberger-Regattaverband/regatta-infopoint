@@ -1,4 +1,4 @@
-use super::{column::TryRowToEntity, Column};
+use super::{Column, TryRowToEntity};
 use serde::Serialize;
 use tiberius::Row;
 

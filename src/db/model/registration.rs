@@ -1,7 +1,4 @@
-use super::{
-    column::{Column, RowToEntity},
-    Club, Crew,
-};
+use super::{Club, Column, Crew, RowToEntity};
 use serde::Serialize;
 use tiberius::{Query, Row};
 

@@ -1,6 +1,9 @@
 use super::{
     cache::{CacheTrait, Caches},
-    model::{Crew, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
+    model::{
+        Crew, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, RowToEntity, Score,
+        Statistics,
+    },
     pool::{PoolFactory, TiberiusConnectionManager},
     TiberiusPool,
 };
@@ -242,7 +245,7 @@ impl Aquarius {
                 .await;
             let mut heat_regs: Vec<HeatRegistration> = Vec::with_capacity(rows.len());
             for row in &rows {
-                let mut heat_registration = HeatRegistration::from_row(row);
+                let mut heat_registration: HeatRegistration = row.to_entity();
 
                 let crew_rows = self
                     ._execute_query(Crew::query_all(heat_registration.registration.id))
