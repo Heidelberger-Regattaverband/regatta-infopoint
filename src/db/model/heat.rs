@@ -21,32 +21,34 @@ pub struct Heat {
     referee: Option<Referee>,
 }
 
+impl RowToEntity<Heat> for Row {
+    fn to_entity(&self) -> Heat {
+        let date_time: NaiveDateTime = Column::get(self, "Comp_DateTime");
+
+        Heat {
+            id: Column::get(self, "Comp_ID"),
+            race: self.to_entity(),
+            number: Column::get(self, "Comp_Number"),
+            round_code: Column::get(self, "Comp_RoundCode"),
+            label: Column::get(self, "Comp_Label"),
+            group_value: Column::get(self, "Comp_GroupValue"),
+            state: Column::get(self, "Comp_State"),
+            cancelled: Column::get(self, "Comp_Cancelled"),
+            date: date_time.date().to_string(),
+            time: date_time.time().to_string(),
+            referee: self.try_to_entity(),
+        }
+    }
+}
+
 impl Heat {
     pub fn from_rows(rows: &Vec<Row>) -> Vec<Heat> {
         let mut heats: Vec<Heat> = Vec::with_capacity(rows.len());
         for row in rows {
-            let heat = Heat::from_row(row);
+            let heat = row.to_entity();
             heats.push(heat);
         }
         heats
-    }
-
-    pub fn from_row(row: &Row) -> Self {
-        let date_time: NaiveDateTime = Column::get(row, "Comp_DateTime");
-
-        Heat {
-            id: Column::get(row, "Comp_ID"),
-            race: row.to_entity(),
-            number: Column::get(row, "Comp_Number"),
-            round_code: Column::get(row, "Comp_RoundCode"),
-            label: Column::get(row, "Comp_Label"),
-            group_value: Column::get(row, "Comp_GroupValue"),
-            state: Column::get(row, "Comp_State"),
-            cancelled: Column::get(row, "Comp_Cancelled"),
-            date: date_time.date().to_string(),
-            time: date_time.time().to_string(),
-            referee: row.try_to_entity(),
-        }
     }
 
     pub(crate) fn query_all<'a>(regatta_id: i32) -> Query<'a> {
