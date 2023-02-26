@@ -1,5 +1,6 @@
 use super::{Race, Referee, ToEntity, TryToEntity};
 use crate::db::tiberius::RowColumn;
+use chrono::Datelike;
 use log::info;
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
@@ -17,6 +18,7 @@ pub struct Heat {
     cancelled: bool,
     date: String,
     time: String,
+    weekday: u8,
     race: Race,
     #[serde(skip_serializing_if = "Option::is_none")]
     referee: Option<Referee>,
@@ -37,6 +39,7 @@ impl ToEntity<Heat> for Row {
             cancelled: self.get_column("Comp_Cancelled"),
             date: date_time.date().to_string(),
             time: date_time.time().to_string(),
+            weekday: date_time.weekday().number_from_monday() as u8,
             referee: self.try_to_entity(),
         }
     }
