@@ -58,11 +58,6 @@
                         <Text text="{i18n>heatRegistrationTable.column.result}" class="bold" wrapping="false" />
                       </header>
                     </Column>
-                    <Column hAlign="End" width="4rem" importance="Low" popinDisplay="Inline">
-                      <header>
-                        <Text text="{i18n>heatRegistrationTable.column.delta}" class="bold" wrapping="false" />
-                      </header>
-                    </Column>
                     <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
                       <header>
                         <Text text="{i18n>common.points}" class="bold" wrapping="false" />
@@ -79,8 +74,10 @@
                           title="{path: 'regsFinished>registration',formatter: '.formatter.boatLabel'}"
                           text="{path: 'regsFinished>registration/crew', formatter: '.formatter.crewLabel'} " />
                         <Text text="{regsFinished>lane}" />
-                        <Text text="{regsFinished>result/result}" />
-                        <Text text="{= ${regsFinished>result/delta} !== '0.0' ? ${regsFinished>result/delta} : '-' }" />
+                        <layout:VerticalLayout>
+                          <Text text="{regsFinished>result/result}" />
+                          <Text text="{=${regsFinished>result/delta}?${regsFinished>result/delta}:''}" />
+                        </layout:VerticalLayout>
                         <Text text="{regsFinished>result/points}" />
                       </cells>
                     </ColumnListItem>
