@@ -3,23 +3,29 @@ use serde::Serialize;
 
 #[derive(Serialize)]
 pub struct Monitor {
-    #[serde(rename = "dbConnections")]
-    db_connections: DBConnections,
+    db: Db,
 }
 
 impl Monitor {
     pub fn new(state: State) -> Self {
         Monitor {
-            db_connections: DBConnections {
-                current: state.connections,
-                idle: state.idle_connections,
+            db: Db {
+                connections: Connections {
+                    current: state.connections,
+                    idle: state.idle_connections,
+                },
             },
         }
     }
 }
 
 #[derive(Serialize)]
-struct DBConnections {
+struct Db {
+    connections: Connections,
+}
+
+#[derive(Serialize)]
+struct Connections {
     current: u32,
     idle: u32,
 }
