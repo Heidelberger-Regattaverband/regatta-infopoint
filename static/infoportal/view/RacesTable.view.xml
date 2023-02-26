@@ -10,11 +10,11 @@
           <headerToolbar>
             <OverflowToolbar>
               <content>
-                <Title text="{i18n>common.race}" level="H2" />
-                <ToolbarSpacer />
                 <SearchField width="10rem" search=".onFilterSearch" />
                 <Button text="{i18n>common.filter}" tooltip="{i18n>common.filter}" icon="sap-icon://filter"
-                  press="onHandleFilterButtonPressed" />
+                  press="onFilterButtonPress" />
+                <ToolbarSpacer />
+                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
               </content>
             </OverflowToolbar>
           </headerToolbar>
@@ -54,11 +54,6 @@
                 <Text text="{i18n>common.state}" class="bold" />
               </header>
             </Column>
-            <Column hAlign="Center" width="7rem" importance="Low" popinDisplay="Inline">
-              <header>
-                <Text text="{i18n>common.raceMode}" class="bold" />
-              </header>
-            </Column>
             <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.seeded}" class="bold" />
@@ -74,7 +69,6 @@
                 <Text text="{path: 'races>', formatter: '.formatter.distanceLabel'}" />
                 <Text text="{races>registrationsCount}" />
                 <Text text="{= ${races>cancelled} ? ${i18n>common.raceCancelled} : ${i18n>common.raceDriven}}" />
-                <Text text="{races>raceMode}" />
                 <Text text="{= ${races>seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
               </cells>
             </ColumnListItem>

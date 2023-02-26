@@ -3,7 +3,19 @@ sap.ui.define([
 ], function (IndicationColor) {
   "use strict";
 
-  let Formatter = {
+  const Formatter = {
+
+    crewLabel: function (aCrew) {
+      let label = "";
+      if (aCrew) {
+        for (const oCrew of aCrew) {
+          const athlete = oCrew.athlete;
+          label += (oCrew.cox ? "St" : oCrew.pos) + ": " + athlete.firstName + " " + athlete.lastName + " (" + athlete.year + ", " + athlete.club + "), ";
+        }
+        label = label.substring(0, label.length - 2);
+      }
+      return label;
+    },
 
     distanceLabel: function (oRace) {
       if (oRace) {
@@ -12,14 +24,15 @@ sap.ui.define([
       return "";
     },
 
-    boatLabel: function (sShortLabel, iBoatNumber, sComment) {
-      if (iBoatNumber > 0) {
-        return sShortLabel + " - Boot " + iBoatNumber;
+    boatLabel: function (oRegistration) {
+      let sLabel = "" + oRegistration.shortLabel;
+      if (oRegistration.boatNumber > 0) {
+        sLabel += " - Boot " + oRegistration.boatNumber;
       }
-      if (sComment) {
-        sShortLabel += "  (" + sComment + ")";
+      if (oRegistration.comment) {
+        sLabel += "  (" + oRegistration.comment + ")";
       }
-      return sShortLabel;
+      return sLabel;
     },
 
     raceLabel: function (oRace) {
@@ -44,10 +57,20 @@ sap.ui.define([
       return "";
     },
 
-    dayLabel: function (sDate) {
-      if (sDate) {
-        const aDate = sDate.split("-");
-        return aDate[2] + "." + aDate[1] + ".";
+    dayLabel: function (oHeat) {
+      if (oHeat) {
+        let weekday;
+        switch (oHeat.weekday) {
+          case 1: weekday = "Mo"; break;
+          case 2: weekday = "Di"; break;
+          case 3: weekday = "Mi"; break;
+          case 4: weekday = "Do"; break;
+          case 5: weekday = "Fr"; break;
+          case 6: weekday = "Sa"; break;
+          case 7: weekday = "So"; break;
+        }
+        const aDate = oHeat.date.split("-");
+        return weekday + ", " + aDate[2] + "." + aDate[1] + ".";
       }
       return "";
     },
@@ -69,6 +92,9 @@ sap.ui.define([
     },
 
     stateLabel: function (oHeat) {
+      if (!oHeat) {
+        return "";
+      }
       if (oHeat.cancelled) {
         return this.i18n("common.cancelled");
       } else {
@@ -91,6 +117,9 @@ sap.ui.define([
     },
 
     heatStateHighlight: function (oHeat) {
+      if (!oHeat) {
+        return "";
+      }
       // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
       if (oHeat.cancelled) {
         return IndicationColor.Indication02; // cancelled -> red
@@ -114,11 +143,14 @@ sap.ui.define([
     },
 
     heatLabel: function (oHeat) {
+      if (!oHeat) {
+        return "";
+      }
       let sGroupValue = "";
 
-      if (oHeat.race.ageClass.numSubClasses > 0) {
+      if (oHeat.race && oHeat.race.ageClass.numSubClasses > 0) {
         const PREFIX = " - AK ";
-        switch (oHeat.group_value) {
+        switch (oHeat.groupValue) {
           case 0:
             sGroupValue = PREFIX + "A";
             break;
@@ -152,7 +184,7 @@ sap.ui.define([
         }
       }
 
-      switch (oHeat.round_code) {
+      switch (oHeat.roundCode) {
         case "A":
           return this.i18n("heat.label.division", [oHeat.label, sGroupValue]);
         case "R":

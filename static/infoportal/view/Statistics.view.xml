@@ -2,17 +2,21 @@
   <mvc:content>
 
     <Page title="{i18n>launchpad.statistics.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
+      <headerContent>
+        <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
+      </headerContent>
+
       <content>
 
-        <List id="registrationsList" items="{statistics>/items/registrations}" headerText="{i18n>statistics.registrations}">
+        <List id="registrationsList" items="{statistics>/registrations}" headerText="{i18n>statistics.registrations}">
           <ObjectListItem title="{statistics>name}" number="{statistics>value}"></ObjectListItem>
         </List>
 
-        <List id="racesList" items="{statistics>/items/races}" headerText="{i18n>statistics.races}">
+        <List id="racesList" items="{statistics>/races}" headerText="{i18n>statistics.races}">
           <ObjectListItem title="{statistics>name}" number="{statistics>value}"></ObjectListItem>
         </List>
 
-        <List id="heatsList" items="{statistics>/items/heats}" headerText="{i18n>statistics.heats}">
+        <List id="heatsList" items="{statistics>/heats}" headerText="{i18n>statistics.heats}">
           <ObjectListItem title="{statistics>name}" number="{statistics>value}"></ObjectListItem>
         </List>
 

@@ -12,32 +12,33 @@ license = "Apache-2.0"
 
 [dependencies]
 anyhow = "1"
-async-std = { version = "1.12", features = ["attributes"] }
-env_logger = "0.10"
-log = "0.4"
-dotenv = "0.15"
+async-std = { version = "1", features = ["attributes"] }
+env_logger = "0"
+log = "0"
+dotenv = "0"
+chrono = "0"
 
 # Web
 actix-web = { version = "4", features = ["rustls"] }
-actix-files = "0.6"
+actix-files = "0"
 serde = { version = "1", features = ["derive"] }
-actix-extensible-rate-limit = "0.2"
-actix-web-lab = "0.18"
-actix-web-prometheus = { version = "0.1", features = ["process"] }
-rustls = "0.20"
+actix-extensible-rate-limit = "0"
+actix-web-lab = "0"
+actix-web-prometheus = { version = "0", features = ["process"] }
+rustls = "0"
 rustls-pemfile = "1"
 actix-web-httpauth = "0.8"
 
 # Database
-bb8 = "0.8"
-async-trait = "0.1"
+bb8 = "0"
+async-trait = "0"
 # https://github.com/prisma/tiberius#feature-flags
-tiberius = { version = "0.12", features = [
+tiberius = { version = "0", features = [
   "chrono",
   "rustls",
   "tds73",
 ], default-features = false }
-stretto = { version = "0.7", features = ["async"] }
+stretto = { version = "0", features = ["async"] }
 
 # Utils
 colored = "2"

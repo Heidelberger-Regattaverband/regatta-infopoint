@@ -6,7 +6,7 @@ use actix_extensible_rate_limit::{
 use actix_files::Files;
 use actix_web::{
     dev::ServiceRequest,
-    web::{scope, Data},
+    web::{self, scope, Data},
     App, Error, HttpServer,
 };
 use actix_web_httpauth::{
@@ -17,7 +17,6 @@ use actix_web_httpauth::{
     middleware::HttpAuthentication,
 };
 use actix_web_lab::middleware::RedirectHttps;
-use actix_web_lab::web as web_lab;
 use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
 use colored::Colorize;
 use log::{debug, info};
@@ -65,6 +64,7 @@ impl Server {
                         .service(rest_api::get_race)
                         .service(rest_api::get_races)
                         .service(rest_api::get_heats)
+                        .service(rest_api::get_kiosk)
                         .service(rest_api::get_registrations)
                         .service(rest_api::get_heat_registrations)
                         .service(rest_api::get_scoring)
@@ -77,7 +77,7 @@ impl Server {
                         .use_etag(true)
                         .redirect_to_slash_directory(),
                 )
-                .service(web_lab::redirect("/", PATH_INFOPORTAL))
+                .service(web::redirect("/", PATH_INFOPORTAL))
         })
         // bind http
         .bind(http_bind)?

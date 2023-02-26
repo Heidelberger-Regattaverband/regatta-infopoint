@@ -1,22 +1,24 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-	<meta charset="utf-8">
-	<title>Infoportal zur Heidelberger Ruderregatta</title>
+  <meta charset="utf-8">
+  <title>Infoportal zur Heidelberger Ruderregatta</title>
   <link href="icon/favicon.ico" rel="icon" type="image/x-icon" />
-	<script
-		id="sap-ui-bootstrap"
-		src="https://ui5.sap.com/1.109.3/resources/sap-ui-core.js"
-		data-sap-ui-theme="sap_fiori_3"
-		data-sap-ui-compatVersion="edge"
-		data-sap-ui-async="true"
-		data-sap-ui-resourceroots='{
-			"de.regatta_hd.infopoint": "./"
-		}'
-		data-sap-ui-oninit="module:sap/ui/core/ComponentSupport">
-	</script>
+  <!-- https://sdk.openui5.org/versionoverview.html -->
+  <script id="sap-ui-bootstrap" src="https://sdk.openui5.org/1.110.0/resources/sap-ui-core.js"
+    data-sap-ui-libs="sap.m, sap.ui.layout, sap.ui.core, sap.f"
+    data-sap-ui-theme="sap_fiori_3"
+    data-sap-ui-compatVersion="edge"
+    data-sap-ui-async="true"
+    data-sap-ui-resourceroots='{"de.regatta_hd.infopoint": "./"}'
+    data-sap-ui-oninit="module:sap/ui/core/ComponentSupport">
+    </script>
 </head>
+
 <body class="sapUiBody" id="content">
-	<div data-sap-ui-component data-name="de.regatta_hd.infopoint" data-id="container" data-settings='{"id" : "infopoint"}'></div>
+  <div data-sap-ui-component data-name="de.regatta_hd.infopoint" data-id="container"
+    data-settings='{"id" : "infopoint"}' />
 </body>
+
 </html>
