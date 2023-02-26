@@ -15,7 +15,7 @@ pub type AquariusClient<'a> = PooledConnection<'a, TiberiusConnectionManager>;
 
 pub struct Aquarius {
     caches: Caches,
-    pool: TiberiusPool,
+    pub pool: TiberiusPool,
 }
 
 impl Aquarius {
