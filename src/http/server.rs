@@ -69,6 +69,7 @@ impl Server {
                         .redirect_to_slash_directory(),
                 )
                 .service(web::redirect("/", PATH_INFOPORTAL))
+                .service(rest_api::monitor)
         })
         // bind http
         .bind(http_bind)?

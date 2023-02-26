@@ -2,11 +2,18 @@ use crate::db::{
     aquarius::Aquarius,
     model::{Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
 };
+use crate::http::monitor::Monitor;
 use actix_web::{
     get,
     web::{Data, Json, Path, Query},
 };
 use serde::Deserialize;
+
+#[get("/monitor")]
+async fn monitor(data: Data<Aquarius>) -> Json<Monitor> {
+    let pool = data.pool.state();
+    Json(Monitor::new(pool))
+}
 
 #[get("/regattas")]
 async fn get_regattas(data: Data<Aquarius>) -> Json<Vec<Regatta>> {

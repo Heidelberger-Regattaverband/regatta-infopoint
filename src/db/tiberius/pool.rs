@@ -4,12 +4,16 @@ use async_trait::async_trait;
 use bb8::{ManageConnection, Pool};
 use colored::Colorize;
 use log::{debug, info};
-use std::env;
+use std::{
+    env,
+    sync::{Arc, Mutex},
+};
 use tiberius::{error::Error, AuthMethod, Client, Config, EncryptionLevel};
 
 #[derive(Debug)]
 pub struct TiberiusConnectionManager {
     config: Config,
+    count: Arc<Mutex<u8>>,
 }
 
 impl TiberiusConnectionManager {
@@ -17,6 +21,7 @@ impl TiberiusConnectionManager {
     fn new() -> TiberiusConnectionManager {
         TiberiusConnectionManager {
             config: Self::create_config(),
+            count: Arc::new(Mutex::new(0)),
         }
     }
 
@@ -56,6 +61,15 @@ impl TiberiusConnectionManager {
         config.trust_cert();
         config
     }
+
+    fn inc_count(&self) {
+        let mut count = self.count.lock().unwrap();
+        *count += 1;
+        debug!(
+            "Created new DB connection: count={}",
+            count.to_string().bold()
+        );
+    }
 }
 
 #[async_trait]
@@ -66,9 +80,9 @@ impl ManageConnection for TiberiusConnectionManager {
     async fn connect(&self) -> Result<Self::Connection, Self::Error> {
         let tcp = TcpStream::connect(self.config.get_addr()).await?;
         tcp.set_nodelay(true)?;
-        debug!("Creating new DB connection.");
-
-        Client::connect(self.config.clone(), tcp).await
+        let result = Client::connect(self.config.clone(), tcp).await;
+        self.inc_count();
+        result
     }
 
     async fn is_valid(&self, connection: &mut Self::Connection) -> Result<(), Self::Error> {
