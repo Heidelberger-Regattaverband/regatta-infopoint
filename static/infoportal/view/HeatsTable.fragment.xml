@@ -60,7 +60,7 @@
       <ColumnListItem type="Navigation" vAlign="Top" highlight="{path: 'heats>', formatter: '.formatter.heatStateHighlight'}">
         <cells>
           <Text text="{heats>number}" />
-          <Text text="{path: 'heats>date', formatter: '.formatter.dayLabel'}" />
+          <Text text="{path: 'heats>', formatter: '.formatter.dayLabel'}" />
           <Text text="{path: 'heats>time', formatter: '.formatter.timeLabel'}" />
           <ObjectIdentifier title="{path: 'heats>race', formatter: '.formatter.nrRaceLabel'}"
             text="{path: 'heats>', formatter: '.formatter.heatLabel'}" />

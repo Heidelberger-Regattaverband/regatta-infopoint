@@ -3,7 +3,7 @@ sap.ui.define([
 ], function (IndicationColor) {
   "use strict";
 
-  let Formatter = {
+  const Formatter = {
 
     crewLabel: function (aCrew) {
       let label = "";
@@ -57,10 +57,20 @@ sap.ui.define([
       return "";
     },
 
-    dayLabel: function (sDate) {
-      if (sDate) {
-        const aDate = sDate.split("-");
-        return aDate[2] + "." + aDate[1] + ".";
+    dayLabel: function (oHeat) {
+      if (oHeat) {
+        let weekday;
+        switch (oHeat.weekday) {
+          case 1: weekday = "Mo"; break;
+          case 2: weekday = "Di"; break;
+          case 3: weekday = "Mi"; break;
+          case 4: weekday = "Do"; break;
+          case 5: weekday = "Fr"; break;
+          case 6: weekday = "Sa"; break;
+          case 7: weekday = "So"; break;
+        }
+        const aDate = oHeat.date.split("-");
+        return weekday + ", " + aDate[2] + "." + aDate[1] + ".";
       }
       return "";
     },
