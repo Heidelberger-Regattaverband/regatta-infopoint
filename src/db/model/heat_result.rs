@@ -11,7 +11,8 @@ pub struct HeatResult {
     #[serde(rename = "rankLabel")]
     rank_label: String,
     result: String,
-    delta: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    delta: Option<String>,
     points: u8,
 }
 
@@ -19,14 +20,14 @@ impl ToEntity<HeatResult> for Row {
     fn to_entity(&self) -> HeatResult {
         let rank: u8 = self.get_column("Result_Rank");
         let rank_sort: u8 = if rank == 0 { u8::MAX } else { rank };
-        let delta: String = if rank > 0 {
+        let delta: Option<String> = if rank > 1 {
             let delta: i32 = self.get_column("Result_Delta");
             let duration = Duration::from_millis(delta as u64);
             let seconds = duration.as_secs();
             let millis = duration.subsec_millis() / 10;
-            format!("{seconds}.{millis}")
+            Some(format!("+{seconds}.{millis}"))
         } else {
-            Default::default()
+            None
         };
 
         let rank_label: String = if rank == 0 {

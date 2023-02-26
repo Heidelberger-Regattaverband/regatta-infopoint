@@ -99,9 +99,7 @@
                     <Text text="{heatRegistrations>lane}" />
                     <layout:VerticalLayout>
                       <Text text="{heatRegistrations>result/result}" />
-                      <Text
-                        text="{= ${heatRegistrations>result/delta} !== '0.0' ? '+' : '' }
-                        {= ${heatRegistrations>result/delta} !== '0.0' ? ${heatRegistrations>result/delta} : '' }" />
+                      <Text text="{=${heatRegistrations>result/delta}?${heatRegistrations>result/delta}:''}" />
                     </layout:VerticalLayout>
                     <Text text="{heatRegistrations>result/points}" />
                   </cells>
