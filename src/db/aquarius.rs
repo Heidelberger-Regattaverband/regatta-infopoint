@@ -4,8 +4,7 @@ use super::{
         Crew, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics,
         ToEntity,
     },
-    pool::{PoolFactory, TiberiusConnectionManager},
-    TiberiusPool,
+    tiberius::{PoolFactory, TiberiusConnectionManager, TiberiusPool},
 };
 use bb8::PooledConnection;
 use log::debug;

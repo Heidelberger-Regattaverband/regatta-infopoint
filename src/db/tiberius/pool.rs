@@ -1,11 +1,11 @@
+use super::TiberiusPool;
 use async_std::net::TcpStream;
 use async_trait::async_trait;
+use bb8::{ManageConnection, Pool};
 use colored::Colorize;
 use log::{debug, info};
 use std::env;
-use tiberius::Config;
-
-use super::TiberiusPool;
+use tiberius::{error::Error, AuthMethod, Client, Config, EncryptionLevel};
 
 #[derive(Debug)]
 pub struct TiberiusConnectionManager {
@@ -15,8 +15,9 @@ pub struct TiberiusConnectionManager {
 impl TiberiusConnectionManager {
     /// Creates a new `TiberiusConnectionManager`.
     fn new() -> TiberiusConnectionManager {
-        let config = Self::create_config();
-        TiberiusConnectionManager { config }
+        TiberiusConnectionManager {
+            config: Self::create_config(),
+        }
     }
 
     fn create_config() -> tiberius::Config {
@@ -42,15 +43,15 @@ impl TiberiusConnectionManager {
             db_user.bold()
         );
 
-        let mut config = tiberius::Config::new();
+        let mut config = Config::new();
         config.host(db_host);
         config.port(db_port);
         config.database(db_name);
-        config.authentication(tiberius::AuthMethod::sql_server(db_user, db_password));
+        config.authentication(AuthMethod::sql_server(db_user, db_password));
         if db_encryption {
-            config.encryption(tiberius::EncryptionLevel::Required);
+            config.encryption(EncryptionLevel::Required);
         } else {
-            config.encryption(tiberius::EncryptionLevel::NotSupported);
+            config.encryption(EncryptionLevel::NotSupported);
         }
         config.trust_cert();
         config
@@ -58,16 +59,16 @@ impl TiberiusConnectionManager {
 }
 
 #[async_trait]
-impl bb8::ManageConnection for TiberiusConnectionManager {
-    type Connection = tiberius::Client<TcpStream>;
-    type Error = tiberius::error::Error;
+impl ManageConnection for TiberiusConnectionManager {
+    type Connection = Client<TcpStream>;
+    type Error = Error;
 
     async fn connect(&self) -> Result<Self::Connection, Self::Error> {
         let tcp = TcpStream::connect(self.config.get_addr()).await?;
         tcp.set_nodelay(true)?;
         debug!("Creating new DB connection.");
 
-        tiberius::Client::connect(self.config.clone(), tcp).await
+        Client::connect(self.config.clone(), tcp).await
     }
 
     async fn is_valid(&self, connection: &mut Self::Connection) -> Result<(), Self::Error> {
@@ -97,7 +98,7 @@ impl PoolFactory {
             db_pool_size.to_string().bold()
         );
 
-        bb8::Pool::builder()
+        Pool::builder()
             .max_size(db_pool_size)
             .build(manager)
             .await
