@@ -40,6 +40,7 @@ RUN cargo build --release
 ## run stage ##
 ###############
 FROM debian:bullseye-slim
+RUN apt-get update && apt-get upgrade -y
 WORKDIR /app
 
 # copy server binary from build stage
