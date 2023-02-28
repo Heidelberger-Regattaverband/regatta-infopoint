@@ -43,10 +43,10 @@ FROM debian:bullseye-slim
 WORKDIR /app
 
 # copy server binary from build stage
-COPY --from=builder /code/target/release/infoportal ./infoportal
-COPY --from=builder /code/.env ./.env
-COPY --from=builder /code/static/infoportal/ ./static/infoportal/
-COPY --from=builder /code/ssl/ ./ssl/
+COPY --from=builder /code/target/release/infoportal infoportal
+COPY --from=builder /code/.env .env
+COPY --from=builder /code/static/infoportal/ static/infoportal
+COPY --from=builder /code/ssl/ ssl
 
 # set user to non-root unless root is required for your app
 USER 1001
@@ -56,6 +56,3 @@ EXPOSE 8443
 VOLUME [ "/data" ]
 
 CMD ["/app/infoportal"]
-
-#RUN cargo install --git https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git --branch main
-#CMD ["infopoint"]
