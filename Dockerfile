@@ -1,5 +1,5 @@
 # build image: docker build -t infoportal .
-# run container: docker run -it --rm --name infoportal -p 80:8080 -p 443:8443 --env DB_PASSWORD= infoportal
+# run container: docker run -it --rm --name infoportal -p 8080:8080 -p 8443:8443 --env DB_PASSWORD= infoportal
 
 #################
 ## build stage ##
@@ -11,24 +11,25 @@ LABEL maintainer="markus@ofterdinger.de"
 RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
 
 # install required software
-RUN apt-get update && apt-get upgrade -y 
+RUN apt-get update && apt-get upgrade -y
 RUN rustup update stable
 RUN apt-get install curl sudo nodejs -y
+RUN sudo npm install -g grunt-cli
 
 WORKDIR /code
 
-# copy required resources into image
-COPY Cargo.toml .
-COPY Cargo.lock .
-COPY src/ ./src/
-COPY static/ ./static/
-COPY ssl/ ./ssl
-COPY .env ./.env
+# copy required resources into builder image
+COPY Cargo.toml Cargo.toml
+COPY Cargo.lock Cargo.lock
+COPY src/ src/
+COPY ssl/ ssl
+COPY .env .env
 
 RUN cargo fetch
 
+COPY static/ static/
+
 # build UI
-RUN sudo npm install -g grunt-cli
 RUN npm install --prefix ./static/
 RUN grunt --gruntfile ./static/Gruntfile.js
 
