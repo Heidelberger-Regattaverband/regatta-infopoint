@@ -119,21 +119,21 @@ impl Aquarius {
                 race_id,
                 start.elapsed()
             );
-            return race;
+            race
+        } else {
+            // 2. read race from DB
+            let row = self
+                ._execute_single_query(Race::query_single(race_id))
+                .await;
+            let race: Race = row.to_entity();
+
+            // 3. store race in cache
+            self.caches.race.set(&race.id, &race).await;
+
+            debug!("Query race {} from DB: {:?}ms", race_id, start.elapsed());
+
+            race
         }
-
-        // 2. read race from DB
-        let row = self
-            ._execute_single_query(Race::query_single(race_id))
-            .await;
-        let race: Race = row.to_entity();
-
-        // 3. store race in cache
-        self.caches.race.set(&race.id, &race).await;
-
-        debug!("Query race {} from DB: {:?}ms", race_id, start.elapsed());
-
-        race
     }
 
     pub async fn get_registrations(&self, race_id: i32) -> Vec<Registration> {
