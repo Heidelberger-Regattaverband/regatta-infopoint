@@ -4,7 +4,9 @@ use actix_extensible_rate_limit::{
     RateLimiter,
 };
 use actix_files::Files;
+use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::{
+    cookie::Key,
     dev::ServiceRequest,
     web::{self, scope, Data},
     App, Error, HttpServer,
@@ -38,9 +40,16 @@ impl Server {
         let http_bind = Self::get_http_bind();
         let https_bind = Self::get_https_bind();
         let https_public_port = Self::get_https_public_port();
+        let secret_key = Self::get_secret_key();
 
         let mut http_server = HttpServer::new(move || {
             App::new()
+                // session store
+                .wrap(
+                    SessionMiddleware::builder(CookieSessionStore::default(), secret_key.clone())
+                        .cookie_secure(false)
+                        .build(),
+                )
                 // add rate limiter middleware
                 .wrap(Self::get_rate_limiter(max_requests, interval))
                 // collect metrics about requests and responses
@@ -84,6 +93,11 @@ impl Server {
         info!("Starting Infoportal");
         // finally run http server
         http_server.run().await
+    }
+
+    // The secret key would usually be read from a configuration file/environment variables.
+    fn get_secret_key() -> Key {
+        Key::generate()
     }
 
     /// Returns a new PrometheusMetrics instance.

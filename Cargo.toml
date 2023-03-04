@@ -19,10 +19,14 @@ dotenv = "0"
 chrono = "0"
 
 # Web
-actix-web = { version = "4", features = ["rustls"] }
+actix-web = { version = "4", features = [
+  "rustls",
+  "cookies"
+] }
 actix-files = "0"
 serde = { version = "1", features = ["derive"] }
 actix-extensible-rate-limit = "0"
+actix-session = { version = "0", features = ["cookie-session"] }
 actix-web-lab = "0"
 actix-web-prometheus = { version = "0", features = ["process"] }
 rustls = "0"
