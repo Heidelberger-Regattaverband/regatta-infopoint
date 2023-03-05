@@ -91,10 +91,13 @@
 
               <items>
                 <ColumnListItem
-                  highlight="{=${heatRegistrations>registration/cancelled} || ${heatRegistrations>result/rankSort}>10 ? 'Indication02' : 'Indication04' }"
-                  vAlign="Top">
+                  highlight="{path: 'heatRegistrations>', formatter: '.formatter.heatRegistrationHighlight'}" vAlign="Top">
                   <cells>
-                    <Text text="{heatRegistrations>result/rankLabel}" />
+                    <layout:VerticalLayout>
+                      <Text text="{heatRegistrations>result/rankLabel}" visible="{= ${heatRegistrations>registration/cancelled}}"
+                        class="cancelled" />
+                      <Text text="{heatRegistrations>result/rankLabel}" visible="{= !${heatRegistrations>registration/cancelled}}" />
+                    </layout:VerticalLayout>
 
                     <layout:VerticalLayout>
                       <Text text="{heatRegistrations>registration/bib}" visible="{= ${heatRegistrations>registration/cancelled}}"

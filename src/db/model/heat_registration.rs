@@ -1,4 +1,4 @@
-use super::{HeatResult, Registration, ToEntity};
+use super::{HeatResult, Registration, ToEntity, TryToEntity};
 use crate::db::tiberius::RowColumn;
 use serde::Serialize;
 use tiberius::{Query, Row};
@@ -7,8 +7,9 @@ use tiberius::{Query, Row};
 pub struct HeatRegistration {
     pub id: i32,
     lane: i16,
-    result: HeatResult,
     pub registration: Registration,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    result: Option<HeatResult>,
 }
 
 impl ToEntity<HeatRegistration> for Row {
@@ -17,7 +18,7 @@ impl ToEntity<HeatRegistration> for Row {
             id: self.get_column("CE_ID"),
             lane: self.get_column("CE_Lane"),
             registration: self.to_entity(),
-            result: self.to_entity(),
+            result: self.try_to_entity(),
         }
     }
 }
