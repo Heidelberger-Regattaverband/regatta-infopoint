@@ -1,10 +1,13 @@
-use crate::{db::aquarius::Aquarius, http::rest_api};
+use crate::{
+    db::aquarius::Aquarius,
+    http::{rest_api, session::InfoportalStore},
+};
 use actix_extensible_rate_limit::{
     backend::{memory::InMemoryBackend, SimpleInput, SimpleInputFunctionBuilder, SimpleOutput},
     RateLimiter,
 };
 use actix_files::Files;
-use actix_session::{storage::CookieSessionStore, SessionMiddleware};
+use actix_session::SessionMiddleware;
 use actix_web::{
     cookie::Key,
     dev::ServiceRequest,
@@ -46,7 +49,7 @@ impl Server {
             App::new()
                 // session store
                 .wrap(
-                    SessionMiddleware::builder(CookieSessionStore::default(), secret_key.clone())
+                    SessionMiddleware::builder(InfoportalStore::new(), secret_key.clone())
                         .cookie_secure(false)
                         .build(),
                 )
