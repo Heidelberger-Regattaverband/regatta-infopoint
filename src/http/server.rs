@@ -112,11 +112,7 @@ impl Server {
     fn get_rate_limiter(
         max_requests: u64,
         interval: u64,
-    ) -> RateLimiter<
-        InMemoryBackend,
-        SimpleOutput,
-        impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>,
-    > {
+    ) -> RateLimiter<InMemoryBackend, SimpleOutput, impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>> {
         let input = SimpleInputFunctionBuilder::new(Duration::from_secs(interval), max_requests)
             .real_ip_key()
             .build();
@@ -146,22 +142,14 @@ impl Server {
 
     fn get_rustls_config() -> ServerConfig {
         // init server config builder with safe defaults
-        let config = ServerConfig::builder()
-            .with_safe_defaults()
-            .with_no_client_auth();
+        let config = ServerConfig::builder().with_safe_defaults().with_no_client_auth();
 
-        let cert_pem_path =
-            env::var("HTTPS_CERT_PATH").unwrap_or_else(|_| "./ssl/cert.pem".to_string());
-        let key_pem_path =
-            env::var("HTTPS_KEY_PATH").unwrap_or_else(|_| "./ssl/key.pem".to_string());
+        let cert_pem_path = env::var("HTTPS_CERT_PATH").unwrap_or_else(|_| "./ssl/cert.pem".to_string());
+        let key_pem_path = env::var("HTTPS_KEY_PATH").unwrap_or_else(|_| "./ssl/key.pem".to_string());
 
         debug!(
             "Current working directory is {}",
-            std::env::current_dir()
-                .unwrap()
-                .display()
-                .to_string()
-                .bold()
+            std::env::current_dir().unwrap().display().to_string().bold()
         );
 
         // load TLS key/cert files
@@ -174,11 +162,7 @@ impl Server {
         let key_file = &mut BufReader::new(File::open(key_pem_path).unwrap());
 
         // convert files to key/cert objects
-        let cert_chain = certs(cert_file)
-            .unwrap()
-            .into_iter()
-            .map(Certificate)
-            .collect();
+        let cert_chain = certs(cert_file).unwrap().into_iter().map(Certificate).collect();
         let mut keys: Vec<PrivateKey> = pkcs8_private_keys(key_file)
             .unwrap()
             .into_iter()
