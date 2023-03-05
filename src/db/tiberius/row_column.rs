@@ -76,3 +76,12 @@ impl TryRowColumn<i32> for Row {
         }
     }
 }
+
+impl TryRowColumn<u8> for Row {
+    fn try_get_column(&self, col_name: &str) -> Option<u8> {
+        match self.try_get::<u8, _>(col_name) {
+            Ok(value) => value,
+            _ => None,
+        }
+    }
+}
