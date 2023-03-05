@@ -5,6 +5,15 @@ sap.ui.define([
 
   const Formatter = {
 
+    raceRegistrationHighlight: function (oRegistration) {
+      // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
+      if (oRegistration.cancelled) {
+        return IndicationColor.Indication02; // cancelled -> red
+      } else {
+        return IndicationColor.Indication04; // official -> green
+      }
+    },
+
     crewLabel: function (aCrew) {
       let label = "";
       if (aCrew) {
