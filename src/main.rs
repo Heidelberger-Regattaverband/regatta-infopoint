@@ -60,9 +60,7 @@ mod tests {
         )
         .await;
 
-        let request = TestRequest::get()
-            .uri("/api/regattas/12/heats")
-            .to_request();
+        let request = TestRequest::get().uri("/api/regattas/12/heats").to_request();
         let response = test::call_service(&app, request).await;
         assert!(response.status().is_success());
     }

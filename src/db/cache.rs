@@ -50,9 +50,7 @@ where
     }
 
     async fn set(&self, key: &K, value: &V) {
-        self.cache
-            .insert_with_ttl(*key, value.clone(), 1, TTL)
-            .await;
+        self.cache.insert_with_ttl(*key, value.clone(), 1, TTL).await;
         self.cache.wait().await.unwrap();
     }
 }
