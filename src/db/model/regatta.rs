@@ -33,10 +33,7 @@ impl ToEntity<Regatta> for Row {
 
 impl Regatta {
     pub async fn query_all(client: &mut AquariusClient<'_>) -> Vec<Regatta> {
-        let stream = Query::new("SELECT * FROM Event e")
-            .query(client)
-            .await
-            .unwrap();
+        let stream = Query::new("SELECT * FROM Event e").query(client).await.unwrap();
         let regattas = utils::get_rows(stream).await;
         regattas.into_iter().map(|row| row.to_entity()).collect()
     }

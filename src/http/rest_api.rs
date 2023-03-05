@@ -51,11 +51,7 @@ async fn get_registrations(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Re
 }
 
 #[get("/regattas/{id}/heats")]
-async fn get_heats(
-    path: Path<i32>,
-    odata_params: Query<OData>,
-    data: Data<Aquarius>,
-) -> Json<Vec<Heat>> {
+async fn get_heats(path: Path<i32>, odata_params: Query<OData>, data: Data<Aquarius>) -> Json<Vec<Heat>> {
     let regatta_id = path.into_inner();
     let odata = odata_params.into_inner();
     Json(data.get_heats(regatta_id, odata.filter).await)
@@ -74,10 +70,7 @@ async fn get_scoring(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Score>> 
 }
 
 #[get("/heats/{id}/registrations")]
-async fn get_heat_registrations(
-    path: Path<i32>,
-    data: Data<Aquarius>,
-) -> Json<Vec<HeatRegistration>> {
+async fn get_heat_registrations(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<HeatRegistration>> {
     let heat_id = path.into_inner();
     Json(data.get_heat_registrations(heat_id).await)
 }

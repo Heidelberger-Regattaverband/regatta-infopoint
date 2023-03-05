@@ -33,8 +33,7 @@ impl TiberiusConnectionManager {
             .unwrap();
         let db_name = env::var("DB_NAME").expect("env variable `DB_NAME` should be set");
         let db_user = env::var("DB_USER").expect("env variable `DB_USER` should be set");
-        let db_password =
-            env::var("DB_PASSWORD").expect("env variable `DB_PASSWORD` should be set");
+        let db_password = env::var("DB_PASSWORD").expect("env variable `DB_PASSWORD` should be set");
         let db_encryption: bool = env::var("DB_ENCRYPTION")
             .expect("env variable `DB_ENCRYPTION` should be set")
             .parse()
@@ -65,10 +64,7 @@ impl TiberiusConnectionManager {
     fn inc_count(&self) {
         let mut count = self.count.lock().unwrap();
         *count += 1;
-        debug!(
-            "Created new DB connection: count={}",
-            count.to_string().bold()
-        );
+        debug!("Created new DB connection: count={}", count.to_string().bold());
     }
 }
 
@@ -112,10 +108,6 @@ impl PoolFactory {
             db_pool_size.to_string().bold()
         );
 
-        Pool::builder()
-            .max_size(db_pool_size)
-            .build(manager)
-            .await
-            .unwrap()
+        Pool::builder().max_size(db_pool_size).build(manager).await.unwrap()
     }
 }
