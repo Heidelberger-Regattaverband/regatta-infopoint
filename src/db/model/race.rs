@@ -1,5 +1,5 @@
 use super::{AgeClass, BoatClass, ToEntity, TryToEntity};
-use crate::db::tiberius::RowColumn;
+use crate::db::tiberius::{RowColumn, TryRowColumn};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -28,7 +28,8 @@ impl ToEntity<Race> for Row {
     fn to_entity(&self) -> Race {
         let short_label: String = self.get_column("Offer_ShortLabel");
         let long_label: String = self.get_column("Offer_LongLabel");
-        let comment: String = self.get_column("Offer_Comment");
+        let comment: String = self.try_get_column("Offer_Comment").unwrap_or_default();
+        let seeded: Option<bool> = self.try_get_column("isSet");
 
         Race {
             id: self.get_column("Offer_ID"),
@@ -39,8 +40,8 @@ impl ToEntity<Race> for Row {
             distance: self.get_column("Offer_Distance"),
             lightweight: self.get_column("Offer_IsLightweight"),
             cancelled: self.get_column("Offer_Cancelled"),
-            registrations_count: self.get_column("Registrations_Count"),
-            seeded: self.get_column("isSet"),
+            registrations_count: self.try_get_column("Registrations_Count").unwrap_or_default(),
+            seeded: seeded.unwrap_or_default(),
             age_class: self.try_to_entity(),
             boat_class: self.try_to_entity(),
         }
