@@ -1,5 +1,5 @@
 use super::{Club, Crew, ToEntity};
-use crate::db::tiberius::RowColumn;
+use crate::db::tiberius::{RowColumn, TryRowColumn};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -26,8 +26,8 @@ impl ToEntity<Registration> for Row {
         Registration {
             id,
             bib: self.get_column("Entry_Bib"),
-            comment: self.get_column("Entry_Comment"),
-            boat_number: self.get_column("Entry_BoatNumber"),
+            comment: self.try_get_column("Entry_Comment").unwrap_or_default(),
+            boat_number: self.try_get_column("Entry_BoatNumber").unwrap_or_default(),
             short_label: self.get_column("Label_Short"),
             cancelled,
             club: self.to_entity(),

@@ -21,7 +21,7 @@ impl TryToEntity<BoatClass> for Row {
                 id,
                 caption: self.get_column("BoatClass_Caption"),
                 abbreviation: self.get_column("BoatClass_Abbr"),
-                num_rowers: self.get_column("BoatClass_NumRowers"),
+                num_rowers: self.try_get_column("BoatClass_NumRowers").unwrap_or_default(),
                 coxed: coxed > 0,
             })
         } else {
