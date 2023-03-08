@@ -96,8 +96,8 @@
                     </layout:VerticalLayout>
 
                     <layout:VerticalLayout>
-                      <Text text="{raceRegistrations>club/shortName}" visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />
-                      <Text text="{raceRegistrations>club/shortName}" visible="{= !${raceRegistrations>cancelled}}" />
+                      <Text text="{raceRegistrations>club/shortName}, {raceRegistrations>club/city}" visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />
+                      <Text text="{raceRegistrations>club/shortName}, {raceRegistrations>club/city}" visible="{= !${raceRegistrations>cancelled}}" />
                     </layout:VerticalLayout>
                   </cells>
                 </ColumnListItem>
