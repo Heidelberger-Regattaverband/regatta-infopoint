@@ -10,6 +10,7 @@ use tiberius::{time::chrono::NaiveDateTime, Query, Row};
 pub struct Regatta {
     pub id: i32,
     title: String,
+    #[serde(rename = "subTitle")]
     sub_title: String,
     venue: String,
     #[serde(rename = "startDate")]
