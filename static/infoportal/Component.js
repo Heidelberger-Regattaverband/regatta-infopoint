@@ -11,7 +11,7 @@ sap.ui.define([
       manifest: "json"
     },
 
-    init: async function () {
+    init: function () {
       // call the init function of the parent
       UIComponent.prototype.init.apply(this, arguments);
 
@@ -19,7 +19,8 @@ sap.ui.define([
       this.getRouter().initialize();
 
       this._oRegattaModel = new JSONModel();
-      await this._oRegattaModel.loadData("/api/active_regatta");
+      // ensure the active regatta is loaded, otherwise the regatta_id is unedfined
+      Promise.resolve(this._oRegattaModel.loadData("/api/active_regatta"));
       this.setModel(this._oRegattaModel, "regatta");
 
       // set device model
