@@ -4,8 +4,12 @@ use super::{
     tiberius::{PoolFactory, TiberiusConnectionManager, TiberiusPool},
 };
 use bb8::PooledConnection;
-use log::debug;
-use std::time::Instant;
+use colored::Colorize;
+use log::{debug, info};
+use std::{
+    env,
+    time::{Duration, Instant},
+};
 use tiberius::{Query, Row};
 
 pub type AquariusClient<'a> = PooledConnection<'a, TiberiusConnectionManager>;
@@ -13,15 +17,35 @@ pub type AquariusClient<'a> = PooledConnection<'a, TiberiusConnectionManager>;
 pub struct Aquarius {
     caches: Caches,
     pub pool: TiberiusPool,
+    active_regatta_id: i32,
 }
 
 impl Aquarius {
     /// Create a new `Aquarius`.
     pub async fn new() -> Self {
+        let active_regatta_id: i32 = env::var("ACTIVE_REGATTA_ID")
+            .expect("env variable `ACTIVE_REGATTA_ID` should be set")
+            .parse()
+            .unwrap();
+        let cache_ttl: u64 = env::var("CACHE_TTL")
+            .expect("env variable `CACHE_TTL` should be set")
+            .parse()
+            .unwrap();
+        info!(
+            "Aquarius: active_regatta_id={}, cache_ttl={}s",
+            active_regatta_id.to_string().bold(),
+            cache_ttl.to_string().bold()
+        );
+
         Aquarius {
-            caches: Caches::new(),
+            caches: Caches::new(Duration::from_secs(cache_ttl)),
             pool: PoolFactory::create_pool().await,
+            active_regatta_id,
         }
+    }
+
+    pub async fn get_active_regatta(&self) -> Regatta {
+        self.get_regatta(self.active_regatta_id).await
     }
 
     pub async fn get_regattas(&self) -> Vec<Regatta> {

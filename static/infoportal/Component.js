@@ -11,16 +11,16 @@ sap.ui.define([
       manifest: "json"
     },
 
-    init: function () {
+    init: async function () {
       // call the init function of the parent
       UIComponent.prototype.init.apply(this, arguments);
 
       // create the views based on the url/hash
       this.getRouter().initialize();
 
-      const oRegattaModel = new JSONModel();
-      oRegattaModel.loadData("/api/regattas/" + this.getRegattaId());
-      this.setModel(oRegattaModel, "regatta");
+      this._oRegattaModel = new JSONModel();
+      await this._oRegattaModel.loadData("/api/active_regatta");
+      this.setModel(this._oRegattaModel, "regatta");
 
       // set device model
       const oDeviceModel = new JSONModel(Device);
@@ -40,7 +40,7 @@ sap.ui.define([
     },
 
     getRegattaId: function () {
-      return 12;
+      return this._oRegattaModel.getData().id;
     }
 
   });

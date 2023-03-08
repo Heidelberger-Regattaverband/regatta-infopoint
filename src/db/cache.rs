@@ -18,6 +18,7 @@ where
     V: Send + Sync + Clone + 'static,
 {
     cache: AsyncCache<K, V>,
+    ttl: Duration,
 }
 
 impl<K, V> Cache<K, V>
@@ -25,9 +26,10 @@ where
     K: Hash + Eq + Send + Sync + Copy,
     V: Send + Sync + Clone + 'static,
 {
-    pub fn new(size: usize) -> Self {
+    pub fn new(size: usize, ttl: Duration) -> Self {
         Cache {
             cache: AsyncCache::new(size, MAX_COST, task::spawn).unwrap(),
+            ttl,
         }
     }
 }
@@ -50,7 +52,7 @@ where
     }
 
     async fn set(&self, key: &K, value: &V) {
-        self.cache.insert_with_ttl(*key, value.clone(), 1, TTL).await;
+        self.cache.insert_with_ttl(*key, value.clone(), 1, self.ttl).await;
         self.cache.wait().await.unwrap();
     }
 }
@@ -65,23 +67,21 @@ pub(super) struct Caches {
     pub scores: Cache<i32, Vec<Score>>,
 }
 
-const TTL: Duration = Duration::from_secs(30);
-
 impl Caches {
     /// Creates a new `Cache`.
-    pub(super) fn new() -> Self {
+    pub(super) fn new(ttl: Duration) -> Self {
         const MAX_REGATTAS_COUNT: usize = 5;
         const MAX_RACES_COUNT: usize = 200;
         const MAX_HEATS_COUNT: usize = 350;
 
         Caches {
-            regatta: Cache::new(MAX_REGATTAS_COUNT),
-            races: Cache::new(MAX_REGATTAS_COUNT),
-            race: Cache::new(MAX_RACES_COUNT),
-            regs: Cache::new(MAX_RACES_COUNT),
-            heats: Cache::new(MAX_REGATTAS_COUNT),
-            heat_regs: Cache::new(MAX_HEATS_COUNT),
-            scores: Cache::new(MAX_REGATTAS_COUNT),
+            regatta: Cache::new(MAX_REGATTAS_COUNT, ttl),
+            races: Cache::new(MAX_REGATTAS_COUNT, ttl),
+            race: Cache::new(MAX_RACES_COUNT, ttl),
+            regs: Cache::new(MAX_RACES_COUNT, ttl),
+            heats: Cache::new(MAX_REGATTAS_COUNT, ttl),
+            heat_regs: Cache::new(MAX_HEATS_COUNT, ttl),
+            scores: Cache::new(MAX_REGATTAS_COUNT, ttl),
         }
     }
 }
