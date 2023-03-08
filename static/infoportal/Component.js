@@ -20,7 +20,7 @@ sap.ui.define([
 
       this._oRegattaModel = new JSONModel();
       // ensure the active regatta is loaded, otherwise the regatta_id is unedfined
-      Promise.resolve(this._oRegattaModel.loadData("/api/active_regatta"));
+      this._oRegattaModel.loadData("/api/active_regatta", {}, false);
       this.setModel(this._oRegattaModel, "regatta");
 
       // set device model
