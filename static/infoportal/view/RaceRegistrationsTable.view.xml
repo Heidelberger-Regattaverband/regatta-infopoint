@@ -76,7 +76,7 @@
               </columns>
 
               <items>
-                <ColumnListItem highlight="{= ${raceRegistrations>cancelled} ? 'Indication02' : 'Indication04' }" vAlign="Top">
+                <ColumnListItem highlight="{path: 'raceRegistrations>', formatter: '.formatter.raceRegistrationHighlight'}" vAlign="Top">
                   <cells>
                     <layout:VerticalLayout>
                       <Text text="{raceRegistrations>bib}" visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />
@@ -96,8 +96,8 @@
                     </layout:VerticalLayout>
 
                     <layout:VerticalLayout>
-                      <Text text="{raceRegistrations>club/shortName}" visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />
-                      <Text text="{raceRegistrations>club/shortName}" visible="{= !${raceRegistrations>cancelled}}" />
+                      <Text text="{raceRegistrations>club/shortName}, {raceRegistrations>club/city}" visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />
+                      <Text text="{raceRegistrations>club/shortName}, {raceRegistrations>club/city}" visible="{= !${raceRegistrations>cancelled}}" />
                     </layout:VerticalLayout>
                   </cells>
                 </ColumnListItem>

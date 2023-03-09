@@ -2,77 +2,82 @@ use crate::db::{
     aquarius::Aquarius,
     model::{Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
 };
+use crate::http::monitor::Monitor;
 use actix_web::{
     get,
     web::{Data, Json, Path, Query},
 };
 use serde::Deserialize;
 
+#[get("/monitor")]
+async fn monitor(aquarius: Data<Aquarius>) -> Json<Monitor> {
+    let pool = aquarius.pool.state();
+    Json(Monitor::new(pool))
+}
+
 #[get("/regattas")]
-async fn get_regattas(data: Data<Aquarius>) -> Json<Vec<Regatta>> {
-    Json(data.get_regattas().await)
+async fn get_regattas(aquarius: Data<Aquarius>) -> Json<Vec<Regatta>> {
+    Json(aquarius.get_regattas().await)
+}
+
+#[get("/active_regatta")]
+async fn get_active_regatta(aquarius: Data<Aquarius>) -> Json<Regatta> {
+    Json(aquarius.get_active_regatta().await)
 }
 
 #[get("/regattas/{id}")]
-async fn get_regatta(path: Path<i32>, data: Data<Aquarius>) -> Json<Regatta> {
+async fn get_regatta(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Regatta> {
     let regatta_id = path.into_inner();
-    Json(data.get_regatta(regatta_id).await)
+    Json(aquarius.get_regatta(regatta_id).await)
 }
 
 #[get("/regattas/{id}/races")]
-async fn get_races(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Race>> {
+async fn get_races(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Vec<Race>> {
     let regatta_id = path.into_inner();
-    Json(data.get_races(regatta_id).await)
+    Json(aquarius.get_races(regatta_id).await)
 }
 
 #[get("/regattas/{id}/statistics")]
-async fn get_statistics(path: Path<i32>, data: Data<Aquarius>) -> Json<Statistics> {
+async fn get_statistics(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Statistics> {
     let regatta_id = path.into_inner();
-    Json(data.get_statistics(regatta_id).await)
+    Json(aquarius.get_statistics(regatta_id).await)
 }
 
 #[get("/races/{id}")]
-async fn get_race(path: Path<i32>, data: Data<Aquarius>) -> Json<Race> {
+async fn get_race(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Race> {
     let race_id = path.into_inner();
-    Json(data.get_race(race_id).await)
+    Json(aquarius.get_race(race_id).await)
 }
 
 #[get("/races/{id}/registrations")]
-async fn get_registrations(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Registration>> {
+async fn get_registrations(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Vec<Registration>> {
     let race_id = path.into_inner();
-    Json(data.get_registrations(race_id).await)
+    Json(aquarius.get_registrations(race_id).await)
 }
 
 #[get("/regattas/{id}/heats")]
-async fn get_heats(
-    path: Path<i32>,
-    odata_params: Query<OData>,
-    data: Data<Aquarius>,
-) -> Json<Vec<Heat>> {
+async fn get_heats(path: Path<i32>, odata_params: Query<OData>, aquarius: Data<Aquarius>) -> Json<Vec<Heat>> {
     let regatta_id = path.into_inner();
     let odata = odata_params.into_inner();
-    Json(data.get_heats(regatta_id, odata.filter).await)
+    Json(aquarius.get_heats(regatta_id, odata.filter).await)
 }
 
 #[get("/regattas/{id}/kiosk")]
-async fn get_kiosk(path: Path<i32>, data: Data<Aquarius>) -> Json<Kiosk> {
+async fn get_kiosk(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Kiosk> {
     let regatta_id = path.into_inner();
-    Json(data.get_kiosk(regatta_id).await)
+    Json(aquarius.get_kiosk(regatta_id).await)
 }
 
 #[get("/regattas/{id}/scoring")]
-async fn get_scoring(path: Path<i32>, data: Data<Aquarius>) -> Json<Vec<Score>> {
+async fn get_scoring(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Vec<Score>> {
     let regatta_id = path.into_inner();
-    Json(data.get_scoring(regatta_id).await)
+    Json(aquarius.get_scoring(regatta_id).await)
 }
 
 #[get("/heats/{id}/registrations")]
-async fn get_heat_registrations(
-    path: Path<i32>,
-    data: Data<Aquarius>,
-) -> Json<Vec<HeatRegistration>> {
+async fn get_heat_registrations(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Vec<HeatRegistration>> {
     let heat_id = path.into_inner();
-    Json(data.get_heat_registrations(heat_id).await)
+    Json(aquarius.get_heat_registrations(heat_id).await)
 }
 
 #[derive(Debug, Deserialize)]

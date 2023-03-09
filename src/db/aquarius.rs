@@ -1,31 +1,51 @@
 use super::{
     cache::{CacheTrait, Caches},
-    model::{
-        Crew, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics,
-        ToEntity,
-    },
-    pool::{PoolFactory, TiberiusConnectionManager},
-    TiberiusPool,
+    model::{Crew, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics, ToEntity},
+    tiberius::{PoolFactory, TiberiusConnectionManager, TiberiusPool},
 };
 use bb8::PooledConnection;
-use log::debug;
-use std::time::Instant;
+use colored::Colorize;
+use log::{debug, info};
+use std::{
+    env,
+    time::{Duration, Instant},
+};
 use tiberius::{Query, Row};
 
 pub type AquariusClient<'a> = PooledConnection<'a, TiberiusConnectionManager>;
 
 pub struct Aquarius {
     caches: Caches,
-    pool: TiberiusPool,
+    pub pool: TiberiusPool,
+    active_regatta_id: i32,
 }
 
 impl Aquarius {
     /// Create a new `Aquarius`.
     pub async fn new() -> Self {
+        let active_regatta_id: i32 = env::var("ACTIVE_REGATTA_ID")
+            .expect("env variable `ACTIVE_REGATTA_ID` should be set")
+            .parse()
+            .unwrap();
+        let cache_ttl: u64 = env::var("CACHE_TTL")
+            .expect("env variable `CACHE_TTL` should be set")
+            .parse()
+            .unwrap();
+        info!(
+            "Aquarius: active_regatta_id={}, cache_ttl={}s",
+            active_regatta_id.to_string().bold(),
+            cache_ttl.to_string().bold()
+        );
+
         Aquarius {
-            caches: Caches::new(),
+            caches: Caches::new(Duration::from_secs(cache_ttl)),
             pool: PoolFactory::create_pool().await,
+            active_regatta_id,
         }
+    }
+
+    pub async fn get_active_regatta(&self) -> Regatta {
+        self.get_regatta(self.active_regatta_id).await
     }
 
     pub async fn get_regattas(&self) -> Vec<Regatta> {
@@ -45,11 +65,7 @@ impl Aquarius {
 
         // 1. try to get regatta from cache
         if let Some(regatta) = self.caches.regatta.get(&regatta_id) {
-            debug!(
-                "Getting regatta {} from cache: {:?}",
-                regatta_id,
-                start.elapsed()
-            );
+            debug!("Getting regatta {} from cache: {:?}", regatta_id, start.elapsed());
 
             regatta
         } else {
@@ -59,11 +75,7 @@ impl Aquarius {
             // 3. store regatta in cache
             self.caches.regatta.set(&regatta.id, &regatta).await;
 
-            debug!(
-                "Query regatta {} from DB: {:?}",
-                regatta_id,
-                start.elapsed()
-            );
+            debug!("Query regatta {} from DB: {:?}", regatta_id, start.elapsed());
 
             regatta
         }
@@ -87,11 +99,7 @@ impl Aquarius {
 
             // 3. store races in cache
             self.caches.races.set(&regatta_id, &races).await;
-            debug!(
-                "Query races of regatta {} from DB: {:?}",
-                regatta_id,
-                start.elapsed()
-            );
+            debug!("Query races of regatta {} from DB: {:?}", regatta_id, start.elapsed());
 
             races
         }
@@ -99,9 +107,7 @@ impl Aquarius {
 
     pub async fn get_statistics(&self, regatta_id: i32) -> Statistics {
         let start = Instant::now();
-        let row = self
-            ._execute_single_query(Statistics::query(regatta_id))
-            .await;
+        let row = self._execute_single_query(Statistics::query(regatta_id)).await;
         let stats = row.to_entity();
         debug!(
             "Query statistics of regatta {} from DB: {:?}",
@@ -115,26 +121,20 @@ impl Aquarius {
         let start = Instant::now();
 
         if let Some(race) = self.caches.race.get(&race_id) {
-            debug!(
-                "Getting race {} from cache:  {:?}ms",
-                race_id,
-                start.elapsed()
-            );
-            return race;
+            debug!("Getting race {} from cache:  {:?}ms", race_id, start.elapsed());
+            race
+        } else {
+            // 2. read race from DB
+            let row = self._execute_single_query(Race::query_single(race_id)).await;
+            let race: Race = row.to_entity();
+
+            // 3. store race in cache
+            self.caches.race.set(&race.id, &race).await;
+
+            debug!("Query race {} from DB: {:?}ms", race_id, start.elapsed());
+
+            race
         }
-
-        // 2. read race from DB
-        let row = self
-            ._execute_single_query(Race::query_single(race_id))
-            .await;
-        let race: Race = row.to_entity();
-
-        // 3. store race in cache
-        self.caches.race.set(&race.id, &race).await;
-
-        debug!("Query race {} from DB: {:?}ms", race_id, start.elapsed());
-
-        race
     }
 
     pub async fn get_registrations(&self, race_id: i32) -> Vec<Registration> {
@@ -162,11 +162,7 @@ impl Aquarius {
 
             // 3. store registrations in cache
             self.caches.regs.set(&race_id, &registrations).await;
-            debug!(
-                "Query registrations of race {} from DB: {:?}",
-                race_id,
-                start.elapsed()
-            );
+            debug!("Query registrations of race {} from DB: {:?}", race_id, start.elapsed());
 
             registrations
         }
@@ -196,11 +192,7 @@ impl Aquarius {
 
             // 3. store heats in cache
             self.caches.heats.set(&regatta_id, &heats).await;
-            debug!(
-                "Query heats of regatta {} from DB: {:?}",
-                regatta_id,
-                start.elapsed()
-            );
+            debug!("Query heats of regatta {} from DB: {:?}", regatta_id, start.elapsed());
 
             heats
         }
@@ -219,11 +211,7 @@ impl Aquarius {
             next: next_heats,
             running: Vec::with_capacity(0),
         };
-        debug!(
-            "Query kiosk of regatta {} from DB: {:?}",
-            regatta_id,
-            start.elapsed()
-        );
+        debug!("Query kiosk of regatta {} from DB: {:?}", regatta_id, start.elapsed());
         kiosk
     }
 
@@ -240,9 +228,7 @@ impl Aquarius {
             heat_regs
         } else {
             // 2. read heat_registrations from DB
-            let rows = self
-                ._execute_query(HeatRegistration::query_all(heat_id))
-                .await;
+            let rows = self._execute_query(HeatRegistration::query_all(heat_id)).await;
             let mut heat_regs: Vec<HeatRegistration> = Vec::with_capacity(rows.len());
             for row in &rows {
                 let mut heat_registration: HeatRegistration = row.to_entity();
@@ -258,11 +244,7 @@ impl Aquarius {
 
             // 3. store heat_registrations in cache
             self.caches.heat_regs.set(&heat_id, &heat_regs).await;
-            debug!(
-                "Query registrations of heat {} from DB: {:?}",
-                heat_id,
-                start.elapsed()
-            );
+            debug!("Query registrations of heat {} from DB: {:?}", heat_id, start.elapsed());
 
             heat_regs
         }

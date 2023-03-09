@@ -16,12 +16,11 @@ pub struct AgeClass {
 
 impl TryToEntity<AgeClass> for Row {
     fn try_to_entity(&self) -> Option<AgeClass> {
-        let it: Option<i32> = self.try_get_column("AgeClass_ID");
-        it.map(|id| AgeClass {
+        <Row as TryRowColumn<i32>>::try_get_column(self, "AgeClass_ID").map(|id| AgeClass {
             id,
             caption: self.get_column("AgeClass_Caption"),
             abbreviation: self.get_column("AgeClass_Abbr"),
-            suffix: self.get_column("AgeClass_Suffix"),
+            suffix: self.try_get_column("AgeClass_Suffix").unwrap_or_default(),
             gender: self.get_column("AgeClass_Gender"),
             num_sub_classes: self.get_column("AgeClass_NumSubClasses"),
         })
