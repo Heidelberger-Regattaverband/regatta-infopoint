@@ -37,24 +37,34 @@ sap.ui.define([
     showLoginButtonPress: function (oEvent) {
       const oControl = oEvent.getSource();
 
-      if (!this._pPopover) {
-        this._pPopover = Fragment.load({
-          id: this.getView().getId(), name: "de.regatta_hd.infopoint.view.LoginPopover", controller: this
-        }).then(function (oPopover) {
-          this.getView().addDependent(oPopover);
-          oPopover.addStyleClass(this.getOwnerComponent().getContentDensityClass());
+      if (this._oPopover) {
+        // close login dialog if it's already open
+        this._oPopover.close();
+        delete this._oPopover;
+      } else {
+        // check if fragment is already loaded or not
+        if (!this._pPopover) {
+          // load fragment ...
+          this._pPopover = Fragment.load({
+            id: this.getView().getId(), name: "de.regatta_hd.infopoint.view.LoginPopover", controller: this
+          }).then(function (oPopover) {
+            // ... and initialize
+            this.getView().addDependent(oPopover);
+            oPopover.addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-          const oCredentialsModel = new JSONModel({ user: "", password: "" });
-          this.getView().setModel(oCredentialsModel, "credentials");
+            const oCredentialsModel = new JSONModel({ user: "", password: "" });
+            this.getView().setModel(oCredentialsModel, "credentials");
 
-          return oPopover;
+            return oPopover;
+          }.bind(this));
+        }
+
+        // finish loading of fragment and open it
+        this._pPopover.then(function (oPopover) {
+          this._oPopover = oPopover;
+          oPopover.openBy(oControl);
         }.bind(this));
       }
-
-      this._pPopover.then(function (oPopover) {
-        this._oPopover = oPopover;
-        oPopover.openBy(oControl);
-      }.bind(this));
     },
 
     performLoginButtonPress: function (oEvent) {
