@@ -2,7 +2,6 @@
 # run container: docker run -it --rm --name infoportal -p 8080:8080 -p 8443:8443 --env DB_PASSWORD= infoportal
 
 ARG RUST_VERSION=1.68.0
-ARG NODE_VERSION=18
 
 #################
 ## build stage ##
@@ -10,8 +9,10 @@ ARG NODE_VERSION=18
 FROM rust:${RUST_VERSION} AS builder
 LABEL maintainer="markus@ofterdinger.de"
 
+ARG NODE_VERSION=18
+
 # add node repository
-RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash -
+RUN curl -fsSL "https://deb.nodesource.com/setup_${NODE_VERSION}.x" | bash -
 
 # install required software
 RUN apt-get update && apt-get upgrade -y
