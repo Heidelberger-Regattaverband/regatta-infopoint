@@ -8,7 +8,9 @@
       <headerContent>
         <Text text="{user>/name}" visible="{user>/authenticated}" />
         <Button icon="{=${user>/authenticated}?'sap-icon://log':'sap-icon://person-placeholder'}" press="showLoginButtonPress"
-          text="{=${user>/authenticated}?${i18n>common.logoff}:${i18n>common.login}}" />
+          text="{=${user>/authenticated}?${i18n>common.logoff}:${i18n>common.login}}" visible="{=!${device>/system/phone}}" />
+        <Button icon="{=${user>/authenticated}?'sap-icon://log':'sap-icon://person-placeholder'}" press="showLoginButtonPress"
+          visible="{device>/system/phone}" />
       </headerContent>
 
       <content>

@@ -12,7 +12,10 @@ sap.ui.define([
 
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
-    },
+
+      const oCredentialsModel = new JSONModel({ user: "", password: "" });
+      this.getView().setModel(oCredentialsModel, "credentials");
+},
 
     onNavToHeats: function () {
       this.getRouter().navTo("heats", {}, false /* history */);
@@ -51,10 +54,6 @@ sap.ui.define([
             // ... and initialize
             this.getView().addDependent(oPopover);
             oPopover.addStyleClass(this.getOwnerComponent().getContentDensityClass());
-
-            const oCredentialsModel = new JSONModel({ user: "", password: "" });
-            this.getView().setModel(oCredentialsModel, "credentials");
-
             return oPopover;
           }.bind(this));
         }
