@@ -4,8 +4,14 @@
 
     <Page title="{parts: [{path:'i18n>launchpad.title'}, {path:'regatta>/title'}], formatter: 'formatMessage'}"
       class="sapUiNoContentPadding">
-      <content>
 
+      <headerContent>
+        <Text text="{user>/name}" visible="{user>/authenticated}" />
+        <Button icon="{=${user>/authenticated}?'sap-icon://log':'sap-icon://person-placeholder'}" press="showLoginButtonPress"
+          text="{=${user>/authenticated}?${i18n>common.logoff}:${i18n>common.login}}" />
+      </headerContent>
+
+      <content>
         <layout:HorizontalLayout allowWrapping="true">
           <layout:content>
 
