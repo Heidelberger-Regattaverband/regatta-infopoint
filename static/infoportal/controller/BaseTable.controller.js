@@ -64,9 +64,7 @@ sap.ui.define([
 
       if (!pDialog) {
         pDialog = Fragment.load({
-          id: this.getView().getId(),
-          name: sDialogFragmentName,
-          controller: this
+          id: this.getView().getId(), name: sDialogFragmentName, controller: this
         }).then(function (oDialog) {
           oDialog.addStyleClass(this.getOwnerComponent().getContentDensityClass());
           this.getView().addDependent(oDialog);
