@@ -63,17 +63,15 @@ sap.ui.define([
       let pDialog = this._mViewSettingsDialogs[sDialogFragmentName];
 
       if (!pDialog) {
-        const sStyleClass = this.getOwnerComponent().getContentDensityClass();
-        const oView = this.getView();
         pDialog = Fragment.load({
           id: this.getView().getId(),
           name: sDialogFragmentName,
           controller: this
         }).then(function (oDialog) {
-          oDialog.addStyleClass(sStyleClass);
-          oView.addDependent(oDialog);
+          oDialog.addStyleClass(this.getOwnerComponent().getContentDensityClass());
+          this.getView().addDependent(oDialog);
           return oDialog;
-        });
+        }.bind(this));
         this._mViewSettingsDialogs[sDialogFragmentName] = pDialog;
       }
       return pDialog;
@@ -82,21 +80,20 @@ sap.ui.define([
     onHandleFilterDialogConfirm: function (oEvent) {
       const mParams = oEvent.getParameters();
       this._aFilters = [];
-      const that = this;
 
       mParams.filterItems.forEach(function (oItem) {
         const aCustomData = oItem.getCustomData();
         if (aCustomData) {
           aCustomData.forEach(function (oData) {
             if (oData.getKey() == "filter") {
-              const oFilter = that._createFilter(oData.getValue());
-              that._aFilters.push(oFilter);
+              const oFilter = this._createFilter(oData.getValue());
+              this._aFilters.push(oFilter);
             }
           });
         }
-        const oFilter = that._createFilter(oItem.getKey());
-        that._aFilters.push(oFilter);
-      });
+        const oFilter = this._createFilter(oItem.getKey());
+        this._aFilters.push(oFilter);
+      }.bind(this));
 
       // apply filters
       this.applyFilters();
