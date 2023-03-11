@@ -99,6 +99,24 @@ sap.ui.define([
       return "";
     },
 
+    dayTimeLabel: function (oHeat) {
+      if (oHeat) {
+        let weekday;
+        switch (oHeat.weekday) {
+          case 1: weekday = "Mo"; break;
+          case 2: weekday = "Di"; break;
+          case 3: weekday = "Mi"; break;
+          case 4: weekday = "Do"; break;
+          case 5: weekday = "Fr"; break;
+          case 6: weekday = "Sa"; break;
+          case 7: weekday = "So"; break;
+        }
+        const aTime = oHeat.time.split(":");
+        return weekday + ", " + aTime[0] + ":" + aTime[1];
+      }
+      return "";
+    },
+
     timeLabel: function (sDate) {
       if (sDate) {
         const aDate = sDate.split(":");
