@@ -35,7 +35,7 @@
         <items>
           <ViewSettingsItem text="{i18n>common.cancelled}" key="cancelled___EQ___true" />
           <ViewSettingsItem text="{i18n>common.scheduled}" key="state___EQ___0" cust:filter="cancelled___EQ___false" />
-          <ViewSettingsItem text="{i18n>heat.state.seeded}" key="state___EQ___1" cust:filter="cancelled___EQ___false" />
+          <ViewSettingsItem text="{i18n>common.seeded}" key="state___EQ___1" cust:filter="cancelled___EQ___false" />
           <ViewSettingsItem text="{i18n>heat.state.started}" key="state___EQ___2" cust:filter="cancelled___EQ___false" />
           <ViewSettingsItem text="{i18n>heat.state.finished}" key="state___EQ___5" cust:filter="cancelled___EQ___false" />
           <ViewSettingsItem text="{i18n>heat.state.official}" key="state___EQ___4" cust:filter="cancelled___EQ___false" />
@@ -58,7 +58,7 @@
         </items>
       </ViewSettingsFilterItem>
 
-      <ViewSettingsFilterItem text="{i18n>common.seeded}" key="seeded" multiSelect="false">
+      <ViewSettingsFilterItem text="{i18n>common.seededLbl}" key="seeded" multiSelect="false">
         <items>
           <ViewSettingsItem text="{i18n>common.yes}" key="race/seeded___EQ___true" />
           <ViewSettingsItem text="{i18n>common.no}" key="race/seeded___EQ___false" />
