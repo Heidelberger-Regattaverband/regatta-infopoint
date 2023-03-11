@@ -34,7 +34,7 @@
       <ViewSettingsFilterItem text="{i18n>common.state}" key="cancelled" multiSelect="false">
         <items>
           <ViewSettingsItem text="{i18n>common.cancelled}" key="cancelled___EQ___true" />
-          <ViewSettingsItem text="{i18n>heat.state.initial}" key="state___EQ___0" cust:filter="cancelled___EQ___false" />
+          <ViewSettingsItem text="{i18n>common.scheduled}" key="state___EQ___0" cust:filter="cancelled___EQ___false" />
           <ViewSettingsItem text="{i18n>heat.state.scheduled}" key="state___EQ___1" cust:filter="cancelled___EQ___false" />
           <ViewSettingsItem text="{i18n>heat.state.started}" key="state___EQ___2" cust:filter="cancelled___EQ___false" />
           <ViewSettingsItem text="{i18n>heat.state.finished}" key="state___EQ___5" cust:filter="cancelled___EQ___false" />

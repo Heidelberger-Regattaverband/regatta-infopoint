@@ -143,7 +143,7 @@ sap.ui.define([
         switch (oHeat.state) {
           default:
           case 0:
-            return this.i18n("heat.state.initial");
+            return this.i18n("common.scheduled");
           case 1:
             return this.i18n("heat.state.scheduled");
           case 2:
