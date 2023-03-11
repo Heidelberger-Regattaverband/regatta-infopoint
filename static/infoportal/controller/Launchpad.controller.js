@@ -14,7 +14,7 @@ sap.ui.define([
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
       const oCredentialsModel = new JSONModel({ user: "", password: "" });
-      this.getView().setModel(oCredentialsModel, "credentials");
+      this.setViewModel(oCredentialsModel, "credentials");
     },
 
     onNavToHeats: function () {
@@ -40,29 +40,33 @@ sap.ui.define([
     showLoginButtonPress: function (oEvent) {
       const oControl = oEvent.getSource();
 
-      if (this._oPopover && this._oPopover.isOpen()) {
-        // close login dialog if it's already open
-        this._oPopover.close();
-        delete this._oPopover;
-      } else {
-        // check if fragment is already loaded or not
-        if (!this._pPopover) {
-          // load fragment ...
-          this._pPopover = Fragment.load({
-            id: this.getView().getId(), name: "de.regatta_hd.infopoint.view.LoginPopover", controller: this
-          }).then(function (oPopover) {
-            // ... and initialize
-            this.getView().addDependent(oPopover);
-            oPopover.addStyleClass(this.getOwnerComponent().getContentDensityClass());
-            return oPopover;
+      if (!this._isAuthenticated()) {
+        if (this._oPopover && this._oPopover.isOpen()) {
+          // close login dialog if it's already open
+          this._oPopover.close();
+          delete this._oPopover;
+        } else {
+          // check if fragment is already loaded or not
+          if (!this._pPopover) {
+            // load fragment ...
+            this._pPopover = Fragment.load({
+              id: this.getView().getId(), name: "de.regatta_hd.infopoint.view.LoginPopover", controller: this
+            }).then(function (oPopover) {
+              // ... and initialize
+              this.getView().addDependent(oPopover);
+              oPopover.addStyleClass(this.getOwnerComponent().getContentDensityClass());
+              return oPopover;
+            }.bind(this));
+          }
+
+          // finish loading of fragment and open it
+          this._pPopover.then(function (oPopover) {
+            this._oPopover = oPopover;
+            oPopover.openBy(oControl);
           }.bind(this));
         }
-
-        // finish loading of fragment and open it
-        this._pPopover.then(function (oPopover) {
-          this._oPopover = oPopover;
-          oPopover.openBy(oControl);
-        }.bind(this));
+      } else {
+        this._logoff();
       }
     },
 
@@ -71,12 +75,35 @@ sap.ui.define([
         this._oPopover.close();
         delete this._oPopover;
       }
-      const oCredentialsModel = this.getView().getModel("credentials");
 
-      // TODO: perform login
+      this._login();
+    },
+
+    _login: function () {
+      const oCredentialsModel = this.getViewModel("credentials");
+      const sUser = oCredentialsModel.getProperty("/user");
+
+      // TODO: perform login in backend
+      this._updateUserModel(true, sUser);
 
       // reset password
       oCredentialsModel.setProperty("/password", "");
+    },
+
+    _logoff: function () {
+      // TODO: perform logoff in backend
+
+      this._updateUserModel(false, "");
+    },
+
+    _updateUserModel: function (bAuthenticated, sName) {
+      const oUserModel = this.getViewModel("user");
+      oUserModel.setProperty("/authenticated", bAuthenticated);
+      oUserModel.setProperty("/name", sName);
+    },
+
+    _isAuthenticated: function () {
+      return this.getViewModel("user").getProperty("/authenticated");
     }
 
   });

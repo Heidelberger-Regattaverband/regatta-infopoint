@@ -39,7 +39,7 @@
             </GenericTile>
 
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.scoringTile.header}"
-              press=".onNavToScoring">
+              visible="{user>/authenticated}" press=".onNavToScoring">
               <tileContent>
                 <TileContent>
                   <content>
@@ -50,7 +50,7 @@
             </GenericTile>
 
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.statistics.header}"
-              press=".onNavToStatistics">
+              visible="{user>/authenticated}" press=".onNavToStatistics">
               <tileContent>
                 <TileContent>
                   <content>
@@ -60,7 +60,7 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="Kiosk"
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="Kiosk" visible="{user>/authenticated}"
               press=".onNavToKiosk">
               <tileContent>
                 <TileContent>
