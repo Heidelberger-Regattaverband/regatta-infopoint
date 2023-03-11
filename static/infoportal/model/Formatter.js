@@ -145,7 +145,7 @@ sap.ui.define([
           case 0:
             return this.i18n("common.scheduled");
           case 1:
-            return this.i18n("heat.state.scheduled");
+            return this.i18n("heat.state.seeded");
           case 2:
             return this.i18n("heat.state.started");
           case 4:

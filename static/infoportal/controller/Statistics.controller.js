@@ -54,7 +54,8 @@ sap.ui.define([
       heats.push({ name: this.i18n("heat.state.official"), value: oStatistics.heats.official });
       heats.push({ name: this.i18n("heat.state.finished"), value: oStatistics.heats.finished });
       heats.push({ name: this.i18n("heat.state.started"), value: oStatistics.heats.started });
-      heats.push({ name: this.i18n("common.scheduled"), value: oStatistics.heats.pending });
+      heats.push({ name: this.i18n("heat.state.seeded"), value: oStatistics.heats.seeded });
+      heats.push({ name: this.i18n("common.scheduled"), value: oStatistics.heats.scheduled });
       heats.push({ name: this.i18n("common.cancelled"), value: oStatistics.heats.cancelled });
 
       // update model

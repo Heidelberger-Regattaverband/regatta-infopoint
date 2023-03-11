@@ -13,7 +13,8 @@ struct RacesStatistics {
 struct HeatsStatistics {
     all: i32,
     cancelled: i32,
-    pending: i32,
+    scheduled: i32,
+    seeded: i32,
     started: i32,
     finished: i32,
     official: i32,
@@ -45,10 +46,11 @@ impl ToEntity<Statistics> for Row {
         let heats = HeatsStatistics {
             all: self.get_column("heats_all"),
             cancelled: self.get_column("heats_cancelled"),
+            scheduled: self.get_column("heats_scheduled"),
+            seeded: self.get_column("heats_seeded"),
+            started: self.get_column("heats_started"),
             finished: self.get_column("heats_finished"),
             official: self.get_column("heats_official"),
-            pending: self.get_column("heats_pending"),
-            started: self.get_column("heats_started"),
         };
         let registrations = RegistrationsStatistics {
             all: self.get_column("registrations_all"),
@@ -73,10 +75,11 @@ impl Statistics {
         (SELECT COUNT(*) FROM Offer o WHERE o.Offer_Event_ID_FK = @P1 AND o.Offer_Cancelled > 0) AS races_cancelled,
         (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 ) AS heats_all,
         (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_Cancelled > 0 ) AS heats_cancelled,
-        (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 4 ) AS heats_official,
+        (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 4 AND c.Comp_Cancelled = 0 ) AS heats_official,
         (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 5 OR c.Comp_State = 6 ) AS heats_finished,
-        (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 2 ) AS heats_started,
-        (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State < 2 AND c.Comp_Cancelled = 0 ) AS heats_pending,
+        (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 2 AND c.Comp_Cancelled = 0 ) AS heats_started,
+        (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 1 AND c.Comp_Cancelled = 0 ) AS heats_seeded,
+        (SELECT COUNT(*) FROM Comp c WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 0 AND c.Comp_Cancelled = 0 ) AS heats_scheduled,
         (SELECT COUNT(*) FROM Entry e WHERE e.Entry_Event_ID_FK = @P1) AS registrations_all,
         (SELECT COUNT(*) FROM Entry e WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue > 0) AS registrations_cancelled,
         (SELECT COUNT(*) FROM (SELECT DISTINCT c.Club_ID FROM Club c JOIN Entry e ON e.Entry_OwnerClub_ID_FK = c.Club_ID WHERE e.Entry_Event_ID_FK = @P1) AS count) AS registrations_owner_clubs,
