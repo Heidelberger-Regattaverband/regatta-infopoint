@@ -15,7 +15,7 @@ sap.ui.define([
 
       const oCredentialsModel = new JSONModel({ user: "", password: "" });
       this.getView().setModel(oCredentialsModel, "credentials");
-},
+    },
 
     onNavToHeats: function () {
       this.getRouter().navTo("heats", {}, false /* history */);
@@ -40,7 +40,7 @@ sap.ui.define([
     showLoginButtonPress: function (oEvent) {
       const oControl = oEvent.getSource();
 
-      if (this._oPopover) {
+      if (this._oPopover && this._oPopover.isOpen()) {
         // close login dialog if it's already open
         this._oPopover.close();
         delete this._oPopover;
