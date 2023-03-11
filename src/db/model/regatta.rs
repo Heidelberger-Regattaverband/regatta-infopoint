@@ -1,5 +1,8 @@
 use super::{utils, ToEntity};
-use crate::db::{aquarius::AquariusClient, tiberius::RowColumn};
+use crate::db::{
+    aquarius::AquariusClient,
+    tiberius::{RowColumn, TryRowColumn},
+};
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
 
@@ -7,6 +10,7 @@ use tiberius::{time::chrono::NaiveDateTime, Query, Row};
 pub struct Regatta {
     pub id: i32,
     title: String,
+    #[serde(rename = "subTitle")]
     sub_title: String,
     venue: String,
     #[serde(rename = "startDate")]
@@ -23,8 +27,8 @@ impl ToEntity<Regatta> for Row {
         Regatta {
             id: self.get_column("Event_ID"),
             title: self.get_column("Event_Title"),
-            sub_title: self.get_column("Event_SubTitle"),
-            venue: self.get_column("Event_Venue"),
+            sub_title: self.try_get_column("Event_SubTitle").unwrap_or_default(),
+            venue: self.try_get_column("Event_Venue").unwrap_or_default(),
             start_date: start_date.date().to_string(),
             end_date: end_date.date().to_string(),
         }

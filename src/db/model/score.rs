@@ -31,7 +31,7 @@ impl Score {
 
     pub fn query_all<'a>(regatta_id: i32) -> Query<'a> {
         let mut query = Query::new(
-            "SELECT s.rank, s.points, c.Club_Name, c.Club_Abbr, c.Club_City
+            "SELECT s.rank, s.points, c.Club_ID, c.Club_Name, c.Club_Abbr, c.Club_City
             FROM HRV_Score s
             JOIN Club AS c ON s.club_id = c.Club_ID
             WHERE s.event_id = @P1

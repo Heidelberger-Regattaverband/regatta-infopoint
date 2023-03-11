@@ -99,6 +99,24 @@ sap.ui.define([
       return "";
     },
 
+    dayTimeLabel: function (oHeat) {
+      if (oHeat) {
+        let weekday;
+        switch (oHeat.weekday) {
+          case 1: weekday = "Mo"; break;
+          case 2: weekday = "Di"; break;
+          case 3: weekday = "Mi"; break;
+          case 4: weekday = "Do"; break;
+          case 5: weekday = "Fr"; break;
+          case 6: weekday = "Sa"; break;
+          case 7: weekday = "So"; break;
+        }
+        const aTime = oHeat.time.split(":");
+        return weekday + ", " + aTime[0] + ":" + aTime[1];
+      }
+      return "";
+    },
+
     timeLabel: function (sDate) {
       if (sDate) {
         const aDate = sDate.split(":");
@@ -125,9 +143,9 @@ sap.ui.define([
         switch (oHeat.state) {
           default:
           case 0:
-            return this.i18n("heat.state.initial");
+            return this.i18n("common.scheduled");
           case 1:
-            return this.i18n("heat.state.scheduled");
+            return this.i18n("common.seeded");
           case 2:
             return this.i18n("heat.state.started");
           case 4:

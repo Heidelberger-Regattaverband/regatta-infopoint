@@ -18,14 +18,21 @@ sap.ui.define([
       // create the views based on the url/hash
       this.getRouter().initialize();
 
-      const oRegattaModel = new JSONModel();
-      oRegattaModel.loadData("/api/regattas/" + this.getRegattaId());
-      this.setModel(oRegattaModel, "regatta");
+      this._oRegattaModel = new JSONModel();
+      // ensure the active regatta is loaded, otherwise the regatta_id is unedfined
+      this._oRegattaModel.loadData("/api/active_regatta", {}, false);
+      this.setModel(this._oRegattaModel, "regatta");
 
       // set device model
       const oDeviceModel = new JSONModel(Device);
       oDeviceModel.setDefaultBindingMode("OneWay");
       this.setModel(oDeviceModel, "device");
+
+      const oUserModel = new JSONModel({
+        authenticated: false, name: "anonymous", roles: []
+      });
+      oUserModel.setDefaultBindingMode("OneWay");
+      this.setModel(oUserModel, "user");
     },
 
     getContentDensityClass: function () {
@@ -40,7 +47,7 @@ sap.ui.define([
     },
 
     getRegattaId: function () {
-      return 12;
+      return this._oRegattaModel.getData().id;
     }
 
   });

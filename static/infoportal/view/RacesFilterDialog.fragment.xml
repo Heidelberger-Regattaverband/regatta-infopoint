@@ -27,8 +27,8 @@
 
       <ViewSettingsFilterItem text="{i18n>common.state}" key="cancelled" multiSelect="false">
         <items>
-          <ViewSettingsItem text="{i18n>common.raceDriven}" key="cancelled___EQ___false" />
-          <ViewSettingsItem text="{i18n>common.raceCancelled}" key="cancelled___EQ___true" />
+          <ViewSettingsItem text="{i18n>common.scheduled}" key="cancelled___EQ___false" />
+          <ViewSettingsItem text="{i18n>common.cancelled}" key="cancelled___EQ___true" />
         </items>
       </ViewSettingsFilterItem>
 
@@ -47,7 +47,7 @@
         </items>
       </ViewSettingsFilterItem>
 
-      <ViewSettingsFilterItem text="{i18n>common.seeded}" key="seeded" multiSelect="false">
+      <ViewSettingsFilterItem text="{i18n>common.seededLbl}" key="seeded" multiSelect="false">
         <items>
           <ViewSettingsItem text="{i18n>common.yes}" key="seeded___EQ___true" />
           <ViewSettingsItem text="{i18n>common.no}" key="seeded___EQ___false" />

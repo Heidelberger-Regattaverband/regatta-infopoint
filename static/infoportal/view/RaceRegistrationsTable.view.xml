@@ -38,12 +38,12 @@
               <layout:HorizontalLayout allowWrapping="true">
                 <layout:VerticalLayout class="sapUiMediumMarginEnd">
                   <ObjectAttribute title="{i18n>common.distance}" text="{path: 'race>/', formatter: '.formatter.distanceLabel'}" />
-                  <ObjectAttribute title="{i18n>common.seeded}" text="{= ${race>/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
+                  <ObjectAttribute title="{i18n>common.seededLbl}" text="{= ${race>/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
                 </layout:VerticalLayout>
               </layout:HorizontalLayout>
               <layout:VerticalLayout>
                 <ObjectAttribute title="{i18n>common.state}"
-                  text="{= ${race>/cancelled} ? ${i18n>common.raceCancelled} : ${i18n>common.raceDriven}}" />
+                  text="{= ${race>/cancelled} ? ${i18n>common.cancelled} : ${i18n>common.scheduled}}" />
                 <ObjectAttribute title="{i18n>common.registrations}" text="{race>/registrationsCount}" />
               </layout:VerticalLayout>
             </f:DynamicPageHeader>
@@ -96,8 +96,8 @@
                     </layout:VerticalLayout>
 
                     <layout:VerticalLayout>
-                      <Text text="{raceRegistrations>club/shortName}" visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />
-                      <Text text="{raceRegistrations>club/shortName}" visible="{= !${raceRegistrations>cancelled}}" />
+                      <Text text="{raceRegistrations>club/shortName}, {raceRegistrations>club/city}" visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />
+                      <Text text="{raceRegistrations>club/shortName}, {raceRegistrations>club/city}" visible="{= !${raceRegistrations>cancelled}}" />
                     </layout:VerticalLayout>
                   </cells>
                 </ColumnListItem>
