@@ -16,9 +16,9 @@ sap.ui.define([
       this._iIndexNext = 0;
 
       this._oHeatFinishedModel = new JSONModel();
-      this.getView().setModel(this._oHeatFinishedModel, "heatFinished");
+      this.setViewModel(this._oHeatFinishedModel, "heatFinished");
       this._oHeatNextModel = new JSONModel();
-      this.getView().setModel(this._oHeatNextModel, "heatNext");
+      this.setViewModel(this._oHeatNextModel, "heatNext");
 
       this.getRouter().getRoute("kiosk").attachMatched(_ => {
         this._loadKioskModel();
@@ -59,7 +59,7 @@ sap.ui.define([
     _loadRegsFinishedModel: async function (iHeatId) {
       if (!this._oFinishedModel) {
         this._oFinishedModel = await this.getJSONModel(this._getRegistrationsUrl(iHeatId), this.getView());
-        this.getView().setModel(this._oFinishedModel, "regsFinished");
+        this.setViewModel(this._oFinishedModel, "regsFinished");
       } else {
         await this.updateJSONModel(this._oFinishedModel, this._getRegistrationsUrl(iHeatId), this.getView());
       }
@@ -68,7 +68,7 @@ sap.ui.define([
     _loadRegsNextModel: async function (iHeatId) {
       if (!this._oNextModel) {
         this._oNextModel = await this.getJSONModel(this._getRegistrationsUrl(iHeatId), this.getView());
-        this.getView().setModel(this._oNextModel, "regsNext");
+        this.setViewModel(this._oNextModel, "regsNext");
       } else {
         await this.updateJSONModel(this._oNextModel, this._getRegistrationsUrl(iHeatId), this.getView());
       }
@@ -77,7 +77,7 @@ sap.ui.define([
     _loadKioskModel: async function () {
       if (!this._oKioskModel) {
         this._oKioskModel = await this.getJSONModel(this._getKioskUrl(), this.getView());
-        this.getView().setModel(this._oKioskModel, "kiosk");
+        this.setViewModel(this._oKioskModel, "kiosk");
       } else {
         await this.updateJSONModel(this._oKioskModel, this._getKioskUrl(), this.getView());
       }
