@@ -54,7 +54,7 @@ sap.ui.define([
       heats.push({ name: this.i18n("heat.state.official"), value: oStatistics.heats.official });
       heats.push({ name: this.i18n("heat.state.finished"), value: oStatistics.heats.finished });
       heats.push({ name: this.i18n("heat.state.started"), value: oStatistics.heats.started });
-      heats.push({ name: this.i18n("statistics.heats.pending"), value: oStatistics.heats.pending });
+      heats.push({ name: this.i18n("heat.state.initial"), value: oStatistics.heats.pending });
       heats.push({ name: this.i18n("statistics.heats.cancelled"), value: oStatistics.heats.cancelled });
 
       // update model
