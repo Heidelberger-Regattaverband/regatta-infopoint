@@ -2,6 +2,13 @@
   xmlns:cust="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
   <ViewSettingsDialog confirm="onHandleFilterDialogConfirm">
     <filterItems>
+      <ViewSettingsFilterItem text="{i18n>common.day}" key="distance" multiSelect="false">
+        <items>
+          <ViewSettingsItem text="{i18n>common.saturday}" key="weekday___EQ___6" />
+          <ViewSettingsItem text="{i18n>common.sunday}" key="weekday___EQ___7" />
+        </items>
+      </ViewSettingsFilterItem>
+
       <ViewSettingsFilterItem text="{i18n>common.boatClass}" key="gender">
         <items>
           <ViewSettingsItem text="Einer (1x)" key="race/boatClass/abbreviation___EQ___1x" />
