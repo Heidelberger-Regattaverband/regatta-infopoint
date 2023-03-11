@@ -37,7 +37,24 @@ sap.ui.define([
       this.getRouter().navTo("kiosk", {}, false /* history */);
     },
 
-    showLoginButtonPress: function (oEvent) {
+    onUserSubmit: function (oEvent) {
+      this.byId("password").focus();
+    },
+
+    onPasswordSubmit: function (oEvent) {
+      this.byId("login").focus();
+    },
+
+    onLoginPress: function (oEvent) {
+      if (this._oPopover) {
+        this._oPopover.close();
+        delete this._oPopover;
+      }
+
+      this._login();
+    },
+
+    onShowLoginPress: function (oEvent) {
       const oControl = oEvent.getSource();
 
       if (!this._isAuthenticated()) {
@@ -68,15 +85,6 @@ sap.ui.define([
       } else {
         this._logoff();
       }
-    },
-
-    performLoginButtonPress: function (oEvent) {
-      if (this._oPopover) {
-        this._oPopover.close();
-        delete this._oPopover;
-      }
-
-      this._login();
     },
 
     _login: function () {
