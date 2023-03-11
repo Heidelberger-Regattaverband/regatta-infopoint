@@ -43,7 +43,7 @@
               </layout:HorizontalLayout>
               <layout:VerticalLayout>
                 <ObjectAttribute title="{i18n>common.state}"
-                  text="{= ${race>/cancelled} ? ${i18n>common.raceCancelled} : ${i18n>common.raceDriven}}" />
+                  text="{= ${race>/cancelled} ? ${i18n>common.cancelled} : ${i18n>common.raceDriven}}" />
                 <ObjectAttribute title="{i18n>common.registrations}" text="{race>/registrationsCount}" />
               </layout:VerticalLayout>
             </f:DynamicPageHeader>
