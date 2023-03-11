@@ -87,7 +87,7 @@ sap.ui.define([
               const oFilter = this._createFilter(oData.getValue());
               this._aFilters.push(oFilter);
             }
-          });
+          }.bind(this));
         }
         const oFilter = this._createFilter(oItem.getKey());
         this._aFilters.push(oFilter);
