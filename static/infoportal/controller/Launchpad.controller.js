@@ -92,6 +92,7 @@ sap.ui.define([
       const oCredentialsModel = this.getViewModel("credentials");
       const oCredentials = oCredentialsModel.getData();
 
+      // see: https://api.jquery.com/jquery.ajax/
       $.ajax({
         type: "POST",
         data: JSON.stringify(oCredentials),
