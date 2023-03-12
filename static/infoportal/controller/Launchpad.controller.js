@@ -15,6 +15,7 @@ sap.ui.define([
 
       const oCredentialsModel = new JSONModel({ username: "", password: "" });
       this.setViewModel(oCredentialsModel, "credentials");
+      this._getIdentity();
     },
 
     onNavToHeats: function () {
@@ -83,7 +84,7 @@ sap.ui.define([
           }.bind(this));
         }
       } else {
-        this._logoff();
+        this._logout();
       }
     },
 
@@ -105,12 +106,22 @@ sap.ui.define([
       oCredentialsModel.setProperty("/password", "");
     },
 
-    _logoff: function () {
+    _logout: function () {
       $.ajax({
         type: "POST",
         url: "/api/logout",
         success: function (sResult) {
           this._updateUserModel(false, "");
+        }.bind(this)
+      });
+    },
+
+    _getIdentity: function () {
+      $.ajax({
+        type: "GET",
+        url: "/api/identity",
+        success: function (sResult) {
+          this._updateUserModel(true, sResult);
         }.bind(this)
       });
     },

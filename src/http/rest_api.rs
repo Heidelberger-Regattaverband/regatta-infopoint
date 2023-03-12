@@ -93,7 +93,7 @@ async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<i
     match User::authenticate(credentials.into_inner()) {
         Ok(user) => {
             let response = format!("Welcome {}", user.name);
-            Identity::login(&request.extensions(), user.name.into()).unwrap();
+            Identity::login(&request.extensions(), user.name).unwrap();
             Ok(response)
         }
         Err(err) => Err(InternalError::from_response("", err).into()),
@@ -107,11 +107,11 @@ async fn logout(user: Identity) -> impl Responder {
 }
 
 #[get("/identity")]
-async fn identity(user: Option<Identity>) -> impl Responder {
+async fn identity(user: Option<Identity>) -> Result<impl Responder, Error> {
     if let Some(user) = user {
-        format!("Welcome {}!", user.id().unwrap())
+        Ok(format!("{}", user.id().unwrap()))
     } else {
-        "Welcome Anonymous!".to_owned()
+        Err(InternalError::from_response("", HttpResponse::Unauthorized().json("Unauthorized")).into())
     }
 }
 
