@@ -6,7 +6,7 @@ use actix_extensible_rate_limit::{
 use actix_files::Files;
 use actix_session::{config::PersistentSession, storage::CookieSessionStore, SessionMiddleware};
 use actix_web::{
-    cookie::{time::Duration, Key},
+    cookie::{time::Duration, Key, SameSite},
     dev::ServiceRequest,
     web::{self, scope, Data},
     App, Error, HttpServer,
@@ -97,6 +97,8 @@ impl Server {
         SessionMiddleware::builder(CookieSessionStore::default(), secret_key)
             .cookie_secure(true)
             .cookie_http_only(true)
+            // allow the cookie only from the current domain
+            .cookie_same_site(SameSite::Strict)
             .session_lifecycle(PersistentSession::default().session_ttl(Duration::seconds(SECS_OF_WEEKEND)))
             .build()
     }
