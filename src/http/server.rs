@@ -4,6 +4,7 @@ use actix_extensible_rate_limit::{
     RateLimiter,
 };
 use actix_files::Files;
+use actix_identity::IdentityMiddleware;
 use actix_session::{config::PersistentSession, storage::CookieSessionStore, SessionMiddleware};
 use actix_web::{
     cookie::{time::Duration, Key, SameSite},
@@ -44,7 +45,8 @@ impl Server {
 
         let mut http_server = HttpServer::new(move || {
             App::new()
-                // adds support for HTTPS sessions
+                // Install the identity framework first.
+                .wrap(IdentityMiddleware::default()) // adds support for HTTPS sessions
                 .wrap(Self::get_session_middleware(secret_key.clone())) // add rate limiter middleware
                 // adds support for rate limiting of HTTP requests
                 .wrap(Self::get_rate_limiter(max_requests, interval))
@@ -65,7 +67,9 @@ impl Server {
                         .service(rest_api::get_registrations)
                         .service(rest_api::get_heat_registrations)
                         .service(rest_api::get_scoring)
-                        .service(rest_api::get_statistics),
+                        .service(rest_api::get_statistics)
+                        .service(rest_api::login)
+                        .service(rest_api::logout),
                 )
                 .service(
                     Files::new(PATH_INFOPORTAL, "./static/infoportal")
