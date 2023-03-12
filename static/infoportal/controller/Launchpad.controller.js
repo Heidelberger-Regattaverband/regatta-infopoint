@@ -13,7 +13,7 @@ sap.ui.define([
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      const oCredentialsModel = new JSONModel({ user: "", password: "" });
+      const oCredentialsModel = new JSONModel({ username: "", password: "" });
       this.setViewModel(oCredentialsModel, "credentials");
     },
 
@@ -89,19 +89,30 @@ sap.ui.define([
 
     _login: function () {
       const oCredentialsModel = this.getViewModel("credentials");
-      const sUser = oCredentialsModel.getProperty("/user");
+      const oCredentials = oCredentialsModel.getData();
 
-      // TODO: perform login in backend
-      this._updateUserModel(true, sUser);
+      $.ajax({
+        type: "POST",
+        data: JSON.stringify(oCredentials),
+        url: "/api/login",
+        contentType: "application/json",
+        success: function (sResult) {
+          this._updateUserModel(true, oCredentials.username);
+        }.bind(this)
+      });
 
       // reset password
       oCredentialsModel.setProperty("/password", "");
     },
 
     _logoff: function () {
-      // TODO: perform logoff in backend
-
-      this._updateUserModel(false, "");
+      $.ajax({
+        type: "POST",
+        url: "/api/logout",
+        success: function (sResult) {
+          this._updateUserModel(false, "");
+        }.bind(this)
+      });
     },
 
     _updateUserModel: function (bAuthenticated, sName) {

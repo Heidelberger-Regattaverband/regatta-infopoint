@@ -15,7 +15,6 @@ pub struct User {
 
 impl User {
     pub fn authenticate(credentials: Credentials) -> Result<Self, HttpResponse> {
-        // to do: figure out why I keep getting hacked      /s
         if &credentials.password != "test" {
             return Err(HttpResponse::Unauthorized().json("Unauthorized"));
         }

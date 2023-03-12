@@ -3,7 +3,7 @@
   <ResponsivePopover id="loginPopover" title="{i18n>common.login}" class="sapUiContentPadding" placement="Bottom" initialFocus="user">
     <content>
       <VBox>
-        <Input id="user" placeholder="{i18n>common.user}" value="{credentials>/user}" submit="onUserSubmit" />
+        <Input id="user" placeholder="{i18n>common.user}" value="{credentials>/username}" submit="onUserSubmit" />
         <Input id="password" placeholder="{i18n>common.password}" value="{credentials>/password}" submit="onPasswordSubmit" type="Password" />
         <Button id="login" text="{i18n>common.login}" width="100%" press="onLoginPress" />
       </VBox>
