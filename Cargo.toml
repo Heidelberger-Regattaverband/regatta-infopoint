@@ -21,6 +21,7 @@ chrono = "0"
 # Web
 actix-web = { version = "4", features = ["rustls"] }
 actix-session = { version = "0", features = ["cookie-session"] }
+actix-identity = "0"
 actix-files = "0"
 actix-extensible-rate-limit = "0"
 actix-web-lab = "0"

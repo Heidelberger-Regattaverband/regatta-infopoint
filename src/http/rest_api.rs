@@ -1,11 +1,19 @@
-use crate::db::{
-    aquarius::Aquarius,
-    model::{Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
+use crate::{
+    db::{
+        aquarius::Aquarius,
+        model::{Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
+    },
+    http::{
+        auth::{Credentials, User},
+        monitor::Monitor,
+    },
 };
-use crate::http::monitor::Monitor;
+use actix_identity::Identity;
 use actix_web::{
-    get,
+    error::InternalError,
+    get, post,
     web::{Data, Json, Path, Query},
+    Error, HttpMessage, HttpRequest, HttpResponse, Responder,
 };
 use serde::Deserialize;
 
@@ -78,6 +86,24 @@ async fn get_scoring(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Vec<Scor
 async fn get_heat_registrations(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Vec<HeatRegistration>> {
     let heat_id = path.into_inner();
     Json(aquarius.get_heat_registrations(heat_id).await)
+}
+
+#[post("/login")]
+async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<impl Responder, Error> {
+    match User::authenticate(credentials.into_inner()) {
+        Ok(user) => {
+            let response = format!("Welcome {}", user.name);
+            Identity::login(&request.extensions(), user.name.into()).unwrap();
+            Ok(response)
+        }
+        Err(err) => Err(InternalError::from_response("", err).into()),
+    }
+}
+
+#[post("/logout")]
+async fn logout(user: Identity) -> impl Responder {
+    user.logout();
+    HttpResponse::Ok()
 }
 
 #[derive(Debug, Deserialize)]
