@@ -106,6 +106,15 @@ async fn logout(user: Identity) -> impl Responder {
     HttpResponse::Ok()
 }
 
+#[get("/identity")]
+async fn identity(user: Option<Identity>) -> impl Responder {
+    if let Some(user) = user {
+        format!("Welcome {}!", user.id().unwrap())
+    } else {
+        "Welcome Anonymous!".to_owned()
+    }
+}
+
 #[derive(Debug, Deserialize)]
 struct OData {
     // #[serde(rename = "$expand")]
