@@ -109,7 +109,7 @@ async fn logout(user: Identity) -> impl Responder {
 #[get("/identity")]
 async fn identity(user: Option<Identity>) -> Result<impl Responder, Error> {
     if let Some(user) = user {
-        Ok(format!("{}", user.id().unwrap()))
+        Ok(user.id().unwrap())
     } else {
         Err(InternalError::from_response("", HttpResponse::Unauthorized().json("Unauthorized")).into())
     }
