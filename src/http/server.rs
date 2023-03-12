@@ -4,7 +4,9 @@ use actix_extensible_rate_limit::{
     RateLimiter,
 };
 use actix_files::Files;
+use actix_session::{config::PersistentSession, storage::CookieSessionStore, SessionMiddleware};
 use actix_web::{
+    cookie::{time::Duration, Key},
     dev::ServiceRequest,
     web::{self, scope, Data},
     App, Error, HttpServer,
@@ -20,7 +22,7 @@ use std::{
     fs::File,
     future::Ready,
     io::{self, BufReader},
-    time::Duration,
+    time,
 };
 
 /// Path to REST API
@@ -32,22 +34,25 @@ pub struct Server {}
 
 impl Server {
     pub async fn start() -> io::Result<()> {
-        let data = create_app_data().await;
+        let aquarius = create_app_data().await;
         let rustls_cfg = Self::get_rustls_config();
         let (max_requests, interval) = Self::get_rate_limiter_config();
         let http_bind = Self::get_http_bind();
         let https_bind = Self::get_https_bind();
         let https_public_port = Self::get_https_public_port();
+        let secret_key = Self::get_secret_key();
 
         let mut http_server = HttpServer::new(move || {
             App::new()
-                // add rate limiter middleware
+                // adds support for HTTPS sessions
+                .wrap(Self::get_session_middleware(secret_key.clone())) // add rate limiter middleware
+                // adds support for rate limiting of HTTP requests
                 .wrap(Self::get_rate_limiter(max_requests, interval))
                 // collect metrics about requests and responses
                 .wrap(Self::get_prometeus())
                 // enable redirect from http -> https
                 .wrap(RedirectHttps::default().to_port(https_public_port))
-                .app_data(Data::clone(&data))
+                .app_data(aquarius.clone())
                 .service(
                     scope(PATH_REST_API)
                         .service(rest_api::get_regattas)
@@ -87,6 +92,20 @@ impl Server {
         http_server.run().await
     }
 
+    fn get_session_middleware(secret_key: Key) -> SessionMiddleware<CookieSessionStore> {
+        const SECS_OF_WEEKEND: i64 = 60 * 60 * 24 * 2;
+        SessionMiddleware::builder(CookieSessionStore::default(), secret_key)
+            .cookie_secure(true)
+            .cookie_http_only(true)
+            .session_lifecycle(PersistentSession::default().session_ttl(Duration::seconds(SECS_OF_WEEKEND)))
+            .build()
+    }
+
+    // The secret key would usually be read from a configuration file/environment variables.
+    fn get_secret_key() -> Key {
+        Key::generate()
+    }
+
     /// Returns a new PrometheusMetrics instance.
     fn get_prometeus() -> PrometheusMetrics {
         PrometheusMetricsBuilder::new("api")
@@ -100,7 +119,7 @@ impl Server {
         max_requests: u64,
         interval: u64,
     ) -> RateLimiter<InMemoryBackend, SimpleOutput, impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>> {
-        let input = SimpleInputFunctionBuilder::new(Duration::from_secs(interval), max_requests)
+        let input = SimpleInputFunctionBuilder::new(time::Duration::from_secs(interval), max_requests)
             .real_ip_key()
             .build();
 
