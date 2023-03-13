@@ -4,13 +4,13 @@ use serde::Serialize;
 use tiberius::Row;
 
 #[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct AgeClass {
     id: i32,
     caption: String,
     abbreviation: String,
     suffix: String,
     gender: String,
-    #[serde(rename = "numSubClasses")]
     num_sub_classes: u8,
 }
 

@@ -10,6 +10,7 @@ struct RacesStatistics {
 }
 
 #[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 struct HeatsStatistics {
     all: i32,
     cancelled: i32,
@@ -21,16 +22,17 @@ struct HeatsStatistics {
 }
 
 #[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 struct RegistrationsStatistics {
     all: i32,
     cancelled: i32,
-    #[serde(rename = "registeringClubs")]
     registering_clubs: i32,
     athletes: i32,
     clubs: i32,
 }
 
 #[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Statistics {
     races: RacesStatistics,
     heats: HeatsStatistics,

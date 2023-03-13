@@ -4,13 +4,12 @@ use serde::Serialize;
 use tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Registration {
     pub(crate) id: i32,
     bib: i16,
-    #[serde(rename = "boatNumber")]
     boat_number: i16,
     comment: String,
-    #[serde(rename = "shortLabel")]
     short_label: String,
     club: Club,
     cancelled: bool,

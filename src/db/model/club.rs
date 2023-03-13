@@ -4,9 +4,9 @@ use serde::Serialize;
 use tiberius::Row;
 
 #[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Club {
     id: i32,
-    #[serde(rename = "shortName")]
     short_name: String,
     city: String,
 }

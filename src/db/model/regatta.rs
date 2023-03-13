@@ -7,15 +7,13 @@ use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Regatta {
     pub id: i32,
     title: String,
-    #[serde(rename = "subTitle")]
     sub_title: String,
     venue: String,
-    #[serde(rename = "startDate")]
     start_date: String,
-    #[serde(rename = "endDate")]
     end_date: String,
 }
 

@@ -13,7 +13,6 @@ enum Scope {
     #[default]
     Guest,
     User,
-    Admin,
 }
 
 #[derive(Serialize)]

@@ -4,18 +4,16 @@ use serde::Serialize;
 use tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Race {
     pub id: i32,
     number: String,
-    #[serde(rename = "shortLabel")]
     short_label: String,
-    #[serde(rename = "longLabel")]
     long_label: String,
     comment: String,
     distance: i16,
     lightweight: bool,
     cancelled: bool,
-    #[serde(rename = "registrationsCount")]
     registrations_count: i32,
     seeded: bool,
     #[serde(rename = "ageClass", skip_serializing_if = "Option::is_none")]

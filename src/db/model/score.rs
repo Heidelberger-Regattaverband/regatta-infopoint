@@ -4,6 +4,7 @@ use serde::Serialize;
 use tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Score {
     rank: i16,
     points: f64,

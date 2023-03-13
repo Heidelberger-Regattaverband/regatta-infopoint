@@ -4,11 +4,10 @@ use serde::Serialize;
 use tiberius::Row;
 
 #[derive(Debug, Serialize, Clone, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct Referee {
     id: i32,
-    #[serde(rename = "firstName")]
     first_name: String,
-    #[serde(rename = "lastName")]
     last_name: String,
 }
 

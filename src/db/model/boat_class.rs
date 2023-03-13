@@ -4,11 +4,11 @@ use serde::Serialize;
 use tiberius::Row;
 
 #[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct BoatClass {
     id: i32,
     caption: String,
     abbreviation: String,
-    #[serde(rename = "numRowers")]
     num_rowers: i32,
     coxed: bool,
 }
