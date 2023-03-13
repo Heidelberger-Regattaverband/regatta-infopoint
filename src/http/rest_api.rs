@@ -92,9 +92,8 @@ async fn get_heat_registrations(path: Path<i32>, aquarius: Data<Aquarius>) -> Js
 async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<impl Responder, Error> {
     match User::authenticate(credentials.into_inner()) {
         Ok(user) => {
-            let response = format!("Welcome {}", user.name);
-            Identity::login(&request.extensions(), user.name).unwrap();
-            Ok(response)
+            Identity::login(&request.extensions(), user.name.clone()).unwrap();
+            Ok(Json(user))
         }
         Err(err) => Err(InternalError::from_response("", err).into()),
     }
