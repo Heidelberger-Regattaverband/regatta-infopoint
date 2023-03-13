@@ -44,14 +44,16 @@ sap.ui.define([
 
     onPasswordSubmit: function (oEvent) {
       this.byId("login").focus();
+      // perform login if return is pressed in password input field
+      this.onLoginPress(oEvent);
     },
 
     onLoginPress: function (oEvent) {
+      // close login popover when login button is pressed
       if (this._oPopover) {
         this._oPopover.close();
         delete this._oPopover;
       }
-
       this._login();
     },
 
