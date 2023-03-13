@@ -1,3 +1,5 @@
+use std::env;
+
 use actix_web::HttpResponse;
 use serde::{Deserialize, Serialize};
 
@@ -23,7 +25,10 @@ pub struct User {
 
 impl User {
     pub fn authenticate(credentials: Credentials) -> Result<Self, HttpResponse> {
-        if &credentials.password != "test" {
+        let username = env::var("USER_NAME").unwrap();
+        let password = env::var("USER_PASSWORD").unwrap();
+
+        if &credentials.username != &username || &credentials.password != &password {
             return Err(HttpResponse::Unauthorized().json("Unauthorized"));
         }
 
