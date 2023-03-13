@@ -7,10 +7,19 @@ pub struct Credentials {
     password: String,
 }
 
+#[derive(Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+enum Scope {
+    #[default]
+    Guest,
+    User,
+    Admin,
+}
+
 #[derive(Serialize)]
 pub struct User {
     pub name: String,
-    password: String,
+    scope: Scope,
 }
 
 impl User {
@@ -21,7 +30,7 @@ impl User {
 
         Ok(User {
             name: credentials.username,
-            password: credentials.password,
+            scope: Scope::User,
         })
     }
 }
