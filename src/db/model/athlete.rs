@@ -4,11 +4,10 @@ use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Row};
 
 #[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Athlete {
     id: i32,
-    #[serde(rename = "firstName")]
     first_name: String,
-    #[serde(rename = "lastName")]
     last_name: String,
     gender: String,
     year: String,

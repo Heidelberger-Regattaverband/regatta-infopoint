@@ -5,10 +5,9 @@ use std::time::Duration;
 use tiberius::Row;
 
 #[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct HeatResult {
-    #[serde(rename = "rankSort")]
     rank_sort: u8,
-    #[serde(rename = "rankLabel")]
     rank_label: String,
     result: String,
     #[serde(skip_serializing_if = "Option::is_none")]

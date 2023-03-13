@@ -4,6 +4,7 @@ use serde::Serialize;
 use tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Crew {
     id: i32,
     pos: u8,
