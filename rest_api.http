@@ -1,0 +1,23 @@
+GET https://8e835d.online-server.cloud/infoportal/ HTTP/1.1
+###
+GET https://8e835d.online-server.cloud/api/active_regatta HTTP/1.1
+###
+GET https://8e835d.online-server.cloud/api/regattas HTTP/1.1
+###
+GET https://8e835d.online-server.cloud/api/regattas/12 HTTP/1.1
+###
+GET https://8e835d.online-server.cloud/api/regattas/12/heats HTTP/1.1
+###
+GET https://8e835d.online-server.cloud/api/identity HTTP/1.1
+###
+POST https://8e835d.online-server.cloud/api/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "",
+  "password": ""
+}
+###
+POST https://8e835d.online-server.cloud/api/logout HTTP/1.1
+###
+GET https://8e835d.online-server.cloud/api/identity HTTP/1.1

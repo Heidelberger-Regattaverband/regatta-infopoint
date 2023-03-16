@@ -28,7 +28,7 @@ impl User {
         let username = env::var("USER_NAME").unwrap();
         let password = env::var("USER_PASSWORD").unwrap();
 
-        if credentials.username != username || credentials.password != password {
+        if credentials.username.to_uppercase() != username.to_uppercase() || credentials.password != password {
             return Err(HttpResponse::Unauthorized().json("Unauthorized"));
         }
 
