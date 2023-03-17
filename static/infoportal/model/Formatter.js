@@ -138,7 +138,7 @@ sap.ui.define([
         return "";
       }
       if (oHeat.cancelled) {
-        return this.i18n("common.cancelled");
+        return this.i18n("heat.state.cancelled");
       } else {
         switch (oHeat.state) {
           default:
