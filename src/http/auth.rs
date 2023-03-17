@@ -29,7 +29,7 @@ impl User {
         let password = env::var("USER_PASSWORD").unwrap();
 
         if credentials.username.to_uppercase() != username.to_uppercase() || credentials.password != password {
-            return Err(HttpResponse::Unauthorized().json("Unauthorized"));
+            return Err(HttpResponse::Unauthorized().body("Unauthorized"));
         }
 
         Ok(User {

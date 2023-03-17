@@ -40,7 +40,7 @@ Content-Type: application/json
   "password": ""
 }
 ###
-POST http://localhost/api/logout HTTP/1.1
+POST http://localhost:8080/api/logout HTTP/1.1
 ###
-GET http://localhost/api/identity HTTP/1.1
+GET http://localhost:8080/api/identity HTTP/1.1
 
