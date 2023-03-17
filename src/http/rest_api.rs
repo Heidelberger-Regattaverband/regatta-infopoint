@@ -102,7 +102,7 @@ async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<i
 #[post("/logout")]
 async fn logout(user: Identity) -> impl Responder {
     user.logout();
-    HttpResponse::Ok()
+    HttpResponse::NoContent()
 }
 
 #[get("/identity")]
