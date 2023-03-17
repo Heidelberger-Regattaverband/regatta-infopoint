@@ -28,7 +28,7 @@
       <ViewSettingsFilterItem text="{i18n>common.state}" key="cancelled" multiSelect="false">
         <items>
           <ViewSettingsItem text="{i18n>common.scheduled}" key="cancelled___EQ___false" />
-          <ViewSettingsItem text="{i18n>common.cancelled}" key="cancelled___EQ___true" />
+          <ViewSettingsItem text="{i18n>heat.state.cancelled}" key="cancelled___EQ___true" />
         </items>
       </ViewSettingsFilterItem>
 
