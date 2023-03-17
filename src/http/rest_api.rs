@@ -110,7 +110,7 @@ async fn identity(user: Option<Identity>) -> Result<impl Responder, Error> {
     if let Some(user) = user {
         Ok(user.id().unwrap())
     } else {
-        Err(InternalError::from_response("", HttpResponse::Unauthorized().json("Unauthorized")).into())
+        Err(InternalError::from_response("", HttpResponse::Unauthorized().body("Unauthorized")).into())
     }
 }
 
