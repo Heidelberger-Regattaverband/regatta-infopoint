@@ -13,12 +13,13 @@ pub struct Race {
     comment: String,
     distance: i16,
     lightweight: bool,
+    state: i32,
     cancelled: bool,
     registrations_count: i32,
     seeded: bool,
-    #[serde(rename = "ageClass", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     age_class: Option<AgeClass>,
-    #[serde(rename = "boatClass", skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     boat_class: Option<BoatClass>,
 }
 
@@ -42,6 +43,7 @@ impl ToEntity<Race> for Row {
             seeded: seeded.unwrap_or_default(),
             age_class: self.try_to_entity(),
             boat_class: self.try_to_entity(),
+            state: self.try_get_column("Race_state").unwrap_or_default(),
         }
     }
 }
@@ -57,7 +59,8 @@ impl Race {
 
     pub fn query_all<'a>(regatta_id: i32) -> Query<'a> {
         let mut query = Query::new("SELECT DISTINCT o.*, ac.*, bc.*, hrv_o.*,
-            (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count
+            (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count,
+            (SELECT AVG(c.Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0) as Race_state
             FROM Offer o
             JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
             JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
@@ -69,7 +72,8 @@ impl Race {
 
     pub fn query_single<'a>(race_id: i32) -> Query<'a> {
         let mut query = Query::new("SELECT o.*,
-            (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count
+            (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count,
+            (SELECT AVG(c.Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0) as state_avg
             FROM Offer o
             WHERE o.Offer_ID = @P1");
         query.bind(race_id);

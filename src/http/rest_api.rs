@@ -11,7 +11,9 @@ use crate::{
 use actix_identity::Identity;
 use actix_web::{
     error::InternalError,
-    get, post,
+    get,
+    http::header::ContentType,
+    post,
     web::{Data, Json, Path, Query},
     Error, HttpMessage, HttpRequest, HttpResponse, Responder,
 };
@@ -110,7 +112,13 @@ async fn identity(user: Option<Identity>) -> Result<impl Responder, Error> {
     if let Some(user) = user {
         Ok(user.id().unwrap())
     } else {
-        Err(InternalError::from_response("", HttpResponse::Unauthorized().body("Unauthorized")).into())
+        Err(InternalError::from_response(
+            "",
+            HttpResponse::Unauthorized()
+                .content_type(ContentType::plaintext())
+                .body("Unauthorized"),
+        )
+        .into())
     }
 }
 

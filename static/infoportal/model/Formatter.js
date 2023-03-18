@@ -184,6 +184,53 @@ sap.ui.define([
       }
     },
 
+    raceStateLabel: function (oRace) {
+      if (!oRace) {
+        return "";
+      }
+      if (oRace.cancelled) {
+        return this.i18n("heat.state.cancelled");
+      } else {
+        switch (oRace.state) {
+          default:
+          case 0:
+          case 1:
+            return this.i18n("common.scheduled");
+          case 2:
+          case 3:
+          case 5:
+          case 6:
+            return this.i18n("heat.state.started");
+          case 4:
+            return this.i18n("common.finished");
+        }
+      }
+    },
+
+    raceStateHighlight: function (oRace) {
+      if (!oRace) {
+        return "";
+      }
+      // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
+      if (oRace.cancelled) {
+        return IndicationColor.Indication02; // cancelled -> red
+      } else {
+        switch (oRace.state) {
+          default:
+          case 0: // initial
+          case 1: // scheduled
+            return IndicationColor.Indication05; // scheduled -> blue
+          case 2: // started
+          case 3: // ???
+          case 5: // finished
+          case 6: // photo finish
+            return IndicationColor.Indication03; // started -> orange
+          case 4:
+            return IndicationColor.Indication04; // official -> green
+        }
+      }
+    },
+
     heatLabel: function (oHeat) {
       if (!oHeat) {
         return "";
