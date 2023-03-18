@@ -42,8 +42,7 @@
                 </layout:VerticalLayout>
               </layout:HorizontalLayout>
               <layout:VerticalLayout>
-                <ObjectAttribute title="{i18n>common.state}"
-                  text="{= ${race>/cancelled} ? ${i18n>heat.state.cancelled} : ${i18n>common.scheduled}}" />
+                <ObjectAttribute title="{i18n>common.state}" text="{path: 'race>/', formatter: '.formatter.raceStateLabel'}" />
                 <ObjectAttribute title="{i18n>common.registrations}" text="{race>/registrationsCount}" />
               </layout:VerticalLayout>
             </f:DynamicPageHeader>
@@ -96,8 +95,10 @@
                     </layout:VerticalLayout>
 
                     <layout:VerticalLayout>
-                      <Text text="{raceRegistrations>club/shortName}, {raceRegistrations>club/city}" visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />
-                      <Text text="{raceRegistrations>club/shortName}, {raceRegistrations>club/city}" visible="{= !${raceRegistrations>cancelled}}" />
+                      <Text text="{raceRegistrations>club/shortName}, {raceRegistrations>club/city}"
+                        visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />
+                      <Text text="{raceRegistrations>club/shortName}, {raceRegistrations>club/city}"
+                        visible="{= !${raceRegistrations>cancelled}}" />
                     </layout:VerticalLayout>
                   </cells>
                 </ColumnListItem>
