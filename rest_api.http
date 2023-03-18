@@ -30,6 +30,8 @@ GET http://localhost:8080/api/regattas/12 HTTP/1.1
 ###
 GET http://localhost:8080/api/regattas/12/heats HTTP/1.1
 ###
+GET http://localhost:8080/api/regattas/12/races HTTP/1.1
+###
 GET http://localhost:8080/api/identity HTTP/1.1
 ###
 POST http://localhost:8080/api/login HTTP/1.1

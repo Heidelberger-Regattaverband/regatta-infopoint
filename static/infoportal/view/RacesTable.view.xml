@@ -62,13 +62,13 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation" vAlign="Top" highlight="{= ${races>cancelled} ? 'Indication02' : 'Indication04' }">
+            <ColumnListItem type="Navigation" vAlign="Top" highlight="{path: 'races>', formatter: '.formatter.raceStateHighlight'}">
               <cells>
                 <Text text="{races>number}" />
                 <ObjectIdentifier title="{path: 'races>', formatter: '.formatter.raceLabel'}" text="{races>longLabel} {races>comment}" />
                 <Text text="{path: 'races>', formatter: '.formatter.distanceLabel'}" />
                 <Text text="{races>registrationsCount}" />
-                <Text text="{= ${races>cancelled} ? ${i18n>heat.state.cancelled} : ${i18n>common.scheduled}}" />
+                <Text text="{path: 'races>', formatter: '.formatter.raceStateLabel'}" />
                 <Text text="{= ${races>seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
               </cells>
             </ColumnListItem>
