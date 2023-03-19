@@ -73,7 +73,7 @@ impl Race {
     pub fn query_single<'a>(race_id: i32) -> Query<'a> {
         let mut query = Query::new("SELECT o.*,
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count,
-            (SELECT AVG(c.Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0) as state_avg
+            (SELECT AVG(c.Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0) as Race_state
             FROM Offer o
             WHERE o.Offer_ID = @P1");
         query.bind(race_id);
