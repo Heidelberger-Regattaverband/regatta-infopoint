@@ -1,4 +1,5 @@
-<mvc:View xmlns:core="sap.ui.core" controllerName="de.regatta_hd.infopoint.controller.RacesTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View xmlns:core="sap.ui.core" controllerName="de.regatta_hd.infopoint.controller.RacesTable" xmlns="sap.m" xmlns:layout="sap.ui.layout"
+  xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
     <Page title="{i18n>common.offer}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
@@ -64,12 +65,40 @@
           <items>
             <ColumnListItem type="Navigation" vAlign="Top" highlight="{path: 'races>', formatter: '.formatter.raceStateHighlight'}">
               <cells>
-                <Text text="{races>number}" />
-                <ObjectIdentifier title="{path: 'races>', formatter: '.formatter.raceLabel'}" text="{races>longLabel} {races>comment}" />
-                <Text text="{path: 'races>', formatter: '.formatter.distanceLabel'}" />
-                <Text text="{races>registrationsCount}" />
-                <Text text="{path: 'races>', formatter: '.formatter.raceStateLabel'}" />
-                <Text text="{= ${races>seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
+                <layout:VerticalLayout>
+                  <Text text="{races>number}" visible="{=${races>cancelled}}" class="cancelled" />
+                  <Text text="{races>number}" visible="{=!${races>cancelled}}" />
+                </layout:VerticalLayout>
+
+                <layout:VerticalLayout>
+                  <Text text="{path: 'races>', formatter: '.formatter.raceLabel'}" visible="{=${races>cancelled}}"
+                    class="boldCancelled sapUiTinyMarginBottom" />
+                  <Text text="{path: 'races>', formatter: '.formatter.raceLabel'}" visible="{=!${races>cancelled}}"
+                    class="bold sapUiTinyMarginBottom" />
+
+                  <Text text="{races>longLabel} {races>comment}" visible="{=${races>cancelled}}" class="cancelled" />
+                  <Text text="{races>longLabel} {races>comment}" visible="{=!${races>cancelled}}" />
+                </layout:VerticalLayout>
+
+                <layout:VerticalLayout>
+                  <Text text="{path: 'races>', formatter: '.formatter.distanceLabel'}" visible="{=${races>cancelled}}" class="cancelled" />
+                  <Text text="{path: 'races>', formatter: '.formatter.distanceLabel'}" visible="{=!${races>cancelled}}" />
+                </layout:VerticalLayout>
+
+                <layout:VerticalLayout>
+                  <Text text="{races>registrationsCount}" visible="{=${races>cancelled}}" class="cancelled" />
+                  <Text text="{races>registrationsCount}" visible="{=!${races>cancelled}}" />
+                </layout:VerticalLayout>
+
+                <layout:VerticalLayout>
+                  <Text text="{path: 'races>', formatter: '.formatter.raceStateLabel'}" />
+                </layout:VerticalLayout>
+
+                <layout:VerticalLayout>
+                  <Text text="{= ${races>seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" visible="{=${races>cancelled}}"
+                    class="cancelled" />
+                  <Text text="{= ${races>seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" visible="{=!${races>cancelled}}" />
+                </layout:VerticalLayout>
               </cells>
             </ColumnListItem>
           </items>
