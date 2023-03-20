@@ -59,7 +59,7 @@
           <ObjectIdentifier title="{path: 'heats>race', formatter: '.formatter.nrRaceLabel'}"
             text="{path: 'heats>', formatter: '.formatter.heatLabel'}" />
           <Text text="{path: 'heats>race', formatter: '.formatter.distanceLabel'}" />
-          <Text text="{path: 'heats>', formatter: '.formatter.stateLabel'}" />
+          <Text text="{path: 'heats>', formatter: '.formatter.heatStateLabel'}" />
         </cells>
       </ColumnListItem>
     </items>
