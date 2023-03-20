@@ -86,7 +86,8 @@ sap.ui.define([
             filters: [
               new Filter("race/number", FilterOperator.Contains, sQuery),
               new Filter("race/shortLabel", FilterOperator.Contains, sQuery),
-              new Filter("race/longLabel", FilterOperator.Contains, sQuery)
+              new Filter("race/longLabel", FilterOperator.Contains, sQuery),
+              new Filter("race/comment", FilterOperator.Contains, sQuery)
             ],
             and: false
           }))
