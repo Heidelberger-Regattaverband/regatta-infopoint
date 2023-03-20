@@ -5,6 +5,82 @@ sap.ui.define([
 
   const Formatter = {
 
+    // -----------------
+    // race formatters
+    // -----------------
+    raceLabel: function (oRace) {
+      if (oRace) {
+        let label = oRace.shortLabel;
+        if (oRace.comment) {
+          label += " " + oRace.comment;
+        }
+        return label;
+      }
+      return "";
+    },
+
+    nrRaceLabel: function (oRace) {
+      if (oRace) {
+        const label = oRace.number + " - " + Formatter.raceLabel(oRace);
+        return label;
+      }
+      return "";
+    },
+
+    raceStateHighlight: function (oRace) {
+      if (!oRace) {
+        return "";
+      }
+      // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
+      if (oRace.cancelled) {
+        return IndicationColor.Indication02; // cancelled -> red
+      } else {
+        switch (oRace.state) {
+          default:
+          case 0: // initial
+          case 1: // scheduled
+            return IndicationColor.Indication05; // scheduled -> blue
+          case 2: // started
+          case 3: // ???
+          case 5: // finished
+          case 6: // photo finish
+            return IndicationColor.Indication03; // started -> orange
+          case 4:
+            return IndicationColor.Indication04; // official -> green
+        }
+      }
+    },
+
+    raceStateLabel: function (oRace) {
+      if (!oRace) {
+        return "";
+      }
+      if (oRace.cancelled) {
+        return this.i18n("heat.state.cancelled");
+      } else {
+        switch (oRace.state) {
+          default:
+          case 0:
+          case 1:
+            return this.i18n("common.scheduled");
+          case 2:
+          case 3:
+          case 5:
+          case 6:
+            return this.i18n("heat.state.started");
+          case 4:
+            return this.i18n("common.finished");
+        }
+      }
+    },
+
+    distanceLabel: function (oRace) {
+      if (oRace && oRace.distance) {
+        return oRace.distance + "m";
+      }
+      return "";
+    },
+
     raceRegistrationHighlight: function (oRegistration) {
       // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
       if (oRegistration.cancelled) {
@@ -14,6 +90,9 @@ sap.ui.define([
       }
     },
 
+    // -----------------
+    // heat formatters
+    // -----------------
     heatRegistrationHighlight: function (oHeatRegistration) {
       // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
       if (oHeatRegistration.registration.cancelled) {
@@ -41,13 +120,6 @@ sap.ui.define([
       return label;
     },
 
-    distanceLabel: function (oRace) {
-      if (oRace) {
-        return oRace.distance + "m";
-      }
-      return "";
-    },
-
     boatLabel: function (oRegistration) {
       let sLabel = "" + oRegistration.shortLabel;
       if (oRegistration.boatNumber > 0) {
@@ -59,60 +131,24 @@ sap.ui.define([
       return sLabel;
     },
 
-    raceLabel: function (oRace) {
-      if (oRace) {
-        let label = oRace.shortLabel;
-        if (oRace.comment) {
-          label += " " + oRace.comment;
-        }
-        return label;
+    weekdayLabel: function (iWeekday) {
+      switch (iWeekday) {
+        case 1: return "Mo";
+        case 2: return "Di";
+        case 3: return "Mi";
+        case 4: return "Do";
+        case 5: return "Fr";
+        case 6: return "Sa";
+        case 7: return "So";
+        default: return "";
       }
-      return "";
-    },
-
-    nrRaceLabel: function (oRace) {
-      if (oRace) {
-        let label = oRace.number + " - " + oRace.shortLabel;
-        if (oRace.comment) {
-          label += " " + oRace.comment;
-        }
-        return label;
-      }
-      return "";
-    },
-
-    dayLabel: function (oHeat) {
-      if (oHeat) {
-        let weekday;
-        switch (oHeat.weekday) {
-          case 1: weekday = "Mo"; break;
-          case 2: weekday = "Di"; break;
-          case 3: weekday = "Mi"; break;
-          case 4: weekday = "Do"; break;
-          case 5: weekday = "Fr"; break;
-          case 6: weekday = "Sa"; break;
-          case 7: weekday = "So"; break;
-        }
-        const aDate = oHeat.date.split("-");
-        return weekday + ", " + aDate[2] + "." + aDate[1] + ".";
-      }
-      return "";
     },
 
     dayTimeLabel: function (oHeat) {
       if (oHeat) {
-        let weekday;
-        switch (oHeat.weekday) {
-          case 1: weekday = "Mo"; break;
-          case 2: weekday = "Di"; break;
-          case 3: weekday = "Mi"; break;
-          case 4: weekday = "Do"; break;
-          case 5: weekday = "Fr"; break;
-          case 6: weekday = "Sa"; break;
-          case 7: weekday = "So"; break;
-        }
+        const sWeekday = Formatter.weekdayLabel(oHeat.weekday);
         const aTime = oHeat.time.split(":");
-        return weekday + ", " + aTime[0] + ":" + aTime[1];
+        return sWeekday + ", " + aTime[0] + ":" + aTime[1];
       }
       return "";
     },
@@ -133,7 +169,7 @@ sap.ui.define([
       return "";
     },
 
-    stateLabel: function (oHeat) {
+    heatStateLabel: function (oHeat) {
       if (!oHeat) {
         return "";
       }
@@ -180,53 +216,6 @@ sap.ui.define([
             return IndicationColor.Indication06; // finished -> dark green
           case 6:
             return IndicationColor.Indication07; // photo finish -> ???
-        }
-      }
-    },
-
-    raceStateLabel: function (oRace) {
-      if (!oRace) {
-        return "";
-      }
-      if (oRace.cancelled) {
-        return this.i18n("heat.state.cancelled");
-      } else {
-        switch (oRace.state) {
-          default:
-          case 0:
-          case 1:
-            return this.i18n("common.scheduled");
-          case 2:
-          case 3:
-          case 5:
-          case 6:
-            return this.i18n("heat.state.started");
-          case 4:
-            return this.i18n("common.finished");
-        }
-      }
-    },
-
-    raceStateHighlight: function (oRace) {
-      if (!oRace) {
-        return "";
-      }
-      // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
-      if (oRace.cancelled) {
-        return IndicationColor.Indication02; // cancelled -> red
-      } else {
-        switch (oRace.state) {
-          default:
-          case 0: // initial
-          case 1: // scheduled
-            return IndicationColor.Indication05; // scheduled -> blue
-          case 2: // started
-          case 3: // ???
-          case 5: // finished
-          case 6: // photo finish
-            return IndicationColor.Indication03; // started -> orange
-          case 4:
-            return IndicationColor.Indication04; // official -> green
         }
       }
     },
