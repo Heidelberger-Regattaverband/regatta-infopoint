@@ -12,3 +12,38 @@
   text-decoration: line-through;
   text-decoration-thickness: 1px;
 }
+
+.sapMMessageToastSuccess {
+  color: #4F8A10 !important;
+  background-color: #DFF2BF !important;
+  border: 1px solid #4F8A10 !important;
+  border-left: 7px solid #4F8A10 !important;
+}
+
+.sapMMessageToastInfo {
+  color: #00529B !important;
+  background-color: #BDE5F8 !important;
+  border: 1px solid #00529B !important;
+  border-left: 7px solid #00529B !important;
+}
+
+.sapMMessageToastWarning {
+  color: #9F6000 !important;
+  background-color: #FEEFB3 !important;
+  border: 1px solid #9F6000 !important;
+  border-left: 7px solid #9F6000 !important;
+}
+
+.sapMMessageToastDanger {
+  color: #D8000C !important;
+  background-color: #FFD2D2 !important;
+  border: 1px solid #D8000C !important;
+  border-left: 7px solid #D8000C !important;
+}
+
+.sapMMessageToastNote {
+  color: #FCF9F9 !important;
+  background-color: #5D5C5C !important;
+  border: 1px solid #4E4D4D !important;
+  border-left: 7px solid #4E4D4D !important;
+}

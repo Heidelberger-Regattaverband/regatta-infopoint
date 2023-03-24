@@ -1,9 +1,10 @@
 sap.ui.define([
   'sap/ui/core/Fragment',
   "sap/ui/model/json/JSONModel",
+  "sap/m/MessageToast",
   "de/regatta_hd/infopoint/controller/Base.controller",
   "../model/Formatter"
-], function (Fragment, JSONModel, BaseController, Formatter) {
+], function (Fragment, JSONModel, MessageToast, BaseController, Formatter) {
   "use strict";
 
   return BaseController.extend("de.regatta_hd.infopoint.controller.Launchpad", {
@@ -102,6 +103,12 @@ sap.ui.define([
         contentType: "application/json",
         success: function (sResult) {
           this._updateUserModel(true, oCredentials.username);
+          MessageToast.show("Anmeldung erfolgreich");
+          $(".sapMMessageToast").removeClass("sapMMessageToastDanger").addClass("sapMMessageToastSuccess");
+        }.bind(this),
+        error: function (sResult) {
+          MessageToast.show("Anmeldung fehlgeschlagen");
+          $(".sapMMessageToast").removeClass("sapMMessageToastSuccess").addClass("sapMMessageToastDanger");
         }.bind(this)
       });
 
