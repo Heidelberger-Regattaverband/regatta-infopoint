@@ -14,8 +14,8 @@ sap.ui.define([
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      const oCredentialsModel = new JSONModel({ username: "", password: "" });
-      this.setViewModel(oCredentialsModel, "credentials");
+      this._oCredentialsModel = new JSONModel({ username: "", password: "" });
+      this.setViewModel(this._oCredentialsModel, "credentials");
       this._getIdentity();
     },
 
@@ -92,8 +92,7 @@ sap.ui.define([
     },
 
     _login: function () {
-      const oCredentialsModel = this.getViewModel("credentials");
-      const oCredentials = oCredentialsModel.getData();
+      const oCredentials = this._oCredentialsModel.getData();
 
       // see: https://api.jquery.com/jquery.ajax/
       $.ajax({
@@ -113,7 +112,7 @@ sap.ui.define([
       });
 
       // reset password
-      oCredentialsModel.setProperty("/password", "");
+      this._oCredentialsModel.setProperty("/password", "");
     },
 
     _logout: function () {

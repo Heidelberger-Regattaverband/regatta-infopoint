@@ -1,18 +1,22 @@
 sap.ui.define([
   "de/regatta_hd/infopoint/controller/Base.controller",
   "sap/ui/model/Filter",
-  "sap/ui/model/FilterOperator"
-], function (BaseController, Filter, FilterOperator) {
+  "sap/ui/model/FilterOperator",
+  "sap/m/MessageToast"
+], function (BaseController, Filter, FilterOperator, MessageToast) {
   "use strict";
 
   return BaseController.extend("de.regatta_hd.infopoint.controller.ScoringTable", {
 
-    onInit: function () {
+    onInit: async function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this.getRouter().getRoute("scoring").attachMatched(async (_) => await this._loadScoringModel(), this);
+      this._oTable = this.getView().byId("scoringTable");
 
-      this.oTable = this.getView().byId("scoringTable");
+      this._oScoringModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/scoring", this._oTable);
+      this.setViewModel(this._oScoringModel, "scoring");
+
+      this.getRouter().getRoute("scoring").attachMatched(async (_) => await this._loadScoringModel(), this);
     },
 
     onNavBack: function () {
@@ -32,21 +36,17 @@ sap.ui.define([
             and: false
           }))
       }
-      const oBinding = this.oTable.getBinding("items");
+      const oBinding = this._oTable.getBinding("items");
       oBinding.filter(aSearchFilters);
     },
 
     onRefreshButtonPress: async function (oEvent) {
       await this._loadScoringModel();
+      MessageToast.show(this.i18n("msg.dataUpdated", undefined));
     },
 
     _loadScoringModel: async function () {
-      if (!this._oScoringModel) {
-        this._oScoringModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/scoring", this.oTable);
-        this.setViewModel(this._oScoringModel, "scoring");
-      } else {
-        await this.updateJSONModel(this._oScoringModel, "/api/regattas/" + this.getRegattaId() + "/scoring", this.oTable)
-      }
+      await this.updateJSONModel(this._oScoringModel, "/api/regattas/" + this.getRegattaId() + "/scoring", this._oTable)
     }
 
   });
