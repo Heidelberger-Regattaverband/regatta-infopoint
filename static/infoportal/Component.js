@@ -29,10 +29,10 @@ sap.ui.define([
       this.setModel(oDeviceModel, "device");
 
       const oUserModel = new JSONModel({
-        authenticated: false, name: "anonymous", roles: []
+        authenticated: false, username: "anonymous", roles: []
       });
       oUserModel.setDefaultBindingMode("OneWay");
-      this.setModel(oUserModel, "user");
+      this.setModel(oUserModel, "identity");
     },
 
     getContentDensityClass: function () {

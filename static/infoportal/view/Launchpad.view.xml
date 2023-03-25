@@ -6,10 +6,9 @@
       class="sapUiNoContentPadding">
 
       <headerContent>
-        <!-- <Text text="{user>/name}" visible="{user>/authenticated}" /> -->
-        <Button icon="{=${user>/authenticated}?'sap-icon://log':'sap-icon://person-placeholder'}" press="onShowLoginPress"
-          text="{=${user>/authenticated}?${i18n>common.logoff}:${i18n>common.login}}" visible="{=!${device>/system/phone}}" />
-        <Button icon="{=${user>/authenticated}?'sap-icon://log':'sap-icon://person-placeholder'}" press="onShowLoginPress"
+        <Button icon="{=${identity>/authenticated}?'sap-icon://log':'sap-icon://person-placeholder'}" press="onShowLoginPress"
+          text="{=${identity>/authenticated}?${i18n>common.logoff}:${i18n>common.login}}" visible="{=!${device>/system/phone}}" />
+        <Button icon="{=${identity>/authenticated}?'sap-icon://log':'sap-icon://person-placeholder'}" press="onShowLoginPress"
           visible="{device>/system/phone}" />
       </headerContent>
 
@@ -39,7 +38,7 @@
             </GenericTile>
 
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.scoringTile.header}"
-              visible="{user>/authenticated}" press=".onNavToScoring">
+              visible="{identity>/authenticated}" press=".onNavToScoring">
               <tileContent>
                 <TileContent>
                   <content>
@@ -50,7 +49,7 @@
             </GenericTile>
 
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.statistics.header}"
-              visible="{user>/authenticated}" press=".onNavToStatistics">
+              visible="{identity>/authenticated}" press=".onNavToStatistics">
               <tileContent>
                 <TileContent>
                   <content>
@@ -60,7 +59,7 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="Kiosk" visible="{user>/authenticated}"
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="Kiosk" visible="{identity>/authenticated}"
               press=".onNavToKiosk">
               <tileContent>
                 <TileContent>
