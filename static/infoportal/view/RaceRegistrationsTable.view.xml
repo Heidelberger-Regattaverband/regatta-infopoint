@@ -38,12 +38,12 @@
               <layout:HorizontalLayout allowWrapping="true">
                 <layout:VerticalLayout class="sapUiMediumMarginEnd">
                   <ObjectAttribute title="{i18n>common.distance}" text="{path: 'race>/', formatter: '.formatter.distanceLabel'}" />
-                  <ObjectAttribute title="{i18n>common.seededLbl}" text="{= ${race>/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
+                  <ObjectAttribute title="{i18n>common.registrations}" text="{race>/registrationsCount}" />
                 </layout:VerticalLayout>
               </layout:HorizontalLayout>
               <layout:VerticalLayout>
                 <ObjectAttribute title="{i18n>common.state}" text="{path: 'race>/', formatter: '.formatter.raceStateLabel'}" />
-                <ObjectAttribute title="{i18n>common.registrations}" text="{race>/registrationsCount}" />
+                <ObjectAttribute title="{i18n>common.seededLbl}" text="{= ${race>/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
               </layout:VerticalLayout>
             </f:DynamicPageHeader>
           </f:header>
