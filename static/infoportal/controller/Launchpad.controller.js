@@ -103,11 +103,11 @@ sap.ui.define([
         contentType: "application/json",
         success: function (sResult) {
           this._updateUserModel(true, oCredentials.username);
-          MessageToast.show("Anmeldung erfolgreich");
+          MessageToast.show(this.i18n("msg.loginSucceeded", undefined));
           $(".sapMMessageToast").removeClass("sapMMessageToastDanger").addClass("sapMMessageToastSuccess");
         }.bind(this),
         error: function (sResult) {
-          MessageToast.show("Anmeldung fehlgeschlagen");
+          MessageToast.show(this.i18n("msg.loginFailed", undefined));
           $(".sapMMessageToast").removeClass("sapMMessageToastSuccess").addClass("sapMMessageToastDanger");
         }.bind(this)
       });

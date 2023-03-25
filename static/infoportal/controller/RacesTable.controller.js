@@ -3,18 +3,22 @@ sap.ui.define([
   "sap/ui/model/json/JSONModel",
   "sap/ui/model/Filter",
   "sap/ui/model/FilterOperator",
+  "sap/m/MessageToast",
   "../model/Formatter"
-], function (BaseTableController, JSONModel, Filter, FilterOperator, Formatter) {
+], function (BaseTableController, JSONModel, Filter, FilterOperator, MessageToast, Formatter) {
   "use strict";
 
   return BaseTableController.extend("de.regatta_hd.infopoint.controller.RacesTable", {
 
     formatter: Formatter,
 
-    onInit: function () {
+    onInit: async function () {
       this.init(this.getView().byId("racesTable"), "race");
 
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
+
+      this._oRacesModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
+      this.setViewModel(this._oRacesModel, "races");
 
       this.getRouter().getRoute("races").attachMatched(async (_) => await this._loadRacesModel(), this);
     },
@@ -38,29 +42,24 @@ sap.ui.define([
     },
 
     onNavBack: function () {
-      this._oRacesModel = undefined;
       // reduce table growing threshold to improve performance next time table is shown
       this.oTable.setGrowingThreshold(30);
       this.navBack("startpage");
     },
 
-    onFilterButtonPress: function (oEvent) {
-      this.getViewSettingsDialog("de.regatta_hd.infopoint.view.RacesFilterDialog")
-        .then(function (oViewSettingsDialog) {
-          oViewSettingsDialog.open();
-        });
+    onFilterButtonPress: async function (oEvent) {
+      const oViewSettingsDialog = await this.getViewSettingsDialog("de.regatta_hd.infopoint.view.RacesFilterDialog")
+      oViewSettingsDialog.open();
     },
 
     onRefreshButtonPress: async function (oEvent) {
-      await this.updateJSONModel(this._oRacesModel, "/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
+      await this._loadRacesModel();
+      MessageToast.show(this.i18n("msg.dataUpdated", undefined));
     },
 
     _loadRacesModel: async function () {
-      if (!this._oRacesModel) {
-        this._oRacesModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
-        this.setViewModel(this._oRacesModel, "races");
-        this.applyFilters();
-      }
+      await this.updateJSONModel(this._oRacesModel, "/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
+      this.applyFilters();
     },
 
     _loadRegistrationsModel: async function (sRaceId) {
