@@ -3,18 +3,22 @@ sap.ui.define([
   "sap/ui/model/json/JSONModel",
   "sap/ui/model/Filter",
   "sap/ui/model/FilterOperator",
+  "sap/m/MessageToast",
   "../model/Formatter"
-], function (BaseTableController, JSONModel, Filter, FilterOperator, Formatter) {
+], function (BaseTableController, JSONModel, Filter, FilterOperator, MessageToast, Formatter) {
   "use strict";
 
   return BaseTableController.extend("de.regatta_hd.infopoint.controller.HeatsTable", {
 
     formatter: Formatter,
 
-    onInit: function () {
+    onInit: async function () {
       this.init(this.getView().byId("heatsTable"), "heat");
 
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
+
+      this._oHeatsModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
+      this.setViewModel(this._oHeatsModel, "heats");
 
       this.getRouter().getRoute("heats").attachMatched(async (_) => await this._loadHeatsModel(), this);
     },
@@ -38,22 +42,19 @@ sap.ui.define([
     },
 
     onNavBack: function () {
-      this._oHeatsModel = undefined;
       // reduce table growing threshold to improve performance next time table is shown
       this.oTable.setGrowingThreshold(30);
       this.navBack("startpage");
     },
 
     onRefreshButtonPress: async function (oEvent) {
-      await this.updateJSONModel(this._oHeatsModel, "/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
+      await this._loadHeatsModel();
+      MessageToast.show(this.i18n("msg.dataUpdated", undefined));
     },
 
     _loadHeatsModel: async function () {
-      if (!this._oHeatsModel) {
-        this._oHeatsModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
-        this.setViewModel(this._oHeatsModel, "heats");
-        this.applyFilters();
-      }
+      await this.updateJSONModel(this._oHeatsModel, "/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
+      this.applyFilters();
     },
 
     _loadRegistrationsModel: async function (sHeatId) {
@@ -70,11 +71,9 @@ sap.ui.define([
       this._loadRegistrationsModel(oItem.id);
     },
 
-    onFilterButtonPress: function (oEvent) {
-      this.getViewSettingsDialog("de.regatta_hd.infopoint.view.HeatsFilterDialog")
-        .then(function (oViewSettingsDialog) {
-          oViewSettingsDialog.open();
-        });
+    onFilterButtonPress: async function (oEvent) {
+      const oViewSettingsDialog = await this.getViewSettingsDialog("de.regatta_hd.infopoint.view.HeatsFilterDialog");
+      oViewSettingsDialog.open();
     },
 
     onFilterSearch: function (oEvent) {
