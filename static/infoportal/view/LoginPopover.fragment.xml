@@ -1,4 +1,4 @@
-<core:FragmentDefinition xmlns="sap.m" xmlns:l="sap.ui.layout" xmlns:core="sap.ui.core">
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
 
   <ResponsivePopover id="loginPopover" title="{i18n>common.login}" class="sapUiContentPadding" placement="Bottom" initialFocus="user">
     <content>
