@@ -101,7 +101,7 @@ sap.ui.define([
         url: "/api/login",
         contentType: "application/json",
         success: function (sResult) {
-          this._updateUserModel(true, oCredentials.username);
+          this._updateIdentity(true, oCredentials.username);
           MessageToast.show(this.i18n("msg.loginSucceeded", undefined));
           $(".sapMMessageToast").removeClass("sapMMessageToastDanger").addClass("sapMMessageToastSuccess");
         }.bind(this),
@@ -120,7 +120,7 @@ sap.ui.define([
         type: "POST",
         url: "/api/logout",
         success: function (sResult) {
-          this._updateUserModel(false, "");
+          this._updateIdentity(false, "");
         }.bind(this)
       });
     },
@@ -130,19 +130,19 @@ sap.ui.define([
         type: "GET",
         url: "/api/identity",
         success: function (sResult) {
-          this._updateUserModel(true, sResult);
+          this._updateIdentity(true, sResult);
         }.bind(this)
       });
     },
 
-    _updateUserModel: function (bAuthenticated, sName) {
-      const oUserModel = this.getViewModel("user");
+    _updateIdentity: function (bAuthenticated, sName) {
+      const oUserModel = this.getViewModel("identity");
       oUserModel.setProperty("/authenticated", bAuthenticated);
-      oUserModel.setProperty("/name", sName);
+      oUserModel.setProperty("/username", sName);
     },
 
     _isAuthenticated: function () {
-      return this.getViewModel("user").getProperty("/authenticated");
+      return this.getViewModel("identity").getProperty("/authenticated");
     }
 
   });
