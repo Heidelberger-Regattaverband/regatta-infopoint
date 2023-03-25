@@ -1,4 +1,4 @@
-<mvc:View controllerName="de.regatta_hd.infopoint.controller.Statistics" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:l="sap.ui.layout">
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.Statistics" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
     <Page title="{i18n>launchpad.statistics.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
