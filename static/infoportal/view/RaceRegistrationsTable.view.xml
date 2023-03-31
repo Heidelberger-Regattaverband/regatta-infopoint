@@ -42,8 +42,8 @@
                 </layout:VerticalLayout>
               </layout:HorizontalLayout>
               <layout:VerticalLayout>
-                <ObjectAttribute title="{i18n>common.state}" text="{path: 'race>/', formatter: '.formatter.raceStateLabel'}" />
                 <ObjectAttribute title="{i18n>common.seededLbl}" text="{= ${race>/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
+                <ObjectAttribute title="{i18n>common.state}" text="{path: 'race>/', formatter: '.formatter.raceStateLabel'}" />
               </layout:VerticalLayout>
             </f:DynamicPageHeader>
           </f:header>

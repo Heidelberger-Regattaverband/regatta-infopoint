@@ -52,12 +52,12 @@
             </Column>
             <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
               <header>
-                <Text text="{i18n>common.state}" class="bold" />
+                <Text text="{i18n>common.seededLbl}" class="bold" />
               </header>
             </Column>
             <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
               <header>
-                <Text text="{i18n>common.seededLbl}" class="bold" />
+                <Text text="{i18n>common.state}" class="bold" />
               </header>
             </Column>
           </columns>
@@ -91,13 +91,13 @@
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>
-                  <Text text="{path: 'races>', formatter: '.formatter.raceStateLabel'}" />
-                </layout:VerticalLayout>
-
-                <layout:VerticalLayout>
                   <Text text="{= ${races>seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" visible="{=${races>cancelled}}"
                     class="cancelled" />
                   <Text text="{= ${races>seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" visible="{=!${races>cancelled}}" />
+                </layout:VerticalLayout>
+
+                <layout:VerticalLayout>
+                  <Text text="{path: 'races>', formatter: '.formatter.raceStateLabel'}" />
                 </layout:VerticalLayout>
               </cells>
             </ColumnListItem>
