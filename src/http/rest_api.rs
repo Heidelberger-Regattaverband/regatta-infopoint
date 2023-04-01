@@ -22,7 +22,7 @@ use serde::Deserialize;
 #[get("/monitor")]
 async fn monitor(aquarius: Data<Aquarius>) -> Json<Monitor> {
     let pool = aquarius.pool.state();
-    Json(Monitor::new(pool))
+    Json(Monitor::new(pool, aquarius.pool.created()))
 }
 
 #[get("/regattas")]

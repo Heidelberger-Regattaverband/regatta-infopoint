@@ -1,7 +1,6 @@
-use super::TiberiusPool;
 use async_std::net::TcpStream;
 use async_trait::async_trait;
-use bb8::{ManageConnection, Pool};
+use bb8::{ManageConnection, Pool, PooledConnection, State};
 use colored::Colorize;
 use log::{debug, info};
 use std::{
@@ -13,7 +12,7 @@ use tiberius::{error::Error, AuthMethod, Client, Config, EncryptionLevel};
 #[derive(Debug)]
 pub struct TiberiusConnectionManager {
     config: Config,
-    count: Arc<Mutex<u8>>,
+    count: Arc<Mutex<u32>>,
 }
 
 impl TiberiusConnectionManager {
@@ -92,22 +91,41 @@ impl ManageConnection for TiberiusConnectionManager {
     }
 }
 
-pub struct PoolFactory {}
+pub struct TiberiusPool {
+    inner: Pool<TiberiusConnectionManager>,
+    count: Arc<Mutex<u32>>,
+}
 
-impl PoolFactory {
-    pub async fn create_pool() -> TiberiusPool {
+impl TiberiusPool {
+    pub async fn new() -> Self {
         let db_pool_size: u32 = env::var("DB_POOL_MAX_SIZE")
             .expect("env variable `DB_POOL_MAX_SIZE` should be set")
             .parse()
             .unwrap();
 
         let manager = TiberiusConnectionManager::new();
+        let count = manager.count.clone();
 
         debug!(
             "Creating DB pool with configuration: max_size={}",
             db_pool_size.to_string().bold()
         );
 
-        Pool::builder().max_size(db_pool_size).build(manager).await.unwrap()
+        TiberiusPool {
+            inner: Pool::builder().max_size(db_pool_size).build(manager).await.unwrap(),
+            count,
+        }
+    }
+
+    pub async fn get(&self) -> PooledConnection<'_, TiberiusConnectionManager> {
+        self.inner.get().await.unwrap()
+    }
+
+    pub fn state(&self) -> State {
+        self.inner.state()
+    }
+
+    pub fn created(&self) -> u32 {
+        *self.count.lock().unwrap()
     }
 }
