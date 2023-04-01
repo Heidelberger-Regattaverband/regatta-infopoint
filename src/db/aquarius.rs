@@ -1,7 +1,7 @@
 use super::{
     cache::{CacheTrait, Caches},
     model::{Crew, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics, ToEntity},
-    tiberius::{PoolFactory, TiberiusConnectionManager, TiberiusPool},
+    tiberius::{TiberiusConnectionManager, TiberiusPool},
 };
 use bb8::PooledConnection;
 use colored::Colorize;
@@ -39,7 +39,7 @@ impl Aquarius {
 
         Aquarius {
             caches: Caches::new(Duration::from_secs(cache_ttl)),
-            pool: PoolFactory::create_pool().await,
+            pool: TiberiusPool::new().await,
             active_regatta_id,
         }
     }
@@ -50,7 +50,7 @@ impl Aquarius {
 
     pub async fn get_regattas(&self) -> Vec<Regatta> {
         let start = Instant::now();
-        let regattas = Regatta::query_all(&mut self.pool.get().await.unwrap()).await;
+        let regattas = Regatta::query_all(&mut self.pool.get().await).await;
         debug!("Query all regattas from DB: {:?}", start.elapsed());
 
         regattas
@@ -70,7 +70,7 @@ impl Aquarius {
             regatta
         } else {
             // 2. read regatta from DB
-            let regatta = Regatta::query(regatta_id, &mut self.pool.get().await.unwrap()).await;
+            let regatta = Regatta::query(regatta_id, &mut self.pool.get().await).await;
 
             // 3. store regatta in cache
             self.caches.regatta.set(&regatta.id, &regatta).await;
@@ -268,7 +268,7 @@ impl Aquarius {
     }
 
     async fn _execute_single_query(&self, query: Query<'_>) -> Row {
-        let mut client = self.pool.get().await.unwrap();
+        let mut client = self.pool.get().await;
 
         query
             .query(&mut client)
@@ -281,7 +281,7 @@ impl Aquarius {
     }
 
     async fn _execute_query(&self, query: Query<'_>) -> Vec<Row> {
-        let mut client = self.pool.get().await.unwrap();
+        let mut client = self.pool.get().await;
 
         query
             .query(&mut client)

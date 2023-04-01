@@ -7,12 +7,13 @@ pub struct Monitor {
 }
 
 impl Monitor {
-    pub fn new(state: State) -> Self {
+    pub fn new(state: State, created: u32) -> Self {
         Monitor {
             db: Db {
                 connections: Connections {
                     current: state.connections,
                     idle: state.idle_connections,
+                    created,
                 },
             },
         }
@@ -20,12 +21,15 @@ impl Monitor {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct Db {
     connections: Connections,
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct Connections {
     current: u32,
     idle: u32,
+    created: u32,
 }
