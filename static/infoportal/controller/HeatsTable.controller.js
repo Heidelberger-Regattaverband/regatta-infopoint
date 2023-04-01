@@ -76,6 +76,13 @@ sap.ui.define([
       oViewSettingsDialog.open();
     },
 
+    onClearFilterPress: async function (oEvent) {
+      const oViewSettingsDialog = await this.getViewSettingsDialog("de.regatta_hd.infopoint.view.HeatsFilterDialog")
+      oViewSettingsDialog.clearFilters();
+      this.clearFilters();
+      this.applyFilters();
+    },
+
     onFilterSearch: function (oEvent) {
       const aSearchFilters = [];
       const sQuery = oEvent.getParameter("query").trim();

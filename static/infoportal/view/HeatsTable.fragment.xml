@@ -19,7 +19,9 @@
       <OverflowToolbar visible="false">
         <content>
           <Text />
-        </content>
+          <ToolbarSpacer />
+          <Button tooltip="{i18n>common.clearFilters}" icon="sap-icon://clear-filter" press="onClearFilterPress" type="Transparent" />
+  </content>
       </OverflowToolbar>
     </infoToolbar>
 

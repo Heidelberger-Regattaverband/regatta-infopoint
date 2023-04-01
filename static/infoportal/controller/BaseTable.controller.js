@@ -96,12 +96,17 @@ sap.ui.define([
       // apply filters
       this.applyFilters();
 
+      this._updateFilterBar(mParams.filterString);
+    },
+
+    _updateFilterBar: function (sText) {
       // update filter bar
       const oInfoToolbar = this.oTable.getInfoToolbar();
       if (oInfoToolbar && oInfoToolbar.getContent()[0]) {
         oInfoToolbar.setVisible(this._aFilters.length > 0);
-        oInfoToolbar.getContent()[0].setText(mParams.filterString);
+        oInfoToolbar.getContent()[0].setText(sText);
       }
+
     },
 
     _createFilter: function (sValue) {
@@ -116,6 +121,11 @@ sap.ui.define([
 
     setSearchFilters: function (aSearchFilters = []) {
       this._aSearchFilters = aSearchFilters
+    },
+
+    clearFilters: function () {
+      this._aFilters = [];
+      this._updateFilterBar("");
     },
 
     applyFilters: function () {
