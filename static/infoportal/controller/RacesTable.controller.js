@@ -52,6 +52,13 @@ sap.ui.define([
       oViewSettingsDialog.open();
     },
 
+    onClearFilterPress: async function (oEvent) {
+      const oViewSettingsDialog = await this.getViewSettingsDialog("de.regatta_hd.infopoint.view.RacesFilterDialog")
+      oViewSettingsDialog.clearFilters();
+      this.clearFilters();
+      this.applyFilters();
+    },
+
     onRefreshButtonPress: async function (oEvent) {
       await this._loadRacesModel();
       MessageToast.show(this.i18n("msg.dataUpdated", undefined));
