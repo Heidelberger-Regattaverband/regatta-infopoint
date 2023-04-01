@@ -1,4 +1,4 @@
-<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:layout="sap.ui.layout">
   <Table id="heatsTable" autoPopinMode="true" items="{heats>/}" growing="true" growingScrollToLoad="true" growingThreshold="30"
     mode="SingleSelectMaster" itemPress="onSelectionChange" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
 
@@ -54,11 +54,31 @@
     <items>
       <ColumnListItem type="Navigation" vAlign="Top" highlight="{path: 'heats>', formatter: '.formatter.heatStateHighlight'}">
         <cells>
-          <Text text="{heats>number}" />
-          <Text text="{path: 'heats>', formatter: '.formatter.dayTimeLabel'}" />
-          <ObjectIdentifier title="{path: 'heats>race', formatter: '.formatter.nrRaceLabel'}"
-            text="{path: 'heats>', formatter: '.formatter.heatLabel'}" />
-          <Text text="{path: 'heats>race', formatter: '.formatter.distanceLabel'}" />
+          <layout:VerticalLayout>
+            <Text text="{heats>number}" visible="{=${heats>cancelled}}" class="cancelled" />
+            <Text text="{heats>number}" visible="{=!${heats>cancelled}}" />
+          </layout:VerticalLayout>
+
+          <layout:VerticalLayout>
+            <Text text="{path: 'heats>', formatter: '.formatter.dayTimeLabel'}" visible="{=${heats>cancelled}}" class="cancelled" />
+            <Text text="{path: 'heats>', formatter: '.formatter.dayTimeLabel'}" visible="{=!${heats>cancelled}}" />
+          </layout:VerticalLayout>
+
+          <layout:VerticalLayout>
+            <Text text="{path: 'heats>race', formatter: '.formatter.nrRaceLabel'}" visible="{=${heats>cancelled}}"
+              class="boldCancelled sapUiTinyMarginBottom" />
+            <Text text="{path: 'heats>race', formatter: '.formatter.nrRaceLabel'}" visible="{=!${heats>cancelled}}"
+              class="bold sapUiTinyMarginBottom" />
+
+            <Text text="{path: 'heats>', formatter: '.formatter.heatLabel'}" visible="{=${heats>cancelled}}" class="cancelled" />
+            <Text text="{path: 'heats>', formatter: '.formatter.heatLabel'}" visible="{=!${heats>cancelled}}" />
+          </layout:VerticalLayout>
+
+          <layout:VerticalLayout>
+            <Text text="{path: 'heats>race', formatter: '.formatter.distanceLabel'}" visible="{=${heats>cancelled}}" class="cancelled" />
+            <Text text="{path: 'heats>race', formatter: '.formatter.distanceLabel'}" visible="{=!${heats>cancelled}}" />
+          </layout:VerticalLayout>
+
           <Text text="{path: 'heats>', formatter: '.formatter.heatStateLabel'}" />
         </cells>
       </ColumnListItem>
