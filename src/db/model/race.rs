@@ -28,7 +28,7 @@ impl ToEntity<Race> for Row {
         let short_label: String = self.get_column("Offer_ShortLabel");
         let long_label: String = self.get_column("Offer_LongLabel");
         let comment: String = self.try_get_column("Offer_Comment").unwrap_or_default();
-        let seeded: Option<bool> = self.try_get_column("isSet");
+        let seeded: Option<bool> = self.try_get_column("Offer_HRV_Seeded");
 
         Race {
             id: self.get_column("Offer_ID"),
@@ -58,13 +58,12 @@ impl Race {
     }
 
     pub fn query_all<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT o.*, ac.*, bc.*, hrv_o.*,
+        let mut query = Query::new("SELECT DISTINCT o.*, ac.*, bc.*,
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count,
             (SELECT AVG(c.Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0) as Race_state
             FROM Offer o
             JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
             JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
-            FULL OUTER JOIN HRV_Offer AS hrv_o ON o.Offer_ID = hrv_o.id
             WHERE o.Offer_Event_ID_FK = @P1 ORDER BY o.Offer_SortValue ASC");
         query.bind(regatta_id);
         query
