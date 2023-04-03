@@ -21,16 +21,11 @@
           <Text />
           <ToolbarSpacer />
           <Button tooltip="{i18n>common.clearFilters}" icon="sap-icon://clear-filter" press="onClearFilterPress" type="Transparent" />
-  </content>
+        </content>
       </OverflowToolbar>
     </infoToolbar>
 
     <columns>
-      <Column hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
-        <header>
-          <Text text="{i18n>common.heatNr}" class="bold" wrapping="false" />
-        </header>
-      </Column>
       <Column hAlign="Center" width="5rem" importance="High" popinDisplay="Inline">
         <header>
           <Text text="{i18n>common.time}" class="bold" wrapping="false" />
@@ -46,6 +41,16 @@
           <Text text="{i18n>common.distance}" class="bold" wrapping="false" />
         </header>
       </Column>
+      <Column hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
+        <header>
+          <Text text="{i18n>common.heatNr}" class="bold" wrapping="false" />
+        </header>
+      </Column>
+      <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+        <header>
+          <Text text="{i18n>common.seededLbl}" class="bold" />
+        </header>
+      </Column>
       <Column hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">
         <header>
           <Text text="{i18n>common.state}" class="bold" wrapping="false" />
@@ -56,11 +61,6 @@
     <items>
       <ColumnListItem type="Navigation" vAlign="Top" highlight="{path: 'heats>', formatter: '.formatter.heatStateHighlight'}">
         <cells>
-          <layout:VerticalLayout>
-            <Text text="{heats>number}" visible="{=${heats>cancelled}}" class="cancelled" />
-            <Text text="{heats>number}" visible="{=!${heats>cancelled}}" />
-          </layout:VerticalLayout>
-
           <layout:VerticalLayout>
             <Text text="{path: 'heats>', formatter: '.formatter.dayTimeLabel'}" visible="{=${heats>cancelled}}" class="cancelled" />
             <Text text="{path: 'heats>', formatter: '.formatter.dayTimeLabel'}" visible="{=!${heats>cancelled}}" />
@@ -79,6 +79,16 @@
           <layout:VerticalLayout>
             <Text text="{path: 'heats>race', formatter: '.formatter.distanceLabel'}" visible="{=${heats>cancelled}}" class="cancelled" />
             <Text text="{path: 'heats>race', formatter: '.formatter.distanceLabel'}" visible="{=!${heats>cancelled}}" />
+          </layout:VerticalLayout>
+
+          <layout:VerticalLayout>
+            <Text text="{heats>number}" visible="{=${heats>cancelled}}" class="cancelled" />
+            <Text text="{heats>number}" visible="{=!${heats>cancelled}}" />
+          </layout:VerticalLayout>
+
+          <layout:VerticalLayout>
+            <Text text="{= ${heats>race/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" visible="{=${heats>cancelled}}" class="cancelled" />
+            <Text text="{= ${heats>race/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" visible="{=!${heats>cancelled}}" />
           </layout:VerticalLayout>
 
           <Text text="{path: 'heats>', formatter: '.formatter.heatStateLabel'}" />

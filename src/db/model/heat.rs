@@ -70,7 +70,7 @@ impl Heat {
 
     pub(crate) fn search<'a>(regatta_id: i32, filter: String) -> Query<'a> {
         let sql = format!("SELECT DISTINCT c.*, ac.*, bc.*, r.*,
-          o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
+          o.Offer_HRV_Seeded, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
           FROM Comp AS c
           FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
           FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
@@ -95,7 +95,7 @@ pub struct Kiosk {
 impl Kiosk {
     pub(crate) fn query_finished<'a>(regatta_id: i32) -> Query<'a> {
         let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*,
-            o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
+            o.Offer_HRV_Seeded, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
             FROM Comp AS c
             FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
             FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
@@ -106,7 +106,7 @@ impl Kiosk {
 
     pub(crate) fn query_next<'a>(regatta_id: i32) -> Query<'a> {
         let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*,
-            o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
+            o.Offer_HRV_Seeded, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
             FROM Comp AS c
             FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
             FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
