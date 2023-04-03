@@ -100,8 +100,9 @@ sap.ui.define([
         data: JSON.stringify(oCredentials),
         url: "/api/login",
         contentType: "application/json",
-        success: function (sResult) {
-          this._updateIdentity(true, oCredentials.username);
+        success: function (mResult) {
+          this._updateIdentity(true, mResult.username);
+          this._oCredentialsModel.setProperty("/username", mResult.username);
           MessageToast.show(this.i18n("msg.loginSucceeded", undefined));
           $(".sapMMessageToast").removeClass("sapMMessageToastDanger").addClass("sapMMessageToastSuccess");
         }.bind(this),
@@ -129,8 +130,13 @@ sap.ui.define([
       $.ajax({
         type: "GET",
         url: "/api/identity",
-        success: function (sResult) {
-          this._updateIdentity(true, sResult);
+        contentType: "application/json",
+        success: function (mResult) {
+          this._updateIdentity(true, mResult.username);
+          this._oCredentialsModel.setProperty("/username", mResult.username);
+        }.bind(this),
+        error: function (mResult) {
+          this._updateIdentity(false, "");
         }.bind(this)
       });
     },

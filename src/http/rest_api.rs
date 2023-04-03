@@ -4,16 +4,14 @@ use crate::{
         model::{Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
     },
     http::{
-        auth::{Credentials, User},
+        auth::{Credentials, Scope, User},
         monitor::Monitor,
     },
 };
 use actix_identity::Identity;
 use actix_web::{
     error::InternalError,
-    get,
-    http::header::ContentType,
-    post,
+    get, post,
     web::{Data, Json, Path, Query},
     Error, HttpMessage, HttpRequest, HttpResponse, Responder,
 };
@@ -93,10 +91,14 @@ async fn get_heat_registrations(path: Path<i32>, aquarius: Data<Aquarius>) -> Js
 #[post("/login")]
 async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<impl Responder, Error> {
     match User::authenticate(credentials.into_inner()) {
+        // authentication succeeded
         Ok(user) => {
-            Identity::login(&request.extensions(), user.name.clone()).unwrap();
+            // attach valid user identity to current session
+            Identity::login(&request.extensions(), user.username.clone()).unwrap();
+            // return user information: username and scope
             Ok(Json(user))
         }
+        // authentication failed
         Err(err) => Err(InternalError::from_response("", err).into()),
     }
 }
@@ -108,17 +110,11 @@ async fn logout(user: Identity) -> impl Responder {
 }
 
 #[get("/identity")]
-async fn identity(user: Option<Identity>) -> Result<impl Responder, Error> {
-    if let Some(user) = user {
-        Ok(user.id().unwrap())
+async fn identity(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
+    if let Some(user) = opt_user {
+        Ok(Json(User::new(user.id().unwrap(), Scope::User)))
     } else {
-        Err(InternalError::from_response(
-            "",
-            HttpResponse::Unauthorized()
-                .content_type(ContentType::plaintext())
-                .body("Unauthorized"),
-        )
-        .into())
+        Err(InternalError::from_response("", HttpResponse::Unauthorized().json(User::new_guest())).into())
     }
 }
 
