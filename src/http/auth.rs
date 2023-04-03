@@ -1,4 +1,4 @@
-use actix_web::{http::header::ContentType, HttpResponse};
+use actix_web::HttpResponse;
 use serde::{Deserialize, Serialize};
 use std::env;
 
@@ -10,31 +10,43 @@ pub struct Credentials {
 
 #[derive(Serialize, Default)]
 #[serde(rename_all = "camelCase")]
-enum Scope {
+pub enum Scope {
     #[default]
     Guest,
     User,
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct User {
-    pub name: String,
+    pub username: String,
     scope: Scope,
 }
 
 impl User {
-    pub fn authenticate(credentials: Credentials) -> Result<Self, HttpResponse> {
-        let username = env::var("USER_NAME").unwrap();
-        let password = env::var("USER_PASSWORD").unwrap();
+    pub fn new(username: String, scope: Scope) -> Self {
+        User { username, scope }
+    }
+
+    pub fn new_guest() -> Self {
+        User {
+            username: String::from("anonymous"),
+            scope: Scope::Guest,
+        }
+    }
+
+    pub fn authenticate(mut credentials: Credentials) -> Result<Self, HttpResponse> {
+        let username = env::var("AUTH_USER_NAME").unwrap();
+        let password = env::var("AUTH_USER_PASSWORD").unwrap();
+
+        credentials.username = credentials.username.trim().to_owned();
 
         if credentials.username.to_uppercase() != username.to_uppercase() || credentials.password != password {
-            return Err(HttpResponse::Unauthorized()
-                .content_type(ContentType::plaintext())
-                .body("Unauthorized"));
+            return Err(HttpResponse::Unauthorized().json(User::new_guest()));
         }
 
         Ok(User {
-            name: credentials.username,
+            username: credentials.username,
             scope: Scope::User,
         })
     }
