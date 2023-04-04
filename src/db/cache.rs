@@ -1,8 +1,8 @@
 use super::model::{Heat, HeatRegistration, Race, Regatta, Registration, Score};
-use async_std::task;
 use async_trait::async_trait;
 use std::{hash::Hash, time::Duration};
 use stretto::AsyncCache;
+use tokio::task;
 
 const MAX_COST: i64 = 1e6 as i64;
 
