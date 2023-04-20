@@ -8,7 +8,7 @@ const MAX_COST: i64 = 1e6 as i64;
 
 #[async_trait]
 pub trait CacheTrait<K, V> {
-    fn get(&self, key: &K) -> Option<V>;
+    async fn get(&self, key: &K) -> Option<V>;
     async fn set(&self, key: &K, value: &V);
 }
 
@@ -40,9 +40,9 @@ where
     K: Hash + Eq + Send + Sync + Copy,
     V: Send + Sync + Clone + 'static,
 {
-    fn get(&self, key: &K) -> Option<V> {
+    async fn get(&self, key: &K) -> Option<V> {
         let opt_value_ref = self.cache.get(key);
-        if let Some(value_ref) = opt_value_ref {
+        if let Some(value_ref) = opt_value_ref.await {
             let value = value_ref.value().clone();
             value_ref.release();
             Some(value)

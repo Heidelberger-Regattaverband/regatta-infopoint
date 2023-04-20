@@ -64,7 +64,7 @@ impl Aquarius {
         let start = Instant::now();
 
         // 1. try to get regatta from cache
-        if let Some(regatta) = self.caches.regatta.get(&regatta_id) {
+        if let Some(regatta) = self.caches.regatta.get(&regatta_id).await {
             debug!("Getting regatta {} from cache: {:?}", regatta_id, start.elapsed());
 
             regatta
@@ -85,7 +85,7 @@ impl Aquarius {
         let start = Instant::now();
 
         // 1. try to get races from cache
-        if let Some(races) = self.caches.races.get(&regatta_id) {
+        if let Some(races) = self.caches.races.get(&regatta_id).await {
             debug!(
                 "Getting races of regatta {} from cache: {:?}",
                 regatta_id,
@@ -120,7 +120,7 @@ impl Aquarius {
     pub async fn get_race(&self, race_id: i32) -> Race {
         let start = Instant::now();
 
-        if let Some(race) = self.caches.race.get(&race_id) {
+        if let Some(race) = self.caches.race.get(&race_id).await {
             debug!("Getting race {} from cache:  {:?}ms", race_id, start.elapsed());
             race
         } else {
@@ -141,7 +141,7 @@ impl Aquarius {
         let start = Instant::now();
 
         // 1. try to get registrations from cache
-        if let Some(registrations) = self.caches.regs.get(&race_id) {
+        if let Some(registrations) = self.caches.regs.get(&race_id).await {
             debug!(
                 "Getting registrations of race {} from cache: {:?}",
                 race_id,
@@ -178,7 +178,7 @@ impl Aquarius {
         }
 
         // 1. try to get heats from cache
-        if let Some(heats) = self.caches.heats.get(&regatta_id) {
+        if let Some(heats) = self.caches.heats.get(&regatta_id).await {
             debug!(
                 "Getting heats of regatta {} from cache: {:?}",
                 regatta_id,
@@ -219,7 +219,7 @@ impl Aquarius {
         let start = Instant::now();
 
         // 1. try to get heat_registrations from cache
-        if let Some(heat_regs) = self.caches.heat_regs.get(&heat_id) {
+        if let Some(heat_regs) = self.caches.heat_regs.get(&heat_id).await {
             debug!(
                 "Getting registrations of heat {} from cache: {:?}",
                 heat_id,
@@ -252,7 +252,7 @@ impl Aquarius {
 
     pub async fn get_scoring(&self, regatta_id: i32) -> Vec<Score> {
         // 1. try to get heat_registrations from cache
-        if let Some(scores) = self.caches.scores.get(&regatta_id) {
+        if let Some(scores) = self.caches.scores.get(&regatta_id).await {
             return scores;
         }
 
