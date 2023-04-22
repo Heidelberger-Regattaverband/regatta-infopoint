@@ -1,4 +1,4 @@
-use super::model::{Heat, HeatRegistration, Race, Regatta, Registration, Score};
+use super::model::{Heat, HeatRegistration, Race, Regatta, Registration};
 use async_std::task;
 use async_trait::async_trait;
 use std::{hash::Hash, time::Duration};
@@ -64,7 +64,6 @@ pub(super) struct Caches {
     pub regs: Cache<i32, Vec<Registration>>,
     pub heats: Cache<i32, Vec<Heat>>,
     pub heat_regs: Cache<i32, Vec<HeatRegistration>>,
-    pub scores: Cache<i32, Vec<Score>>,
 }
 
 impl Caches {
@@ -81,7 +80,6 @@ impl Caches {
             regs: Cache::new(MAX_RACES_COUNT, ttl),
             heats: Cache::new(MAX_REGATTAS_COUNT, ttl),
             heat_regs: Cache::new(MAX_HEATS_COUNT, ttl),
-            scores: Cache::new(MAX_REGATTAS_COUNT, ttl),
         }
     }
 }
