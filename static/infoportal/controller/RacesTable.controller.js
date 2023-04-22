@@ -20,6 +20,9 @@ sap.ui.define([
       this._oRacesModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
       this.setViewModel(this._oRacesModel, "races");
 
+      this._oRegistrationsModel = new JSONModel();
+      this.getOwnerComponent().setModel(this._oRegistrationsModel, "raceRegistrations");
+
       this.getRouter().getRoute("races").attachMatched(async (_) => await this._loadRacesModel(), this);
     },
 
@@ -70,12 +73,7 @@ sap.ui.define([
     },
 
     _loadRegistrationsModel: async function (sRaceId) {
-      if (!this._oRegistrationsModel) {
-        this._oRegistrationsModel = await this.getJSONModel("/api/races/" + sRaceId + "/registrations", undefined);
-        this.getOwnerComponent().setModel(this._oRegistrationsModel, "raceRegistrations");
-      } else {
-        await this.updateJSONModel(this._oRegistrationsModel, "/api/races/" + sRaceId + "/registrations", undefined);
-      }
+      await this.updateJSONModel(this._oRegistrationsModel, "/api/races/" + sRaceId + "/registrations", undefined);
     },
 
     onItemChanged: function (oItem) {
