@@ -32,6 +32,7 @@ sap.ui.define([
             filters: [
               new Filter("shortName", FilterOperator.Contains, sQuery),
               new Filter("longName", FilterOperator.Contains, sQuery),
+              new Filter("abbreviation", FilterOperator.Contains, sQuery),
               new Filter("city", FilterOperator.Contains, sQuery)
             ],
             and: false
