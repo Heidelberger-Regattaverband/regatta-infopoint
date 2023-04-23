@@ -58,6 +58,7 @@ impl Server {
                 .service(
                     scope(PATH_REST_API)
                         .service(rest_api::get_regattas)
+                        .service(rest_api::get_clubs)
                         .service(rest_api::get_active_regatta)
                         .service(rest_api::get_regatta)
                         .service(rest_api::get_race)

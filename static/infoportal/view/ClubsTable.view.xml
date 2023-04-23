@@ -1,0 +1,47 @@
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.ClubsTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
+  <mvc:content>
+
+    <Page title="{i18n>statistics.participatingClubs}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
+      <content>
+
+        <Table id="clubsTable" autoPopinMode="true" items="{clubs>/}" growing="true" growingScrollToLoad="true" growingThreshold="50"
+          sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
+          <!-- The HeaderToolbar shows a title and the filter button -->
+          <headerToolbar>
+            <OverflowToolbar>
+              <content>
+                <SearchField width="12rem" search=".onFilterSearch" />
+                <ToolbarSpacer />
+                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
+              </content>
+            </OverflowToolbar>
+          </headerToolbar>
+
+          <columns>
+            <Column hAlign="Begin" width="10rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.city}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column hAlign="Begin" width="20rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.club}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+          </columns>
+
+          <items>
+            <ColumnListItem>
+              <cells>
+                <Text text="{clubs>city}" />
+                <Text text="{clubs>longName}" />
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table>
+
+      </content>
+    </Page>
+
+  </mvc:content>
+</mvc:View>
