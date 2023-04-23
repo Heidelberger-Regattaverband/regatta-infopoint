@@ -23,6 +23,10 @@ sap.ui.define([
       this.getRouter().navTo("heats", {}, false /* history */);
     },
 
+    onNavToClubs: function () {
+      this.getRouter().navTo("clubs", {}, false /* history */);
+    },
+
     onNavToScoring: function () {
       this.getRouter().navTo("scoring", {}, false /* history */);
     },

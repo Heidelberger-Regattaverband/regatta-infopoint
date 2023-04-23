@@ -107,6 +107,11 @@
           "pattern": "kiosk",
           "name": "kiosk",
           "target": "kiosk"
+        },
+        {
+          "pattern": "clubs",
+          "name": "clubs",
+          "target": "clubs"
         }
       ],
       "targets": {
@@ -133,6 +138,10 @@
         "raceRegistrations": {
           "viewName": "RaceRegistrationsTable",
           "viewLevel": 2
+        },
+        "clubs": {
+          "viewName": "ClubsTable",
+          "viewLevel": 1
         },
         "statistics": {
           "viewName": "Statistics",

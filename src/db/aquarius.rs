@@ -1,6 +1,6 @@
 use super::{
     cache::{CacheTrait, Caches},
-    model::{Crew, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics, ToEntity},
+    model::{Club, Crew, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics, ToEntity},
     tiberius::{TiberiusConnectionManager, TiberiusPool},
 };
 use actix_identity::Identity;
@@ -202,6 +202,17 @@ impl Aquarius {
 
             heat_regs
         }
+    }
+
+    pub async fn query_clubs(&self, regatta_id: i32) -> Vec<Club> {
+        let start = Instant::now();
+        let clubs = Club::query_participating(regatta_id, &mut self.pool.get().await).await;
+        debug!(
+            "Query participating clubs of regatta {} from DB: {:?}",
+            regatta_id,
+            start.elapsed()
+        );
+        clubs
     }
 
     pub async fn query_scoring(&self, regatta_id: i32) -> Vec<Score> {

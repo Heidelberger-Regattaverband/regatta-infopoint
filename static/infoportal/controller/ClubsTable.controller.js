@@ -11,12 +11,12 @@ sap.ui.define([
     onInit: async function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this._oTable = this.getView().byId("scoringTable");
+      this._oTable = this.getView().byId("clubsTable");
 
-      this._oScoringModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/scoring", this._oTable);
-      this.setViewModel(this._oScoringModel, "scoring");
+      this._oScoringModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/clubs", this._oTable);
+      this.setViewModel(this._oScoringModel, "clubs");
 
-      this.getRouter().getRoute("scoring").attachMatched(async (_) => await this._loadScoringModel(), this);
+      this.getRouter().getRoute("clubs").attachMatched(async (_) => await this._loadModel(), this);
     },
 
     onNavBack: function () {
@@ -30,9 +30,9 @@ sap.ui.define([
         aSearchFilters.push(
           new Filter({
             filters: [
-              new Filter("club/shortName", FilterOperator.Contains, sQuery),
-              new Filter("club/longName", FilterOperator.Contains, sQuery),
-              new Filter("club/city", FilterOperator.Contains, sQuery)
+              new Filter("shortName", FilterOperator.Contains, sQuery),
+              new Filter("longName", FilterOperator.Contains, sQuery),
+              new Filter("city", FilterOperator.Contains, sQuery)
             ],
             and: false
           }))
@@ -42,12 +42,12 @@ sap.ui.define([
     },
 
     onRefreshButtonPress: async function (oEvent) {
-      await this._loadScoringModel();
+      await this._loadModel();
       MessageToast.show(this.i18n("msg.dataUpdated", undefined));
     },
 
-    _loadScoringModel: async function () {
-      await this.updateJSONModel(this._oScoringModel, "/api/regattas/" + this.getRegattaId() + "/scoring", this._oTable)
+    _loadModel: async function () {
+      await this.updateJSONModel(this._oScoringModel, "/api/regattas/" + this.getRegattaId() + "/clubs", this._oTable)
     }
 
   });

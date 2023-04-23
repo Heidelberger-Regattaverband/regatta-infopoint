@@ -40,7 +40,7 @@
               <cells>
                 <Text text="{scoring>rank}" />
                 <Text text="{path: 'scoring>points', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 3} }" />
-                <Text text="{scoring>club/shortName}" />
+                <Text text="{scoring>club/longName}" />
               </cells>
             </ColumnListItem>
           </items>
