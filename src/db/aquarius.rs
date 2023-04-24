@@ -215,6 +215,18 @@ impl Aquarius {
         clubs
     }
 
+    pub async fn query_club_registrations(&self, regatta_id: i32, club_id: i32) -> Vec<Registration> {
+        let start = Instant::now();
+        let registrations = Registration::query_of_clubs(regatta_id, club_id, &mut self.pool.get().await).await;
+        debug!(
+            "Query registrations of club {} for regatta {} from DB: {:?}",
+            club_id,
+            regatta_id,
+            start.elapsed()
+        );
+        registrations
+    }
+
     pub async fn query_scoring(&self, regatta_id: i32) -> Vec<Score> {
         let start = Instant::now();
 

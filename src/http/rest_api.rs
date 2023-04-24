@@ -76,6 +76,12 @@ async fn get_clubs(path: Path<i32>, aquarius: Data<Aquarius>) -> impl Responder 
     Json(aquarius.query_clubs(regatta_id).await)
 }
 
+#[get("/regattas/{regatta_id}/clubs/{club_id}/registrations")]
+async fn get_club_registrations(ids: Path<(i32, i32)>, aquarius: Data<Aquarius>) -> impl Responder {
+    let ids = ids.into_inner();
+    Json(aquarius.query_club_registrations(ids.0, ids.1).await)
+}
+
 #[get("/regattas/{id}/statistics")]
 async fn get_statistics(
     path: Path<i32>,
