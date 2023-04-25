@@ -13,7 +13,8 @@ pub struct Registration {
     bib: i16,
     #[serde(skip_serializing_if = "Option::is_none")]
     boat_number: Option<i16>,
-    comment: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    comment: Option<String>,
     short_label: String,
     club: Club,
     cancelled: bool,
@@ -30,7 +31,7 @@ impl ToEntity<Registration> for Row {
         Registration {
             id,
             bib: self.get_column("Entry_Bib"),
-            comment: self.try_get_column("Entry_Comment").unwrap_or_default(),
+            comment: self.try_get_column("Entry_Comment"),
             boat_number: self.try_get_column("Entry_BoatNumber"),
             short_label: self.get_column("Label_Short"),
             cancelled,

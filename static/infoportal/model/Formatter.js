@@ -122,7 +122,7 @@ sap.ui.define([
 
     boatLabel: function (oRegistration) {
       let sLabel = "" + oRegistration.shortLabel;
-      if (oRegistration.boatNumber > 0) {
+      if (oRegistration.boatNumber) {
         sLabel += " - Boot " + oRegistration.boatNumber;
       }
       if (oRegistration.comment) {
