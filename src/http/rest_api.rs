@@ -1,7 +1,7 @@
 use crate::{
     db::{
         aquarius::Aquarius,
-        model::{Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
+        model::{Heat, HeatRegistration, Race, Regatta, Registration},
     },
     http::{
         auth::{Credentials, Scope, User},
@@ -10,7 +10,7 @@ use crate::{
 };
 use actix_identity::Identity;
 use actix_web::{
-    error::InternalError,
+    error::{ErrorUnauthorized, InternalError},
     get, post,
     web::{Data, Json, Path, Query},
     Error, HttpMessage, HttpRequest, HttpResponse, Responder,
@@ -40,15 +40,9 @@ async fn get_regatta(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Regatta>
 }
 
 #[get("/regattas/{id}/races")]
-async fn get_races(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Vec<Race>> {
+async fn get_races(path: Path<i32>, aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Json<Vec<Race>> {
     let regatta_id = path.into_inner();
-    Json(aquarius.get_races(regatta_id).await)
-}
-
-#[get("/regattas/{id}/statistics")]
-async fn get_statistics(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Statistics> {
-    let regatta_id = path.into_inner();
-    Json(aquarius.get_statistics(regatta_id).await)
+    Json(aquarius.get_races(regatta_id, opt_user).await)
 }
 
 #[get("/races/{id}")]
@@ -70,22 +64,58 @@ async fn get_heats(path: Path<i32>, odata_params: Query<OData>, aquarius: Data<A
     Json(aquarius.get_heats(regatta_id, odata.filter).await)
 }
 
-#[get("/regattas/{id}/kiosk")]
-async fn get_kiosk(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Kiosk> {
-    let regatta_id = path.into_inner();
-    Json(aquarius.get_kiosk(regatta_id).await)
-}
-
-#[get("/regattas/{id}/scoring")]
-async fn get_scoring(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Vec<Score>> {
-    let regatta_id = path.into_inner();
-    Json(aquarius.get_scoring(regatta_id).await)
-}
-
 #[get("/heats/{id}/registrations")]
 async fn get_heat_registrations(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Vec<HeatRegistration>> {
     let heat_id = path.into_inner();
     Json(aquarius.get_heat_registrations(heat_id).await)
+}
+
+#[get("/regattas/{id}/clubs")]
+async fn get_clubs(path: Path<i32>, aquarius: Data<Aquarius>) -> impl Responder {
+    let regatta_id = path.into_inner();
+    Json(aquarius.query_clubs(regatta_id).await)
+}
+
+#[get("/regattas/{id}/statistics")]
+async fn get_statistics(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
+    if opt_user.is_some() {
+        let regatta_id = path.into_inner();
+        Ok(Json(aquarius.get_statistics(regatta_id).await))
+    } else {
+        Err(ErrorUnauthorized("Unauthorized"))
+    }
+}
+
+#[get("/regattas/{id}/kiosk")]
+async fn get_kiosk(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
+    if opt_user.is_some() {
+        let regatta_id = path.into_inner();
+        Ok(Json(aquarius.query_kiosk(regatta_id).await))
+    } else {
+        Err(ErrorUnauthorized("Unauthorized"))
+    }
+}
+
+#[get("/regattas/{id}/scoring")]
+async fn get_scoring(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
+    if opt_user.is_some() {
+        let regatta_id = path.into_inner();
+        Ok(Json(aquarius.query_scoring(regatta_id).await))
+    } else {
+        Err(ErrorUnauthorized("Unauthorized"))
+    }
 }
 
 #[post("/login")]

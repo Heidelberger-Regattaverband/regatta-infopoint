@@ -37,6 +37,17 @@
               </tileContent>
             </GenericTile>
 
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>statistics.participatingClubs}"
+              press=".onNavToClubs">
+              <tileContent>
+                <TileContent>
+                  <content>
+                    <ImageContent src="sap-icon://account" />
+                  </content>
+                </TileContent>
+              </tileContent>
+            </GenericTile>
+
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.scoringTile.header}"
               visible="{identity>/authenticated}" press=".onNavToScoring">
               <tileContent>
