@@ -1,4 +1,4 @@
-use super::model::{Heat, HeatRegistration, Race, Regatta, Registration, Score};
+use super::model::{Heat, HeatRegistration, Race, Regatta, Registration};
 use async_trait::async_trait;
 use std::{hash::Hash, time::Duration};
 use stretto::AsyncCache;
