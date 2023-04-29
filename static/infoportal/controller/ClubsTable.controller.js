@@ -6,7 +6,7 @@ sap.ui.define([
 ], function (BaseController, Filter, FilterOperator, MessageToast) {
   "use strict";
 
-  return BaseController.extend("de.regatta_hd.infopoint.controller.ScoringTable", {
+  return BaseController.extend("de.regatta_hd.infopoint.controller.ClubsTable", {
 
     onInit: async function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
