@@ -13,7 +13,7 @@ apt update && apt upgrade
 apt install certbot git docker.io docker-compose
 ```
 
-Request an letsencrypt certificate:
+Request a letsencrypt certificate:
 ```bash
 certbot certonly
 ```
@@ -30,7 +30,7 @@ Clone the github repo containing the infoportal:
 git clone git@github.com:Heidelberger-Regattaverband/regatta-infopoint.git
 ```
 
-Change permission of private key to make it accessible by the infoportal docker container:
+Change the permission of the private key to make it accessible to the Infoportal docker container:
 ```bash
 chmod 640 /etc/letsencrypt/archive/<host>.online-server.cloud/privkey<id>.pem
 ```
@@ -38,5 +38,5 @@ chmod 640 /etc/letsencrypt/archive/<host>.online-server.cloud/privkey<id>.pem
 Start the infoportal docker container:
 ```bash
 cd regatta-infopoint
-./update.sh
+DB_PASSWORD=<db_password> ./update.sh
 ```
