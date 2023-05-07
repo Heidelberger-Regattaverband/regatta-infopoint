@@ -122,6 +122,9 @@ sap.ui.define([
 
     boatLabel: function (oRegistration) {
       let sLabel = "" + oRegistration.shortLabel;
+      if (oRegistration.groupValue) {
+        sLabel += " - " + Formatter.groupValueLabel(oRegistration.groupValue);
+      }
       if (oRegistration.boatNumber) {
         sLabel += " - Boot " + oRegistration.boatNumber;
       }
@@ -132,41 +135,29 @@ sap.ui.define([
     },
 
     groupValueLabel: function (iGroupValue) {
-      let sGroupValue = "";
       const PREFIX = "AK ";
       switch (iGroupValue) {
         case 0:
-          sGroupValue = PREFIX + "A";
-          break;
+          return PREFIX + "A";
         case 4:
-          sGroupValue = PREFIX + "B";
-          break;
+          return PREFIX + "B";
         case 8:
-          sGroupValue = PREFIX + "C";
-          break;
+          return PREFIX + "C";
         case 12:
-          sGroupValue = PREFIX + "D";
-          break;
+          return PREFIX + "D";
         case 16:
-          sGroupValue = PREFIX + "E";
-          break;
+          return PREFIX + "E";
         case 20:
-          sGroupValue = PREFIX + "F";
-          break;
+          return PREFIX + "F";
         case 24:
-          sGroupValue = PREFIX + "G";
-          break;
+          return PREFIX + "G";
         case 28:
-          sGroupValue = PREFIX + "H";
-          break;
+          return PREFIX + "H";
         case 32:
-          sGroupValue = PREFIX + "I";
-          break;
+          return PREFIX + "I";
         case 36:
-          sGroupValue = PREFIX + "J";
-          break;
+          return PREFIX + "J";
       }
-      return sGroupValue;
     },
 
     weekdayLabel: function (iWeekday) {
