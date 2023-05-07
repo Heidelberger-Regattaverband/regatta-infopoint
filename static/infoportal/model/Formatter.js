@@ -131,6 +131,44 @@ sap.ui.define([
       return sLabel;
     },
 
+    groupValueLabel: function (iGroupValue) {
+      let sGroupValue = "";
+      const PREFIX = "AK ";
+      switch (iGroupValue) {
+        case 0:
+          sGroupValue = PREFIX + "A";
+          break;
+        case 4:
+          sGroupValue = PREFIX + "B";
+          break;
+        case 8:
+          sGroupValue = PREFIX + "C";
+          break;
+        case 12:
+          sGroupValue = PREFIX + "D";
+          break;
+        case 16:
+          sGroupValue = PREFIX + "E";
+          break;
+        case 20:
+          sGroupValue = PREFIX + "F";
+          break;
+        case 24:
+          sGroupValue = PREFIX + "G";
+          break;
+        case 28:
+          sGroupValue = PREFIX + "H";
+          break;
+        case 32:
+          sGroupValue = PREFIX + "I";
+          break;
+        case 36:
+          sGroupValue = PREFIX + "J";
+          break;
+      }
+      return sGroupValue;
+    },
+
     weekdayLabel: function (iWeekday) {
       switch (iWeekday) {
         case 1: return "Mo";
@@ -224,42 +262,10 @@ sap.ui.define([
       if (!oHeat) {
         return "";
       }
-      let sGroupValue = "";
 
+      let sGroupValue = "";
       if (oHeat.race && oHeat.race.ageClass.numSubClasses > 0) {
-        const PREFIX = " - AK ";
-        switch (oHeat.groupValue) {
-          case 0:
-            sGroupValue = PREFIX + "A";
-            break;
-          case 4:
-            sGroupValue = PREFIX + "B";
-            break;
-          case 8:
-            sGroupValue = PREFIX + "C";
-            break;
-          case 12:
-            sGroupValue = PREFIX + "D";
-            break;
-          case 16:
-            sGroupValue = PREFIX + "E";
-            break;
-          case 20:
-            sGroupValue = PREFIX + "F";
-            break;
-          case 24:
-            sGroupValue = PREFIX + "G";
-            break;
-          case 28:
-            sGroupValue = PREFIX + "H";
-            break;
-          case 32:
-            sGroupValue = PREFIX + "I";
-            break;
-          case 36:
-            sGroupValue = PREFIX + "J";
-            break;
-        }
+        sGroupValue = " - " + Formatter.groupValueLabel(oHeat.groupValue);
       }
 
       switch (oHeat.roundCode) {
