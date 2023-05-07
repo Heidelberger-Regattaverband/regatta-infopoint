@@ -18,6 +18,11 @@ Request a letsencrypt certificate:
 certbot certonly
 ```
 
+Change the permission of the private key to make it accessible to the Infoportal docker container:
+```bash
+chmod 640 /etc/letsencrypt/archive/<host>.online-server.cloud/privkey<id>.pem
+```
+
 Maintain an ssh key to access github.com:
 ```bash
 nano .ssh/id_rsa
@@ -28,11 +33,6 @@ chmod 600 .ssh/id_rsa
 Clone the github repo containing the infoportal:
 ```bash
 git clone git@github.com:Heidelberger-Regattaverband/regatta-infopoint.git
-```
-
-Change the permission of the private key to make it accessible to the Infoportal docker container:
-```bash
-chmod 640 /etc/letsencrypt/archive/<host>.online-server.cloud/privkey<id>.pem
 ```
 
 Start the infoportal docker container:
