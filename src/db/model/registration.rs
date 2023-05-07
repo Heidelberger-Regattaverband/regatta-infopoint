@@ -10,12 +10,15 @@ use tiberius::{Query, Row};
 #[serde(rename_all = "camelCase")]
 pub struct Registration {
     pub(crate) id: i32,
-    bib: i16,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    bib: Option<i16>,
     #[serde(skip_serializing_if = "Option::is_none")]
     boat_number: Option<i16>,
     #[serde(skip_serializing_if = "Option::is_none")]
     comment: Option<String>,
     short_label: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    group_value: Option<i16>,
     club: Club,
     cancelled: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -30,11 +33,12 @@ impl ToEntity<Registration> for Row {
 
         Registration {
             id,
-            bib: self.get_column("Entry_Bib"),
+            bib: self.try_get_column("Entry_Bib"),
             comment: self.try_get_column("Entry_Comment"),
             boat_number: self.try_get_column("Entry_BoatNumber"),
             short_label: self.get_column("Label_Short"),
             cancelled,
+            group_value: self.try_get_column("Entry_GroupValue"),
             club: self.to_entity(),
             crew: Option::None,
         }

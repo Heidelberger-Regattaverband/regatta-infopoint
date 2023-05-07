@@ -204,7 +204,17 @@ impl Aquarius {
         }
     }
 
-    pub async fn query_clubs(&self, regatta_id: i32) -> Vec<Club> {
+    pub async fn get_participating_clubs(&self, regatta_id: i32) -> Vec<Club> {
+        if let Some(clubs) = self.caches.part_clubs.get(&regatta_id).await {
+            clubs
+        } else {
+            let clubs = self._query_participating_clubs(regatta_id).await;
+            self.caches.part_clubs.set(&regatta_id, &clubs).await;
+            clubs
+        }
+    }
+
+    async fn _query_participating_clubs(&self, regatta_id: i32) -> Vec<Club> {
         let start = Instant::now();
         let clubs = Club::query_participating(regatta_id, &mut self.pool.get().await).await;
         debug!(

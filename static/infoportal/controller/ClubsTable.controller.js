@@ -6,14 +6,14 @@ sap.ui.define([
 ], function (BaseController, Filter, FilterOperator, MessageToast) {
   "use strict";
 
-  return BaseController.extend("de.regatta_hd.infopoint.controller.ScoringTable", {
+  return BaseController.extend("de.regatta_hd.infopoint.controller.ClubsTable", {
 
     onInit: async function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
       this._oTable = this.getView().byId("clubsTable");
 
-      this._oScoringModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/clubs", this._oTable);
+      this._oScoringModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/participating_clubs", this._oTable);
       this.setViewModel(this._oScoringModel, "clubs");
 
       this.getRouter().getRoute("clubs").attachMatched(async (_) => await this._loadModel(), this);
@@ -48,7 +48,7 @@ sap.ui.define([
     },
 
     _loadModel: async function () {
-      await this.updateJSONModel(this._oScoringModel, "/api/regattas/" + this.getRegattaId() + "/clubs", this._oTable)
+      await this.updateJSONModel(this._oScoringModel, "/api/regattas/" + this.getRegattaId() + "/participating_clubs", this._oTable)
     }
 
   });
