@@ -14,6 +14,8 @@ pub struct Registration {
     #[serde(skip_serializing_if = "Option::is_none")]
     comment: Option<String>,
     short_label: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    group_value: Option<i16>,
     club: Club,
     cancelled: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -33,6 +35,7 @@ impl ToEntity<Registration> for Row {
             boat_number: self.try_get_column("Entry_BoatNumber"),
             short_label: self.get_column("Label_Short"),
             cancelled,
+            group_value: self.try_get_column("Entry_GroupValue"),
             club: self.to_entity(),
             crew: Option::None,
         }
