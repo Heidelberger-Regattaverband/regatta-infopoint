@@ -126,8 +126,8 @@ impl Aquarius {
             for row in &rows {
                 let mut registration: Registration = row.to_entity();
 
-                let crew_rows = self._execute_query(Crew::query_all(registration.id)).await;
-                registration.crew = Some(Crew::from_rows(&crew_rows));
+                let crew = Crew::query_all(registration.id, &mut self.pool.get().await).await;
+                registration.crew = Some(crew);
                 registrations.push(registration);
             }
 
@@ -187,11 +187,8 @@ impl Aquarius {
             for row in &rows {
                 let mut heat_registration: HeatRegistration = row.to_entity();
 
-                let crew_rows = self
-                    ._execute_query(Crew::query_all(heat_registration.registration.id))
-                    .await;
-                let crews = Crew::from_rows(&crew_rows);
-                heat_registration.registration.crew = Some(crews);
+                let crew = Crew::query_all(heat_registration.registration.id, &mut self.pool.get().await).await;
+                heat_registration.registration.crew = Some(crew);
 
                 heat_regs.push(heat_registration);
             }

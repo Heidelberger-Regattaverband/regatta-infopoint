@@ -44,7 +44,7 @@ impl ToEntity<Registration> for Row {
             cancelled,
             group_value: self.try_get_column("Entry_GroupValue"),
             club: self.to_entity(),
-            crew: Option::None,
+            crew: None,
             race: self.try_to_entity(),
         }
     }
