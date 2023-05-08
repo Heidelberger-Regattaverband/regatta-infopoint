@@ -73,7 +73,7 @@ impl Registration {
         registrations.into_iter().map(|row| row.to_entity()).collect()
     }
 
-    pub fn query_for_race<'a>(race_id: i32) -> Query<'a> {
+    pub async fn query_for_race<'a>(race_id: i32, client: &mut AquariusClient<'_>) -> Vec<Registration> {
         let mut query = Query::new(
             "SELECT DISTINCT Entry.*, Label_Short, Club.*
             FROM Entry
@@ -84,6 +84,16 @@ impl Registration {
             ORDER BY Entry_Bib ASC",
         );
         query.bind(race_id);
-        query
+        let stream = query.query(client).await.unwrap();
+        let rows = utils::get_rows(stream).await;
+
+        let mut registrations: Vec<Registration> = Vec::with_capacity(rows.len());
+        for row in &rows {
+            let mut registration: Registration = row.to_entity();
+            let crew = Crew::query_all(registration.id, client).await;
+            registration.crew = Some(crew);
+            registrations.push(registration);
+        }
+        registrations
     }
 }

@@ -280,17 +280,8 @@ impl Aquarius {
 
     async fn _query_race_registrations(&self, race_id: i32) -> Vec<Registration> {
         let start = Instant::now();
-
-        let rows = self._execute_query(Registration::query_for_race(race_id)).await;
-        let mut registrations: Vec<Registration> = Vec::with_capacity(rows.len());
-        for row in &rows {
-            let mut registration: Registration = row.to_entity();
-            let crew = Crew::query_all(registration.id, &mut self.pool.get().await).await;
-            registration.crew = Some(crew);
-            registrations.push(registration);
-        }
+        let registrations = Registration::query_for_race(race_id, &mut self.pool.get().await).await;
         debug!("Query registrations of race {} from DB: {:?}", race_id, start.elapsed());
-
         registrations
     }
 
