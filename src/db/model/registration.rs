@@ -1,7 +1,12 @@
-use super::{Club, Crew, ToEntity};
-use crate::db::tiberius::{RowColumn, TryRowColumn};
+use crate::db::{
+    aquarius::AquariusClient,
+    model::{utils, Club, Crew, Race, ToEntity},
+    tiberius::{RowColumn, TryRowColumn},
+};
 use serde::Serialize;
 use tiberius::{Query, Row};
+
+use super::TryToEntity;
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -20,6 +25,8 @@ pub struct Registration {
     cancelled: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) crew: Option<Vec<Crew>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) race: Option<Race>,
 }
 
 impl ToEntity<Registration> for Row {
@@ -37,23 +44,56 @@ impl ToEntity<Registration> for Row {
             cancelled,
             group_value: self.try_get_column("Entry_GroupValue"),
             club: self.to_entity(),
-            crew: Option::None,
+            crew: None,
+            race: self.try_to_entity(),
         }
     }
 }
 
 impl Registration {
-    pub fn query_all<'a>(race_id: i32) -> Query<'a> {
+    pub async fn query_of_club(regatta_id: i32, club_id: i32, client: &mut AquariusClient<'_>) -> Vec<Registration> {
         let mut query = Query::new(
-            "SELECT DISTINCT e.*, l.Label_Short, c.Club_ID, c.Club_Abbr, c.Club_City
-        FROM Entry e
-        JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
-        JOIN Label AS l ON el.EL_Label_ID_FK = l.Label_ID
-        JOIN Club AS c ON c.Club_ID = e.Entry_OwnerClub_ID_FK
-        WHERE e.Entry_Race_ID_FK = @P1 AND el.EL_RoundFrom <= 64 AND 64 <= el.EL_RoundTo
-        ORDER BY e.Entry_Bib ASC",
+            "SELECT DISTINCT Entry_ID, Entry_CancelValue, Entry_Bib, Entry_Comment, Entry_BoatNumber, Label_Short, Club.*, Offer.*
+            FROM Club
+            JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
+            JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
+            JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
+            JOIN Event      ON Entry_Event_ID_FK  = Event_ID
+            JOIN EntryLabel ON EL_Entry_ID_FK     = Entry_ID
+            JOIN Label      ON EL_Label_ID_FK     = Label_ID
+            JOIN Offer      ON Entry_Race_ID_FK   = Offer_ID
+            WHERE Event_ID = @P1 AND Club_ID = @P2 AND EL_RoundFrom <= 64 AND 64 <= EL_RoundTo
+            ORDER BY Club_City ASC",
+        );
+        query.bind(regatta_id);
+        query.bind(club_id);
+
+        let stream = query.query(client).await.unwrap();
+        let registrations = utils::get_rows(stream).await;
+        registrations.into_iter().map(|row| row.to_entity()).collect()
+    }
+
+    pub async fn query_for_race<'a>(race_id: i32, client: &mut AquariusClient<'_>) -> Vec<Registration> {
+        let mut query = Query::new(
+            "SELECT DISTINCT Entry.*, Label_Short, Club.*
+            FROM Entry
+            JOIN EntryLabel ON EL_Entry_ID_FK = Entry_ID
+            JOIN Label      ON EL_Label_ID_FK = Label_ID
+            JOIN Club       ON Club_ID        = Entry_OwnerClub_ID_FK
+            WHERE Entry_Race_ID_FK = @P1 AND EL_RoundFrom <= 64 AND 64 <= EL_RoundTo
+            ORDER BY Entry_Bib ASC",
         );
         query.bind(race_id);
-        query
+        let stream = query.query(client).await.unwrap();
+        let rows = utils::get_rows(stream).await;
+
+        let mut registrations: Vec<Registration> = Vec::with_capacity(rows.len());
+        for row in &rows {
+            let mut registration: Registration = row.to_entity();
+            let crew = Crew::query_all(registration.id, client).await;
+            registration.crew = Some(crew);
+            registrations.push(registration);
+        }
+        registrations
     }
 }

@@ -48,6 +48,16 @@ impl ToEntity<Race> for Row {
     }
 }
 
+impl TryToEntity<Race> for Row {
+    fn try_to_entity(&self) -> Option<Race> {
+        if <Row as TryRowColumn<i32>>::try_get_column(self, "Offer_ID").is_some() {
+            Some(self.to_entity())
+        } else {
+            None
+        }
+    }
+}
+
 impl Race {
     pub fn from_rows(rows: &Vec<Row>) -> Vec<Self> {
         let mut races: Vec<Race> = Vec::with_capacity(rows.len());
