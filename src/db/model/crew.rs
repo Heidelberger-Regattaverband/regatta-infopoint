@@ -1,12 +1,10 @@
 use crate::db::{
     aquarius::AquariusClient,
-    model::{Athlete, ToEntity},
+    model::{utils, Athlete, ToEntity},
     tiberius::RowColumn,
 };
 use serde::Serialize;
 use tiberius::{Query, Row};
-
-use super::utils;
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
