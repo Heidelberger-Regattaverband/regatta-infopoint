@@ -54,7 +54,7 @@ async fn get_race(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Race> {
 #[get("/races/{id}/registrations")]
 async fn get_registrations(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Vec<Registration>> {
     let race_id = path.into_inner();
-    Json(aquarius.get_registrations(race_id).await)
+    Json(aquarius.get_race_registrations(race_id).await)
 }
 
 #[get("/regattas/{id}/heats")]
@@ -74,6 +74,12 @@ async fn get_heat_registrations(path: Path<i32>, aquarius: Data<Aquarius>) -> Js
 async fn get_participating_clubs(path: Path<i32>, aquarius: Data<Aquarius>) -> impl Responder {
     let regatta_id = path.into_inner();
     Json(aquarius.get_participating_clubs(regatta_id).await)
+}
+
+#[get("/regattas/{regatta_id}/clubs/{club_id}/registrations")]
+async fn get_club_registrations(ids: Path<(i32, i32)>, aquarius: Data<Aquarius>) -> impl Responder {
+    let ids = ids.into_inner();
+    Json(aquarius.query_club_registrations(ids.0, ids.1).await)
 }
 
 #[get("/regattas/{id}/statistics")]

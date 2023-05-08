@@ -108,33 +108,13 @@ impl Aquarius {
         }
     }
 
-    pub async fn get_registrations(&self, race_id: i32) -> Vec<Registration> {
-        let start = Instant::now();
-
+    pub async fn get_race_registrations(&self, race_id: i32) -> Vec<Registration> {
         // 1. try to get registrations from cache
         if let Some(registrations) = self.caches.regs.get(&race_id).await {
-            debug!(
-                "Getting registrations of race {} from cache: {:?}",
-                race_id,
-                start.elapsed()
-            );
             registrations
         } else {
-            // 2. read registrations from DB
-            let rows = self._execute_query(Registration::query_all(race_id)).await;
-            let mut registrations: Vec<Registration> = Vec::with_capacity(rows.len());
-            for row in &rows {
-                let mut registration: Registration = row.to_entity();
-
-                let crew_rows = self._execute_query(Crew::query_all(registration.id)).await;
-                registration.crew = Some(Crew::from_rows(&crew_rows));
-                registrations.push(registration);
-            }
-
-            // 3. store registrations in cache
+            let registrations = self._query_race_registrations(race_id).await;
             self.caches.regs.set(&race_id, &registrations).await;
-            debug!("Query registrations of race {} from DB: {:?}", race_id, start.elapsed());
-
             registrations
         }
     }
@@ -187,11 +167,8 @@ impl Aquarius {
             for row in &rows {
                 let mut heat_registration: HeatRegistration = row.to_entity();
 
-                let crew_rows = self
-                    ._execute_query(Crew::query_all(heat_registration.registration.id))
-                    .await;
-                let crews = Crew::from_rows(&crew_rows);
-                heat_registration.registration.crew = Some(crews);
+                let crew = Crew::query_all(heat_registration.registration.id, &mut self.pool.get().await).await;
+                heat_registration.registration.crew = Some(crew);
 
                 heat_regs.push(heat_registration);
             }
@@ -223,6 +200,18 @@ impl Aquarius {
             start.elapsed()
         );
         clubs
+    }
+
+    pub async fn query_club_registrations(&self, regatta_id: i32, club_id: i32) -> Vec<Registration> {
+        let start = Instant::now();
+        let registrations = Registration::query_of_club(regatta_id, club_id, &mut self.pool.get().await).await;
+        debug!(
+            "Query registrations of club {} for regatta {} from DB: {:?}",
+            club_id,
+            regatta_id,
+            start.elapsed()
+        );
+        registrations
     }
 
     pub async fn query_scoring(&self, regatta_id: i32) -> Vec<Score> {
@@ -287,6 +276,13 @@ impl Aquarius {
         debug!("Query races of regatta {} from DB: {:?}", regatta_id, start.elapsed());
 
         races
+    }
+
+    async fn _query_race_registrations(&self, race_id: i32) -> Vec<Registration> {
+        let start = Instant::now();
+        let registrations = Registration::query_for_race(race_id, &mut self.pool.get().await).await;
+        debug!("Query registrations of race {} from DB: {:?}", race_id, start.elapsed());
+        registrations
     }
 
     async fn _execute_single_query(&self, query: Query<'_>) -> Row {
