@@ -6,7 +6,7 @@ sap.ui.define([
 ], function (BaseController, Filter, FilterOperator, MessageToast) {
   "use strict";
 
-  return BaseController.extend("de.regatta_hd.infopoint.controller.ClubsTable", {
+  return BaseController.extend("de.regatta_hd.infopoint.controller.ParticipatingClubsTable", {
 
     onInit: async function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
@@ -16,7 +16,7 @@ sap.ui.define([
       this._oScoringModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/participating_clubs", this._oTable);
       this.setViewModel(this._oScoringModel, "clubs");
 
-      this.getRouter().getRoute("clubs").attachMatched(async (_) => await this._loadModel(), this);
+      this.getRouter().getRoute("participatingClubs").attachMatched(async (_) => await this._loadModel(), this);
     },
 
     onNavBack: function () {
