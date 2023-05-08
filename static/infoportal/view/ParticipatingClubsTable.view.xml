@@ -1,4 +1,4 @@
-<mvc:View controllerName="de.regatta_hd.infopoint.controller.ClubsTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.ParticipatingClubsTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
     <Page title="{i18n>statistics.participatingClubs}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">

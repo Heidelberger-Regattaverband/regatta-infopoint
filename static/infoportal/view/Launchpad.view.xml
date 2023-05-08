@@ -38,7 +38,7 @@
             </GenericTile>
 
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>statistics.participatingClubs}"
-              press=".onNavToClubs">
+              press=".onNavToParticipatingClubs">
               <tileContent>
                 <TileContent>
                   <content>

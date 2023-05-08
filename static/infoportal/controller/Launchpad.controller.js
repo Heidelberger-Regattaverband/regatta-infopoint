@@ -19,20 +19,20 @@ sap.ui.define([
       this._getIdentity();
     },
 
+    onNavToRaces: function () {
+      this.getRouter().navTo("races", {}, false /* history */);
+    },
+
     onNavToHeats: function () {
       this.getRouter().navTo("heats", {}, false /* history */);
     },
 
-    onNavToClubs: function () {
-      this.getRouter().navTo("clubs", {}, false /* history */);
+    onNavToParticipatingClubs: function () {
+      this.getRouter().navTo("participatingClubs", {}, false /* history */);
     },
 
     onNavToScoring: function () {
       this.getRouter().navTo("scoring", {}, false /* history */);
-    },
-
-    onNavToRaces: function () {
-      this.getRouter().navTo("races", {}, false /* history */);
     },
 
     onNavToStatistics: function () {
