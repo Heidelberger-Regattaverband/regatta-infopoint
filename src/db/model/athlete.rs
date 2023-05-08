@@ -1,5 +1,4 @@
-use super::ToEntity;
-use crate::db::tiberius::RowColumn;
+use crate::db::{model::ToEntity, tiberius::RowColumn};
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Row};
 

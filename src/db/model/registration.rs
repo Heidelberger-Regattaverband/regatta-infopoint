@@ -51,9 +51,9 @@ impl ToEntity<Registration> for Row {
 }
 
 impl Registration {
-    pub async fn query_of_clubs(regatta_id: i32, club_id: i32, client: &mut AquariusClient<'_>) -> Vec<Registration> {
+    pub async fn query_of_club(regatta_id: i32, club_id: i32, client: &mut AquariusClient<'_>) -> Vec<Registration> {
         let mut query = Query::new(
-            "SELECT DISTINCT Entry_ID, Entry_CancelValue, Entry_Bib, Entry_Comment, Entry_BoatNumber, Label_Short, Club_ID, Club_Name, Club_Abbr, Club_UltraAbbr, Club_City, Offer.*
+            "SELECT DISTINCT Entry_ID, Entry_CancelValue, Entry_Bib, Entry_Comment, Entry_BoatNumber, Label_Short, Club.*, Offer.*
             FROM Club
             JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
             JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
@@ -73,15 +73,15 @@ impl Registration {
         registrations.into_iter().map(|row| row.to_entity()).collect()
     }
 
-    pub fn query_all<'a>(race_id: i32) -> Query<'a> {
+    pub fn query_for_race<'a>(race_id: i32) -> Query<'a> {
         let mut query = Query::new(
-            "SELECT DISTINCT e.*, l.Label_Short, c.Club_ID, c.Club_Abbr, c.Club_City
-            FROM Entry e
-            JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
-            JOIN Label AS l ON el.EL_Label_ID_FK = l.Label_ID
-            JOIN Club AS c ON c.Club_ID = e.Entry_OwnerClub_ID_FK
-            WHERE e.Entry_Race_ID_FK = @P1 AND el.EL_RoundFrom <= 64 AND 64 <= el.EL_RoundTo
-            ORDER BY e.Entry_Bib ASC",
+            "SELECT DISTINCT Entry.*, Label_Short, Club.*
+            FROM Entry
+            JOIN EntryLabel ON EL_Entry_ID_FK = Entry_ID
+            JOIN Label      ON EL_Label_ID_FK = Label_ID
+            JOIN Club       ON Club_ID        = Entry_OwnerClub_ID_FK
+            WHERE Entry_Race_ID_FK = @P1 AND EL_RoundFrom <= 64 AND 64 <= EL_RoundTo
+            ORDER BY Entry_Bib ASC",
         );
         query.bind(race_id);
         query
