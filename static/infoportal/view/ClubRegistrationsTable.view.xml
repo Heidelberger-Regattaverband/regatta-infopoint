@@ -25,6 +25,17 @@
               items="{path: 'registrations>/', sorter: [{path: 'race/number', descending: false}, {path: 'bib', descending: false} ]}"
               growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders"
               class="sapUiNoContentPadding">
+
+              <headerToolbar>
+                <OverflowToolbar>
+                  <content>
+                    <SearchField width="12rem" search=".onFilterSearch" />
+                    <ToolbarSpacer />
+                    <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
+                  </content>
+                </OverflowToolbar>
+              </headerToolbar>
+
               <columns>
                 <Column hAlign="Begin" width="10rem" importance="High" popinDisplay="Inline">
                   <header>

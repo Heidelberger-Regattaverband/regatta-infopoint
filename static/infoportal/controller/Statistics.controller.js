@@ -38,7 +38,7 @@ sap.ui.define([
       this._setBusy(true);
 
       // load statistic data from backend
-      const oDataLoader = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/statistics", undefined);
+      const oDataLoader = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/statistics`, undefined);
       const oStatistics = oDataLoader.getData();
 
       // transform statistic data into human readable format

@@ -96,11 +96,11 @@ sap.ui.define([
     },
 
     _getKioskUrl: function () {
-      return "/api/regattas/" + this.getRegattaId() + "/kiosk";
+      return `/api/regattas/${this.getRegattaId()}/kiosk`;
     },
 
     _getRegistrationsUrl: function (sHeatId) {
-      return "/api/heats/" + sHeatId + "/registrations";
+      return `/api/heats/${sHeatId}/registrations`;
     }
 
   });

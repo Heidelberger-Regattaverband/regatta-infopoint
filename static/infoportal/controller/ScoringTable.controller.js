@@ -13,7 +13,7 @@ sap.ui.define([
 
       this._oTable = this.getView().byId("scoringTable");
 
-      this._oScoringModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/scoring", this._oTable);
+      this._oScoringModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/scoring`, this._oTable);
       this.setViewModel(this._oScoringModel, "scoring");
 
       this.getRouter().getRoute("scoring").attachMatched(async (_) => await this._loadScoringModel(), this);
@@ -47,7 +47,7 @@ sap.ui.define([
     },
 
     _loadScoringModel: async function () {
-      await this.updateJSONModel(this._oScoringModel, "/api/regattas/" + this.getRegattaId() + "/scoring", this._oTable)
+      await this.updateJSONModel(this._oScoringModel, `/api/regattas/${this.getRegattaId()}/scoring`, this._oTable)
     }
 
   });

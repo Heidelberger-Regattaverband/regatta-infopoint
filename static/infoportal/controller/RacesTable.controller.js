@@ -17,7 +17,7 @@ sap.ui.define([
 
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this._oRacesModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
+      this._oRacesModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/races`, this.oTable);
       this.setViewModel(this._oRacesModel, "races");
 
       this._oRegistrationsModel = new JSONModel();
@@ -68,12 +68,12 @@ sap.ui.define([
     },
 
     _loadRacesModel: async function () {
-      await this.updateJSONModel(this._oRacesModel, "/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
+      await this.updateJSONModel(this._oRacesModel, `/api/regattas/${this.getRegattaId()}/races`, this.oTable);
       this.applyFilters();
     },
 
     _loadRegistrationsModel: async function (sRaceId) {
-      await this.updateJSONModel(this._oRegistrationsModel, "/api/races/" + sRaceId + "/registrations", undefined);
+      await this.updateJSONModel(this._oRegistrationsModel, `/api/races/${sRaceId}/registrations`, undefined);
     },
 
     onItemChanged: function (oItem) {
