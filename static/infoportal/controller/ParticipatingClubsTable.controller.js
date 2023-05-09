@@ -47,6 +47,15 @@ sap.ui.define([
       MessageToast.show(this.i18n("msg.dataUpdated", undefined));
     },
 
+    onItemPress: function (oEvent) {
+      const oSelectedItem = oEvent.getParameter("listItem");
+      if (oSelectedItem) {
+        const oBindingCtx = oSelectedItem.getBindingContext("clubs");
+        const oClub = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
+        this.getRouter().navTo("clubRegistrations", { clubId: oClub.id }, false /* history*/);
+      }
+    },
+
     _loadModel: async function () {
       await this.updateJSONModel(this._oScoringModel, "/api/regattas/" + this.getRegattaId() + "/participating_clubs", this._oTable)
     }

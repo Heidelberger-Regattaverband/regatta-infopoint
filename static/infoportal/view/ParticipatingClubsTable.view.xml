@@ -5,7 +5,7 @@
       <content>
 
         <Table id="clubsTable" autoPopinMode="true" items="{clubs>/}" growing="true" growingScrollToLoad="true" growingThreshold="50"
-          sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
+          sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding" itemPress="onItemPress">
           <!-- The HeaderToolbar shows a title and the filter button -->
           <headerToolbar>
             <OverflowToolbar>
@@ -36,7 +36,7 @@
           </columns>
 
           <items>
-            <ColumnListItem>
+            <ColumnListItem type="Navigation">
               <cells>
                 <Text text="{clubs>city}" />
                 <Text text="{clubs>longName}" />
