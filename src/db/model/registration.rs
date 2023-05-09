@@ -53,16 +53,17 @@ impl ToEntity<Registration> for Row {
 impl Registration {
     pub async fn query_of_club(regatta_id: i32, club_id: i32, client: &mut AquariusClient<'_>) -> Vec<Registration> {
         let mut query = Query::new(
-            "SELECT DISTINCT Entry_ID, Entry_CancelValue, Entry_Bib, Entry_Comment, Entry_BoatNumber, Label_Short, Club.*, Offer.*
-            FROM Club
-            JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
+            "SELECT DISTINCT Entry_ID, Entry_CancelValue, Entry_Bib, Entry_Comment, Entry_BoatNumber, Label_Short, oc.*, Offer.*
+            FROM Club AS ac
+            JOIN Athlet     ON Athlet_Club_ID_FK  = ac.Club_ID
             JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
             JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
+            JOIN Club as oc ON Entry_OwnerClub_ID_FK = oc.Club_ID
             JOIN Event      ON Entry_Event_ID_FK  = Event_ID
             JOIN EntryLabel ON EL_Entry_ID_FK     = Entry_ID
             JOIN Label      ON EL_Label_ID_FK     = Label_ID
             JOIN Offer      ON Entry_Race_ID_FK   = Offer_ID
-            WHERE Event_ID = @P1 AND Club_ID = @P2 AND EL_RoundFrom <= 64 AND 64 <= EL_RoundTo
+            WHERE Event_ID = @P1 AND ac.Club_ID = @P2 AND EL_RoundFrom <= 64 AND 64 <= EL_RoundTo
             ORDER BY Club_City ASC",
         );
         query.bind(regatta_id);
