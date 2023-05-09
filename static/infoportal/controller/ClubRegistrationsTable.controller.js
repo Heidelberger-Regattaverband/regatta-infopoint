@@ -1,8 +1,9 @@
 sap.ui.define([
   "de/regatta_hd/infopoint/controller/Base.controller",
   "sap/ui/model/json/JSONModel",
+  "sap/m/MessageToast",
   "../model/Formatter"
-], function (BaseController, JSONModel, Formatter) {
+], function (BaseController, JSONModel, MessageToast, Formatter) {
   "use strict";
 
   return BaseController.extend("de.regatta_hd.infopoint.controller.ClubRegistrationsTable", {
@@ -25,9 +26,10 @@ sap.ui.define([
     },
 
     _onPatternMatched: async function (oEvent) {
-      const clubId = oEvent.getParameter("arguments").clubId;
+      const iClubId = oEvent.getParameter("arguments").clubId;
       const iRegattaId = this.getRegattaId();
-      await this.updateJSONModel(this._oRegistrationsModel, `/api/regattas/${iRegattaId}/clubs/${clubId}/registrations`, this._oTable);
+      await this.updateJSONModel(this._oRegistrationsModel, `/api/regattas/${iRegattaId}/clubs/${iClubId}/registrations`, this._oTable);
+      MessageToast.show(this.i18n("msg.dataUpdated", undefined));
     }
 
   });
