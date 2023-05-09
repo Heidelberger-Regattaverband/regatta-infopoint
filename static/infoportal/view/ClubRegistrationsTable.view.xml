@@ -1,0 +1,73 @@
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.ClubRegistrationsTable" xmlns="sap.m" xmlns:f="sap.f"
+  xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
+  <mvc:content>
+
+    <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
+    https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
+    <Page title="{i18n>common.registrations}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
+      <content>
+
+        <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
+          <!-- DynamicPage Title -->
+          <f:title>
+            <f:DynamicPageTitle>
+              <f:heading>
+                <Title text="{path: 'race>/', formatter: '.formatter.nrRaceLabel'}" wrapping="true" wrappingType="Normal" />
+              </f:heading>
+            </f:DynamicPageTitle>
+          </f:title>
+
+          <!-- DynamicPage Content -->
+          <f:content>
+            <!-- <ScrollContainer height="100%" vertical="true"> -->
+
+            <Table id="registrationsTable" autoPopinMode="true"
+              items="{path: 'registrations>/', sorter: [{path: 'race/number', descending: false}, {path: 'bib', descending: false} ]}"
+              growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders"
+              class="sapUiNoContentPadding">
+              <columns>
+                <Column hAlign="Begin" width="10rem" importance="High" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>common.race}" class="bold" />
+                  </header>
+                </Column>
+                <Column hAlign="Begin" width="14rem" importance="Medium" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>common.boat}" class="bold" />
+                  </header>
+                </Column>
+                <Column hAlign="Begin" width="6rem" importance="Low" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>common.clubRegistration}" class="bold" />
+                  </header>
+                </Column>
+              </columns>
+
+              <items>
+                <ColumnListItem vAlign="Top">
+                  <cells>
+                    <layout:VerticalLayout>
+                      <Text text="{path: 'registrations>race', formatter: '.formatter.nrRaceLabel'}" class="bold" />
+                      <Text text="{registrations>race/longLabel}" />
+                    </layout:VerticalLayout>
+
+                    <layout:VerticalLayout>
+                      <Text text="{path: 'registrations>', formatter: '.formatter.boatLabel'}" class="bold" />
+                      <Text text="{path: 'registrations>crew', formatter: '.formatter.crewLabel'}" />
+                    </layout:VerticalLayout>
+
+                    <Text text="{registrations>club/shortName}" />
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
+            <!-- </ScrollContainer> -->
+
+          </f:content>
+        </f:DynamicPage>
+
+      </content>
+    </Page>
+
+  </mvc:content>
+</mvc:View>

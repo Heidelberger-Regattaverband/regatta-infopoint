@@ -69,8 +69,17 @@ impl Registration {
         query.bind(club_id);
 
         let stream = query.query(client).await.unwrap();
-        let registrations = utils::get_rows(stream).await;
-        registrations.into_iter().map(|row| row.to_entity()).collect()
+        let rows = utils::get_rows(stream).await;
+        // rows.into_iter().map(|row| row.to_entity()).collect()
+
+        let mut registrations: Vec<Registration> = Vec::with_capacity(rows.len());
+        for row in &rows {
+            let mut registration: Registration = row.to_entity();
+            let crew = Crew::query_all(registration.id, client).await;
+            registration.crew = Some(crew);
+            registrations.push(registration);
+        }
+        registrations
     }
 
     pub async fn query_for_race<'a>(race_id: i32, client: &mut AquariusClient<'_>) -> Vec<Registration> {
