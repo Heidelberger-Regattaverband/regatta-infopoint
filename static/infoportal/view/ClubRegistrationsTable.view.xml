@@ -47,12 +47,12 @@
                 <ColumnListItem vAlign="Top">
                   <cells>
                     <layout:VerticalLayout>
-                      <Text text="{path: 'registrations>race', formatter: '.formatter.nrRaceLabel'}" class="bold" />
+                      <Text text="{path: 'registrations>race', formatter: '.formatter.nrRaceLabel'}" class="bold sapUiTinyMarginBottom" />
                       <Text text="{registrations>race/longLabel}" />
                     </layout:VerticalLayout>
 
                     <layout:VerticalLayout>
-                      <Text text="{path: 'registrations>', formatter: '.formatter.boatLabel'}" class="bold" />
+                      <Text text="{path: 'registrations>', formatter: '.formatter.boatLabel'}" class="bold sapUiTinyMarginBottom" />
                       <Text text="{path: 'registrations>crew', formatter: '.formatter.crewLabel'}" />
                     </layout:VerticalLayout>
 
