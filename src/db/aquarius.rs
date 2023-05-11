@@ -108,6 +108,14 @@ impl Aquarius {
         }
     }
 
+    pub async fn get_club(&self, club_id: i32) -> Club {
+        if let Some(race) = self.caches.club.get(&club_id).await {
+            race
+        } else {
+            self._query_club(club_id).await
+        }
+    }
+
     pub async fn get_race_registrations(&self, race_id: i32) -> Vec<Registration> {
         // 1. try to get registrations from cache
         if let Some(registrations) = self.caches.regs.get(&race_id).await {
@@ -262,6 +270,18 @@ impl Aquarius {
 
         debug!("Query race {} from DB: {:?}", race_id, start.elapsed());
         race
+    }
+
+    async fn _query_club(&self, club_id: i32) -> Club {
+        let start = Instant::now();
+
+        let club = Club::query_single(club_id, &mut self.pool.get().await).await;
+
+        // store club in cache
+        self.caches.club.set(&club.id, &club).await;
+
+        debug!("Query club {} from DB: {:?}", club_id, start.elapsed());
+        club
     }
 
     async fn _query_races(&self, regatta_id: i32) -> Vec<Race> {

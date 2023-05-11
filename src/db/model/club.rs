@@ -9,7 +9,7 @@ use tiberius::{Query, Row};
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Club {
-    id: i32,
+    pub id: i32,
     short_name: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     long_name: Option<String>,
@@ -34,6 +34,18 @@ impl Club {
         let stream = query.query(client).await.unwrap();
         let regattas = utils::get_rows(stream).await;
         regattas.into_iter().map(|row| row.to_entity()).collect()
+    }
+
+    pub async fn query_single(club_id: i32, client: &mut AquariusClient<'_>) -> Club {
+        let mut query = Query::new(
+            "SELECT DISTINCT Club.*
+            FROM Club
+            WHERE Club_ID = @P1
+            ORDER BY Club_City ASC",
+        );
+        query.bind(club_id);
+        let stream = query.query(client).await.unwrap();
+        utils::get_row(stream).await.to_entity()
     }
 }
 
