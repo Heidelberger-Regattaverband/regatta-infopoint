@@ -27,14 +27,16 @@ impl ToEntity<Heat> for Row {
     fn to_entity(&self) -> Heat {
         let id: i32 = self.get_column("Comp_ID");
         let number: i16 = self.get_column("Comp_Number");
+        let round_code: String = self.get_column("Comp_RoundCode");
+        let label: String = self.get_column("Comp_Label");
 
         if let Some(date_time) = <tiberius::Row as TryRowColumn<NaiveDateTime>>::try_get_column(self, "Comp_DateTime") {
             Heat {
                 id,
                 race: self.to_entity(),
                 number,
-                round_code: self.get_column("Comp_RoundCode"),
-                label: self.get_column("Comp_Label"),
+                round_code,
+                label,
                 group_value: self.get_column("Comp_GroupValue"),
                 state: self.get_column("Comp_State"),
                 cancelled: self.get_column("Comp_Cancelled"),
@@ -48,8 +50,8 @@ impl ToEntity<Heat> for Row {
                 id,
                 race: self.to_entity(),
                 number,
-                round_code: self.get_column("Comp_RoundCode"),
-                label: self.get_column("Comp_Label"),
+                round_code,
+                label,
                 group_value: self.get_column("Comp_GroupValue"),
                 state: self.get_column("Comp_State"),
                 cancelled: self.get_column("Comp_Cancelled"),
