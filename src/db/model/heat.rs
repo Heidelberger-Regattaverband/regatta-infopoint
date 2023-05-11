@@ -1,5 +1,7 @@
-use super::{Race, Referee, ToEntity, TryToEntity};
-use crate::db::tiberius::{RowColumn, TryRowColumn};
+use crate::db::{
+    model::{Race, Referee, ToEntity, TryToEntity},
+    tiberius::{RowColumn, TryRowColumn},
+};
 use chrono::Datelike;
 use log::info;
 use serde::Serialize;
@@ -29,17 +31,20 @@ impl ToEntity<Heat> for Row {
         let number: i16 = self.get_column("Comp_Number");
         let round_code: String = self.get_column("Comp_RoundCode");
         let label: String = self.get_column("Comp_Label");
+        let group_value: i16 = self.get_column("Comp_GroupValue");
+        let state: u8 = self.get_column("Comp_State");
+        let cancelled: bool = self.get_column("Comp_Cancelled");
 
-        if let Some(date_time) = <tiberius::Row as TryRowColumn<NaiveDateTime>>::try_get_column(self, "Comp_DateTime") {
+        if let Some(date_time) = <Row as TryRowColumn<NaiveDateTime>>::try_get_column(self, "Comp_DateTime") {
             Heat {
                 id,
                 race: self.to_entity(),
                 number,
                 round_code,
                 label,
-                group_value: self.get_column("Comp_GroupValue"),
-                state: self.get_column("Comp_State"),
-                cancelled: self.get_column("Comp_Cancelled"),
+                group_value,
+                state,
+                cancelled,
                 date: date_time.date().to_string(),
                 time: date_time.time().to_string(),
                 weekday: date_time.weekday().number_from_monday() as u8,
@@ -52,12 +57,12 @@ impl ToEntity<Heat> for Row {
                 number,
                 round_code,
                 label,
-                group_value: self.get_column("Comp_GroupValue"),
-                state: self.get_column("Comp_State"),
-                cancelled: self.get_column("Comp_Cancelled"),
+                group_value,
+                state,
+                cancelled,
                 date: String::new(),
                 time: String::new(),
-                weekday: 1,
+                weekday: 0,
                 referee: self.try_to_entity(),
             }
         }
@@ -75,15 +80,15 @@ impl Heat {
     }
 
     pub(crate) fn query_all<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT c.*, ac.*, bc.*, r.*,
-            o.Offer_HRV_Seeded, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
-            FROM Comp AS c
-            FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
-            FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
-            JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
-            FULL OUTER JOIN CompReferee AS cr ON cr.CompReferee_Comp_ID_FK = c.Comp_ID
-            FULL OUTER JOIN Referee AS r ON r.Referee_ID = cr.CompReferee_Referee_ID_FK
-            WHERE c.Comp_Event_ID_FK = @P1 ORDER BY c.Comp_DateTime ASC");
+        let mut query = Query::new("SELECT DISTINCT Comp.*, AgeClass.*, BoatClass.*, Referee.*,
+            Offer_HRV_Seeded, Offer_RaceNumber, Offer_ID, Offer_ShortLabel, Offer_LongLabel, Offer_Comment, Offer_Distance, Offer_IsLightweight, Offer_Cancelled
+            FROM Comp
+            FULL OUTER JOIN Offer       ON Offer_ID                  = Comp_Race_ID_FK
+            FULL OUTER JOIN AgeClass    ON Offer_AgeClass_ID_FK      = AgeClass_ID
+            JOIN BoatClass              ON Offer_BoatClass_ID_FK     = BoatClass_ID
+            FULL OUTER JOIN CompReferee ON CompReferee_Comp_ID_FK    = Comp_ID
+            FULL OUTER JOIN Referee     ON CompReferee_Referee_ID_FK = Referee_ID
+            WHERE Comp_Event_ID_FK = @P1 ORDER BY Comp_DateTime ASC");
         query.bind(regatta_id);
         query
     }
