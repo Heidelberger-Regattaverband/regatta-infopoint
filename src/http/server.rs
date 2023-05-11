@@ -57,6 +57,7 @@ impl Server {
                 .app_data(aquarius.clone())
                 .service(
                     scope(PATH_REST_API)
+                        .service(rest_api::get_club)
                         .service(rest_api::get_regattas)
                         .service(rest_api::get_club_registrations)
                         .service(rest_api::get_participating_clubs)

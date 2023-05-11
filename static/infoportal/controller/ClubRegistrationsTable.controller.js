@@ -18,10 +18,14 @@ sap.ui.define([
       this._oRegistrationsModel = new JSONModel();
       this.setViewModel(this._oRegistrationsModel, "registrations");
 
+      this._ClubModel = new JSONModel();
+      this.setViewModel(this._ClubModel, "club");
+
       this.getRouter().getRoute("clubRegistrations").attachPatternMatched(async (oEvent) => await this._onPatternMatched(oEvent), this);
     },
 
     onNavBack: function () {
+      delete this._iClubId;
       this.navBack("participatingClubs");
     },
 
@@ -32,7 +36,12 @@ sap.ui.define([
 
     _onPatternMatched: async function (oEvent) {
       this._iClubId = oEvent.getParameter("arguments").clubId;
-      await this._loadRegistrationsModel();
+
+      await Promise.all([this._loadRegistrationsModel(), this._loadClubModel()]);
+    },
+
+    _loadClubModel: async function () {
+      await this.updateJSONModel(this._ClubModel, `/api/clubs/${this._iClubId}`, undefined);
     },
 
     _loadRegistrationsModel: async function () {

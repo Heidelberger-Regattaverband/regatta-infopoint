@@ -1,7 +1,7 @@
 use crate::{
     db::{
         aquarius::Aquarius,
-        model::{Heat, HeatRegistration, Race, Regatta, Registration},
+        model::{Club, Heat, HeatRegistration, Race, Regatta, Registration},
     },
     http::{
         auth::{Credentials, Scope, User},
@@ -80,6 +80,12 @@ async fn get_participating_clubs(path: Path<i32>, aquarius: Data<Aquarius>) -> i
 async fn get_club_registrations(ids: Path<(i32, i32)>, aquarius: Data<Aquarius>) -> impl Responder {
     let ids = ids.into_inner();
     Json(aquarius.query_club_registrations(ids.0, ids.1).await)
+}
+
+#[get("/clubs/{id}")]
+async fn get_club(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Club> {
+    let club_id = path.into_inner();
+    Json(aquarius.get_club(club_id).await)
 }
 
 #[get("/regattas/{id}/statistics")]
