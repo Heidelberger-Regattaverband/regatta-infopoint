@@ -25,7 +25,7 @@ async fn monitor(aquarius: Data<Aquarius>) -> Json<Monitor> {
 
 #[get("/regattas")]
 async fn get_regattas(aquarius: Data<Aquarius>) -> Json<Vec<Regatta>> {
-    Json(aquarius.get_regattas().await)
+    Json(aquarius.query_regattas().await)
 }
 
 #[get("/active_regatta")]
@@ -79,7 +79,7 @@ async fn get_participating_clubs(path: Path<i32>, aquarius: Data<Aquarius>) -> i
 #[get("/regattas/{regatta_id}/clubs/{club_id}/registrations")]
 async fn get_club_registrations(ids: Path<(i32, i32)>, aquarius: Data<Aquarius>) -> impl Responder {
     let ids = ids.into_inner();
-    Json(aquarius.query_club_registrations(ids.0, ids.1).await)
+    Json(aquarius.get_club_registrations(ids.0, ids.1).await)
 }
 
 #[get("/clubs/{id}")]
