@@ -100,3 +100,12 @@ impl TryRowColumn<bool> for Row {
         }
     }
 }
+
+impl TryRowColumn<NaiveDateTime> for Row {
+    fn try_get_column(&self, col_name: &str) -> Option<NaiveDateTime> {
+        match self.try_get::<NaiveDateTime, _>(col_name) {
+            Ok(value) => value,
+            _ => None,
+        }
+    }
+}
