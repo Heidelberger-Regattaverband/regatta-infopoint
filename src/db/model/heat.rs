@@ -1,5 +1,5 @@
 use super::{Race, Referee, ToEntity, TryToEntity};
-use crate::db::tiberius::RowColumn;
+use crate::db::tiberius::{RowColumn, TryRowColumn};
 use chrono::Datelike;
 use log::info;
 use serde::Serialize;
@@ -25,21 +25,39 @@ pub struct Heat {
 
 impl ToEntity<Heat> for Row {
     fn to_entity(&self) -> Heat {
-        let date_time: NaiveDateTime = self.get_column("Comp_DateTime");
+        let id: i32 = self.get_column("Comp_ID");
+        let number: i16 = self.get_column("Comp_Number");
 
-        Heat {
-            id: self.get_column("Comp_ID"),
-            race: self.to_entity(),
-            number: self.get_column("Comp_Number"),
-            round_code: self.get_column("Comp_RoundCode"),
-            label: self.get_column("Comp_Label"),
-            group_value: self.get_column("Comp_GroupValue"),
-            state: self.get_column("Comp_State"),
-            cancelled: self.get_column("Comp_Cancelled"),
-            date: date_time.date().to_string(),
-            time: date_time.time().to_string(),
-            weekday: date_time.weekday().number_from_monday() as u8,
-            referee: self.try_to_entity(),
+        if let Some(date_time) = <tiberius::Row as TryRowColumn<NaiveDateTime>>::try_get_column(self, "Comp_DateTime") {
+            Heat {
+                id,
+                race: self.to_entity(),
+                number,
+                round_code: self.get_column("Comp_RoundCode"),
+                label: self.get_column("Comp_Label"),
+                group_value: self.get_column("Comp_GroupValue"),
+                state: self.get_column("Comp_State"),
+                cancelled: self.get_column("Comp_Cancelled"),
+                date: date_time.date().to_string(),
+                time: date_time.time().to_string(),
+                weekday: date_time.weekday().number_from_monday() as u8,
+                referee: self.try_to_entity(),
+            }
+        } else {
+            Heat {
+                id,
+                race: self.to_entity(),
+                number,
+                round_code: self.get_column("Comp_RoundCode"),
+                label: self.get_column("Comp_Label"),
+                group_value: self.get_column("Comp_GroupValue"),
+                state: self.get_column("Comp_State"),
+                cancelled: self.get_column("Comp_Cancelled"),
+                date: String::new(),
+                time: String::new(),
+                weekday: 1,
+                referee: self.try_to_entity(),
+            }
         }
     }
 }
