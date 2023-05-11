@@ -29,7 +29,6 @@
               <headerToolbar>
                 <OverflowToolbar>
                   <content>
-                    <SearchField width="12rem" search=".onFilterSearch" />
                     <ToolbarSpacer />
                     <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
                   </content>
