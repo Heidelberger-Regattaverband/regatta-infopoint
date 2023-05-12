@@ -13,13 +13,16 @@ sap.ui.define([
 
       this._oTable = this.getView().byId("clubsTable");
 
-      this._oScoringModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/participating_clubs`, this._oTable);
-      this.setViewModel(this._oScoringModel, "clubs");
+      this._oParticipatingClubs = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/participating_clubs`, this._oTable);
+      this.setViewModel(this._oParticipatingClubs, "clubs");
 
       this.getRouter().getRoute("participatingClubs").attachMatched(async (_) => await this._loadModel(), this);
     },
 
     onNavBack: function () {
+      // free some resources first ...
+      this._oParticipatingClubs.setData({});
+
       this.navBack("startpage");
     },
 
@@ -57,7 +60,7 @@ sap.ui.define([
     },
 
     _loadModel: async function () {
-      await this.updateJSONModel(this._oScoringModel, `/api/regattas/${this.getRegattaId()}/participating_clubs`, this._oTable)
+      await this.updateJSONModel(this._oParticipatingClubs, `/api/regattas/${this.getRegattaId()}/participating_clubs`, this._oTable)
     }
 
   });

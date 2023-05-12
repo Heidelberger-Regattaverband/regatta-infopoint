@@ -25,7 +25,12 @@ sap.ui.define([
     },
 
     onNavBack: function () {
+      // free some resources first ...
       delete this._iClubId;
+      this._oRegistrationsModel.setData({});
+      this._ClubModel.setData({});
+
+      // ...  then navigate back
       this.navBack("participatingClubs");
     },
 
