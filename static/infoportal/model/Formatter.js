@@ -122,7 +122,7 @@ sap.ui.define([
 
     boatLabel: function (oRegistration) {
       let sLabel = "" + oRegistration.shortLabel;
-      if (oRegistration.groupValue) {
+      if (oRegistration.race.groupMode == 2) {
         sLabel += " - " + Formatter.groupValueLabel(oRegistration.groupValue);
       }
       if (oRegistration.boatNumber) {

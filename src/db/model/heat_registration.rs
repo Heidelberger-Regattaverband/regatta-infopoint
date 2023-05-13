@@ -34,7 +34,7 @@ impl HeatRegistration {
     // }
 
     pub(crate) fn query_all<'a>(heat_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT CompEntries.*, Entry_Bib, Entry_ID, Entry_BoatNumber, Entry_Comment, Entry_CancelValue, Label_Short, Result_Rank, Result_DisplayValue, Result_Delta, BoatClass_NumRowers, Club_ID, Club_Abbr, Club_City
+        let mut query = Query::new("SELECT DISTINCT CompEntries.*, Entry.*, Label_Short, Result_Rank, Result_DisplayValue, Result_Delta, BoatClass_NumRowers, Club.*, Offer.*
             FROM CompEntries
             JOIN Comp                  ON CE_Comp_ID_FK = Comp_ID
             JOIN Offer                 ON Offer_ID      = Comp_Race_ID_FK

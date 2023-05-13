@@ -80,15 +80,16 @@ impl Heat {
     }
 
     pub(crate) fn query_all<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT Comp.*, AgeClass.*, BoatClass.*, Referee.*,
-            Offer_HRV_Seeded, Offer_RaceNumber, Offer_ID, Offer_ShortLabel, Offer_LongLabel, Offer_Comment, Offer_Distance, Offer_IsLightweight, Offer_Cancelled
+        let mut query = Query::new(
+            "SELECT DISTINCT Comp.*, AgeClass.*, BoatClass.*, Referee.*, Offer.*
             FROM Comp
             FULL OUTER JOIN Offer       ON Offer_ID                  = Comp_Race_ID_FK
             FULL OUTER JOIN AgeClass    ON Offer_AgeClass_ID_FK      = AgeClass_ID
             JOIN BoatClass              ON Offer_BoatClass_ID_FK     = BoatClass_ID
             FULL OUTER JOIN CompReferee ON CompReferee_Comp_ID_FK    = Comp_ID
             FULL OUTER JOIN Referee     ON CompReferee_Referee_ID_FK = Referee_ID
-            WHERE Comp_Event_ID_FK = @P1 ORDER BY Comp_DateTime ASC");
+            WHERE Comp_Event_ID_FK = @P1 ORDER BY Comp_DateTime ASC",
+        );
         query.bind(regatta_id);
         query
     }
