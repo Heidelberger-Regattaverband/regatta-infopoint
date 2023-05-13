@@ -64,7 +64,7 @@ impl Registration {
             JOIN Label      ON EL_Label_ID_FK     = Label_ID
             JOIN Offer      ON Entry_Race_ID_FK   = Offer_ID
             WHERE Event_ID = @P1 AND ac.Club_ID = @P2 AND EL_RoundFrom <= 64 AND 64 <= EL_RoundTo
-            ORDER BY Club_City ASC",
+            ORDER BY Offer_ID ASC",
         );
         query.bind(regatta_id);
         query.bind(club_id);
