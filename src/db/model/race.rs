@@ -21,6 +21,7 @@ pub struct Race {
     age_class: Option<AgeClass>,
     #[serde(skip_serializing_if = "Option::is_none")]
     boat_class: Option<BoatClass>,
+    group_mode: u8,
 }
 
 impl ToEntity<Race> for Row {
@@ -44,6 +45,7 @@ impl ToEntity<Race> for Row {
             age_class: self.try_to_entity(),
             boat_class: self.try_to_entity(),
             state: self.try_get_column("Race_state").unwrap_or_default(),
+            group_mode: self.get_column("Offer_GroupMode"),
         }
     }
 }
