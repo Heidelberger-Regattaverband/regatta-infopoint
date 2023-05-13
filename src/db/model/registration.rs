@@ -6,8 +6,6 @@ use crate::db::{
 use serde::Serialize;
 use tiberius::{Query, Row};
 
-use super::TryToEntity;
-
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Registration {
@@ -25,8 +23,7 @@ pub struct Registration {
     cancelled: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) crew: Option<Vec<Crew>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) race: Option<Race>,
+    pub(crate) race: Race,
 }
 
 impl ToEntity<Registration> for Row {
@@ -45,7 +42,7 @@ impl ToEntity<Registration> for Row {
             group_value: self.try_get_column("Entry_GroupValue"),
             club: self.to_entity(),
             crew: None,
-            race: self.try_to_entity(),
+            race: self.to_entity(),
         }
     }
 }
@@ -85,11 +82,12 @@ impl Registration {
 
     pub async fn query_for_race<'a>(race_id: i32, client: &mut AquariusClient<'_>) -> Vec<Registration> {
         let mut query = Query::new(
-            "SELECT DISTINCT Entry.*, Label_Short, Club.*
+            "SELECT DISTINCT Entry.*, Label_Short, Club.*, Offer.*
             FROM Entry
-            JOIN EntryLabel ON EL_Entry_ID_FK = Entry_ID
-            JOIN Label      ON EL_Label_ID_FK = Label_ID
-            JOIN Club       ON Club_ID        = Entry_OwnerClub_ID_FK
+            JOIN EntryLabel ON EL_Entry_ID_FK   = Entry_ID
+            JOIN Label      ON EL_Label_ID_FK   = Label_ID
+            JOIN Club       ON Club_ID          = Entry_OwnerClub_ID_FK
+            JOIN Offer      ON Entry_Race_ID_FK = Offer_ID
             WHERE Entry_Race_ID_FK = @P1 AND EL_RoundFrom <= 64 AND 64 <= EL_RoundTo
             ORDER BY Entry_Bib ASC",
         );
