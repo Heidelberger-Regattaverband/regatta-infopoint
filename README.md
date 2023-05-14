@@ -10,7 +10,7 @@ sudo -i
 Install required packages:
 ```bash
 apt update && apt upgrade
-apt install certbot git docker.io docker-compose
+apt install certbot git docker.io docker-compose htop deborphan
 ```
 
 Request a letsencrypt certificate:
@@ -39,4 +39,18 @@ Start the infoportal docker container:
 ```bash
 cd regatta-infopoint
 DB_PASSWORD=<db_password> ./update.sh
+```
+
+## Additional MS-SQL setup
+
+Add a new mssql user:
+```bash
+adduser mssql -u 10001
+```
+
+Add backup and restore folder for MS-SQL:
+```bash
+su - mssql
+mkdir /mssql/backup
+mkdir /mssql/restore
 ```
