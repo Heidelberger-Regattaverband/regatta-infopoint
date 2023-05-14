@@ -47,3 +47,10 @@ Add a new mssql user:
 ```bash
 adduser mssql -u 10001
 ```
+
+Add backup and restore folder for MS-SQL:
+```bash
+su - mssql
+mkdir /mssql/backup
+mkdir /mssql/restore
+```
