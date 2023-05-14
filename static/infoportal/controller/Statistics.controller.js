@@ -43,11 +43,13 @@ sap.ui.define([
 
       // transform statistic data into human readable format
       const registrations = [];
+      const seats = oStatistics.registrations.seats + oStatistics.registrations.seatsCox;
       registrations.push({ name: this.i18n("common.overall", undefined), value: oStatistics.registrations.all });
       registrations.push({ name: this.i18n("statistics.registrations.cancelled", undefined), value: oStatistics.registrations.cancelled });
       registrations.push({ name: this.i18n("statistics.reportingClubs", undefined), value: oStatistics.registrations.registeringClubs });
       registrations.push({ name: this.i18n("statistics.participatingClubs", undefined), value: oStatistics.registrations.clubs });
       registrations.push({ name: this.i18n("common.athletes", undefined), value: oStatistics.registrations.athletes });
+      registrations.push({ name: this.i18n("common.seats", undefined), value: seats });
       const races = [];
       races.push({ name: this.i18n("common.overall", undefined), value: oStatistics.races.all });
       races.push({ name: this.i18n("common.cancelled", undefined), value: oStatistics.races.cancelled });

@@ -1,5 +1,8 @@
-use super::ToEntity;
-use crate::db::tiberius::RowColumn;
+use crate::db::{
+    aquarius::AquariusClient,
+    model::{utils, ToEntity},
+    tiberius::RowColumn,
+};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -29,6 +32,8 @@ struct RegistrationsStatistics {
     registering_clubs: i32,
     athletes: i32,
     clubs: i32,
+    seats: i32,
+    seats_cox: i32,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -60,6 +65,8 @@ impl ToEntity<Statistics> for Row {
             registering_clubs: self.get_column("registrations_owner_clubs"),
             athletes: self.get_column("registrations_athletes"),
             clubs: self.get_column("registrations_clubs"),
+            seats: self.get_column("registrations_seats"),
+            seats_cox: self.get_column("registrations_seats_cox"),
         };
         Statistics {
             races,
@@ -70,26 +77,51 @@ impl ToEntity<Statistics> for Row {
 }
 
 impl Statistics {
-    pub fn query<'a>(regatta_id: i32) -> Query<'a> {
+    pub async fn query<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Statistics {
         let mut query = Query::new(
         "SELECT
-        (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1) AS races_all,
-        (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1 AND Offer_Cancelled > 0) AS races_cancelled,
-        (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 ) AS heats_all,
-        (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_Cancelled > 0 ) AS heats_cancelled,
-        (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 4 AND Comp_Cancelled = 0 ) AS heats_official,
-        (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 5 OR  Comp_State = 6 ) AS heats_finished,
-        (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 2 AND Comp_Cancelled = 0 ) AS heats_started,
-        (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 1 AND Comp_Cancelled = 0 ) AS heats_seeded,
-        (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 0 AND Comp_Cancelled = 0 ) AS heats_scheduled,
-        (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1) AS registrations_all,
-        (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue > 0) AS registrations_cancelled,
-        (SELECT COUNT(*) FROM (SELECT DISTINCT Club_ID FROM Club  JOIN Entry ON Entry_OwnerClub_ID_FK = Club_ID WHERE Entry_Event_ID_FK = @P1) AS count) AS registrations_owner_clubs,
-        (SELECT COUNT(*) FROM (SELECT DISTINCT Crew_Athlete_ID_FK FROM Entry JOIN Crew ON Crew_Entry_ID_FK = Entry_ID WHERE Entry_Event_ID_FK = @P1) AS count) AS registrations_athletes,
-        (SELECT COUNT(*) FROM (SELECT DISTINCT Crew_Club_ID_FK    FROM Entry JOIN Crew ON Crew_Entry_ID_FK = Entry_ID WHERE Entry_Event_ID_FK = @P1) AS count) AS registrations_clubs
-        ",
-    );
+          (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1) AS races_all,
+          (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1 AND Offer_Cancelled > 0) AS races_cancelled,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 ) AS heats_all,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_Cancelled > 0 ) AS heats_cancelled,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 4 AND Comp_Cancelled = 0 ) AS heats_official,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 5 OR  Comp_State = 6 ) AS heats_finished,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 2 AND Comp_Cancelled = 0 ) AS heats_started,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 1 AND Comp_Cancelled = 0 ) AS heats_seeded,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 0 AND Comp_Cancelled = 0 ) AS heats_scheduled,
+          (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1) AS registrations_all,
+          (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue > 0) AS registrations_cancelled,
+          (SELECT COUNT(*) FROM (
+            SELECT DISTINCT Club_ID FROM
+            Club  JOIN Entry ON Entry_OwnerClub_ID_FK = Club_ID
+            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) AS registrations_owner_clubs,
+          (SELECT COUNT(*) FROM (
+            SELECT DISTINCT Crew_Athlete_ID_FK
+            FROM  Entry
+            JOIN  Crew ON Crew_Entry_ID_FK = Entry_ID
+            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) AS registrations_athletes,
+          (SELECT COUNT(*) FROM (
+            SELECT DISTINCT Crew_Club_ID_FK
+            FROM  Entry
+            JOIN  Crew ON Crew_Entry_ID_FK = Entry_ID
+            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) AS registrations_clubs,
+          (SELECT SUM(BoatClass_NumRowers) FROM (
+            SELECT BoatClass_NumRowers
+            FROM  Entry
+            JOIN  Offer     ON Offer_ID = Entry_Race_ID_FK
+            JOIN  BoatClass ON BoatClass_ID = Offer_BoatClass_ID_FK
+            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) as seats) AS registrations_seats,
+          (SELECT SUM(BoatClass_Coxed) FROM (
+            SELECT BoatClass_Coxed 
+            FROM  Entry
+            JOIN  Offer     ON Offer_ID = Entry_Race_ID_FK
+            JOIN  BoatClass ON BoatClass_ID = Offer_BoatClass_ID_FK
+            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) as seats) AS registrations_seats_cox
+          ",
+        );
         query.bind(regatta_id);
-        query
+
+        let stream = query.query(client).await.unwrap();
+        utils::get_row(stream).await.to_entity()
     }
 }

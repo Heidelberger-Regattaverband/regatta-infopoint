@@ -76,8 +76,7 @@ impl Aquarius {
 
     pub async fn get_statistics(&self, regatta_id: i32) -> Statistics {
         let start = Instant::now();
-        let row = self._execute_single_query(Statistics::query(regatta_id)).await;
-        let stats = row.to_entity();
+        let stats = Statistics::query(regatta_id, &mut self.pool.get().await).await;
         debug!(
             "Query statistics of regatta {} from DB: {:?}",
             regatta_id,
