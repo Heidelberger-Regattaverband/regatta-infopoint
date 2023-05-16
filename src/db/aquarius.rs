@@ -278,15 +278,11 @@ impl Aquarius {
 
     async fn _query_races(&self, regatta_id: i32) -> Vec<Race> {
         let start = Instant::now();
-
         // read races from DB
-        let rows = self._execute_query(Race::query_all(regatta_id)).await;
-        let races = Race::from_rows(&rows);
-
+        let races = Race::query_all(regatta_id, &mut self.pool.get().await).await;
         // store races in cache
         self.caches.races.set(&regatta_id, &races).await;
         debug!("Query races of regatta {} from DB: {:?}", regatta_id, start.elapsed());
-
         races
     }
 

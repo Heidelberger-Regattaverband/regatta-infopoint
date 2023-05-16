@@ -21,7 +21,7 @@ pub struct Club {
 impl Club {
     pub async fn query_participating(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Club> {
         let mut query = Query::new(
-            "SELECT DISTINCT Club_ID, Club_Name, Club_Abbr, Club_UltraAbbr, Club_City
+            "SELECT DISTINCT Club.*
             FROM Club
             JOIN Athlet ON Athlet_Club_ID_FK  = Club_ID
             JOIN Crew   ON Crew_Athlete_ID_FK = Athlet_ID
@@ -32,8 +32,8 @@ impl Club {
         );
         query.bind(regatta_id);
         let stream = query.query(client).await.unwrap();
-        let regattas = utils::get_rows(stream).await;
-        regattas.into_iter().map(|row| row.to_entity()).collect()
+        let clubs = utils::get_rows(stream).await;
+        clubs.into_iter().map(|row| row.to_entity()).collect()
     }
 
     pub async fn query_single(club_id: i32, client: &mut AquariusClient<'_>) -> Club {
