@@ -55,7 +55,7 @@ sap.ui.define([
       if (oSelectedItem) {
         const oBindingCtx = oSelectedItem.getBindingContext("clubs");
         const oClub = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
-        this.getRouter().navTo("clubRegistrations", { clubId: oClub.id }, false /* history*/);
+        this.getRouter().navTo("clubParticipations", { clubId: oClub.id }, false /* history*/);
       }
     },
 

@@ -1,10 +1,10 @@
-<mvc:View controllerName="de.regatta_hd.infopoint.controller.ClubRegistrationsTable" xmlns="sap.m" xmlns:layout="sap.ui.layout"
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.ClubParticipationsTable" xmlns="sap.m" xmlns:layout="sap.ui.layout"
   xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
     <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
     https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
-    <Page title="{i18n>common.registrations}: {club>/shortName}" class="sapUiNoContentPadding" showNavButton="true"
+    <Page title="{i18n>common.participations} von {club>/shortName}" class="sapUiNoContentPadding" showNavButton="true"
       navButtonPress="onNavBack">
 
       <headerContent>
