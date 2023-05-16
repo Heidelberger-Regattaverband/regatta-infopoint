@@ -6,7 +6,7 @@ sap.ui.define([
 ], function (BaseController, JSONModel, MessageToast, Formatter) {
   "use strict";
 
-  return BaseController.extend("de.regatta_hd.infopoint.controller.ClubRegistrationsTable", {
+  return BaseController.extend("de.regatta_hd.infopoint.controller.ClubParticipationsTable", {
 
     formatter: Formatter,
 
@@ -21,7 +21,7 @@ sap.ui.define([
       this._ClubModel = new JSONModel();
       this.setViewModel(this._ClubModel, "club");
 
-      this.getRouter().getRoute("clubRegistrations").attachPatternMatched(async (oEvent) => await this._onPatternMatched(oEvent), this);
+      this.getRouter().getRoute("clubParticipations").attachPatternMatched(async (oEvent) => await this._onPatternMatched(oEvent), this);
     },
 
     onNavBack: function () {

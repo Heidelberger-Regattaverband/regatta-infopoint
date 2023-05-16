@@ -114,9 +114,9 @@
           "target": "participatingClubs"
         },
         {
-          "pattern": "clubRegistrations/{clubId}",
-          "name": "clubRegistrations",
-          "target": "clubRegistrations"
+          "pattern": "clubParticipations/{clubId}",
+          "name": "clubParticipations",
+          "target": "clubParticipations"
         }
       ],
       "targets": {
@@ -148,8 +148,8 @@
           "viewName": "ParticipatingClubsTable",
           "viewLevel": 1
         },
-        "clubRegistrations": {
-          "viewName": "ClubRegistrationsTable",
+        "clubParticipations": {
+          "viewName": "ClubParticipationsTable",
           "viewLevel": 2
         },
         "statistics": {
