@@ -82,7 +82,7 @@ impl Statistics {
         "SELECT
           (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1) AS races_all,
           (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1 AND Offer_Cancelled > 0) AS races_cancelled,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 ) AS heats_all,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1) AS heats_all,
           (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_Cancelled > 0 ) AS heats_cancelled,
           (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 4 AND Comp_Cancelled = 0 ) AS heats_official,
           (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 5 OR  Comp_State = 6 ) AS heats_finished,
@@ -92,8 +92,9 @@ impl Statistics {
           (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1) AS registrations_all,
           (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue > 0) AS registrations_cancelled,
           (SELECT COUNT(*) FROM (
-            SELECT DISTINCT Club_ID FROM
-            Club  JOIN Entry ON Entry_OwnerClub_ID_FK = Club_ID
+            SELECT DISTINCT Club_ID
+            FROM  Club
+            JOIN  Entry ON Entry_OwnerClub_ID_FK = Club_ID
             WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) AS registrations_owner_clubs,
           (SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Athlete_ID_FK
