@@ -21,6 +21,7 @@ sap.ui.define([
 
     onNavBack: function () {
       this.navBack("startpage");
+      this._oScoringModel.setData({});
     },
 
     onFilterSearch: function (oEvent) {

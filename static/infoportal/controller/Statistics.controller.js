@@ -13,11 +13,6 @@ sap.ui.define([
       this.getRouter().getRoute("statistics").attachMatched(async (_) => await this._loadStatistics(), this);
 
       this._oStatisticsModel = new JSONModel();
-      this._oStatisticsModel.setData({
-        registrations: [],
-        races: [],
-        heats: []
-      });
       this.setViewModel(this._oStatisticsModel, "statistics");
 
       this._oRegistrationsList = this.getView().byId("registrationsList");
