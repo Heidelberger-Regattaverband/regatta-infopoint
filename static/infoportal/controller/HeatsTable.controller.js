@@ -49,8 +49,6 @@ sap.ui.define([
 
       // reduce table growing threshold to improve performance next time table is shown
       this.oTable.setGrowingThreshold(30);
-      this._oHeatsModel.setData({});
-      this._oRegistrationsModel.setData({});
     },
 
     onRefreshButtonPress: async function (oEvent) {

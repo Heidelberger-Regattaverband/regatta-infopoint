@@ -27,8 +27,6 @@ sap.ui.define([
     onNavBack: function () {
       this.navBack("participatingClubs");
       delete this._iClubId;
-      this._oRegistrationsModel.setData({});
-      this._oClubModel.setData({});
     },
 
     onRefreshButtonPress: async function (oEvent) {
