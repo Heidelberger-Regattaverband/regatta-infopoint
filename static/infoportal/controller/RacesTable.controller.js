@@ -48,8 +48,6 @@ sap.ui.define([
       this.navBack("startpage");
       // reduce table growing threshold to improve performance next time table is shown
       this.oTable.setGrowingThreshold(30);
-      this._oRacesModel.setData({});
-      this._oRegistrationsModel.setData({});
     },
 
     onFilterButtonPress: async function (oEvent) {

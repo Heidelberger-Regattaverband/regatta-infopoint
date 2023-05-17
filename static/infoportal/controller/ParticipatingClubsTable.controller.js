@@ -21,7 +21,6 @@ sap.ui.define([
 
     onNavBack: function () {
       this.navBack("startpage");
-      this._oParticipatingClubs.setData({});
     },
 
     onFilterSearch: function (oEvent) {
