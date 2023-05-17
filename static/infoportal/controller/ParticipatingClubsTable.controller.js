@@ -20,10 +20,8 @@ sap.ui.define([
     },
 
     onNavBack: function () {
-      // free some resources first ...
-      this._oParticipatingClubs.setData({});
-
       this.navBack("startpage");
+      this._oParticipatingClubs.setData({});
     },
 
     onFilterSearch: function (oEvent) {
