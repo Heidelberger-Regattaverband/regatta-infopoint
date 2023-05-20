@@ -44,7 +44,7 @@ impl HeatRegistration {
             FULL OUTER JOIN Label      ON EL_Label_ID_FK = Label_ID
             FULL OUTER JOIN Result     ON Result_CE_ID_FK = CE_ID
             JOIN Club                  ON Club_ID = Entry_OwnerClub_ID_FK
-            WHERE CE_Comp_ID_FK = @P1 AND (Result_SplitNr = 64 OR Result_SplitNr IS NULL)
+            WHERE CE_Comp_ID_FK = @P1 AND ((Result_SplitNr = 64 AND Comp_State >=4) OR (Result_SplitNr = 0 AND Comp_State < 3) OR (Comp_State < 2 AND Result_SplitNr IS NULL))
             AND EL_RoundFrom <= Comp_Round AND Comp_Round <= EL_RoundTo");
         query.bind(heat_id);
         query
