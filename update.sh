@@ -1,6 +1,6 @@
 #!/bin/bash
 
-git pull -p
+#git pull -p
 
 if [[ -z ${DB_PASSWORD} ]]; then
   echo "Environment variable DB_PASSWORD not set."
