@@ -30,6 +30,10 @@ sap.ui.define([
 
     onLastPress: function () {
       this.getEventBus().publish("heat", "last", {});
+    },
+
+    onRefreshButtonPress: function () {
+      this.getEventBus().publish("heat", "refresh", {});
     }
 
   });

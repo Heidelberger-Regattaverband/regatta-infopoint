@@ -24,6 +24,8 @@ sap.ui.define([
       this.getOwnerComponent().setModel(this._oRegistrationsModel, "heatRegistrations");
 
       this.getRouter().getRoute("heats").attachMatched(async (_) => await this._loadHeatsModel(), this);
+
+      this.getEventBus().subscribe("heat", "refresh", async (_) => await this._loadHeatsModel(), this);
     },
 
     onSelectionChange: function (oEvent) {

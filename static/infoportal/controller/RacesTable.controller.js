@@ -24,6 +24,8 @@ sap.ui.define([
       this.getOwnerComponent().setModel(this._oRegistrationsModel, "raceRegistrations");
 
       this.getRouter().getRoute("races").attachMatched(async (_) => await this._loadRacesModel(), this);
+
+      this.getEventBus().subscribe("race", "refresh", async (_) => await this._loadRacesModel(), this);
     },
 
     onItemPress: function (oEvent) {

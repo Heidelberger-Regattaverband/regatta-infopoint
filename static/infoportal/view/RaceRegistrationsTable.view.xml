@@ -19,6 +19,10 @@
                 <Label text="{race>/longLabel} {race>/comment}" />
               </f:expandedContent>
 
+              <!--f:actions>
+                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
+              </f:actions-->
+
               <f:navigationActions>
                 <Button type="Transparent" icon="sap-icon://close-command-field" press="onFirstPress" tooltip="First"
                   enabled="{= ${race>/_nav/isFirst} ? false : true }" />
