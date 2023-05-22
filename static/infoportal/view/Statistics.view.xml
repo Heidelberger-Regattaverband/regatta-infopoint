@@ -20,6 +20,10 @@
           <ObjectListItem title="{statistics>name}" number="{statistics>value}"></ObjectListItem>
         </List>
 
+        <List id="athletesList" items="{statistics>/athletes}" headerText="{i18n>statistics.athletes}">
+          <ObjectListItem title="{statistics>name}" number="{statistics>value}"></ObjectListItem>
+        </List>
+
       </content>
     </Page>
 

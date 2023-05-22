@@ -2,6 +2,8 @@ use crate::db::{model::ToEntity, tiberius::RowColumn};
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Row};
 
+use super::Club;
+
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Athlete {
@@ -10,7 +12,7 @@ pub struct Athlete {
     last_name: String,
     gender: String,
     year: String,
-    club: String,
+    club: Club,
 }
 
 impl ToEntity<Athlete> for Row {
@@ -22,7 +24,7 @@ impl ToEntity<Athlete> for Row {
             last_name: self.get_column("Athlet_LastName"),
             gender: self.get_column("Athlet_Gender"),
             year: dob.date().format("%Y").to_string(),
-            club: self.get_column("Club_UltraAbbr"),
+            club: self.to_entity(),
         }
     }
 }

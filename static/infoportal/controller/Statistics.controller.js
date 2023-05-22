@@ -57,10 +57,17 @@ sap.ui.define([
       heats.push({ name: this.i18n("common.scheduled", undefined), value: oStatistics.heats.scheduled });
       heats.push({ name: this.i18n("common.cancelled", undefined), value: oStatistics.heats.cancelled });
 
+      const oldestWoman = oStatistics.athletes.oldestWoman;
+      const oldestMan = oStatistics.athletes.oldestMan;
+      const athletes = [];
+      athletes.push({ name: this.i18n("statistics.athletes.oldestWoman", undefined), value: oldestWoman.lastName + ", " + oldestWoman.firstName + " (" + oldestWoman.year + ", " + oldestWoman.club.longName + ")" });
+      athletes.push({ name: this.i18n("statistics.athletes.oldestMan", undefined), value: oldestMan.lastName + ", " + oldestMan.firstName + " (" + oldestMan.year + ", " + oldestMan.club.longName + ")" });
+
       // update model
       this._oStatisticsModel.setProperty("/registrations", registrations);
       this._oStatisticsModel.setProperty("/races", races);
       this._oStatisticsModel.setProperty("/heats", heats);
+      this._oStatisticsModel.setProperty("/athletes", athletes);
 
       this._setBusy(false);
     },

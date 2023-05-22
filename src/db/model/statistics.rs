@@ -1,6 +1,6 @@
 use crate::db::{
     aquarius::AquariusClient,
-    model::{utils, ToEntity},
+    model::{utils, Athlete, ToEntity},
     tiberius::RowColumn,
 };
 use serde::Serialize;
@@ -42,6 +42,7 @@ pub struct Statistics {
     races: RacesStatistics,
     heats: HeatsStatistics,
     registrations: RegistrationsStatistics,
+    athletes: Option<Athletes>,
 }
 
 impl ToEntity<Statistics> for Row {
@@ -72,8 +73,16 @@ impl ToEntity<Statistics> for Row {
             races,
             heats,
             registrations,
+            athletes: None,
         }
     }
+}
+
+#[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+struct Athletes {
+    oldest_woman: Athlete,
+    oldest_man: Athlete,
 }
 
 impl Statistics {
@@ -121,7 +130,30 @@ impl Statistics {
           ",
         );
         query.bind(regatta_id);
+        let stream = query.query(client).await.unwrap();
+        let mut stats: Statistics = utils::get_row(stream).await.to_entity();
 
+        let athletes = Athletes {
+            oldest_woman: Statistics::query_oldest(regatta_id, "W", client).await,
+            oldest_man: Statistics::query_oldest(regatta_id, "M", client).await,
+        };
+        stats.athletes = Some(athletes);
+
+        stats
+    }
+
+    async fn query_oldest<'a>(regatta_id: i32, gender: &str, client: &mut AquariusClient<'_>) -> Athlete {
+        let mut query = Query::new(
+            "SELECT DISTINCT TOP 1 Athlet.*, Club.*
+            FROM  Entry
+            JOIN  Crew   ON Crew_Entry_ID_FK   = Entry_ID
+            JOIN  Athlet ON Crew_Athlete_ID_FK = Athlet_ID
+            JOIN  Club   ON Athlet_Club_ID_FK  = Club_ID
+            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0 AND Athlet_Gender = @P2
+            ORDER BY Athlet_DOB",
+        );
+        query.bind(regatta_id);
+        query.bind(gender);
         let stream = query.query(client).await.unwrap();
         utils::get_row(stream).await.to_entity()
     }
