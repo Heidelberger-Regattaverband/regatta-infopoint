@@ -1,5 +1,6 @@
 use crate::db::{
-    model::{Race, Referee, ToEntity, TryToEntity},
+    aquarius::AquariusClient,
+    model::{utils, Race, Referee, ToEntity, TryToEntity},
     tiberius::{RowColumn, TryRowColumn},
 };
 use chrono::Datelike;
@@ -79,7 +80,7 @@ impl Heat {
         heats
     }
 
-    pub(crate) fn query_all<'a>(regatta_id: i32) -> Query<'a> {
+    pub async fn query_all<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Heat> {
         let mut query = Query::new(
             "SELECT DISTINCT Comp.*, AgeClass.*, BoatClass.*, Referee.*, Offer.*
             FROM Comp
@@ -91,10 +92,12 @@ impl Heat {
             WHERE Comp_Event_ID_FK = @P1 ORDER BY Comp_DateTime ASC",
         );
         query.bind(regatta_id);
-        query
+        let stream = query.query(client).await.unwrap();
+        let heats = utils::get_rows(stream).await;
+        heats.into_iter().map(|row| row.to_entity()).collect()
     }
 
-    pub(crate) fn search<'a>(regatta_id: i32, filter: String) -> Query<'a> {
+    pub async fn search<'a>(regatta_id: i32, filter: String, client: &mut AquariusClient<'_>) -> Vec<Heat> {
         let sql = format!("SELECT DISTINCT c.*, ac.*, bc.*, r.*,
           o.Offer_HRV_Seeded, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
           FROM Comp AS c
@@ -108,7 +111,9 @@ impl Heat {
         info!("{}", sql);
         let mut query = Query::new(sql);
         query.bind(regatta_id);
-        query
+        let stream = query.query(client).await.unwrap();
+        let heats = utils::get_rows(stream).await;
+        heats.into_iter().map(|row| row.to_entity()).collect()
     }
 }
 
