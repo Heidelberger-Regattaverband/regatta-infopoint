@@ -13,9 +13,8 @@
 
       <content>
 
-        <Table id="registrationsTable" autoPopinMode="true" items="{path: 'registrations>/'}"
-          growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="ColumnHeaders"
-          class="sapUiNoContentPadding">
+        <Table id="registrationsTable" autoPopinMode="true" items="{path: 'registrations>/'}" growing="true" growingThreshold="50"
+          growingScrollToLoad="true" sticky="ColumnHeaders" class="sapUiNoContentPadding">
 
           <columns>
             <Column hAlign="Begin" width="6rem" importance="High" popinDisplay="Inline">
