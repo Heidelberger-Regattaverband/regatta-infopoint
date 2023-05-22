@@ -24,6 +24,8 @@ sap.ui.define([
       this.getOwnerComponent().setModel(this._oRegistrationsModel, "raceRegistrations");
 
       this.getRouter().getRoute("races").attachMatched(async (_) => await this._loadRacesModel(), this);
+
+      this.getEventBus().subscribe("race", "refresh", async (_) => await this._loadRacesModel(), this);
     },
 
     onItemPress: function (oEvent) {
@@ -69,7 +71,7 @@ sap.ui.define([
 
     _loadRacesModel: async function () {
       await this.updateJSONModel(this._oRacesModel, `/api/regattas/${this.getRegattaId()}/races`, this.oTable);
-      this.applyFilters();
+      // this.applyFilters(); // causes the table to scroll to the beginning
     },
 
     _loadRegistrationsModel: async function (sRaceId) {

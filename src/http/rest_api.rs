@@ -52,9 +52,13 @@ async fn get_race(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Race> {
 }
 
 #[get("/races/{id}/registrations")]
-async fn get_registrations(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Vec<Registration>> {
+async fn get_registrations(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Json<Vec<Registration>> {
     let race_id = path.into_inner();
-    Json(aquarius.get_race_registrations(race_id).await)
+    Json(aquarius.get_race_registrations(race_id, opt_user).await)
 }
 
 #[get("/regattas/{id}/heats")]
@@ -65,9 +69,13 @@ async fn get_heats(path: Path<i32>, odata_params: Query<OData>, aquarius: Data<A
 }
 
 #[get("/heats/{id}/registrations")]
-async fn get_heat_registrations(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Vec<HeatRegistration>> {
+async fn get_heat_registrations(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Json<Vec<HeatRegistration>> {
     let heat_id = path.into_inner();
-    Json(aquarius.get_heat_registrations(heat_id).await)
+    Json(aquarius.get_heat_registrations(heat_id, opt_user).await)
 }
 
 #[get("/regattas/{id}/participating_clubs")]
@@ -96,7 +104,7 @@ async fn get_statistics(
 ) -> Result<impl Responder, Error> {
     if opt_user.is_some() {
         let regatta_id = path.into_inner();
-        Ok(Json(aquarius.get_statistics(regatta_id).await))
+        Ok(Json(aquarius.query_statistics(regatta_id).await))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
     }
