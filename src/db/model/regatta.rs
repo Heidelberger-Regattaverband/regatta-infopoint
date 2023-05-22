@@ -1,6 +1,6 @@
-use super::{utils, ToEntity};
 use crate::db::{
     aquarius::AquariusClient,
+    model::{utils, ToEntity},
     tiberius::{RowColumn, TryRowColumn},
 };
 use serde::Serialize;
@@ -35,13 +35,13 @@ impl ToEntity<Regatta> for Row {
 
 impl Regatta {
     pub async fn query_all(client: &mut AquariusClient<'_>) -> Vec<Regatta> {
-        let stream = Query::new("SELECT * FROM Event e").query(client).await.unwrap();
+        let stream = Query::new("SELECT * FROM Event").query(client).await.unwrap();
         let regattas = utils::get_rows(stream).await;
         regattas.into_iter().map(|row| row.to_entity()).collect()
     }
 
     pub async fn query(regatta_id: i32, client: &mut AquariusClient<'_>) -> Regatta {
-        let mut query = Query::new("SELECT * FROM Event e WHERE e.Event_ID = @P1");
+        let mut query = Query::new("SELECT * FROM Event WHERE Event_ID = @P1");
         query.bind(regatta_id);
         let stream = query.query(client).await.unwrap();
         utils::get_row(stream).await.to_entity()

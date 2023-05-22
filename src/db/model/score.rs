@@ -1,5 +1,8 @@
-use super::{Club, ToEntity};
-use crate::db::tiberius::RowColumn;
+use crate::db::{
+    aquarius::AquariusClient,
+    model::{utils, Club, ToEntity},
+    tiberius::RowColumn,
+};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -22,23 +25,17 @@ impl ToEntity<Score> for Row {
 }
 
 impl Score {
-    pub fn from_rows(rows: &Vec<Row>) -> Vec<Self> {
-        let mut scores: Vec<Score> = Vec::with_capacity(rows.len());
-        for row in rows {
-            scores.push(row.to_entity());
-        }
-        scores
-    }
-
-    pub fn query_all<'a>(regatta_id: i32) -> Query<'a> {
+    pub async fn query_all<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Self> {
         let mut query = Query::new(
             "SELECT s.rank, s.points, c.Club_ID, c.Club_Name, c.Club_Abbr, c.Club_City
-            FROM HRV_Score s
-            JOIN Club AS c ON s.club_id = c.Club_ID
+            FROM HRV_Score AS s
+            JOIN Club      AS c ON s.club_id = c.Club_ID
             WHERE s.event_id = @P1
             ORDER BY s.rank ASC",
         );
         query.bind(regatta_id);
-        query
+        let stream = query.query(client).await.unwrap();
+        let scores = utils::get_rows(stream).await;
+        scores.into_iter().map(|row| row.to_entity()).collect()
     }
 }
