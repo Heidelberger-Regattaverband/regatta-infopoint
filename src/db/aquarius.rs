@@ -101,24 +101,20 @@ impl Aquarius {
     }
 
     pub async fn get_heats(&self, regatta_id: i32, filter: Option<String>) -> Vec<Heat> {
-        let start = Instant::now();
-
         if let Some(filter) = filter {
             debug!("Found filter={filter}");
             Heat::search(regatta_id, filter, &mut self.pool.get().await).await
         } else if let Some(heats) = self.caches.heats.get(&regatta_id).await {
             heats
         } else {
-            let heats: Vec<Heat> = Heat::query_all(regatta_id, &mut self.pool.get().await).await;
-            self.caches.heats.set(&regatta_id, &heats).await;
-            debug!("Query heats of regatta {} from DB: {:?}", regatta_id, start.elapsed());
-            heats
+            self._query_heats(regatta_id).await
         }
     }
 
-    pub async fn get_heat_registrations(&self, heat_id: i32) -> Vec<HeatRegistration> {
-        // 1. try to get heat_registrations from cache
-        if let Some(heat_regs) = self.caches.heat_registrations.get(&heat_id).await {
+    pub async fn get_heat_registrations(&self, heat_id: i32, opt_user: Option<Identity>) -> Vec<HeatRegistration> {
+        if opt_user.is_some() {
+            self._query_heat_registrations(heat_id).await
+        } else if let Some(heat_regs) = self.caches.heat_registrations.get(&heat_id).await {
             heat_regs
         } else {
             self._query_heat_registrations(heat_id).await
@@ -139,6 +135,14 @@ impl Aquarius {
         } else {
             self._query_club_registrations(regatta_id, club_id).await
         }
+    }
+
+    async fn _query_heats(&self, regatta_id: i32) -> Vec<Heat> {
+        let start = Instant::now();
+        let heats: Vec<Heat> = Heat::query_all(regatta_id, &mut self.pool.get().await).await;
+        self.caches.heats.set(&regatta_id, &heats).await;
+        debug!("Query heats of regatta {} from DB: {:?}", regatta_id, start.elapsed());
+        heats
     }
 
     async fn _query_heat_registrations(&self, heat_id: i32) -> Vec<HeatRegistration> {

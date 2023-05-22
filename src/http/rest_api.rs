@@ -69,9 +69,13 @@ async fn get_heats(path: Path<i32>, odata_params: Query<OData>, aquarius: Data<A
 }
 
 #[get("/heats/{id}/registrations")]
-async fn get_heat_registrations(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Vec<HeatRegistration>> {
+async fn get_heat_registrations(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Json<Vec<HeatRegistration>> {
     let heat_id = path.into_inner();
-    Json(aquarius.get_heat_registrations(heat_id).await)
+    Json(aquarius.get_heat_registrations(heat_id, opt_user).await)
 }
 
 #[get("/regattas/{id}/participating_clubs")]
