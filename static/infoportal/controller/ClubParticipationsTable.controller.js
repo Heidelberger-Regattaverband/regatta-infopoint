@@ -19,7 +19,7 @@ sap.ui.define([
       this.setViewModel(this._oRegistrationsModel, "registrations");
 
       this._oClubModel = new JSONModel();
-      this.setViewModel(this._ClubModel, "club");
+      this.setViewModel(this._oClubModel, "club");
 
       this.getRouter().getRoute("clubParticipations").attachPatternMatched(async (oEvent) => await this._onPatternMatched(oEvent), this);
     },
