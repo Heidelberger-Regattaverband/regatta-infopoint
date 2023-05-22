@@ -24,6 +24,8 @@ sap.ui.define([
       this.getOwnerComponent().setModel(this._oRegistrationsModel, "heatRegistrations");
 
       this.getRouter().getRoute("heats").attachMatched(async (_) => await this._loadHeatsModel(), this);
+
+      this.getEventBus().subscribe("heat", "refresh", async (_) => await this._loadHeatsModel(), this);
     },
 
     onSelectionChange: function (oEvent) {
@@ -58,7 +60,7 @@ sap.ui.define([
 
     _loadHeatsModel: async function () {
       await this.updateJSONModel(this._oHeatsModel, `/api/regattas/${this.getRegattaId()}/heats`, this.oTable);
-      this.applyFilters();
+      // this.applyFilters();
     },
 
     _loadRegistrationsModel: async function (sHeatId) {

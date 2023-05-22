@@ -78,13 +78,14 @@ impl Race {
         races.into_iter().map(|row| row.to_entity()).collect()
     }
 
-    pub fn query_single<'a>(race_id: i32) -> Query<'a> {
+    pub async fn query_single<'a>(race_id: i32, client: &mut AquariusClient<'_>) -> Race {
         let mut query = Query::new("SELECT o.*,
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count,
             (SELECT AVG(c.Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0) as Race_state
-            FROM Offer o
+            FROM  Offer o
             WHERE o.Offer_ID = @P1");
         query.bind(race_id);
-        query
+        let stream = query.query(client).await.unwrap();
+        utils::get_row(stream).await.to_entity()
     }
 }

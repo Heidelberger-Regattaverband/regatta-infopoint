@@ -1,5 +1,8 @@
-use super::{HeatResult, Registration, ToEntity, TryToEntity};
-use crate::db::tiberius::RowColumn;
+use crate::db::{
+    aquarius::AquariusClient,
+    model::{utils, HeatResult, Registration, ToEntity, TryToEntity},
+    tiberius::RowColumn,
+};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -25,15 +28,7 @@ impl ToEntity<HeatRegistration> for Row {
 }
 
 impl HeatRegistration {
-    // pub fn from_rows(rows: &Vec<Row>) -> Vec<HeatRegistration> {
-    //     let mut heat_regs: Vec<HeatRegistration> = Vec::with_capacity(rows.len());
-    //     for row in rows {
-    //         heat_regs.push(HeatRegistration::from_row(row));
-    //     }
-    //     heat_regs
-    // }
-
-    pub(crate) fn query_all<'a>(heat_id: i32) -> Query<'a> {
+    pub async fn query_all<'a>(heat_id: i32, client: &mut AquariusClient<'_>) -> Vec<HeatRegistration> {
         let mut query = Query::new("SELECT DISTINCT CompEntries.*, Entry.*, Label_Short, Result_Rank, Result_DisplayValue, Result_Delta, BoatClass_NumRowers, Club.*, Offer.*
             FROM CompEntries
             JOIN Comp                  ON CE_Comp_ID_FK = Comp_ID
@@ -44,9 +39,11 @@ impl HeatRegistration {
             FULL OUTER JOIN Label      ON EL_Label_ID_FK = Label_ID
             FULL OUTER JOIN Result     ON Result_CE_ID_FK = CE_ID
             JOIN Club                  ON Club_ID = Entry_OwnerClub_ID_FK
-            WHERE CE_Comp_ID_FK = @P1 AND (Result_SplitNr = 64 OR Result_SplitNr IS NULL)
+            WHERE CE_Comp_ID_FK = @P1 AND ((Result_SplitNr = 64 AND Comp_State >=4) OR (Result_SplitNr = 0 AND Comp_State < 3) OR (Comp_State < 2 AND Result_SplitNr IS NULL))
             AND EL_RoundFrom <= Comp_Round AND Comp_Round <= EL_RoundTo");
         query.bind(heat_id);
-        query
+        let stream = query.query(client).await.unwrap();
+        let crew = utils::get_rows(stream).await;
+        crew.into_iter().map(|row| row.to_entity()).collect()
     }
 }
