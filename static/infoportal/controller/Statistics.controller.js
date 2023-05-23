@@ -1,8 +1,9 @@
 sap.ui.define([
   "de/regatta_hd/infopoint/controller/Base.controller",
   "sap/ui/model/json/JSONModel",
-  "sap/m/MessageToast"
-], function (BaseController, JSONModel, MessageToast) {
+  "sap/m/MessageToast",
+  "../model/Formatter"
+], function (BaseController, JSONModel, MessageToast, Formatter) {
   "use strict";
 
   return BaseController.extend("de.regatta_hd.infopoint.controller.Statistics", {
@@ -60,8 +61,8 @@ sap.ui.define([
       const oldestWoman = oStatistics.athletes.oldestWoman;
       const oldestMan = oStatistics.athletes.oldestMan;
       const athletes = [];
-      athletes.push({ name: this.i18n("statistics.athletes.oldestWoman", undefined), value: oldestWoman.lastName + ", " + oldestWoman.firstName + " (" + oldestWoman.year + ", " + oldestWoman.club.longName + ")" });
-      athletes.push({ name: this.i18n("statistics.athletes.oldestMan", undefined), value: oldestMan.lastName + ", " + oldestMan.firstName + " (" + oldestMan.year + ", " + oldestMan.club.longName + ")" });
+      athletes.push({ name: this.i18n("statistics.athletes.oldestWoman", undefined), value: Formatter.athleteLabel(oldestWoman) });
+      athletes.push({ name: this.i18n("statistics.athletes.oldestMan", undefined), value: Formatter.athleteLabel(oldestMan) });
 
       // update model
       this._oStatisticsModel.setProperty("/registrations", registrations);

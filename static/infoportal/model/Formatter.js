@@ -108,12 +108,15 @@ sap.ui.define([
           }
     },
 
+    athleteLabel: function (oAthlete) {
+      return oAthlete.firstName + " " + oAthlete.lastName + " (" + oAthlete.year + ", " + oAthlete.club.abbreviation + ")"
+    },
+
     crewLabel: function (aCrew) {
       let label = "";
       if (aCrew) {
         for (const oCrew of aCrew) {
-          const athlete = oCrew.athlete;
-          label += (oCrew.cox ? "St" : oCrew.pos) + ": " + athlete.firstName + " " + athlete.lastName + " (" + athlete.year + ", " + athlete.club.abbreviation + "), ";
+          label += (oCrew.cox ? "St" : oCrew.pos) + ": " + Formatter.athleteLabel(oCrew.athlete) + ", ";
         }
         label = label.substring(0, label.length - 2);
       }
