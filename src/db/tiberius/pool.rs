@@ -53,10 +53,10 @@ impl TiberiusConnectionManager {
         config.authentication(AuthMethod::sql_server(db_user, db_password));
         if db_encryption {
             config.encryption(EncryptionLevel::Required);
+            config.trust_cert();
         } else {
             config.encryption(EncryptionLevel::NotSupported);
         }
-        config.trust_cert();
         config
     }
 
