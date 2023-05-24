@@ -2694,10 +2694,11 @@ dependencies = [
 
 [[package]]
 name = "wg"
-version = "0.3.1"
+version = "0.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc4a87eca0e149703202bc625506b908d94f620dfbfbad7aac3402b2868f0043"
+checksum = "f390449c16e0679435fc97a6b49d24e67f09dd05fea1de54db1b60902896d273"
 dependencies = [
+ "atomic-waker",
  "parking_lot",
  "triomphe",
 ]
