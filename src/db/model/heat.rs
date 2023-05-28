@@ -71,15 +71,6 @@ impl ToEntity<Heat> for Row {
 }
 
 impl Heat {
-    pub fn from_rows(rows: &Vec<Row>) -> Vec<Heat> {
-        let mut heats: Vec<Heat> = Vec::with_capacity(rows.len());
-        for row in rows {
-            let heat = row.to_entity();
-            heats.push(heat);
-        }
-        heats
-    }
-
     pub async fn query_all<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Heat> {
         let mut query = Query::new(
             "SELECT DISTINCT Comp.*, AgeClass.*, BoatClass.*, Referee.*, Offer.*
@@ -124,7 +115,7 @@ pub struct Kiosk {
     pub next: Vec<Heat>,
 }
 impl Kiosk {
-    pub(crate) fn query_finished<'a>(regatta_id: i32) -> Query<'a> {
+    pub async fn query_finished<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Heat> {
         let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, o.Offer_GroupMode,
             o.Offer_HRV_Seeded, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
             FROM Comp AS c
@@ -132,10 +123,12 @@ impl Kiosk {
             FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
             WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 4 ORDER BY c.Comp_DateTime DESC");
         query.bind(regatta_id);
-        query
+        let stream = query.query(client).await.unwrap();
+        let heats = utils::get_rows(stream).await;
+        heats.into_iter().map(|row| row.to_entity()).collect()
     }
 
-    pub(crate) fn query_next<'a>(regatta_id: i32) -> Query<'a> {
+    pub async fn query_next<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Heat> {
         let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, o.Offer_GroupMode,
             o.Offer_HRV_Seeded, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
             FROM Comp AS c
@@ -143,6 +136,8 @@ impl Kiosk {
             FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
             WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 1 AND c.Comp_Cancelled = 0 ORDER BY c.Comp_DateTime ASC");
         query.bind(regatta_id);
-        query
+        let stream = query.query(client).await.unwrap();
+        let heats = utils::get_rows(stream).await;
+        heats.into_iter().map(|row| row.to_entity()).collect()
     }
 }

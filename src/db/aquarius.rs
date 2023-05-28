@@ -11,7 +11,6 @@ use std::{
     env,
     time::{Duration, Instant},
 };
-use tiberius::{Query, Row};
 
 pub type AquariusClient<'a> = PooledConnection<'a, TiberiusConnectionManager>;
 
@@ -207,14 +206,12 @@ impl Aquarius {
     pub async fn query_kiosk(&self, regatta_id: i32) -> Kiosk {
         let start = Instant::now();
 
-        let finished = self._execute_query(Kiosk::query_finished(regatta_id)).await;
-        let next = self._execute_query(Kiosk::query_next(regatta_id)).await;
-        let finished_heats = Heat::from_rows(&finished);
-        let next_heats: Vec<Heat> = Heat::from_rows(&next);
+        let finished = Kiosk::query_finished(regatta_id, &mut self.pool.get().await).await;
+        let next = Kiosk::query_next(regatta_id, &mut self.pool.get().await).await;
 
         let kiosk = Kiosk {
-            finished: finished_heats,
-            next: next_heats,
+            finished,
+            next,
             running: Vec::with_capacity(0),
         };
         debug!("Query kiosk of regatta {} from DB: {:?}", regatta_id, start.elapsed());
@@ -259,30 +256,5 @@ impl Aquarius {
         self.caches.club.set(&club.id, &club).await;
         debug!("Query club {} from DB: {:?}", club_id, start.elapsed());
         club
-    }
-
-    async fn _execute_single_query(&self, query: Query<'_>) -> Row {
-        let mut client = self.pool.get().await;
-
-        query
-            .query(&mut client)
-            .await
-            .unwrap()
-            .into_row()
-            .await
-            .unwrap()
-            .unwrap()
-    }
-
-    async fn _execute_query(&self, query: Query<'_>) -> Vec<Row> {
-        let mut client = self.pool.get().await;
-
-        query
-            .query(&mut client)
-            .await
-            .unwrap()
-            .into_first_result()
-            .await
-            .unwrap()
     }
 }
