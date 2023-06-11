@@ -50,9 +50,9 @@ impl ToEntity<Race> for Row {
             seeded: seeded.unwrap_or_default(),
             age_class: self.try_to_entity(),
             boat_class: self.try_to_entity(),
-            state: self.try_get_column("Race_state").unwrap_or_default(),
+            state: self.try_get_column("Race_State").unwrap_or_default(),
             group_mode: self.get_column("Offer_GroupMode"),
-            date_time: self.try_get_column("Comp_DateTime"),
+            date_time: self.try_get_column("Race_DateTime"),
         }
     }
 }
@@ -71,7 +71,7 @@ impl Race {
     pub async fn query_all<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Race> {
         let mut query = Query::new("SELECT DISTINCT Offer.*, AgeClass.*, BoatClass.*,
             (SELECT Count(*) FROM Entry WHERE Entry_Race_ID_FK = Offer_ID AND Entry_CancelValue = 0) as Registrations_Count,
-            (SELECT AVG(Comp_State) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_state
+            (SELECT AVG(Comp_State) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_State
             FROM Offer
             JOIN AgeClass  ON Offer_AgeClass_ID_FK  = AgeClass_ID
             JOIN BoatClass ON Offer_BoatClass_ID_FK = BoatClass_ID
@@ -85,7 +85,7 @@ impl Race {
     pub async fn query_single<'a>(race_id: i32, client: &mut AquariusClient<'_>) -> Race {
         let mut query = Query::new("SELECT o.*,
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count,
-            (SELECT AVG(c.Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0) as Race_state
+            (SELECT AVG(c.Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0) as Race_State
             FROM  Offer o
             WHERE o.Offer_ID = @P1");
         query.bind(race_id);

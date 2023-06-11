@@ -165,6 +165,7 @@ sap.ui.define([
 
     weekdayLabel: function (iWeekday) {
       switch (iWeekday) {
+        case 0: return "So";
         case 1: return "Mo";
         case 2: return "Di";
         case 3: return "Mi";
@@ -174,6 +175,17 @@ sap.ui.define([
         case 7: return "So";
         default: return "";
       }
+    },
+
+    dayTimeIsoLabel: function (sDateTime) {
+      if (sDateTime) {
+        const oDateTime = new Date(sDateTime);
+        const sWeekday = Formatter.weekdayLabel(oDateTime.getDay());
+        const sHours = ('00' + oDateTime.getUTCHours()).slice(-2);
+        const sMinutes = ('00' + oDateTime.getUTCMinutes()).slice(-2);
+        return sWeekday + ", " + sHours + ":" + sMinutes;
+      }
+      return "";
     },
 
     dayTimeLabel: function (oHeat) {
