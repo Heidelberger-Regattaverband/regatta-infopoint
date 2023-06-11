@@ -3,6 +3,7 @@ use crate::db::{
     model::{utils, AgeClass, BoatClass, ToEntity, TryToEntity},
     tiberius::{RowColumn, TryRowColumn},
 };
+use chrono::{DateTime, Utc};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -25,6 +26,8 @@ pub struct Race {
     #[serde(skip_serializing_if = "Option::is_none")]
     boat_class: Option<BoatClass>,
     group_mode: u8,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    date_time: Option<DateTime<Utc>>,
 }
 
 impl ToEntity<Race> for Row {
@@ -49,6 +52,7 @@ impl ToEntity<Race> for Row {
             boat_class: self.try_to_entity(),
             state: self.try_get_column("Race_state").unwrap_or_default(),
             group_mode: self.get_column("Offer_GroupMode"),
+            date_time: self.try_get_column("Comp_DateTime"),
         }
     }
 }

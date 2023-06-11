@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use tiberius::{time::chrono::NaiveDateTime, Row};
 
 pub trait RowColumn<T>
@@ -105,6 +106,15 @@ impl TryRowColumn<NaiveDateTime> for Row {
     fn try_get_column(&self, col_name: &str) -> Option<NaiveDateTime> {
         match self.try_get::<NaiveDateTime, _>(col_name) {
             Ok(value) => value,
+            _ => None,
+        }
+    }
+}
+
+impl TryRowColumn<DateTime<Utc>> for Row {
+    fn try_get_column(&self, col_name: &str) -> Option<DateTime<Utc>> {
+        match self.try_get::<NaiveDateTime, _>(col_name) {
+            Ok(value) => Some(DateTime::from_utc(value.unwrap(), Utc)),
             _ => None,
         }
     }

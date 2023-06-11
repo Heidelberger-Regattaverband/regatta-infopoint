@@ -16,7 +16,7 @@ async-std = { version = "1", features = ["attributes"] }
 env_logger = "0"
 log = "0"
 dotenv = "0"
-chrono = "0"
+chrono = { version = "0", features = ["serde"] }
 
 # Web
 actix-web = { version = "4", features = ["rustls"] }
