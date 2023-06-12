@@ -1,4 +1,4 @@
-# regatta-infopoint
+# regatta-infoportal
 
 ## Installation on a new server
 
