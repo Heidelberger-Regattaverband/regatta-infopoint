@@ -7,13 +7,14 @@ use actix_files::Files;
 use actix_identity::IdentityMiddleware;
 use actix_session::{config::PersistentSession, storage::CookieSessionStore, SessionMiddleware};
 use actix_web::{
+    body::{BoxBody, EitherBody},
     cookie::{time::Duration, Key, SameSite},
-    dev::ServiceRequest,
+    dev::{ServiceFactory, ServiceRequest, ServiceResponse},
     web::{self, scope, Data},
     App, Error, HttpServer,
 };
 use actix_web_lab::middleware::RedirectHttps;
-use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
+use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder, StreamMetrics};
 use colored::Colorize;
 use log::{debug, info};
 use rustls::{Certificate, PrivateKey, ServerConfig};
@@ -34,26 +35,45 @@ const PATH_INFOPORTAL: &str = "/infoportal/";
 pub struct Server {}
 
 impl Server {
+    fn get_app(
+        https_public_port: u16,
+        secret_key: Key,
+        rl_max_requests: u64,
+        rl_interval: u64,
+    ) -> App<
+        impl ServiceFactory<
+            ServiceRequest,
+            Config = (),
+            Response = ServiceResponse<EitherBody<EitherBody<StreamMetrics<BoxBody>, ()>>>,
+            Error = Error,
+            InitError = (),
+        >,
+    > {
+        App::new()
+            // Install the identity framework first.
+            .wrap(IdentityMiddleware::default())
+            // adds support for HTTPS sessions
+            .wrap(Self::get_session_middleware(secret_key))
+            // collect metrics about requests and responses
+            .wrap(Self::get_prometeus())
+            // enable redirect from http -> https
+            .wrap(RedirectHttps::default().to_port(https_public_port))
+            // adds support for rate limiting of HTTP requests
+            .wrap(Self::get_rate_limiter(rl_max_requests, rl_interval))
+    }
+
     pub async fn start() -> io::Result<()> {
         let aquarius = create_app_data().await;
         let rustls_cfg = Self::get_rustls_config();
-        let (max_requests, interval) = Self::get_rate_limiter_config();
+        let (rl_max_requests, rl_interval) = Self::get_rate_limiter_config();
         let http_bind = Self::get_http_bind();
         let https_bind = Self::get_https_bind();
         let https_public_port = Self::get_https_public_port();
         let secret_key = Self::get_secret_key();
 
         let mut http_server = HttpServer::new(move || {
-            App::new()
-                // Install the identity framework first.
-                .wrap(IdentityMiddleware::default()) // adds support for HTTPS sessions
-                .wrap(Self::get_session_middleware(secret_key.clone())) // add rate limiter middleware
-                // adds support for rate limiting of HTTP requests
-                .wrap(Self::get_rate_limiter(max_requests, interval))
-                // collect metrics about requests and responses
-                .wrap(Self::get_prometeus())
-                // enable redirect from http -> https
-                .wrap(RedirectHttps::default().to_port(https_public_port))
+            // get app with some middlewares initialized
+            Self::get_app(https_public_port, secret_key.clone(), rl_max_requests, rl_interval)
                 .app_data(aquarius.clone())
                 .service(
                     scope(PATH_REST_API)
