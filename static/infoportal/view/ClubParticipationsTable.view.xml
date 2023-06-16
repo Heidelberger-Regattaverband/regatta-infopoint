@@ -44,36 +44,36 @@
               <cells>
                 <layout:VerticalLayout>
                   <Text text="{path: 'registrations>race/dateTime', formatter: '.formatter.dayTimeIsoLabel'}"
-                    visible="{=${registrations>cancelled}}" class="cancelled" />
+                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="cancelled" />
                   <Text text="{path: 'registrations>race/dateTime', formatter: '.formatter.dayTimeIsoLabel'}"
-                    visible="{=!${registrations>cancelled}}" />
+                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>
-                  <Text text="{path: 'registrations>race', formatter: '.formatter.nrRaceLabel'}" visible="{=${registrations>cancelled}}"
+                  <Text text="{path: 'registrations>race', formatter: '.formatter.nrRaceLabel'}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
                     class="boldCancelled sapUiTinyMarginBottom" />
-                  <Text text="{path: 'registrations>race', formatter: '.formatter.nrRaceLabel'}" visible="{=!${registrations>cancelled}}"
+                  <Text text="{path: 'registrations>race', formatter: '.formatter.nrRaceLabel'}" visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}"
                     class="bold sapUiTinyMarginBottom" />
 
-                  <Text text="{registrations>race/longLabel}" visible="{=${registrations>cancelled}}" class="cancelled" />
-                  <Text text="{registrations>race/longLabel}" visible="{=!${registrations>cancelled}}" />
+                  <Text text="{registrations>race/longLabel}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="cancelled" />
+                  <Text text="{registrations>race/longLabel}" visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>
-                  <Text text="{path: 'registrations>', formatter: '.formatter.boatLabel'}" visible="{=${registrations>cancelled}}"
+                  <Text text="{path: 'registrations>', formatter: '.formatter.boatLabel'}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
                     class="boldCancelled sapUiTinyMarginBottom" />
-                  <Text text="{path: 'registrations>', formatter: '.formatter.boatLabel'}" visible="{=!${registrations>cancelled}}"
+                  <Text text="{path: 'registrations>', formatter: '.formatter.boatLabel'}" visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}"
                     class="bold sapUiTinyMarginBottom" />
 
-                  <Text text="{path: 'registrations>crew', formatter: '.formatter.crewLabel'}" visible="{=${registrations>cancelled}}"
+                  <Text text="{path: 'registrations>crew', formatter: '.formatter.crewLabel'}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
                     class="cancelled" />
-                  <Text text="{path: 'registrations>crew', formatter: '.formatter.crewLabel'}" visible="{=!${registrations>cancelled}}" />
+                  <Text text="{path: 'registrations>crew', formatter: '.formatter.crewLabel'}" visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>
-                  <Text text="{registrations>club/shortName}" visible="{=${registrations>cancelled}}"
+                  <Text text="{registrations>club/shortName}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
                     class="cancelled" />
-                  <Text text="{registrations>club/shortName}" visible="{=!${registrations>cancelled}}" />
+                  <Text text="{registrations>club/shortName}" visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
                 </layout:VerticalLayout>
               </cells>
             </ColumnListItem>
