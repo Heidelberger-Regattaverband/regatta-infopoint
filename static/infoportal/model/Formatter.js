@@ -83,7 +83,7 @@ sap.ui.define([
 
     raceRegistrationHighlight: function (oRegistration) {
       // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
-      if (oRegistration.cancelled) {
+      if (oRegistration.cancelled || oRegistration.race.cancelled) {
         return IndicationColor.Indication02; // cancelled -> red
       } else {
         return IndicationColor.Indication04; // official -> green
