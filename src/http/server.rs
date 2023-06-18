@@ -29,7 +29,7 @@ use std::{
 /// Path to REST API
 pub const PATH_REST_API: &str = "/api";
 /// Path to Infoportal UI
-const PATH_INFOPORTAL: &str = "/infoportal/";
+const INFOPORTAL: &str = "infoportal";
 
 pub struct Server {}
 
@@ -91,13 +91,14 @@ impl Server {
                         .service(rest_api::logout),
                 )
                 .service(
-                    Files::new(PATH_INFOPORTAL, "./static/infoportal")
+                    Files::new(INFOPORTAL, "./static/".to_owned() + INFOPORTAL)
                         .index_file("index.html")
                         .use_last_modified(true)
                         .use_etag(true)
                         .redirect_to_slash_directory(),
                 )
-                .service(web::redirect("/", PATH_INFOPORTAL))
+                // redirect from / to /infoportal
+                .service(web::redirect("/", INFOPORTAL))
                 .service(rest_api::monitor)
         })
         // bind http
@@ -123,6 +124,7 @@ impl Server {
             // allow the cookie only from the current domain
             .cookie_same_site(SameSite::Strict)
             .session_lifecycle(PersistentSession::default().session_ttl(Duration::seconds(SECS_OF_WEEKEND)))
+            .cookie_path(INFOPORTAL.to_string())
             .build()
     }
 
