@@ -91,7 +91,7 @@ impl Server {
                         .service(rest_api::logout),
                 )
                 .service(
-                    Files::new(INFOPORTAL, &"./static/" + &INFOPORTAL)
+                    Files::new(INFOPORTAL, "./static/".to_owned() + INFOPORTAL)
                         .index_file("index.html")
                         .use_last_modified(true)
                         .use_etag(true)
