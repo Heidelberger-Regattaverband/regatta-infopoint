@@ -3,6 +3,7 @@ use crate::db::{
     model::{utils, Club, Crew, Race, ToEntity},
     tiberius::{RowColumn, TryRowColumn},
 };
+use chrono::{DateTime, Utc};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -24,6 +25,8 @@ pub struct Registration {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) crew: Option<Vec<Crew>>,
     pub(crate) race: Race,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    heat_date_time: Option<DateTime<Utc>>,
 }
 
 impl ToEntity<Registration> for Row {
@@ -43,6 +46,7 @@ impl ToEntity<Registration> for Row {
             club: self.to_entity(),
             crew: None,
             race: self.to_entity(),
+            heat_date_time: self.try_get_column("Heat_DateTime"),
         }
     }
 }
@@ -51,7 +55,8 @@ impl Registration {
     pub async fn query_of_club(regatta_id: i32, club_id: i32, client: &mut AquariusClient<'_>) -> Vec<Registration> {
         let mut query = Query::new(
             "SELECT DISTINCT Entry.*, Label_Short, oc.Club_ID, oc.Club_Abbr, oc.Club_UltraAbbr, oc.Club_City, Offer.*,
-            (SELECT MIN(Comp_DateTime) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID) as Race_DateTime
+            (SELECT MIN(Comp_DateTime) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID) as Race_DateTime,
+            (SELECT TOP 1 Comp_DateTime FROM Comp JOIN CompEntries ON CE_Comp_ID_FK = Comp_ID AND CE_Entry_ID_FK = Entry_ID) as Heat_DateTime
             FROM Club AS ac
             JOIN Athlet     ON Athlet_Club_ID_FK  = ac.Club_ID
             JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
