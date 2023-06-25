@@ -32,7 +32,8 @@ sap.ui.define([
             filters: [
               new Filter("club/shortName", FilterOperator.Contains, sQuery),
               new Filter("club/longName", FilterOperator.Contains, sQuery),
-              new Filter("club/city", FilterOperator.Contains, sQuery)
+              new Filter("club/city", FilterOperator.Contains, sQuery),
+              new Filter("club/abbreviation", FilterOperator.Contains, sQuery)
             ],
             and: false
           }))
