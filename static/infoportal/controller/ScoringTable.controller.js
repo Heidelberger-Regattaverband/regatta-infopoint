@@ -13,7 +13,7 @@ sap.ui.define([
 
       this._oTable = this.getView().byId("scoringTable");
 
-      this._oScoringModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/scoring`, this._oTable);
+      this._oScoringModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/calculateScoring`, this._oTable);
       this.setViewModel(this._oScoringModel, "scoring");
 
       this.getRouter().getRoute("scoring").attachMatched(async (_) => await this._loadScoringModel(), this);
