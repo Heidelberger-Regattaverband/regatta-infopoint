@@ -136,55 +136,6 @@ impl Aquarius {
         }
     }
 
-    async fn _query_heats(&self, regatta_id: i32) -> Vec<Heat> {
-        let start = Instant::now();
-        let heats: Vec<Heat> = Heat::query_all(regatta_id, &mut self.pool.get().await).await;
-        self.caches.heats.set(&regatta_id, &heats).await;
-        debug!("Query heats of regatta {} from DB: {:?}", regatta_id, start.elapsed());
-        heats
-    }
-
-    async fn _query_heat_registrations(&self, heat_id: i32) -> Vec<HeatRegistration> {
-        let start = Instant::now();
-        let mut heat_registrations: Vec<HeatRegistration> =
-            HeatRegistration::query_all(heat_id, &mut self.pool.get().await).await;
-        for heat_registration in &mut heat_registrations {
-            let crew = Crew::query_all(heat_registration.registration.id, &mut self.pool.get().await).await;
-            heat_registration.registration.crew = Some(crew);
-        }
-        self.caches.heat_registrations.set(&heat_id, &heat_registrations).await;
-        debug!("Query registrations of heat {} from DB: {:?}", heat_id, start.elapsed());
-        heat_registrations
-    }
-
-    async fn _query_participating_clubs(&self, regatta_id: i32) -> Vec<Club> {
-        let start = Instant::now();
-        let clubs = Club::query_participating(regatta_id, &mut self.pool.get().await).await;
-        self.caches.participating_clubs.set(&regatta_id, &clubs).await;
-        debug!(
-            "Query participating clubs of regatta {} from DB: {:?}",
-            regatta_id,
-            start.elapsed()
-        );
-        clubs
-    }
-
-    async fn _query_club_registrations(&self, regatta_id: i32, club_id: i32) -> Vec<Registration> {
-        let start = Instant::now();
-        let registrations = Registration::query_of_club(regatta_id, club_id, &mut self.pool.get().await).await;
-        self.caches
-            .club_registrations
-            .set(&(regatta_id, club_id), &registrations)
-            .await;
-        debug!(
-            "Query registrations of club {} for regatta {} from DB: {:?}",
-            club_id,
-            regatta_id,
-            start.elapsed()
-        );
-        registrations
-    }
-
     pub async fn query_scoring(&self, regatta_id: i32) -> Vec<Score> {
         let start = Instant::now();
         let scores = Score::query_all(regatta_id, &mut self.pool.get().await).await;
@@ -258,6 +209,55 @@ impl Aquarius {
         let registrations = Registration::query_for_race(race_id, &mut self.pool.get().await).await;
         self.caches.regs.set(&race_id, &registrations).await;
         debug!("Query registrations of race {} from DB: {:?}", race_id, start.elapsed());
+        registrations
+    }
+
+    async fn _query_heats(&self, regatta_id: i32) -> Vec<Heat> {
+        let start = Instant::now();
+        let heats: Vec<Heat> = Heat::query_all(regatta_id, &mut self.pool.get().await).await;
+        self.caches.heats.set(&regatta_id, &heats).await;
+        debug!("Query heats of regatta {} from DB: {:?}", regatta_id, start.elapsed());
+        heats
+    }
+
+    async fn _query_heat_registrations(&self, heat_id: i32) -> Vec<HeatRegistration> {
+        let start = Instant::now();
+        let mut heat_registrations: Vec<HeatRegistration> =
+            HeatRegistration::query_all(heat_id, &mut self.pool.get().await).await;
+        for heat_registration in &mut heat_registrations {
+            let crew = Crew::query_all(heat_registration.registration.id, &mut self.pool.get().await).await;
+            heat_registration.registration.crew = Some(crew);
+        }
+        self.caches.heat_registrations.set(&heat_id, &heat_registrations).await;
+        debug!("Query registrations of heat {} from DB: {:?}", heat_id, start.elapsed());
+        heat_registrations
+    }
+
+    async fn _query_participating_clubs(&self, regatta_id: i32) -> Vec<Club> {
+        let start = Instant::now();
+        let clubs = Club::query_participating(regatta_id, &mut self.pool.get().await).await;
+        self.caches.participating_clubs.set(&regatta_id, &clubs).await;
+        debug!(
+            "Query participating clubs of regatta {} from DB: {:?}",
+            regatta_id,
+            start.elapsed()
+        );
+        clubs
+    }
+
+    async fn _query_club_registrations(&self, regatta_id: i32, club_id: i32) -> Vec<Registration> {
+        let start = Instant::now();
+        let registrations = Registration::query_of_club(regatta_id, club_id, &mut self.pool.get().await).await;
+        self.caches
+            .club_registrations
+            .set(&(regatta_id, club_id), &registrations)
+            .await;
+        debug!(
+            "Query registrations of club {} for regatta {} from DB: {:?}",
+            club_id,
+            regatta_id,
+            start.elapsed()
+        );
         registrations
     }
 
