@@ -31,14 +31,14 @@ impl Club {
                 JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
                 JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
                 JOIN Event      ON Entry_Event_ID_FK  = Event_ID
-                WHERE Event_ID = e.Event_ID AND c.Club_ID = Club_ID AND Entry_CancelValue = 0
+                WHERE Event_ID = e.Event_ID AND c.Club_ID = Club_ID AND Entry_CancelValue = 0 AND Crew_RoundTo = 64
               ) AS Participations_Count) AS Participations_Count
             FROM Club AS c
-            JOIN Athlet ON Athlet_Club_ID_FK  = c.Club_ID
-            JOIN Crew   ON Crew_Athlete_ID_FK = Athlet_ID
-            JOIN Entry  ON Crew_Entry_ID_FK   = Entry_ID
+            JOIN Athlet ON Athlet_Club_ID_FK      = c.Club_ID
+            JOIN Crew   ON Crew_Athlete_ID_FK     = Athlet_ID
+            JOIN Entry  ON Crew_Entry_ID_FK       = Entry_ID
             JOIN Event AS e ON Entry_Event_ID_FK  = Event_ID
-            WHERE Event_ID = @P1
+            WHERE Event_ID = @P1 AND Crew_RoundTo = 64
             ORDER BY Club_City ASC",
         );
         query.bind(regatta_id);
