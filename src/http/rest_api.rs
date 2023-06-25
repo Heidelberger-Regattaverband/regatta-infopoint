@@ -138,6 +138,20 @@ async fn get_scoring(
     }
 }
 
+#[get("/regattas/{id}/calculateScoring")]
+async fn calculate_scoring(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
+    if opt_user.is_some() {
+        let regatta_id = path.into_inner();
+        Ok(Json(aquarius.calculate_scoring(regatta_id).await))
+    } else {
+        Err(ErrorUnauthorized("Unauthorized"))
+    }
+}
+
 #[post("/login")]
 async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<impl Responder, Error> {
     match User::authenticate(credentials.into_inner()) {
