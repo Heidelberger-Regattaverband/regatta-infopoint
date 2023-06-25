@@ -188,15 +188,6 @@ sap.ui.define([
       return "";
     },
 
-    dayTimeLabel: function (oHeat) {
-      if (oHeat) {
-        const sWeekday = Formatter.weekdayLabel(oHeat.weekday);
-        const aTime = oHeat.time.split(":");
-        return sWeekday + ", " + aTime[0] + ":" + aTime[1];
-      }
-      return "";
-    },
-
     timeLabel: function (sDate) {
       if (sDate) {
         const aDate = sDate.split(":");

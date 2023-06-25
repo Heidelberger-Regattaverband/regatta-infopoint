@@ -47,7 +47,7 @@ sap.ui.define([
     },
 
     _loadScoringModel: async function () {
-      await this.updateJSONModel(this._oScoringModel, `/api/regattas/${this.getRegattaId()}/scoring`, this._oTable)
+      await this.updateJSONModel(this._oScoringModel, `/api/regattas/${this.getRegattaId()}/calculateScoring`, this._oTable)
     }
 
   });

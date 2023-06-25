@@ -3,10 +3,10 @@ use crate::db::{
     model::{utils, Race, Referee, ToEntity, TryToEntity},
     tiberius::{RowColumn, TryRowColumn},
 };
-use chrono::Datelike;
+use chrono::{DateTime, Utc};
 use log::info;
 use serde::Serialize;
-use tiberius::{time::chrono::NaiveDateTime, Query, Row};
+use tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -18,12 +18,10 @@ pub struct Heat {
     group_value: i16,
     state: u8,
     cancelled: bool,
-    date: String,
-    time: String,
-    weekday: u8,
     race: Race,
     #[serde(skip_serializing_if = "Option::is_none")]
     referee: Option<Referee>,
+    date_time: Option<DateTime<Utc>>,
 }
 
 impl ToEntity<Heat> for Row {
@@ -36,36 +34,17 @@ impl ToEntity<Heat> for Row {
         let state: u8 = self.get_column("Comp_State");
         let cancelled: bool = self.get_column("Comp_Cancelled");
 
-        if let Some(date_time) = <Row as TryRowColumn<NaiveDateTime>>::try_get_column(self, "Comp_DateTime") {
-            Heat {
-                id,
-                race: self.to_entity(),
-                number,
-                round_code,
-                label,
-                group_value,
-                state,
-                cancelled,
-                date: date_time.date().to_string(),
-                time: date_time.time().to_string(),
-                weekday: date_time.weekday().number_from_monday() as u8,
-                referee: self.try_to_entity(),
-            }
-        } else {
-            Heat {
-                id,
-                race: self.to_entity(),
-                number,
-                round_code,
-                label,
-                group_value,
-                state,
-                cancelled,
-                date: String::new(),
-                time: String::new(),
-                weekday: 0,
-                referee: self.try_to_entity(),
-            }
+        Heat {
+            id,
+            race: self.to_entity(),
+            number,
+            round_code,
+            label,
+            group_value,
+            state,
+            cancelled,
+            date_time: self.try_get_column("Comp_DateTime"),
+            referee: self.try_to_entity(),
         }
     }
 }
