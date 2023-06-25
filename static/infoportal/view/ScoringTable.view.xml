@@ -33,6 +33,11 @@
                 <Text text="{i18n>common.club}" class="bold" wrapping="false" />
               </header>
             </Column>
+            <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.abbreviation}" class="bold" wrapping="false" />
+              </header>
+            </Column>
           </columns>
 
           <items>
@@ -41,6 +46,7 @@
                 <Text text="{scoring>rank}" />
                 <Text text="{path: 'scoring>points', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 3} }" />
                 <Text text="{scoring>club/longName}" />
+                <Text text="{scoring>club/abbreviation}" />
               </cells>
             </ColumnListItem>
           </items>

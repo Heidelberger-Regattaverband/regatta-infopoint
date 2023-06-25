@@ -41,8 +41,8 @@ impl Score {
 
     pub async fn calculate<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Self> {
         let mut query = Query::new(
-            "SELECT Club_ID, SUM(Points_Crew) as points, Club_Name, Club_City, Club_Abbr FROM
-              (SELECT Club_ID, Club_Name, Club_City, Club_Abbr,
+            "SELECT Club_ID, SUM(Points_Crew) as points, Club_Name, Club_City, Club_Abbr, Club_UltraAbbr FROM
+              (SELECT Club_ID, Club_Name, Club_City, Club_Abbr, Club_UltraAbbr,
                 (SELECT CASE WHEN Offer_HRV_Seeded = 1 AND Comp_HeatNumber = 1
                   THEN
                     ((RaceMode_LaneCount + 1 - CAST(Result_Rank AS float) + BoatClass_NumRowers) / BoatClass_NumRowers) * 2
@@ -62,7 +62,7 @@ impl Score {
               JOIN RaceMode    ON RaceMode_ID  = Offer_RaceMode_ID_FK
               WHERE Offer_Event_ID_FK = @P1 AND Crew_IsCox = 0 AND Result_SplitNr = 64 AND Crew_RoundTo = 64 AND Result_Rank > 0 AND Comp_Round = 64 AND Comp_State = 4
             ) as t
-            GROUP BY Club_ID, Club_City, Club_Name, Club_Abbr
+            GROUP BY Club_ID, Club_City, Club_Name, Club_Abbr, Club_UltraAbbr
             ORDER BY points DESC",
         );
         query.bind(regatta_id);
