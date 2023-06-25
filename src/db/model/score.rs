@@ -44,7 +44,13 @@ impl Score {
             "SELECT Club_ID, SUM(Points_Crew) as points, Club_Name, Club_City, Club_Abbr FROM
             (
             SELECT Club_ID, Club_Name, Club_City, Club_Abbr,
-              (SELECT (RaceMode_LaneCount + 1 - CAST(Result_Rank AS float) + BoatClass_NumRowers) / BoatClass_NumRowers) as Points_Crew
+              (SELECT CASE WHEN Offer_HRV_Seeded = 1 AND Comp_HeatNumber = 1
+                THEN
+                  ((RaceMode_LaneCount + 1 - CAST(Result_Rank AS float) + BoatClass_NumRowers) / BoatClass_NumRowers) * 2
+                ELSE 
+                  (RaceMode_LaneCount + 1 - CAST(Result_Rank AS float) + BoatClass_NumRowers) / BoatClass_NumRowers
+                END
+              ) as Points_Crew
               FROM Result
               JOIN CompEntries ON Result_CE_ID_FK = CE_ID
               JOIN Comp        ON CE_Comp_ID_FK   = Comp_ID
@@ -55,7 +61,7 @@ impl Score {
               JOIN Offer       ON Comp_Race_ID_FK = Offer_ID
               JOIN BoatClass   ON Offer_BoatClass_ID_FK = BoatClass_ID
               JOIN RaceMode    ON Offer_RaceMode_ID_FK  = RaceMode_ID
-              WHERE Offer_Event_ID_FK = @P1 AND Crew_IsCox = 0 AND Result_SplitNr = 64 AND Crew_RoundTo = 64 AND Result_Rank > 0
+              WHERE Offer_Event_ID_FK = @P1 AND Crew_IsCox = 0 AND Result_SplitNr = 64 AND Crew_RoundTo = 64 AND Result_Rank > 0 AND Comp_Round = 64
             ) as t
             GROUP BY Club_ID, Club_City, Club_Name, Club_Abbr
             ORDER BY points DESC",
