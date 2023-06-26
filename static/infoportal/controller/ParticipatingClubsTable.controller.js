@@ -43,8 +43,11 @@ sap.ui.define([
     },
 
     onRefreshButtonPress: async function (oEvent) {
+      const oSource = oEvent.getSource();
+      oSource.setEnabled(false);
       await this._loadModel();
       MessageToast.show(this.i18n("msg.dataUpdated", undefined));
+      oSource.setEnabled(true);
     },
 
     onItemPress: function (oEvent) {
