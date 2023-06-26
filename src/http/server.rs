@@ -84,7 +84,6 @@ impl Server {
                         .service(rest_api::get_kiosk)
                         .service(rest_api::get_registrations)
                         .service(rest_api::get_heat_registrations)
-                        .service(rest_api::get_scoring)
                         .service(rest_api::calculate_scoring)
                         .service(rest_api::get_statistics)
                         .service(rest_api::login)
