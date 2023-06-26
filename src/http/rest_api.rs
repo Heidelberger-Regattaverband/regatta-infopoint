@@ -124,20 +124,6 @@ async fn get_kiosk(
     }
 }
 
-#[get("/regattas/{id}/scoring")]
-async fn get_scoring(
-    path: Path<i32>,
-    aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
-) -> Result<impl Responder, Error> {
-    if opt_user.is_some() {
-        let regatta_id = path.into_inner();
-        Ok(Json(aquarius.query_scoring(regatta_id).await))
-    } else {
-        Err(ErrorUnauthorized("Unauthorized"))
-    }
-}
-
 #[get("/regattas/{id}/calculateScoring")]
 async fn calculate_scoring(
     path: Path<i32>,

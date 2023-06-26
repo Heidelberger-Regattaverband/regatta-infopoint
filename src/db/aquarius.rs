@@ -136,13 +136,6 @@ impl Aquarius {
         }
     }
 
-    pub async fn query_scoring(&self, regatta_id: i32) -> Vec<Score> {
-        let start = Instant::now();
-        let scores = Score::query_all(regatta_id, &mut self.pool.get().await).await;
-        debug!("Query scoring of regatta {} from DB: {:?}", regatta_id, start.elapsed());
-        scores
-    }
-
     pub async fn calculate_scoring(&self, regatta_id: i32) -> Vec<Score> {
         let start = Instant::now();
         let scores = Score::calculate(regatta_id, &mut self.pool.get().await).await;

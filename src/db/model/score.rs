@@ -25,20 +25,6 @@ impl ToEntity<Score> for Row {
 }
 
 impl Score {
-    pub async fn query_all<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Self> {
-        let mut query = Query::new(
-            "SELECT s.rank, s.points, c.Club_ID, c.Club_Name, c.Club_Abbr, c.Club_City
-            FROM HRV_Score AS s
-            JOIN Club      AS c ON s.club_id = c.Club_ID
-            WHERE s.event_id = @P1
-            ORDER BY s.rank ASC",
-        );
-        query.bind(regatta_id);
-        let stream = query.query(client).await.unwrap();
-        let scores = utils::get_rows(stream).await;
-        scores.into_iter().map(|row| row.to_entity()).collect()
-    }
-
     pub async fn calculate<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Self> {
         let mut query = Query::new(
             "SELECT Club_ID, SUM(Points_Crew) as points, Club_Name, Club_City, Club_Abbr, Club_UltraAbbr FROM
