@@ -1,4 +1,3 @@
-use async_std::net::TcpStream;
 use async_trait::async_trait;
 use bb8::{ManageConnection, Pool, PooledConnection, State};
 use colored::Colorize;
@@ -8,6 +7,8 @@ use std::{
     sync::{Arc, Mutex},
 };
 use tiberius::{error::Error, AuthMethod, Client, Config, EncryptionLevel};
+use tokio::net::TcpStream;
+use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
 
 #[derive(Debug)]
 pub struct TiberiusConnectionManager {
@@ -69,13 +70,13 @@ impl TiberiusConnectionManager {
 
 #[async_trait]
 impl ManageConnection for TiberiusConnectionManager {
-    type Connection = Client<TcpStream>;
+    type Connection = Client<Compat<TcpStream>>;
     type Error = Error;
 
     async fn connect(&self) -> Result<Self::Connection, Self::Error> {
         let tcp = TcpStream::connect(self.config.get_addr()).await?;
         tcp.set_nodelay(true)?;
-        let result = Client::connect(self.config.clone(), tcp).await;
+        let result = Client::connect(self.config.clone(), tcp.compat_write()).await;
         self.inc_count();
         result
     }
