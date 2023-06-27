@@ -1,9 +1,12 @@
-use super::{Race, Referee, ToEntity, TryToEntity};
-use crate::db::tiberius::RowColumn;
-use chrono::Datelike;
+use crate::db::{
+    aquarius::AquariusClient,
+    model::{utils, Race, Referee, ToEntity, TryToEntity},
+    tiberius::{RowColumn, TryRowColumn},
+};
+use chrono::{DateTime, Utc};
 use log::info;
 use serde::Serialize;
-use tiberius::{time::chrono::NaiveDateTime, Query, Row};
+use tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -15,60 +18,56 @@ pub struct Heat {
     group_value: i16,
     state: u8,
     cancelled: bool,
-    date: String,
-    time: String,
-    weekday: u8,
     race: Race,
     #[serde(skip_serializing_if = "Option::is_none")]
     referee: Option<Referee>,
+    date_time: Option<DateTime<Utc>>,
 }
 
 impl ToEntity<Heat> for Row {
     fn to_entity(&self) -> Heat {
-        let date_time: NaiveDateTime = self.get_column("Comp_DateTime");
+        let id: i32 = self.get_column("Comp_ID");
+        let number: i16 = self.get_column("Comp_Number");
+        let round_code: String = self.get_column("Comp_RoundCode");
+        let label: String = self.get_column("Comp_Label");
+        let group_value: i16 = self.get_column("Comp_GroupValue");
+        let state: u8 = self.get_column("Comp_State");
+        let cancelled: bool = self.get_column("Comp_Cancelled");
 
         Heat {
-            id: self.get_column("Comp_ID"),
+            id,
             race: self.to_entity(),
-            number: self.get_column("Comp_Number"),
-            round_code: self.get_column("Comp_RoundCode"),
-            label: self.get_column("Comp_Label"),
-            group_value: self.get_column("Comp_GroupValue"),
-            state: self.get_column("Comp_State"),
-            cancelled: self.get_column("Comp_Cancelled"),
-            date: date_time.date().to_string(),
-            time: date_time.time().to_string(),
-            weekday: date_time.weekday().number_from_monday() as u8,
+            number,
+            round_code,
+            label,
+            group_value,
+            state,
+            cancelled,
+            date_time: self.try_get_column("Comp_DateTime"),
             referee: self.try_to_entity(),
         }
     }
 }
 
 impl Heat {
-    pub fn from_rows(rows: &Vec<Row>) -> Vec<Heat> {
-        let mut heats: Vec<Heat> = Vec::with_capacity(rows.len());
-        for row in rows {
-            let heat = row.to_entity();
-            heats.push(heat);
-        }
-        heats
-    }
-
-    pub(crate) fn query_all<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT c.*, ac.*, bc.*, r.*,
-            o.Offer_HRV_Seeded, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
-            FROM Comp AS c
-            FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
-            FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
-            JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
-            FULL OUTER JOIN CompReferee AS cr ON cr.CompReferee_Comp_ID_FK = c.Comp_ID
-            FULL OUTER JOIN Referee AS r ON r.Referee_ID = cr.CompReferee_Referee_ID_FK
-            WHERE c.Comp_Event_ID_FK = @P1 ORDER BY c.Comp_DateTime ASC");
+    pub async fn query_all<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Heat> {
+        let mut query = Query::new(
+            "SELECT DISTINCT Comp.*, AgeClass.*, BoatClass.*, Referee.*, Offer.*
+            FROM Comp
+            FULL OUTER JOIN Offer       ON Offer_ID                  = Comp_Race_ID_FK
+            FULL OUTER JOIN AgeClass    ON Offer_AgeClass_ID_FK      = AgeClass_ID
+            JOIN BoatClass              ON Offer_BoatClass_ID_FK     = BoatClass_ID
+            FULL OUTER JOIN CompReferee ON CompReferee_Comp_ID_FK    = Comp_ID
+            FULL OUTER JOIN Referee     ON CompReferee_Referee_ID_FK = Referee_ID
+            WHERE Comp_Event_ID_FK = @P1 ORDER BY Comp_DateTime ASC",
+        );
         query.bind(regatta_id);
-        query
+        let stream = query.query(client).await.unwrap();
+        let heats = utils::get_rows(stream).await;
+        heats.into_iter().map(|row| row.to_entity()).collect()
     }
 
-    pub(crate) fn search<'a>(regatta_id: i32, filter: String) -> Query<'a> {
+    pub async fn search<'a>(regatta_id: i32, filter: String, client: &mut AquariusClient<'_>) -> Vec<Heat> {
         let sql = format!("SELECT DISTINCT c.*, ac.*, bc.*, r.*,
           o.Offer_HRV_Seeded, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
           FROM Comp AS c
@@ -82,7 +81,9 @@ impl Heat {
         info!("{}", sql);
         let mut query = Query::new(sql);
         query.bind(regatta_id);
-        query
+        let stream = query.query(client).await.unwrap();
+        let heats = utils::get_rows(stream).await;
+        heats.into_iter().map(|row| row.to_entity()).collect()
     }
 }
 
@@ -93,25 +94,29 @@ pub struct Kiosk {
     pub next: Vec<Heat>,
 }
 impl Kiosk {
-    pub(crate) fn query_finished<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*,
+    pub async fn query_finished<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Heat> {
+        let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, o.Offer_GroupMode,
             o.Offer_HRV_Seeded, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
             FROM Comp AS c
-            FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
+            FULL OUTER JOIN Offer AS o     ON o.Offer_ID = c.Comp_Race_ID_FK
             FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
             WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 4 ORDER BY c.Comp_DateTime DESC");
         query.bind(regatta_id);
-        query
+        let stream = query.query(client).await.unwrap();
+        let heats = utils::get_rows(stream).await;
+        heats.into_iter().map(|row| row.to_entity()).collect()
     }
 
-    pub(crate) fn query_next<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*,
+    pub async fn query_next<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Heat> {
+        let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, o.Offer_GroupMode,
             o.Offer_HRV_Seeded, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
             FROM Comp AS c
-            FULL OUTER JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
+            FULL OUTER JOIN Offer AS o     ON o.Offer_ID = c.Comp_Race_ID_FK
             FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
             WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 1 AND c.Comp_Cancelled = 0 ORDER BY c.Comp_DateTime ASC");
         query.bind(regatta_id);
-        query
+        let stream = query.query(client).await.unwrap();
+        let heats = utils::get_rows(stream).await;
+        heats.into_iter().map(|row| row.to_entity()).collect()
     }
 }

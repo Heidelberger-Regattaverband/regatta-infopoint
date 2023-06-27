@@ -17,13 +17,15 @@ sap.ui.define([
 
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this._oRacesModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
+      this._oRacesModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/races`, this.oTable);
       this.setViewModel(this._oRacesModel, "races");
 
       this._oRegistrationsModel = new JSONModel();
       this.getOwnerComponent().setModel(this._oRegistrationsModel, "raceRegistrations");
 
       this.getRouter().getRoute("races").attachMatched(async (_) => await this._loadRacesModel(), this);
+
+      this.getEventBus().subscribe("race", "refresh", async (_) => await this._loadRacesModel(), this);
     },
 
     onItemPress: function (oEvent) {
@@ -45,9 +47,9 @@ sap.ui.define([
     },
 
     onNavBack: function () {
+      this.navBack("startpage");
       // reduce table growing threshold to improve performance next time table is shown
       this.oTable.setGrowingThreshold(30);
-      this.navBack("startpage");
     },
 
     onFilterButtonPress: async function (oEvent) {
@@ -63,17 +65,20 @@ sap.ui.define([
     },
 
     onRefreshButtonPress: async function (oEvent) {
+      const oSource = oEvent.getSource();
+      oSource.setEnabled(false);
       await this._loadRacesModel();
       MessageToast.show(this.i18n("msg.dataUpdated", undefined));
+      oSource.setEnabled(true);
     },
 
     _loadRacesModel: async function () {
-      await this.updateJSONModel(this._oRacesModel, "/api/regattas/" + this.getRegattaId() + "/races", this.oTable);
-      this.applyFilters();
+      await this.updateJSONModel(this._oRacesModel, `/api/regattas/${this.getRegattaId()}/races`, this.oTable);
+      // this.applyFilters(); // causes the table to scroll to the beginning
     },
 
     _loadRegistrationsModel: async function (sRaceId) {
-      await this.updateJSONModel(this._oRegistrationsModel, "/api/races/" + sRaceId + "/registrations", undefined);
+      await this.updateJSONModel(this._oRegistrationsModel, `/api/races/${sRaceId}/registrations`, undefined);
     },
 
     onItemChanged: function (oItem) {

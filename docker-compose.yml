@@ -24,7 +24,6 @@ services:
       - HTTPS_PORT=${HTTPS_PORT}
       - HTTPS_CERT_PATH=/data/ssl/cert.pem
       - HTTPS_KEY_PATH=/data/ssl/privkey.pem
-      - HTTPS_PUBLIC_PORT=443
       - RUST_LOG=${RUST_LOG}
     volumes:
       - '/etc/letsencrypt/live/8e835d.online-server.cloud/cert.pem:/data/ssl/cert.pem:ro'

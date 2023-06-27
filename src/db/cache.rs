@@ -1,4 +1,4 @@
-use super::model::{Heat, HeatRegistration, Race, Regatta, Registration};
+use super::model::{Club, Heat, HeatRegistration, Race, Regatta, Registration};
 use async_trait::async_trait;
 use std::{hash::Hash, time::Duration};
 use stretto::AsyncCache;
@@ -58,28 +58,44 @@ where
 }
 
 pub(super) struct Caches {
+    // caches with entries per regatta
     pub regatta: Cache<i32, Regatta>,
     pub races: Cache<i32, Vec<Race>>,
-    pub race: Cache<i32, Race>,
-    pub regs: Cache<i32, Vec<Registration>>,
     pub heats: Cache<i32, Vec<Heat>>,
-    pub heat_regs: Cache<i32, Vec<HeatRegistration>>,
+    pub participating_clubs: Cache<i32, Vec<Club>>,
+
+    // caches with entries per race
+    pub race: Cache<i32, Race>,
+    pub club: Cache<i32, Club>,
+    pub club_registrations: Cache<(i32, i32), Vec<Registration>>,
+    pub regs: Cache<i32, Vec<Registration>>,
+
+    // caches with entries per heat
+    pub heat_registrations: Cache<i32, Vec<HeatRegistration>>,
 }
 
 impl Caches {
     /// Creates a new `Cache`.
-    pub(super) fn new(ttl: Duration) -> Self {
-        const MAX_REGATTAS_COUNT: usize = 5;
+    pub fn new(ttl: Duration) -> Self {
+        const MAX_REGATTAS_COUNT: usize = 3;
         const MAX_RACES_COUNT: usize = 200;
         const MAX_HEATS_COUNT: usize = 350;
 
         Caches {
+            // caches with entries per regatta
             regatta: Cache::new(MAX_REGATTAS_COUNT, ttl),
             races: Cache::new(MAX_REGATTAS_COUNT, ttl),
-            race: Cache::new(MAX_RACES_COUNT, ttl),
-            regs: Cache::new(MAX_RACES_COUNT, ttl),
             heats: Cache::new(MAX_REGATTAS_COUNT, ttl),
-            heat_regs: Cache::new(MAX_HEATS_COUNT, ttl),
+            participating_clubs: Cache::new(MAX_REGATTAS_COUNT, ttl),
+
+            // caches with entries per race
+            race: Cache::new(MAX_RACES_COUNT, ttl),
+            club: Cache::new(MAX_RACES_COUNT, ttl),
+            club_registrations: Cache::new(MAX_RACES_COUNT, ttl),
+            regs: Cache::new(MAX_RACES_COUNT, ttl),
+
+            // ccaches with entries per heat
+            heat_registrations: Cache::new(MAX_HEATS_COUNT, ttl),
         }
     }
 }

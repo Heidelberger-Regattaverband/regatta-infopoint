@@ -7,13 +7,13 @@ use actix_files::Files;
 use actix_identity::IdentityMiddleware;
 use actix_session::{config::PersistentSession, storage::CookieSessionStore, SessionMiddleware};
 use actix_web::{
+    body::{BoxBody, EitherBody},
     cookie::{time::Duration, Key, SameSite},
-    dev::ServiceRequest,
+    dev::{ServiceFactory, ServiceRequest, ServiceResponse},
     web::{self, scope, Data},
     App, Error, HttpServer,
 };
-use actix_web_lab::middleware::RedirectHttps;
-use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
+use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder, StreamMetrics};
 use colored::Colorize;
 use log::{debug, info};
 use rustls::{Certificate, PrivateKey, ServerConfig};
@@ -29,36 +29,53 @@ use std::{
 /// Path to REST API
 pub const PATH_REST_API: &str = "/api";
 /// Path to Infoportal UI
-const PATH_INFOPORTAL: &str = "/infoportal/";
+const INFOPORTAL: &str = "infoportal";
 
 pub struct Server {}
 
 impl Server {
+    fn get_app(
+        secret_key: Key,
+        rl_max_requests: u64,
+        rl_interval: u64,
+    ) -> App<
+        impl ServiceFactory<
+            ServiceRequest,
+            Config = (),
+            Response = ServiceResponse<EitherBody<StreamMetrics<BoxBody>>>,
+            Error = Error,
+            InitError = (),
+        >,
+    > {
+        App::new()
+            // Install the identity framework first.
+            .wrap(IdentityMiddleware::default())
+            // adds support for HTTPS sessions
+            .wrap(Self::get_session_middleware(secret_key))
+            // collect metrics about requests and responses
+            .wrap(Self::get_prometeus())
+            // adds support for rate limiting of HTTP requests
+            .wrap(Self::get_rate_limiter(rl_max_requests, rl_interval))
+    }
+
     pub async fn start() -> io::Result<()> {
         let aquarius = create_app_data().await;
         let rustls_cfg = Self::get_rustls_config();
-        let (max_requests, interval) = Self::get_rate_limiter_config();
+        let (rl_max_requests, rl_interval) = Self::get_rate_limiter_config();
         let http_bind = Self::get_http_bind();
         let https_bind = Self::get_https_bind();
-        let https_public_port = Self::get_https_public_port();
         let secret_key = Self::get_secret_key();
 
         let mut http_server = HttpServer::new(move || {
-            App::new()
-                // Install the identity framework first.
-                .wrap(IdentityMiddleware::default()) // adds support for HTTPS sessions
-                .wrap(Self::get_session_middleware(secret_key.clone())) // add rate limiter middleware
-                // adds support for rate limiting of HTTP requests
-                .wrap(Self::get_rate_limiter(max_requests, interval))
-                // collect metrics about requests and responses
-                .wrap(Self::get_prometeus())
-                // enable redirect from http -> https
-                .wrap(RedirectHttps::default().to_port(https_public_port))
+            // get app with some middlewares initialized
+            Self::get_app(secret_key.clone(), rl_max_requests, rl_interval)
                 .app_data(aquarius.clone())
                 .service(
                     scope(PATH_REST_API)
+                        .service(rest_api::get_club)
                         .service(rest_api::get_regattas)
-                        .service(rest_api::get_clubs)
+                        .service(rest_api::get_club_registrations)
+                        .service(rest_api::get_participating_clubs)
                         .service(rest_api::get_active_regatta)
                         .service(rest_api::get_regatta)
                         .service(rest_api::get_race)
@@ -67,20 +84,21 @@ impl Server {
                         .service(rest_api::get_kiosk)
                         .service(rest_api::get_registrations)
                         .service(rest_api::get_heat_registrations)
-                        .service(rest_api::get_scoring)
+                        .service(rest_api::calculate_scoring)
                         .service(rest_api::get_statistics)
                         .service(rest_api::login)
                         .service(rest_api::identity)
                         .service(rest_api::logout),
                 )
                 .service(
-                    Files::new(PATH_INFOPORTAL, "./static/infoportal")
+                    Files::new(INFOPORTAL, "./static/".to_owned() + INFOPORTAL)
                         .index_file("index.html")
                         .use_last_modified(true)
                         .use_etag(true)
                         .redirect_to_slash_directory(),
                 )
-                .service(web::redirect("/", PATH_INFOPORTAL))
+                // redirect from / to /infoportal
+                .service(web::redirect("/", INFOPORTAL))
                 .service(rest_api::monitor)
         })
         // bind http
@@ -106,6 +124,7 @@ impl Server {
             // allow the cookie only from the current domain
             .cookie_same_site(SameSite::Strict)
             .session_lifecycle(PersistentSession::default().session_ttl(Duration::seconds(SECS_OF_WEEKEND)))
+            .cookie_path(INFOPORTAL.to_string())
             .build()
     }
 
@@ -221,16 +240,6 @@ impl Server {
         );
 
         (host, port)
-    }
-
-    fn get_https_public_port() -> u16 {
-        let public_port: u16 = env::var("HTTPS_PUBLIC_PORT")
-            .expect("env variable `HTTPS_PUBLIC_PORT` should be set")
-            .parse()
-            .unwrap();
-        debug!("HTTPS public port is: {}", public_port.to_string().bold());
-
-        public_port
     }
 }
 

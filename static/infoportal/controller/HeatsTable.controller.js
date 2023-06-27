@@ -17,13 +17,15 @@ sap.ui.define([
 
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this._oHeatsModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
+      this._oHeatsModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/heats`, this.oTable);
       this.setViewModel(this._oHeatsModel, "heats");
 
       this._oRegistrationsModel = new JSONModel();
       this.getOwnerComponent().setModel(this._oRegistrationsModel, "heatRegistrations");
 
       this.getRouter().getRoute("heats").attachMatched(async (_) => await this._loadHeatsModel(), this);
+
+      this.getEventBus().subscribe("heat", "refresh", async (_) => await this._loadHeatsModel(), this);
     },
 
     onSelectionChange: function (oEvent) {
@@ -44,24 +46,28 @@ sap.ui.define([
       }
     },
 
-    onNavBack: function () {
+    onNavBack: async function () {
+      await this.navBack("startpage");
+
       // reduce table growing threshold to improve performance next time table is shown
       this.oTable.setGrowingThreshold(30);
-      this.navBack("startpage");
     },
 
     onRefreshButtonPress: async function (oEvent) {
+      const oSource = oEvent.getSource();
+      oSource.setEnabled(false);
       await this._loadHeatsModel();
       MessageToast.show(this.i18n("msg.dataUpdated", undefined));
+      oSource.setEnabled(true);
     },
 
     _loadHeatsModel: async function () {
-      await this.updateJSONModel(this._oHeatsModel, "/api/regattas/" + this.getRegattaId() + "/heats", this.oTable);
-      this.applyFilters();
+      await this.updateJSONModel(this._oHeatsModel, `/api/regattas/${this.getRegattaId()}/heats`, this.oTable);
+      // this.applyFilters();
     },
 
     _loadRegistrationsModel: async function (sHeatId) {
-      await this.updateJSONModel(this._oRegistrationsModel, "/api/heats/" + sHeatId + "/registrations", undefined);
+      await this.updateJSONModel(this._oRegistrationsModel, `/api/heats/${sHeatId}/registrations`, undefined);
     },
 
     onItemChanged: function (oItem) {

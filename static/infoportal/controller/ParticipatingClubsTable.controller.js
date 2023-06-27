@@ -6,17 +6,17 @@ sap.ui.define([
 ], function (BaseController, Filter, FilterOperator, MessageToast) {
   "use strict";
 
-  return BaseController.extend("de.regatta_hd.infopoint.controller.ScoringTable", {
+  return BaseController.extend("de.regatta_hd.infopoint.controller.ParticipatingClubsTable", {
 
     onInit: async function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
       this._oTable = this.getView().byId("clubsTable");
 
-      this._oScoringModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/clubs", this._oTable);
-      this.setViewModel(this._oScoringModel, "clubs");
+      this._oParticipatingClubs = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/participating_clubs`, this._oTable);
+      this.setViewModel(this._oParticipatingClubs, "clubs");
 
-      this.getRouter().getRoute("clubs").attachMatched(async (_) => await this._loadModel(), this);
+      this.getRouter().getRoute("participatingClubs").attachMatched(async (_) => await this._loadModel(), this);
     },
 
     onNavBack: function () {
@@ -43,12 +43,24 @@ sap.ui.define([
     },
 
     onRefreshButtonPress: async function (oEvent) {
+      const oSource = oEvent.getSource();
+      oSource.setEnabled(false);
       await this._loadModel();
       MessageToast.show(this.i18n("msg.dataUpdated", undefined));
+      oSource.setEnabled(true);
+    },
+
+    onItemPress: function (oEvent) {
+      const oSelectedItem = oEvent.getParameter("listItem");
+      if (oSelectedItem) {
+        const oBindingCtx = oSelectedItem.getBindingContext("clubs");
+        const oClub = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
+        this.getRouter().navTo("clubParticipations", { clubId: oClub.id }, false /* history*/);
+      }
     },
 
     _loadModel: async function () {
-      await this.updateJSONModel(this._oScoringModel, "/api/regattas/" + this.getRegattaId() + "/clubs", this._oTable)
+      await this.updateJSONModel(this._oParticipatingClubs, `/api/regattas/${this.getRegattaId()}/participating_clubs`, this._oTable)
     }
 
   });

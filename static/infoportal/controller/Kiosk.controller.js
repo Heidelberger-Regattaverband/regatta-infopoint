@@ -44,15 +44,25 @@ sap.ui.define([
       this._oHeatFinishedModel.setData(oData.finished[this._iIndexFinished]);
       this._oHeatNextModel.setData(oData.next[this._iIndexNext]);
 
-      await Promise.all([this._loadRegsFinishedModel(oData.finished[this._iIndexFinished].id), this._loadRegsNextModel(oData.next[this._iIndexNext].id)]);
-
-      this._iIndexFinished += 1;
-      this._iIndexNext += 1;
-      if (this._iIndexFinished >= this._oKioskModel.getData().finished.length) {
-        this._iIndexFinished = 0;
+      const aPromises = [];
+      if (oData.finished && oData.finished.length > 0) {
+        aPromises.push(this._loadRegsFinishedModel(oData.finished[this._iIndexFinished].id));
       }
-      if (this._iIndexNext >= this._oKioskModel.getData().next.length) {
-        this._iIndexNext = 0;
+      if (oData.next && oData.next.length > 0) {
+        aPromises.push(this._loadRegsNextModel(oData.next[this._iIndexNext].id));
+      }
+
+      if (aPromises.length > 0) {
+        await Promise.all(aPromises);
+
+        this._iIndexFinished += 1;
+        this._iIndexNext += 1;
+        if (this._iIndexFinished >= this._oKioskModel.getData().finished.length) {
+          this._iIndexFinished = 0;
+        }
+        if (this._iIndexNext >= this._oKioskModel.getData().next.length) {
+          this._iIndexNext = 0;
+        }
       }
     },
 
@@ -86,11 +96,11 @@ sap.ui.define([
     },
 
     _getKioskUrl: function () {
-      return "/api/regattas/" + this.getRegattaId() + "/kiosk";
+      return `/api/regattas/${this.getRegattaId()}/kiosk`;
     },
 
     _getRegistrationsUrl: function (sHeatId) {
-      return "/api/heats/" + sHeatId + "/registrations";
+      return `/api/heats/${sHeatId}/registrations`;
     }
 
   });

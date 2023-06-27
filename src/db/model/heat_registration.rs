@@ -1,5 +1,8 @@
-use super::{HeatResult, Registration, ToEntity, TryToEntity};
-use crate::db::tiberius::RowColumn;
+use crate::db::{
+    aquarius::AquariusClient,
+    model::{utils, HeatResult, Registration, ToEntity, TryToEntity},
+    tiberius::RowColumn,
+};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -25,28 +28,22 @@ impl ToEntity<HeatRegistration> for Row {
 }
 
 impl HeatRegistration {
-    // pub fn from_rows(rows: &Vec<Row>) -> Vec<HeatRegistration> {
-    //     let mut heat_regs: Vec<HeatRegistration> = Vec::with_capacity(rows.len());
-    //     for row in rows {
-    //         heat_regs.push(HeatRegistration::from_row(row));
-    //     }
-    //     heat_regs
-    // }
-
-    pub(crate) fn query_all<'a>(heat_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT ce.*, e.Entry_Bib, e.Entry_ID, e.Entry_BoatNumber, e.Entry_Comment, e.Entry_CancelValue, l.Label_Short, r.Result_Rank, r.Result_DisplayValue, r.Result_Delta, bc.BoatClass_NumRowers, cl.Club_ID, cl.Club_Abbr, cl.Club_City
-            FROM CompEntries AS ce
-            JOIN Comp AS c ON ce.CE_Comp_ID_FK = c.Comp_ID
-            JOIN Offer AS o ON o.Offer_ID = c.Comp_Race_ID_FK
-            JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
-            FULL OUTER JOIN Entry AS e ON ce.CE_Entry_ID_FK = e.Entry_ID
-            FULL OUTER JOIN EntryLabel AS el ON el.EL_Entry_ID_FK = e.Entry_ID
-            FULL OUTER JOIN Label AS l ON el.EL_Label_ID_FK = l.Label_ID
-            FULL OUTER JOIN Result AS r ON r.Result_CE_ID_FK = ce.CE_ID
-            JOIN Club AS cl ON cl.Club_ID = e.Entry_OwnerClub_ID_FK
-            WHERE ce.CE_Comp_ID_FK = @P1 AND (r.Result_SplitNr = 64 OR r.Result_SplitNr IS NULL)
-            AND el.EL_RoundFrom <= c.Comp_Round AND c.Comp_Round <= el.EL_RoundTo");
+    pub async fn query_all<'a>(heat_id: i32, client: &mut AquariusClient<'_>) -> Vec<HeatRegistration> {
+        let mut query = Query::new("SELECT DISTINCT CompEntries.*, Entry.*, Label_Short, Result_Rank, Result_DisplayValue, Result_Delta, BoatClass_NumRowers, Club.*, Offer.*
+            FROM CompEntries
+            JOIN Comp                  ON CE_Comp_ID_FK = Comp_ID
+            JOIN Offer                 ON Offer_ID      = Comp_Race_ID_FK
+            JOIN BoatClass             ON Offer_BoatClass_ID_FK = BoatClass_ID
+            FULL OUTER JOIN Entry      ON CE_Entry_ID_FK = Entry_ID
+            FULL OUTER JOIN EntryLabel ON EL_Entry_ID_FK = Entry_ID
+            FULL OUTER JOIN Label      ON EL_Label_ID_FK = Label_ID
+            FULL OUTER JOIN Result     ON Result_CE_ID_FK = CE_ID
+            JOIN Club                  ON Club_ID = Entry_OwnerClub_ID_FK
+            WHERE CE_Comp_ID_FK = @P1 AND ((Result_SplitNr = 64 AND Comp_State >=4) OR (Result_SplitNr = 0 AND Comp_State < 3) OR (Comp_State < 2 AND Result_SplitNr IS NULL))
+            AND EL_RoundFrom <= Comp_Round AND Comp_Round <= EL_RoundTo");
         query.bind(heat_id);
-        query
+        let stream = query.query(client).await.unwrap();
+        let crew = utils::get_rows(stream).await;
+        crew.into_iter().map(|row| row.to_entity()).collect()
     }
 }

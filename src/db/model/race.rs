@@ -1,5 +1,9 @@
-use super::{AgeClass, BoatClass, ToEntity, TryToEntity};
-use crate::db::tiberius::{RowColumn, TryRowColumn};
+use crate::db::{
+    aquarius::AquariusClient,
+    model::{utils, AgeClass, BoatClass, ToEntity, TryToEntity},
+    tiberius::{RowColumn, TryRowColumn},
+};
+use chrono::{DateTime, Utc};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -21,6 +25,9 @@ pub struct Race {
     age_class: Option<AgeClass>,
     #[serde(skip_serializing_if = "Option::is_none")]
     boat_class: Option<BoatClass>,
+    group_mode: u8,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    date_time: Option<DateTime<Utc>>,
 }
 
 impl ToEntity<Race> for Row {
@@ -43,39 +50,46 @@ impl ToEntity<Race> for Row {
             seeded: seeded.unwrap_or_default(),
             age_class: self.try_to_entity(),
             boat_class: self.try_to_entity(),
-            state: self.try_get_column("Race_state").unwrap_or_default(),
+            state: self.try_get_column("Race_State").unwrap_or_default(),
+            group_mode: self.get_column("Offer_GroupMode"),
+            date_time: self.try_get_column("Race_DateTime"),
+        }
+    }
+}
+
+impl TryToEntity<Race> for Row {
+    fn try_to_entity(&self) -> Option<Race> {
+        if <Row as TryRowColumn<i32>>::try_get_column(self, "Offer_ID").is_some() {
+            Some(self.to_entity())
+        } else {
+            None
         }
     }
 }
 
 impl Race {
-    pub fn from_rows(rows: &Vec<Row>) -> Vec<Self> {
-        let mut races: Vec<Race> = Vec::with_capacity(rows.len());
-        for row in rows {
-            races.push(row.to_entity());
-        }
-        races
-    }
-
-    pub fn query_all<'a>(regatta_id: i32) -> Query<'a> {
-        let mut query = Query::new("SELECT DISTINCT o.*, ac.*, bc.*,
-            (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count,
-            (SELECT AVG(c.Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0) as Race_state
-            FROM Offer o
-            JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
-            JOIN BoatClass AS bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
-            WHERE o.Offer_Event_ID_FK = @P1 ORDER BY o.Offer_SortValue ASC");
+    pub async fn query_all<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Race> {
+        let mut query = Query::new("SELECT DISTINCT Offer.*, AgeClass.*, BoatClass.*,
+            (SELECT Count(*) FROM Entry WHERE Entry_Race_ID_FK = Offer_ID AND Entry_CancelValue = 0) as Registrations_Count,
+            (SELECT AVG(Comp_State) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_State
+            FROM Offer
+            JOIN AgeClass  ON Offer_AgeClass_ID_FK  = AgeClass_ID
+            JOIN BoatClass ON Offer_BoatClass_ID_FK = BoatClass_ID
+            WHERE Offer_Event_ID_FK = @P1 ORDER BY Offer_SortValue ASC");
         query.bind(regatta_id);
-        query
+        let stream = query.query(client).await.unwrap();
+        let races = utils::get_rows(stream).await;
+        races.into_iter().map(|row| row.to_entity()).collect()
     }
 
-    pub fn query_single<'a>(race_id: i32) -> Query<'a> {
+    pub async fn query_single<'a>(race_id: i32, client: &mut AquariusClient<'_>) -> Race {
         let mut query = Query::new("SELECT o.*,
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count,
-            (SELECT AVG(c.Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0) as Race_state
-            FROM Offer o
+            (SELECT AVG(c.Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0) as Race_State
+            FROM  Offer o
             WHERE o.Offer_ID = @P1");
         query.bind(race_id);
-        query
+        let stream = query.query(client).await.unwrap();
+        utils::get_row(stream).await.to_entity()
     }
 }

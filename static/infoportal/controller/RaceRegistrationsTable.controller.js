@@ -30,6 +30,10 @@ sap.ui.define([
 
     onLastPress: function () {
       this.getEventBus().publish("race", "last", {});
+    },
+
+    onRefreshButtonPress: function () {
+      this.getEventBus().publish("race", "refresh", {});
     }
 
   });

@@ -13,7 +13,7 @@ sap.ui.define([
 
       this._oTable = this.getView().byId("scoringTable");
 
-      this._oScoringModel = await this.getJSONModel("/api/regattas/" + this.getRegattaId() + "/scoring", this._oTable);
+      this._oScoringModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/calculateScoring`, this._oTable);
       this.setViewModel(this._oScoringModel, "scoring");
 
       this.getRouter().getRoute("scoring").attachMatched(async (_) => await this._loadScoringModel(), this);
@@ -32,7 +32,8 @@ sap.ui.define([
             filters: [
               new Filter("club/shortName", FilterOperator.Contains, sQuery),
               new Filter("club/longName", FilterOperator.Contains, sQuery),
-              new Filter("club/city", FilterOperator.Contains, sQuery)
+              new Filter("club/city", FilterOperator.Contains, sQuery),
+              new Filter("club/abbreviation", FilterOperator.Contains, sQuery)
             ],
             and: false
           }))
@@ -42,12 +43,15 @@ sap.ui.define([
     },
 
     onRefreshButtonPress: async function (oEvent) {
+      const oSource = oEvent.getSource();
+      oSource.setEnabled(false);
       await this._loadScoringModel();
       MessageToast.show(this.i18n("msg.dataUpdated", undefined));
+      oSource.setEnabled(true);
     },
 
     _loadScoringModel: async function () {
-      await this.updateJSONModel(this._oScoringModel, "/api/regattas/" + this.getRegattaId() + "/scoring", this._oTable)
+      await this.updateJSONModel(this._oScoringModel, `/api/regattas/${this.getRegattaId()}/calculateScoring`, this._oTable)
     }
 
   });

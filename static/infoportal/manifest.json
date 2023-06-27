@@ -109,9 +109,14 @@
           "target": "kiosk"
         },
         {
-          "pattern": "clubs",
-          "name": "clubs",
-          "target": "clubs"
+          "pattern": "participatingClubs",
+          "name": "participatingClubs",
+          "target": "participatingClubs"
+        },
+        {
+          "pattern": "clubParticipations/{clubId}",
+          "name": "clubParticipations",
+          "target": "clubParticipations"
         }
       ],
       "targets": {
@@ -139,9 +144,13 @@
           "viewName": "RaceRegistrationsTable",
           "viewLevel": 2
         },
-        "clubs": {
-          "viewName": "ClubsTable",
+        "participatingClubs": {
+          "viewName": "ParticipatingClubsTable",
           "viewLevel": 1
+        },
+        "clubParticipations": {
+          "viewName": "ClubParticipationsTable",
+          "viewLevel": 2
         },
         "statistics": {
           "viewName": "Statistics",

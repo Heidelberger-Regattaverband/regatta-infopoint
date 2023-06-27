@@ -1,0 +1,96 @@
+<mvc:View controllerName="de.regatta_hd.infopoint.controller.ClubParticipationsTable" xmlns="sap.m" xmlns:layout="sap.ui.layout"
+  xmlns:mvc="sap.ui.core.mvc">
+  <mvc:content>
+
+    <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
+    https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
+    <Page title="{i18n>common.participations} von {club>/shortName}" class="sapUiNoContentPadding" showNavButton="true"
+      navButtonPress="onNavBack">
+
+      <headerContent>
+        <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
+      </headerContent>
+
+      <content>
+
+        <Table id="registrationsTable" autoPopinMode="true" items="{path: 'registrations>/'}" growing="true" growingThreshold="50"
+          growingScrollToLoad="true" sticky="ColumnHeaders" class="sapUiNoContentPadding">
+
+          <columns>
+            <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.time}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column hAlign="Begin" width="6rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.race}" class="bold" />
+              </header>
+            </Column>
+            <Column hAlign="Begin" width="14rem" importance="Medium" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.boat}" class="bold" />
+              </header>
+            </Column>
+            <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.clubRegistration}" class="bold" />
+              </header>
+            </Column>
+          </columns>
+
+          <items>
+            <ColumnListItem vAlign="Top" highlight="{path: 'registrations>', formatter: '.formatter.raceRegistrationHighlight'}">
+              <cells>
+                <layout:VerticalLayout>
+                  <Text text="{path: 'registrations>heatDateTime', formatter: '.formatter.dayTimeIsoLabel'}"
+                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="cancelled" />
+                  <Text text="{path: 'registrations>heatDateTime', formatter: '.formatter.dayTimeIsoLabel'}"
+                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                </layout:VerticalLayout>
+
+                <layout:VerticalLayout>
+                  <Text text="{path: 'registrations>race', formatter: '.formatter.nrRaceLabel'}"
+                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
+                    class="boldCancelled sapUiTinyMarginBottom" />
+                  <Text text="{path: 'registrations>race', formatter: '.formatter.nrRaceLabel'}"
+                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}"
+                    class="bold sapUiTinyMarginBottom" />
+
+                  <Text text="{registrations>race/longLabel}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
+                    class="cancelled" />
+                  <Text text="{registrations>race/longLabel}"
+                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                </layout:VerticalLayout>
+
+                <layout:VerticalLayout>
+                  <Text text="{path: 'registrations>', formatter: '.formatter.boatLabel'}"
+                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
+                    class="boldCancelled sapUiTinyMarginBottom" />
+                  <Text text="{path: 'registrations>', formatter: '.formatter.boatLabel'}"
+                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}"
+                    class="bold sapUiTinyMarginBottom" />
+
+                  <Text text="{path: 'registrations>crew', formatter: '.formatter.crewLabel'}"
+                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
+                    class="cancelled" />
+                  <Text text="{path: 'registrations>crew', formatter: '.formatter.crewLabel'}"
+                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                </layout:VerticalLayout>
+
+                <layout:VerticalLayout>
+                  <Text text="{registrations>club/shortName}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
+                    class="cancelled" />
+                  <Text text="{registrations>club/shortName}"
+                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                </layout:VerticalLayout>
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table>
+
+      </content>
+    </Page>
+
+  </mvc:content>
+</mvc:View>

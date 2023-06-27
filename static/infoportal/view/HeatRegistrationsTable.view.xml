@@ -17,6 +17,10 @@
                 <Label text="{heat>/race/longLabel} {heat>/race/comment}" />
               </f:expandedContent>
 
+              <!--f:actions>
+                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
+              </f:actions-->
+
               <f:navigationActions>
                 <Button type="Transparent" icon="sap-icon://close-command-field" press="onFirstPress" tooltip="First"
                   enabled="{= ${heat>/_nav/isFirst} ? false : true }" />
@@ -35,7 +39,7 @@
             <f:DynamicPageHeader>
               <layout:HorizontalLayout allowWrapping="true">
                 <layout:VerticalLayout class="sapUiMediumMarginEnd">
-                  <ObjectAttribute title="{i18n>common.time}" text="{path: 'heat>/', formatter: '.formatter.dayTimeLabel'}" />
+                  <ObjectAttribute title="{i18n>common.time}" text="{path: 'heat>/dateTime', formatter: '.formatter.dayTimeIsoLabel'}" />
                   <ObjectAttribute title="{i18n>common.distance}" text="{path: 'heat>/race', formatter: '.formatter.distanceLabel'}" />
                   <ObjectAttribute title="{i18n>common.heatNr}" text="{heat>/number}" />
                 </layout:VerticalLayout>
