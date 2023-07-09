@@ -11,40 +11,76 @@ use tiberius::{Query, Row};
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Heat {
+    /** The unique identifier of this heat. */
     pub id: i32,
+
+    /** The sequential number of the heat. */
     number: i16,
-    round_code: String,
-    label: String,
-    group_value: i16,
-    state: u8,
-    cancelled: bool,
+
+    /** The race the heat belongs to. */
     race: Race,
+
+    /** The round code of the heat. Known values are: "R" - main race, "A" - division, "V" - Vorlauf */
+    round_code: String,
+
+    /** An optional division label, e.g. "1" or "2" */
+    #[serde(skip_serializing_if = "Option::is_none")]
+    label: Option<String>,
+
+    group_value: i16,
+
+    state: u8,
+
+    /** Indicates whether or not the heat has been canceled. */
+    cancelled: bool,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     referee: Option<Referee>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     date_time: Option<DateTime<Utc>>,
 }
 
 impl ToEntity<Heat> for Row {
     fn to_entity(&self) -> Heat {
-        let id: i32 = self.get_column("Comp_ID");
-        let number: i16 = self.get_column("Comp_Number");
-        let round_code: String = self.get_column("Comp_RoundCode");
-        let label: String = self.get_column("Comp_Label");
-        let group_value: i16 = self.get_column("Comp_GroupValue");
         let state: u8 = self.get_column("Comp_State");
         let cancelled: bool = self.get_column("Comp_Cancelled");
 
         Heat {
-            id,
+            id: self.get_column("Comp_ID"),
             race: self.to_entity(),
-            number,
-            round_code,
-            label,
-            group_value,
+            number: self.get_column("Comp_Number"),
+            round_code: self.get_column("Comp_RoundCode"),
+            label: self.try_get_column("Comp_Label"),
+            group_value: self.get_column("Comp_GroupValue"),
             state,
             cancelled,
             date_time: self.try_get_column("Comp_DateTime"),
             referee: self.try_to_entity(),
+        }
+    }
+}
+
+impl TryToEntity<Heat> for Row {
+    fn try_to_entity(&self) -> Option<Heat> {
+        if let Some(id) = self.try_get_column("Comp_ID") {
+            let state: u8 = self.get_column("Comp_State");
+            let cancelled: bool = self.get_column("Comp_Cancelled");
+
+            Some(Heat {
+                id,
+                race: self.to_entity(),
+                number: self.get_column("Comp_Number"),
+                round_code: self.get_column("Comp_RoundCode"),
+                label: self.try_get_column("Comp_Label"),
+                group_value: self.get_column("Comp_GroupValue"),
+                state,
+                cancelled,
+                date_time: self.try_get_column("Comp_DateTime"),
+                referee: self.try_to_entity(),
+            })
+        } else {
+            None
         }
     }
 }

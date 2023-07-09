@@ -43,9 +43,9 @@
             <ColumnListItem vAlign="Top" highlight="{path: 'registrations>', formatter: '.formatter.raceRegistrationHighlight'}">
               <cells>
                 <layout:VerticalLayout>
-                  <Text text="{path: 'registrations>heatDateTime', formatter: '.formatter.dayTimeIsoLabel'}"
+                  <Text text="{path: 'registrations>heat/dateTime', formatter: '.formatter.dayTimeIsoLabel'}"
                     visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="cancelled" />
-                  <Text text="{path: 'registrations>heatDateTime', formatter: '.formatter.dayTimeIsoLabel'}"
+                  <Text text="{path: 'registrations>heat/dateTime', formatter: '.formatter.dayTimeIsoLabel'}"
                     visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
                 </layout:VerticalLayout>
 

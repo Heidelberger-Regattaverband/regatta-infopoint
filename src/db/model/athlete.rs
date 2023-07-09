@@ -1,8 +1,9 @@
-use crate::db::{model::ToEntity, tiberius::RowColumn};
+use crate::db::{
+    model::{Club, ToEntity},
+    tiberius::RowColumn,
+};
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Row};
-
-use super::Club;
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]

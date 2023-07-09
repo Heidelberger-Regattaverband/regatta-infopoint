@@ -1,5 +1,7 @@
-use super::TryToEntity;
-use crate::db::tiberius::{RowColumn, TryRowColumn};
+use crate::db::{
+    model::TryToEntity,
+    tiberius::{RowColumn, TryRowColumn},
+};
 use serde::Serialize;
 use tiberius::Row;
 

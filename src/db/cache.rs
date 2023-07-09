@@ -1,4 +1,4 @@
-use super::model::{Club, Heat, HeatRegistration, Race, Regatta, Registration};
+use crate::db::model::{Club, Heat, HeatRegistration, Race, Regatta, Registration};
 use async_trait::async_trait;
 use std::{hash::Hash, time::Duration};
 use stretto::AsyncCache;
