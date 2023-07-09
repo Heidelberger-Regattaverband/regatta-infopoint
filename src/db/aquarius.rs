@@ -1,4 +1,4 @@
-use super::{
+use crate::db::{
     cache::{CacheTrait, Caches},
     model::{Club, Crew, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
     tiberius::{TiberiusConnectionManager, TiberiusPool},
