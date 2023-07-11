@@ -2,20 +2,15 @@ mod db;
 mod http;
 
 use crate::http::server::Server;
-use dotenv::dotenv;
 use std::io::Result;
 
 #[actix_web::main]
 async fn main() -> Result<()> {
-    dotenv().ok();
-    env_logger::init();
-
     Server::start().await
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::http::{
         rest_api,
         server::{create_app_data, PATH_REST_API},
@@ -26,6 +21,7 @@ mod tests {
         web::{scope, Data},
         App,
     };
+    use dotenv::dotenv;
 
     #[actix_web::test]
     async fn test_get_regattas() {
