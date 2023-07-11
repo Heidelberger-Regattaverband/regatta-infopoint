@@ -15,6 +15,7 @@ use actix_web::{
 };
 use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder, StreamMetrics};
 use colored::Colorize;
+use dotenv::dotenv;
 use log::{debug, info};
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
@@ -23,7 +24,7 @@ use std::{
     fs::File,
     future::Ready,
     io::{self, BufReader},
-    time,
+    time::{self, Instant},
 };
 
 /// Path to REST API
@@ -59,6 +60,11 @@ impl Server {
     }
 
     pub async fn start() -> io::Result<()> {
+        let start = Instant::now();
+
+        dotenv().ok();
+        env_logger::init();
+
         let aquarius = create_app_data().await;
         let rustls_cfg = Self::get_rustls_config();
         let (rl_max_requests, rl_interval) = Self::get_rate_limiter_config();
@@ -111,9 +117,10 @@ impl Server {
             http_server = http_server.workers(workers);
         }
 
-        info!("Starting Infoportal");
         // finally run http server
-        http_server.run().await
+        let server = http_server.run();
+        info!("Starting Infoportal in {:?}", start.elapsed());
+        server.await
     }
 
     fn get_session_middleware(secret_key: Key) -> SessionMiddleware<CookieSessionStore> {
