@@ -264,14 +264,15 @@ sap.ui.define([
       if (oHeat.race && oHeat.race.ageClass.numSubClasses > 0) {
         sGroupValue = " - " + Formatter.groupValueLabel(oHeat.groupValue);
       }
+      const sHeatLabel = oHeat.label || "";
 
       switch (oHeat.roundCode) {
         case "A":
-          return this.i18n("heat.label.division", [oHeat.label, sGroupValue]);
+          return this.i18n("heat.label.division", [sHeatLabel, sGroupValue]);
         case "R":
-          return this.i18n("heat.label.mainRace", [oHeat.label, sGroupValue]);
+          return this.i18n("heat.label.mainRace", [sHeatLabel, sGroupValue]);
         case "V":
-          return this.i18n("heat.label.forerun", [oHeat.label, sGroupValue]);
+          return this.i18n("heat.label.forerun", [sHeatLabel, sGroupValue]);
         case "F":
           return this.i18n("heat.label.final", [sGroupValue]);
         default:
