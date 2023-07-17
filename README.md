@@ -2,7 +2,7 @@
 
 ## Installation on a new server
 
-Become root user:
+Become root user, if not already:
 ```bash
 sudo -i
 ```
