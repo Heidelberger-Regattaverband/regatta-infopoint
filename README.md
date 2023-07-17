@@ -20,7 +20,7 @@ certbot certonly
 
 Change the permission of the private key to make it accessible to the Infoportal docker container:
 ```bash
-chmod 640 /etc/letsencrypt/archive/<host>.online-server.cloud/privkey<id>.pem
+chmod 640 /etc/letsencrypt/archive/<full-qualified-hostname>/privkey<id>.pem
 ```
 
 Maintain an ssh key to access github.com:
