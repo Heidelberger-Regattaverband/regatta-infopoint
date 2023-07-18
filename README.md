@@ -29,6 +29,16 @@ mkdir git && cd git
 git clone https://github.com/Heidelberger-Regattaverband/docker.git
 ```
 
+Start MS-SQL Server in docker container:
+```bash
+mkdir /mssql
+chown 10001 /mssql/
+cd docker/mssql
+nano .env
+docker-compose up -d
+docker logs mss
+```
+
 Maintain an ssh key for write access to github.com:
 ```bash
 nano .ssh/id_rsa
