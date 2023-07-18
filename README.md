@@ -23,7 +23,13 @@ Change the permission of the private key to make it accessible to the Infoportal
 chmod 640 /etc/letsencrypt/archive/<full-qualified-hostname>/privkey<id>.pem
 ```
 
-Maintain an ssh key to access github.com:
+Clone Github repo with docker configurations:
+```bash
+mkdir git && cd git
+git clone https://github.com/Heidelberger-Regattaverband/docker.git
+```
+
+Maintain an ssh key for write access to github.com:
 ```bash
 nano .ssh/id_rsa
 nano .ssh/id_rsa.pub
