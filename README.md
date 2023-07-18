@@ -36,7 +36,6 @@ chown 10001 /mssql/
 cd docker/mssql
 nano .env
 docker-compose up -d
-docker logs mss
 ```
 
 Maintain an ssh key for write access to github.com:
