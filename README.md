@@ -12,7 +12,7 @@ apt update && apt upgrade
 apt install certbot git docker.io docker-compose htop deborphan
 ```
 
-Request a letsencrypt certificates for all hostnames:
+Request letsencrypt certificates for all hostnames:
 ```bash
 certbot certonly
 ```
@@ -48,6 +48,10 @@ Copy database backup files into restore directory:
 ```bash
 scp <local_file> root@<full-qualified-hostname>:/mssql/restore
 ```
+Import the database backup files from the restore directory with SQL Server Management Studio.
+
+
+## Obsolete
 
 Maintain an ssh key for write access to github.com:
 ```bash
