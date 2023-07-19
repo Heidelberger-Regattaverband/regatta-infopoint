@@ -1,8 +1,7 @@
-# regatta-infoportal
+# Setup of a new regatta server
 
-## Installation on a new server
-
-Become root user, if not already:
+## General steps
+Become root if you haven't already:
 ```bash
 sudo -i
 ```
@@ -13,7 +12,7 @@ apt update && apt upgrade
 apt install certbot git docker.io docker-compose htop deborphan
 ```
 
-Request a letsencrypt certificate:
+Request a letsencrypt certificates for all hostnames:
 ```bash
 certbot certonly
 ```
@@ -29,15 +28,21 @@ mkdir git && cd git
 git clone https://github.com/Heidelberger-Regattaverband/docker.git
 ```
 
-Start MS-SQL Server in docker container:
+## Setup MS-SQL Server
+
+Prepare MS-SQL server directories:
 ```bash
 mkdir /mssql
 chown 10001 /mssql
 chmod 775 /mssql
+mkdir /mssql/backup && mkdir /mssql/restore
+```
+
+Configure the docker container settings and start MS-SQL Server:
+```
 cd docker/mssql
 nano .env
-docker-compose up -d
-docker logs mssql-aquarius -f
+docker-compose up -d && docker logs mssql-aquarius -f
 ```
 
 Maintain an ssh key for write access to github.com:
