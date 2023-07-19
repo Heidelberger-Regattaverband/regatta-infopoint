@@ -32,7 +32,8 @@ git clone https://github.com/Heidelberger-Regattaverband/docker.git
 Start MS-SQL Server in docker container:
 ```bash
 mkdir /mssql
-chown 10001 /mssql/
+chown 1001 /mssql
+chmod 775 /mssql
 cd docker/mssql
 nano .env
 docker-compose up -d
