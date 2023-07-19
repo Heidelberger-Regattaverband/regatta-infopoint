@@ -20,7 +20,7 @@ certbot certonly
 
 Change the permission of the private key to make it accessible to the Infoportal docker container:
 ```bash
-chmod 640 /etc/letsencrypt/archive/<full-qualified-hostname>/privkey<id>.pem
+chmod 640 /etc/letsencrypt/live/<full-qualified-hostname>/privkey.pem
 ```
 
 Clone Github repo with docker configurations:
@@ -37,6 +37,7 @@ chmod 775 /mssql
 cd docker/mssql
 nano .env
 docker-compose up -d
+docker logs mssql-aquarius -f
 ```
 
 Maintain an ssh key for write access to github.com:
