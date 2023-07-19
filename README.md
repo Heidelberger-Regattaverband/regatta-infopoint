@@ -17,7 +17,7 @@ Request letsencrypt certificates for all hostnames:
 certbot certonly
 ```
 
-Change the permission of the private key to make it accessible from docker containers:
+Change the permissions of all private keys to make them accessible from docker containers:
 ```bash
 chmod 640 /etc/letsencrypt/live/<full-qualified-hostname>/privkey.pem
 ```
@@ -50,6 +50,14 @@ scp <local_file> root@<full-qualified-hostname>:/mssql/restore
 ```
 Import the database backup files from the restore directory with SQL Server Management Studio.
 
+## Setup infoportal
+
+Configure the docker container settings and start Infoportal:
+```bash
+cd docker/infoportal
+nano .env
+docker-compose up -d && docker logs mssql-aquarius -f
+```
 
 ## Obsolete
 
