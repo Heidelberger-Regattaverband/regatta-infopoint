@@ -38,10 +38,15 @@ chmod -R 775 /mssql
 ```
 
 Configure the docker container settings and start MS-SQL Server:
-```
+```bash
 cd docker/mssql
 nano .env
 docker-compose up -d && docker logs mssql-aquarius -f
+```
+
+Copy database backup files into restore directory:
+```bash
+scp <local_file> root@<full-qualified-hostname>:/mssql/restore
 ```
 
 Maintain an ssh key for write access to github.com:
