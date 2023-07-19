@@ -50,33 +50,13 @@ scp <local_file> root@<full-qualified-hostname>:/mssql/restore
 ```
 Import the database backup files from the restore directory with SQL Server Management Studio.
 
-## Setup infoportal
+## Setup Regatta Infoportal
 
 Configure the docker container settings and start Infoportal:
 ```bash
 cd docker/infoportal
 nano .env
 docker-compose up -d && docker logs mssql-aquarius -f
-```
-
-## Obsolete
-
-Maintain an ssh key for write access to github.com:
-```bash
-nano .ssh/id_rsa
-nano .ssh/id_rsa.pub
-chmod 600 .ssh/id_rsa
-```
-
-Clone the github repo containing the infoportal:
-```bash
-git clone git@github.com:Heidelberger-Regattaverband/regatta-infopoint.git
-```
-
-Start the infoportal docker container:
-```bash
-cd regatta-infopoint
-DB_PASSWORD=<db_password> ./update.sh
 ```
 
 ## Additional MS-SQL setup
