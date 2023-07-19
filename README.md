@@ -56,7 +56,7 @@ Configure the docker container settings and start Infoportal:
 ```bash
 cd docker/infoportal
 nano .env
-docker-compose up -d && docker logs mssql-aquarius -f
+docker-compose up -d && docker logs infoportal -f
 ```
 
 ## Additional MS-SQL setup
