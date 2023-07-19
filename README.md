@@ -32,10 +32,9 @@ git clone https://github.com/Heidelberger-Regattaverband/docker.git
 
 Prepare MS-SQL server directories:
 ```bash
-mkdir /mssql
-chown 10001 /mssql
-chmod 775 /mssql
-mkdir /mssql/backup && mkdir /mssql/restore
+mkdir /mssql && mkdir /mssql/backup && mkdir /mssql/restore
+chown -R 10001 /mssql
+chmod -R 775 /mssql
 ```
 
 Configure the docker container settings and start MS-SQL Server:
