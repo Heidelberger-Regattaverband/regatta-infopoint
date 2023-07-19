@@ -18,7 +18,7 @@ Request a letsencrypt certificate:
 certbot certonly
 ```
 
-Change the permission of the private key to make it accessible to the Infoportal docker container:
+Change the permission of the private key to make it accessible from docker containers:
 ```bash
 chmod 640 /etc/letsencrypt/live/<full-qualified-hostname>/privkey.pem
 ```
