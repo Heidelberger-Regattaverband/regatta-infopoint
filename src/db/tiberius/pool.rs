@@ -28,7 +28,7 @@ impl TiberiusConnectionManager {
     fn create_config() -> tiberius::Config {
         let db_host = env::var("DB_HOST").expect("env variable `DB_HOST` should be set");
         let db_port: u16 = env::var("DB_PORT")
-            .expect("env variable `DB_PORT` should be set")
+            .unwrap_or_else(|_| "1433".to_string())
             .parse()
             .unwrap();
         let db_name = env::var("DB_NAME").expect("env variable `DB_NAME` should be set");
