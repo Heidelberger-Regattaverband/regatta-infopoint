@@ -69,21 +69,21 @@ impl ToEntity<Registration> for Row {
 impl Registration {
     pub async fn query_of_club(regatta_id: i32, club_id: i32, client: &mut AquariusClient<'_>) -> Vec<Registration> {
         let mut query = Query::new(
-            "SELECT DISTINCT Entry.*, Label_Short, oc.Club_ID, oc.Club_Abbr, oc.Club_UltraAbbr, oc.Club_City, Offer.*, Comp.*,
-            (SELECT MIN(Comp_DateTime) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID) as Race_DateTime
-            FROM Club AS ac
-            JOIN Athlet     ON Athlet_Club_ID_FK  = ac.Club_ID
-            JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
-            JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
-            JOIN Club as oc ON Entry_OwnerClub_ID_FK = oc.Club_ID
-            JOIN EntryLabel ON EL_Entry_ID_FK     = Entry_ID
-            JOIN Label      ON EL_Label_ID_FK     = Label_ID
-            JOIN Offer      ON Entry_Race_ID_FK   = Offer_ID
-            LEFT OUTER JOIN CompEntries ON CE_Entry_ID_FK = Entry_ID
-            LEFT OUTER JOIN Comp        ON CE_Comp_ID_FK = Comp_ID AND CE_Entry_ID_FK = Entry_ID
-            WHERE Entry_Event_ID_FK = @P1 AND ac.Club_ID = @P2 AND EL_RoundFrom <= 64 AND 64 <= EL_RoundTo AND Crew_RoundTo = 64
-            ORDER BY Offer_ID ASC",
-        );
+          "SELECT DISTINCT Entry.*, Label_Short, oc.Club_ID, oc.Club_Abbr, oc.Club_UltraAbbr, oc.Club_City, Offer.*, Comp.*,
+          (SELECT MIN(Comp_DateTime) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID) as Race_DateTime
+          FROM Club AS ac
+          JOIN Athlet      ON Athlet_Club_ID_FK  = ac.Club_ID
+          JOIN Crew        ON Crew_Athlete_ID_FK = Athlet_ID
+          JOIN Entry       ON Crew_Entry_ID_FK   = Entry_ID
+          JOIN Club as oc  ON Entry_OwnerClub_ID_FK = oc.Club_ID
+          JOIN EntryLabel  ON EL_Entry_ID_FK     = Entry_ID
+          JOIN Label       ON EL_Label_ID_FK     = Label_ID
+          JOIN Offer       ON Entry_Race_ID_FK = Offer_ID
+          JOIN CompEntries ON CE_Entry_ID_FK = Entry_ID
+          JOIN Comp        ON CE_Comp_ID_FK = Comp_ID AND CE_Entry_ID_FK = Entry_ID
+          WHERE Entry_Event_ID_FK = @P1 AND ac.Club_ID = @P2 AND EL_RoundFrom <= 64 AND 64 <= EL_RoundTo AND Crew_RoundTo = 64
+          ORDER BY Offer_ID ASC, Comp_DateTime ASC",
+      );
         query.bind(regatta_id);
         query.bind(club_id);
 
