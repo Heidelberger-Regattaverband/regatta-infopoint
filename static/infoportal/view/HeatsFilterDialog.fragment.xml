@@ -4,8 +4,8 @@
     <filterItems>
       <ViewSettingsFilterItem text="{i18n>common.day}" key="distance" multiSelect="false">
         <items>
-          <ViewSettingsItem text="{i18n>common.saturday}" key="weekday___EQ___6" />
-          <ViewSettingsItem text="{i18n>common.sunday}" key="weekday___EQ___7" />
+          <ViewSettingsItem text="{i18n>common.saturday}" key="dateTime___Contains___2023-05-20" />
+          <ViewSettingsItem text="{i18n>common.sunday}" key="dateTime___Contains___2023-05-21" />
         </items>
       </ViewSettingsFilterItem>
 
