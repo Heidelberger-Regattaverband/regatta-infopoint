@@ -2,14 +2,14 @@
   xmlns:cust="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
   <ViewSettingsDialog confirm="onHandleFilterDialogConfirm">
     <filterItems>
-      <ViewSettingsFilterItem text="{i18n>common.day}" key="distance" multiSelect="false">
+      <ViewSettingsFilterItem text="{i18n>common.day}" key="day" multiSelect="false">
         <items>
           <ViewSettingsItem text="{i18n>common.saturday}" key="dateTime___Contains___2023-05-20" />
           <ViewSettingsItem text="{i18n>common.sunday}" key="dateTime___Contains___2023-05-21" />
         </items>
       </ViewSettingsFilterItem>
 
-      <ViewSettingsFilterItem text="{i18n>common.boatClass}" key="gender">
+      <ViewSettingsFilterItem text="{i18n>common.boatClass}" key="boatClass">
         <items>
           <ViewSettingsItem text="Einer (1x)" key="race/boatClass/abbreviation___EQ___1x" />
           <ViewSettingsItem text="Doppelzweier (2x)" key="race/boatClass/abbreviation___EQ___2x" />
@@ -31,7 +31,7 @@
         </items>
       </ViewSettingsFilterItem>
 
-      <ViewSettingsFilterItem text="{i18n>common.state}" key="cancelled" multiSelect="false">
+      <ViewSettingsFilterItem text="{i18n>common.state}" key="state" multiSelect="false">
         <items>
           <ViewSettingsItem text="{i18n>heat.state.cancelled}" key="cancelled___EQ___true" />
           <ViewSettingsItem text="{i18n>common.scheduled}" key="state___EQ___0" cust:filter="cancelled___EQ___false" />
