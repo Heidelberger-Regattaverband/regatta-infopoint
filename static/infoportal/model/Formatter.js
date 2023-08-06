@@ -109,7 +109,14 @@ sap.ui.define([
     },
 
     athleteLabel: function (oAthlete) {
-      return oAthlete.firstName + " " + oAthlete.lastName + " (" + oAthlete.year + ", " + oAthlete.club.abbreviation + ")"
+      let sLabel = oAthlete.firstName + " " + oAthlete.lastName + " (" + oAthlete.year + ", ";
+      if (oAthlete.club.abbreviation) {
+        sLabel += oAthlete.club.abbreviation
+      } else {
+        sLabel += oAthlete.club.shortName
+      };
+      sLabel += ")"
+      return sLabel;
     },
 
     crewLabel: function (aCrew) {
