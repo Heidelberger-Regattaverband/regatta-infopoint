@@ -4,8 +4,9 @@ sap.ui.define([
   "sap/ui/model/Filter",
   "sap/ui/model/FilterOperator",
   "sap/m/MessageToast",
+  "sap/m/ViewSettingsItem",
   "../model/Formatter"
-], function (BaseTableController, JSONModel, Filter, FilterOperator, MessageToast, Formatter) {
+], function (BaseTableController, JSONModel, Filter, FilterOperator, MessageToast, ViewSettingsItem, Formatter) {
   "use strict";
 
   return BaseTableController.extend("de.regatta_hd.infopoint.controller.HeatsTable", {
@@ -26,6 +27,22 @@ sap.ui.define([
       this.getRouter().getRoute("heats").attachMatched(async (_) => await this._loadHeatsModel(), this);
 
       this.getEventBus().subscribe("heat", "refresh", async (_) => await this._loadHeatsModel(), this);
+
+      // initialize filter values
+      const oViewSettingsDialog = await this.getViewSettingsDialog("de.regatta_hd.infopoint.view.HeatsFilterDialog");
+      oViewSettingsDialog.getFilterItems().forEach(oFilterItem => {
+        switch (oFilterItem.getKey()) {
+          case 'day':
+            oFilterItem.addItem(new ViewSettingsItem({ text: "{i18n>common.saturday}", key: "dateTime___Contains___2023-05-20" }));
+            oFilterItem.addItem(new ViewSettingsItem({ text: "{i18n>common.sunday}", key: "dateTime___Contains___2023-05-21" }));
+            break;
+          case 'distance':
+            oFilterItem.addItem(new ViewSettingsItem({ text: "1500m", key: "race/distance___EQ___1500" }));
+            oFilterItem.addItem(new ViewSettingsItem({ text: "1000m", key: "race/distance___EQ___1000" }));
+            oFilterItem.addItem(new ViewSettingsItem({ text: "350m", key: "race/distance___EQ___350" }));
+            break;
+        }
+      });
     },
 
     onSelectionChange: function (oEvent) {
