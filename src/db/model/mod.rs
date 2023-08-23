@@ -19,7 +19,7 @@ pub use athlete::Athlete;
 pub use boat_class::BoatClass;
 pub use club::Club;
 pub use crew::Crew;
-pub use heat::{Heat, Kiosk};
+pub use heat::{Heat, HeatFilters, Kiosk};
 pub use heat_registration::HeatRegistration;
 pub use heat_result::HeatResult;
 pub use race::Race;

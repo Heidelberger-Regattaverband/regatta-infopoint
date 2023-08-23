@@ -10,6 +10,23 @@ use tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
+pub struct HeatFilters {
+    distances: Vec<i16>,
+}
+
+impl HeatFilters {
+    pub async fn query(regatta_id: i32, client: &mut AquariusClient<'_>) -> Self {
+        let mut query = Query::new("SELECT DISTINCT Offer_Distance FROM Offer WHERE Offer_Event_ID_FK = @P1");
+        query.bind(regatta_id);
+        let stream = query.query(client).await.unwrap();
+        let rows = utils::get_rows(stream).await;
+        let distances = rows.into_iter().map(|row| row.get_column("Offer_Distance")).collect();
+        HeatFilters { distances }
+    }
+}
+
+#[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct Heat {
     /** The unique identifier of this heat. */
     pub id: i32,
