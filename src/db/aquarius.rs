@@ -49,7 +49,10 @@ impl Aquarius {
     }
 
     pub async fn get_filters(&self, regatta_id: i32) -> Filters {
-        Filters::query(regatta_id, &mut self.pool.get().await).await
+        let start = Instant::now();
+        let filters = Filters::query(regatta_id, &mut self.pool.get().await).await;
+        debug!("Query filters from DB: {:?}", start.elapsed());
+        filters
     }
 
     pub async fn query_regattas(&self) -> Vec<Regatta> {
