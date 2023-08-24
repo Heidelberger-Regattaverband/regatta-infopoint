@@ -1,6 +1,6 @@
 use crate::db::{
     cache::{CacheTrait, Caches},
-    model::{Club, Crew, Heat, HeatFilters, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
+    model::{Club, Crew, Filters, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
     tiberius::{TiberiusConnectionManager, TiberiusPool},
 };
 use actix_identity::Identity;
@@ -120,8 +120,8 @@ impl Aquarius {
         }
     }
 
-    pub async fn get_heats_filters(&self, regatta_id: i32) -> HeatFilters {
-        HeatFilters::query(regatta_id, &mut self.pool.get().await).await
+    pub async fn get_heats_filters(&self, regatta_id: i32) -> Filters {
+        Filters::query(regatta_id, &mut self.pool.get().await).await
     }
 
     pub async fn get_participating_clubs(&self, regatta_id: i32) -> Vec<Club> {
