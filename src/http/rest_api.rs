@@ -71,7 +71,7 @@ async fn get_heats(path: Path<i32>, odata_params: Query<OData>, aquarius: Data<A
 #[get("/regattas/{id}/filters")]
 async fn get_heats_filters(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Filters> {
     let regatta_id = path.into_inner();
-    Json(aquarius.get_heats_filters(regatta_id).await)
+    Json(aquarius.get_filters(regatta_id).await)
 }
 
 #[get("/heats/{id}/registrations")]

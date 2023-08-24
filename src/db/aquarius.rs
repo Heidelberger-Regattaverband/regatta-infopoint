@@ -48,6 +48,10 @@ impl Aquarius {
         self.get_regatta(self.active_regatta_id).await
     }
 
+    pub async fn get_filters(&self, regatta_id: i32) -> Filters {
+        Filters::query(regatta_id, &mut self.pool.get().await).await
+    }
+
     pub async fn query_regattas(&self) -> Vec<Regatta> {
         let start = Instant::now();
         let regattas = Regatta::query_all(&mut self.pool.get().await).await;
@@ -118,10 +122,6 @@ impl Aquarius {
         } else {
             self._query_heat_registrations(heat_id).await
         }
-    }
-
-    pub async fn get_heats_filters(&self, regatta_id: i32) -> Filters {
-        Filters::query(regatta_id, &mut self.pool.get().await).await
     }
 
     pub async fn get_participating_clubs(&self, regatta_id: i32) -> Vec<Club> {
