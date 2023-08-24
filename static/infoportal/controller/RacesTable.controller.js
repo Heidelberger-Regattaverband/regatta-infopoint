@@ -4,8 +4,9 @@ sap.ui.define([
   "sap/ui/model/Filter",
   "sap/ui/model/FilterOperator",
   "sap/m/MessageToast",
+  "sap/m/ViewSettingsItem",
   "../model/Formatter"
-], function (BaseTableController, JSONModel, Filter, FilterOperator, MessageToast, Formatter) {
+], function (BaseTableController, JSONModel, Filter, FilterOperator, MessageToast, ViewSettingsItem, Formatter) {
   "use strict";
 
   return BaseTableController.extend("de.regatta_hd.infopoint.controller.RacesTable", {
@@ -26,6 +27,19 @@ sap.ui.define([
       this.getRouter().getRoute("races").attachMatched(async (_) => await this._loadRacesModel(), this);
 
       this.getEventBus().subscribe("race", "refresh", async (_) => await this._loadRacesModel(), this);
+      const oFilters = this.getOwnerComponent().getModel("filters").getData();
+
+      // initialize filter values
+      const oViewSettingsDialog = await this.getViewSettingsDialog("de.regatta_hd.infopoint.view.RacesFilterDialog");
+      oViewSettingsDialog.getFilterItems().forEach(oFilterItem => {
+        switch (oFilterItem.getKey()) {
+          case 'distance':
+            oFilters.distances.forEach((distance) => {
+              oFilterItem.addItem(new ViewSettingsItem({ text: distance + "m", key: "distance___EQ___" + distance }));
+            });
+            break;
+        }
+      });
     },
 
     onItemPress: function (oEvent) {

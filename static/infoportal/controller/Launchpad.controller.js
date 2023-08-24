@@ -66,7 +66,7 @@ sap.ui.define([
       const oControl = oEvent.getSource();
 
       if (!this._isAuthenticated()) {
-        if (this._oPopover && this._oPopover.isOpen()) {
+        if (this._oPopover?.isOpen()) {
           // close login dialog if it's already open
           this._oPopover.close();
           delete this._oPopover;

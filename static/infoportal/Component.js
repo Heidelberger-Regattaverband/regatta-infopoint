@@ -23,6 +23,11 @@ sap.ui.define([
       this._oRegattaModel.loadData("/api/active_regatta", {}, false);
       this.setModel(this._oRegattaModel, "regatta");
 
+      this._oFiltersModel = new JSONModel();
+      const iRegattaID = this._oRegattaModel.getData().id;
+      this._oFiltersModel.loadData(`/api/regattas/${iRegattaID}/filters`, {}, false);
+      this.setModel(this._oFiltersModel, "filters");
+
       // set device model
       const oDeviceModel = new JSONModel(Device);
       oDeviceModel.setDefaultBindingMode("OneWay");

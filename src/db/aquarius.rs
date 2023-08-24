@@ -1,6 +1,6 @@
 use crate::db::{
     cache::{CacheTrait, Caches},
-    model::{Club, Crew, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
+    model::{Club, Crew, Filters, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
     tiberius::{TiberiusConnectionManager, TiberiusPool},
 };
 use actix_identity::Identity;
@@ -46,6 +46,13 @@ impl Aquarius {
 
     pub async fn get_active_regatta(&self) -> Regatta {
         self.get_regatta(self.active_regatta_id).await
+    }
+
+    pub async fn get_filters(&self, regatta_id: i32) -> Filters {
+        let start = Instant::now();
+        let filters = Filters::query(regatta_id, &mut self.pool.get().await).await;
+        debug!("Query filters from DB: {:?}", start.elapsed());
+        filters
     }
 
     pub async fn query_regattas(&self) -> Vec<Regatta> {

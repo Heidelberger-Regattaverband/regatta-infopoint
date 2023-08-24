@@ -32,13 +32,7 @@
         </items>
       </ViewSettingsFilterItem>
 
-      <ViewSettingsFilterItem text="{i18n>common.distance}" key="distance" multiSelect="false">
-        <items>
-          <ViewSettingsItem text="1000m" key="distance___EQ___1000" />
-          <ViewSettingsItem text="1500m" key="distance___EQ___1500" />
-          <ViewSettingsItem text="350m" key="distance___EQ___350" />
-        </items>
-      </ViewSettingsFilterItem>
+      <ViewSettingsFilterItem text="{i18n>common.distance}" key="distance" multiSelect="false" />
 
       <ViewSettingsFilterItem text="{i18n>common.lightweight}" key="lightweight" multiSelect="false">
         <items>
