@@ -184,6 +184,15 @@ sap.ui.define([
       }
     },
 
+    weekDayDateLabel: function (sDate) {
+      if (sDate) {
+        const sWeekday = Formatter.weekdayLabel(new Date(sDate).getDay());
+        const sDateLabel = Formatter.dateLabel(sDate);
+        return `${sWeekday}, ${sDateLabel}`;
+      }
+      return "";
+    },
+
     dayTimeIsoLabel: function (sDateTime) {
       if (sDateTime) {
         const oDateTime = new Date(sDateTime);

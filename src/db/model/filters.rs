@@ -7,10 +7,10 @@ use tiberius::Query;
 #[serde(rename_all = "camelCase")]
 pub struct Filters {
     /// Available distances of all races.
-    distance: Vec<i16>,
+    distances: Vec<i16>,
 
     /// All dates of the races.
-    date: Vec<NaiveDate>,
+    dates: Vec<NaiveDate>,
 }
 
 impl Filters {
@@ -20,7 +20,7 @@ impl Filters {
         query.bind(regatta_id);
         let stream = query.query(client).await.unwrap();
         let rows = utils::get_rows(stream).await;
-        let distance = rows.into_iter().map(|row| row.get_column("Offer_Distance")).collect();
+        let distances = rows.into_iter().map(|row| row.get_column("Offer_Distance")).collect();
 
         // get all available dates
         let mut query = Query::new(
@@ -29,8 +29,8 @@ impl Filters {
         query.bind(regatta_id);
         let stream = query.query(client).await.unwrap();
         let rows = utils::get_rows(stream).await;
-        let date = rows.into_iter().map(|row| row.get_column("Comp_Date")).collect();
+        let dates = rows.into_iter().map(|row| row.get_column("Comp_Date")).collect();
 
-        Filters { distance, date }
+        Filters { distances, dates }
     }
 }
