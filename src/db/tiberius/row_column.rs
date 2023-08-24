@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDate, Utc};
 use tiberius::{time::chrono::NaiveDateTime, Row};
 
 pub trait RowColumn<T>
@@ -54,6 +54,12 @@ impl RowColumn<NaiveDateTime> for Row {
 impl RowColumn<String> for Row {
     fn get_column(&self, col_name: &str) -> String {
         self.try_get::<&str, _>(col_name).unwrap().unwrap().to_string()
+    }
+}
+
+impl RowColumn<NaiveDate> for Row {
+    fn get_column(&self, col_name: &str) -> NaiveDate {
+        self.try_get::<NaiveDate, _>(col_name).unwrap().unwrap()
     }
 }
 
