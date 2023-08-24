@@ -102,7 +102,7 @@ sap.ui.define([
     _updateFilterBar: function (sText) {
       // update filter bar
       const oInfoToolbar = this.oTable.getInfoToolbar();
-      if (oInfoToolbar && oInfoToolbar.getContent()[0]) {
+      if (oInfoToolbar?.getContent()[0]) {
         oInfoToolbar.setVisible(this._aFilters.length > 0);
         oInfoToolbar.getContent()[0].setText(sText);
       }
