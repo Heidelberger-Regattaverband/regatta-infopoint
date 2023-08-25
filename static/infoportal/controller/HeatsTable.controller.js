@@ -82,7 +82,6 @@ sap.ui.define([
 
       _loadHeatsModel: async function () {
         await this.updateJSONModel(this._oHeatsModel, `/api/regattas/${this.getRegattaId()}/heats`, this.oTable);
-        // this.applyFilters();
       },
 
       _loadRegistrationsModel: async function (sHeatId) {
