@@ -75,7 +75,7 @@ sap.ui.define([
     },
 
     distanceLabel: function (oRace) {
-      if (oRace && oRace.distance) {
+      if (oRace?.distance) {
         return oRace.distance + "m";
       }
       return "";

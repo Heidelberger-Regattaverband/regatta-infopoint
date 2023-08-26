@@ -60,7 +60,7 @@ sap.ui.define([
       if (sPreviousHash) {
         window.history.go(-1);
       } else {
-        this.getRouter().navTo(sTarget, {}, true /* no history*/);
+        this.getRouter().navTo(sTarget, {}, undefined, true /* no history*/);
       }
     },
 
@@ -91,6 +91,6 @@ sap.ui.define([
         oControl.setBusy(false);
       }
     }
-  });
 
+  });
 });
