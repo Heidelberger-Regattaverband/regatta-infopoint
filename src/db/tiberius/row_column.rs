@@ -126,7 +126,7 @@ impl TryRowColumn<NaiveDateTime> for Row {
 impl TryRowColumn<DateTime<Utc>> for Row {
     fn try_get_column(&self, col_name: &str) -> Option<DateTime<Utc>> {
         match self.try_get::<NaiveDateTime, _>(col_name) {
-            Ok(value) => value.map(|date_time| DateTime::from_utc(date_time, Utc)),
+            Ok(value) => value.map(|date_time| DateTime::from_naive_utc_and_offset(date_time, Utc)),
             _ => None,
         }
     }
