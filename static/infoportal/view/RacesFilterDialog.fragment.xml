@@ -25,14 +25,14 @@
         </items>
       </ViewSettingsFilterItem>
 
+      <ViewSettingsFilterItem text="{i18n>common.distance}" key="distance" multiSelect="false" />
+
       <ViewSettingsFilterItem text="{i18n>common.state}" key="cancelled" multiSelect="false">
         <items>
           <ViewSettingsItem text="{i18n>common.scheduled}" key="cancelled___EQ___false" />
           <ViewSettingsItem text="{i18n>heat.state.cancelled}" key="cancelled___EQ___true" />
         </items>
       </ViewSettingsFilterItem>
-
-      <ViewSettingsFilterItem text="{i18n>common.distance}" key="distance" multiSelect="false" />
 
       <ViewSettingsFilterItem text="{i18n>common.lightweight}" key="lightweight" multiSelect="false">
         <items>
