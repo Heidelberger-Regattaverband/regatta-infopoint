@@ -111,7 +111,7 @@ impl Server {
         // bind http
         .bind(http_bind)?
         // bind https
-        .bind_rustls(https_bind, rustls_cfg)?;
+        .bind_rustls_021(https_bind, rustls_cfg)?;
 
         // configure number of workers if env. variable is set
         if let Some(workers) = get_http_workers() {
