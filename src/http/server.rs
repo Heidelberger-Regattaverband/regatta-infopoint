@@ -16,7 +16,7 @@ use actix_web::{
 use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder, StreamMetrics};
 use colored::Colorize;
 use dotenv::dotenv;
-use log::{debug, info};
+use log::{debug, info, warn};
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
 use std::{
@@ -66,10 +66,8 @@ impl Server {
         env_logger::init();
 
         let aquarius = create_app_data().await;
-        let rustls_cfg = Self::get_rustls_config();
         let (rl_max_requests, rl_interval) = Self::get_rate_limiter_config();
         let http_bind = Self::get_http_bind();
-        let https_bind = Self::get_https_bind();
         let secret_key = Self::get_secret_key();
 
         let mut http_server = HttpServer::new(move || {
@@ -109,9 +107,13 @@ impl Server {
                 .service(rest_api::monitor)
         })
         // bind http
-        .bind(http_bind)?
-        // bind https
-        .bind_rustls_021(https_bind, rustls_cfg)?;
+        .bind(http_bind)?;
+
+        // bind https if config is available
+        if let Some(rustls_cfg) = Self::get_rustls_config() {
+            let https_bind = Self::get_https_bind();
+            http_server = http_server.bind_rustls_021(https_bind, rustls_cfg)?;
+        }
 
         // configure number of workers if env. variable is set
         if let Some(workers) = get_http_workers() {
@@ -181,7 +183,7 @@ impl Server {
         (max_requests, interval)
     }
 
-    fn get_rustls_config() -> ServerConfig {
+    fn get_rustls_config() -> Option<ServerConfig> {
         // init server config builder with safe defaults
         let config = ServerConfig::builder().with_safe_defaults().with_no_client_auth();
 
@@ -195,29 +197,39 @@ impl Server {
 
         // load TLS key/cert files
         debug!(
-            "Loading TLS config: certificate {} and private key {}.",
+            "Try to load TLS config from: certificate {} and private key {}.",
             cert_pem_path.bold(),
             key_pem_path.bold()
         );
-        let cert_file = &mut BufReader::new(File::open(cert_pem_path).unwrap());
-        let key_file = &mut BufReader::new(File::open(key_pem_path).unwrap());
 
-        // convert files to key/cert objects
-        let cert_chain = certs(cert_file).unwrap().into_iter().map(Certificate).collect();
-        let mut keys: Vec<PrivateKey> = pkcs8_private_keys(key_file)
-            .unwrap()
-            .into_iter()
-            .map(PrivateKey)
-            .collect();
+        match File::open(cert_pem_path) {
+            Ok(cert_file) => {
+                let cert_reader = &mut BufReader::new(cert_file);
+                let cert_chain: Vec<Certificate> = certs(cert_reader).unwrap().into_iter().map(Certificate).collect();
 
-        // exit if no keys could be parsedpter for each variant
-        /////////////////
-        if keys.is_empty() {
-            eprintln!("Could not locate PKCS 8 private keys.");
-            std::process::exit(1);
+                match File::open(key_pem_path) {
+                    Ok(key_file) => {
+                        let key_reader = &mut BufReader::new(key_file);
+                        // convert files to key/cert objects
+                        let mut keys: Vec<PrivateKey> = pkcs8_private_keys(key_reader)
+                            .unwrap()
+                            .into_iter()
+                            .map(PrivateKey)
+                            .collect();
+
+                        // no keys could be parsedpter for each variant
+                        if keys.is_empty() {
+                            warn!("Could not locate PKCS 8 private keys.");
+                            return None;
+                        }
+
+                        Some(config.with_single_cert(cert_chain, keys.remove(0)).unwrap())
+                    }
+                    Err(_) => None,
+                }
+            }
+            Err(_) => None,
         }
-
-        config.with_single_cert(cert_chain, keys.remove(0)).unwrap()
     }
 
     fn get_http_bind() -> (String, u16) {
