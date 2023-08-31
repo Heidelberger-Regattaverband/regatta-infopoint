@@ -1,5 +1,5 @@
 # build image: docker build -t infoportal .
-# run container: docker run -it --rm --name infoportal -p 8080:8080 -p 8443:8443 --env DB_PASSWORD= infoportal
+# run container: docker run -it --rm --name infoportal -p 8080:8080 -p 8443:8443 --env DB_HOST= --env DB_NAME= --env DB_USER= --env DB_PASSWORD= infoportal
 
 ARG RUST_VERSION=1.72.0
 
@@ -43,7 +43,7 @@ RUN cargo build --release
 ###############
 ## run stage ##
 ###############
-FROM debian:bullseye-slim
+FROM ubuntu:23.04
 RUN apt-get update && apt-get upgrade -y
 WORKDIR /app
 
