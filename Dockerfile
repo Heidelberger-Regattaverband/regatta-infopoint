@@ -50,7 +50,7 @@ WORKDIR /app
 # copy server binary from build stage
 COPY --from=builder /code/target/release/infoportal infoportal
 COPY --from=builder /code/.env .env
-COPY --from=builder /code/static/infoportal/ static/infoportal
+COPY --from=builder /code/static/webapp/ static/webapp
 COPY --from=builder /code/ssl/ ssl
 
 # set user to non-root unless root is required for your app

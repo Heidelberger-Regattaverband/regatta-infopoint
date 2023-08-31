@@ -8,10 +8,10 @@ module.exports = function (grunt) {
       component: {
         options: {
           resources: {
-            cwd: 'infoportal',
+            cwd: 'webapp',
             prefix: 'de/regatta_hd/infopoint'
           },
-          dest: 'infoportal'
+          dest: 'webapp'
         },
         components: 'de/regatta_hd/infopoint'
       }
