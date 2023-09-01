@@ -11,14 +11,16 @@ LABEL maintainer="markus@ofterdinger.de"
 
 ARG NODE_VERSION=18
 
+# see https://github.com/hadolint/hadolint/wiki/DL4006
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
 # add node repository
 RUN curl -fsSL "https://deb.nodesource.com/setup_${NODE_VERSION}.x" | bash -
 
-# install required software
-RUN apt-get update && apt-get upgrade -y
-RUN rustup update stable
-RUN apt-get install curl sudo nodejs -y
-RUN sudo npm install -g grunt-cli
+RUN rustup update stable \
+ && apt-get update && apt-get upgrade -y \
+ && apt-get install -y --no-install-recommends curl sudo nodejs \
+ && sudo npm install -g grunt-cli
 
 WORKDIR /code
 
@@ -33,18 +35,18 @@ RUN cargo fetch
 
 COPY static/ static/
 
-# build UI
-RUN npm install --prefix ./static/
-RUN grunt --gruntfile ./static/Gruntfile.js
-
 # build rust application
-RUN cargo build --release
+RUN cargo build --release \
+ && npm install --prefix ./static/ \
+ && grunt --gruntfile ./static/Gruntfile.js
 
 ###############
 ## run stage ##
 ###############
 FROM ubuntu:23.04
-RUN apt-get update && apt-get upgrade -y
+RUN apt-get update && apt-get upgrade -y \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # copy server binary from build stage
