@@ -1,16 +1,16 @@
-use crate::config::{self};
+use crate::config::{self, Config};
 use async_trait::async_trait;
 use bb8::{ManageConnection, Pool, PooledConnection, State};
 use colored::Colorize;
 use log::debug;
 use std::sync::{Arc, Mutex};
-use tiberius::{error::Error, Client, Config};
+use tiberius::{error::Error, Client, Config as TiberiusConfig};
 use tokio::net::TcpStream;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
 
 #[derive(Debug)]
 pub struct TiberiusConnectionManager {
-    config: Config,
+    config: TiberiusConfig,
     count: Arc<Mutex<u32>>,
 }
 
@@ -23,8 +23,8 @@ impl TiberiusConnectionManager {
         }
     }
 
-    fn create_config() -> tiberius::Config {
-        let config = crate::config::Config::get().get_db_config();
+    fn create_config() -> TiberiusConfig {
+        let config = Config::get().get_db_config();
         config
     }
 

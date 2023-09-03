@@ -2,7 +2,7 @@ use colored::Colorize;
 use dotenv::dotenv;
 use log::info;
 use std::{env, sync::OnceLock};
-use tiberius::{AuthMethod, EncryptionLevel};
+use tiberius::{AuthMethod, Config as TiberiusConfig, EncryptionLevel};
 
 static CONFIG: OnceLock<Config> = OnceLock::new();
 
@@ -62,7 +62,7 @@ impl Config {
         (self.http_rl_max_requests, self.http_rl_interval)
     }
 
-    pub fn get_db_config(&self) -> tiberius::Config {
+    pub fn get_db_config(&self) -> TiberiusConfig {
         info!(
             "Database configuration: host={}, port={}, encryption={}, name={}, user={}",
             self.db_host.bold(),
@@ -72,7 +72,7 @@ impl Config {
             self.db_user.bold()
         );
 
-        let mut config = tiberius::Config::new();
+        let mut config = TiberiusConfig::new();
         config.host(self.db_host.clone());
         config.port(self.db_port);
         config.database(self.db_name.clone());
