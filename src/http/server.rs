@@ -166,8 +166,8 @@ impl Server {
         // init server config builder with safe defaults
         let config = ServerConfig::builder().with_safe_defaults().with_no_client_auth();
 
-        let cert_pem_path = env::var("HTTPS_CERT_PATH").unwrap_or_else(|_| "./ssl/cert.pem".to_string());
-        let key_pem_path = env::var("HTTPS_KEY_PATH").unwrap_or_else(|_| "./ssl/key.pem".to_string());
+        let cert_pem_path = crate::config::Config::get().https_cert_path.clone();
+        let key_pem_path = crate::config::Config::get().https_key_path.clone();
 
         debug!(
             "Current working directory is {}",

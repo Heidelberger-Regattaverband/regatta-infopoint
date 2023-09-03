@@ -11,6 +11,8 @@ pub struct Config {
     pub http_port: u16,
     pub https_bind: String,
     pub https_port: u16,
+    pub https_cert_path: String,
+    pub https_key_path: String,
     pub http_rl_max_requests: u64,
     pub http_rl_interval: u64,
     pub db_host: String,
@@ -97,6 +99,8 @@ impl Config {
             .unwrap_or_else(|_| "8443".to_string())
             .parse()
             .unwrap();
+        let https_cert_path = env::var("HTTPS_CERT_PATH").unwrap_or_else(|_| "./ssl/cert.pem".to_string());
+        let https_key_path = env::var("HTTPS_KEY_PATH").unwrap_or_else(|_| "./ssl/key.pem".to_string());
 
         // read ratelimiter config
         let http_rl_max_requests: u64 = env::var("HTTP_RL_MAX_REQUESTS")
@@ -121,7 +125,6 @@ impl Config {
             .unwrap_or_else(|_| "true".to_string())
             .parse()
             .unwrap();
-
         let db_pool_size: u32 = env::var("DB_POOL_MAX_SIZE")
             .unwrap_or_else(|_| "10".to_string())
             .parse()
@@ -132,6 +135,8 @@ impl Config {
             http_port,
             https_bind,
             https_port,
+            https_cert_path,
+            https_key_path,
             http_rl_max_requests,
             http_rl_interval,
             db_host,
