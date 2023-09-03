@@ -15,6 +15,7 @@ pub struct Config {
     pub https_key_path: String,
     pub http_rl_max_requests: u64,
     pub http_rl_interval: u64,
+    pub http_workers: Option<usize>,
     pub db_host: String,
     pub db_port: u16,
     pub db_name: String,
@@ -22,6 +23,8 @@ pub struct Config {
     pub db_password: String,
     pub db_encryption: bool,
     pub db_pool_size: u32,
+    pub active_regatta_id: i32,
+    pub cache_ttl: u64,
 }
 
 impl Config {
@@ -112,6 +115,12 @@ impl Config {
             .parse()
             .unwrap();
 
+        let http_workers: Option<usize> = match env::var("HTTP_WORKERS") {
+            // parses the value and panics if it's not a number
+            Ok(workers) => Some(workers.parse().unwrap()),
+            Err(_error) => Option::None,
+        };
+
         // read db config
         let db_host = env::var("DB_HOST").expect("env variable `DB_HOST` should be set");
         let db_port: u16 = env::var("DB_PORT")
@@ -130,6 +139,20 @@ impl Config {
             .parse()
             .unwrap();
 
+        let active_regatta_id: i32 = env::var("ACTIVE_REGATTA_ID")
+            .expect("env variable `ACTIVE_REGATTA_ID` should be set")
+            .parse()
+            .unwrap();
+        let cache_ttl: u64 = env::var("CACHE_TTL")
+            .unwrap_or_else(|_| "20".to_string())
+            .parse()
+            .unwrap();
+        info!(
+            "Aquarius: active_regatta_id={}, cache_ttl={}s",
+            active_regatta_id.to_string().bold(),
+            cache_ttl.to_string().bold()
+        );
+
         Config {
             http_bind,
             http_port,
@@ -139,6 +162,7 @@ impl Config {
             https_key_path,
             http_rl_max_requests,
             http_rl_interval,
+            http_workers,
             db_host,
             db_port,
             db_name,
@@ -146,6 +170,8 @@ impl Config {
             db_password,
             db_encryption,
             db_pool_size,
+            active_regatta_id,
+            cache_ttl,
         }
     }
 }

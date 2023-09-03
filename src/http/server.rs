@@ -19,7 +19,6 @@ use log::{debug, info, warn};
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
 use std::{
-    env,
     fs::File,
     future::Ready,
     io::{self, BufReader},
@@ -113,7 +112,7 @@ impl Server {
         }
 
         // configure number of workers if env. variable is set
-        if let Some(workers) = get_http_workers() {
+        if let Some(workers) = config.http_workers {
             http_server = http_server.workers(workers);
         }
 
@@ -166,8 +165,8 @@ impl Server {
         // init server config builder with safe defaults
         let config = ServerConfig::builder().with_safe_defaults().with_no_client_auth();
 
-        let cert_pem_path = crate::config::Config::get().https_cert_path.clone();
-        let key_pem_path = crate::config::Config::get().https_key_path.clone();
+        let cert_pem_path = Config::get().https_cert_path.clone();
+        let key_pem_path = Config::get().https_key_path.clone();
 
         debug!(
             "Current working directory is {}",
@@ -209,14 +208,6 @@ impl Server {
             }
             Err(_) => None,
         }
-    }
-}
-
-fn get_http_workers() -> Option<usize> {
-    match env::var("HTTP_WORKERS") {
-        // parses the value and panics if it's not a number
-        Ok(workers) => Some(workers.parse().unwrap()),
-        Err(_error) => Option::None,
     }
 }
 

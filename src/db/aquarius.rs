@@ -1,16 +1,15 @@
-use crate::db::{
-    cache::{CacheTrait, Caches},
-    model::{Club, Crew, Filters, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
-    tiberius::{TiberiusConnectionManager, TiberiusPool},
+use crate::{
+    config::Config,
+    db::{
+        cache::{CacheTrait, Caches},
+        model::{Club, Crew, Filters, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
+        tiberius::{TiberiusConnectionManager, TiberiusPool},
+    },
 };
 use actix_identity::Identity;
 use bb8::PooledConnection;
-use colored::Colorize;
-use log::{debug, info};
-use std::{
-    env,
-    time::{Duration, Instant},
-};
+use log::debug;
+use std::time::{Duration, Instant};
 
 pub type AquariusClient<'a> = PooledConnection<'a, TiberiusConnectionManager>;
 
@@ -23,24 +22,10 @@ pub struct Aquarius {
 impl Aquarius {
     /// Create a new `Aquarius`.
     pub async fn new() -> Self {
-        let active_regatta_id: i32 = env::var("ACTIVE_REGATTA_ID")
-            .expect("env variable `ACTIVE_REGATTA_ID` should be set")
-            .parse()
-            .unwrap();
-        let cache_ttl: u64 = env::var("CACHE_TTL")
-            .unwrap_or_else(|_| "20".to_string())
-            .parse()
-            .unwrap();
-        info!(
-            "Aquarius: active_regatta_id={}, cache_ttl={}s",
-            active_regatta_id.to_string().bold(),
-            cache_ttl.to_string().bold()
-        );
-
         Aquarius {
-            caches: Caches::new(Duration::from_secs(cache_ttl)),
+            caches: Caches::new(Duration::from_secs(Config::get().cache_ttl)),
             pool: TiberiusPool::new().await,
-            active_regatta_id,
+            active_regatta_id: Config::get().active_regatta_id,
         }
     }
 
