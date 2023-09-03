@@ -1,12 +1,17 @@
+mod config;
 mod db;
 mod http;
+
+use config::Config;
 
 use crate::http::server::Server;
 use std::io::Result;
 
 #[actix_web::main]
 async fn main() -> Result<()> {
-    Server::start().await
+    let config = Config::get();
+
+    Server::start(config).await
 }
 
 #[cfg(test)]

@@ -1,12 +1,10 @@
+use crate::config::{self};
 use async_trait::async_trait;
 use bb8::{ManageConnection, Pool, PooledConnection, State};
 use colored::Colorize;
-use log::{debug, info};
-use std::{
-    env,
-    sync::{Arc, Mutex},
-};
-use tiberius::{error::Error, AuthMethod, Client, Config, EncryptionLevel};
+use log::debug;
+use std::sync::{Arc, Mutex};
+use tiberius::{error::Error, Client, Config};
 use tokio::net::TcpStream;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
 
@@ -26,38 +24,7 @@ impl TiberiusConnectionManager {
     }
 
     fn create_config() -> tiberius::Config {
-        let db_host = env::var("DB_HOST").expect("env variable `DB_HOST` should be set");
-        let db_port: u16 = env::var("DB_PORT")
-            .unwrap_or_else(|_| "1433".to_string())
-            .parse()
-            .unwrap();
-        let db_name = env::var("DB_NAME").expect("env variable `DB_NAME` should be set");
-        let db_user = env::var("DB_USER").expect("env variable `DB_USER` should be set");
-        let db_password = env::var("DB_PASSWORD").expect("env variable `DB_PASSWORD` should be set");
-        let db_encryption: bool = env::var("DB_ENCRYPTION")
-            .unwrap_or_else(|_| "true".to_string())
-            .parse()
-            .unwrap();
-        info!(
-            "Database configuration: host={}, port={}, encryption={}, name={}, user={}",
-            db_host.bold(),
-            db_port.to_string().bold(),
-            db_encryption.to_string().bold(),
-            db_name.bold(),
-            db_user.bold()
-        );
-
-        let mut config = Config::new();
-        config.host(db_host);
-        config.port(db_port);
-        config.database(db_name);
-        config.authentication(AuthMethod::sql_server(db_user, db_password));
-        if db_encryption {
-            config.encryption(EncryptionLevel::Required);
-            config.trust_cert();
-        } else {
-            config.encryption(EncryptionLevel::NotSupported);
-        }
+        let config = crate::config::Config::get().get_db_config();
         config
     }
 
@@ -99,10 +66,7 @@ pub struct TiberiusPool {
 
 impl TiberiusPool {
     pub async fn new() -> Self {
-        let db_pool_size: u32 = env::var("DB_POOL_MAX_SIZE")
-            .unwrap_or_else(|_| "10".to_string())
-            .parse()
-            .unwrap();
+        let db_pool_size: u32 = config::Config::get().db_pool_size;
 
         let manager = TiberiusConnectionManager::new();
         let count = manager.count.clone();

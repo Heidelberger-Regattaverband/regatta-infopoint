@@ -1,4 +1,4 @@
-use crate::{db::aquarius::Aquarius, http::rest_api};
+use crate::{config::Config, db::aquarius::Aquarius, http::rest_api};
 use actix_extensible_rate_limit::{
     backend::{memory::InMemoryBackend, SimpleInput, SimpleInputFunctionBuilder, SimpleOutput},
     RateLimiter,
@@ -15,7 +15,6 @@ use actix_web::{
 };
 use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder, StreamMetrics};
 use colored::Colorize;
-use dotenv::dotenv;
 use log::{debug, info, warn};
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
@@ -59,15 +58,13 @@ impl Server {
             .wrap(Self::get_rate_limiter(rl_max_requests, rl_interval))
     }
 
-    pub async fn start() -> io::Result<()> {
+    pub async fn start(config: &Config) -> io::Result<()> {
         let start = Instant::now();
 
-        dotenv().ok();
         env_logger::init();
 
         let aquarius = create_app_data().await;
-        let (rl_max_requests, rl_interval) = Self::get_rate_limiter_config();
-        let http_bind = Self::get_http_bind();
+        let (rl_max_requests, rl_interval) = config.get_rate_limiter_config();
         let secret_key = Self::get_secret_key();
 
         let mut http_server = HttpServer::new(move || {
@@ -107,11 +104,11 @@ impl Server {
                 .service(rest_api::monitor)
         })
         // bind http
-        .bind(http_bind)?;
+        .bind(config.get_http_bind())?;
 
         // bind https if config is available
         if let Some(rustls_cfg) = Self::get_rustls_config() {
-            let https_bind = Self::get_https_bind();
+            let https_bind = config.get_https_bind();
             http_server = http_server.bind_rustls_021(https_bind, rustls_cfg)?;
         }
 
@@ -165,24 +162,6 @@ impl Server {
             .build()
     }
 
-    /// Returns the rate limiter configuration taken from the environment.
-    fn get_rate_limiter_config() -> (u64, u64) {
-        let max_requests: u64 = env::var("HTTP_RL_MAX_REQUESTS")
-            .unwrap_or_else(|_| "50".to_string())
-            .parse()
-            .unwrap();
-        let interval: u64 = env::var("HTTP_RL_INTERVAL")
-            .unwrap_or_else(|_| "60".to_string())
-            .parse()
-            .unwrap();
-        debug!(
-            "HTTP/S Server rate limiter max. requests {} in {} seconds.",
-            max_requests.to_string().bold(),
-            interval.to_string().bold()
-        );
-        (max_requests, interval)
-    }
-
     fn get_rustls_config() -> Option<ServerConfig> {
         // init server config builder with safe defaults
         let config = ServerConfig::builder().with_safe_defaults().with_no_client_auth();
@@ -230,36 +209,6 @@ impl Server {
             }
             Err(_) => None,
         }
-    }
-
-    fn get_http_bind() -> (String, u16) {
-        let port: u16 = env::var("HTTP_PORT")
-            .unwrap_or_else(|_| "8080".to_string())
-            .parse()
-            .unwrap();
-        let host = env::var("HTTP_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
-        debug!(
-            "HTTP server is listening on: {}:{}",
-            host.bold(),
-            port.to_string().bold()
-        );
-
-        (host, port)
-    }
-
-    fn get_https_bind() -> (String, u16) {
-        let port: u16 = env::var("HTTPS_PORT")
-            .unwrap_or_else(|_| "8443".to_string())
-            .parse()
-            .unwrap();
-        let host = env::var("HTTPS_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
-        debug!(
-            "HTTPS server is listening on: {}:{}",
-            host.bold(),
-            port.to_string().bold()
-        );
-
-        (host, port)
     }
 }
 
