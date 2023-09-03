@@ -28,7 +28,7 @@ impl Aquarius {
             .parse()
             .unwrap();
         let cache_ttl: u64 = env::var("CACHE_TTL")
-            .expect("env variable `CACHE_TTL` should be set")
+            .unwrap_or_else(|_| "20".to_string())
             .parse()
             .unwrap();
         info!(

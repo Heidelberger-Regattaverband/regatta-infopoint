@@ -168,11 +168,11 @@ impl Server {
     /// Returns the rate limiter configuration taken from the environment.
     fn get_rate_limiter_config() -> (u64, u64) {
         let max_requests: u64 = env::var("HTTP_RL_MAX_REQUESTS")
-            .expect("env variable `HTTP_RL_MAX_REQUESTS` should be set")
+            .unwrap_or_else(|_| "50".to_string())
             .parse()
             .unwrap();
         let interval: u64 = env::var("HTTP_RL_INTERVAL")
-            .expect("env variable `HTTP_RL_INTERVAL` should be set")
+            .unwrap_or_else(|_| "60".to_string())
             .parse()
             .unwrap();
         debug!(
@@ -234,7 +234,7 @@ impl Server {
 
     fn get_http_bind() -> (String, u16) {
         let port: u16 = env::var("HTTP_PORT")
-            .expect("env variable `HTTP_PORT` should be set")
+            .unwrap_or_else(|_| "8080".to_string())
             .parse()
             .unwrap();
         let host = env::var("HTTP_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
@@ -249,7 +249,7 @@ impl Server {
 
     fn get_https_bind() -> (String, u16) {
         let port: u16 = env::var("HTTPS_PORT")
-            .expect("env variable `HTTPS_PORT` should be set")
+            .unwrap_or_else(|_| "8443".to_string())
             .parse()
             .unwrap();
         let host = env::var("HTTPS_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());

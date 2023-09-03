@@ -35,7 +35,7 @@ impl TiberiusConnectionManager {
         let db_user = env::var("DB_USER").expect("env variable `DB_USER` should be set");
         let db_password = env::var("DB_PASSWORD").expect("env variable `DB_PASSWORD` should be set");
         let db_encryption: bool = env::var("DB_ENCRYPTION")
-            .expect("env variable `DB_ENCRYPTION` should be set")
+            .unwrap_or_else(|_| "true".to_string())
             .parse()
             .unwrap();
         info!(
@@ -100,7 +100,7 @@ pub struct TiberiusPool {
 impl TiberiusPool {
     pub async fn new() -> Self {
         let db_pool_size: u32 = env::var("DB_POOL_MAX_SIZE")
-            .expect("env variable `DB_POOL_MAX_SIZE` should be set")
+            .unwrap_or_else(|_| "10".to_string())
             .parse()
             .unwrap();
 
