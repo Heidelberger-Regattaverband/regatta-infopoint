@@ -28,7 +28,6 @@ mod tests {
     #[actix_web::test]
     async fn test_get_regattas() {
         dotenv().ok();
-        env_logger::init();
 
         let app_data = create_app_data().await;
 
