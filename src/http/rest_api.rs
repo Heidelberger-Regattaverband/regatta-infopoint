@@ -146,7 +146,7 @@ async fn calculate_scoring(
 
 #[post("/login")]
 async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<impl Responder, Error> {
-    match User::authenticate(credentials.into_inner()) {
+    match User::authenticate(credentials.into_inner()).await {
         // authentication succeeded
         Ok(user) => {
             // attach valid user identity to current session
