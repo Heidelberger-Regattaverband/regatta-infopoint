@@ -18,14 +18,9 @@ impl TiberiusConnectionManager {
     /// Creates a new `TiberiusConnectionManager`.
     fn new() -> TiberiusConnectionManager {
         TiberiusConnectionManager {
-            config: Self::create_config(),
+            config: Config::get().get_db_config(),
             count: Arc::new(Mutex::new(0)),
         }
-    }
-
-    fn create_config() -> TiberiusConfig {
-        let config = Config::get().get_db_config();
-        config
     }
 
     fn inc_count(&self) {
