@@ -63,15 +63,6 @@ impl Config {
     }
 
     pub fn get_db_config(&self) -> TiberiusConfig {
-        info!(
-            "Database configuration: host={}, port={}, encryption={}, name={}, user={}",
-            self.db_host.bold(),
-            self.db_port.to_string().bold(),
-            self.db_encryption.to_string().bold(),
-            self.db_name.bold(),
-            self.db_user.bold()
-        );
-
         let mut config = TiberiusConfig::new();
         config.host(self.db_host.clone());
         config.port(self.db_port);
@@ -88,6 +79,7 @@ impl Config {
 
     fn _init() -> Self {
         dotenv().ok();
+        env_logger::init();
 
         // read http config
         let http_bind = env::var("HTTP_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
@@ -138,6 +130,15 @@ impl Config {
             .unwrap_or_else(|_| "10".to_string())
             .parse()
             .unwrap();
+        info!(
+            "Database configuration: host={}, port={}, encryption={}, name={}, user={}, pool_size={}",
+            db_host.bold(),
+            db_port.to_string().bold(),
+            db_encryption.to_string().bold(),
+            db_name.bold(),
+            db_user.bold(),
+            db_pool_size.to_string().bold(),
+        );
 
         let active_regatta_id: i32 = env::var("ACTIVE_REGATTA_ID")
             .expect("env variable `ACTIVE_REGATTA_ID` should be set")

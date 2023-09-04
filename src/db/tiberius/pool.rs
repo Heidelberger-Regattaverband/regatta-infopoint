@@ -1,4 +1,4 @@
-use crate::config::{self, Config};
+use crate::config::Config;
 use async_trait::async_trait;
 use bb8::{ManageConnection, Pool, PooledConnection, State};
 use colored::Colorize;
@@ -61,18 +61,15 @@ pub struct TiberiusPool {
 
 impl TiberiusPool {
     pub async fn new() -> Self {
-        let db_pool_size: u32 = config::Config::get().db_pool_size;
-
         let manager = TiberiusConnectionManager::new();
         let count = manager.count.clone();
 
-        debug!(
-            "Creating DB pool with configuration: max_size={}",
-            db_pool_size.to_string().bold()
-        );
-
         TiberiusPool {
-            inner: Pool::builder().max_size(db_pool_size).build(manager).await.unwrap(),
+            inner: Pool::builder()
+                .max_size(Config::get().db_pool_size)
+                .build(manager)
+                .await
+                .unwrap(),
             count,
         }
     }

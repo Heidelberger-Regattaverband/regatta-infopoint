@@ -60,8 +60,6 @@ impl Server {
     pub async fn start(config: &Config) -> io::Result<()> {
         let start = Instant::now();
 
-        env_logger::init();
-
         let aquarius = create_app_data().await;
         let (rl_max_requests, rl_interval) = config.get_rate_limiter_config();
         let secret_key = Self::get_secret_key();
