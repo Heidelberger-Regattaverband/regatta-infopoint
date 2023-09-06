@@ -29,12 +29,10 @@ git clone https://github.com/Heidelberger-Regattaverband/docker.git
 ```
 
 ## Setup MS-SQL Server
-
 Prepare MS-SQL server directories:
 ```bash
 mkdir /mssql && mkdir /mssql/backup && mkdir /mssql/restore
-chown -R 10001 /mssql
-chmod -R 775 /mssql
+chown -R 10001 /mssql && chmod -R 775 /mssql
 ```
 
 Configure the docker container settings and start MS-SQL Server:
@@ -66,15 +64,7 @@ docker-compose up -d && docker logs watchtower -f
 ```
 
 ## Additional MS-SQL setup
-
 Add a new mssql user:
 ```bash
 adduser mssql -u 10001
-```
-
-Add backup and restore folder for MS-SQL:
-```bash
-su - mssql
-mkdir /mssql/backup
-mkdir /mssql/restore
 ```
