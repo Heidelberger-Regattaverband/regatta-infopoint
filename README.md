@@ -51,12 +51,18 @@ scp <local_file> root@<full-qualified-hostname>:/mssql/restore
 Import the database backup files from the restore directory with SQL Server Management Studio.
 
 ## Setup Regatta Infoportal
-
 Configure the docker container settings and start Infoportal:
 ```bash
 cd docker/infoportal
 nano .env
 docker-compose up -d && docker logs infoportal -f
+```
+
+## Setup Watchtower
+Start Watchtower:
+```bash
+cd docker/watchtower
+docker-compose up -d && docker logs watchtower -f
 ```
 
 ## Additional MS-SQL setup
