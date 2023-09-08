@@ -63,8 +63,13 @@ cd docker/watchtower
 docker-compose up -d && docker logs watchtower -f
 ```
 
-## Additional MS-SQL setup
+## Add MS-SQL User
 Add a new mssql user:
 ```bash
 adduser mssql -u 10001
+```
+
+## Copy public key
+```bash
+ssh-copy-id -i .ssh/id_rsa.pub root@<host_name>
 ```
