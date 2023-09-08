@@ -57,7 +57,7 @@ docker-compose up -d && docker logs infoportal -f
 ```
 
 ## Setup Watchtower
-Watchtower is a tool that automatically updates docker containers if a new version of a docker image is available.
+[Watchtower](https://hub.docker.com/r/containrrr/watchtower) is a tool to automatically update docker containers, if a new version of a docker image is available.
 Start Watchtower:
 ```bash
 cd docker/watchtower
