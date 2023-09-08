@@ -57,6 +57,7 @@ docker-compose up -d && docker logs infoportal -f
 ```
 
 ## Setup Watchtower
+Watchtower is a tool that automatically updates docker containers if a new version of a docker image is available.
 Start Watchtower:
 ```bash
 cd docker/watchtower
@@ -69,7 +70,13 @@ Add a new mssql user:
 adduser mssql -u 10001
 ```
 
-## Copy public key
+## Create and copy public key
+Create a new private SSH key:
 ```bash
-ssh-copy-id -i .ssh/id_rsa.pub root@<host_name>
+ssh-keygen -b 4096
+```
+
+Copy the public key to any remote host to enable login without password:
+```bash
+ssh-copy-id -i .ssh/id_rsa.pub root@<full-qualified-hostname>
 ```
