@@ -9,7 +9,7 @@ sudo -i
 Install required packages:
 ```bash
 apt update && apt upgrade
-apt install certbot git docker.io docker-compose htop deborphan
+apt install certbot git docker.io docker-compose htop deborphan sshpass
 ```
 
 Request letsencrypt certificates for all hostnames:
