@@ -71,6 +71,7 @@ pub(super) struct Caches {
     pub regs: Cache<i32, Vec<Registration>>,
 
     // caches with entries per heat
+    pub heat: Cache<i32, Heat>,
     pub heat_registrations: Cache<i32, Vec<HeatRegistration>>,
 }
 
@@ -95,6 +96,7 @@ impl Caches {
             regs: Cache::new(MAX_RACES_COUNT, ttl),
 
             // ccaches with entries per heat
+            heat: Cache::new(MAX_HEATS_COUNT, ttl),
             heat_registrations: Cache::new(MAX_HEATS_COUNT, ttl),
         }
     }

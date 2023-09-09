@@ -80,6 +80,7 @@ impl Server {
                         .service(rest_api::get_races)
                         .service(rest_api::get_heats)
                         .service(rest_api::get_filters)
+                        .service(rest_api::get_heat)
                         .service(rest_api::get_kiosk)
                         .service(rest_api::get_registrations)
                         .service(rest_api::get_heat_registrations)

@@ -8,6 +8,8 @@ use log::info;
 use serde::Serialize;
 use tiberius::{Query, Row};
 
+use super::HeatRegistration;
+
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Heat {
@@ -39,6 +41,9 @@ pub struct Heat {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     date_time: Option<DateTime<Utc>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub registrations: Option<Vec<HeatRegistration>>,
 }
 
 impl ToEntity<Heat> for Row {
@@ -57,6 +62,7 @@ impl ToEntity<Heat> for Row {
             cancelled,
             date_time: self.try_get_column("Comp_DateTime"),
             referee: self.try_to_entity(),
+            registrations: None,
         }
     }
 }
@@ -78,6 +84,7 @@ impl TryToEntity<Heat> for Row {
                 cancelled,
                 date_time: self.try_get_column("Comp_DateTime"),
                 referee: self.try_to_entity(),
+                registrations: None,
             })
         } else {
             None
@@ -101,6 +108,22 @@ impl Heat {
         let stream = query.query(client).await.unwrap();
         let heats = utils::get_rows(stream).await;
         heats.into_iter().map(|row| row.to_entity()).collect()
+    }
+
+    pub async fn query_single<'a>(heat_id: i32, client: &mut AquariusClient<'_>) -> Heat {
+        let mut query = Query::new(
+            "SELECT DISTINCT Comp.*, AgeClass.*, BoatClass.*, Referee.*, Offer.*
+						FROM Comp
+						JOIN Offer       ON Offer_ID                  = Comp_Race_ID_FK
+						JOIN AgeClass    ON Offer_AgeClass_ID_FK      = AgeClass_ID
+						JOIN BoatClass              ON Offer_BoatClass_ID_FK     = BoatClass_ID
+						FULL OUTER JOIN CompReferee ON CompReferee_Comp_ID_FK    = Comp_ID
+						FULL OUTER JOIN Referee     ON CompReferee_Referee_ID_FK = Referee_ID
+						WHERE Comp_ID = @P1",
+        );
+        query.bind(heat_id);
+        let stream = query.query(client).await.unwrap();
+        utils::get_row(stream).await.to_entity()
     }
 
     pub async fn search<'a>(regatta_id: i32, filter: String, client: &mut AquariusClient<'_>) -> Vec<Heat> {

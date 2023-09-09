@@ -102,6 +102,17 @@ impl Aquarius {
         }
     }
 
+    /// Returns heat details for the given identifier.
+    pub async fn get_heat(&self, heat_id: i32, opt_user: Option<Identity>) -> Heat {
+        if opt_user.is_some() {
+            self._query_heat(heat_id).await
+        } else if let Some(heat) = self.caches.heat.get(&heat_id).await {
+            heat
+        } else {
+            self._query_heat(heat_id).await
+        }
+    }
+
     pub async fn get_heat_registrations(&self, heat_id: i32, opt_user: Option<Identity>) -> Vec<HeatRegistration> {
         if opt_user.is_some() {
             self._query_heat_registrations(heat_id).await
@@ -203,6 +214,15 @@ impl Aquarius {
         self.caches.heats.set(&regatta_id, &heats).await;
         debug!("Query heats of regatta {} from DB: {:?}", regatta_id, start.elapsed());
         heats
+    }
+
+    async fn _query_heat(&self, heat_id: i32) -> Heat {
+        let start = Instant::now();
+        let mut heat = Heat::query_single(heat_id, &mut self.pool.get().await).await;
+        heat.registrations = Some(self._query_heat_registrations(heat_id).await);
+        self.caches.heat.set(&heat_id, &heat).await;
+        debug!("Query heat {} from DB: {:?}", heat_id, start.elapsed());
+        heat
     }
 
     async fn _query_heat_registrations(&self, heat_id: i32) -> Vec<HeatRegistration> {

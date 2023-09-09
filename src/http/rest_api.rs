@@ -84,6 +84,12 @@ async fn get_heat_registrations(
     Json(aquarius.get_heat_registrations(heat_id, opt_user).await)
 }
 
+#[get("/heats/{id}")]
+async fn get_heat(path: Path<i32>, aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Json<Heat> {
+    let heat_id = path.into_inner();
+    Json(aquarius.get_heat(heat_id, opt_user).await)
+}
+
 #[get("/regattas/{id}/participating_clubs")]
 async fn get_participating_clubs(path: Path<i32>, aquarius: Data<Aquarius>) -> impl Responder {
     let regatta_id = path.into_inner();
