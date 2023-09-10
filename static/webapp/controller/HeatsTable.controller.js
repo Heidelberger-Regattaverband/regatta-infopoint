@@ -20,12 +20,12 @@ sap.ui.define([
         this._oHeatsModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/heats`, this.oTable);
         this.setViewModel(this._oHeatsModel, "heats");
 
-        this._oRegistrationsModel = new JSONModel();
-        this.getOwnerComponent().setModel(this._oRegistrationsModel, "heatRegistrations");
+        this._oHeatModel = new JSONModel();
+        this.getOwnerComponent().setModel(this._oHeatModel, "heatRegistrations");
 
         this.getRouter().getRoute("heats").attachMatched(async (_) => await this._loadHeatsModel(), this);
 
-        this.getEventBus().subscribe("heat", "refresh", async (_) => await this._loadHeatsModel(), this);
+        // this.getEventBus().subscribe("heat", "refresh", async (_) => await this._loadHeatsModel(), this);
 
         const oFilters = this.getOwnerComponent().getModel("filters").getData();
 
@@ -60,7 +60,7 @@ sap.ui.define([
 
           this.getOwnerComponent().setModel(new JSONModel(oHeat), "heat");
 
-          this._loadRegistrationsModel(oHeat.id);
+          this._loadHeatModel(oHeat.id);
           this.displayTarget("heatRegistrations");
         }
       },
@@ -84,13 +84,13 @@ sap.ui.define([
         await this.updateJSONModel(this._oHeatsModel, `/api/regattas/${this.getRegattaId()}/heats`, this.oTable);
       },
 
-      _loadRegistrationsModel: async function (sHeatId) {
-        await this.updateJSONModel(this._oRegistrationsModel, `/api/heats/${sHeatId}/registrations`, undefined);
+      _loadHeatModel: async function (sHeatId) {
+        await this.updateJSONModel(this._oHeatModel, `/api/heats/${sHeatId}`, undefined);
       },
 
       onItemChanged: function (oItem) {
         this.getOwnerComponent().getModel("heat").setData(oItem);
-        this._loadRegistrationsModel(oItem.id);
+        this._loadHeatModel(oItem.id);
       },
 
       onFilterButtonPress: async function (oEvent) {

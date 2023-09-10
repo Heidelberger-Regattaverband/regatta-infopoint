@@ -1,7 +1,7 @@
 use crate::{
     db::{
         aquarius::Aquarius,
-        model::{Club, Filters, Heat, HeatRegistration, Race, Regatta, Registration},
+        model::{Club, Filters, Heat, Race, Regatta, Registration},
     },
     http::{
         auth::{Credentials, Scope, User},
@@ -72,16 +72,6 @@ async fn get_heats(path: Path<i32>, odata_params: Query<OData>, aquarius: Data<A
 async fn get_filters(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Filters> {
     let regatta_id = path.into_inner();
     Json(aquarius.get_filters(regatta_id).await)
-}
-
-#[get("/heats/{id}/registrations")]
-async fn get_heat_registrations(
-    path: Path<i32>,
-    aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
-) -> Json<Vec<HeatRegistration>> {
-    let heat_id = path.into_inner();
-    Json(aquarius.get_heat_registrations(heat_id, opt_user).await)
 }
 
 #[get("/heats/{id}")]

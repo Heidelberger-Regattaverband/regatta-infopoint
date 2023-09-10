@@ -39,7 +39,7 @@
             <f:DynamicPageHeader>
               <layout:HorizontalLayout allowWrapping="true">
                 <layout:VerticalLayout class="sapUiMediumMarginEnd">
-                  <ObjectAttribute title="{i18n>common.time}" text="{path: 'heat>/dateTime', formatter: '.formatter.dayTimeIsoLabel'}" />
+                  <ObjectAttribute title="{i18n>common.time}" text="{path: 'heatRegistrations>/dateTime', formatter: '.formatter.dayTimeIsoLabel'}" />
                   <ObjectAttribute title="{i18n>common.distance}" text="{path: 'heat>/race', formatter: '.formatter.distanceLabel'}" />
                   <ObjectAttribute title="{i18n>common.heatNr}" text="{heat>/number}" />
                 </layout:VerticalLayout>
@@ -58,7 +58,7 @@
           <f:content>
             <Table autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
               sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding"
-              items="{path: 'heatRegistrations>/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}">
+              items="{path: 'heatRegistrations>/registrations/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}">
 
               <columns>
                 <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline" visible="{= ${heat>/state} >= 4 }">
