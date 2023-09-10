@@ -12,8 +12,7 @@ sap.ui.define([
     onInit: async function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this._oHeatModel = new JSONModel();
-      this.setComponentModel(this._oHeatModel, "heatRegistrations");
+      this.setViewModel(new JSONModel(), "heatRegistrations");
 
       this.getRouter().getRoute("heatRegistrations").attachMatched(async (_) => await this._loadHeatModel(), this);
     },
@@ -48,7 +47,7 @@ sap.ui.define([
 
     _loadHeatModel: async function () {
       const oHeat = this.getComponentModel("heat").getData();
-      await this.updateJSONModel(this._oHeatModel, `/api/heats/${oHeat.id}`, undefined);
+      await this.updateJSONModel(this.getViewModel("heatRegistrations"), `/api/heats/${oHeat.id}`, this.getView());
     },
 
   });
