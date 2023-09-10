@@ -61,8 +61,12 @@ sap.ui.define([
       const oldestWoman = oStatistics.athletes.oldestWoman;
       const oldestMan = oStatistics.athletes.oldestMan;
       const athletes = [];
-      athletes.push({ name: this.i18n("statistics.athletes.oldestWoman", undefined), value: Formatter.athleteLabel(oldestWoman) });
-      athletes.push({ name: this.i18n("statistics.athletes.oldestMan", undefined), value: Formatter.athleteLabel(oldestMan) });
+      if (oldestWoman) {
+        athletes.push({ name: this.i18n("statistics.athletes.oldestWoman", undefined), value: Formatter.athleteLabel(oldestWoman) });
+      }
+      if (oldestMan) {
+        athletes.push({ name: this.i18n("statistics.athletes.oldestMan", undefined), value: Formatter.athleteLabel(oldestMan) });
+      }
 
       // update model
       this._oStatisticsModel.setProperty("/registrations", registrations);

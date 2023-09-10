@@ -1,6 +1,6 @@
 use crate::db::{
     aquarius::AquariusClient,
-    model::{utils, Athlete, ToEntity},
+    model::{utils, Athlete, ToEntity, TryToEntity},
     tiberius::RowColumn,
 };
 use serde::Serialize;
@@ -81,8 +81,11 @@ impl ToEntity<Statistics> for Row {
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 struct Athletes {
-    oldest_woman: Athlete,
-    oldest_man: Athlete,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    oldest_woman: Option<Athlete>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    oldest_man: Option<Athlete>,
 }
 
 impl Statistics {
@@ -115,13 +118,13 @@ impl Statistics {
             FROM  Entry
             JOIN  Crew ON Crew_Entry_ID_FK = Entry_ID
             WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) AS registrations_clubs,
-          (SELECT SUM(BoatClass_NumRowers) FROM (
+          (SELECT COALESCE(SUM(BoatClass_NumRowers), 0) FROM (
             SELECT BoatClass_NumRowers
             FROM  Entry
             JOIN  Offer     ON Offer_ID = Entry_Race_ID_FK
             JOIN  BoatClass ON BoatClass_ID = Offer_BoatClass_ID_FK
             WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) as seats) AS registrations_seats,
-          (SELECT SUM(BoatClass_Coxed) FROM (
+          (SELECT COALESCE(SUM(BoatClass_Coxed), 0) FROM (
             SELECT BoatClass_Coxed 
             FROM  Entry
             JOIN  Offer     ON Offer_ID = Entry_Race_ID_FK
@@ -142,7 +145,7 @@ impl Statistics {
         stats
     }
 
-    async fn query_oldest<'a>(regatta_id: i32, gender: &str, client: &mut AquariusClient<'_>) -> Athlete {
+    async fn query_oldest<'a>(regatta_id: i32, gender: &str, client: &mut AquariusClient<'_>) -> Option<Athlete> {
         let mut query = Query::new(
             "SELECT DISTINCT TOP 1 Athlet.*, Club.*
             FROM  Entry
@@ -155,6 +158,10 @@ impl Statistics {
         query.bind(regatta_id);
         query.bind(gender);
         let stream = query.query(client).await.unwrap();
-        utils::get_row(stream).await.to_entity()
+        if let Some(row) = utils::try_get_row(stream).await {
+            row.try_to_entity()
+        } else {
+            None
+        }
     }
 }
