@@ -95,13 +95,11 @@ impl TryToEntity<Heat> for Row {
 impl Heat {
     pub async fn query_all<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Heat> {
         let mut query = Query::new(
-            "SELECT DISTINCT Comp.*, AgeClass.*, BoatClass.*, Referee.*, Offer.*
-            FROM Comp
-            FULL OUTER JOIN Offer       ON Offer_ID                  = Comp_Race_ID_FK
-            FULL OUTER JOIN AgeClass    ON Offer_AgeClass_ID_FK      = AgeClass_ID
-            JOIN BoatClass              ON Offer_BoatClass_ID_FK     = BoatClass_ID
-            FULL OUTER JOIN CompReferee ON CompReferee_Comp_ID_FK    = Comp_ID
-            FULL OUTER JOIN Referee     ON CompReferee_Referee_ID_FK = Referee_ID
+            "SELECT DISTINCT c.*, a.*, b.*, o.*
+            FROM Comp c
+            JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
+            JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
+            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
             WHERE Comp_Event_ID_FK = @P1 ORDER BY Comp_DateTime ASC",
         );
         query.bind(regatta_id);
