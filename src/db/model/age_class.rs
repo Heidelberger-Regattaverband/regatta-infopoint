@@ -1,5 +1,5 @@
 use crate::db::{
-    model::TryToEntity,
+    model::{ToEntity, TryToEntity},
     tiberius::{RowColumn, TryRowColumn},
 };
 use serde::Serialize;
@@ -14,6 +14,19 @@ pub struct AgeClass {
     suffix: String,
     gender: String,
     num_sub_classes: u8,
+}
+
+impl ToEntity<AgeClass> for Row {
+    fn to_entity(&self) -> AgeClass {
+        AgeClass {
+            id: self.get_column("AgeClass_ID"),
+            caption: self.get_column("AgeClass_Caption"),
+            abbreviation: self.get_column("AgeClass_Abbr"),
+            suffix: self.try_get_column("AgeClass_Suffix").unwrap_or_default(),
+            gender: self.get_column("AgeClass_Gender"),
+            num_sub_classes: self.get_column("AgeClass_NumSubClasses"),
+        }
+    }
 }
 
 impl TryToEntity<AgeClass> for Row {
