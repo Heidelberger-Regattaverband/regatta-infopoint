@@ -46,8 +46,12 @@ sap.ui.define([
     },
 
     _loadHeatModel: async function () {
-      const oHeat = this.getComponentModel("heat").getData();
-      await this.updateJSONModel(this.getViewModel("heatRegistrations"), `/api/heats/${oHeat.id}`, this.getView());
+      const oHeat = this.getComponentModel("heat");
+      if (oHeat) {
+        await this.updateJSONModel(this.getViewModel("heatRegistrations"), `/api/heats/${oHeat.getData().id}`, this.getView());
+      } else {
+        this.onNavBack();
+      }
     },
 
   });
