@@ -13,21 +13,18 @@ sap.ui.define([
       formatter: Formatter,
 
       onInit: async function () {
-        this.init(this.getView().byId("heatsTable"), "heat");
+        this.init(this.getView().byId("heatsTable"), "heat" /* eventBus channel */);
 
         this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
         this._oHeatsModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/heats`, this.oTable);
         this.setViewModel(this._oHeatsModel, "heats");
 
-        this._oHeatModel = new JSONModel();
-        this.getOwnerComponent().setModel(this._oHeatModel, "heatRegistrations");
+        this.setComponentModel(new JSONModel(), "heat");
 
         this.getRouter().getRoute("heats").attachMatched(async (_) => await this._loadHeatsModel(), this);
 
-        // this.getEventBus().subscribe("heat", "refresh", async (_) => await this._loadHeatsModel(), this);
-
-        const oFilters = this.getOwnerComponent().getModel("filters").getData();
+        const oFilters = this.getComponentModel("filters").getData();
 
         // initialize filter values
         const oViewSettingsDialog = await this.getViewSettingsDialog("de.regatta_hd.infopoint.view.HeatsFilterDialog");
@@ -58,10 +55,9 @@ sap.ui.define([
           // store navigation meta information in selected item
           oHeat._nav = { isFirst: iIndex == 0, isLast: iIndex == iCount - 1 };
 
-          this.getOwnerComponent().setModel(new JSONModel(oHeat), "heat");
-
-          this._loadHeatModel(oHeat.id);
-          this.displayTarget("heatRegistrations");
+          this.getComponentModel("heat").setData(oHeat);
+          // this.displayTarget("heatRegistrations");
+          this.getRouter().navTo("heatRegistrations", {}, undefined, true /* no history*/);
         }
       },
 
@@ -84,13 +80,8 @@ sap.ui.define([
         await this.updateJSONModel(this._oHeatsModel, `/api/regattas/${this.getRegattaId()}/heats`, this.oTable);
       },
 
-      _loadHeatModel: async function (sHeatId) {
-        await this.updateJSONModel(this._oHeatModel, `/api/heats/${sHeatId}`, undefined);
-      },
-
       onItemChanged: function (oItem) {
-        this.getOwnerComponent().getModel("heat").setData(oItem);
-        this._loadHeatModel(oItem.id);
+        this.getComponentModel("heat").setData(oItem);
       },
 
       onFilterButtonPress: async function (oEvent) {
