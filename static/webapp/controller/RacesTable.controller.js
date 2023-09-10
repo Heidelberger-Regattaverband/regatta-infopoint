@@ -21,13 +21,15 @@ sap.ui.define([
       this._oRacesModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/races`, this.oTable);
       this.setViewModel(this._oRacesModel, "races");
 
+      this.setComponentModel(new JSONModel(), "race");
+
       this._oRegistrationsModel = new JSONModel();
-      this.getOwnerComponent().setModel(this._oRegistrationsModel, "raceRegistrations");
+      this.setComponentModel(this._oRegistrationsModel, "raceRegistrations");
 
       this.getRouter().getRoute("races").attachMatched(async (_) => await this._loadRacesModel(), this);
 
       this.getEventBus().subscribe("race", "refresh", async (_) => await this._loadRacesModel(), this);
-      const oFilters = this.getOwnerComponent().getModel("filters").getData();
+      const oFilters = this.getComponentModel("filters").getData();
 
       // initialize filter values
       const oViewSettingsDialog = await this.getViewSettingsDialog("de.regatta_hd.infopoint.view.RacesFilterDialog");
@@ -53,9 +55,7 @@ sap.ui.define([
         // store navigation meta information in selected item
         oRace._nav = { isFirst: iIndex == 0, isLast: iIndex == iCount - 1 };
 
-        this.getOwnerComponent().setModel(new JSONModel(oRace), "race");
-
-        this._loadRegistrationsModel(oRace.id);
+        this.onItemChanged(oRace);
         this.displayTarget("raceRegistrations");
       }
     },
@@ -95,7 +95,7 @@ sap.ui.define([
     },
 
     onItemChanged: function (oItem) {
-      this.getOwnerComponent().getModel("race").setData(oItem);
+      this.getComponentModel("race").setData(oItem);
       this._loadRegistrationsModel(oItem.id);
     },
 
