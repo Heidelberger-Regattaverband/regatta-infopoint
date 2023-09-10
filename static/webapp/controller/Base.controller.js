@@ -17,6 +17,27 @@ sap.ui.define([
     },
 
     /**
+     * Convenience method for accessing a component model.
+     * @public
+     * @param {string} [sName] the model name
+     * @returns {sap.ui.model.Model} the model instance
+     */
+    getComponentModel: function (sName) {
+      return this.getOwnerComponent().getModel(sName);
+    },
+
+    /**
+     * Convenience method for setting the view model.
+     * @public
+     * @param {sap.ui.model.Model} oModel the model instance
+     * @param {string} sName the model name
+     * @returns {sap.ui.mvc.View} the view instance
+     */
+    setComponentModel: function (oModel, sName) {
+      return this.getOwnerComponent().setModel(oModel, sName);
+    },
+
+    /**
      * Convenience method for accessing the router.
      * @public
      * @returns {sap.ui.core.routing.Router} the router for this component
