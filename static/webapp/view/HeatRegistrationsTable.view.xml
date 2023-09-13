@@ -18,7 +18,7 @@
               </f:expandedContent>
 
               <f:actions>
-                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
+                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" type="Transparent" />
               </f:actions>
 
               <f:navigationActions>
