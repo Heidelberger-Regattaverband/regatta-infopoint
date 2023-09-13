@@ -15,7 +15,6 @@ use actix_web::{
     web::{Data, Json, Path},
     Error, HttpMessage, HttpRequest, HttpResponse, Responder,
 };
-use serde::Deserialize;
 
 #[get("/monitor")]
 async fn monitor(aquarius: Data<Aquarius>) -> Json<Monitor> {
@@ -46,9 +45,9 @@ async fn get_races(path: Path<i32>, aquarius: Data<Aquarius>, opt_user: Option<I
 }
 
 #[get("/races/{id}")]
-async fn get_race(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Race> {
+async fn get_race(path: Path<i32>, aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Json<Race> {
     let race_id = path.into_inner();
-    Json(aquarius.get_race(race_id).await)
+    Json(aquarius.get_race(race_id, opt_user).await)
 }
 
 #[get("/races/{id}/registrations")]
@@ -167,12 +166,4 @@ async fn identity(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     } else {
         Err(InternalError::from_response("", HttpResponse::Unauthorized().json(User::new_guest())).into())
     }
-}
-
-#[derive(Debug, Deserialize)]
-struct OData {
-    // #[serde(rename = "$expand")]
-    // expand: Option<String>,
-    #[serde(rename = "$filter")]
-    filter: Option<String>,
 }

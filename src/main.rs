@@ -17,6 +17,7 @@ mod tests {
         rest_api,
         server::{create_app_data, PATH_REST_API},
     };
+    use actix_identity::IdentityMiddleware;
     use actix_web::{
         test,
         test::TestRequest,
@@ -55,6 +56,7 @@ mod tests {
             App::new().service(
                 scope(PATH_REST_API)
                     .service(rest_api::get_heats)
+                    .wrap(IdentityMiddleware::default())
                     .app_data(Data::clone(&app_data)),
             ),
         )

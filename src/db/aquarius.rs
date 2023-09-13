@@ -48,7 +48,7 @@ impl Aquarius {
         let filters = Filters::query(regatta_id, &mut self.pool.get().await).await;
         self.caches.filters.set(&regatta_id, &filters).await;
         debug!("Query filters from DB: {:?}", start.elapsed());
-        return filters;
+        filters
     }
 
     pub async fn query_regattas(&self) -> Vec<Regatta> {
@@ -76,8 +76,10 @@ impl Aquarius {
         }
     }
 
-    pub async fn get_race(&self, race_id: i32) -> Race {
-        if let Some(race) = self.caches.race.get(&race_id).await {
+    pub async fn get_race(&self, race_id: i32, opt_user: Option<Identity>) -> Race {
+        if opt_user.is_some() {
+            self._query_race(race_id).await
+        } else if let Some(race) = self.caches.race.get(&race_id).await {
             race
         } else {
             self._query_race(race_id).await
