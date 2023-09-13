@@ -48,7 +48,7 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.scoringTile.header}"
+            <!-- <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.scoringTile.header}"
               visible="{identity>/authenticated}" press=".onNavToScoring">
               <tileContent>
                 <TileContent>
@@ -57,7 +57,7 @@
                   </content>
                 </TileContent>
               </tileContent>
-            </GenericTile>
+            </GenericTile> -->
 
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.statistics.header}"
               visible="{identity>/authenticated}" press=".onNavToStatistics">
@@ -70,7 +70,7 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="Kiosk" visible="{identity>/authenticated}"
+            <!-- <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="Kiosk" visible="{identity>/authenticated}"
               press=".onNavToKiosk">
               <tileContent>
                 <TileContent>
@@ -79,7 +79,7 @@
                   </content>
                 </TileContent>
               </tileContent>
-            </GenericTile>
+            </GenericTile> -->
 
           </layout:content>
         </layout:HorizontalLayout>

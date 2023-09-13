@@ -46,7 +46,7 @@
 
                 <layout:VerticalLayout>
                   <ObjectAttribute title="{i18n>common.state}" text="{path: 'heatRegistrations>/', formatter: '.formatter.heatStateLabel'}" />
-                  <ObjectAttribute title="{i18n>common.seededLbl}" text="{= ${heatRegistrations>/race/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
+                  <!-- <ObjectAttribute title="{i18n>common.seededLbl}" text="{= ${heatRegistrations>/race/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" /> -->
                   <ObjectAttribute title="{i18n>common.refereeAbr}" text="{heatRegistrations>/referee/lastName}, {heatRegistrations>/referee/firstName}"
                     visible="{= ${heatRegistrations>/referee} !== undefined }" />
                 </layout:VerticalLayout>
@@ -86,12 +86,12 @@
                     <Text text="{i18n>heatRegistrationTable.column.result}" class="bold" wrapping="false" />
                   </header>
                 </Column>
-                <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
+                <!-- <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
                   visible="{=${heatheatRegistrations>/state}>=4 &amp;&amp; ${identity>/authenticated}}">
                   <header>
                     <Text text="{i18n>common.points}" class="bold" wrapping="false" />
                   </header>
-                </Column>
+                </Column> -->
               </columns>
 
               <items>
@@ -128,7 +128,7 @@
                       <Text text="{heatRegistrations>result/result}" />
                       <Text text="{=${heatRegistrations>result/delta}?${heatRegistrations>result/delta}:''}" />
                     </layout:VerticalLayout>
-                    <Text text="{heatRegistrations>result/points}" />
+                    <!-- <Text text="{heatRegistrations>result/points}" /> -->
                   </cells>
                 </ColumnListItem>
               </items>

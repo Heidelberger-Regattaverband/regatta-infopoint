@@ -47,12 +47,12 @@
         </items>
       </ViewSettingsFilterItem>
 
-      <ViewSettingsFilterItem text="{i18n>common.seededLbl}" key="seeded" multiSelect="false">
+      <!-- <ViewSettingsFilterItem text="{i18n>common.seededLbl}" key="seeded" multiSelect="false">
         <items>
           <ViewSettingsItem text="{i18n>common.yes}" key="race/seeded___EQ___true" />
           <ViewSettingsItem text="{i18n>common.no}" key="race/seeded___EQ___false" />
         </items>
-      </ViewSettingsFilterItem>
+      </ViewSettingsFilterItem> -->
     </filterItems>
   </ViewSettingsDialog>
 </core:FragmentDefinition>
