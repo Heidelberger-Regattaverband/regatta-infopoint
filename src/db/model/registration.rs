@@ -93,7 +93,7 @@ impl Registration {
         let mut registrations: Vec<Registration> = Vec::with_capacity(rows.len());
         for row in &rows {
             let mut registration: Registration = row.to_entity();
-            let crew = Crew::query_all(registration.id, client).await;
+            let crew = Crew::query_all(registration.id, 64, client).await;
             registration.crew = Some(crew);
             registrations.push(registration);
         }
@@ -118,7 +118,7 @@ impl Registration {
         let mut registrations: Vec<Registration> = Vec::with_capacity(rows.len());
         for row in &rows {
             let mut registration: Registration = row.to_entity();
-            let crew = Crew::query_all(registration.id, client).await;
+            let crew = Crew::query_all(registration.id, 64, client).await;
             registration.crew = Some(crew);
             registrations.push(registration);
         }
