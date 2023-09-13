@@ -7,6 +7,8 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
+use super::Registration;
+
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Race {
@@ -28,6 +30,9 @@ pub struct Race {
     group_mode: u8,
     #[serde(skip_serializing_if = "Option::is_none")]
     date_time: Option<DateTime<Utc>>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub registrations: Option<Vec<Registration>>,
 }
 
 impl ToEntity<Race> for Row {
@@ -53,6 +58,7 @@ impl ToEntity<Race> for Row {
             state: self.try_get_column("Race_State").unwrap_or_default(),
             group_mode: self.get_column("Offer_GroupMode"),
             date_time: self.try_get_column("Race_DateTime"),
+            registrations: None,
         }
     }
 }

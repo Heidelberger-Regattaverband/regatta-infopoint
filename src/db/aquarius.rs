@@ -94,16 +94,6 @@ impl Aquarius {
         }
     }
 
-    pub async fn get_race_registrations(&self, race_id: i32, opt_user: Option<Identity>) -> Vec<Registration> {
-        if opt_user.is_some() {
-            self._query_race_registrations(race_id).await
-        } else if let Some(registrations) = self.caches.regs.get(&race_id).await {
-            registrations
-        } else {
-            self._query_race_registrations(race_id).await
-        }
-    }
-
     pub async fn get_heats(&self, regatta_id: i32, opt_user: Option<Identity>) -> Vec<Heat> {
         if opt_user.is_some() {
             self._query_heats(regatta_id).await
@@ -188,7 +178,10 @@ impl Aquarius {
 
     async fn _query_race(&self, race_id: i32) -> Race {
         let start = Instant::now();
-        let race: Race = Race::query_single(race_id, &mut self.pool.get().await).await;
+        // query the race details
+        let mut race: Race = Race::query_single(race_id, &mut self.pool.get().await).await;
+        // then query the registrations
+        race.registrations = Some(Registration::query_for_race(race_id, &mut self.pool.get().await).await);
         self.caches.race.set(&race.id, &race).await;
         debug!("Query race {} from DB: {:?}", race_id, start.elapsed());
         race
@@ -200,14 +193,6 @@ impl Aquarius {
         self.caches.races.set(&regatta_id, &races).await;
         debug!("Query races of regatta {} from DB: {:?}", regatta_id, start.elapsed());
         races
-    }
-
-    async fn _query_race_registrations(&self, race_id: i32) -> Vec<Registration> {
-        let start = Instant::now();
-        let registrations = Registration::query_for_race(race_id, &mut self.pool.get().await).await;
-        self.caches.regs.set(&race_id, &registrations).await;
-        debug!("Query registrations of race {} from DB: {:?}", race_id, start.elapsed());
-        registrations
     }
 
     async fn _query_heats(&self, regatta_id: i32) -> Vec<Heat> {

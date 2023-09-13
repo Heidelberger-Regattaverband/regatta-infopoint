@@ -23,12 +23,8 @@ sap.ui.define([
 
       this.setComponentModel(new JSONModel(), "race");
 
-      this._oRegistrationsModel = new JSONModel();
-      this.setComponentModel(this._oRegistrationsModel, "raceRegistrations");
-
       this.getRouter().getRoute("races").attachMatched(async (_) => await this._loadRacesModel(), this);
 
-      this.getEventBus().subscribe("race", "refresh", async (_) => await this._loadRacesModel(), this);
       const oFilters = this.getComponentModel("filters").getData();
 
       // initialize filter values
@@ -90,13 +86,8 @@ sap.ui.define([
       await this.updateJSONModel(this._oRacesModel, `/api/regattas/${this.getRegattaId()}/races`, this.oTable);
     },
 
-    _loadRegistrationsModel: async function (sRaceId) {
-      await this.updateJSONModel(this._oRegistrationsModel, `/api/races/${sRaceId}/registrations`, undefined);
-    },
-
     onItemChanged: function (oItem) {
       this.getComponentModel("race").setData(oItem);
-      this._loadRegistrationsModel(oItem.id);
     },
 
     onFilterSearch: function (oEvent) {

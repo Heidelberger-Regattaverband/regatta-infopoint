@@ -1,7 +1,9 @@
 sap.ui.define([
   "de/regatta_hd/infopoint/controller/Base.controller",
+  "sap/ui/model/json/JSONModel",
+  "sap/m/MessageToast",
   "../model/Formatter"
-], function (BaseController, Formatter) {
+], function (BaseController, JSONModel, MessageToast, Formatter) {
   "use strict";
 
   return BaseController.extend("de.regatta_hd.infopoint.controller.RaceRegistrationsTable", {
@@ -10,31 +12,50 @@ sap.ui.define([
 
     onInit: function () {
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
+
+      this.setViewModel(new JSONModel(), "raceRegistrations");
+    },
+
+    onBeforeRendering: async function () {
+      await this._loadRaceModel()
     },
 
     onNavBack: function () {
       this.displayTarget("races");
     },
 
-    onFirstPress: function () {
+    onFirstPress: async function () {
       this.getEventBus().publish("race", "first", {});
+      await this._loadRaceModel();
     },
 
-    onPreviousPress: function () {
+    onPreviousPress: async function () {
       this.getEventBus().publish("race", "previous", {});
+      await this._loadRaceModel();
     },
 
-    onNextPress: function () {
+    onNextPress: async function () {
       this.getEventBus().publish("race", "next", {});
+      await this._loadRaceModel();
     },
 
-    onLastPress: function () {
+    onLastPress: async function () {
       this.getEventBus().publish("race", "last", {});
+      await this._loadRaceModel();
     },
 
-    onRefreshButtonPress: function () {
-      this.getEventBus().publish("race", "refresh", {});
-    }
+    onRefreshButtonPress: async function (oEvent) {
+      const oSource = oEvent.getSource();
+      oSource.setEnabled(false);
+      await this._loadRaceModel();
+      MessageToast.show(this.i18n("msg.dataUpdated", undefined));
+      oSource.setEnabled(true);
+    },
+
+    _loadRaceModel: async function () {
+      const oRace = this.getComponentModel("race");
+      await this.updateJSONModel(this.getViewModel("raceRegistrations"), `/api/races/${oRace.getData().id}`, undefined);
+    },
 
   });
 });
