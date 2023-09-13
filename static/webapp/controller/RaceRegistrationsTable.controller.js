@@ -55,7 +55,6 @@ sap.ui.define([
     _loadRaceModel: async function () {
       const oRace = this.getComponentModel("race");
       await this.updateJSONModel(this.getViewModel("raceRegistrations"), `/api/races/${oRace.getData().id}`, undefined);
-    },
-
+    }
   });
 });
