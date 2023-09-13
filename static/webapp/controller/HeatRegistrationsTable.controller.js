@@ -15,10 +15,12 @@ sap.ui.define([
 
       this.setViewModel(new JSONModel(), "heatRegistrations");
 
-      // this.getRouter().getRoute("heatRegistrations").attachMatched(async (_) => await this._loadHeatModel(), this);
+      this.getView().addEventDelegate({
+        onBeforeShow: this.onBeforeShow,
+      }, this);
     },
 
-    onBeforeRendering: async function () {
+    onBeforeShow: async function () {
       await this._loadHeatModel();
     },
 

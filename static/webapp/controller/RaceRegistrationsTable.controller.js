@@ -14,9 +14,13 @@ sap.ui.define([
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
       this.setViewModel(new JSONModel(), "raceRegistrations");
+
+      this.getView().addEventDelegate({
+        onBeforeShow: this.onBeforeShow,
+      }, this);
     },
 
-    onBeforeRendering: async function () {
+    onBeforeShow: async function () {
       await this._loadRaceModel();
     },
 
