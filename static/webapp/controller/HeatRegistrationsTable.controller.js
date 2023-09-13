@@ -1,8 +1,9 @@
 sap.ui.define([
   "de/regatta_hd/infopoint/controller/Base.controller",
   "sap/ui/model/json/JSONModel",
+  "sap/m/MessageToast",
   "../model/Formatter"
-], function (BaseController, JSONModel, Formatter) {
+], function (BaseController, JSONModel, MessageToast, Formatter) {
   "use strict";
 
   return BaseController.extend("de.regatta_hd.infopoint.controller.HeatRegistrationsTable", {
@@ -14,11 +15,16 @@ sap.ui.define([
 
       this.setViewModel(new JSONModel(), "heatRegistrations");
 
-      this.getRouter().getRoute("heatRegistrations").attachMatched(async (_) => await this._loadHeatModel(), this);
+      // this.getRouter().getRoute("heatRegistrations").attachMatched(async (_) => await this._loadHeatModel(), this);
     },
 
-    onNavBack: async function () {
-      await this.navBack("heats");
+    onBeforeRendering: async function () {
+      await this._loadHeatModel()
+    },
+
+    onNavBack: function () {
+      // await this.navBack("heats");
+      this.displayTarget("heats");
     },
 
     onFirstPress: async function () {
@@ -41,8 +47,12 @@ sap.ui.define([
       await this._loadHeatModel();
     },
 
-    onRefreshButtonPress: async function () {
+    onRefreshButtonPress: async function (oEvent) {
+      const oSource = oEvent.getSource();
+      oSource.setEnabled(false);
       await this._loadHeatModel();
+      MessageToast.show(this.i18n("msg.dataUpdated", undefined));
+      oSource.setEnabled(true);
     },
 
     _loadHeatModel: async function () {

@@ -1,4 +1,4 @@
-use crate::db::model::{Club, Heat, Race, Regatta, Registration};
+use crate::db::model::{Club, Filters, Heat, Race, Regatta, Registration};
 use async_trait::async_trait;
 use std::{hash::Hash, time::Duration};
 use stretto::AsyncCache;
@@ -63,6 +63,7 @@ pub(super) struct Caches {
     pub races: Cache<i32, Vec<Race>>,
     pub heats: Cache<i32, Vec<Heat>>,
     pub participating_clubs: Cache<i32, Vec<Club>>,
+    pub filters: Cache<i32, Filters>,
 
     // caches with entries per race
     pub race: Cache<i32, Race>,
@@ -87,6 +88,7 @@ impl Caches {
             races: Cache::new(MAX_REGATTAS_COUNT, ttl),
             heats: Cache::new(MAX_REGATTAS_COUNT, ttl),
             participating_clubs: Cache::new(MAX_REGATTAS_COUNT, ttl),
+            filters: Cache::new(MAX_REGATTAS_COUNT, ttl),
 
             // caches with entries per race
             race: Cache::new(MAX_RACES_COUNT, ttl),

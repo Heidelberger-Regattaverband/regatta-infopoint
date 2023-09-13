@@ -56,8 +56,8 @@ sap.ui.define([
           oHeat._nav = { isFirst: iIndex == 0, isLast: iIndex == iCount - 1 };
 
           this.getComponentModel("heat").setData(oHeat);
-          // this.displayTarget("heatRegistrations");
-          this.getRouter().navTo("heatRegistrations", {}, undefined, true /* no history*/);
+          this.displayTarget("heatRegistrations");
+          // this.getRouter().navTo("heatRegistrations", {}, undefined, true /* no history*/);
         }
       },
 

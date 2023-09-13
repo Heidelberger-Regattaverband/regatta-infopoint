@@ -41,7 +41,7 @@ impl Filters {
 
         let mut query = Query::new(
             "SELECT DISTINCT a.* FROM AgeClass a JOIN Offer o ON o.Offer_AgeClass_ID_FK = a.AgeClass_ID
-                  WHERE o.Offer_Event_ID_FK = @P1 ORDER BY AgeClass_MinAge ASC",
+            WHERE o.Offer_Event_ID_FK = @P1 ORDER BY AgeClass_MinAge ASC",
         );
         query.bind(regatta_id);
         let stream = query.query(client).await.unwrap();
@@ -50,7 +50,7 @@ impl Filters {
 
         let mut query = Query::new(
             "SELECT DISTINCT b.* FROM BoatClass b JOIN Offer o ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID 
-            WHERE o.Offer_Event_ID_FK = @P1 ORDER BY b.BoatClass_NumRowers ASC, b.BoatClass_Coxed ASC ",
+            WHERE o.Offer_Event_ID_FK = @P1 ORDER BY b.BoatClass_NumRowers ASC, b.BoatClass_Coxed ASC",
         );
         query.bind(regatta_id);
         let stream = query.query(client).await.unwrap();

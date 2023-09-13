@@ -12,7 +12,7 @@ use actix_identity::Identity;
 use actix_web::{
     error::{ErrorUnauthorized, InternalError},
     get, post,
-    web::{Data, Json, Path, Query},
+    web::{Data, Json, Path},
     Error, HttpMessage, HttpRequest, HttpResponse, Responder,
 };
 use serde::Deserialize;
@@ -62,16 +62,15 @@ async fn get_registrations(
 }
 
 #[get("/regattas/{id}/heats")]
-async fn get_heats(path: Path<i32>, odata_params: Query<OData>, aquarius: Data<Aquarius>) -> Json<Vec<Heat>> {
+async fn get_heats(path: Path<i32>, aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Json<Vec<Heat>> {
     let regatta_id = path.into_inner();
-    let odata = odata_params.into_inner();
-    Json(aquarius.get_heats(regatta_id, odata.filter).await)
+    Json(aquarius.get_heats(regatta_id, opt_user).await)
 }
 
 #[get("/regattas/{id}/filters")]
-async fn get_filters(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Filters> {
+async fn get_filters(path: Path<i32>, aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Json<Filters> {
     let regatta_id = path.into_inner();
-    Json(aquarius.get_filters(regatta_id).await)
+    Json(aquarius.get_filters(regatta_id, opt_user).await)
 }
 
 #[get("/heats/{id}")]
