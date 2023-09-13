@@ -15,11 +15,13 @@ sap.ui.define([
 
       this.setViewModel(new JSONModel(), "heatRegistrations");
 
-      // this.getRouter().getRoute("heatRegistrations").attachMatched(async (_) => await this._loadHeatModel(), this);
+      this.getView().addEventDelegate({
+        onBeforeShow: this.onBeforeShow,
+      }, this);
     },
 
-    onBeforeRendering: async function () {
-      await this._loadHeatModel()
+    onBeforeShow: async function () {
+      await this._loadHeatModel();
     },
 
     onNavBack: function () {
@@ -57,12 +59,7 @@ sap.ui.define([
 
     _loadHeatModel: async function () {
       const oHeat = this.getComponentModel("heat");
-      if (oHeat) {
-        await this.updateJSONModel(this.getViewModel("heatRegistrations"), `/api/heats/${oHeat.getData().id}`, this.getView());
-      } else {
-        this.onNavBack();
-      }
-    },
-
+      await this.updateJSONModel(this.getViewModel("heatRegistrations"), `/api/heats/${oHeat.getData().id}`, this.getView());
+    }
   });
 });

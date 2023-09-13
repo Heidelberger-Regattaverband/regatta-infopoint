@@ -12,16 +12,16 @@
           <f:title>
             <f:DynamicPageTitle>
               <f:heading>
-                <Title text="{path: 'race>/', formatter: '.formatter.nrRaceLabel'}" wrapping="true" wrappingType="Normal" />
+                <Title text="{path: 'raceRegistrations>/', formatter: '.formatter.nrRaceLabel'}" wrapping="true" wrappingType="Normal" />
               </f:heading>
 
               <f:expandedContent>
-                <Label text="{race>/longLabel} {race>/comment}" />
+                <Label text="{raceRegistrations>/longLabel} {raceRegistrations>/comment}" />
               </f:expandedContent>
 
-              <!--f:actions>
-                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
-              </f:actions-->
+              <f:actions>
+                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" type="Transparent" />
+              </f:actions>
 
               <f:navigationActions>
                 <Button type="Transparent" icon="sap-icon://close-command-field" press="onFirstPress" tooltip="First"
@@ -41,13 +41,13 @@
             <f:DynamicPageHeader>
               <layout:HorizontalLayout allowWrapping="true">
                 <layout:VerticalLayout class="sapUiMediumMarginEnd">
-                  <ObjectAttribute title="{i18n>common.distance}" text="{path: 'race>/', formatter: '.formatter.distanceLabel'}" />
-                  <ObjectAttribute title="{i18n>common.registrations}" text="{race>/registrationsCount}" />
+                  <ObjectAttribute title="{i18n>common.distance}" text="{path: 'raceRegistrations>/', formatter: '.formatter.distanceLabel'}" />
+                  <ObjectAttribute title="{i18n>common.registrations}" text="{raceRegistrations>/registrationsCount}" />
                 </layout:VerticalLayout>
               </layout:HorizontalLayout>
               <layout:VerticalLayout>
-                <!-- <ObjectAttribute title="{i18n>common.seededLbl}" text="{= ${race>/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" /> -->
-                <ObjectAttribute title="{i18n>common.state}" text="{path: 'race>/', formatter: '.formatter.raceStateLabel'}" />
+                <!-- <ObjectAttribute title="{i18n>common.seededLbl}" text="{= ${raceRegistrations>/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" /> -->
+                <ObjectAttribute title="{i18n>common.state}" text="{path: 'raceRegistrations>/', formatter: '.formatter.raceStateLabel'}" />
               </layout:VerticalLayout>
             </f:DynamicPageHeader>
           </f:header>
@@ -57,7 +57,7 @@
             <!-- <ScrollContainer height="100%" vertical="true"> -->
 
             <Table id="registrationsTable" autoPopinMode="true"
-              items="{path: 'raceRegistrations>/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}"
+              items="{path: 'raceRegistrations>/registrations/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}"
               growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders"
               class="sapUiNoContentPadding">
               <columns>

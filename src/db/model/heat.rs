@@ -10,19 +10,19 @@ use tiberius::{Query, Row};
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Heat {
-    /** The unique identifier of this heat. */
+    /// The unique identifier of this heat.
     pub id: i32,
 
-    /** The sequential number of the heat. */
+    /// The sequential number of the heat.
     number: i16,
 
-    /** The race the heat belongs to. */
+    /// The race the heat belongs to.
     race: Race,
 
-    /** The round code of the heat. Known values are: "R" - main race, "A" - division, "V" - Vorlauf */
+    /// The round code of the heat. Known values are: "R" - main race, "A" - division, "V" - Vorlauf
     round_code: String,
 
-    /** An optional division label, e.g. "1" or "2" */
+    /// An optional division label, e.g. "1" or "2"
     #[serde(skip_serializing_if = "Option::is_none")]
     label: Option<String>,
 
@@ -41,6 +41,9 @@ pub struct Heat {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub registrations: Option<Vec<HeatRegistration>>,
+
+    /// The round of this heat: 64 - final, 4 - Vorlauf
+    pub round: i16,
 }
 
 impl ToEntity<Heat> for Row {
@@ -60,6 +63,7 @@ impl ToEntity<Heat> for Row {
             date_time: self.try_get_column("Comp_DateTime"),
             referee: self.try_to_entity(),
             registrations: None,
+            round: self.get_column("Comp_Round"),
         }
     }
 }
@@ -82,6 +86,7 @@ impl TryToEntity<Heat> for Row {
                 date_time: self.try_get_column("Comp_DateTime"),
                 referee: self.try_to_entity(),
                 registrations: None,
+                round: self.get_column("Comp_Round"),
             })
         } else {
             None
