@@ -17,7 +17,7 @@ sap.ui.define([
     },
 
     onBeforeRendering: async function () {
-      await this._loadRaceModel()
+      await this._loadRaceModel();
     },
 
     onNavBack: function () {

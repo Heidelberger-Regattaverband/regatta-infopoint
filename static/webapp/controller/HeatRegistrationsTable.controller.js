@@ -19,7 +19,7 @@ sap.ui.define([
     },
 
     onBeforeRendering: async function () {
-      await this._loadHeatModel()
+      await this._loadHeatModel();
     },
 
     onNavBack: function () {
