@@ -20,8 +20,6 @@ sap.ui.define([
         this._oHeatsModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/heats`, this.oTable);
         this.setViewModel(this._oHeatsModel, "heats");
 
-        this.setComponentModel(new JSONModel(), "heat");
-
         this.getRouter().getRoute("heats").attachMatched(async (_) => await this._loadHeatsModel(), this);
 
         const oFilters = this.getComponentModel("filters").getData();
@@ -55,9 +53,8 @@ sap.ui.define([
           // store navigation meta information in selected item
           oHeat._nav = { isFirst: iIndex == 0, isLast: iIndex == iCount - 1 };
 
-          this.getComponentModel("heat").setData(oHeat);
+          this.onItemChanged(oHeat);
           this.displayTarget("heatRegistrations");
-          // this.getRouter().navTo("heatRegistrations", {}, undefined, true /* no history*/);
         }
       },
 

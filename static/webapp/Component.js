@@ -38,6 +38,9 @@ sap.ui.define([
       });
       oUserModel.setDefaultBindingMode("OneWay");
       this.setModel(oUserModel, "identity");
+
+      // set initial heat model, required for navigation over heats
+      this.setModel(new JSONModel(), "heat");
     },
 
     getContentDensityClass: function () {

@@ -18,8 +18,6 @@ sap.ui.define([
       this.setViewModel(new JSONModel(), "registrations");
       this.setViewModel(new JSONModel(), "club");
 
-      this.setComponentModel(new JSONModel(), "heat");
-
       this.getRouter().getRoute("clubParticipations").attachPatternMatched(async (oEvent) => await this._onPatternMatched(oEvent), this);
     },
 
@@ -60,7 +58,8 @@ sap.ui.define([
     },
 
     _loadRegistrationsModel: async function () {
-      await this.updateJSONModel(this.getViewModel("registrations"), `/api/regattas/${this.getRegattaId()}/clubs/${this._iClubId}/registrations`, this._oTable);
+      await this.updateJSONModel(this.getViewModel("registrations"),
+        `/api/regattas/${this.getRegattaId()}/clubs/${this._iClubId}/registrations`, this._oTable);
     }
 
   });
