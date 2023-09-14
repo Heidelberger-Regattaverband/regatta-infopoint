@@ -15,13 +15,25 @@ sap.ui.define([
 
       this._oTable = this.getView().byId("registrationsTable");
 
-      this._oRegistrationsModel = new JSONModel();
-      this.setViewModel(this._oRegistrationsModel, "registrations");
+      this.setViewModel(new JSONModel(), "registrations");
+      this.setViewModel(new JSONModel(), "club");
 
-      this._oClubModel = new JSONModel();
-      this.setViewModel(this._oClubModel, "club");
+      this.setComponentModel(new JSONModel(), "heat");
 
       this.getRouter().getRoute("clubParticipations").attachPatternMatched(async (oEvent) => await this._onPatternMatched(oEvent), this);
+    },
+
+    onSelectionChange: function (oEvent) {
+      const oSelectedItem = oEvent.getParameter("listItem");
+      if (oSelectedItem) {
+        const oBindingCtx = oSelectedItem.getBindingContext("registrations");
+        const oRegistration = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
+
+        oRegistration.heat._nav = { disabled: true, back: "clubParticipations" };
+
+        this.getComponentModel("heat").setData(oRegistration.heat);
+        this.displayTarget("heatRegistrations");
+      }
     },
 
     onNavBack: function () {
@@ -44,11 +56,11 @@ sap.ui.define([
     },
 
     _loadClubModel: async function () {
-      await this.updateJSONModel(this._oClubModel, `/api/clubs/${this._iClubId}`, undefined);
+      await this.updateJSONModel(this.getViewModel("club"), `/api/clubs/${this._iClubId}`, undefined);
     },
 
     _loadRegistrationsModel: async function () {
-      await this.updateJSONModel(this._oRegistrationsModel, `/api/regattas/${this.getRegattaId()}/clubs/${this._iClubId}/registrations`, this._oTable);
+      await this.updateJSONModel(this.getViewModel("registrations"), `/api/regattas/${this.getRegattaId()}/clubs/${this._iClubId}/registrations`, this._oTable);
     }
 
   });

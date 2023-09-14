@@ -23,13 +23,13 @@
 
               <f:navigationActions>
                 <Button type="Transparent" icon="sap-icon://close-command-field" press="onFirstPress" tooltip="First"
-                  enabled="{= ${heat>/_nav/isFirst} ? false : true }" />
+                  enabled="{= ${heat>/_nav/isFirst} ? false : true }" visible="{=!${heat>/_nav/disabled}}" />
                 <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="onPreviousPress" tooltip="Previous"
-                  enabled="{= ${heat>/_nav/isFirst} ? false : true }" />
+                  enabled="{= ${heat>/_nav/isFirst} ? false : true }" visible="{=!${heat>/_nav/disabled}}" />
                 <Button type="Transparent" icon="sap-icon://navigation-right-arrow" press="onNextPress" tooltip="Next"
-                  enabled="{= ${heat>/_nav/isLast} ? false : true }" />
+                  enabled="{= ${heat>/_nav/isLast} ? false : true }" visible="{=!${heat>/_nav/disabled}}" />
                 <Button type="Transparent" icon="sap-icon://open-command-field" press="onLastPress" tooltip="Last"
-                  enabled="{= ${heat>/_nav/isLast} ? false : true }" />
+                  enabled="{= ${heat>/_nav/isLast} ? false : true }" visible="{=!${heat>/_nav/disabled}}" />
               </f:navigationActions>
             </f:DynamicPageTitle>
           </f:title>

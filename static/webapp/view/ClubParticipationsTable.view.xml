@@ -14,7 +14,7 @@
       <content>
 
         <Table id="registrationsTable" autoPopinMode="true" items="{path: 'registrations>/'}" growing="true" growingThreshold="50"
-          growingScrollToLoad="true" sticky="ColumnHeaders" class="sapUiNoContentPadding">
+          growingScrollToLoad="true" sticky="ColumnHeaders" class="sapUiNoContentPadding" mode="SingleSelectMaster" itemPress="onSelectionChange" >
 
           <columns>
             <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
@@ -40,7 +40,7 @@
           </columns>
 
           <items>
-            <ColumnListItem vAlign="Top" highlight="{path: 'registrations>', formatter: '.formatter.raceRegistrationHighlight'}">
+            <ColumnListItem vAlign="Top" highlight="{path: 'registrations>', formatter: '.formatter.raceRegistrationHighlight'}" type="Navigation">
               <cells>
                 <layout:VerticalLayout>
                   <Text text="{path: 'registrations>heat/dateTime', formatter: '.formatter.dayTimeIsoLabel'}"

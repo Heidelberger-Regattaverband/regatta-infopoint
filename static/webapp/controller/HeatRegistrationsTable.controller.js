@@ -25,8 +25,12 @@ sap.ui.define([
     },
 
     onNavBack: function () {
-      // await this.navBack("heats");
-      this.displayTarget("heats");
+      const oData = this.getComponentModel("heat").getData();
+      if (oData._nav.back) {
+        this.displayTarget(oData._nav.back);
+      } else {
+        this.displayTarget("heats");
+      }
     },
 
     onFirstPress: async function () {
@@ -58,8 +62,8 @@ sap.ui.define([
     },
 
     _loadHeatModel: async function () {
-      const oHeat = this.getComponentModel("heat");
-      await this.updateJSONModel(this.getViewModel("heatRegistrations"), `/api/heats/${oHeat.getData().id}`, this.getView());
+      const mHeat = this.getComponentModel("heat").getData();
+      await this.updateJSONModel(this.getViewModel("heatRegistrations"), `/api/heats/${mHeat.id}`, this.getView());
     }
   });
 });
