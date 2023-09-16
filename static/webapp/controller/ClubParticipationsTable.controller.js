@@ -1,9 +1,11 @@
 sap.ui.define([
   "de/regatta_hd/infopoint/controller/Base.controller",
+  "sap/ui/model/Filter",
+  "sap/ui/model/FilterOperator",
   "sap/ui/model/json/JSONModel",
   "sap/m/MessageToast",
   "../model/Formatter"
-], function (BaseController, JSONModel, MessageToast, Formatter) {
+], function (BaseController, Filter, FilterOperator, JSONModel, MessageToast, Formatter) {
   "use strict";
 
   return BaseController.extend("de.regatta_hd.infopoint.controller.ClubParticipationsTable", {
@@ -45,6 +47,35 @@ sap.ui.define([
       await this._loadRegistrationsModel();
       MessageToast.show(this.i18n("msg.dataUpdated", undefined));
       oSource.setEnabled(true);
+    },
+
+    onFilterSearch: function (oEvent) {
+      const aSearchFilters = [];
+      const sQuery = oEvent.getParameter("query").trim();
+      if (sQuery) {
+        aSearchFilters.push(
+          new Filter({
+            filters: [
+              new Filter({
+                path: "crew/",
+                test: function (aCrew) {
+                  let mCrew;
+                  for (mCrew of aCrew) {
+                    let found = mCrew.athlete.firstName.includes(sQuery) || mCrew.athlete.lastName.includes(sQuery);
+                    if (found) {
+                      return true;
+                    }
+                  }
+                  return false;
+                }
+              }),
+              new Filter("race/number", FilterOperator.Contains, sQuery),
+            ],
+            and: false
+          }))
+      }
+      const oBinding = this._oTable.getBinding("items");
+      oBinding.filter(aSearchFilters);
     },
 
     _onPatternMatched: async function (oEvent) {
