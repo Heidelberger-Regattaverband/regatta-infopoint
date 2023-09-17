@@ -61,7 +61,8 @@ sap.ui.define([
                 test: function (aCrew) {
                   let mCrew;
                   for (mCrew of aCrew) {
-                    let found = mCrew.athlete.firstName.includes(sQuery) || mCrew.athlete.lastName.includes(sQuery);
+                    let found = mCrew.athlete.firstName.toLowerCase().includes(sQuery.toLowerCase())
+                      || mCrew.athlete.lastName.toLowerCase().includes(sQuery.toLowerCase());
                     if (found) {
                       return true;
                     }
