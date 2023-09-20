@@ -5,11 +5,7 @@ pub async fn get_row(stream: QueryStream<'_>) -> Row {
 }
 
 pub async fn try_get_row(stream: QueryStream<'_>) -> Option<Row> {
-    if let Some(row) = stream.into_row().await.unwrap() {
-        Some(row)
-    } else {
-        None
-    }
+    stream.into_row().await.unwrap()
 }
 
 pub async fn get_rows(stream: QueryStream<'_>) -> Vec<Row> {
