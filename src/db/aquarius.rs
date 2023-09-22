@@ -206,7 +206,7 @@ impl Aquarius {
     async fn _query_heat(&self, heat_id: i32) -> Heat {
         let start = Instant::now();
         let mut heat = Heat::query_single(heat_id, &mut self.pool.get().await).await;
-        heat.registrations = Some(self._query_heat_registrations(heat_id, heat.round).await);
+        heat.registrations = Some(self._query_heat_registrations(&heat).await);
         self.caches.heat.set(&heat_id, &heat).await;
         debug!(
             "Query heat {} with registrations from DB: {:?}",
@@ -216,16 +216,16 @@ impl Aquarius {
         heat
     }
 
-    async fn _query_heat_registrations(&self, heat_id: i32, heat_round: i16) -> Vec<HeatRegistration> {
+    async fn _query_heat_registrations(&self, heat: &Heat) -> Vec<HeatRegistration> {
         // get all registrations of heat
         let mut heat_registrations: Vec<HeatRegistration> =
-            HeatRegistration::query_all(heat_id, &mut self.pool.get().await).await;
+            HeatRegistration::query_all(heat.id, &mut self.pool.get().await).await;
 
         // loop over all heat registrations and get crews
         for heat_registration in &mut heat_registrations {
             let crew = Crew::query_all(
                 heat_registration.registration.id,
-                heat_round,
+                heat.round,
                 &mut self.pool.get().await,
             )
             .await;
