@@ -41,7 +41,7 @@ impl ToEntity<Crew> for Row {
 impl Crew {
     pub async fn query_all<'a>(registration_id: i32, round: i16, client: &mut AquariusClient<'_>) -> Vec<Crew> {
         let mut query = Query::new(
-            "SELECT DISTINCT Crew.*, Athlet.*, Club.Club_ID, Club.Club_Abbr, Club.Club_UltraAbbr, Club.Club_City
+            "SELECT Crew.*, Athlet.*, Club.Club_ID, Club.Club_Abbr, Club.Club_UltraAbbr, Club.Club_City
             FROM Crew
             JOIN Athlet ON Crew_Athlete_ID_FK = Athlet_ID
             JOIN Club   ON Athlet_Club_ID_FK  = Club_ID
