@@ -101,6 +101,7 @@ impl Registration {
     }
 
     pub async fn query_for_race<'a>(race_id: i32, client: &mut AquariusClient<'_>) -> Vec<Registration> {
+        let round = 64;
         let mut query = Query::new(
             "SELECT DISTINCT Entry.*, Label_Short, Club.Club_ID, Club.Club_Abbr, Club.Club_UltraAbbr, Club.Club_City, Offer.*
             FROM Entry
@@ -108,17 +109,18 @@ impl Registration {
             JOIN Label      ON EL_Label_ID_FK   = Label_ID
             JOIN Club       ON Club_ID          = Entry_OwnerClub_ID_FK
             JOIN Offer      ON Entry_Race_ID_FK = Offer_ID
-            WHERE Entry_Race_ID_FK = @P1 AND EL_RoundFrom <= 64 AND 64 <= EL_RoundTo
+            WHERE Entry_Race_ID_FK = @P1 AND EL_RoundFrom <= @P2 AND @P2 <= EL_RoundTo
             ORDER BY Entry_Bib ASC",
         );
         query.bind(race_id);
+        query.bind(round);
         let stream = query.query(client).await.unwrap();
         let rows = utils::get_rows(stream).await;
 
         let mut registrations: Vec<Registration> = Vec::with_capacity(rows.len());
         for row in &rows {
             let mut registration: Registration = row.to_entity();
-            let crew = Crew::query_all(registration.id, 64, client).await;
+            let crew = Crew::query_all(registration.id, round, client).await;
             registration.crew = Some(crew);
             registrations.push(registration);
         }
