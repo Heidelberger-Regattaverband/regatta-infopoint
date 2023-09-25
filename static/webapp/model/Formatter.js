@@ -285,6 +285,8 @@ sap.ui.define([
       switch (oHeat.roundCode) {
         case "A":
           return this.i18n("heat.label.division", [sHeatLabel, sGroupValue]);
+        case "H":
+          return this.i18n("heat.label.repechage", [sHeatLabel]);
         case "R":
           return this.i18n("heat.label.mainRace", [sHeatLabel, sGroupValue]);
         case "V":
