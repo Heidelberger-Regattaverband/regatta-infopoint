@@ -30,11 +30,11 @@ pub struct Heat {
 
     state: u8,
 
-    /** Indicates whether or not the heat has been canceled. */
+    /// Indicates whether or not the heat has been canceled.
     cancelled: bool,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    referee: Option<Referee>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    referees: Vec<Referee>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     date_time: Option<DateTime<Utc>>,
@@ -61,7 +61,7 @@ impl ToEntity<Heat> for Row {
             state,
             cancelled,
             date_time: self.try_get_column("Comp_DateTime"),
-            referee: self.try_to_entity(),
+            referees: vec![],
             registrations: None,
             round: self.get_column("Comp_Round"),
         }
@@ -84,7 +84,7 @@ impl TryToEntity<Heat> for Row {
                 state,
                 cancelled,
                 date_time: self.try_get_column("Comp_DateTime"),
-                referee: self.try_to_entity(),
+                referees: vec![],
                 registrations: None,
                 round: self.get_column("Comp_Round"),
             })
@@ -112,18 +112,18 @@ impl Heat {
 
     pub async fn query_single<'a>(heat_id: i32, client: &mut AquariusClient<'_>) -> Heat {
         let mut query = Query::new(
-            "SELECT DISTINCT Comp.*, AgeClass.*, BoatClass.*, Referee.*, Offer.*
+            "SELECT DISTINCT Comp.*, AgeClass.*, BoatClass.*, Offer.*
             FROM Comp
-            JOIN Offer       ON Offer_ID                  = Comp_Race_ID_FK
-            JOIN AgeClass    ON Offer_AgeClass_ID_FK      = AgeClass_ID
-            JOIN BoatClass              ON Offer_BoatClass_ID_FK     = BoatClass_ID
-            FULL OUTER JOIN CompReferee ON CompReferee_Comp_ID_FK    = Comp_ID
-            FULL OUTER JOIN Referee     ON CompReferee_Referee_ID_FK = Referee_ID
+            JOIN Offer     ON Offer_ID              = Comp_Race_ID_FK
+            JOIN AgeClass  ON Offer_AgeClass_ID_FK  = AgeClass_ID
+            JOIN BoatClass ON Offer_BoatClass_ID_FK = BoatClass_ID
             WHERE Comp_ID = @P1",
         );
         query.bind(heat_id);
         let stream = query.query(client).await.unwrap();
-        utils::get_row(stream).await.to_entity()
+        let mut heat: Heat = utils::get_row(stream).await.to_entity();
+        heat.referees = Referee::query(heat.id, client).await;
+        heat
     }
 }
 
