@@ -29,8 +29,10 @@ jobs:
       - name: Tailscale
         uses: tailscale/github-action@v2
         with:
+          authkey: ${{ secrets.TS_AUTHKEY }}
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          version: '1.50.0'
           tags: tag:ci
 
       - name: Build and run tests
