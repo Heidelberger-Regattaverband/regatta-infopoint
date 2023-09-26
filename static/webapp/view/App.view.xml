@@ -4,7 +4,7 @@
   <mvc:content>
 
     <Shell homeIcon="{ 'phone ':'', 'phone@2':'', 'tablet':'', 'tablet@2':'', 'precomposed':true, 'favicon':'icon/favicon.ico' }"
-      logo="icon/android-chrome-256x256.png">
+      logo="icon/hrv_bw_text.jpg">
       <app>
         <App id="infopointApp" class="infopoint" />
       </app>
