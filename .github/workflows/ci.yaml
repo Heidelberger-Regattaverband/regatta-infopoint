@@ -14,6 +14,14 @@ jobs:
     name: Rust project
     runs-on: ubuntu-latest
     steps:
+      - name: Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          version: '1.50.0'
+          tags: tag:ci
+
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -25,14 +33,6 @@ jobs:
 
       - name: Restore build & cargo cache
         uses: Swatinem/rust-cache@v2
-
-      - name: Tailscale
-        uses: tailscale/github-action@v2
-        with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          version: '1.50.0'
-          tags: tag:ci
 
       - name: Build and run tests
         uses: actions-rs/cargo@v1
