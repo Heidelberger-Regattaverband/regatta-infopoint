@@ -24,6 +24,12 @@ pub struct AgeClass {
 
     /// The number of sub-classes, e.g. for masters age classes
     num_sub_classes: u8,
+
+    /// The minimum age in this class
+    min_age: u8,
+
+    /// The maximum age in this class
+    max_age: u8,
 }
 
 impl ToEntity<AgeClass> for Row {
@@ -35,6 +41,8 @@ impl ToEntity<AgeClass> for Row {
             suffix: self.try_get_column("AgeClass_Suffix").unwrap_or_default(),
             gender: self.get_column("AgeClass_Gender"),
             num_sub_classes: self.get_column("AgeClass_NumSubClasses"),
+            min_age: self.get_column("AgeClass_MinAge"),
+            max_age: self.get_column("AgeClass_MaxAge"),
         }
     }
 }
@@ -48,6 +56,8 @@ impl TryToEntity<AgeClass> for Row {
             suffix: self.try_get_column("AgeClass_Suffix").unwrap_or_default(),
             gender: self.get_column("AgeClass_Gender"),
             num_sub_classes: self.get_column("AgeClass_NumSubClasses"),
+            min_age: self.get_column("AgeClass_MinAge"),
+            max_age: self.get_column("AgeClass_MaxAge"),
         })
     }
 }

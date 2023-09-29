@@ -39,15 +39,20 @@ impl Filters {
         let rows = utils::get_rows(stream).await;
         let dates = rows.into_iter().map(|row| row.get_column("Comp_Date")).collect();
 
+        // get all used age classes
         let mut query = Query::new(
-            "SELECT DISTINCT a.* FROM AgeClass a JOIN Offer o ON o.Offer_AgeClass_ID_FK = a.AgeClass_ID
-            WHERE o.Offer_Event_ID_FK = @P1 ORDER BY AgeClass_MinAge ASC",
+            "SELECT DISTINCT a.AgeClass_ID, a.AgeClass_Caption, a.AgeClass_Abbr, a.AgeClass_Suffix, a.AgeClass_Gender, a.AgeClass_NumSubClasses, a.AgeClass_MinAge, a.AgeClass_MaxAge
+            FROM AgeClass a
+            JOIN Offer o ON o.Offer_AgeClass_ID_FK = a.AgeClass_ID
+            WHERE o.Offer_Event_ID_FK = @P1
+            ORDER BY a.AgeClass_MinAge DESC, a.AgeClass_MaxAge DESC",
         );
         query.bind(regatta_id);
         let stream = query.query(client).await.unwrap();
         let rows = utils::get_rows(stream).await;
         let age_classes = rows.into_iter().map(|row| row.to_entity()).collect();
 
+        // get all used boat classes
         let mut query = Query::new(
             "SELECT DISTINCT b.* FROM BoatClass b JOIN Offer o ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID 
             WHERE o.Offer_Event_ID_FK = @P1 ORDER BY b.BoatClass_NumRowers ASC, b.BoatClass_Coxed ASC",

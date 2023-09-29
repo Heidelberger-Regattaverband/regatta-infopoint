@@ -4,19 +4,9 @@
     <filterItems>
       <ViewSettingsFilterItem text="{i18n>common.day}" key="day" multiSelect="false" />
 
-      <ViewSettingsFilterItem text="{i18n>common.boatClass}" key="boatClass">
-        <items>
-          <ViewSettingsItem text="Einer (1x)" key="race/boatClass/abbreviation___EQ___1x" />
-          <ViewSettingsItem text="Doppelzweier (2x)" key="race/boatClass/abbreviation___EQ___2x" />
-          <ViewSettingsItem text="Zweier ohne St. (2-)" key="race/boatClass/abbreviation___EQ___2-" />
-          <ViewSettingsItem text="Zweier mit St. (2+)" key="race/boatClass/abbreviation___EQ___2+" />
-          <ViewSettingsItem text="Doppelvierer (4x)" key="race/boatClass/abbreviation___EQ___4x" />
-          <ViewSettingsItem text="Vierer ohne St. (4-)" key="race/boatClass/abbreviation___EQ___4-" />
-          <ViewSettingsItem text="Doppelvierer mit St. (4x+)" key="race/boatClass/abbreviation___EQ___4x+" />
-          <ViewSettingsItem text="Vierer mit St. (4+)" key="race/boatClass/abbreviation___EQ___4+" />
-          <ViewSettingsItem text="Achter mit St. (8+)" key="race/boatClass/abbreviation___EQ___8+" />
-        </items>
-      </ViewSettingsFilterItem>
+      <ViewSettingsFilterItem text="{i18n>common.boatClass}" key="boatClass" />
+
+      <ViewSettingsFilterItem text="{i18n>common.ageClass}" key="ageClass" />
 
       <ViewSettingsFilterItem text="{i18n>common.gender}" key="gender" multiSelect="false">
         <items>

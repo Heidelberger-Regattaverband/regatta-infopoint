@@ -34,11 +34,34 @@ sap.ui.define([
               });
               break;
             case 'distance':
-              oFilters.distances.forEach((distance) => {
-                oFilterItem.addItem(new ViewSettingsItem({ text: distance + "m", key: "race/distance___EQ___" + distance }));
-              });
+              if (oFilters.distances.length > 1) {
+                oFilters.distances.forEach((distance) => {
+                  oFilterItem.addItem(new ViewSettingsItem({ text: distance + "m", key: "race/distance___EQ___" + distance }));
+                });
+              } else {
+                oFilterItem.setEnabled(false);
+              }
               break;
-          }
+            case 'boatClass':
+              if (oFilters.boatClasses.length > 1) {
+                oFilters.boatClasses.forEach((boatClass) => {
+                  oFilterItem.addItem(new ViewSettingsItem({ text: boatClass.caption + " (" + boatClass.abbreviation + ")", key: "race/boatClass/id___EQ___" + boatClass.id }));
+                });
+              } else {
+                oFilterItem.setEnabled(false);
+              }
+              break;
+            case 'ageClass':
+              if (oFilters.ageClasses.length > 1) {
+                oFilters.ageClasses.forEach((ageClass) => {
+                  oFilterItem.addItem(new ViewSettingsItem({ text: ageClass.caption + " " + ageClass.suffix + "", key: "race/ageClass/id___EQ___" + ageClass.id }));
+                });
+              } else {
+                oFilterItem.setEnabled(false);
+              }
+              break;
+
+          } // end switch
         });
       },
 
