@@ -1,7 +1,7 @@
 <mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatRegistrationsTable" xmlns="sap.m" xmlns:f="sap.f"
   xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
-    <Page title="{i18n>common.result}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
+    <Page title="{= ${heatRegistrations>/state} >= 4 ? ${i18n>common.result} : ${i18n>common.assignment}}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <content>
 
         <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
