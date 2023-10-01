@@ -1,9 +1,7 @@
-use super::{AgeClass, BoatClass, ToEntity};
 use crate::db::{
-    model::utils,
-    tiberius::{RowColumn, TiberiusConnectionManager, TiberiusPool},
+    model::{utils, AgeClass, BoatClass, ToEntity},
+    tiberius::{RowColumn, TiberiusPool},
 };
-use bb8::PooledConnection;
 use chrono::NaiveDate;
 use futures::join;
 use serde::Serialize;
@@ -51,7 +49,7 @@ impl Filters {
 }
 
 async fn query_boat_classes(pool: &TiberiusPool, regatta_id: i32) -> Vec<BoatClass> {
-    let mut client: PooledConnection<'_, TiberiusConnectionManager> = pool.get().await;
+    let mut client = pool.get().await;
     let mut query = Query::new(
         "SELECT DISTINCT b.BoatClass_ID, b.BoatClass_Caption, b.BoatClass_Abbr, b.BoatClass_NumRowers, b.BoatClass_Coxed
             FROM BoatClass b
@@ -65,7 +63,7 @@ async fn query_boat_classes(pool: &TiberiusPool, regatta_id: i32) -> Vec<BoatCla
 }
 
 async fn query_age_classes(pool: &TiberiusPool, regatta_id: i32) -> Vec<AgeClass> {
-    let mut client: PooledConnection<'_, TiberiusConnectionManager> = pool.get().await;
+    let mut client = pool.get().await;
     let mut query = Query::new(
         "SELECT DISTINCT a.AgeClass_ID, a.AgeClass_Caption, a.AgeClass_Abbr, a.AgeClass_Suffix, a.AgeClass_Gender, a.AgeClass_NumSubClasses, a.AgeClass_MinAge, a.AgeClass_MaxAge
             FROM AgeClass a
