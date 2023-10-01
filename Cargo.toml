@@ -43,3 +43,4 @@ stretto = { version = "0", features = ["async"] }
 
 # Utils
 colored = "2"
+futures = "0.3"

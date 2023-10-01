@@ -45,7 +45,7 @@ impl Aquarius {
 
     async fn _query_filters(&self, regatta_id: i32) -> Filters {
         let start = Instant::now();
-        let filters = Filters::query(regatta_id, &mut self.pool.get().await).await;
+        let filters = Filters::query(regatta_id, &self.pool).await;
         self.caches.filters.set(&regatta_id, &filters).await;
         debug!("Query filters from DB: {:?}", start.elapsed());
         filters
