@@ -19,7 +19,7 @@ pub struct BoatClass {
     abbreviation: String,
 
     /// Number of rowers in the boat
-    num_rowers: i32,
+    num_rowers: u8,
 
     /// Whether boat is coxed or not
     coxed: bool,
@@ -32,7 +32,7 @@ impl ToEntity<BoatClass> for Row {
             id: self.get_column("BoatClass_ID"),
             caption: self.get_column("BoatClass_Caption"),
             abbreviation: self.get_column("BoatClass_Abbr"),
-            num_rowers: self.try_get_column("BoatClass_NumRowers").unwrap_or_default(),
+            num_rowers: self.get_column("BoatClass_NumRowers"),
             coxed: coxed > 0,
         }
     }
@@ -46,7 +46,7 @@ impl TryToEntity<BoatClass> for Row {
                 id,
                 caption: self.get_column("BoatClass_Caption"),
                 abbreviation: self.get_column("BoatClass_Abbr"),
-                num_rowers: self.try_get_column("BoatClass_NumRowers").unwrap_or_default(),
+                num_rowers: self.get_column("BoatClass_NumRowers"),
                 coxed: coxed > 0,
             })
         } else {

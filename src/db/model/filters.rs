@@ -54,7 +54,9 @@ impl Filters {
 
         // get all used boat classes
         let mut query = Query::new(
-            "SELECT DISTINCT b.* FROM BoatClass b JOIN Offer o ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID 
+            "SELECT DISTINCT b.BoatClass_ID, b.BoatClass_Caption, b.BoatClass_Abbr, b.BoatClass_NumRowers, b.BoatClass_Coxed
+            FROM BoatClass b
+            JOIN Offer o ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID 
             WHERE o.Offer_Event_ID_FK = @P1 ORDER BY b.BoatClass_NumRowers ASC, b.BoatClass_Coxed ASC",
         );
         query.bind(regatta_id);
