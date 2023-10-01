@@ -49,15 +49,6 @@ impl ToEntity<AgeClass> for Row {
 
 impl TryToEntity<AgeClass> for Row {
     fn try_to_entity(&self) -> Option<AgeClass> {
-        <Row as TryRowColumn<i32>>::try_get_column(self, "AgeClass_ID").map(|id| AgeClass {
-            id,
-            caption: self.get_column("AgeClass_Caption"),
-            abbreviation: self.get_column("AgeClass_Abbr"),
-            suffix: self.try_get_column("AgeClass_Suffix").unwrap_or_default(),
-            gender: self.get_column("AgeClass_Gender"),
-            num_sub_classes: self.get_column("AgeClass_NumSubClasses"),
-            min_age: self.get_column("AgeClass_MinAge"),
-            max_age: self.get_column("AgeClass_MaxAge"),
-        })
+        <Row as TryRowColumn<i32>>::try_get_column(self, "AgeClass_ID").map(|_id| self.to_entity())
     }
 }

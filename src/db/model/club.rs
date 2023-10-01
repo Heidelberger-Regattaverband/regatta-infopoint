@@ -10,12 +10,22 @@ use tiberius::{Query, Row};
 #[serde(rename_all = "camelCase")]
 pub struct Club {
     pub id: i32,
+
+    /// The short name of the club.
     short_name: String,
+
+    /// The long name of the club.
     #[serde(skip_serializing_if = "Option::is_none")]
     long_name: Option<String>,
+
+    /// A very short abbreviation of the club.
     #[serde(skip_serializing_if = "Option::is_none")]
     abbreviation: Option<String>,
+
+    /// The location of the club.
     city: String,
+
+    /// The number of times this club has been a participant.
     #[serde(skip_serializing_if = "Option::is_none")]
     participations_count: Option<i32>,
 }

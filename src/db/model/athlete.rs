@@ -9,22 +9,34 @@ use tiberius::{time::chrono::NaiveDateTime, Row};
 #[serde(rename_all = "camelCase")]
 pub struct Athlete {
     id: i32,
+
+    /// First name of the athlete.
     first_name: String,
+
+    /// Last name of the athlete.
     last_name: String,
+
+    /// The athlete's gender.
     gender: String,
+
+    /// Year of birth.
     year: String,
+
+    /// The athlete's club.
     club: Club,
 }
 
 impl ToEntity<Athlete> for Row {
     fn to_entity(&self) -> Athlete {
-        let dob: NaiveDateTime = self.get_column("Athlet_DOB");
         Athlete {
             id: self.get_column("Athlet_ID"),
             first_name: self.get_column("Athlet_FirstName"),
             last_name: self.get_column("Athlet_LastName"),
             gender: self.get_column("Athlet_Gender"),
-            year: dob.date().format("%Y").to_string(),
+            year: <Row as RowColumn<NaiveDateTime>>::get_column(self, "Athlet_DOB")
+                .date()
+                .format("%Y")
+                .to_string(),
             club: self.to_entity(),
         }
     }
@@ -32,18 +44,6 @@ impl ToEntity<Athlete> for Row {
 
 impl TryToEntity<Athlete> for Row {
     fn try_to_entity(&self) -> Option<Athlete> {
-        if let Some(id) = self.try_get_column("Athlet_ID") {
-            let dob: NaiveDateTime = self.get_column("Athlet_DOB");
-            Some(Athlete {
-                id,
-                first_name: self.get_column("Athlet_FirstName"),
-                last_name: self.get_column("Athlet_LastName"),
-                gender: self.get_column("Athlet_Gender"),
-                year: dob.date().format("%Y").to_string(),
-                club: self.to_entity(),
-            })
-        } else {
-            None
-        }
+        <Row as TryRowColumn<i32>>::try_get_column(self, "Athlet_ID").map(|_id| self.to_entity())
     }
 }
