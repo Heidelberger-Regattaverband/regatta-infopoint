@@ -29,8 +29,8 @@ impl Aquarius {
         }
     }
 
-    pub async fn get_active_regatta(&self) -> Regatta {
-        self.get_regatta(self.active_regatta_id).await
+    pub async fn get_active_regatta(&self, opt_user: Option<Identity>) -> Regatta {
+        self.get_regatta(self.active_regatta_id, opt_user).await
     }
 
     pub async fn get_filters(&self, regatta_id: i32, opt_user: Option<Identity>) -> Filters {
@@ -50,8 +50,10 @@ impl Aquarius {
         regattas
     }
 
-    pub async fn get_regatta(&self, regatta_id: i32) -> Regatta {
-        if let Some(regatta) = self.caches.regatta.get(&regatta_id).await {
+    pub async fn get_regatta(&self, regatta_id: i32, opt_user: Option<Identity>) -> Regatta {
+        if opt_user.is_some() {
+            self._query_regatta(regatta_id).await
+        } else if let Some(regatta) = self.caches.regatta.get(&regatta_id).await {
             regatta
         } else {
             self._query_regatta(regatta_id).await

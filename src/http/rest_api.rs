@@ -28,14 +28,14 @@ async fn get_regattas(aquarius: Data<Aquarius>) -> Json<Vec<Regatta>> {
 }
 
 #[get("/active_regatta")]
-async fn get_active_regatta(aquarius: Data<Aquarius>) -> Json<Regatta> {
-    Json(aquarius.get_active_regatta().await)
+async fn get_active_regatta(aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Json<Regatta> {
+    Json(aquarius.get_active_regatta(opt_user).await)
 }
 
 #[get("/regattas/{id}")]
-async fn get_regatta(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Regatta> {
+async fn get_regatta(path: Path<i32>, aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Json<Regatta> {
     let regatta_id = path.into_inner();
-    Json(aquarius.get_regatta(regatta_id).await)
+    Json(aquarius.get_regatta(regatta_id, opt_user).await)
 }
 
 #[get("/regattas/{id}/races")]
