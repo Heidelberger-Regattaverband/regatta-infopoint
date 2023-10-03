@@ -4,6 +4,7 @@ use crate::db::{
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use chrono::{DateTime, Utc};
+use futures::future::{join, join_all, BoxFuture};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -102,8 +103,13 @@ impl Heat {
         let stream = query.query(&mut client).await.unwrap();
         let mut heat: Heat = utils::get_row(stream).await.to_entity();
 
-        heat.referees = Referee::query(heat.id, pool).await;
-        heat.registrations = Some(Heat::_query_heat_registrations(&heat, pool).await);
+        let result = join(
+            Referee::query(heat.id, pool),
+            Heat::_query_heat_registrations(&heat, pool),
+        )
+        .await;
+        heat.referees = result.0;
+        heat.registrations = Some(result.1);
 
         heat
     }
@@ -112,10 +118,22 @@ impl Heat {
         // get all registrations of heat
         let mut heat_registrations: Vec<HeatRegistration> = HeatRegistration::query_all(heat.id, pool).await;
 
+        let mut crew_futures: Vec<BoxFuture<Vec<Crew>>> = Vec::new();
+
         // loop over all heat registrations and get crews
         for heat_registration in &mut heat_registrations {
-            let crew = Crew::query_all(heat_registration.registration.id, heat.round, pool).await;
-            heat_registration.registration.crew = Some(crew);
+            crew_futures.push(Box::pin(Crew::query_all(
+                heat_registration.registration.id,
+                heat.round,
+                pool,
+            )));
+        }
+
+        let crews = join_all(crew_futures).await;
+
+        for (pos, heat_registration) in heat_registrations.iter_mut().enumerate() {
+            let crew = crews.get(pos).unwrap();
+            heat_registration.registration.crew = Some(crew.to_vec());
         }
 
         heat_registrations
