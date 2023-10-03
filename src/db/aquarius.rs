@@ -2,7 +2,7 @@ use crate::{
     config::Config,
     db::{
         cache::{CacheTrait, Caches},
-        model::{Club, Crew, Filters, Heat, HeatRegistration, Kiosk, Race, Regatta, Registration, Score, Statistics},
+        model::{Club, Filters, Heat, Kiosk, Race, Regatta, Registration, Score, Statistics},
         tiberius::{TiberiusConnectionManager, TiberiusPool},
     },
 };
@@ -216,8 +216,7 @@ impl Aquarius {
 
     async fn _query_heat(&self, heat_id: i32) -> Heat {
         let start = Instant::now();
-        let mut heat = Heat::query_single(heat_id, &self.pool).await;
-        heat.registrations = Some(self._query_heat_registrations(&heat).await);
+        let heat = Heat::query_single(heat_id, &self.pool).await;
         self.caches.heat.set(&heat_id, &heat).await;
         debug!(
             "Query heat {} with registrations from DB: {:?}",
@@ -225,20 +224,6 @@ impl Aquarius {
             start.elapsed()
         );
         heat
-    }
-
-    async fn _query_heat_registrations(&self, heat: &Heat) -> Vec<HeatRegistration> {
-        // get all registrations of heat
-        let mut heat_registrations: Vec<HeatRegistration> =
-            HeatRegistration::query_all(heat.id, &mut self.pool.get().await).await;
-
-        // loop over all heat registrations and get crews
-        for heat_registration in &mut heat_registrations {
-            let crew = Crew::query_all(heat_registration.registration.id, heat.round, &self.pool).await;
-            heat_registration.registration.crew = Some(crew);
-        }
-
-        heat_registrations
     }
 
     async fn _query_participating_clubs(&self, regatta_id: i32) -> Vec<Club> {

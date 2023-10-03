@@ -1,6 +1,6 @@
 use crate::db::{
     aquarius::AquariusClient,
-    model::{utils, HeatRegistration, Race, Referee, ToEntity, TryToEntity},
+    model::{utils, Crew, HeatRegistration, Race, Referee, ToEntity, TryToEntity},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use chrono::{DateTime, Utc};
@@ -104,8 +104,25 @@ impl Heat {
         query.bind(heat_id);
         let stream = query.query(&mut client).await.unwrap();
         let mut heat: Heat = utils::get_row(stream).await.to_entity();
+
         heat.referees = Referee::query(heat.id, pool).await;
+        heat.registrations = Some(Heat::_query_heat_registrations(&heat, pool).await);
+
         heat
+    }
+
+    async fn _query_heat_registrations(heat: &Heat, pool: &TiberiusPool) -> Vec<HeatRegistration> {
+        // get all registrations of heat
+        let mut heat_registrations: Vec<HeatRegistration> =
+            HeatRegistration::query_all(heat.id, &mut pool.get().await).await;
+
+        // loop over all heat registrations and get crews
+        for heat_registration in &mut heat_registrations {
+            let crew = Crew::query_all(heat_registration.registration.id, heat.round, pool).await;
+            heat_registration.registration.crew = Some(crew);
+        }
+
+        heat_registrations
     }
 }
 
