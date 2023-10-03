@@ -113,8 +113,7 @@ impl Heat {
 
     async fn _query_heat_registrations(heat: &Heat, pool: &TiberiusPool) -> Vec<HeatRegistration> {
         // get all registrations of heat
-        let mut heat_registrations: Vec<HeatRegistration> =
-            HeatRegistration::query_all(heat.id, &mut pool.get().await).await;
+        let mut heat_registrations: Vec<HeatRegistration> = HeatRegistration::query_all(heat.id, pool).await;
 
         // loop over all heat registrations and get crews
         for heat_registration in &mut heat_registrations {
