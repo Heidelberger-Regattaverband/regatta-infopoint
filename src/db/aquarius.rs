@@ -190,7 +190,7 @@ impl Aquarius {
     async fn _query_race(&self, race_id: i32) -> Race {
         let start = Instant::now();
         // query the race details
-        let mut race: Race = Race::query_single(race_id, &mut self.pool.get().await).await;
+        let mut race: Race = Race::query_single(race_id, &self.pool).await;
         // then query the registrations
         race.registrations = Some(Registration::query_for_race(race_id, &self.pool).await);
         self.caches.race.set(&race.id, &race).await;
@@ -200,7 +200,7 @@ impl Aquarius {
 
     async fn _query_races(&self, regatta_id: i32) -> Vec<Race> {
         let start = Instant::now();
-        let races = Race::query_all(regatta_id, &mut self.pool.get().await).await;
+        let races = Race::query_all(regatta_id, &self.pool).await;
         self.caches.races.set(&regatta_id, &races).await;
         debug!("Query races of regatta {} from DB: {:?}", regatta_id, start.elapsed());
         races

@@ -70,27 +70,7 @@ impl ToEntity<Heat> for Row {
 
 impl TryToEntity<Heat> for Row {
     fn try_to_entity(&self) -> Option<Heat> {
-        if let Some(id) = self.try_get_column("Comp_ID") {
-            let state: u8 = self.get_column("Comp_State");
-            let cancelled: bool = self.get_column("Comp_Cancelled");
-
-            Some(Heat {
-                id,
-                race: self.to_entity(),
-                number: self.get_column("Comp_Number"),
-                round_code: self.get_column("Comp_RoundCode"),
-                label: self.try_get_column("Comp_Label"),
-                group_value: self.get_column("Comp_GroupValue"),
-                state,
-                cancelled,
-                date_time: self.try_get_column("Comp_DateTime"),
-                referees: vec![],
-                registrations: None,
-                round: self.get_column("Comp_Round"),
-            })
-        } else {
-            None
-        }
+        <Row as TryRowColumn<i32>>::try_get_column(self, "Comp_ID").map(|_id| self.to_entity())
     }
 }
 
