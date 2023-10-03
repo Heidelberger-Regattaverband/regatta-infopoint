@@ -1,8 +1,8 @@
 use crate::db::{
-    aquarius::AquariusClient,
     model::{utils, Club, Crew, Heat, Race, ToEntity, TryToEntity},
-    tiberius::{RowColumn, TryRowColumn},
+    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
+use futures::future::{join_all, BoxFuture};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -67,9 +67,11 @@ impl ToEntity<Registration> for Row {
 }
 
 impl Registration {
-    pub async fn query_of_club(regatta_id: i32, club_id: i32, client: &mut AquariusClient<'_>) -> Vec<Registration> {
+    pub async fn query_of_club(regatta_id: i32, club_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
+        let mut client = pool.get().await;
         let mut query = Query::new(
-          "SELECT DISTINCT Entry.*, Label_Short, oc.Club_ID, oc.Club_Abbr, oc.Club_UltraAbbr, oc.Club_City, Offer.*, Comp.*,
+          "SELECT DISTINCT Entry_ID, Entry_Bib, Entry_Comment, Entry_BoatNumber, Entry_GroupValue, Entry_CancelValue,
+            Label_Short, oc.Club_ID, oc.Club_Abbr, oc.Club_UltraAbbr, oc.Club_City, Offer.*, Comp.*,
           (SELECT MIN(Comp_DateTime) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID) as Race_DateTime
           FROM Club AS ac
           JOIN Athlet      ON Athlet_Club_ID_FK  = ac.Club_ID
@@ -87,23 +89,25 @@ impl Registration {
         query.bind(regatta_id);
         query.bind(club_id);
 
-        let stream = query.query(client).await.unwrap();
+        let stream = query.query(&mut client).await.unwrap();
         let rows = utils::get_rows(stream).await;
 
         let mut registrations: Vec<Registration> = Vec::with_capacity(rows.len());
         for row in &rows {
             let mut registration: Registration = row.to_entity();
-            let crew = Crew::query_all(registration.id, 64, client).await;
+            let crew = Crew::query_all(registration.id, 64, pool).await;
             registration.crew = Some(crew);
             registrations.push(registration);
         }
         registrations
     }
 
-    pub async fn query_for_race<'a>(race_id: i32, client: &mut AquariusClient<'_>) -> Vec<Registration> {
+    pub async fn query_for_race<'a>(race_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
+        let mut client = pool.get().await;
         let round = 64;
         let mut query = Query::new(
-            "SELECT DISTINCT Entry.*, Label_Short, Club.Club_ID, Club.Club_Abbr, Club.Club_UltraAbbr, Club.Club_City, Offer.*
+            "SELECT DISTINCT Entry_ID, Entry_Bib, Entry_Comment, Entry_BoatNumber, Entry_GroupValue, Entry_CancelValue,
+              Label_Short, Club.Club_ID, Club.Club_Abbr, Club.Club_UltraAbbr, Club.Club_City, Offer.*
             FROM Entry
             JOIN EntryLabel ON EL_Entry_ID_FK   = Entry_ID
             JOIN Label      ON EL_Label_ID_FK   = Label_ID
@@ -114,16 +118,26 @@ impl Registration {
         );
         query.bind(race_id);
         query.bind(round);
-        let stream = query.query(client).await.unwrap();
-        let rows = utils::get_rows(stream).await;
+        let stream = query.query(&mut client).await.unwrap();
 
-        let mut registrations: Vec<Registration> = Vec::with_capacity(rows.len());
-        for row in &rows {
-            let mut registration: Registration = row.to_entity();
-            let crew = Crew::query_all(registration.id, round, client).await;
-            registration.crew = Some(crew);
-            registrations.push(registration);
+        let mut crew_futures: Vec<BoxFuture<Vec<Crew>>> = Vec::new();
+        let mut registrations: Vec<Registration> = utils::get_rows(stream)
+            .await
+            .into_iter()
+            .map(|row| {
+                let registration: Registration = row.to_entity();
+                crew_futures.push(Box::pin(Crew::query_all(registration.id, round, pool)));
+                registration
+            })
+            .collect();
+
+        let crews = join_all(crew_futures).await;
+
+        for (pos, registration) in registrations.iter_mut().enumerate() {
+            let crew = crews.get(pos).unwrap();
+            registration.crew = Some(crew.to_vec());
         }
+
         registrations
     }
 }

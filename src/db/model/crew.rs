@@ -1,7 +1,6 @@
 use crate::db::{
-    aquarius::AquariusClient,
     model::{utils, Athlete, ToEntity},
-    tiberius::RowColumn,
+    tiberius::{RowColumn, TiberiusPool},
 };
 use serde::Serialize;
 use tiberius::{Query, Row};
@@ -39,7 +38,8 @@ impl ToEntity<Crew> for Row {
 }
 
 impl Crew {
-    pub async fn query_all<'a>(registration_id: i32, round: i16, client: &mut AquariusClient<'_>) -> Vec<Crew> {
+    pub async fn query_all<'a>(registration_id: i32, round: i16, pool: &TiberiusPool) -> Vec<Crew> {
+        let mut client = pool.get().await;
         let mut query = Query::new(
             "SELECT Crew.*, Athlet.*, Club.Club_ID, Club.Club_Abbr, Club.Club_UltraAbbr, Club.Club_City
             FROM Crew
@@ -50,7 +50,7 @@ impl Crew {
         );
         query.bind(registration_id);
         query.bind(round);
-        let stream = query.query(client).await.unwrap();
+        let stream = query.query(&mut client).await.unwrap();
         let crew = utils::get_rows(stream).await;
         crew.into_iter().map(|row| row.to_entity()).collect()
     }
