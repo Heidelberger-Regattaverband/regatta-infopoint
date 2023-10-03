@@ -25,7 +25,7 @@ impl ToEntity<Score> for Row {
 }
 
 impl Score {
-    pub async fn calculate<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Self> {
+    pub async fn calculate(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Self> {
         let mut query = Query::new(
             "SELECT Club_ID, SUM(Points_Crew) as points, Club_Name, Club_City, Club_Abbr, Club_UltraAbbr FROM
               (SELECT Club_ID, Club_Name, Club_City, Club_Abbr, Club_UltraAbbr,

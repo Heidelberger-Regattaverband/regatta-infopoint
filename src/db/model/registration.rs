@@ -102,7 +102,7 @@ impl Registration {
         registrations
     }
 
-    pub async fn query_for_race<'a>(race_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
+    pub async fn query_for_race(race_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
         let mut client = pool.get().await;
         let round = 64;
         let mut query = Query::new(

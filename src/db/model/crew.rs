@@ -38,7 +38,7 @@ impl ToEntity<Crew> for Row {
 }
 
 impl Crew {
-    pub async fn query_all<'a>(registration_id: i32, round: i16, pool: &TiberiusPool) -> Vec<Crew> {
+    pub async fn query_all(registration_id: i32, round: i16, pool: &TiberiusPool) -> Vec<Crew> {
         let mut client = pool.get().await;
         let mut query = Query::new(
             "SELECT Crew.*, Athlet.*, Club.Club_ID, Club.Club_Abbr, Club.Club_UltraAbbr, Club.Club_City

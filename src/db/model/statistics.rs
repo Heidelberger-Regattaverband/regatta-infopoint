@@ -89,7 +89,7 @@ struct Athletes {
 }
 
 impl Statistics {
-    pub async fn query<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Statistics {
+    pub async fn query(regatta_id: i32, client: &mut AquariusClient<'_>) -> Statistics {
         let mut query = Query::new(
         "SELECT
           (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1) AS races_all,

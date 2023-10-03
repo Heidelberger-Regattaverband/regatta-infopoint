@@ -1,7 +1,6 @@
 use crate::db::{
-    aquarius::AquariusClient,
     model::{utils, ToEntity},
-    tiberius::{RowColumn, TryRowColumn},
+    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
 use tiberius::{Query, Row};
@@ -31,7 +30,8 @@ pub struct Club {
 }
 
 impl Club {
-    pub async fn query_participating(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Club> {
+    pub async fn query_participating(regatta_id: i32, pool: &TiberiusPool) -> Vec<Club> {
+        let mut client = pool.get().await;
         let mut query = Query::new(
             "SELECT DISTINCT c.*,
               (SELECT COUNT(*) FROM ( 
@@ -52,12 +52,13 @@ impl Club {
             ORDER BY Club_City ASC",
         );
         query.bind(regatta_id);
-        let stream = query.query(client).await.unwrap();
+        let stream = query.query(&mut client).await.unwrap();
         let clubs = utils::get_rows(stream).await;
         clubs.into_iter().map(|row| row.to_entity()).collect()
     }
 
-    pub async fn query_single(club_id: i32, client: &mut AquariusClient<'_>) -> Club {
+    pub async fn query_single(club_id: i32, pool: &TiberiusPool) -> Club {
+        let mut client = pool.get().await;
         let mut query = Query::new(
             "SELECT DISTINCT Club.*
             FROM Club
@@ -65,7 +66,7 @@ impl Club {
             ORDER BY Club_City ASC",
         );
         query.bind(club_id);
-        let stream = query.query(client).await.unwrap();
+        let stream = query.query(&mut client).await.unwrap();
         utils::get_row(stream).await.to_entity()
     }
 }

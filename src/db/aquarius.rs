@@ -208,7 +208,7 @@ impl Aquarius {
 
     async fn _query_heats(&self, regatta_id: i32) -> Vec<Heat> {
         let start = Instant::now();
-        let heats: Vec<Heat> = Heat::query_all(regatta_id, &mut self.pool.get().await).await;
+        let heats: Vec<Heat> = Heat::query_all(regatta_id, &self.pool).await;
         self.caches.heats.set(&regatta_id, &heats).await;
         debug!("Query heats of regatta {} from DB: {:?}", regatta_id, start.elapsed());
         heats
@@ -216,7 +216,7 @@ impl Aquarius {
 
     async fn _query_heat(&self, heat_id: i32) -> Heat {
         let start = Instant::now();
-        let mut heat = Heat::query_single(heat_id, &mut self.pool.get().await).await;
+        let mut heat = Heat::query_single(heat_id, &self.pool).await;
         heat.registrations = Some(self._query_heat_registrations(&heat).await);
         self.caches.heat.set(&heat_id, &heat).await;
         debug!(
@@ -243,7 +243,7 @@ impl Aquarius {
 
     async fn _query_participating_clubs(&self, regatta_id: i32) -> Vec<Club> {
         let start = Instant::now();
-        let clubs = Club::query_participating(regatta_id, &mut self.pool.get().await).await;
+        let clubs = Club::query_participating(regatta_id, &self.pool).await;
         self.caches.participating_clubs.set(&regatta_id, &clubs).await;
         debug!(
             "Query participating clubs of regatta {} from DB: {:?}",
@@ -271,7 +271,7 @@ impl Aquarius {
 
     async fn _query_club(&self, club_id: i32) -> Club {
         let start = Instant::now();
-        let club = Club::query_single(club_id, &mut self.pool.get().await).await;
+        let club = Club::query_single(club_id, &self.pool).await;
         self.caches.club.set(&club.id, &club).await;
         debug!("Query club {} from DB: {:?}", club_id, start.elapsed());
         club

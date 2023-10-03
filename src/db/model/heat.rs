@@ -1,7 +1,7 @@
 use crate::db::{
     aquarius::AquariusClient,
     model::{utils, HeatRegistration, Race, Referee, ToEntity, TryToEntity},
-    tiberius::{RowColumn, TryRowColumn},
+    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use chrono::{DateTime, Utc};
 use serde::Serialize;
@@ -95,7 +95,8 @@ impl TryToEntity<Heat> for Row {
 }
 
 impl Heat {
-    pub async fn query_all<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Heat> {
+    pub async fn query_all(regatta_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
+        let mut client = pool.get().await;
         let mut query = Query::new(
             "SELECT DISTINCT c.*, a.*, b.*, o.*
             FROM Comp c
@@ -105,12 +106,13 @@ impl Heat {
             WHERE Comp_Event_ID_FK = @P1 ORDER BY Comp_DateTime ASC",
         );
         query.bind(regatta_id);
-        let stream = query.query(client).await.unwrap();
+        let stream = query.query(&mut client).await.unwrap();
         let heats = utils::get_rows(stream).await;
         heats.into_iter().map(|row| row.to_entity()).collect()
     }
 
-    pub async fn query_single<'a>(heat_id: i32, client: &mut AquariusClient<'_>) -> Heat {
+    pub async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Heat {
+        let mut client = pool.get().await;
         let mut query = Query::new(
             "SELECT DISTINCT Comp.*, AgeClass.*, BoatClass.*, Offer.*
             FROM Comp
@@ -120,9 +122,9 @@ impl Heat {
             WHERE Comp_ID = @P1",
         );
         query.bind(heat_id);
-        let stream = query.query(client).await.unwrap();
+        let stream = query.query(&mut client).await.unwrap();
         let mut heat: Heat = utils::get_row(stream).await.to_entity();
-        heat.referees = Referee::query(heat.id, client).await;
+        heat.referees = Referee::query(heat.id, pool).await;
         heat
     }
 }
@@ -134,7 +136,7 @@ pub struct Kiosk {
     pub next: Vec<Heat>,
 }
 impl Kiosk {
-    pub async fn query_finished<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Heat> {
+    pub async fn query_finished(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Heat> {
         let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, o.Offer_GroupMode,
             o.Offer_HRV_Seeded, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
             FROM Comp AS c
@@ -147,7 +149,7 @@ impl Kiosk {
         heats.into_iter().map(|row| row.to_entity()).collect()
     }
 
-    pub async fn query_next<'a>(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Heat> {
+    pub async fn query_next(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Heat> {
         let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, o.Offer_GroupMode,
             o.Offer_HRV_Seeded, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
             FROM Comp AS c
