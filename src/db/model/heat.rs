@@ -48,9 +48,6 @@ pub struct Heat {
 
 impl ToEntity<Heat> for Row {
     fn to_entity(&self) -> Heat {
-        let state: u8 = self.get_column("Comp_State");
-        let cancelled: bool = self.get_column("Comp_Cancelled");
-
         Heat {
             id: self.get_column("Comp_ID"),
             race: self.to_entity(),
@@ -58,8 +55,8 @@ impl ToEntity<Heat> for Row {
             round_code: self.get_column("Comp_RoundCode"),
             label: self.try_get_column("Comp_Label"),
             group_value: self.get_column("Comp_GroupValue"),
-            state,
-            cancelled,
+            state: self.get_column("Comp_State"),
+            cancelled: self.get_column("Comp_Cancelled"),
             date_time: self.try_get_column("Comp_DateTime"),
             referees: vec![],
             registrations: None,
