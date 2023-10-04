@@ -31,17 +31,17 @@ impl HeatRegistration {
     pub async fn query_all(heat: &Heat, pool: &TiberiusPool) -> Vec<HeatRegistration> {
         let mut client = pool.get().await;
         let mut query = Query::new("SELECT DISTINCT
-                ce.CE_ID, ce.CE_Lane, e.Entry_ID, e.Entry_Bib, e.Entry_Comment, e.Entry_BoatNumber, e.Entry_GroupValue, e.Entry_CancelValue,
-                Label_Short, Result_Rank, Result_DisplayValue, Result_Delta, BoatClass_NumRowers,".to_string() 
-                + &Club::select_columns("c") + ", " + &Race::select_columns("o")
-            + "FROM CompEntries ce
-            JOIN Comp                  ON CE_Comp_ID_FK = Comp_ID
-            JOIN Offer o               ON o.Offer_ID      = Comp_Race_ID_FK
+                ce.CE_ID, ce.CE_Lane, e.Entry_ID, e.Entry_Bib, e.Entry_Comment, e.Entry_BoatNumber, e.Entry_GroupValue, e.Entry_CancelValue, Label_Short, BoatClass_NumRowers,".to_string() 
+                + &Club::select_columns("c") + ", " + &Race::select_columns("o") + ", " + &HeatResult::select_columns("r")
+            + "
+            FROM CompEntries ce
+            JOIN Comp                  ON CE_Comp_ID_FK     = Comp_ID
+            JOIN Offer o               ON o.Offer_ID        = Comp_Race_ID_FK
             JOIN BoatClass             ON o.Offer_BoatClass_ID_FK = BoatClass_ID
-            FULL OUTER JOIN Entry e    ON CE_Entry_ID_FK = e.Entry_ID
-            FULL OUTER JOIN EntryLabel ON EL_Entry_ID_FK = e.Entry_ID
-            FULL OUTER JOIN Label      ON EL_Label_ID_FK = Label_ID
-            FULL OUTER JOIN Result     ON Result_CE_ID_FK = CE_ID
+            FULL OUTER JOIN Entry e    ON CE_Entry_ID_FK    = e.Entry_ID
+            FULL OUTER JOIN EntryLabel ON EL_Entry_ID_FK    = e.Entry_ID
+            FULL OUTER JOIN Label      ON EL_Label_ID_FK    = Label_ID
+            FULL OUTER JOIN Result r   ON r.Result_CE_ID_FK = ce.CE_ID
             JOIN Club c                ON c.Club_ID = Entry_OwnerClub_ID_FK
             WHERE CE_Comp_ID_FK = @P1 AND ((Result_SplitNr = 64 AND Comp_State >=4) OR (Result_SplitNr = 0 AND Comp_State < 3) OR (Comp_State < 2 AND Result_SplitNr IS NULL))
             AND EL_RoundFrom <= Comp_Round AND Comp_Round <= EL_RoundTo");

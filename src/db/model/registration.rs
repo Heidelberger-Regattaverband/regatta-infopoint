@@ -70,22 +70,22 @@ impl Registration {
     pub async fn query_of_club(regatta_id: i32, club_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
         let mut client = pool.get().await;
         let mut query = Query::new(
-          "SELECT DISTINCT Entry_ID, Entry_Bib, Entry_Comment, Entry_BoatNumber, Entry_GroupValue, Entry_CancelValue,
-            Label_Short, oc.Club_ID, oc.Club_Abbr, oc.Club_UltraAbbr, oc.Club_City, Offer.*, Comp.*,
-          (SELECT MIN(Comp_DateTime) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID) as Race_DateTime
-          FROM Club AS ac
-          JOIN Athlet      ON Athlet_Club_ID_FK  = ac.Club_ID
-          JOIN Crew        ON Crew_Athlete_ID_FK = Athlet_ID
-          JOIN Entry       ON Crew_Entry_ID_FK   = Entry_ID
-          JOIN Club as oc  ON Entry_OwnerClub_ID_FK = oc.Club_ID
-          JOIN EntryLabel  ON EL_Entry_ID_FK     = Entry_ID
-          JOIN Label       ON EL_Label_ID_FK     = Label_ID
-          JOIN Offer       ON Entry_Race_ID_FK = Offer_ID
-          JOIN CompEntries ON CE_Entry_ID_FK = Entry_ID
-          JOIN Comp        ON CE_Comp_ID_FK = Comp_ID AND CE_Entry_ID_FK = Entry_ID
-          WHERE Entry_Event_ID_FK = @P1 AND ac.Club_ID = @P2 AND EL_RoundFrom <= 64 AND 64 <= EL_RoundTo AND Crew_RoundTo = 64
-          ORDER BY Offer_ID ASC, Comp_DateTime ASC",
-      );
+          "SELECT DISTINCT Entry_ID, Entry_Bib, Entry_Comment, Entry_BoatNumber, Entry_GroupValue, Entry_CancelValue, Label_Short, ".to_string()
+                + &Club::select_columns("oc") + ", " + &Race::select_columns("o") + ", " + &Heat::select_columns("c") +
+                ", (SELECT MIN(Comp_DateTime) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID) as Race_DateTime
+            FROM Club AS ac
+            JOIN Athlet      ON Athlet_Club_ID_FK  = ac.Club_ID
+            JOIN Crew        ON Crew_Athlete_ID_FK = Athlet_ID
+            JOIN Entry       ON Crew_Entry_ID_FK   = Entry_ID
+            JOIN Club as oc  ON Entry_OwnerClub_ID_FK = oc.Club_ID
+            JOIN EntryLabel  ON EL_Entry_ID_FK     = Entry_ID
+            JOIN Label       ON EL_Label_ID_FK     = Label_ID
+            JOIN Offer o     ON Entry_Race_ID_FK   = o.Offer_ID
+            JOIN CompEntries ON CE_Entry_ID_FK     = Entry_ID
+            JOIN Comp c      ON CE_Comp_ID_FK = c.Comp_ID AND CE_Entry_ID_FK = Entry_ID
+            WHERE Entry_Event_ID_FK = @P1 AND ac.Club_ID = @P2 AND EL_RoundFrom <= 64 AND 64 <= EL_RoundTo AND Crew_RoundTo = 64
+            ORDER BY Offer_ID ASC, c.Comp_DateTime ASC",
+        );
         query.bind(regatta_id);
         query.bind(club_id);
 
@@ -106,13 +106,13 @@ impl Registration {
         let mut client = pool.get().await;
         let round = 64;
         let mut query = Query::new(
-            "SELECT DISTINCT Entry_ID, Entry_Bib, Entry_Comment, Entry_BoatNumber, Entry_GroupValue, Entry_CancelValue,
-              Label_Short, Club.Club_ID, Club.Club_Abbr, Club.Club_UltraAbbr, Club.Club_City, Offer.*
+            "SELECT DISTINCT Entry_ID, Entry_Bib, Entry_Comment, Entry_BoatNumber, Entry_GroupValue, Entry_CancelValue, Label_Short, "
+                .to_string() + &Club::select_columns("c") + ", " + &Race::select_columns("o") + " 
             FROM Entry
             JOIN EntryLabel ON EL_Entry_ID_FK   = Entry_ID
             JOIN Label      ON EL_Label_ID_FK   = Label_ID
-            JOIN Club       ON Club_ID          = Entry_OwnerClub_ID_FK
-            JOIN Offer      ON Entry_Race_ID_FK = Offer_ID
+            JOIN Club c     ON c.Club_ID        = Entry_OwnerClub_ID_FK
+            JOIN Offer o    ON Entry_Race_ID_FK = o.Offer_ID
             WHERE Entry_Race_ID_FK = @P1 AND EL_RoundFrom <= @P2 AND @P2 <= EL_RoundTo
             ORDER BY Entry_Bib ASC",
         );

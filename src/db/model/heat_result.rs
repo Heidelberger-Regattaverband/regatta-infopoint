@@ -17,6 +17,12 @@ pub struct HeatResult {
     points: u8,
 }
 
+impl HeatResult {
+    pub fn select_columns(alias: &str) -> String {
+        format!(" {0}.Result_Rank, {0}.Result_Delta, {0}.Result_DisplayValue ", alias)
+    }
+}
+
 impl TryToEntity<HeatResult> for Row {
     fn try_to_entity(&self) -> Option<HeatResult> {
         if let Some(rank) = self.try_get_column("Result_Rank") {

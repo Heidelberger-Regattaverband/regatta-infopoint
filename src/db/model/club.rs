@@ -63,7 +63,8 @@ impl Club {
         let mut query = Query::new(
             "SELECT".to_string()
                 + &Club::select_columns("c")
-                + "FROM Club c
+                + "
+            FROM Club c
             WHERE c.Club_ID = @P1
             ORDER BY c.Club_City ASC",
         );

@@ -26,6 +26,15 @@ pub struct Athlete {
     club: Club,
 }
 
+impl Athlete {
+    pub fn select_columns(alias: &str) -> String {
+        format!(
+            " {0}.Athlet_ID, {0}.Athlet_FirstName, {0}.Athlet_LastName, {0}.Athlet_Gender, {0}.Athlet_DOB ",
+            alias
+        )
+    }
+}
+
 impl ToEntity<Athlete> for Row {
     fn to_entity(&self) -> Athlete {
         Athlete {
