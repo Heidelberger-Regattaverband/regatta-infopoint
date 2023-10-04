@@ -23,6 +23,12 @@ pub struct BoatClass {
     coxed: bool,
 }
 
+impl BoatClass {
+    pub fn select_columns(alias: &str) -> String {
+        format!(" {0}.BoatClass_ID, {0}.BoatClass_Caption, {0}.BoatClass_Abbr, {0}.BoatClass_NumRowers, {0}.BoatClass_Coxed ", alias)
+    }
+}
+
 impl ToEntity<BoatClass> for Row {
     fn to_entity(&self) -> BoatClass {
         BoatClass {

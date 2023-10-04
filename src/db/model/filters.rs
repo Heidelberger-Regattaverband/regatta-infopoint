@@ -51,8 +51,9 @@ impl Filters {
 async fn query_boat_classes(pool: &TiberiusPool, regatta_id: i32) -> Vec<BoatClass> {
     let mut client = pool.get().await;
     let mut query = Query::new(
-        "SELECT DISTINCT b.BoatClass_ID, b.BoatClass_Caption, b.BoatClass_Abbr, b.BoatClass_NumRowers, b.BoatClass_Coxed
-            FROM BoatClass b
+        "SELECT DISTINCT".to_string()
+            + &BoatClass::select_columns("b")
+            + "FROM BoatClass b
             JOIN Offer o ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID 
             WHERE o.Offer_Event_ID_FK = @P1 ORDER BY b.BoatClass_NumRowers ASC, b.BoatClass_Coxed ASC",
     );
@@ -65,8 +66,9 @@ async fn query_boat_classes(pool: &TiberiusPool, regatta_id: i32) -> Vec<BoatCla
 async fn query_age_classes(pool: &TiberiusPool, regatta_id: i32) -> Vec<AgeClass> {
     let mut client = pool.get().await;
     let mut query = Query::new(
-        "SELECT DISTINCT a.AgeClass_ID, a.AgeClass_Caption, a.AgeClass_Abbr, a.AgeClass_Suffix, a.AgeClass_Gender, a.AgeClass_NumSubClasses, a.AgeClass_MinAge, a.AgeClass_MaxAge
-            FROM AgeClass a
+        "SELECT DISTINCT".to_string()
+            + &AgeClass::select_columns("a")
+            + "FROM AgeClass a
             JOIN Offer o ON o.Offer_AgeClass_ID_FK = a.AgeClass_ID
             WHERE o.Offer_Event_ID_FK = @P1
             ORDER BY a.AgeClass_MinAge DESC, a.AgeClass_MaxAge DESC",

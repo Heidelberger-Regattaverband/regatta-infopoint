@@ -32,6 +32,12 @@ pub struct AgeClass {
     max_age: u8,
 }
 
+impl AgeClass {
+    pub fn select_columns(alias: &str) -> String {
+        format!(" {0}.AgeClass_ID, {0}.AgeClass_Caption, {0}.AgeClass_Abbr, {0}.AgeClass_Suffix, {0}.AgeClass_Gender, {0}.AgeClass_NumSubClasses, {0}.AgeClass_MinAge, {0}.AgeClass_MaxAge ", alias)
+    }
+}
+
 impl ToEntity<AgeClass> for Row {
     fn to_entity(&self) -> AgeClass {
         AgeClass {

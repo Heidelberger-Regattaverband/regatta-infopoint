@@ -1,12 +1,14 @@
 use crate::db::{
     aquarius::AquariusClient,
-    model::{utils, Crew, HeatRegistration, Race, Referee, ToEntity, TryToEntity},
+    model::{utils, HeatRegistration, Race, Referee, ToEntity, TryToEntity},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use chrono::{DateTime, Utc};
-use futures::future::{join, join_all, BoxFuture};
+use futures::future::join;
 use serde::Serialize;
 use tiberius::{Query, Row};
+
+use super::{AgeClass, BoatClass};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -47,6 +49,12 @@ pub struct Heat {
     pub round: i16,
 }
 
+impl Heat {
+    pub fn select_columns(alias: &str) -> String {
+        format!(" {0}.Comp_ID, {0}.Comp_Number, {0}.Comp_RoundCode, {0}.Comp_Label, {0}.Comp_GroupValue, {0}.Comp_State, {0}.Comp_Cancelled, {0}.Comp_DateTime, {0}.Comp_Round ", alias)
+    }
+}
+
 impl ToEntity<Heat> for Row {
     fn to_entity(&self) -> Heat {
         Heat {
@@ -76,7 +84,13 @@ impl Heat {
     pub async fn query_all(regatta_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
         let mut client = pool.get().await;
         let mut query = Query::new(
-            "SELECT DISTINCT c.*, a.*, b.*, o.*
+            "SELECT DISTINCT".to_string()
+                + &Heat::select_columns("c")
+                + ","
+                + &AgeClass::select_columns("a")
+                + ","
+                + &BoatClass::select_columns("b")
+                + ", o.*
             FROM Comp c
             JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
@@ -92,51 +106,28 @@ impl Heat {
     pub async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Heat {
         let mut client = pool.get().await;
         let mut query = Query::new(
-            "SELECT DISTINCT Comp.*, AgeClass.*, BoatClass.*, Offer.*
-            FROM Comp
-            JOIN Offer     ON Offer_ID              = Comp_Race_ID_FK
-            JOIN AgeClass  ON Offer_AgeClass_ID_FK  = AgeClass_ID
-            JOIN BoatClass ON Offer_BoatClass_ID_FK = BoatClass_ID
+            "SELECT DISTINCT".to_string()
+                + &Heat::select_columns("c")
+                + ","
+                + &AgeClass::select_columns("a")
+                + ","
+                + &BoatClass::select_columns("b")
+                + ", o.*
+            FROM Comp c
+            JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
+            JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
+            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
             WHERE Comp_ID = @P1",
         );
         query.bind(heat_id);
         let stream = query.query(&mut client).await.unwrap();
         let mut heat: Heat = utils::get_row(stream).await.to_entity();
 
-        let result = join(
-            Referee::query(heat.id, pool),
-            Heat::_query_heat_registrations(&heat, pool),
-        )
-        .await;
+        let result = join(Referee::query(heat.id, pool), HeatRegistration::query_all(&heat, pool)).await;
         heat.referees = result.0;
         heat.registrations = Some(result.1);
 
         heat
-    }
-
-    async fn _query_heat_registrations(heat: &Heat, pool: &TiberiusPool) -> Vec<HeatRegistration> {
-        // get all registrations of heat
-        let mut heat_registrations: Vec<HeatRegistration> = HeatRegistration::query_all(heat.id, pool).await;
-
-        let mut crew_futures: Vec<BoxFuture<Vec<Crew>>> = Vec::new();
-
-        // loop over all heat registrations and get crews
-        for heat_registration in &mut heat_registrations {
-            crew_futures.push(Box::pin(Crew::query_all(
-                heat_registration.registration.id,
-                heat.round,
-                pool,
-            )));
-        }
-
-        let crews = join_all(crew_futures).await;
-
-        for (pos, heat_registration) in heat_registrations.iter_mut().enumerate() {
-            let crew = crews.get(pos).unwrap();
-            heat_registration.registration.crew = Some(crew.to_vec());
-        }
-
-        heat_registrations
     }
 }
 
