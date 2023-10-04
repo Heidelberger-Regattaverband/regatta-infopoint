@@ -31,7 +31,7 @@ impl HeatRegistration {
     pub async fn query_all(heat: &Heat, pool: &TiberiusPool) -> Vec<HeatRegistration> {
         let mut client = pool.get().await;
         let mut query = Query::new("SELECT DISTINCT
-                ce.CE_ID, ce.CE_Lane, e.Entry_ID, e.Entry_Bib, e.Entry_Comment, e.Entry_BoatNumber, e.Entry_GroupValue, e.Entry_CancelValue, Label_Short, BoatClass_NumRowers,".to_string() 
+                ce.CE_ID, ce.CE_Lane, ".to_string() + &Registration::select_columns("e") + ", Label_Short, BoatClass_NumRowers,"
                 + &Club::select_columns("c") + ", " + &Race::select_columns("o") + ", " + &HeatResult::select_columns("r")
             + "
             FROM CompEntries ce

@@ -67,24 +67,28 @@ impl ToEntity<Registration> for Row {
 }
 
 impl Registration {
+    pub fn select_columns(alias: &str) -> String {
+        format!(" {0}.Entry_ID, {0}.Entry_Bib, {0}.Entry_Comment, {0}.Entry_BoatNumber, {0}.Entry_GroupValue, {0}.Entry_CancelValue ", alias)
+    }
+
     pub async fn query_of_club(regatta_id: i32, club_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
         let mut client = pool.get().await;
         let mut query = Query::new(
-          "SELECT DISTINCT Entry_ID, Entry_Bib, Entry_Comment, Entry_BoatNumber, Entry_GroupValue, Entry_CancelValue, Label_Short, ".to_string()
+          "SELECT DISTINCT".to_string() + &Registration::select_columns("e") + ", Label_Short, "
                 + &Club::select_columns("oc") + ", " + &Race::select_columns("o") + ", " + &Heat::select_columns("c") +
                 ", (SELECT MIN(Comp_DateTime) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID) as Race_DateTime
             FROM Club AS ac
             JOIN Athlet      ON Athlet_Club_ID_FK  = ac.Club_ID
             JOIN Crew        ON Crew_Athlete_ID_FK = Athlet_ID
-            JOIN Entry       ON Crew_Entry_ID_FK   = Entry_ID
+            JOIN Entry e     ON Crew_Entry_ID_FK   = e.Entry_ID
             JOIN Club as oc  ON Entry_OwnerClub_ID_FK = oc.Club_ID
-            JOIN EntryLabel  ON EL_Entry_ID_FK     = Entry_ID
+            JOIN EntryLabel  ON EL_Entry_ID_FK     = e.Entry_ID
             JOIN Label       ON EL_Label_ID_FK     = Label_ID
             JOIN Offer o     ON Entry_Race_ID_FK   = o.Offer_ID
-            JOIN CompEntries ON CE_Entry_ID_FK     = Entry_ID
+            JOIN CompEntries ON CE_Entry_ID_FK     = e.Entry_ID
             JOIN Comp c      ON CE_Comp_ID_FK = c.Comp_ID AND CE_Entry_ID_FK = Entry_ID
-            WHERE Entry_Event_ID_FK = @P1 AND ac.Club_ID = @P2 AND EL_RoundFrom <= 64 AND 64 <= EL_RoundTo AND Crew_RoundTo = 64
-            ORDER BY Offer_ID ASC, c.Comp_DateTime ASC",
+            WHERE e.Entry_Event_ID_FK = @P1 AND ac.Club_ID = @P2 AND EL_RoundFrom <= 64 AND 64 <= EL_RoundTo AND Crew_RoundTo = 64
+            ORDER BY o.Offer_ID ASC, c.Comp_DateTime ASC",
         );
         query.bind(regatta_id);
         query.bind(club_id);
@@ -106,15 +110,20 @@ impl Registration {
         let mut client = pool.get().await;
         let round = 64;
         let mut query = Query::new(
-            "SELECT DISTINCT Entry_ID, Entry_Bib, Entry_Comment, Entry_BoatNumber, Entry_GroupValue, Entry_CancelValue, Label_Short, "
-                .to_string() + &Club::select_columns("c") + ", " + &Race::select_columns("o") + " 
-            FROM Entry
-            JOIN EntryLabel ON EL_Entry_ID_FK   = Entry_ID
+            "SELECT DISTINCT".to_string()
+                + &Registration::select_columns("e")
+                + ", Label_Short, "
+                + &Club::select_columns("c")
+                + ", "
+                + &Race::select_columns("o")
+                + " 
+            FROM Entry e
+            JOIN EntryLabel ON EL_Entry_ID_FK   = e.Entry_ID
             JOIN Label      ON EL_Label_ID_FK   = Label_ID
             JOIN Club c     ON c.Club_ID        = Entry_OwnerClub_ID_FK
             JOIN Offer o    ON Entry_Race_ID_FK = o.Offer_ID
-            WHERE Entry_Race_ID_FK = @P1 AND EL_RoundFrom <= @P2 AND @P2 <= EL_RoundTo
-            ORDER BY Entry_Bib ASC",
+            WHERE e.Entry_Race_ID_FK = @P1 AND EL_RoundFrom <= @P2 AND @P2 <= EL_RoundTo
+            ORDER BY e.Entry_Bib ASC",
         );
         query.bind(race_id);
         query.bind(round);
