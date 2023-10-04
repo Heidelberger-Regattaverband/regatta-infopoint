@@ -72,7 +72,7 @@ impl Registration {
     }
 
     pub async fn query_of_club(regatta_id: i32, club_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
-        let mut client = pool.get().await;
+        let round = 64;
         let mut query = Query::new(
           "SELECT DISTINCT".to_string() + &Registration::select_columns("e") + ", Label_Short, "
                 + &Club::select_columns("oc") + ", " + &Race::select_columns("o") + ", " + &Heat::select_columns("c") +
@@ -81,33 +81,23 @@ impl Registration {
             JOIN Athlet      ON Athlet_Club_ID_FK  = ac.Club_ID
             JOIN Crew        ON Crew_Athlete_ID_FK = Athlet_ID
             JOIN Entry e     ON Crew_Entry_ID_FK   = e.Entry_ID
-            JOIN Club as oc  ON Entry_OwnerClub_ID_FK = oc.Club_ID
+            JOIN Club as oc  ON e.Entry_OwnerClub_ID_FK = oc.Club_ID
             JOIN EntryLabel  ON EL_Entry_ID_FK     = e.Entry_ID
             JOIN Label       ON EL_Label_ID_FK     = Label_ID
-            JOIN Offer o     ON Entry_Race_ID_FK   = o.Offer_ID
+            JOIN Offer o     ON e.Entry_Race_ID_FK = o.Offer_ID
             JOIN CompEntries ON CE_Entry_ID_FK     = e.Entry_ID
-            JOIN Comp c      ON CE_Comp_ID_FK = c.Comp_ID AND CE_Entry_ID_FK = Entry_ID
+            JOIN Comp c      ON CE_Comp_ID_FK = c.Comp_ID AND CE_Entry_ID_FK = e.Entry_ID
             WHERE e.Entry_Event_ID_FK = @P1 AND ac.Club_ID = @P2 AND EL_RoundFrom <= 64 AND 64 <= EL_RoundTo AND Crew_RoundTo = 64
             ORDER BY o.Offer_ID ASC, c.Comp_DateTime ASC",
         );
         query.bind(regatta_id);
         query.bind(club_id);
 
-        let stream = query.query(&mut client).await.unwrap();
-        let rows = utils::get_rows(stream).await;
-
-        let mut registrations: Vec<Registration> = Vec::with_capacity(rows.len());
-        for row in &rows {
-            let mut registration: Registration = row.to_entity();
-            let crew = Crew::query_all(registration.id, 64, pool).await;
-            registration.crew = Some(crew);
-            registrations.push(registration);
-        }
+        let registrations = execute_query(pool, query, round).await;
         registrations
     }
 
     pub async fn query_for_race(race_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
-        let mut client = pool.get().await;
         let round = 64;
         let mut query = Query::new(
             "SELECT DISTINCT".to_string()
@@ -127,26 +117,33 @@ impl Registration {
         );
         query.bind(race_id);
         query.bind(round);
-        let stream = query.query(&mut client).await.unwrap();
 
-        let mut crew_futures: Vec<BoxFuture<Vec<Crew>>> = Vec::new();
-        let mut registrations: Vec<Registration> = utils::get_rows(stream)
-            .await
-            .into_iter()
-            .map(|row| {
-                let registration: Registration = row.to_entity();
-                crew_futures.push(Box::pin(Crew::query_all(registration.id, round, pool)));
-                registration
-            })
-            .collect();
-
-        let crews = join_all(crew_futures).await;
-
-        for (pos, registration) in registrations.iter_mut().enumerate() {
-            let crew = crews.get(pos).unwrap();
-            registration.crew = Some(crew.to_vec());
-        }
+        let registrations = execute_query(pool, query, round).await;
 
         registrations
     }
+}
+
+async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Vec<Registration> {
+    let mut client = pool.get().await;
+    let stream = query.query(&mut client).await.unwrap();
+
+    let mut crew_futures: Vec<BoxFuture<Vec<Crew>>> = Vec::new();
+    let mut registrations: Vec<Registration> = utils::get_rows(stream)
+        .await
+        .into_iter()
+        .map(|row| {
+            let registration: Registration = row.to_entity();
+            crew_futures.push(Box::pin(Crew::query_all(registration.id, round, pool)));
+            registration
+        })
+        .collect();
+
+    let crews = join_all(crew_futures).await;
+
+    for (pos, registration) in registrations.iter_mut().enumerate() {
+        let crew = crews.get(pos).unwrap();
+        registration.crew = Some(crew.to_vec());
+    }
+    registrations
 }
