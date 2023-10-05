@@ -1,8 +1,8 @@
 use crate::db::{
-    aquarius::AquariusClient,
     model::{utils, Athlete, ToEntity, TryToEntity},
-    tiberius::RowColumn,
+    tiberius::{RowColumn, TiberiusPool},
 };
+use futures::join;
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -89,7 +89,7 @@ struct Athletes {
 }
 
 impl Statistics {
-    pub async fn query(regatta_id: i32, client: &mut AquariusClient<'_>) -> Statistics {
+    pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Statistics {
         let mut query = Query::new(
         "SELECT
           (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1) AS races_all,
@@ -133,19 +133,25 @@ impl Statistics {
           ",
         );
         query.bind(regatta_id);
-        let stream = query.query(client).await.unwrap();
-        let mut stats: Statistics = utils::get_row(stream).await.to_entity();
 
-        let athletes = Athletes {
-            oldest_woman: Statistics::query_oldest(regatta_id, "W", client).await,
-            oldest_man: Statistics::query_oldest(regatta_id, "M", client).await,
-        };
-        stats.athletes = Some(athletes);
+        let mut client = pool.get().await;
+        let mut stats: Statistics = utils::get_row(query.query(&mut client).await.unwrap())
+            .await
+            .to_entity();
+
+        let result = join!(
+            Statistics::query_oldest(regatta_id, "W", pool),
+            Statistics::query_oldest(regatta_id, "M", pool)
+        );
+        stats.athletes = Some(Athletes {
+            oldest_woman: result.0,
+            oldest_man: result.1,
+        });
 
         stats
     }
 
-    async fn query_oldest(regatta_id: i32, gender: &str, client: &mut AquariusClient<'_>) -> Option<Athlete> {
+    async fn query_oldest(regatta_id: i32, gender: &str, pool: &TiberiusPool) -> Option<Athlete> {
         let mut query = Query::new(
             "SELECT DISTINCT TOP 1 Athlet.*, Club.*
             FROM  Entry
@@ -157,8 +163,9 @@ impl Statistics {
         );
         query.bind(regatta_id);
         query.bind(gender);
-        let stream = query.query(client).await.unwrap();
-        if let Some(row) = utils::try_get_row(stream).await {
+
+        let mut client = pool.get().await;
+        if let Some(row) = utils::try_get_row(query.query(&mut client).await.unwrap()).await {
             row.try_to_entity()
         } else {
             None

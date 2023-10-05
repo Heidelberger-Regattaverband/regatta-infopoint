@@ -147,7 +147,7 @@ impl Aquarius {
 
     pub async fn query_statistics(&self, regatta_id: i32) -> Statistics {
         let start = Instant::now();
-        let stats = Statistics::query(regatta_id, &mut self.pool.get().await).await;
+        let stats = Statistics::query(regatta_id, &self.pool).await;
         debug!(
             "Query statistics of regatta {} from DB: {:?}",
             regatta_id,

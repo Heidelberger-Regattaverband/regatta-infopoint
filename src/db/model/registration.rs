@@ -93,8 +93,7 @@ impl Registration {
         query.bind(regatta_id);
         query.bind(club_id);
 
-        let registrations = execute_query(pool, query, round).await;
-        registrations
+        execute_query(pool, query, round).await
     }
 
     pub async fn query_for_race(race_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
@@ -118,9 +117,7 @@ impl Registration {
         query.bind(race_id);
         query.bind(round);
 
-        let registrations = execute_query(pool, query, round).await;
-
-        registrations
+        execute_query(pool, query, round).await
     }
 }
 
