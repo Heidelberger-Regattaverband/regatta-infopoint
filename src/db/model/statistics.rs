@@ -145,14 +145,14 @@ impl Statistics {
         stats
     }
 
-    async fn query_oldest<'a>(regatta_id: i32, gender: &str, client: &mut AquariusClient<'_>) -> Option<Athlete> {
+    async fn query_oldest(regatta_id: i32, gender: &str, client: &mut AquariusClient<'_>) -> Option<Athlete> {
         let mut query = Query::new(
             "SELECT DISTINCT TOP 1 Athlet.*, Club.*
             FROM  Entry
             JOIN  Crew   ON Crew_Entry_ID_FK   = Entry_ID
             JOIN  Athlet ON Crew_Athlete_ID_FK = Athlet_ID
             JOIN  Club   ON Athlet_Club_ID_FK  = Club_ID
-            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0 AND Athlet_Gender = @P2
+            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0 AND Athlet_Gender = @P2 AND Crew_IsCox = 0
             ORDER BY Athlet_DOB",
         );
         query.bind(regatta_id);
