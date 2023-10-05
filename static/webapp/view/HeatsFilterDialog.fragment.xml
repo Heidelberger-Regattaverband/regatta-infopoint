@@ -30,12 +30,12 @@
         </items>
       </ViewSettingsFilterItem>
 
-      <ViewSettingsFilterItem text="{i18n>common.lightweight}" key="lightweight" multiSelect="false">
+      <!-- <ViewSettingsFilterItem text="{i18n>common.lightweight}" key="lightweight" multiSelect="false">
         <items>
           <ViewSettingsItem text="{i18n>common.yes}" key="race/lightweight___EQ___true" />
           <ViewSettingsItem text="{i18n>common.no}" key="race/lightweight___EQ___false" />
         </items>
-      </ViewSettingsFilterItem>
+      </ViewSettingsFilterItem> -->
 
       <!-- <ViewSettingsFilterItem text="{i18n>common.seededLbl}" key="seeded" multiSelect="false">
         <items>
