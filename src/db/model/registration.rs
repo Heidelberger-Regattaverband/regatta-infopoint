@@ -87,11 +87,12 @@ impl Registration {
             JOIN Offer o     ON e.Entry_Race_ID_FK = o.Offer_ID
             JOIN CompEntries ON CE_Entry_ID_FK     = e.Entry_ID
             JOIN Comp c      ON CE_Comp_ID_FK = c.Comp_ID AND CE_Entry_ID_FK = e.Entry_ID
-            WHERE e.Entry_Event_ID_FK = @P1 AND ac.Club_ID = @P2 AND EL_RoundFrom <= 64 AND 64 <= EL_RoundTo AND Crew_RoundTo = 64
+            WHERE e.Entry_Event_ID_FK = @P1 AND ac.Club_ID = @P2 AND EL_RoundFrom <= @P3 AND @P3 <= EL_RoundTo AND Crew_RoundTo = @P3
             ORDER BY o.Offer_ID ASC, c.Comp_DateTime ASC",
         );
         query.bind(regatta_id);
         query.bind(club_id);
+        query.bind(round);
 
         execute_query(pool, query, round).await
     }
