@@ -82,13 +82,12 @@ sap.ui.define([
     },
 
     raceRegistrationHighlight: function (oRegistration) {
-      return Formatter.heatStateHighlight(oRegistration.heat);
-      // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
-      // if (oRegistration.cancelled || oRegistration.race.cancelled) {
-      //   return IndicationColor.Indication02; // cancelled -> red
-      // } else {
-      //   return IndicationColor.Indication04; // official -> green
-      // }
+      https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
+      if (oRegistration.cancelled || oRegistration.race.cancelled) {
+        return IndicationColor.Indication02; // cancelled -> red
+      } else {
+        return IndicationColor.Indication04; // official -> green
+      }
     },
 
     // -----------------

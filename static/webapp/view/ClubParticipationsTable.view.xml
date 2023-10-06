@@ -44,7 +44,7 @@
           </columns>
 
           <items>
-            <ColumnListItem vAlign="Top" highlight="{path: 'registrations>', formatter: '.formatter.raceRegistrationHighlight'}" type="Navigation">
+            <ColumnListItem vAlign="Top" highlight="{path: 'registrations>heat', formatter: '.formatter.heatStateHighlight'}" type="Navigation">
               <cells>
                 <layout:VerticalLayout>
                   <Text text="{path: 'registrations>heat/dateTime', formatter: '.formatter.dayTimeIsoLabel'}"
