@@ -88,7 +88,7 @@ impl Registration {
             JOIN CompEntries ON CE_Entry_ID_FK     = e.Entry_ID
             JOIN Comp c      ON CE_Comp_ID_FK = c.Comp_ID AND CE_Entry_ID_FK = e.Entry_ID
             WHERE e.Entry_Event_ID_FK = @P1 AND ac.Club_ID = @P2 AND EL_RoundFrom <= @P3 AND @P3 <= EL_RoundTo AND Crew_RoundTo = @P3
-            ORDER BY o.Offer_ID ASC, c.Comp_DateTime ASC",
+            ORDER BY c.Comp_DateTime ASC, o.Offer_ID ASC",
         );
         query.bind(regatta_id);
         query.bind(club_id);
