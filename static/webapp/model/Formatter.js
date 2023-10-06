@@ -101,7 +101,7 @@ sap.ui.define([
         if (!oHeatRegistration.result) {
           return IndicationColor.Indication05; // no result yet -> blue
         } else
-          if (oHeatRegistration.result.rankSort > 0 && oHeatRegistration.result.rankSort <= 4) {
+          if (oHeatRegistration.result.rankSort > 0 && oHeatRegistration.result.rankSort <= 5) {
             return IndicationColor.Indication04; // official -> green
           } else {
             return IndicationColor.Indication02; // DNS, DNF, ... -> red
