@@ -54,17 +54,6 @@ sap.ui.define([
         });
         oViewSettingsDialog.insertFilterItem(oDistancesFilter, 3);
       }
-
-      oViewSettingsDialog.getFilterItems().forEach(oFilterItem => {
-        switch (oFilterItem.getKey()) {
-          case 'distance':
-            break;
-          case 'boatClass':
-            break;
-          case 'ageClass':
-            break;
-        } // end switch
-      });
     },
 
     onItemPress: function (oEvent) {
