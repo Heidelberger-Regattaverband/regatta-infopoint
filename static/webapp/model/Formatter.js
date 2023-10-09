@@ -298,6 +298,25 @@ sap.ui.define([
         default:
           return "";
       }
+    },
+
+    roundLabel: function (sRoundCode) {
+      switch (sRoundCode) {
+        case "A":
+          return "Abteilung";
+        case "H":
+          return "Hoffnungslauf";
+        case "R":
+          return "Hauptrennen";
+        case "V":
+          return "Vorlauf";
+        case "S":
+          return "Halbfinale";
+        case "F":
+          return "Finale";
+        default:
+          return sRoundCode;
+      }
     }
   };
 
