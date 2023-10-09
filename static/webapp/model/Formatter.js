@@ -292,9 +292,9 @@ sap.ui.define([
         case "V":
           return this.i18n("heat.label.forerun", [sHeatLabel, sGroupValue]);
         case "S":
-          return this.i18n("heat.label.semifinal", [sGroupValue]);
+          return this.i18n("heat.label.semifinal", [sHeatLabel, sGroupValue]);
         case "F":
-          return this.i18n("heat.label.final", [sGroupValue]);
+          return this.i18n("heat.label.final", [sHeatLabel, sGroupValue]);
         default:
           return "";
       }
