@@ -5,8 +5,9 @@ sap.ui.define([
   "sap/ui/model/FilterOperator",
   "sap/m/MessageToast",
   "sap/m/ViewSettingsItem",
+  "sap/m/ViewSettingsFilterItem",
   "../model/Formatter"
-], function (BaseTableController, JSONModel, Filter, FilterOperator, MessageToast, ViewSettingsItem, Formatter) {
+], function (BaseTableController, JSONModel, Filter, FilterOperator, MessageToast, ViewSettingsItem, ViewSettingsFilterItem, Formatter) {
   "use strict";
 
   return BaseTableController.extend("de.regatta_hd.infopoint.controller.RacesTable", {
@@ -25,26 +26,42 @@ sap.ui.define([
 
       this.getRouter().getRoute("races").attachMatched(async (_) => await this._loadRacesModel(), this);
 
-      const oFilters = this.getComponentModel("filters").getData();
+      const mFilters = this.getComponentModel("filters").getData();
 
       // initialize filter values
       const oViewSettingsDialog = await this.getViewSettingsDialog("de.regatta_hd.infopoint.view.RacesFilterDialog");
+
+      if (mFilters.boatClasses) {
+        const oBoatClassFilter = new ViewSettingsFilterItem({ multiSelect: true, key: "boatClass", text: "{i18n>common.boatClass}" });
+        mFilters.boatClasses.forEach((boatClass) => {
+          oBoatClassFilter.addItem(new ViewSettingsItem({ text: boatClass.caption + " (" + boatClass.abbreviation + ")", key: "boatClass/id___EQ___" + boatClass.id }));
+        });
+        oViewSettingsDialog.insertFilterItem(oBoatClassFilter, 0);
+      }
+
+      if (mFilters.ageClasses) {
+        const oAgeClassFilter = new ViewSettingsFilterItem({ multiSelect: true, key: "ageClass", text: "{i18n>common.ageClass}" });
+        mFilters.ageClasses.forEach((ageClass) => {
+          oAgeClassFilter.addItem(new ViewSettingsItem({ text: ageClass.caption + " " + ageClass.suffix, key: "ageClass/id___EQ___" + ageClass.id }));
+        });
+        oViewSettingsDialog.insertFilterItem(oAgeClassFilter, 1);
+      }
+
+      if (mFilters.distances && mFilters.distances.length > 1) {
+        const oDistancesFilter = new ViewSettingsFilterItem({ multiSelect: true, key: "distance", text: "{i18n>common.distance}" });
+        mFilters.distances.forEach((distance) => {
+          oDistancesFilter.addItem(new ViewSettingsItem({ text: distance + "m", key: "distance___EQ___" + distance }));
+        });
+        oViewSettingsDialog.insertFilterItem(oDistancesFilter, 3);
+      }
+
       oViewSettingsDialog.getFilterItems().forEach(oFilterItem => {
         switch (oFilterItem.getKey()) {
           case 'distance':
-            oFilters.distances.forEach((distance) => {
-              oFilterItem.addItem(new ViewSettingsItem({ text: distance + "m", key: "distance___EQ___" + distance }));
-            });
             break;
           case 'boatClass':
-            oFilters.boatClasses.forEach((boatClass) => {
-              oFilterItem.addItem(new ViewSettingsItem({ text: boatClass.caption + " (" + boatClass.abbreviation + ")", key: "boatClass/id___EQ___" + boatClass.id }));
-            });
             break;
           case 'ageClass':
-            oFilters.ageClasses.forEach((ageClass) => {
-              oFilterItem.addItem(new ViewSettingsItem({ text: ageClass.caption + " " + ageClass.suffix + "", key: "ageClass/id___EQ___" + ageClass.id }));
-            });
             break;
         } // end switch
       });
