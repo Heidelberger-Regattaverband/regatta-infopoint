@@ -22,7 +22,8 @@ pub struct Config {
     pub db_user: String,
     pub db_password: String,
     pub db_encryption: bool,
-    pub db_pool_size: u32,
+    pub db_pool_max_size: u32,
+    pub db_pool_min_idle: u32,
     pub active_regatta_id: i32,
     pub cache_ttl: u64,
 }
@@ -126,18 +127,23 @@ impl Config {
             .unwrap_or_else(|_| "true".to_string())
             .parse()
             .unwrap();
-        let db_pool_size: u32 = env::var("DB_POOL_MAX_SIZE")
-            .unwrap_or_else(|_| "20".to_string())
+        let db_pool_max_size: u32 = env::var("DB_POOL_MAX_SIZE")
+            .unwrap_or_else(|_| "30".to_string())
+            .parse()
+            .unwrap();
+        let db_pool_min_idle: u32 = env::var("DB_POOL_MIN_IDLE")
+            .unwrap_or_else(|_| "10".to_string())
             .parse()
             .unwrap();
         info!(
-            "Database configuration: host={}, port={}, encryption={}, name={}, user={}, pool_size={}",
+            "Database configuration: host={}, port={}, encryption={}, name={}, user={}, pool_max_size={}, pool_min_idle={}",
             db_host.bold(),
             db_port.to_string().bold(),
             db_encryption.to_string().bold(),
             db_name.bold(),
             db_user.bold(),
-            db_pool_size.to_string().bold(),
+            db_pool_max_size.to_string().bold(),
+            db_pool_min_idle.to_string().bold(),
         );
 
         let active_regatta_id: i32 = env::var("ACTIVE_REGATTA_ID")
@@ -170,7 +176,8 @@ impl Config {
             db_user,
             db_password,
             db_encryption,
-            db_pool_size,
+            db_pool_max_size,
+            db_pool_min_idle,
             active_regatta_id,
             cache_ttl,
         }

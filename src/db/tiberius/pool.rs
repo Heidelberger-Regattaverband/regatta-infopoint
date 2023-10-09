@@ -66,7 +66,8 @@ impl TiberiusPool {
 
         TiberiusPool {
             inner: Pool::builder()
-                .max_size(Config::get().db_pool_size)
+                .max_size(Config::get().db_pool_max_size)
+                .min_idle(Some(Config::get().db_pool_min_idle))
                 .build(manager)
                 .await
                 .unwrap(),
