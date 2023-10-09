@@ -52,16 +52,14 @@ impl User {
         // then try to open a connection to the MS-SQL server ...
         let tcp = TcpStream::connect(db_cfg.get_addr()).await.unwrap();
         // ... and connect with credentials
-        let result = Client::connect(db_cfg, tcp.compat_write()).await;
-
-        if result.is_err() {
-            Err(HttpResponse::Unauthorized().json(User::new_guest()))
-        } else {
-            let _ = result.unwrap().close().await;
+        if let Ok(client) = Client::connect(db_cfg, tcp.compat_write()).await {
+            let _ = client.close().await;
             Ok(User {
                 username: credentials.username,
                 scope: Scope::User,
             })
+        } else {
+            Err(HttpResponse::Unauthorized().json(User::new_guest()))
         }
     }
 }
