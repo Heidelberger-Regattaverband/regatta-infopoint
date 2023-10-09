@@ -39,7 +39,7 @@ sap.ui.define([
         if (mFilters.rounds) {
           const oRoundFilter = new ViewSettingsFilterItem({ multiSelect: true, key: "round", text: "{i18n>common.round}" });
           mFilters.rounds.forEach((mRound) => {
-            oRoundFilter.addItem(new ViewSettingsItem({ text: Formatter.roundLabel(mRound.code), key: "round___EQ___" + mRound.id }))
+            oRoundFilter.addItem(new ViewSettingsItem({ text: Formatter.roundLabel(mRound.code), key: "roundCode___EQ___" + mRound.code }))
           });
           oViewSettingsDialog.insertFilterItem(oRoundFilter, 1);
         }
