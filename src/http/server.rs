@@ -15,7 +15,7 @@ use actix_web::{
 };
 use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder, StreamMetrics};
 use colored::Colorize;
-use log::{debug, info, warn};
+use log::{info, warn};
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
 use std::{
@@ -165,13 +165,13 @@ impl Server {
         let cert_pem_path = Config::get().https_cert_path.clone();
         let key_pem_path = Config::get().https_key_path.clone();
 
-        debug!(
+        info!(
             "Current working directory is {}",
             std::env::current_dir().unwrap().display().to_string().bold()
         );
 
         // load TLS key/cert files
-        debug!(
+        info!(
             "Try to load TLS config from: certificate {} and private key {}.",
             cert_pem_path.bold(),
             key_pem_path.bold()
