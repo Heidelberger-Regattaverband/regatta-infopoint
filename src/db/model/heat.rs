@@ -53,6 +53,56 @@ impl Heat {
     pub fn select_columns(alias: &str) -> String {
         format!(" {0}.Comp_ID, {0}.Comp_Number, {0}.Comp_RoundCode, {0}.Comp_Label, {0}.Comp_GroupValue, {0}.Comp_State, {0}.Comp_Cancelled, {0}.Comp_DateTime, {0}.Comp_Round ", alias)
     }
+
+    pub async fn query_all(regatta_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
+        let mut query = Query::new(
+            "SELECT DISTINCT".to_string()
+                + &Heat::select_columns("c")
+                + ","
+                + &AgeClass::select_columns("a")
+                + ","
+                + &BoatClass::select_columns("b")
+                + ", o.*
+            FROM Comp c
+            JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
+            JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
+            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
+            WHERE Comp_Event_ID_FK = @P1 ORDER BY Comp_DateTime ASC",
+        );
+        query.bind(regatta_id);
+
+        let mut client = pool.get().await;
+        let heats = utils::get_rows(query.query(&mut client).await.unwrap()).await;
+        heats.into_iter().map(|row| row.to_entity()).collect()
+    }
+
+    pub async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Heat {
+        let mut query = Query::new(
+            "SELECT DISTINCT".to_string()
+                + &Heat::select_columns("c")
+                + ","
+                + &AgeClass::select_columns("a")
+                + ","
+                + &BoatClass::select_columns("b")
+                + ", o.*
+            FROM Comp c
+            JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
+            JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
+            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
+            WHERE Comp_ID = @P1",
+        );
+        query.bind(heat_id);
+
+        let mut client = pool.get().await;
+        let mut heat: Heat = utils::get_row(query.query(&mut client).await.unwrap())
+            .await
+            .to_entity();
+
+        let results = join(Referee::query(heat.id, pool), HeatRegistration::query_all(&heat, pool)).await;
+        heat.referees = results.0;
+        heat.registrations = Some(results.1);
+        heat
+    }
 }
 
 impl ToEntity<Heat> for Row {
@@ -77,57 +127,6 @@ impl ToEntity<Heat> for Row {
 impl TryToEntity<Heat> for Row {
     fn try_to_entity(&self) -> Option<Heat> {
         <Row as TryRowColumn<i32>>::try_get_column(self, "Comp_ID").map(|_id| self.to_entity())
-    }
-}
-
-impl Heat {
-    pub async fn query_all(regatta_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
-        let mut client = pool.get().await;
-        let mut query = Query::new(
-            "SELECT DISTINCT".to_string()
-                + &Heat::select_columns("c")
-                + ","
-                + &AgeClass::select_columns("a")
-                + ","
-                + &BoatClass::select_columns("b")
-                + ", o.*
-            FROM Comp c
-            JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
-            JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
-            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
-            WHERE Comp_Event_ID_FK = @P1 ORDER BY Comp_DateTime ASC",
-        );
-        query.bind(regatta_id);
-        let stream = query.query(&mut client).await.unwrap();
-        let heats = utils::get_rows(stream).await;
-        heats.into_iter().map(|row| row.to_entity()).collect()
-    }
-
-    pub async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Heat {
-        let mut client = pool.get().await;
-        let mut query = Query::new(
-            "SELECT DISTINCT".to_string()
-                + &Heat::select_columns("c")
-                + ","
-                + &AgeClass::select_columns("a")
-                + ","
-                + &BoatClass::select_columns("b")
-                + ", o.*
-            FROM Comp c
-            JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
-            JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
-            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
-            WHERE Comp_ID = @P1",
-        );
-        query.bind(heat_id);
-        let stream = query.query(&mut client).await.unwrap();
-        let mut heat: Heat = utils::get_row(stream).await.to_entity();
-
-        let result = join(Referee::query(heat.id, pool), HeatRegistration::query_all(&heat, pool)).await;
-        heat.referees = result.0;
-        heat.registrations = Some(result.1);
-
-        heat
     }
 }
 

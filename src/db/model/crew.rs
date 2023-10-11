@@ -10,31 +10,20 @@ use tiberius::{Query, Row};
 pub struct Crew {
     id: i32,
 
-    /// position in the boat
+    /// Position in the boat
     pos: u8,
 
-    /// is the cox
+    /// Is cox in the boat
     cox: bool,
 
     /// the athlete
     athlete: Athlete,
 
+    /// Is crew member from round.
     round_from: i16,
 
+    /// Is crew member until round.
     round_to: i16,
-}
-
-impl ToEntity<Crew> for Row {
-    fn to_entity(&self) -> Crew {
-        Crew {
-            id: self.get_column("Crew_ID"),
-            pos: self.get_column("Crew_Pos"),
-            cox: self.get_column("Crew_IsCox"),
-            athlete: self.to_entity(),
-            round_from: self.get_column("Crew_RoundFrom"),
-            round_to: self.get_column("Crew_RoundTo"),
-        }
-    }
 }
 
 impl Crew {
@@ -46,7 +35,6 @@ impl Crew {
     }
 
     pub async fn query_all(registration_id: i32, round: i16, pool: &TiberiusPool) -> Vec<Crew> {
-        let mut client = pool.get().await;
         let mut query = Query::new(
             "SELECT".to_string()
                 + &Crew::select_columns("cr")
@@ -63,8 +51,22 @@ impl Crew {
         );
         query.bind(registration_id);
         query.bind(round);
-        let stream = query.query(&mut client).await.unwrap();
-        let crew = utils::get_rows(stream).await;
+
+        let mut client = pool.get().await;
+        let crew = utils::get_rows(query.query(&mut client).await.unwrap()).await;
         crew.into_iter().map(|row| row.to_entity()).collect()
+    }
+}
+
+impl ToEntity<Crew> for Row {
+    fn to_entity(&self) -> Crew {
+        Crew {
+            id: self.get_column("Crew_ID"),
+            pos: self.get_column("Crew_Pos"),
+            cox: self.get_column("Crew_IsCox"),
+            athlete: self.to_entity(),
+            round_from: self.get_column("Crew_RoundFrom"),
+            round_to: self.get_column("Crew_RoundTo"),
+        }
     }
 }

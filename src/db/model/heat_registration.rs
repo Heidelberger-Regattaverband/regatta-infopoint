@@ -29,7 +29,6 @@ impl ToEntity<HeatRegistration> for Row {
 
 impl HeatRegistration {
     pub async fn query_all(heat: &Heat, pool: &TiberiusPool) -> Vec<HeatRegistration> {
-        let mut client = pool.get().await;
         let mut query = Query::new("SELECT DISTINCT
                 ce.CE_ID, ce.CE_Lane, ".to_string() + &Registration::select_columns("e") + ", Label_Short, BoatClass_NumRowers,"
                 + &Club::select_columns("c") + ", " + &Race::select_columns("o") + ", " + &HeatResult::select_columns("r")
@@ -46,8 +45,9 @@ impl HeatRegistration {
             WHERE CE_Comp_ID_FK = @P1 AND ((Result_SplitNr = 64 AND Comp_State >=4) OR (Result_SplitNr = 0 AND Comp_State < 3) OR (Comp_State < 2 AND Result_SplitNr IS NULL))
             AND EL_RoundFrom <= Comp_Round AND Comp_Round <= EL_RoundTo");
         query.bind(heat.id);
-        let stream = query.query(&mut client).await.unwrap();
-        let crew = utils::get_rows(stream).await;
+
+        let mut client = pool.get().await;
+        let crew = utils::get_rows(query.query(&mut client).await.unwrap()).await;
 
         let mut crew_futures: Vec<BoxFuture<Vec<Crew>>> = Vec::new();
         let mut heat_registrations: Vec<HeatRegistration> = crew
