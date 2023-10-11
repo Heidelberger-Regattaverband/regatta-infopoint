@@ -1,7 +1,6 @@
 use crate::db::{
-    aquarius::AquariusClient,
     model::{utils, Club, ToEntity},
-    tiberius::{RowColumn, TryRowColumn},
+    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
 use tiberius::{Query, Row};
@@ -25,7 +24,7 @@ impl ToEntity<Score> for Row {
 }
 
 impl Score {
-    pub async fn calculate(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Self> {
+    pub async fn calculate(regatta_id: i32, pool: &TiberiusPool) -> Vec<Self> {
         let mut query = Query::new(
             "SELECT Club_ID, SUM(Points_Crew) as points, Club_Name, Club_City, Club_Abbr, Club_UltraAbbr FROM
               (SELECT Club_ID, Club_Name, Club_City, Club_Abbr, Club_UltraAbbr,
@@ -52,8 +51,9 @@ impl Score {
             ORDER BY points DESC",
         );
         query.bind(regatta_id);
-        let stream = query.query(client).await.unwrap();
-        let scores = utils::get_rows(stream).await;
+
+        let mut client = pool.get().await;
+        let scores = utils::get_rows(query.query(&mut client).await.unwrap()).await;
         let mut index = 0;
         scores
             .into_iter()

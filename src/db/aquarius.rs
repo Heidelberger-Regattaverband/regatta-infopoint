@@ -45,7 +45,7 @@ impl Aquarius {
 
     pub async fn query_regattas(&self) -> Vec<Regatta> {
         let start = Instant::now();
-        let regattas = Regatta::query_all(&mut self.pool.get().await).await;
+        let regattas = Regatta::query_all(&self.pool).await;
         debug!("Query all regattas from DB: {:?}", start.elapsed());
         regattas
     }
@@ -136,7 +136,7 @@ impl Aquarius {
 
     pub async fn calculate_scoring(&self, regatta_id: i32) -> Vec<Score> {
         let start = Instant::now();
-        let scores = Score::calculate(regatta_id, &mut self.pool.get().await).await;
+        let scores = Score::calculate(regatta_id, &self.pool).await;
         debug!(
             "Calculate scoring of regatta {} from DB: {:?}",
             regatta_id,
@@ -181,7 +181,7 @@ impl Aquarius {
 
     async fn _query_regatta(&self, regatta_id: i32) -> Regatta {
         let start = Instant::now();
-        let regatta = Regatta::query(regatta_id, &mut self.pool.get().await).await;
+        let regatta = Regatta::query(regatta_id, &self.pool).await;
         self.caches.regatta.set(&regatta.id, &regatta).await;
         debug!("Query regatta {} from DB: {:?}", regatta_id, start.elapsed());
         regatta

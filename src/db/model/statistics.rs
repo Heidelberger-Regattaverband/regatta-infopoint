@@ -135,17 +135,17 @@ impl Statistics {
         query.bind(regatta_id);
 
         let mut client = pool.get().await;
-        let mut stats: Statistics = utils::get_row(query.query(&mut client).await.unwrap())
-            .await
-            .to_entity();
 
         let result = join!(
+            query.query(&mut client),
             Statistics::query_oldest(regatta_id, "W", pool),
             Statistics::query_oldest(regatta_id, "M", pool)
         );
+
+        let mut stats: Statistics = utils::get_row(result.0.unwrap()).await.to_entity();
         stats.athletes = Some(Athletes {
-            oldest_woman: result.0,
-            oldest_man: result.1,
+            oldest_woman: result.1,
+            oldest_man: result.2,
         });
 
         stats

@@ -1,7 +1,6 @@
 use crate::db::{
-    aquarius::AquariusClient,
     model::{utils, ToEntity},
-    tiberius::{RowColumn, TryRowColumn},
+    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
@@ -34,16 +33,20 @@ impl ToEntity<Regatta> for Row {
 }
 
 impl Regatta {
-    pub async fn query_all(client: &mut AquariusClient<'_>) -> Vec<Regatta> {
-        let stream = Query::new("SELECT * FROM Event").query(client).await.unwrap();
+    pub async fn query_all(pool: &TiberiusPool) -> Vec<Regatta> {
+        let mut client = pool.get().await;
+        let stream = Query::new("SELECT * FROM Event").query(&mut client).await.unwrap();
         let regattas = utils::get_rows(stream).await;
         regattas.into_iter().map(|row| row.to_entity()).collect()
     }
 
-    pub async fn query(regatta_id: i32, client: &mut AquariusClient<'_>) -> Regatta {
+    pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Regatta {
         let mut query = Query::new("SELECT * FROM Event WHERE Event_ID = @P1");
         query.bind(regatta_id);
-        let stream = query.query(client).await.unwrap();
-        utils::get_row(stream).await.to_entity()
+
+        let mut client = pool.get().await;
+        utils::get_row(query.query(&mut client).await.unwrap())
+            .await
+            .to_entity()
     }
 }

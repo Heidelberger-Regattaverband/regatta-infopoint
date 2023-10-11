@@ -22,15 +22,15 @@ pub struct Referee {
 
 impl Referee {
     pub async fn query(heat_id: i32, pool: &TiberiusPool) -> Vec<Referee> {
-        let mut client = pool.get().await;
         let mut query = Query::new(
             "SELECT r.* FROM Referee r
             JOIN CompReferee cr ON cr.CompReferee_Referee_ID_FK = r.Referee_ID
             WHERE cr.CompReferee_Comp_ID_FK = @P1",
         );
         query.bind(heat_id);
-        let stream = query.query(&mut client).await.unwrap();
-        let heats = utils::get_rows(stream).await;
+
+        let mut client = pool.get().await;
+        let heats = utils::get_rows(query.query(&mut client).await.unwrap()).await;
         heats.into_iter().map(|row| row.to_entity()).collect()
     }
 }
