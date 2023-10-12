@@ -39,7 +39,7 @@ pub struct Registration {
     group_value: Option<i16>,
 
     /** Indicates whether or not the registration has been canceled. */
-    cancelled: bool,
+    pub cancelled: bool,
 
     /** An optional heat this registration is assigned to. */
     #[serde(skip_serializing_if = "Option::is_none")]

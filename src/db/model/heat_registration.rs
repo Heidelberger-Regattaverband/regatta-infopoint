@@ -53,12 +53,16 @@ impl HeatRegistration {
         let mut heat_registrations: Vec<HeatRegistration> = crew
             .into_iter()
             .map(|row| {
-                let heat_registration: HeatRegistration = row.to_entity();
+                let mut heat_registration: HeatRegistration = row.to_entity();
                 crew_futures.push(Box::pin(Crew::query_all(
                     heat_registration.registration.id,
                     heat.round,
                     pool,
                 )));
+                // if a result is available, the registration isn't cancelled yet
+                if heat_registration.result.is_some() {
+                    heat_registration.registration.cancelled = false;
+                }
                 heat_registration
             })
             .collect();
