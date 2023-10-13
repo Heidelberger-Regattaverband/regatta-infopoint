@@ -18,6 +18,33 @@ sap.ui.define([
       this.getView().addEventDelegate({
         onBeforeShow: this.onBeforeShow,
       }, this);
+
+      window.addEventListener('beforeunload', (event) => {
+        // Cancel the event as stated by the standard.
+        event.preventDefault();
+        // Chrome requires returnValue to be set.
+        event.returnValue = '';
+      });
+
+      window.addEventListener("keydown", async (event) => {
+        switch (event.key) {
+          case "F5":
+            event.preventDefault();
+            break;
+          case "ArrowLeft":
+            await this.onPreviousPress();
+            break;
+          case "ArrowRight":
+            await this.onNextPress();
+            break;
+          case "ArrowUp":
+            await this.onFirstPress();
+            break;
+          case "ArrowDown":
+            await this.onLastPress();
+            break;
+        }
+      });
     },
 
     onBeforeShow: async function () {

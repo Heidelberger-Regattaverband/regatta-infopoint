@@ -12,14 +12,22 @@ pub struct HeatResult {
     rank_sort: u8,
     rank_label: String,
     result: String,
+
+    /// The net time of the boat
+    pub net_time: i32,
     #[serde(skip_serializing_if = "Option::is_none")]
     delta: Option<String>,
+
+    /// The points given for the result
     points: u8,
 }
 
 impl HeatResult {
     pub fn select_columns(alias: &str) -> String {
-        format!(" {0}.Result_Rank, {0}.Result_Delta, {0}.Result_DisplayValue ", alias)
+        format!(
+            " {0}.Result_Rank, {0}.Result_Delta, {0}.Result_DisplayValue, {0}.Result_NetTime ",
+            alias
+        )
     }
 }
 
@@ -50,6 +58,7 @@ impl TryToEntity<HeatResult> for Row {
                 delta,
                 rank_label,
                 rank_sort,
+                net_time: self.get_column("Result_NetTime"),
                 result: self.get_column("Result_DisplayValue"),
                 points,
             })

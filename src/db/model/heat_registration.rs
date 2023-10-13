@@ -43,7 +43,7 @@ impl HeatRegistration {
             FULL OUTER JOIN Result r   ON r.Result_CE_ID_FK = ce.CE_ID
             JOIN Club c                ON c.Club_ID = Entry_OwnerClub_ID_FK
             WHERE CE_Comp_ID_FK = @P1 AND ((Result_SplitNr = 64 AND Comp_State >=4) OR (Result_SplitNr = 0 AND Comp_State < 3) OR (Comp_State < 2 AND Result_SplitNr IS NULL))
-            AND EL_RoundFrom <= Comp_Round AND Comp_Round <= EL_RoundTo");
+                AND EL_RoundFrom <= Comp_Round AND Comp_Round <= EL_RoundTo");
         query.bind(heat.id);
 
         let mut client = pool.get().await;
@@ -68,6 +68,12 @@ impl HeatRegistration {
             .collect();
 
         let crews = join_all(crew_futures).await;
+
+        // if let Some(registration) = heat_registrations.get(0) {
+        //     if registration.result.is_some() {
+        //         let netto_time = registration.result.as_ref().unwrap().net_time;
+        //     }
+        // }
 
         for (pos, heat_registration) in heat_registrations.iter_mut().enumerate() {
             let crew = crews.get(pos).unwrap();
