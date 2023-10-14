@@ -41,30 +41,6 @@ impl<'a> Server<'a> {
         Server { config }
     }
 
-    fn get_app(
-        secret_key: Key,
-        rl_max_requests: u64,
-        rl_interval: u64,
-    ) -> App<
-        impl ServiceFactory<
-            ServiceRequest,
-            Config = (),
-            Response = ServiceResponse<EitherBody<StreamMetrics<BoxBody>>>,
-            Error = Error,
-            InitError = (),
-        >,
-    > {
-        App::new()
-            // Install the identity framework first.
-            .wrap(IdentityMiddleware::default())
-            // adds support for HTTPS sessions
-            .wrap(Self::get_session_middleware(secret_key))
-            // collect metrics about requests and responses
-            .wrap(Self::get_prometeus())
-            // adds support for rate limiting of HTTP requests
-            .wrap(Self::get_rate_limiter(rl_max_requests, rl_interval))
-    }
-
     pub async fn start(&self) -> io::Result<()> {
         let start = Instant::now();
 
@@ -74,10 +50,10 @@ impl<'a> Server<'a> {
 
         let worker_count = Arc::new(Mutex::new(0));
 
-        let mut http_server = HttpServer::new(move || {
+        let factory_closure = move || {
             let mut current_count = worker_count.lock().unwrap();
             *current_count += 1;
-            debug!("Created new worker: count={}", current_count.to_string().bold());
+            debug!("Created new HTTP worker: count={}", current_count.to_string().bold());
 
             // get app with some middlewares initialized
             Self::get_app(secret_key.clone(), rl_max_requests, rl_interval)
@@ -112,9 +88,11 @@ impl<'a> Server<'a> {
                 // redirect from / to /infoportal
                 .service(web::redirect("/", INFOPORTAL))
                 .service(rest_api::monitor)
-        })
-        // bind http
-        .bind(self.config.get_http_bind())?;
+        };
+
+        let mut http_server = HttpServer::new(factory_closure)
+            // bind http
+            .bind(self.config.get_http_bind())?;
 
         // bind https if config is available
         if let Some(rustls_cfg) = Self::get_rustls_config() {
@@ -131,6 +109,30 @@ impl<'a> Server<'a> {
         let server = http_server.run();
         info!("Infoportal started in {:?}", start.elapsed());
         server.await
+    }
+
+    fn get_app(
+        secret_key: Key,
+        rl_max_requests: u64,
+        rl_interval: u64,
+    ) -> App<
+        impl ServiceFactory<
+            ServiceRequest,
+            Config = (),
+            Response = ServiceResponse<EitherBody<StreamMetrics<BoxBody>>>,
+            Error = Error,
+            InitError = (),
+        >,
+    > {
+        App::new()
+            // Install the identity framework first.
+            .wrap(IdentityMiddleware::default())
+            // adds support for HTTPS sessions
+            .wrap(Self::get_session_middleware(secret_key))
+            // collect metrics about requests and responses
+            .wrap(Self::get_prometeus())
+            // adds support for rate limiting of HTTP requests
+            .wrap(Self::get_rate_limiter(rl_max_requests, rl_interval))
     }
 
     fn get_session_middleware(secret_key: Key) -> SessionMiddleware<CookieSessionStore> {
