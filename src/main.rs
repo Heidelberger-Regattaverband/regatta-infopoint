@@ -8,7 +8,8 @@ use std::io::Result;
 
 #[actix_web::main]
 async fn main() -> Result<()> {
-    Server::start(Config::get()).await
+    let server = Server::new(Config::get());
+    server.start().await
 }
 
 #[cfg(test)]

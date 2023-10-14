@@ -15,13 +15,14 @@ use actix_web::{
 };
 use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder, StreamMetrics};
 use colored::Colorize;
-use log::{info, warn};
+use log::{debug, info, warn};
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
 use std::{
     fs::File,
     future::Ready,
     io::{self, BufReader},
+    sync::{Arc, Mutex},
     time::{self, Instant},
 };
 
@@ -30,9 +31,16 @@ pub const PATH_REST_API: &str = "/api";
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
 
-pub struct Server {}
+pub struct Server<'a> {
+    config: &'a Config,
+}
 
-impl Server {
+impl<'a> Server<'a> {
+    /// Creates s new server instance with given configuration.
+    pub fn new(config: &'a Config) -> Server {
+        Server { config }
+    }
+
     fn get_app(
         secret_key: Key,
         rl_max_requests: u64,
@@ -57,14 +65,20 @@ impl Server {
             .wrap(Self::get_rate_limiter(rl_max_requests, rl_interval))
     }
 
-    pub async fn start(config: &Config) -> io::Result<()> {
+    pub async fn start(&self) -> io::Result<()> {
         let start = Instant::now();
 
         let aquarius = create_app_data().await;
-        let (rl_max_requests, rl_interval) = config.get_rate_limiter_config();
+        let (rl_max_requests, rl_interval) = self.config.get_rate_limiter_config();
         let secret_key = Self::get_secret_key();
 
+        let worker_count = Arc::new(Mutex::new(0));
+
         let mut http_server = HttpServer::new(move || {
+            let mut current_count = worker_count.lock().unwrap();
+            *current_count += 1;
+            debug!("Created new worker: count={}", current_count.to_string().bold());
+
             // get app with some middlewares initialized
             Self::get_app(secret_key.clone(), rl_max_requests, rl_interval)
                 .app_data(aquarius.clone())
@@ -100,22 +114,22 @@ impl Server {
                 .service(rest_api::monitor)
         })
         // bind http
-        .bind(config.get_http_bind())?;
+        .bind(self.config.get_http_bind())?;
 
         // bind https if config is available
         if let Some(rustls_cfg) = Self::get_rustls_config() {
-            let https_bind = config.get_https_bind();
+            let https_bind = self.config.get_https_bind();
             http_server = http_server.bind_rustls_021(https_bind, rustls_cfg)?;
         }
 
         // configure number of workers if env. variable is set
-        if let Some(workers) = config.http_workers {
+        if let Some(workers) = self.config.http_workers {
             http_server = http_server.workers(workers);
         }
 
         // finally run http server
         let server = http_server.run();
-        info!("Starting Infoportal in {:?}", start.elapsed());
+        info!("Infoportal started in {:?}", start.elapsed());
         server.await
     }
 
