@@ -41,6 +41,16 @@ sap.ui.define([
 
       // set initial heat model, required for navigation over heats
       this.setModel(new JSONModel(), "heat");
+
+      // set initial race model, required for navigation over races
+      this.setModel(new JSONModel(), "race");
+
+      window.addEventListener('beforeunload', (oEvent) => {
+        // Cancel the event as stated by the standard.
+        oEvent.preventDefault();
+        // Chrome requires returnValue to be set.
+        oEvent.returnValue = '';
+      });
     },
 
     getContentDensityClass: function () {

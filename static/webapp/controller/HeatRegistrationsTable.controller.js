@@ -19,13 +19,6 @@ sap.ui.define([
         onBeforeShow: this.onBeforeShow,
       }, this);
 
-      window.addEventListener('beforeunload', (event) => {
-        // Cancel the event as stated by the standard.
-        event.preventDefault();
-        // Chrome requires returnValue to be set.
-        event.returnValue = '';
-      });
-
       window.addEventListener("keydown", async (event) => {
         switch (event.key) {
           case "F5":

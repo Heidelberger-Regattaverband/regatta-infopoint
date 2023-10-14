@@ -22,8 +22,6 @@ sap.ui.define([
       this._oRacesModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/races`, this.oTable);
       this.setViewModel(this._oRacesModel, "races");
 
-      this.setComponentModel(new JSONModel(), "race");
-
       this.getRouter().getRoute("races").attachMatched(async (_) => await this._loadRacesModel(), this);
 
       const mFilters = this.getComponentModel("filters").getData();

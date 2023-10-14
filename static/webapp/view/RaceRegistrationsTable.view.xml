@@ -41,12 +41,14 @@
             <f:DynamicPageHeader>
               <layout:HorizontalLayout allowWrapping="true">
                 <layout:VerticalLayout class="sapUiMediumMarginEnd">
-                  <ObjectAttribute title="{i18n>common.distance}" text="{path: 'raceRegistrations>/', formatter: '.formatter.distanceLabel'}" />
+                  <ObjectAttribute title="{i18n>common.distance}"
+                    text="{path: 'raceRegistrations>/', formatter: '.formatter.distanceLabel'}" />
                   <ObjectAttribute title="{i18n>common.registrations}" text="{raceRegistrations>/registrationsCount}" />
                 </layout:VerticalLayout>
               </layout:HorizontalLayout>
               <layout:VerticalLayout>
-                <!-- <ObjectAttribute title="{i18n>common.seededLbl}" text="{= ${raceRegistrations>/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" /> -->
+                <!-- <ObjectAttribute title="{i18n>common.seededLbl}" text="{= ${raceRegistrations>/seeded} ? ${i18n>common.yes} :
+                ${i18n>common.no}}" /> -->
                 <ObjectAttribute title="{i18n>common.state}" text="{path: 'raceRegistrations>/', formatter: '.formatter.raceStateLabel'}" />
               </layout:VerticalLayout>
             </f:DynamicPageHeader>
@@ -82,15 +84,15 @@
                 <ColumnListItem highlight="{path: 'raceRegistrations>', formatter: '.formatter.raceRegistrationHighlight'}" vAlign="Top">
                   <cells>
                     <layout:VerticalLayout>
-                      <Text text="{raceRegistrations>bib}" visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />
-                      <Text text="{raceRegistrations>bib}" visible="{= !${raceRegistrations>cancelled}}" />
+                      <Text text="{raceRegistrations>bib}" visible="{=${raceRegistrations>cancelled}}" class="cancelled" />
+                      <Text text="{raceRegistrations>bib}" visible="{=!${raceRegistrations>cancelled}}" />
                     </layout:VerticalLayout>
 
                     <layout:VerticalLayout>
                       <Text text="{path: 'raceRegistrations>', formatter: '.formatter.boatLabel'}"
-                        class="boldCancelled sapUiTinyMarginBottom" visible="{= ${raceRegistrations>cancelled}}" />
+                        class="boldCancelled sapUiTinyMarginBottom" visible="{=${raceRegistrations>cancelled}}" />
                       <Text text="{path: 'raceRegistrations>', formatter: '.formatter.boatLabel'}"
-                        class="bold sapUiTinyMarginBottom" visible="{= !${raceRegistrations>cancelled}}" />
+                        class="bold sapUiTinyMarginBottom" visible="{=!${raceRegistrations>cancelled}}" />
 
                       <Text text="{path: 'raceRegistrations>crew', formatter: '.formatter.crewLabel'}"
                         visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />
