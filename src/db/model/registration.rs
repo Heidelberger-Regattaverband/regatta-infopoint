@@ -24,7 +24,7 @@ pub struct Registration {
 
     /** The start number of the boat. May be None if bib number draw has not yet taken place. */
     #[serde(skip_serializing_if = "Option::is_none")]
-    bib: Option<i16>,
+    pub bib: Option<i16>,
 
     /** An optional boat number, if several boats from the same club are registered. */
     #[serde(skip_serializing_if = "Option::is_none")]

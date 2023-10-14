@@ -4,6 +4,7 @@ use crate::db::{
 };
 use futures::future::{join_all, BoxFuture};
 use serde::Serialize;
+use std::cmp::Ordering;
 use tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
@@ -47,10 +48,12 @@ impl HeatRegistration {
         query.bind(heat.id);
 
         let mut client = pool.get().await;
-        let crew = utils::get_rows(query.query(&mut client).await.unwrap()).await;
+        let rows = utils::get_rows(query.query(&mut client).await.unwrap()).await;
 
         let mut crew_futures: Vec<BoxFuture<Vec<Crew>>> = Vec::new();
-        let mut heat_registrations: Vec<HeatRegistration> = crew
+
+        // convert rows into HeatRegistrations
+        let mut heat_registrations: Vec<HeatRegistration> = rows
             .into_iter()
             .map(|row| {
                 let mut heat_registration: HeatRegistration = row.to_entity();
@@ -67,6 +70,20 @@ impl HeatRegistration {
             })
             .collect();
 
+        // sort heat registrations by rank
+        heat_registrations.sort_by(|a, b| {
+            if let (Some(result_a), Some(result_b)) = (a.result.as_ref(), b.result.as_ref()) {
+                if result_a.rank_sort > result_b.rank_sort {
+                    Ordering::Greater
+                } else {
+                    Ordering::Less
+                }
+            } else {
+                Ordering::Equal
+            }
+        });
+
+        // query the crews of all registrations in parallel
         let crews = join_all(crew_futures).await;
 
         // if let Some(registration) = heat_registrations.get(0) {
