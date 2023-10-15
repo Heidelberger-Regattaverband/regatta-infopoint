@@ -4,7 +4,6 @@ use crate::db::{
 };
 use futures::future::{join_all, BoxFuture};
 use serde::Serialize;
-use std::cmp::Ordering;
 use tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
