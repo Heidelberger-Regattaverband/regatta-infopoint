@@ -44,10 +44,7 @@ impl User {
         // get database config ...
         let mut db_cfg = Config::get().get_db_config();
         // ... and authenticate with given credentials
-        db_cfg.authentication(AuthMethod::sql_server(
-            credentials.username.clone(),
-            credentials.password,
-        ));
+        db_cfg.authentication(AuthMethod::sql_server(&credentials.username, &credentials.password));
 
         // then try to open a connection to the MS-SQL server ...
         let tcp = TcpStream::connect(db_cfg.get_addr()).await.unwrap();

@@ -178,8 +178,8 @@ impl<'a> Server<'a> {
         // init server config builder with safe defaults
         let config = ServerConfig::builder().with_safe_defaults().with_no_client_auth();
 
-        let cert_pem_path = Config::get().https_cert_path.clone();
-        let key_pem_path = Config::get().https_key_path.clone();
+        let cert_pem_path = &Config::get().https_cert_path;
+        let key_pem_path = &Config::get().https_key_path;
 
         info!(
             "Current working directory is {}",

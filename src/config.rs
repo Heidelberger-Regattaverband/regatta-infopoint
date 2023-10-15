@@ -65,10 +65,10 @@ impl Config {
 
     pub fn get_db_config(&self) -> TiberiusConfig {
         let mut config = TiberiusConfig::new();
-        config.host(self.db_host.clone());
+        config.host(&self.db_host);
         config.port(self.db_port);
-        config.database(self.db_name.clone());
-        config.authentication(AuthMethod::sql_server(self.db_user.clone(), self.db_password.clone()));
+        config.database(&self.db_name);
+        config.authentication(AuthMethod::sql_server(&self.db_user, &self.db_password));
         if self.db_encryption {
             config.encryption(EncryptionLevel::Required);
             config.trust_cert();
