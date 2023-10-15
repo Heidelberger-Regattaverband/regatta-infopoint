@@ -71,30 +71,30 @@ impl HeatRegistration {
             .collect();
 
         // sort heat registrations by rank
-        heat_registrations.sort_by(|a, b| {
-            if let (Some(result_a), Some(result_b)) = (a.result.as_ref(), b.result.as_ref()) {
-                if result_a.rank_sort > result_b.rank_sort {
-                    Ordering::Greater
-                } else {
-                    Ordering::Less
-                }
-            } else {
-                Ordering::Equal
-            }
-        });
+        // heat_registrations.sort_by(|a, b| {
+        //     if let (Some(result_a), Some(result_b)) = (a.result.as_ref(), b.result.as_ref()) {
+        //         if result_a.rank_sort > result_b.rank_sort {
+        //             Ordering::Greater
+        //         } else {
+        //             Ordering::Less
+        //         }
+        //     } else {
+        //         Ordering::Equal
+        //     }
+        // });
 
         // query the crews of all registrations in parallel
         let crews = join_all(crew_futures).await;
 
-        // if let Some(registration) = heat_registrations.get(0) {
-        //     if registration.result.is_some() {
-        //         let netto_time = registration.result.as_ref().unwrap().net_time;
-        //     }
-        // }
-
         for (pos, heat_registration) in heat_registrations.iter_mut().enumerate() {
             let crew = crews.get(pos).unwrap();
             heat_registration.registration.crew = Some(crew.to_vec());
+
+            // if pos == 0 {
+            //     if let Some(result) = &heat_registration.result {
+            //         let net_time = result.net_time;
+            //     }
+            // }
         }
 
         heat_registrations
