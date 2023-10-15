@@ -3,7 +3,6 @@ use crate::db::{
     tiberius::{RowColumn, TryRowColumn},
 };
 use serde::Serialize;
-use std::{time::Duration, u8};
 use tiberius::Row;
 
 #[derive(Debug, Serialize, Clone)]
@@ -20,7 +19,7 @@ pub struct HeatResult {
     pub net_time: i32,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    delta: Option<String>,
+    pub delta: Option<String>,
 
     /// The points given for the result
     points: u8,
@@ -38,21 +37,11 @@ impl HeatResult {
 impl TryToEntity<HeatResult> for Row {
     fn try_to_entity(&self) -> Option<HeatResult> {
         if let Some(rank) = <Row as TryRowColumn<u8>>::try_get_column(self, "Result_Rank") {
-            let delta: Option<String> = if rank > 1 {
-                let delta: i32 = self.get_column("Result_Delta");
-                let duration = Duration::from_millis(delta as u64);
-                let seconds = duration.as_secs();
-                let millis = duration.subsec_millis() / 10;
-                Some(format!("+{seconds}.{millis}"))
-            } else {
-                None
-            };
-
             let num_rowers: u8 = self.get_column("BoatClass_NumRowers");
             let points: u8 = if rank > 0 { num_rowers + (5 - rank) } else { 0 };
 
             Some(HeatResult {
-                delta,
+                delta: None,
                 rank_label: if rank == 0 {
                     Default::default()
                 } else {

@@ -1,3 +1,5 @@
+use std::{cmp::Ordering, time::Duration};
+
 use crate::db::{
     model::{utils, Club, Crew, Heat, HeatResult, Race, Registration, ToEntity, TryToEntity},
     tiberius::{RowColumn, TiberiusPool},
@@ -49,18 +51,11 @@ impl HeatRegistration {
         let mut client = pool.get().await;
         let rows = utils::get_rows(query.query(&mut client).await.unwrap()).await;
 
-        let mut crew_futures: Vec<BoxFuture<Vec<Crew>>> = Vec::new();
-
         // convert rows into HeatRegistrations
         let mut heat_registrations: Vec<HeatRegistration> = rows
             .into_iter()
             .map(|row| {
                 let mut heat_registration: HeatRegistration = row.to_entity();
-                crew_futures.push(Box::pin(Crew::query_all(
-                    heat_registration.registration.id,
-                    heat.round,
-                    pool,
-                )));
                 // if a result is available, the registration isn't cancelled yet
                 if heat_registration.result.is_some() {
                     heat_registration.registration.cancelled = false;
@@ -70,17 +65,39 @@ impl HeatRegistration {
             .collect();
 
         // sort heat registrations by rank
-        // heat_registrations.sort_by(|a, b| {
-        //     if let (Some(result_a), Some(result_b)) = (a.result.as_ref(), b.result.as_ref()) {
-        //         if result_a.rank_sort > result_b.rank_sort {
-        //             Ordering::Greater
-        //         } else {
-        //             Ordering::Less
-        //         }
-        //     } else {
-        //         Ordering::Equal
-        //     }
-        // });
+        heat_registrations.sort_by(|a, b| {
+            if let (Some(result_a), Some(result_b)) = (a.result.as_ref(), b.result.as_ref()) {
+                if result_a.rank_sort > result_b.rank_sort {
+                    Ordering::Greater
+                } else {
+                    Ordering::Less
+                }
+            } else {
+                Ordering::Equal
+            }
+        });
+
+        let mut first_net_time: i32 = 0;
+
+        let mut crew_futures: Vec<BoxFuture<Vec<Crew>>> = Vec::new();
+        for (pos, heat_registration) in heat_registrations.iter_mut().enumerate() {
+            crew_futures.push(Box::pin(Crew::query_all(
+                heat_registration.registration.id,
+                heat.round,
+                pool,
+            )));
+
+            if let Some(result) = &mut heat_registration.result {
+                if pos == 0 {
+                    first_net_time = result.net_time;
+                } else if result.rank_sort > 1 && result.rank_sort < u8::MAX {
+                    let delta = result.net_time - first_net_time;
+                    let duration = Duration::from_millis(delta as u64);
+                    let millis = duration.subsec_millis() / 10;
+                    result.delta = Some(format!("+{}.{millis:02}", duration.as_secs()));
+                }
+            }
+        }
 
         // query the crews of all registrations in parallel
         let crews = join_all(crew_futures).await;
@@ -88,12 +105,6 @@ impl HeatRegistration {
         for (pos, heat_registration) in heat_registrations.iter_mut().enumerate() {
             let crew = crews.get(pos).unwrap();
             heat_registration.registration.crew = Some(crew.to_vec());
-
-            // if pos == 0 {
-            //     if let Some(result) = &heat_registration.result {
-            //         let net_time = result.net_time;
-            //     }
-            // }
         }
 
         heat_registrations
