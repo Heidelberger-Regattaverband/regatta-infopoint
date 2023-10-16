@@ -12,7 +12,7 @@
           <f:title>
             <f:DynamicPageTitle>
               <f:heading>
-                <Title text="{path: 'raceRegistrations>/', formatter: '.formatter.nrRaceLabel'}" wrapping="true" wrappingType="Normal" />
+                <Title text="{path:'raceRegistrations>/', formatter:'.formatter.nrRaceLabel'}" wrapping="true" wrappingType="Normal" />
               </f:heading>
 
               <f:expandedContent>
@@ -41,15 +41,15 @@
             <f:DynamicPageHeader>
               <layout:HorizontalLayout allowWrapping="true">
                 <layout:VerticalLayout class="sapUiMediumMarginEnd">
-                  <ObjectAttribute title="{i18n>common.distance}"
-                    text="{path: 'raceRegistrations>/', formatter: '.formatter.distanceLabel'}" />
+                  <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceRegistrations>/', formatter:'.formatter.distanceLabel'}" />
                   <ObjectAttribute title="{i18n>common.registrations}" text="{raceRegistrations>/registrationsCount}" />
                 </layout:VerticalLayout>
               </layout:HorizontalLayout>
               <layout:VerticalLayout>
                 <!-- <ObjectAttribute title="{i18n>common.seededLbl}" text="{= ${raceRegistrations>/seeded} ? ${i18n>common.yes} :
                 ${i18n>common.no}}" /> -->
-                <ObjectAttribute title="{i18n>common.state}" text="{path: 'raceRegistrations>/', formatter: '.formatter.raceStateLabel'}" />
+                <ObjectStatus title="{i18n>common.state}" text="{path:'raceRegistrations>/',formatter:'.formatter.raceStateLabel'}"
+                  state="{path:'raceRegistrations>/',formatter:'.formatter.raceStateHighlight'}" />
               </layout:VerticalLayout>
             </f:DynamicPageHeader>
           </f:header>
@@ -58,10 +58,9 @@
           <f:content>
             <!-- <ScrollContainer height="100%" vertical="true"> -->
 
-            <Table id="registrationsTable" autoPopinMode="true"
-              items="{path: 'raceRegistrations>/registrations/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}"
-              growing="true" growingThreshold="50" growingScrollToLoad="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders"
-              class="sapUiNoContentPadding">
+            <Table id="registrationsTable" autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
+              items="{path:'raceRegistrations>/registrations/', sorter:[{path:'result/rankSort', descending:false}, {path:'bib', descending:false}]}"
+              sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
               <columns>
                 <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
                   <header>

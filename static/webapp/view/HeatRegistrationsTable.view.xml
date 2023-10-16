@@ -45,7 +45,8 @@
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>
-                  <ObjectAttribute title="{i18n>common.state}" text="{path: 'heatRegistrations>/', formatter: '.formatter.heatStateLabel'}" />
+                  <ObjectStatus title="{i18n>common.state}" text="{path:'heatRegistrations>/',formatter:'.formatter.heatStateLabel'}"
+                    state="{path:'heatRegistrations>/',formatter:'.formatter.heatStateHighlight'}" />
                   <!-- <ObjectAttribute title="{i18n>common.seededLbl}" text="{= ${heatRegistrations>/race/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" /> -->
                   <ObjectAttribute title="{i18n>common.refereeAbr}" text="{heatRegistrations>/referees/0/lastName}, {heatRegistrations>/referees/0/firstName}"
                     visible="{= ${heatRegistrations>/referees} !== undefined }" />
