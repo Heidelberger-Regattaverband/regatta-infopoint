@@ -1,6 +1,7 @@
 use log::debug;
 use reqwest::Error;
 use scraper::{Html, Selector};
+use std::fs;
 
 struct ClubIcon {
     url: String,
@@ -18,7 +19,8 @@ impl Crawler {
     }
 
     async fn fetch(&mut self) -> Result<&Self, Error> {
-        let body = reqwest::get(&self.url).await?.text().await?;
+        // let body: String = reqwest::get(&self.url).await?.text().await?;
+        let body: String = fs::read_to_string("static/webapp/flags.html").unwrap();
         debug!("body = {:?}", body);
         self.body = Some(body.clone());
         Ok(self)
@@ -26,9 +28,11 @@ impl Crawler {
 
     fn parse(&self) {
         let document = Html::parse_document(self.body.as_ref().unwrap());
-        let selector = Selector::parse(r#"table > tbody > tr > td > a"#).unwrap();
+        let selector = Selector::parse(r#"a"#).unwrap();
         for title in document.select(&selector) {
-            println!("{}", title.value().attr("href").expect("href not found").to_string());
+            if let Some(href) = title.value().attr("href") {
+                println!("{}", href);
+            }
         }
     }
 }
