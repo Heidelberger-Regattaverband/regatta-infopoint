@@ -1,5 +1,6 @@
+use log::debug;
 use scraper::{Html, Selector};
-use std::{collections::HashMap, fs, sync::OnceLock};
+use std::{collections::HashMap, fs, sync::OnceLock, time::Instant};
 
 const BASE_URL: &str = "https://verwaltung.rudern.de";
 
@@ -18,15 +19,15 @@ impl ClubFlag {
 }
 
 fn load_club_flags() -> HashMap<i32, ClubFlag> {
+    let start = Instant::now();
+
     let body: String = fs::read_to_string("static/webapp/flags.html").unwrap();
-
     let document = Html::parse_document(&body);
-    let selector = Selector::parse(r#"a"#).unwrap();
+    let a_selector = Selector::parse(r#"a"#).unwrap();
     let img_selector = Selector::parse(r#"img"#).unwrap();
-
     let mut club_flags = HashMap::new();
 
-    for a in document.select(&selector) {
+    for a in document.select(&a_selector) {
         if let Some(href) = a.value().attr("href") {
             if href.starts_with("/clubs/") {
                 for img in a.select(&img_selector) {
@@ -46,6 +47,7 @@ fn load_club_flags() -> HashMap<i32, ClubFlag> {
             }
         }
     }
+    debug!("Reading flag URLs from html page: {:?}", start.elapsed());
     club_flags
 }
 
