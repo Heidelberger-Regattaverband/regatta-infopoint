@@ -3,7 +3,7 @@ use crate::{
         model::{utils, ToEntity},
         tiberius::{RowColumn, TiberiusPool, TryRowColumn},
     },
-    http::crawler::ClubFlag,
+    http::flag_scraper::ClubFlag,
 };
 use serde::Serialize;
 use tiberius::{Query, Row};

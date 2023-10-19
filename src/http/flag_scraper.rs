@@ -53,7 +53,7 @@ fn load_club_flags() -> HashMap<i32, ClubFlag> {
 
 #[cfg(test)]
 mod tests {
-    use crate::http::crawler::ClubFlag;
+    use crate::http::flag_scraper::ClubFlag;
 
     #[actix_web::test]
     async fn test_crawler() {
