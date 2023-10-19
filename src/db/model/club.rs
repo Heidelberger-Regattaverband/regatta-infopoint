@@ -1,6 +1,9 @@
-use crate::db::{
-    model::{utils, ToEntity},
-    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
+use crate::{
+    db::{
+        model::{utils, ToEntity},
+        tiberius::{RowColumn, TiberiusPool, TryRowColumn},
+    },
+    http::crawler::load_club_flags,
 };
 use serde::Serialize;
 use tiberius::{Query, Row};
@@ -27,6 +30,9 @@ pub struct Club {
     /// The number of times this club has been a participant.
     #[serde(skip_serializing_if = "Option::is_none")]
     participations_count: Option<i32>,
+
+    /// An optional URL showing the flag of the club.
+    flag_url: Option<String>,
 }
 
 impl Club {
@@ -84,13 +90,20 @@ impl Club {
 
 impl ToEntity<Club> for Row {
     fn to_entity(&self) -> Club {
+        let club_id: i32 = self.get_column("Club_ID");
+        let binding = load_club_flags();
+        let mut flag_url = None;
+        if let Some(club_flag) = binding.get(&club_id) {
+            flag_url = Some(club_flag.flag_url.clone());
+        }
         Club {
-            id: self.get_column("Club_ID"),
+            id: club_id,
             short_name: self.get_column("Club_Abbr"),
             long_name: self.try_get_column("Club_Name"),
             abbreviation: self.try_get_column("Club_UltraAbbr"),
             city: self.get_column("Club_City"),
             participations_count: self.try_get_column("Participations_Count"),
+            flag_url,
         }
     }
 }

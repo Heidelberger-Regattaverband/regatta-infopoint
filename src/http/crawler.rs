@@ -5,11 +5,11 @@ const BASE_URL: &str = "https://verwaltung.rudern.de";
 
 #[derive(Debug, PartialEq)]
 pub struct ClubFlag {
-    flag_url: String,
-    club_id: String,
+    pub flag_url: String,
+    pub club_id: i32,
 }
 
-pub fn load_club_flags() -> HashMap<String, ClubFlag> {
+pub fn load_club_flags() -> HashMap<i32, ClubFlag> {
     let body: String = fs::read_to_string("static/webapp/flags.html").unwrap();
 
     let document = Html::parse_document(&body);
@@ -23,16 +23,10 @@ pub fn load_club_flags() -> HashMap<String, ClubFlag> {
             if href.starts_with("/clubs/") {
                 for img in a.select(&img_selector) {
                     if let Some(src) = img.value().attr("src") {
-                        let club_id = href.split('/').last().unwrap();
+                        let mut club_id: i32 = href.split('/').last().unwrap_or_default().parse().unwrap_or_default();
+                        club_id -= 11000;
                         let flag_url = BASE_URL.to_owned() + src;
-                        println!("{} - {}", club_id, flag_url);
-                        club_flags.insert(
-                            club_id.to_owned(),
-                            ClubFlag {
-                                flag_url,
-                                club_id: club_id.to_owned(),
-                            },
-                        );
+                        club_flags.insert(club_id, ClubFlag { flag_url, club_id });
                     }
                 }
             }
@@ -49,8 +43,8 @@ mod tests {
     async fn test_crawler() {
         let club_flags = load_club_flags();
         assert_eq!(
-            club_flags.get("40028").unwrap().flag_url,
-            "https://verwaltung.rudern.de/uploads/clubs/797f9c9bea3af22290a395b0ff3afa3f_small.png".to_owned()
+            club_flags.get(&8).unwrap().flag_url,
+            "https://verwaltung.rudern.de/uploads/clubs/fdd52f8c4b5b15538341ea3e9edb11c3_small.png".to_owned()
         );
     }
 }
