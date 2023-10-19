@@ -3,7 +3,7 @@ use crate::{
         model::{utils, ToEntity},
         tiberius::{RowColumn, TiberiusPool, TryRowColumn},
     },
-    http::crawler::load_club_flags,
+    http::crawler::ClubFlag,
 };
 use serde::Serialize;
 use tiberius::{Query, Row};
@@ -32,6 +32,7 @@ pub struct Club {
     participations_count: Option<i32>,
 
     /// An optional URL showing the flag of the club.
+    #[serde(skip_serializing_if = "Option::is_none")]
     flag_url: Option<String>,
 }
 
@@ -82,7 +83,7 @@ impl Club {
 
     pub fn select_columns(alias: &str) -> String {
         format!(
-            " {0}.Club_ID, {0}.Club_Abbr, {0}.Club_Name, {0}.Club_UltraAbbr, {0}.Club_City ",
+            " {0}.Club_ID, {0}.Club_Abbr, {0}.Club_Name, {0}.Club_UltraAbbr, {0}.Club_City, {0}.Club_ExternID  ",
             alias
         )
     }
@@ -90,14 +91,13 @@ impl Club {
 
 impl ToEntity<Club> for Row {
     fn to_entity(&self) -> Club {
-        let club_id: i32 = self.get_column("Club_ID");
-        let binding = load_club_flags();
+        let club_extern_id: i32 = self.get_column("Club_ExternID");
         let mut flag_url = None;
-        if let Some(club_flag) = binding.get(&club_id) {
+        if let Some(club_flag) = ClubFlag::get(&club_extern_id) {
             flag_url = Some(club_flag.flag_url.clone());
         }
         Club {
-            id: club_id,
+            id: self.get_column("Club_ID"),
             short_name: self.get_column("Club_Abbr"),
             long_name: self.try_get_column("Club_Name"),
             abbreviation: self.try_get_column("Club_UltraAbbr"),
