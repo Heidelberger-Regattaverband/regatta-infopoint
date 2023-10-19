@@ -99,12 +99,14 @@
                         visible="{= !${raceRegistrations>cancelled}}" />
                     </layout:VerticalLayout>
 
-                    <layout:VerticalLayout>
+                    <layout:HorizontalLayout>
+                      <Image src="{raceRegistrations>club/flagUrl}" height="30px" class="sapUiTinyMarginEnd" />
+
                       <Text text="{raceRegistrations>club/shortName}, {raceRegistrations>club/city}"
                         visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />
                       <Text text="{raceRegistrations>club/shortName}, {raceRegistrations>club/city}"
                         visible="{= !${raceRegistrations>cancelled}}" />
-                    </layout:VerticalLayout>
+                    </layout:HorizontalLayout>
                   </cells>
                 </ColumnListItem>
               </items>

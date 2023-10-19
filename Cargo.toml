@@ -44,3 +44,7 @@ stretto = { version = "0", features = ["async"] }
 # Utils
 colored = "2"
 futures = "0.3"
+
+# html + http
+reqwest = "0"
+scraper = "0"
