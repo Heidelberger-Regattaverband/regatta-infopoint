@@ -72,7 +72,7 @@
                     <Text text="{i18n>common.boat}" class="bold" />
                   </header>
                 </Column>
-                <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline">
+                <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="WithoutHeader">
                   <header>
                     <Text text="{i18n>common.clubRegistration}" class="bold" />
                   </header>
