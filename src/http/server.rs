@@ -19,7 +19,7 @@ use log::{debug, info, warn};
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
 use std::{
-    fs::File,
+    fs::{metadata, File},
     future::Ready,
     io::{self, BufReader},
     sync::{Arc, Mutex},
@@ -186,40 +186,50 @@ impl<'a> Server<'a> {
             std::env::current_dir().unwrap().display().to_string().bold()
         );
 
-        // load TLS key/cert files
-        info!(
-            "Try to load TLS config from: certificate {} and private key {}.",
-            cert_pem_path.bold(),
-            key_pem_path.bold()
-        );
+        if metadata(cert_pem_path).unwrap().is_file() && metadata(key_pem_path).unwrap().is_file() {
+            // load TLS key/cert files
+            info!(
+                "Try to load TLS config from: certificate {} and private key {}.",
+                cert_pem_path.bold(),
+                key_pem_path.bold()
+            );
 
-        match File::open(cert_pem_path) {
-            Ok(cert_file) => {
-                let cert_reader = &mut BufReader::new(cert_file);
-                let cert_chain: Vec<Certificate> = certs(cert_reader).unwrap().into_iter().map(Certificate).collect();
+            match File::open(cert_pem_path) {
+                Ok(cert_file) => {
+                    let cert_reader = &mut BufReader::new(cert_file);
+                    let cert_chain: Vec<Certificate> =
+                        certs(cert_reader).unwrap().into_iter().map(Certificate).collect();
 
-                match File::open(key_pem_path) {
-                    Ok(key_file) => {
-                        let key_reader = &mut BufReader::new(key_file);
-                        // convert files to key/cert objects
-                        let mut keys: Vec<PrivateKey> = pkcs8_private_keys(key_reader)
-                            .unwrap()
-                            .into_iter()
-                            .map(PrivateKey)
-                            .collect();
+                    match File::open(key_pem_path) {
+                        Ok(key_file) => {
+                            let key_reader = &mut BufReader::new(key_file);
+                            // convert files to key/cert objects
+                            let mut keys: Vec<PrivateKey> = pkcs8_private_keys(key_reader)
+                                .unwrap()
+                                .into_iter()
+                                .map(PrivateKey)
+                                .collect();
 
-                        // no keys could be parsedpter for each variant
-                        if keys.is_empty() {
-                            warn!("Could not locate PKCS 8 private keys.");
-                            return None;
+                            // no keys could be parsedpter for each variant
+                            if keys.is_empty() {
+                                warn!("Could not locate PKCS 8 private keys.");
+                                return None;
+                            }
+
+                            Some(config.with_single_cert(cert_chain, keys.remove(0)).unwrap())
                         }
-
-                        Some(config.with_single_cert(cert_chain, keys.remove(0)).unwrap())
+                        Err(_) => None,
                     }
-                    Err(_) => None,
                 }
+                Err(_) => None,
             }
-            Err(_) => None,
+        } else {
+            warn!(
+                "One or both are directories: certificate {} and private key {}.",
+                cert_pem_path.bold(),
+                key_pem_path.bold()
+            );
+            None
         }
     }
 }
