@@ -13,6 +13,8 @@ use tiberius::{Query, Row};
 pub struct Club {
     pub id: i32,
 
+    extern_id: i32,
+
     /// The short name of the club.
     short_name: String,
 
@@ -98,6 +100,7 @@ impl ToEntity<Club> for Row {
         }
         Club {
             id: self.get_column("Club_ID"),
+            extern_id: club_extern_id,
             short_name: self.get_column("Club_Abbr"),
             long_name: self.try_get_column("Club_Name"),
             abbreviation: self.try_get_column("Club_UltraAbbr"),
