@@ -9,19 +9,21 @@ use actix_session::{config::PersistentSession, storage::CookieSessionStore, Sess
 use actix_web::{
     body::{BoxBody, EitherBody},
     cookie::{time::Duration, Key, SameSite},
-    dev::{ServiceFactory, ServiceRequest, ServiceResponse},
+    dev::{Service, ServiceFactory, ServiceRequest, ServiceResponse},
     web::{self, scope, Data},
     App, Error, HttpServer,
 };
 use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder, StreamMetrics};
 use colored::Colorize;
+use futures::FutureExt;
 use log::{debug, info, warn};
 use rustls::{Certificate, PrivateKey, ServerConfig};
 use rustls_pemfile::{certs, pkcs8_private_keys};
 use std::{
-    fs::{metadata, File},
+    fs::File,
     future::Ready,
     io::{self, BufReader},
+    path::Path,
     sync::{Arc, Mutex},
     time::{self, Instant},
 };
@@ -133,6 +135,13 @@ impl<'a> Server<'a> {
             .wrap(Self::get_prometeus())
             // adds support for rate limiting of HTTP requests
             .wrap(Self::get_rate_limiter(rl_max_requests, rl_interval))
+            .wrap_fn(|req, srv| {
+                // println!("Hi from start. You requested: {}", req.path());
+                srv.call(req).map(|res| {
+                    // println!("Hi from response");
+                    res
+                })
+            })
     }
 
     fn get_session_middleware(secret_key: Key) -> SessionMiddleware<CookieSessionStore> {
@@ -178,20 +187,20 @@ impl<'a> Server<'a> {
         // init server config builder with safe defaults
         let config = ServerConfig::builder().with_safe_defaults().with_no_client_auth();
 
-        let cert_pem_path = &Config::get().https_cert_path;
-        let key_pem_path = &Config::get().https_key_path;
+        let cert_pem_path = Path::new(&Config::get().https_cert_path);
+        let key_pem_path = Path::new(&Config::get().https_key_path);
 
         info!(
             "Current working directory is {}",
             std::env::current_dir().unwrap().display().to_string().bold()
         );
 
-        if metadata(cert_pem_path).unwrap().is_file() && metadata(key_pem_path).unwrap().is_file() {
+        if cert_pem_path.exists() && cert_pem_path.is_file() && key_pem_path.exists() && key_pem_path.is_file() {
             // load TLS key/cert files
             info!(
                 "Try to load TLS config from: certificate {} and private key {}.",
-                cert_pem_path.bold(),
-                key_pem_path.bold()
+                &Config::get().https_cert_path.bold(),
+                &Config::get().https_key_path.bold()
             );
 
             match File::open(cert_pem_path) {
@@ -225,9 +234,9 @@ impl<'a> Server<'a> {
             }
         } else {
             warn!(
-                "One or both are directories: certificate {} and private key {}.",
-                cert_pem_path.bold(),
-                key_pem_path.bold()
+                "One or both are not existing or are directories: certificate {} and private key {}.",
+                &Config::get().https_cert_path.bold(),
+                &Config::get().https_key_path.bold()
             );
             None
         }
