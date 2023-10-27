@@ -28,7 +28,6 @@ WORKDIR /code
 COPY Cargo.toml Cargo.toml
 COPY Cargo.lock Cargo.lock
 COPY src/ src/
-COPY .env .env
 
 RUN cargo fetch
 
@@ -50,7 +49,6 @@ WORKDIR /app
 
 # copy server binary from build stage
 COPY --from=builder /code/target/release/infoportal infoportal
-COPY --from=builder /code/.env .env
 COPY --from=builder /code/static/webapp/ static/webapp
 
 # set user to non-root unless root is required for your app
