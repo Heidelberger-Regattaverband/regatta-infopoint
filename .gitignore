@@ -12,3 +12,4 @@ Component-preload.js
 
 .vscode
 .DS_Store
+.env
