@@ -97,7 +97,9 @@ async fn query_age_classes(regatta_id: i32, pool: &TiberiusPool) -> Vec<AgeClass
 
 async fn query_dates(regatta_id: i32, pool: &TiberiusPool) -> Vec<NaiveDate> {
     let mut query = Query::new(
-        "SELECT DISTINCT CAST (c.Comp_Datetime as date) AS Comp_Date FROM Comp c WHERE c.Comp_Event_ID_FK = @P1",
+        "SELECT DISTINCT CAST (c.Comp_Datetime as date) AS Comp_Date
+        FROM Comp c
+        WHERE c.Comp_DateTime IS NOT NULL AND c.Comp_Event_ID_FK = @P1",
     );
     query.bind(regatta_id);
 
