@@ -30,9 +30,10 @@ pub struct Config {
 
 impl Config {
     pub fn get() -> &'static Config {
-        CONFIG.get_or_init(Self::_init)
+        CONFIG.get_or_init(Self::init)
     }
 
+    /// Returns the HTTP binding configuration of the server.
     pub fn get_http_bind(&self) -> (String, u16) {
         info!(
             "HTTP server is listening on: {}:{}",
@@ -42,6 +43,7 @@ impl Config {
         (self.http_bind.clone(), self.http_port)
     }
 
+    /// Returns the HTTPS binding configuration of the server.
     pub fn get_https_bind(&self) -> (String, u16) {
         info!(
             "HTTPS server is listening on: {}:{}",
@@ -63,6 +65,7 @@ impl Config {
         (self.http_rl_max_requests, self.http_rl_interval)
     }
 
+    /// Returns the database configuration required by the tiberius client.
     pub fn get_db_config(&self) -> TiberiusConfig {
         let mut config = TiberiusConfig::new();
         config.host(&self.db_host);
@@ -78,7 +81,8 @@ impl Config {
         config
     }
 
-    fn _init() -> Self {
+    /// Initializes the configuration by reading variables from the environment.
+    fn init() -> Self {
         dotenv().ok();
         env_logger::init();
 

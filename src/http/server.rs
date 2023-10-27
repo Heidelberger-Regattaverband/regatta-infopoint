@@ -93,10 +93,10 @@ impl<'a> Server<'a> {
         };
 
         let mut http_server = HttpServer::new(factory_closure)
-            // bind http
+            // always bind to http
             .bind(self.config.get_http_bind())?;
 
-        // bind https if config is available
+        // also bind to https if config is available
         if let Some(rustls_cfg) = Self::get_rustls_config() {
             let https_bind = self.config.get_https_bind();
             http_server = http_server.bind_rustls_021(https_bind, rustls_cfg)?;
@@ -183,10 +183,8 @@ impl<'a> Server<'a> {
             .build()
     }
 
+    /// Returns HTTPS server configuration if available.
     fn get_rustls_config() -> Option<ServerConfig> {
-        // init server config builder with safe defaults
-        let config = ServerConfig::builder().with_safe_defaults().with_no_client_auth();
-
         let cert_pem_path = Path::new(&Config::get().https_cert_path);
         let key_pem_path = Path::new(&Config::get().https_key_path);
 
@@ -203,34 +201,38 @@ impl<'a> Server<'a> {
                 &Config::get().https_key_path.bold()
             );
 
-            match File::open(cert_pem_path) {
-                Ok(cert_file) => {
-                    let cert_reader = &mut BufReader::new(cert_file);
-                    let cert_chain: Vec<Certificate> =
-                        certs(cert_reader).unwrap().into_iter().map(Certificate).collect();
+            if let (Ok(cert_file), Ok(key_file)) = (File::open(cert_pem_path), File::open(key_pem_path)) {
+                let cert_reader = &mut BufReader::new(cert_file);
+                let cert_chain: Vec<Certificate> = certs(cert_reader).unwrap().into_iter().map(Certificate).collect();
 
-                    match File::open(key_pem_path) {
-                        Ok(key_file) => {
-                            let key_reader = &mut BufReader::new(key_file);
-                            // convert files to key/cert objects
-                            let mut keys: Vec<PrivateKey> = pkcs8_private_keys(key_reader)
-                                .unwrap()
-                                .into_iter()
-                                .map(PrivateKey)
-                                .collect();
+                let key_reader = &mut BufReader::new(key_file);
+                // convert files to key/cert objects
+                let mut keys: Vec<PrivateKey> = pkcs8_private_keys(key_reader)
+                    .unwrap()
+                    .into_iter()
+                    .map(PrivateKey)
+                    .collect();
 
-                            // no keys could be parsedpter for each variant
-                            if keys.is_empty() {
-                                warn!("Could not locate PKCS 8 private keys.");
-                                return None;
-                            }
-
-                            Some(config.with_single_cert(cert_chain, keys.remove(0)).unwrap())
-                        }
-                        Err(_) => None,
-                    }
+                // no keys could be parsedpter for each variant
+                if keys.is_empty() {
+                    warn!("Could not locate PKCS 8 private keys.");
+                    return None;
                 }
-                Err(_) => None,
+
+                // init server config builder with safe defaults
+                let config = ServerConfig::builder()
+                    .with_safe_defaults()
+                    .with_no_client_auth()
+                    .with_single_cert(cert_chain, keys.remove(0))
+                    .unwrap();
+                Some(config)
+            } else {
+                warn!(
+                    "Can't open one or both files: certificate {} and private key {}.",
+                    &Config::get().https_cert_path.bold(),
+                    &Config::get().https_key_path.bold()
+                );
+                None
             }
         } else {
             warn!(
