@@ -22,10 +22,19 @@ pub struct Aquarius {
 impl Aquarius {
     /// Create a new `Aquarius`.
     pub async fn new() -> Self {
+        let pool = TiberiusPool::new().await;
+        let active_regatta_id: i32 = if Config::get().active_regatta_id.is_none() {
+            let start: Instant = Instant::now();
+            let regatta = Regatta::query_active_regatta(&pool).await;
+            debug!("Query active regatta from DB: {:?}", start.elapsed());
+            regatta.id
+        } else {
+            Config::get().active_regatta_id.unwrap()
+        };
         Aquarius {
             caches: Caches::new(Duration::from_secs(Config::get().cache_ttl)),
-            pool: TiberiusPool::new().await,
-            active_regatta_id: Config::get().active_regatta_id,
+            pool,
+            active_regatta_id,
         }
     }
 

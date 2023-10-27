@@ -24,7 +24,7 @@ pub struct Config {
     pub db_encryption: bool,
     pub db_pool_max_size: u32,
     pub db_pool_min_idle: u32,
-    pub active_regatta_id: i32,
+    pub active_regatta_id: Option<i32>,
     pub cache_ttl: u64,
 }
 
@@ -150,17 +150,17 @@ impl Config {
             db_pool_min_idle.to_string().bold(),
         );
 
-        let active_regatta_id: i32 = env::var("ACTIVE_REGATTA_ID")
-            .expect("env variable `ACTIVE_REGATTA_ID` should be set")
-            .parse()
-            .unwrap();
+        let mut active_regatta_id: Option<i32> = None;
+        if let Ok(id) = env::var("ACTIVE_REGATTA_ID") {
+            active_regatta_id = Some(id.parse().unwrap());
+        }
         let cache_ttl: u64 = env::var("CACHE_TTL")
             .unwrap_or_else(|_| "40".to_string())
             .parse()
             .unwrap();
         info!(
             "Aquarius: active_regatta_id={}, cache_ttl={}s",
-            active_regatta_id.to_string().bold(),
+            active_regatta_id.unwrap_or_default().to_string().bold(),
             cache_ttl.to_string().bold()
         );
 

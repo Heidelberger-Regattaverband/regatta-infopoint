@@ -33,6 +33,15 @@ impl ToEntity<Regatta> for Row {
 }
 
 impl Regatta {
+    pub async fn query_active_regatta(pool: &TiberiusPool) -> Regatta {
+        let mut client = pool.get().await;
+        let stream = Query::new("SELECT TOP 1 e.* FROM Event e ORDER BY e.Event_StartDate DESC, e.Event_ID DESC")
+            .query(&mut client)
+            .await
+            .unwrap();
+        utils::get_row(stream).await.to_entity()
+    }
+
     pub async fn query_all(pool: &TiberiusPool) -> Vec<Regatta> {
         let mut client = pool.get().await;
         let stream = Query::new("SELECT * FROM Event").query(&mut client).await.unwrap();
