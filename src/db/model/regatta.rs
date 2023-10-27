@@ -14,6 +14,7 @@ pub struct Regatta {
     venue: String,
     start_date: String,
     end_date: String,
+    url: String,
 }
 
 impl ToEntity<Regatta> for Row {
@@ -28,6 +29,7 @@ impl ToEntity<Regatta> for Row {
             venue: self.try_get_column("Event_Venue").unwrap_or_default(),
             start_date: start_date.date().to_string(),
             end_date: end_date.date().to_string(),
+            url: self.try_get_column("Event_Url").unwrap_or_default(),
         }
     }
 }
