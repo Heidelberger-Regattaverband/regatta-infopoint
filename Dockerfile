@@ -41,10 +41,11 @@ RUN cargo build --release \
 ###############
 ## run stage ##
 ###############
-FROM ubuntu:23.04
+FROM ubuntu:23.10
 RUN apt-get update && apt-get upgrade -y \
- && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+  && apt-get install -y iputils-ping \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # copy server binary from build stage
