@@ -13,7 +13,7 @@ use actix_web::{
     web::{self, scope, Data},
     App, Error, HttpServer,
 };
-use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder, StreamMetrics};
+use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
 use colored::Colorize;
 use futures::FutureExt;
 use log::{debug, info, warn};
@@ -51,6 +51,7 @@ impl<'a> Server<'a> {
         let secret_key = Self::get_secret_key();
 
         let worker_count = Arc::new(Mutex::new(0));
+        let prometheus = Self::get_prometeus();
 
         let factory_closure = move || {
             let mut current_count = worker_count.lock().unwrap();
@@ -59,6 +60,8 @@ impl<'a> Server<'a> {
 
             // get app with some middlewares initialized
             Self::get_app(secret_key.clone(), rl_max_requests, rl_interval)
+                // collect metrics about requests and responses
+                .wrap(prometheus.clone())
                 .app_data(aquarius.clone())
                 .service(
                     scope(PATH_REST_API)
@@ -121,7 +124,7 @@ impl<'a> Server<'a> {
         impl ServiceFactory<
             ServiceRequest,
             Config = (),
-            Response = ServiceResponse<EitherBody<StreamMetrics<BoxBody>>>,
+            Response = ServiceResponse<EitherBody<BoxBody>>,
             Error = Error,
             InitError = (),
         >,
@@ -131,8 +134,6 @@ impl<'a> Server<'a> {
             .wrap(IdentityMiddleware::default())
             // adds support for HTTPS sessions
             .wrap(Self::get_session_middleware(secret_key))
-            // collect metrics about requests and responses
-            .wrap(Self::get_prometeus())
             // adds support for rate limiting of HTTP requests
             .wrap(Self::get_rate_limiter(rl_max_requests, rl_interval))
             .wrap_fn(|req, srv| {
@@ -162,11 +163,13 @@ impl<'a> Server<'a> {
     }
 
     /// Returns a new PrometheusMetrics instance.
-    fn get_prometeus() -> PrometheusMetrics {
-        PrometheusMetricsBuilder::new("api")
-            .endpoint("/metrics")
-            .build()
-            .unwrap()
+    fn get_prometeus() -> Arc<PrometheusMetrics> {
+        Arc::new(
+            PrometheusMetricsBuilder::new("api")
+                .endpoint("/metrics")
+                .build()
+                .unwrap(),
+        )
     }
 
     /// Returns a new RateLimiter instance.
