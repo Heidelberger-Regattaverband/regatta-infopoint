@@ -19,6 +19,8 @@ sap.ui.define([
         onBeforeShow: this.onBeforeShow,
       }, this);
 
+      this.getEventBus().subscribe("race", "itemChanged", this._onItemChanged, this);
+
       window.addEventListener("keydown", async (event) => {
         switch (event.key) {
           case "F5":
@@ -50,22 +52,18 @@ sap.ui.define([
 
     onFirstPress: async function () {
       this.getEventBus().publish("race", "first", {});
-      await this._loadRaceModel();
     },
 
     onPreviousPress: async function () {
       this.getEventBus().publish("race", "previous", {});
-      await this._loadRaceModel();
     },
 
     onNextPress: async function () {
       this.getEventBus().publish("race", "next", {});
-      await this._loadRaceModel();
     },
 
     onLastPress: async function () {
       this.getEventBus().publish("race", "last", {});
-      await this._loadRaceModel();
     },
 
     onRefreshButtonPress: async function (oEvent) {
@@ -79,6 +77,10 @@ sap.ui.define([
     _loadRaceModel: async function () {
       const oRace = this.getComponentModel("race");
       await this.updateJSONModel(this.getViewModel("raceRegistrations"), `/api/races/${oRace.getData().id}`, undefined);
+    },
+
+    _onItemChanged: async function (channelId, eventId, parametersMap) {
+      await this._loadRaceModel();
     }
   });
 });

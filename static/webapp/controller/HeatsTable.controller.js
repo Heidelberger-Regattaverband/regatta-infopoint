@@ -106,6 +106,7 @@ sap.ui.define([
 
       onItemChanged: function (oItem) {
         this.getComponentModel("heat").setData(oItem);
+        this.getEventBus().publish("heat", "itemChanged", {});
       },
 
       onFilterButtonPress: async function (oEvent) {
@@ -139,5 +140,4 @@ sap.ui.define([
         this.applyFilters();
       }
     });
-
   });

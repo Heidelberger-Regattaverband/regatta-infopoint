@@ -19,6 +19,8 @@ sap.ui.define([
         onBeforeShow: this.onBeforeShow,
       }, this);
 
+      this.getEventBus().subscribe("heat", "itemChanged", this._onItemChanged, this);
+
       window.addEventListener("keydown", async (event) => {
         switch (event.key) {
           case "F5":
@@ -55,22 +57,18 @@ sap.ui.define([
 
     onFirstPress: async function () {
       this.getEventBus().publish("heat", "first", {});
-      await this._loadHeatModel();
     },
 
     onPreviousPress: async function () {
       this.getEventBus().publish("heat", "previous", {});
-      await this._loadHeatModel();
     },
 
     onNextPress: async function () {
       this.getEventBus().publish("heat", "next", {});
-      await this._loadHeatModel();
     },
 
     onLastPress: async function () {
       this.getEventBus().publish("heat", "last", {});
-      await this._loadHeatModel();
     },
 
     onRefreshButtonPress: async function (oEvent) {
@@ -84,6 +82,10 @@ sap.ui.define([
     _loadHeatModel: async function () {
       const mHeat = this.getComponentModel("heat").getData();
       await this.updateJSONModel(this.getViewModel("heatRegistrations"), `/api/heats/${mHeat.id}`, this.getView());
+    },
+
+    _onItemChanged: async function (channelId, eventId, parametersMap) {
+      await this._loadHeatModel();
     }
   });
 });

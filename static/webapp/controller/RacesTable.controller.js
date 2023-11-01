@@ -102,6 +102,7 @@ sap.ui.define([
 
     onItemChanged: function (oItem) {
       this.getComponentModel("race").setData(oItem);
+      this.getEventBus().publish("race", "itemChanged", {});
     },
 
     onFilterSearch: function (oEvent) {
@@ -122,6 +123,5 @@ sap.ui.define([
       this.setSearchFilters(aSearchFilters);
       this.applyFilters();
     }
-
   });
 });
