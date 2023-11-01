@@ -1,36 +1,35 @@
 <mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatRegistrationsTable" xmlns="sap.m" xmlns:f="sap.f"
   xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
-    <Page title="{= ${heatRegistrations>/state} >= 4 ? ${i18n>common.result} : ${i18n>common.assignment}}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
-      <content>
+    <Page title="{= ${heatRegistrations>/state} >= 4 ? ${i18n>common.result} : ${i18n>common.assignment}}" class="sapUiNoContentPadding"
+      showNavButton="true" navButtonPress="onNavBack">
+      <headerContent>
+        <Button id="firstButton" type="Transparent" icon="sap-icon://close-command-field" press="onFirstPress" tooltip="First"
+          enabled="{= ${heat>/_nav/isFirst} ? false : true }" visible="{=!${heat>/_nav/disabled}}" />
+        <Button id="previousButton" type="Transparent" icon="sap-icon://navigation-left-arrow" press="onPreviousPress" tooltip="Previous"
+          enabled="{= ${heat>/_nav/isFirst} ? false : true }" visible="{=!${heat>/_nav/disabled}}" />
+        <Button id="nextButton" type="Transparent" icon="sap-icon://navigation-right-arrow" press="onNextPress" tooltip="Next"
+          enabled="{= ${heat>/_nav/isLast} ? false : true }" visible="{=!${heat>/_nav/disabled}}" />
+        <Button id="lastButton" type="Transparent" icon="sap-icon://open-command-field" press="onLastPress" tooltip="Last"
+          enabled="{= ${heat>/_nav/isLast} ? false : true }" visible="{=!${heat>/_nav/disabled}}" />
+      </headerContent>
 
+      <content>
         <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
           <!-- DynamicPage Title -->
           <f:title>
             <f:DynamicPageTitle>
               <f:heading>
-                <Title text="{path: 'heatRegistrations>/race', formatter: '.formatter.nrRaceLabel'}, {path: 'heatRegistrations>/', formatter: '.formatter.heatLabel'}"
-                  wrapping="true" />
+                <Title wrapping="true"
+                  text="{path:'heatRegistrations>/race',formatter:'.formatter.nrRaceLabel'},{path:'heatRegistrations>/',formatter:'.formatter.heatLabel'}" />
               </f:heading>
-
               <f:expandedContent>
                 <Label text="{heatRegistrations>/race/longLabel} {heatRegistrations>/race/comment}" />
               </f:expandedContent>
-
               <f:actions>
                 <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" type="Transparent" />
               </f:actions>
-
-              <f:navigationActions>
-                <Button id="firstButton" type="Transparent" icon="sap-icon://close-command-field" press="onFirstPress" tooltip="First"
-                  enabled="{= ${heat>/_nav/isFirst} ? false : true }" visible="{=!${heat>/_nav/disabled}}" />
-                <Button id="previousButton" type="Transparent" icon="sap-icon://navigation-left-arrow" press="onPreviousPress" tooltip="Previous"
-                  enabled="{= ${heat>/_nav/isFirst} ? false : true }" visible="{=!${heat>/_nav/disabled}}" />
-                <Button id="nextButton" type="Transparent" icon="sap-icon://navigation-right-arrow" press="onNextPress" tooltip="Next"
-                  enabled="{= ${heat>/_nav/isLast} ? false : true }" visible="{=!${heat>/_nav/disabled}}" />
-                <Button id="lastButton" type="Transparent" icon="sap-icon://open-command-field" press="onLastPress" tooltip="Last"
-                  enabled="{= ${heat>/_nav/isLast} ? false : true }" visible="{=!${heat>/_nav/disabled}}" />
-              </f:navigationActions>
+              <f:navigationActions />
             </f:DynamicPageTitle>
           </f:title>
 
@@ -39,16 +38,20 @@
             <f:DynamicPageHeader>
               <layout:HorizontalLayout allowWrapping="true">
                 <layout:VerticalLayout class="sapUiMediumMarginEnd">
-                  <ObjectAttribute title="{i18n>common.time}" text="{path: 'heatRegistrations>/dateTime', formatter: '.formatter.dayTimeIsoLabel'}" />
-                  <ObjectAttribute title="{i18n>common.distance}" text="{path: 'heatRegistrations>/race', formatter: '.formatter.distanceLabel'}" />
+                  <ObjectAttribute title="{i18n>common.time}"
+                    text="{path: 'heatRegistrations>/dateTime', formatter: '.formatter.dayTimeIsoLabel'}" />
+                  <ObjectAttribute title="{i18n>common.distance}"
+                    text="{path: 'heatRegistrations>/race', formatter: '.formatter.distanceLabel'}" />
                   <ObjectAttribute title="{i18n>common.heatNr}" text="{heatRegistrations>/number}" />
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>
                   <ObjectStatus title="{i18n>common.state}" text="{path:'heatRegistrations>/',formatter:'.formatter.heatStateLabel'}"
                     state="{path:'heatRegistrations>/',formatter:'.formatter.heatStateHighlight'}" />
-                  <!-- <ObjectAttribute title="{i18n>common.seededLbl}" text="{= ${heatRegistrations>/race/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" /> -->
-                  <ObjectAttribute title="{i18n>common.refereeAbr}" text="{heatRegistrations>/referees/0/lastName}, {heatRegistrations>/referees/0/firstName}"
+                  <!-- <ObjectAttribute title="{i18n>common.seededLbl}" text="{= ${heatRegistrations>/race/seeded} ? ${i18n>common.yes} :
+                  ${i18n>common.no}}" /> -->
+                  <ObjectAttribute title="{i18n>common.refereeAbr}"
+                    text="{heatRegistrations>/referees/0/lastName}, {heatRegistrations>/referees/0/firstName}"
                     visible="{= ${heatRegistrations>/referees} !== undefined }" />
                 </layout:VerticalLayout>
               </layout:HorizontalLayout>

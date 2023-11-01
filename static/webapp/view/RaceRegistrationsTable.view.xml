@@ -5,34 +5,32 @@
     <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
     https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
     <Page title="{i18n>common.registrations}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
-      <content>
+      <headerContent>
+        <Button type="Transparent" icon="sap-icon://close-command-field" press="onFirstPress" tooltip="First"
+          enabled="{= ${race>/_nav/isFirst} ? false : true }" />
+        <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="onPreviousPress" tooltip="Previous"
+          enabled="{= ${race>/_nav/isFirst} ? false : true }" />
+        <Button type="Transparent" icon="sap-icon://navigation-right-arrow" press="onNextPress" tooltip="Next"
+          enabled="{= ${race>/_nav/isLast} ? false : true }" />
+        <Button type="Transparent" icon="sap-icon://open-command-field" press="onLastPress" tooltip="Last"
+          enabled="{= ${race>/_nav/isLast} ? false : true }" />
+      </headerContent>
 
+      <content>
         <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
           <!-- DynamicPage Title -->
           <f:title>
             <f:DynamicPageTitle>
               <f:heading>
-                <Title text="{path:'raceRegistrations>/', formatter:'.formatter.nrRaceLabel'}" wrapping="true" wrappingType="Normal" />
+                <Title text="{path:'raceRegistrations>/', formatter:'.formatter.nrRaceLabel'}" wrapping="true" />
               </f:heading>
-
               <f:expandedContent>
                 <Label text="{raceRegistrations>/longLabel} {raceRegistrations>/comment}" />
               </f:expandedContent>
-
               <f:actions>
                 <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" type="Transparent" />
               </f:actions>
-
-              <f:navigationActions>
-                <Button type="Transparent" icon="sap-icon://close-command-field" press="onFirstPress" tooltip="First"
-                  enabled="{= ${race>/_nav/isFirst} ? false : true }" />
-                <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="onPreviousPress" tooltip="Previous"
-                  enabled="{= ${race>/_nav/isFirst} ? false : true }" />
-                <Button type="Transparent" icon="sap-icon://navigation-right-arrow" press="onNextPress" tooltip="Next"
-                  enabled="{= ${race>/_nav/isLast} ? false : true }" />
-                <Button type="Transparent" icon="sap-icon://open-command-field" press="onLastPress" tooltip="Last"
-                  enabled="{= ${race>/_nav/isLast} ? false : true }" />
-              </f:navigationActions>
+              <f:navigationActions />
             </f:DynamicPageTitle>
           </f:title>
 
