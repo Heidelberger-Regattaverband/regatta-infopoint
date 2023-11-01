@@ -13,7 +13,8 @@ use tiberius::{Query, Row};
 pub struct Club {
     pub id: i32,
 
-    extern_id: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    extern_id: Option<i32>,
 
     /// The short name of the club.
     short_name: String,
@@ -93,10 +94,12 @@ impl Club {
 
 impl ToEntity<Club> for Row {
     fn to_entity(&self) -> Club {
-        let club_extern_id: i32 = self.get_column("Club_ExternID");
         let mut flag_url = None;
-        if let Some(club_flag) = ClubFlag::get(&club_extern_id) {
-            flag_url = Some(club_flag.flag_url.clone());
+        let club_extern_id = self.try_get_column("Club_ExternID");
+        if let Some(extern_id) = club_extern_id {
+            if let Some(club_flag) = ClubFlag::get(&extern_id) {
+                flag_url = Some(club_flag.flag_url.clone());
+            }
         }
         Club {
             id: self.get_column("Club_ID"),
