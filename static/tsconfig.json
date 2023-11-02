@@ -14,7 +14,8 @@
         "webapp/*"
       ]
     },
-    "composite": true
+    "composite": true,
+    "noImplicitAny": true
   },
   "include": [
     "./webapp/**/*"
