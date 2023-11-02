@@ -1,13 +1,19 @@
 import Device from "sap/ui/Device";
 import UIComponent from "sap/ui/core/UIComponent";
 import JSONModel from "sap/ui/model/json/JSONModel";
+
 /**
- * @namespace ui5.typescript.helloworld
+ * @namespace de.regatta_hd.infoportal
  */
 export default class Component extends UIComponent {
     private regattaModel: JSONModel;
     private filterModel: JSONModel;
     private contentDensityClass: String;
+
+    public static metadata = {
+        manifest: "json",
+        interfaces: ["sap.ui.core.IAsyncContentCreation"],
+    };
 
     public init(): void {
         super.init();

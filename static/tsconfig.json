@@ -10,7 +10,7 @@
     "rootDir": "./webapp",
     "baseUrl": "./",
     "paths": {
-      "ui5/typescript/helloworld/*": [
+      "de/regatta_hd/*": [
         "webapp/*"
       ]
     },
