@@ -84,7 +84,7 @@ impl<'a> Server<'a> {
                         .service(rest_api::logout),
                 )
                 .service(
-                    Files::new(INFOPORTAL, "./static/webapp".to_owned())
+                    Files::new(INFOPORTAL, "./static/dist".to_owned())
                         .index_file("index.html")
                         .use_last_modified(true)
                         .use_etag(true)
