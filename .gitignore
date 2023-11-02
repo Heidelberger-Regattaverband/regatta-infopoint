@@ -13,3 +13,6 @@ Component-preload.js
 .vscode
 .DS_Store
 .env
+
+dist
+tsconfig.tsbuildinfo

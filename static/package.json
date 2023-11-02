@@ -1,6 +1,12 @@
 {
+  "name": "infoportal",
+  "version": "0.1.0",
   "devDependencies": {
+    "@types/openui5": "^1.119.1",
+    "@ui5/cli": "^3.7.1",
     "grunt": "^1.6.1",
-    "grunt-openui5": "^0.18.4"
+    "grunt-openui5": "^0.18.4",
+    "typescript": "^5.2.2",
+    "ui5-tooling-transpile": "^3.2.7"
   }
 }
