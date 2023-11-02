@@ -11,8 +11,6 @@ export default class Component extends UIComponent {
 
     public init(): void {
         super.init();
-        // call the init function of the parent
-        //   UIComponent.prototype.init.apply(this, arguments);
 
         // create the views based on the url/hash
         super.getRouter().initialize();
