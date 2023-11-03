@@ -8,7 +8,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 export default class Component extends UIComponent {
     private regattaModel: JSONModel;
     private filterModel: JSONModel;
-    private contentDensityClass: String;
+    private contentDensityClass: string;
 
     public static metadata = {
         manifest: "json",
@@ -56,7 +56,7 @@ export default class Component extends UIComponent {
         });
     }
 
-    public getContentDensityClass(): String {
+    public getContentDensityClass(): string {
         if (!this.contentDensityClass) {
             if (!Device.support.touch) {
                 this.contentDensityClass = "sapUiSizeCompact";

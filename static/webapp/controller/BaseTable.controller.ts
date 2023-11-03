@@ -82,9 +82,11 @@ export default class BaseTable extends BaseController {
       dialogPromise = Fragment.load({
         id: this.getView()?.getId(), name: dialogFragmentName, controller: this
       }).then(function (dialog: Control | Control[]) {
-        dialog.addStyleClass((that.getOwnerComponent() as MyComponent).getContentDensityClass());
-        that.getView()?.addDependent(dialog);
-        return dialog;
+        if (dialog instanceof Control) {
+          dialog.addStyleClass((that.getOwnerComponent() as MyComponent).getContentDensityClass());
+          that.getView()?.addDependent(dialog);
+          return dialog;
+        }
       }.bind(that));
       this.viewSettingsDialogs.set(dialogFragmentName, dialogPromise);
     }
