@@ -1,5 +1,5 @@
 sap.ui.define([
-  "de/regatta_hd/infopoint/controller/BaseTable.controller",
+  "de/regatta_hd/infoportal/controller/BaseTable.controller",
   "sap/ui/model/json/JSONModel",
   "sap/ui/model/Filter",
   "sap/ui/model/FilterOperator",

@@ -1,5 +1,5 @@
 sap.ui.define([
-  "de/regatta_hd/infopoint/controller/BaseTable.controller",
+  "de/regatta_hd/infoportal/controller/BaseTable.controller",
   "sap/ui/model/Filter",
   "sap/ui/model/FilterOperator",
   "sap/m/MessageToast",
@@ -9,7 +9,7 @@ sap.ui.define([
   function (BaseTableController, Filter, FilterOperator, MessageToast, ViewSettingsItem, ViewSettingsFilterItem, Formatter) {
     "use strict";
 
-    return BaseTableController.extend("de.regatta_hd.infopoint.controller.HeatsTable", {
+    return BaseTableController.extend("de.regatta_hd.infoportal.controller.HeatsTable", {
 
       formatter: Formatter,
 
