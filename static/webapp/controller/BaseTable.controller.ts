@@ -1,6 +1,5 @@
 import Table from "sap/m/Table";
 import BaseController from "./Base.controller";
-import Model from "sap/ui/model/Model";
 import Filter from "sap/ui/model/Filter";
 import ViewSettingsDialog from "sap/m/ViewSettingsDialog";
 import Fragment from "sap/ui/core/Fragment";
@@ -9,7 +8,6 @@ import ListBinding from "sap/ui/model/ListBinding";
 import ListItemBase from "sap/m/ListItemBase";
 import Event from "sap/ui/base/Event";
 import MyComponent from "de/regatta_hd/Component";
-import UI5Element from "sap/ui/core/Element";
 import Control from "sap/ui/core/Control";
 
 /**
@@ -93,12 +91,12 @@ export default class BaseTable extends BaseController {
     return dialogPromise;
   }
 
-  onHandleFilterDialogConfirm(oEvent: Event): void {
-    const mParams = oEvent.getParameters();
+  onHandleFilterDialogConfirm(event: Event): void {
+    const params = event.getParameters();
     this.filters = [];
     const that = this;
 
-    mParams.filterItems.forEach(function (oItem) {
+    params.filterItems.forEach(function (oItem) {
       const aCustomData = oItem.getCustomData();
       if (aCustomData) {
         aCustomData.forEach(function (oData) {
@@ -115,7 +113,7 @@ export default class BaseTable extends BaseController {
     // apply filters
     this.applyFilters();
 
-    this.updateFilterBar(mParams.filterString);
+    this.updateFilterBar(params.filterString);
   }
 
   private updateFilterBar(sText: string): void {
@@ -157,7 +155,7 @@ export default class BaseTable extends BaseController {
     this.table.setSelectedItem(items[index]);
 
     // gets the selected item in a generic way
-    const item = this.table.getSelectedItem().getBindingContext(this.bindingModel).getObject();
+    const item = this.table.getSelectedItem()?.getBindingContext(this.bindingModel)?.getObject();
 
     // store navigation meta information in selected item
     item._nav = { isFirst: index == 0, isLast: index == items.length - 1 };
