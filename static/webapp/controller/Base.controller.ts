@@ -48,8 +48,7 @@ export default class BaseController extends Controller {
    * @returns {sap.ui.core.routing.Router} the router for this component
    */
   public getRouter(): Router {
-    const owner = super.getOwnerComponent() as UIComponent;
-    return owner?.getRouter();
+    return (super.getOwnerComponent() as UIComponent).getRouter();
   }
 
   /**
@@ -76,12 +75,11 @@ export default class BaseController extends Controller {
    * @returns {sap.base.i18n.ResourceBundle} the resourceModel of the component
    */
   public getResourceBundle(): ResourceBundle | Promise<ResourceBundle> {
-    const model: ResourceModel = this.getOwnerComponent()?.getModel("i18n") as ResourceModel;
-    return model?.getResourceBundle();
+    return (this.getOwnerComponent()?.getModel("i18n") as ResourceModel)?.getResourceBundle();
   }
 
   public navBack(target: string): void {
-    const previousHash = History.getInstance().getPreviousHash();
+    var previousHash = History.getInstance().getPreviousHash();
     if (previousHash) {
       window.history.go(-1);
     } else {
@@ -98,12 +96,11 @@ export default class BaseController extends Controller {
   }
 
   public getRegattaId(): int {
-    const owner = super.getOwnerComponent() as MyComponent;
-    return owner.getRegattaId();
+    return (super.getOwnerComponent() as MyComponent).getRegattaId();
   }
 
   public async getJSONModel(url: string, control: Control): Promise<JSONModel> {
-    const model = new JSONModel();
+    const model: JSONModel = new JSONModel();
     await this.updateJSONModel(model, url, control);
     return model;
   }

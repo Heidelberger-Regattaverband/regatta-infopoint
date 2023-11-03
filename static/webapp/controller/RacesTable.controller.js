@@ -10,7 +10,7 @@ sap.ui.define([
 ], function (BaseTableController, JSONModel, Filter, FilterOperator, MessageToast, ViewSettingsItem, ViewSettingsFilterItem, Formatter) {
   "use strict";
 
-  return BaseTableController.extend("de.regatta_hd.infopoint.controller.RacesTable", {
+  return BaseTableController.extend("de.regatta_hd.infoportal.controller.RacesTable", {
 
     formatter: Formatter,
 
@@ -19,7 +19,7 @@ sap.ui.define([
 
       this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-      this._oRacesModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/races`, this.oTable);
+      this._oRacesModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/races`, this.table);
       this.setViewModel(this._oRacesModel, "races");
 
       this.getRouter().getRoute("races").attachMatched(async (_) => await this._loadRacesModel(), this);
@@ -60,8 +60,8 @@ sap.ui.define([
         const oBindingCtx = oSelectedItem.getBindingContext("races");
         const oRace = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
 
-        const iIndex = this.oTable.indexOfItem(oSelectedItem);
-        const iCount = this.oTable.getItems().length;
+        const iIndex = this.table.indexOfItem(oSelectedItem);
+        const iCount = this.table.getItems().length;
         // store navigation meta information in selected item
         oRace._nav = { isFirst: iIndex == 0, isLast: iIndex == iCount - 1 };
 
@@ -73,7 +73,7 @@ sap.ui.define([
     onNavBack: function () {
       this.navBack("startpage");
       // reduce table growing threshold to improve performance next time table is shown
-      this.oTable.setGrowingThreshold(30);
+      this.table.setGrowingThreshold(30);
     },
 
     onFilterButtonPress: async function (oEvent) {
@@ -97,7 +97,7 @@ sap.ui.define([
     },
 
     _loadRacesModel: async function () {
-      await this.updateJSONModel(this._oRacesModel, `/api/regattas/${this.getRegattaId()}/races`, this.oTable);
+      await this.updateJSONModel(this._oRacesModel, `/api/regattas/${this.getRegattaId()}/races`, this.table);
     },
 
     onItemChanged: function (oItem) {
