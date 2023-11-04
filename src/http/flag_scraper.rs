@@ -2,6 +2,8 @@ use log::debug;
 use scraper::{Html, Selector};
 use std::{collections::HashMap, fs, sync::OnceLock, time::Instant};
 
+use crate::config::Config;
+
 const BASE_URL: &str = "https://verwaltung.rudern.de";
 
 static CLUB_FLAGS: OnceLock<HashMap<i32, ClubFlag>> = OnceLock::new();
@@ -21,7 +23,7 @@ impl ClubFlag {
 fn load_club_flags() -> HashMap<i32, ClubFlag> {
     let start = Instant::now();
 
-    let body: String = fs::read_to_string("static/webapp/flags.html").unwrap();
+    let body: String = fs::read_to_string(Config::get().static_content_path.clone() + "/flags.html").unwrap();
     let document = Html::parse_document(&body);
     let a_selector = Selector::parse(r#"a"#).unwrap();
     let img_selector = Selector::parse(r#"img"#).unwrap();
