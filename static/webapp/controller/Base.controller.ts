@@ -16,6 +16,7 @@ import MyComponent from "de/regatta_hd/Component";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class BaseController extends Controller {
+
   /**
    * Convenience method for accessing the event bus for this component.
    * @returns {sap.ui.core.EventBus} the event bus for this component
@@ -105,7 +106,7 @@ export default class BaseController extends Controller {
     return model;
   }
 
-  public async updateJSONModel(model: JSONModel, url: string, control: Control) {
+  public async updateJSONModel(model: JSONModel, url: string, control: Control): Promise<void> {
     if (control) {
       control.setBusy(true);
     }

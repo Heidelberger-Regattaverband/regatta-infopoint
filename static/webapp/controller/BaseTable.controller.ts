@@ -8,7 +8,6 @@ import ListBinding from "sap/ui/model/ListBinding";
 import ListItemBase from "sap/m/ListItemBase";
 import Event from "sap/ui/base/Event";
 import MyComponent from "de/regatta_hd/Component";
-import Control from "sap/ui/core/Control";
 import FilterOperator from "sap/ui/model/FilterOperator";
 
 /**
@@ -88,7 +87,7 @@ export default class BaseTable extends BaseController {
   }
 
   onHandleFilterDialogConfirm(event: Event): void {
-    const params = event.getParameters();
+    const params: Record<string, any> = event.getParameters() as Record<string, any>;
     this.filters = [];
     const that = this;
 
@@ -102,8 +101,8 @@ export default class BaseTable extends BaseController {
           }
         }.bind(that));
       }
-      const oFilter = that.createFilter(oItem.getKey());
-      that.filters.push(oFilter);
+      const filter = that.createFilter(oItem.getKey());
+      that.filters.push(filter);
     }.bind(this));
 
     // apply filters
@@ -125,10 +124,9 @@ export default class BaseTable extends BaseController {
     const split: string[] = value.split("___");
     const path: string = split[0];
     const operator: FilterOperator = split[1] as FilterOperator;
-    const value1 = split[2] === 'true' || (split[2] === 'false' ? false : split[2]);
+    const value1: string | boolean = split[2] === 'true' || (split[2] === 'false' ? false : split[2]);
     // sValue2 = aSplit[3],
-    const filter: Filter = new Filter(path, operator, value1);
-    return filter;
+    return new Filter(path, operator, value1);
   }
 
   setSearchFilters(searchFilters: Filter[]): void {
@@ -146,12 +144,12 @@ export default class BaseTable extends BaseController {
     (this.table.getBinding("items") as ListBinding).filter(allFilters);
   }
 
-  private setCurrentItem(index: int) {
+  private setCurrentItem(index: int): void {
     const items: ListItemBase[] = this.table.getItems();
     this.table.setSelectedItem(items[index]);
 
     // gets the selected item in a generic way
-    const item = this.table.getSelectedItem()?.getBindingContext(this.bindingModel)?.getObject();
+    const item: any = this.table.getSelectedItem()?.getBindingContext(this.bindingModel)?.getObject();
 
     // store navigation meta information in selected item
     item._nav = { isFirst: index == 0, isLast: index == items.length - 1 };

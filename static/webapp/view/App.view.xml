@@ -1,5 +1,5 @@
 <!-- see: https://stackoverflow.com/a/47049779 -->
-<mvc:View controllerName="de.regatta_hd.infopoint.controller.App" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" height="100%"
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.App" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" height="100%"
   displayBlock="true">
   <mvc:content>
 
