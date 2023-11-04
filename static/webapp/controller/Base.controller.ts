@@ -100,19 +100,20 @@ export default class BaseController extends Controller {
     return (super.getOwnerComponent() as MyComponent).getRegattaId();
   }
 
-  public async getJSONModel(url: string, control: Control): Promise<JSONModel> {
+  public async getJSONModel(url: string, control?: Control): Promise<JSONModel> {
     const model: JSONModel = new JSONModel();
     await this.updateJSONModel(model, url, control);
     return model;
   }
 
-  public async updateJSONModel(model: JSONModel, url: string, control: Control): Promise<void> {
-    if (control) {
-      control.setBusy(true);
-    }
+  public async createJSONModel(url: string, control?: Control): Promise<JSONModel> {
+    return await this.updateJSONModel(new JSONModel(), url, control);
+  }
+
+  public async updateJSONModel(model: JSONModel, url: string, control?: Control): Promise<JSONModel> {
+    control?.setBusy(true);
     await model.loadData(url);
-    if (control) {
-      control.setBusy(false);
-    }
+    control?.setBusy(false);
+    return model;
   }
 }
