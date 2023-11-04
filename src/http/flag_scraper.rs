@@ -22,7 +22,7 @@ impl ClubFlag {
 fn load_club_flags() -> HashMap<i32, ClubFlag> {
     let start = Instant::now();
 
-    let document = Html::parse_document(&FLAGS_CONTENT);
+    let document = Html::parse_document(FLAGS_CONTENT);
     let a_selector = Selector::parse(r#"a"#).unwrap();
     let img_selector = Selector::parse(r#"img"#).unwrap();
     let mut club_flags = HashMap::new();
