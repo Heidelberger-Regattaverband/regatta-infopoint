@@ -1,6 +1,18 @@
 {
+  "name": "infoportal",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "ui5 build --clean-dest",
+    "build:opt": "ui5 build self-contained --clean-dest --all",
+    "start": "ui5 serve --port 8080 -o index.html",
+    "start:dist": "ui5 serve  --port 8080 -o index.html --config ui5-dist.yaml",
+    "ts-typecheck": "tsc --noEmit",
+    "lint": "eslint webapp"
+  },
   "devDependencies": {
-    "grunt": "^1.6.1",
-    "grunt-openui5": "^0.18.4"
+    "@types/openui5": "^1.119.1",
+    "@ui5/cli": "^3.7.1",
+    "typescript": "^5.2.2",
+    "ui5-tooling-transpile": "^3.2.7"
   }
 }

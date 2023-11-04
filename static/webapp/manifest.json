@@ -2,7 +2,7 @@
   "_version": "1.53.0",
   "start_url": "index.html",
   "sap.app": {
-    "id": "de.regatta_hd.infopoint",
+    "id": "de.regatta_hd.infoportal",
     "type": "application",
     "i18n": "i18n/i18n.properties",
     "title": "{{app.title}}",

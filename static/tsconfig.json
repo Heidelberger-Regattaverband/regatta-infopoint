@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "es2022",
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "allowJs": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
+    "rootDir": "./webapp",
+    "baseUrl": "./",
+    "paths": {
+      "de/regatta_hd/*": [
+        "webapp/*"
+      ]
+    },
+    "composite": true,
+    "noImplicitAny": true
+  },
+  "include": [
+    "./webapp/**/*"
+  ]
+}

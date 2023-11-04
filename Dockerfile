@@ -9,18 +9,16 @@ ARG RUST_VERSION=1.73.0
 FROM rust:${RUST_VERSION} AS builder
 LABEL maintainer="markus@ofterdinger.de"
 
-ARG NODE_VERSION=18
-
 # see https://github.com/hadolint/hadolint/wiki/DL4006
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN apt-get upgrade && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
   && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
-  && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
-  && apt-get update && apt-get install -y --no-install-recommends nodejs sudo \
+  && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list \
+  && apt-get update && apt-get install -y --no-install-recommends nodejs \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
-  && rustup update stable && sudo npm install -g grunt-cli
+  && rustup update stable
 
 WORKDIR /code
 
@@ -28,15 +26,15 @@ WORKDIR /code
 COPY Cargo.toml Cargo.toml
 COPY Cargo.lock Cargo.lock
 COPY src/ src/
-
-RUN cargo fetch
-
 COPY static/ static/
 
 # build rust application
-RUN cargo build --release \
-  && npm install --prefix ./static/ \
-  && grunt --gruntfile ./static/Gruntfile.js
+RUN cargo fetch && cargo build --release
+
+WORKDIR /code/static
+
+# build UI5 application
+RUN npm install && npx ui5 build --clean-dest
 
 ###############
 ## run stage ##
@@ -50,13 +48,12 @@ WORKDIR /app
 
 # copy server binary from build stage
 COPY --from=builder /code/target/release/infoportal infoportal
-COPY --from=builder /code/static/webapp/ static/webapp
+COPY --from=builder /code/static/dist/ static/dist
 
 # set user to non-root unless root is required for your app
 USER 1001
 
 EXPOSE 8080
 EXPOSE 8443
-VOLUME [ "/data" ]
 
 CMD ["/app/infoportal"]

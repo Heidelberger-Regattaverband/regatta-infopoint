@@ -1,5 +1,5 @@
 sap.ui.define([
-  "de/regatta_hd/infopoint/controller/BaseTable.controller",
+  "de/regatta_hd/infoportal/controller/BaseTable.controller",
   "sap/ui/model/Filter",
   "sap/ui/model/FilterOperator",
   "sap/m/MessageToast",
@@ -9,7 +9,7 @@ sap.ui.define([
   function (BaseTableController, Filter, FilterOperator, MessageToast, ViewSettingsItem, ViewSettingsFilterItem, Formatter) {
     "use strict";
 
-    return BaseTableController.extend("de.regatta_hd.infopoint.controller.HeatsTable", {
+    return BaseTableController.extend("de.regatta_hd.infoportal.controller.HeatsTable", {
 
       formatter: Formatter,
 
@@ -18,7 +18,7 @@ sap.ui.define([
 
         this.getView().addStyleClass(this.getOwnerComponent().getContentDensityClass());
 
-        this._oHeatsModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/heats`, this.oTable);
+        this._oHeatsModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/heats`, this.table);
         this.setViewModel(this._oHeatsModel, "heats");
 
         this.getRouter().getRoute("heats").attachMatched(async (_) => await this._loadHeatsModel(), this);
@@ -75,8 +75,8 @@ sap.ui.define([
           const oBindingCtx = oSelectedItem.getBindingContext("heats");
           const oHeat = oBindingCtx.getModel().getProperty(oBindingCtx.getPath());
 
-          const iIndex = this.oTable.indexOfItem(oSelectedItem);
-          const iCount = this.oTable.getItems().length;
+          const iIndex = this.table.indexOfItem(oSelectedItem);
+          const iCount = this.table.getItems().length;
           // store navigation meta information in selected item
           oHeat._nav = { isFirst: iIndex == 0, isLast: iIndex == iCount - 1 };
 
@@ -89,7 +89,7 @@ sap.ui.define([
         await this.navBack("startpage");
 
         // reduce table growing threshold to improve performance next time table is shown
-        this.oTable.setGrowingThreshold(30);
+        this.table.setGrowingThreshold(30);
       },
 
       onRefreshButtonPress: async function (oEvent) {
@@ -101,7 +101,7 @@ sap.ui.define([
       },
 
       _loadHeatsModel: async function () {
-        await this.updateJSONModel(this._oHeatsModel, `/api/regattas/${this.getRegattaId()}/heats`, this.oTable);
+        await this.updateJSONModel(this._oHeatsModel, `/api/regattas/${this.getRegattaId()}/heats`, this.table);
       },
 
       onItemChanged: function (oItem) {

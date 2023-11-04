@@ -49,6 +49,7 @@ impl<'a> Server<'a> {
         let aquarius = create_app_data().await;
         let (rl_max_requests, rl_interval) = self.config.get_rate_limiter_config();
         let secret_key = Self::get_secret_key();
+        let static_content_path = self.config.static_content_path.clone();
 
         let worker_count = Arc::new(Mutex::new(0));
         let prometheus = Self::get_prometeus();
@@ -84,7 +85,7 @@ impl<'a> Server<'a> {
                         .service(rest_api::logout),
                 )
                 .service(
-                    Files::new(INFOPORTAL, "./static/webapp".to_owned())
+                    Files::new(INFOPORTAL, static_content_path.clone())
                         .index_file("index.html")
                         .use_last_modified(true)
                         .use_etag(true)

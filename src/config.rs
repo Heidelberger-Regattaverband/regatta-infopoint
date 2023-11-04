@@ -26,6 +26,7 @@ pub struct Config {
     pub db_pool_min_idle: u32,
     pub active_regatta_id: Option<i32>,
     pub cache_ttl: u64,
+    pub static_content_path: String,
 }
 
 impl Config {
@@ -184,6 +185,7 @@ impl Config {
             db_pool_min_idle,
             active_regatta_id,
             cache_ttl,
+            static_content_path: "./static/dist".to_owned(),
         }
     }
 }

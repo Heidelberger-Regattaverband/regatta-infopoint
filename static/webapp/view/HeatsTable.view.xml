@@ -1,4 +1,4 @@
-<mvc:View controllerName="de.regatta_hd.infopoint.controller.HeatsTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core">
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.HeatsTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core">
   <mvc:content>
 
     <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
