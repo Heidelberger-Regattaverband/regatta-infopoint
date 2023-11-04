@@ -48,11 +48,11 @@ export default class Component extends UIComponent {
         // set initial race model, required for navigation over races
         super.setModel(new JSONModel(), "race");
 
-        window.addEventListener('beforeunload', (oEvent) => {
+        window.addEventListener('beforeunload', (event: BeforeUnloadEvent) => {
             // Cancel the event as stated by the standard.
-            oEvent.preventDefault();
+            event.preventDefault();
             // Chrome requires returnValue to be set.
-            oEvent.returnValue = '';
+            event.returnValue = '';
         });
     }
 
