@@ -34,8 +34,7 @@ COPY static/ static/
 RUN cargo fetch && cargo build --release
 
 WORKDIR /code/static
-RUN npm install --prefix \
-  && npx ui5 build --clean-dest
+RUN npm install && npx ui5 build --clean-dest
 
 ###############
 ## run stage ##
