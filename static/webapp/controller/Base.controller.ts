@@ -58,7 +58,7 @@ export default class BaseController extends Controller {
    * @returns {sap.ui.model.Model} the model instance
    */
   public getViewModel(name: string): Model | undefined {
-    return this.getView()?.getModel(name);
+    return super.getView()?.getModel(name);
   }
 
   /**
@@ -76,11 +76,11 @@ export default class BaseController extends Controller {
    * @returns {sap.base.i18n.ResourceBundle} the resourceModel of the component
    */
   public getResourceBundle(): ResourceBundle | Promise<ResourceBundle> {
-    return (this.getOwnerComponent()?.getModel("i18n") as ResourceModel)?.getResourceBundle();
+    return (super.getOwnerComponent()?.getModel("i18n") as ResourceModel)?.getResourceBundle();
   }
 
   public navBack(target: string): void {
-    var previousHash = History.getInstance().getPreviousHash();
+    const previousHash: string | undefined = History.getInstance().getPreviousHash();
     if (previousHash) {
       window.history.go(-1);
     } else {
@@ -100,6 +100,9 @@ export default class BaseController extends Controller {
     return (super.getOwnerComponent() as MyComponent).getRegattaId();
   }
 
+  /**
+   * @deprecated
+   */
   public async getJSONModel(url: string, control?: Control): Promise<JSONModel> {
     const model: JSONModel = new JSONModel();
     await this.updateJSONModel(model, url, control);

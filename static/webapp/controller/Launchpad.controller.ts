@@ -6,6 +6,8 @@ import Event from "sap/ui/base/Event";
 import MessageToast from "sap/m/MessageToast";
 import ResponsivePopover from "sap/m/ResponsivePopover";
 import Fragment from "sap/ui/core/Fragment";
+import * as $ from "jquery";
+import Control from "sap/ui/core/Control";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -18,10 +20,10 @@ export default class Launchpad extends BaseController {
   private popoverPromise?: Promise<ResponsivePopover>;
 
   onInit(): void {
-    this.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
+    super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
 
     this.credentialsModel = new JSONModel({ username: "", password: "" });
-    this.setViewModel(this.credentialsModel, "credentials");
+    super.setViewModel(this.credentialsModel, "credentials");
     this.getIdentity();
   }
 
@@ -50,11 +52,11 @@ export default class Launchpad extends BaseController {
   }
 
   onUserSubmit(event: Event): void {
-    this.byId("password")?.focus();
+    super.byId("password")?.focus();
   }
 
   onPasswordSubmit(event: Event): void {
-    this.byId("login")?.focus();
+    super.byId("login")?.focus();
     // perform login if return is pressed in password input field
     this.onLoginPress(event);
   }
@@ -69,7 +71,7 @@ export default class Launchpad extends BaseController {
   }
 
   onShowLoginPress(event: Event): void {
-    const eventSource = event.getSource();
+    const eventSource: Control = event.getSource();
     const that = this;
 
     if (!this.isAuthenticated()) {
@@ -83,19 +85,19 @@ export default class Launchpad extends BaseController {
           // load fragment ...
           this.popoverPromise = Fragment.load({
             id: this.getView()?.getId(), name: "de.regatta_hd.infoportal.view.LoginPopover", controller: this
-          }).then(function (popover: any) {
+          }).then((popover: any) => {
             // ... and initialize
             that.getView()?.addDependent(popover);
             popover.addStyleClass((that.getOwnerComponent() as MyComponent).getContentDensityClass());
             return popover;
-          }.bind(this));
+          });
         }
 
         // finish loading of fragment and open it
-        this.popoverPromise.then(function (oPopover: any) {
-          that.popover = oPopover;
-          oPopover.openBy(eventSource);
-        }.bind(this));
+        this.popoverPromise.then((popover: ResponsivePopover) => {
+          that.popover = popover;
+          popover.openBy(eventSource);
+        });
       }
     } else {
       this.logout();
@@ -149,7 +151,7 @@ export default class Launchpad extends BaseController {
         that.updateIdentity(true, result.username);
         that.credentialsModel.setProperty("/username", result.username);
       }.bind(this),
-      error: function (mResult: any) {
+      error: function (result: any) {
         that.updateIdentity(false, "");
       }.bind(this)
     });

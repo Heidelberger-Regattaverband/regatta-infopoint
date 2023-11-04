@@ -15,12 +15,12 @@ export default class Statistics extends BaseController {
   private registrationsList?: Control;
 
   onInit(): void {
-    this.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
+    super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
 
-    this.getRouter()?.getRoute("statistics")?.attachMatched(async (_) => await this.loadStatistics(), this);
+    super.getRouter()?.getRoute("statistics")?.attachMatched(async (_) => await this.loadStatistics(), this);
 
     this.statisticsModel = new JSONModel();
-    this.setViewModel(this.statisticsModel, "statistics");
+    super.setViewModel(this.statisticsModel, "statistics");
 
     this.registrationsList = this.getView()?.byId("registrationsList") as Control;
     this.racesList = this.getView()?.byId("racesList") as Control;
@@ -40,7 +40,7 @@ export default class Statistics extends BaseController {
     this.setBusy(true);
 
     // load statistic data from backend
-    const dataLoader: JSONModel = await this.getJSONModel(`/api/regattas/${this.getRegattaId()}/statistics`, undefined);
+    const dataLoader: JSONModel = await super.createJSONModel(`/api/regattas/${this.getRegattaId()}/statistics`, undefined);
     const statistics = dataLoader.getData();
 
     // transform statistic data into human readable format

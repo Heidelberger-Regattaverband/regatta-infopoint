@@ -9,6 +9,7 @@
     "strictPropertyInitialization": false,
     "strictFunctionTypes": true,
     "strictNullChecks": true,
+    "alwaysStrict": true,
     "rootDir": "./webapp",
     "baseUrl": "./",
     "paths": {
