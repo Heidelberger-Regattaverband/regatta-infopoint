@@ -25,7 +25,7 @@
   },
   "sap.ui5": {
     "rootView": {
-      "viewName": "de.regatta_hd.infopoint.view.App",
+      "viewName": "de.regatta_hd.infoportal.view.App",
       "type": "XML",
       "id": "app",
       "async": true
@@ -43,7 +43,7 @@
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
-          "bundleName": "de.regatta_hd.infopoint.i18n.i18n",
+          "bundleName": "de.regatta_hd.infoportal.i18n.i18n",
           "supportedLocales": [
             "de",
             "en"

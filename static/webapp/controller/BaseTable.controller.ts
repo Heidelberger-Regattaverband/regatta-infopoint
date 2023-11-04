@@ -91,17 +91,17 @@ export default class BaseTable extends BaseController {
     this.filters = [];
     const that = this;
 
-    params.filterItems.forEach(function (oItem) {
-      const aCustomData = oItem.getCustomData();
-      if (aCustomData) {
-        aCustomData.forEach(function (oData) {
-          if (oData.getKey() == "filter") {
-            const oFilter = that.createFilter(oData.getValue());
+    params.filterItems.forEach(function (filterItem: any) {
+      const customData = filterItem.getCustomData();
+      if (customData) {
+        customData.forEach(function (data: any) {
+          if (data.getKey() == "filter") {
+            const oFilter = that.createFilter(data.getValue());
             that.filters.push(oFilter);
           }
         }.bind(that));
       }
-      const filter = that.createFilter(oItem.getKey());
+      const filter = that.createFilter(filterItem.getKey());
       that.filters.push(filter);
     }.bind(this));
 

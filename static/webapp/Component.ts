@@ -32,15 +32,15 @@ export default class Component extends UIComponent {
         super.setModel(this.filterModel, "filters");
 
         // set device model
-        const oDeviceModel = new JSONModel(Device);
-        oDeviceModel.setDefaultBindingMode("OneWay");
-        super.setModel(oDeviceModel, "device");
+        const deviceModel = new JSONModel(Device);
+        deviceModel.setDefaultBindingMode("OneWay");
+        super.setModel(deviceModel, "device");
 
-        const oUserModel = new JSONModel({
+        const identityModel = new JSONModel({
             authenticated: false, username: "anonymous", roles: []
         });
-        oUserModel.setDefaultBindingMode("OneWay");
-        super.setModel(oUserModel, "identity");
+        identityModel.setDefaultBindingMode("OneWay");
+        super.setModel(identityModel, "identity");
 
         // set initial heat model, required for navigation over heats
         super.setModel(new JSONModel(), "heat");
