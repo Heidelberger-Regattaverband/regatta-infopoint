@@ -9,6 +9,7 @@ import ListItemBase from "sap/m/ListItemBase";
 import Event from "sap/ui/base/Event";
 import MyComponent from "de/regatta_hd/Component";
 import Control from "sap/ui/core/Control";
+import FilterOperator from "sap/ui/model/FilterOperator";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -19,11 +20,11 @@ export default class BaseTable extends BaseController {
   private filters: Filter[];
   private searchFilters: Filter[];
   private bindingModel: string;
-  private viewSettingsDialogs: Map<string, Promise<ViewSettingsDialog>>;
+  private viewSettingsDialogs: Map<string, ViewSettingsDialog>;
 
   public init(table: Table, channelId: string): void {
     // Keeps reference to any of the created sap.m.ViewSettingsDialog-s in this sample
-    this.viewSettingsDialogs = new Map<string, Promise<ViewSettingsDialog>>();
+    this.viewSettingsDialogs = new Map<string, ViewSettingsDialog>();
 
     this.table = table;
     this.filters = [];
@@ -72,23 +73,18 @@ export default class BaseTable extends BaseController {
     }
   }
 
-  getViewSettingsDialog(dialogFragmentName: string): Promise<ViewSettingsDialog> {
-    let dialogPromise: Promise<ViewSettingsDialog> = this.viewSettingsDialogs.get(dialogFragmentName)!;
-    const that = this;
+  async getViewSettingsDialog(dialogFragmentName: string): Promise<ViewSettingsDialog> {
+    let dialog: ViewSettingsDialog = this.viewSettingsDialogs.get(dialogFragmentName)!;
 
-    if (!dialogPromise) {
-      dialogPromise = Fragment.load({
+    if (!dialog) {
+      dialog = await Fragment.load({
         id: this.getView()?.getId(), name: dialogFragmentName, controller: this
-      }).then(function (dialog: Control | Control[]) {
-        if (dialog instanceof Control) {
-          dialog.addStyleClass((that.getOwnerComponent() as MyComponent).getContentDensityClass());
-          that.getView()?.addDependent(dialog);
-          return dialog;
-        }
-      }.bind(that));
-      this.viewSettingsDialogs.set(dialogFragmentName, dialogPromise);
+      }) as ViewSettingsDialog;
+      dialog.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
+      this.getView()?.addDependent(dialog);
+      this.viewSettingsDialogs.set(dialogFragmentName, dialog);
     }
-    return dialogPromise;
+    return dialog;
   }
 
   onHandleFilterDialogConfirm(event: Event): void {
@@ -128,10 +124,10 @@ export default class BaseTable extends BaseController {
   private createFilter(value: string): Filter {
     const split: string[] = value.split("___");
     const path: string = split[0];
-    const operator: string = split[1];
-    const sValue1 = split[2] === 'true' || (split[2] === 'false' ? false : split[2]);
+    const operator: FilterOperator = split[1] as FilterOperator;
+    const value1 = split[2] === 'true' || (split[2] === 'false' ? false : split[2]);
     // sValue2 = aSplit[3],
-    const filter: Filter = new Filter(path, operator, sValue1);
+    const filter: Filter = new Filter(path, operator, value1);
     return filter;
   }
 
