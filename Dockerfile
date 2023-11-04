@@ -9,8 +9,6 @@ ARG RUST_VERSION=1.73.0
 FROM rust:${RUST_VERSION} AS builder
 LABEL maintainer="markus@ofterdinger.de"
 
-ARG NODE_VERSION=18
-
 # see https://github.com/hadolint/hadolint/wiki/DL4006
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -34,6 +32,8 @@ COPY static/ static/
 RUN cargo fetch && cargo build --release
 
 WORKDIR /code/static
+
+# build UI5 application
 RUN npm install && npx ui5 build --clean-dest
 
 ###############
@@ -55,6 +55,5 @@ USER 1001
 
 EXPOSE 8080
 EXPOSE 8443
-VOLUME [ "/data" ]
 
 CMD ["/app/infoportal"]
