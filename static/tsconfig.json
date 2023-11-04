@@ -7,6 +7,8 @@
     "allowJs": true,
     "strict": true,
     "strictPropertyInitialization": false,
+    "strictFunctionTypes": true,
+    "strictNullChecks": true,
     "rootDir": "./webapp",
     "baseUrl": "./",
     "paths": {
