@@ -1,4 +1,4 @@
-<mvc:View controllerName="de.regatta_hd.infopoint.controller.RaceRegistrationsTable" xmlns="sap.m" xmlns:f="sap.f"
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.RaceRegistrationsTable" xmlns="sap.m" xmlns:f="sap.f"
   xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
