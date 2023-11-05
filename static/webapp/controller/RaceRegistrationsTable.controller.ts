@@ -4,7 +4,6 @@ import BaseController from "./Base.controller";
 import MyComponent from "de/regatta_hd/Component";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import MessageToast from "sap/m/MessageToast";
-import Form from "sap/ui/layout/form/Form";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller

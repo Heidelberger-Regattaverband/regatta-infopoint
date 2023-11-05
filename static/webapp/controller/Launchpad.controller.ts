@@ -1,7 +1,6 @@
 import JSONModel from "sap/ui/model/json/JSONModel";
 import BaseController from "./Base.controller";
 import MyComponent from "de/regatta_hd/Component";
-import Formatter from "../model/Formatter";
 import MessageToast from "sap/m/MessageToast";
 import ResponsivePopover from "sap/m/ResponsivePopover";
 import Fragment from "sap/ui/core/Fragment";
@@ -15,7 +14,6 @@ import { Input$SubmitEvent } from "sap/m/Input";
  */
 export default class Launchpad extends BaseController {
 
-  static formatter: Formatter;
   private credentialsModel: JSONModel;
   private popover?: ResponsivePopover;
   private popoverPromise?: Promise<ResponsivePopover>;
