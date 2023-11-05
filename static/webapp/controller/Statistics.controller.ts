@@ -33,45 +33,45 @@ export default class Statistics extends BaseController {
 
   async onRefreshButtonPress(event: Event): Promise<void> {
     await this.loadStatistics();
-    MessageToast.show(super.i18n("msg.dataUpdated", undefined));
+    MessageToast.show(super.i18n("msg.dataUpdated"));
   }
 
   private async loadStatistics(): Promise<void> {
     this.setBusy(true);
 
     // load statistic data from backend
-    const dataLoader: JSONModel = await super.createJSONModel(`/api/regattas/${this.getRegattaId()}/statistics`, undefined);
+    const dataLoader: JSONModel = await super.createJSONModel(`/api/regattas/${this.getRegattaId()}/statistics`);
     const statistics = dataLoader.getData();
 
     // transform statistic data into human readable format
     const registrations = [];
     const seats = statistics.registrations.seats + statistics.registrations.seatsCox;
-    registrations.push({ name: this.i18n("common.overall", undefined), value: statistics.registrations.all });
-    registrations.push({ name: this.i18n("statistics.registrations.cancelled", undefined), value: statistics.registrations.cancelled });
-    registrations.push({ name: this.i18n("statistics.reportingClubs", undefined), value: statistics.registrations.registeringClubs });
-    registrations.push({ name: this.i18n("statistics.participatingClubs", undefined), value: statistics.registrations.clubs });
-    registrations.push({ name: this.i18n("common.athletes", undefined), value: statistics.registrations.athletes });
-    registrations.push({ name: this.i18n("common.seats", undefined), value: seats });
+    registrations.push({ name: this.i18n("common.overall"), value: statistics.registrations.all });
+    registrations.push({ name: this.i18n("statistics.registrations.cancelled"), value: statistics.registrations.cancelled });
+    registrations.push({ name: this.i18n("statistics.reportingClubs"), value: statistics.registrations.registeringClubs });
+    registrations.push({ name: this.i18n("statistics.participatingClubs"), value: statistics.registrations.clubs });
+    registrations.push({ name: this.i18n("common.athletes"), value: statistics.registrations.athletes });
+    registrations.push({ name: this.i18n("common.seats"), value: seats });
     const races = [];
-    races.push({ name: this.i18n("common.overall", undefined), value: statistics.races.all });
-    races.push({ name: this.i18n("common.cancelled", undefined), value: statistics.races.cancelled });
+    races.push({ name: this.i18n("common.overall"), value: statistics.races.all });
+    races.push({ name: this.i18n("common.cancelled"), value: statistics.races.cancelled });
     const heats = [];
-    heats.push({ name: this.i18n("common.overall", undefined), value: statistics.heats.all });
-    heats.push({ name: this.i18n("heat.state.official", undefined), value: statistics.heats.official });
-    heats.push({ name: this.i18n("heat.state.finished", undefined), value: statistics.heats.finished });
-    heats.push({ name: this.i18n("heat.state.started", undefined), value: statistics.heats.started });
-    heats.push({ name: this.i18n("common.seeded", undefined), value: statistics.heats.seeded });
-    heats.push({ name: this.i18n("common.scheduled", undefined), value: statistics.heats.scheduled });
-    heats.push({ name: this.i18n("common.cancelled", undefined), value: statistics.heats.cancelled });
+    heats.push({ name: this.i18n("common.overall"), value: statistics.heats.all });
+    heats.push({ name: this.i18n("heat.state.official"), value: statistics.heats.official });
+    heats.push({ name: this.i18n("heat.state.finished"), value: statistics.heats.finished });
+    heats.push({ name: this.i18n("heat.state.started"), value: statistics.heats.started });
+    heats.push({ name: this.i18n("common.seeded"), value: statistics.heats.seeded });
+    heats.push({ name: this.i18n("common.scheduled"), value: statistics.heats.scheduled });
+    heats.push({ name: this.i18n("common.cancelled"), value: statistics.heats.cancelled });
 
     const oldestWoman = statistics.athletes.oldestWoman;
     const oldestMan = statistics.athletes.oldestMan;
     const athletes = [];
     if (oldestWoman) {
-      athletes.push({ name: this.i18n("statistics.athletes.oldestWoman", undefined), value: Formatter.athleteLabel(oldestWoman) });
+      athletes.push({ name: this.i18n("statistics.athletes.oldestWoman"), value: Formatter.athleteLabel(oldestWoman) });
     }
     if (oldestMan) {
-      athletes.push({ name: this.i18n("statistics.athletes.oldestMan", undefined), value: Formatter.athleteLabel(oldestMan) });
+      athletes.push({ name: this.i18n("statistics.athletes.oldestMan"), value: Formatter.athleteLabel(oldestMan) });
     }
 
     // update model
