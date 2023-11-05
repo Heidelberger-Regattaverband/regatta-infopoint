@@ -1,4 +1,4 @@
-<mvc:View controllerName="de.regatta_hd.infopoint.controller.ParticipatingClubsTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.ParticipatingClubsTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
     <Page title="{i18n>statistics.participatingClubs}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
@@ -49,7 +49,7 @@
             <ColumnListItem type="Navigation">
               <cells>
                 <Text text="{clubs>city}" />
-                <Image src="{clubs>flagUrl}" height="20px"/>
+                <Image src="{clubs>flagUrl}" height="20px" />
                 <Text text="{clubs>longName}" />
                 <Text text="{clubs>abbreviation}" />
                 <Text text="{clubs>participationsCount}" />

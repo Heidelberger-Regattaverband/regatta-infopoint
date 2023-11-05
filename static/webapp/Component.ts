@@ -27,19 +27,16 @@ export default class Component extends UIComponent {
         super.setModel(this.regattaModel, "regatta");
 
         this.filterModel = new JSONModel();
-        const iRegattaID = this.regattaModel.getData().id;
-        this.filterModel.loadData(`/api/regattas/${iRegattaID}/filters`, {}, false);
+        const regattaId = this.regattaModel.getData().id;
+        this.filterModel.loadData(`/api/regattas/${regattaId}/filters`, {}, false);
         super.setModel(this.filterModel, "filters");
 
         // set device model
-        const deviceModel = new JSONModel(Device);
-        deviceModel.setDefaultBindingMode("OneWay");
+        const deviceModel: JSONModel = new JSONModel(Device).setDefaultBindingMode("OneWay");
         super.setModel(deviceModel, "device");
 
-        const identityModel = new JSONModel({
-            authenticated: false, username: "anonymous", roles: []
-        });
-        identityModel.setDefaultBindingMode("OneWay");
+        // set identity model
+        const identityModel: JSONModel = new JSONModel({ authenticated: false, username: "anonymous", roles: [] }).setDefaultBindingMode("OneWay");
         super.setModel(identityModel, "identity");
 
         // set initial heat model, required for navigation over heats

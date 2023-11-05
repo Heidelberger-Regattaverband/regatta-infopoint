@@ -1,17 +1,15 @@
-import Table, { Table$BeforeOpenContextMenuEvent } from "sap/m/Table";
+import Table from "sap/m/Table";
 import BaseController from "./Base.controller";
 import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import Event from "sap/ui/base/Event";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import ListBinding from "sap/ui/model/ListBinding";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import MessageToast from "sap/m/MessageToast";
-import ListItem from "sap/ui/core/ListItem";
 import Context from "sap/ui/model/Context";
-import SearchField, { SearchField$SearchEvent } from "sap/m/SearchField";
-import ListBase, { ListBase$SelectEvent } from "sap/m/ListBase";
+import { SearchField$SearchEvent } from "sap/m/SearchField";
+import { ListBase$SelectEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
 
 /**
