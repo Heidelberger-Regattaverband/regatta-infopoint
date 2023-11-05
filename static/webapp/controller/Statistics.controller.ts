@@ -4,6 +4,7 @@ import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import Control from "sap/ui/core/Control";
+import { Button$PressEvent } from "sap/m/Button";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -31,7 +32,7 @@ export default class Statistics extends BaseController {
     super.navBack("startpage");
   }
 
-  async onRefreshButtonPress(event: Event): Promise<void> {
+  async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     await this.loadStatistics();
     MessageToast.show(super.i18n("msg.dataUpdated"));
   }

@@ -2,12 +2,13 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import BaseController from "./Base.controller";
 import MyComponent from "de/regatta_hd/Component";
 import Formatter from "../model/Formatter";
-import Event from "sap/ui/base/Event";
 import MessageToast from "sap/m/MessageToast";
 import ResponsivePopover from "sap/m/ResponsivePopover";
 import Fragment from "sap/ui/core/Fragment";
 import * as $ from "jquery";
 import Control from "sap/ui/core/Control";
+import { Button$PressEvent } from "sap/m/Button";
+import { Input$SubmitEvent } from "sap/m/Input";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -51,18 +52,22 @@ export default class Launchpad extends BaseController {
     super.getRouter().navTo("kiosk", {}, false /* history */);
   }
 
-  onUserSubmit(event: Event): void {
+  onUserSubmit(event: Input$SubmitEvent): void {
     super.byId("password")?.focus();
   }
 
-  onPasswordSubmit(event: Event): void {
+  onPasswordSubmit(event: Input$SubmitEvent): void {
     super.byId("login")?.focus();
     // perform login if return is pressed in password input field
-    this.onLoginPress(event);
+    this.performLogin();
   }
 
-  onLoginPress(event: Event): void {
+  onLoginPress(event: Button$PressEvent): void {
     // close login popover when login button is pressed
+    this.performLogin();
+  }
+
+  private performLogin() {
     if (this.popover) {
       this.popover.close();
       delete this.popover;
@@ -70,7 +75,7 @@ export default class Launchpad extends BaseController {
     this.login();
   }
 
-  onShowLoginPress(event: Event): void {
+  onShowLoginPress(event: Button$PressEvent): void {
     const eventSource: Control = event.getSource();
 
     if (!this.isAuthenticated()) {
