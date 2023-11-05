@@ -9,6 +9,8 @@ import ListItemBase from "sap/m/ListItemBase";
 import Event from "sap/ui/base/Event";
 import MyComponent from "de/regatta_hd/Component";
 import FilterOperator from "sap/ui/model/FilterOperator";
+import ViewSettingsFilterItem from "sap/m/ViewSettingsFilterItem";
+import CustomData from "sap/ui/core/CustomData";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -89,21 +91,20 @@ export default class BaseTable extends BaseController {
   onHandleFilterDialogConfirm(event: Event): void {
     const params: Record<string, any> = event.getParameters() as Record<string, any>;
     this.filters = [];
-    const that = this;
 
-    params.filterItems.forEach(function (filterItem: any) {
-      const customData = filterItem.getCustomData();
+    params.filterItems.forEach((filterItem: ViewSettingsFilterItem) => {
+      const customData: CustomData[] = filterItem.getCustomData();
       if (customData) {
-        customData.forEach(function (data: any) {
+        customData.forEach((data: CustomData) => {
           if (data.getKey() == "filter") {
-            const oFilter = that.createFilter(data.getValue());
-            that.filters.push(oFilter);
+            const oFilter = this.createFilter(data.getValue());
+            this.filters.push(oFilter);
           }
-        }.bind(that));
+        });
       }
-      const filter = that.createFilter(filterItem.getKey());
-      that.filters.push(filter);
-    }.bind(this));
+      const filter: Filter = this.createFilter(filterItem.getKey());
+      this.filters.push(filter);
+    });
 
     // apply filters
     this.applyFilters();

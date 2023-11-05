@@ -72,7 +72,6 @@ export default class Launchpad extends BaseController {
 
   onShowLoginPress(event: Event): void {
     const eventSource: Control = event.getSource();
-    const that = this;
 
     if (!this.isAuthenticated()) {
       if (this.popover?.isOpen()) {
@@ -87,15 +86,15 @@ export default class Launchpad extends BaseController {
             id: this.getView()?.getId(), name: "de.regatta_hd.infoportal.view.LoginPopover", controller: this
           }).then((popover: any) => {
             // ... and initialize
-            that.getView()?.addDependent(popover);
-            popover.addStyleClass((that.getOwnerComponent() as MyComponent).getContentDensityClass());
+            super.getView()?.addDependent(popover);
+            popover.addStyleClass((super.getOwnerComponent() as MyComponent).getContentDensityClass());
             return popover;
           });
         }
 
         // finish loading of fragment and open it
         this.popoverPromise.then((popover: ResponsivePopover) => {
-          that.popover = popover;
+          this.popover = popover;
           popover.openBy(eventSource);
         });
       }
@@ -106,7 +105,6 @@ export default class Launchpad extends BaseController {
 
   private login(): void {
     const credentials: any = this.credentialsModel.getData();
-    const that = this;
 
     // see: https://api.jquery.com/jquery.ajax/
     $.ajax({
@@ -114,16 +112,16 @@ export default class Launchpad extends BaseController {
       data: JSON.stringify(credentials),
       url: "/api/login",
       contentType: "application/json",
-      success: function (result: { username: any; }) {
-        that.updateIdentity(true, result.username);
-        that.credentialsModel.setProperty("/username", result.username);
-        MessageToast.show(that.i18n("msg.loginSucceeded", undefined));
+      success: (result: { username: any; }) => {
+        this.updateIdentity(true, result.username);
+        this.credentialsModel.setProperty("/username", result.username);
+        MessageToast.show(super.i18n("msg.loginSucceeded", undefined));
         $(".sapMMessageToast").removeClass("sapMMessageToastDanger").addClass("sapMMessageToastSuccess");
-      }.bind(this),
-      error: function (result: any) {
-        MessageToast.show(that.i18n("msg.loginFailed", undefined));
+      },
+      error: (result: any) => {
+        MessageToast.show(super.i18n("msg.loginFailed", undefined));
         $(".sapMMessageToast").removeClass("sapMMessageToastSuccess").addClass("sapMMessageToastDanger");
-      }.bind(this)
+      }
     });
 
     // reset password
@@ -131,29 +129,27 @@ export default class Launchpad extends BaseController {
   }
 
   private logout(): void {
-    const that = this;
     $.ajax({
       type: "POST",
       url: "/api/logout",
-      success: function (result: any) {
-        that.updateIdentity(false, "");
-      }.bind(this)
+      success: (result: any) => {
+        this.updateIdentity(false, "");
+      }
     });
   }
 
   private getIdentity(): void {
-    const that = this;
     $.ajax({
       type: "GET",
       url: "/api/identity",
       contentType: "application/json",
-      success: function (result: { username: string; }) {
-        that.updateIdentity(true, result.username);
-        that.credentialsModel.setProperty("/username", result.username);
-      }.bind(this),
-      error: function (result: any) {
-        that.updateIdentity(false, "");
-      }.bind(this)
+      success: (result: { username: string; }) => {
+        this.updateIdentity(true, result.username);
+        this.credentialsModel.setProperty("/username", result.username);
+      },
+      error: (result: any) => {
+        this.updateIdentity(false, "");
+      }
     });
   }
 
