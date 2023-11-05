@@ -11,6 +11,7 @@ import Context from "sap/ui/model/Context";
 import { SearchField$SearchEvent } from "sap/m/SearchField";
 import { ListBase$SelectEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
+import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -28,7 +29,7 @@ export default class ParticipatingClubsTable extends BaseController {
     this.participatingClubsModel = await super.createJSONModel(`/api/regattas/${this.getRegattaId()}/participating_clubs`, this.table);
     super.setViewModel(this.participatingClubsModel, "clubs");
 
-    super.getRouter()?.getRoute("participatingClubs")?.attachMatched(async (_) => await this.loadModel(), this);
+    super.getRouter()?.getRoute("participatingClubs")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadModel(), this);
   }
 
   onNavBack(): void {

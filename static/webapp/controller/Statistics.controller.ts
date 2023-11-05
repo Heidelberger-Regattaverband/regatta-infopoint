@@ -5,6 +5,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import Control from "sap/ui/core/Control";
 import { Button$PressEvent } from "sap/m/Button";
+import Route, { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -18,7 +19,7 @@ export default class Statistics extends BaseController {
   onInit(): void {
     super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
 
-    super.getRouter()?.getRoute("statistics")?.attachMatched(async (_) => await this.loadStatistics(), this);
+    super.getRouter()?.getRoute("statistics")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadStatistics(), this);
 
     this.statisticsModel = new JSONModel();
     super.setViewModel(this.statisticsModel, "statistics");
