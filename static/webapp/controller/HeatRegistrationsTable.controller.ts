@@ -2,24 +2,24 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
 import MyComponent from "de/regatta_hd/Component";
-import Button, { Button$PressEvent } from "sap/m/Button";
 import MessageToast from "sap/m/MessageToast";
+import Button, { Button$PressEvent } from "sap/m/Button";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class RaceRegistrationsTable extends BaseController {
+export default class HeatRegistrationsTable extends BaseController {
 
   public formatter: Formatter = Formatter;
 
   onInit(): void {
     super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
 
-    super.setViewModel(new JSONModel(), "raceRegistrations");
+    super.setViewModel(new JSONModel(), "heatRegistrations");
 
-    super.getView()?.addEventDelegate({ onBeforeShow: this.onBeforeShow }, this);
+    super.getView()?.addEventDelegate({ onBeforeShow: this.onBeforeShow, }, this);
 
-    super.getEventBus()?.subscribe("race", "itemChanged", this.onItemChanged, this);
+    super.getEventBus()?.subscribe("heat", "itemChanged", this.onItemChanged, this);
 
     window.addEventListener("keydown", (event: KeyboardEvent) => {
       switch (event.key) {
@@ -43,44 +43,49 @@ export default class RaceRegistrationsTable extends BaseController {
   }
 
   async onBeforeShow(): Promise<void> {
-    await this.loadRaceModel();
+    await this.loadHeatModel();
   }
 
   onNavBack(): void {
-    super.displayTarget("races");
+    const data = (super.getComponentModel("heat") as JSONModel).getData();
+    if (data._nav.back) {
+      super.displayTarget(data._nav.back);
+    } else {
+      super.displayTarget("heats");
+    }
   }
 
   onFirstPress(): void {
-    super.getEventBus()?.publish("race", "first", {});
+    super.getEventBus()?.publish("heat", "first", {});
   }
 
   onPreviousPress(): void {
-    super.getEventBus()?.publish("race", "previous", {});
+    super.getEventBus()?.publish("heat", "previous", {});
   }
 
   onNextPress(): void {
-    super.getEventBus()?.publish("race", "next", {});
+    super.getEventBus()?.publish("heat", "next", {});
   }
 
   onLastPress(): void {
-    super.getEventBus()?.publish("race", "last", {});
+    super.getEventBus()?.publish("heat", "last", {});
   }
 
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    await this.loadRaceModel();
-    MessageToast.show(this.i18n("msg.dataUpdated"));
+    await this.loadHeatModel();
+    MessageToast.show(this.i18n("msg.dataUpdated", undefined));
     source.setEnabled(true);
   }
 
-  private async loadRaceModel(): Promise<void> {
-    const race: any = (super.getComponentModel("race") as JSONModel).getData();
-    await super.updateJSONModel(super.getViewModel("raceRegistrations") as JSONModel, `/api/races/${race.id}`, super.getView());
+  private async loadHeatModel(): Promise<void> {
+    const heat: any = (super.getComponentModel("heat") as JSONModel).getData();
+    await super.updateJSONModel(super.getViewModel("heatRegistrations") as JSONModel, `/api/heats/${heat.id}`, super.getView());
   }
 
   private async onItemChanged(channelId: string, eventId: string, parametersMap: any): Promise<void> {
-    await this.loadRaceModel();
+    await this.loadHeatModel();
   }
 
 }
