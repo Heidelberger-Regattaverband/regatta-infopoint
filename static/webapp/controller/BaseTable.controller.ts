@@ -1,12 +1,11 @@
 import Table from "sap/m/Table";
 import BaseController from "./Base.controller";
 import Filter from "sap/ui/model/Filter";
-import ViewSettingsDialog from "sap/m/ViewSettingsDialog";
+import ViewSettingsDialog, { ViewSettingsDialog$ConfirmEvent } from "sap/m/ViewSettingsDialog";
 import Fragment from "sap/ui/core/Fragment";
 import Text from "sap/m/Text";
 import ListBinding from "sap/ui/model/ListBinding";
 import ListItemBase from "sap/m/ListItemBase";
-import Event from "sap/ui/base/Event";
 import MyComponent from "de/regatta_hd/Component";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import ViewSettingsFilterItem from "sap/m/ViewSettingsFilterItem";
@@ -17,7 +16,7 @@ import CustomData from "sap/ui/core/CustomData";
  */
 export default class BaseTable extends BaseController {
 
-  private table: Table;
+  protected table: Table;
   private filters: Filter[];
   private searchFilters: Filter[];
   private bindingModel: string;
@@ -88,7 +87,7 @@ export default class BaseTable extends BaseController {
     return dialog;
   }
 
-  onHandleFilterDialogConfirm(event: Event): void {
+  onHandleFilterDialogConfirm(event: ViewSettingsDialog$ConfirmEvent): void {
     const params: Record<string, any> = event.getParameters() as Record<string, any>;
     this.filters = [];
 
@@ -97,8 +96,8 @@ export default class BaseTable extends BaseController {
       if (customData) {
         customData.forEach((data: CustomData) => {
           if (data.getKey() == "filter") {
-            const oFilter = this.createFilter(data.getValue());
-            this.filters.push(oFilter);
+            const filter = this.createFilter(data.getValue());
+            this.filters.push(filter);
           }
         });
       }
