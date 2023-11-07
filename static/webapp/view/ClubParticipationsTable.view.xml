@@ -1,4 +1,4 @@
-<mvc:View controllerName="de.regatta_hd.infopoint.controller.ClubParticipationsTable" xmlns="sap.m" xmlns:layout="sap.ui.layout"
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.ClubParticipationsTable" xmlns="sap.m" xmlns:layout="sap.ui.layout"
   xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
@@ -8,8 +8,9 @@
       navButtonPress="onNavBack">
       <content>
 
-        <Table id="registrationsTable" autoPopinMode="true" items="{path: 'registrations>/'}" growing="true" growingThreshold="50"
-          growingScrollToLoad="true" sticky="ColumnHeaders" class="sapUiNoContentPadding" mode="SingleSelectMaster" itemPress="onSelectionChange" >
+        <Table id="registrationsTable" autoPopinMode="true" items="{path:'registrations>/'}" growing="true" growingThreshold="50"
+          growingScrollToLoad="true" sticky="ColumnHeaders" class="sapUiNoContentPadding" mode="SingleSelectMaster"
+          itemPress="onSelectionChange">
           <headerToolbar>
             <OverflowToolbar>
               <content>
@@ -44,7 +45,8 @@
           </columns>
 
           <items>
-            <ColumnListItem vAlign="Top" highlight="{path: 'registrations>heat', formatter: '.formatter.heatStateHighlight'}" type="Navigation">
+            <ColumnListItem vAlign="Top" highlight="{path: 'registrations>heat', formatter: '.formatter.heatStateHighlight'}"
+              type="Navigation">
               <cells>
                 <layout:VerticalLayout>
                   <Text text="{path: 'registrations>heat/dateTime', formatter: '.formatter.dayTimeIsoLabel'}"
