@@ -10,7 +10,7 @@ import Button, { Button$PressEvent } from "sap/m/Button";
  */
 export default class HeatRegistrationsTable extends BaseController {
 
-  public formatter: Formatter = Formatter;
+  formatter: Formatter = Formatter;
 
   onInit(): void {
     super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
@@ -75,7 +75,7 @@ export default class HeatRegistrationsTable extends BaseController {
     const source: Button = event.getSource();
     source.setEnabled(false);
     await this.loadHeatModel();
-    MessageToast.show(this.i18n("msg.dataUpdated", undefined));
+    MessageToast.show(this.i18n("msg.dataUpdated"));
     source.setEnabled(true);
   }
 

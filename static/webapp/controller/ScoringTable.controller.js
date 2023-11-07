@@ -46,7 +46,7 @@ sap.ui.define([
       const oSource = oEvent.getSource();
       oSource.setEnabled(false);
       await this._loadScoringModel();
-      MessageToast.show(this.i18n("msg.dataUpdated", undefined));
+      MessageToast.show(this.i18n("msg.dataUpdated"));
       oSource.setEnabled(true);
     },
 

@@ -39,7 +39,7 @@ export default class RacesTable extends BaseTableController {
     const viewSettingsDialog: ViewSettingsDialog = await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog");
 
     if (filters.boatClasses) {
-      const boatClassFilter = new ViewSettingsFilterItem({ multiSelect: true, key: "boatClass", text: "{i18n>common.boatClass}" });
+      const boatClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "boatClass", text: "{i18n>common.boatClass}" });
       filters.boatClasses.forEach((boatClass: any) => {
         boatClassFilter.addItem(new ViewSettingsItem({ text: boatClass.caption + " (" + boatClass.abbreviation + ")", key: "boatClass/id___EQ___" + boatClass.id }));
       });
@@ -47,7 +47,7 @@ export default class RacesTable extends BaseTableController {
     }
 
     if (filters.ageClasses) {
-      const ageClassFilter = new ViewSettingsFilterItem({ multiSelect: true, key: "ageClass", text: "{i18n>common.ageClass}" });
+      const ageClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "ageClass", text: "{i18n>common.ageClass}" });
       filters.ageClasses.forEach((ageClass: any) => {
         ageClassFilter.addItem(new ViewSettingsItem({ text: ageClass.caption + " " + ageClass.suffix, key: "ageClass/id___EQ___" + ageClass.id }));
       });
@@ -55,7 +55,7 @@ export default class RacesTable extends BaseTableController {
     }
 
     if (filters.distances && filters.distances.length > 1) {
-      const distancesFilter = new ViewSettingsFilterItem({ multiSelect: true, key: "distance", text: "{i18n>common.distance}" });
+      const distancesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "distance", text: "{i18n>common.distance}" });
       filters.distances.forEach((distance: any) => {
         distancesFilter.addItem(new ViewSettingsItem({ text: distance + "m", key: "distance___EQ___" + distance }));
       });
@@ -75,7 +75,7 @@ export default class RacesTable extends BaseTableController {
       race._nav = { isFirst: index == 0, isLast: index == count - 1 };
 
       this.onItemChanged(race);
-      this.displayTarget("raceRegistrations");
+      super.displayTarget("raceRegistrations");
     }
   }
 
@@ -86,22 +86,22 @@ export default class RacesTable extends BaseTableController {
   }
 
   async onFilterButtonPress(event: Button$PressEvent): Promise<void> {
-    const viewSettingsDialog = await this.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog")
+    const viewSettingsDialog = await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog")
     viewSettingsDialog.open();
   }
 
   async onClearFilterPress(event: Button$PressEvent): Promise<void> {
-    const viewSettingsDialog: ViewSettingsDialog = await this.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog")
+    const viewSettingsDialog: ViewSettingsDialog = await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog")
     viewSettingsDialog.clearFilters();
-    this.clearFilters();
-    this.applyFilters();
+    super.clearFilters();
+    super.applyFilters();
   }
 
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
     await this.loadRacesModel();
-    MessageToast.show(this.i18n("msg.dataUpdated", undefined));
+    MessageToast.show(this.i18n("msg.dataUpdated"));
     source.setEnabled(true);
   }
 
@@ -130,7 +130,7 @@ export default class RacesTable extends BaseTableController {
   }
 
   private async loadRacesModel(): Promise<void> {
-    await this.updateJSONModel(this.racesModel, `/api/regattas/${super.getRegattaId()}/races`, this.table);
+    await super.updateJSONModel(this.racesModel, `/api/regattas/${super.getRegattaId()}/races`, this.table);
   }
 
 }
