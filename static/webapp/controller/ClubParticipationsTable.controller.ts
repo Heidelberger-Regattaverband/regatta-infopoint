@@ -24,14 +24,14 @@ export default class ClubParticipationsTable extends BaseController {
   private clubId?: int;
 
   onInit(): void {
-    super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
+    super.getView()?.addStyleClass((super.getOwnerComponent() as MyComponent).getContentDensityClass());
 
     this.table = super.getView()?.byId("registrationsTable") as Table;
 
     super.setViewModel(new JSONModel(), "registrations");
     super.setViewModel(new JSONModel(), "club");
 
-    super.getRouter()?.getRoute("clubParticipations")?.attachPatternMatched(async (event: Route$PatternMatchedEvent) => await this._onPatternMatched(event), this);
+    super.getRouter()?.getRoute("clubParticipations")?.attachPatternMatched(async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
   }
 
   onSelectionChange(oEvent: ListBase$SelectEvent): void {
@@ -56,7 +56,7 @@ export default class ClubParticipationsTable extends BaseController {
     const source: Button = event.getSource();
     source.setEnabled(false);
     await this.loadRegistrationsModel();
-    MessageToast.show(this.i18n("msg.dataUpdated", undefined));
+    MessageToast.show(this.i18n("msg.dataUpdated"));
     source.setEnabled(true);
   }
 
@@ -69,11 +69,11 @@ export default class ClubParticipationsTable extends BaseController {
           filters: [
             new Filter({
               path: "crew/",
-              test: function (aCrew) {
-                let mCrew;
-                for (mCrew of aCrew) {
-                  let found = mCrew.athlete.firstName.toLowerCase().includes(query.toLowerCase())
-                    || mCrew.athlete.lastName.toLowerCase().includes(query.toLowerCase());
+              test: function (crews: any[]) {
+                let crew: any;
+                for (crew of crews) {
+                  let found = crew.athlete.firstName.toLowerCase().includes(query.toLowerCase())
+                    || crew.athlete.lastName.toLowerCase().includes(query.toLowerCase());
                   if (found) {
                     return true;
                   }
@@ -87,10 +87,10 @@ export default class ClubParticipationsTable extends BaseController {
         }))
     }
     const binding: ListBinding = this.table.getBinding("items") as ListBinding;
-    binding?.filter(searchFilters);
+    binding.filter(searchFilters);
   }
 
-  private async _onPatternMatched(event: Route$PatternMatchedEvent) {
+  private async onPatternMatched(event: Route$PatternMatchedEvent): Promise<void> {
     this.clubId = (event.getParameter("arguments") as any).clubId;
     await Promise.all([this.loadRegistrationsModel(), this.loadClubModel()]);
   }
