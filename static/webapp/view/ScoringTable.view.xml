@@ -1,4 +1,4 @@
-<mvc:View controllerName="de.regatta_hd.infopoint.controller.ScoringTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.ScoringTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
     <Page title="{i18n>launchpad.scoringTile.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">

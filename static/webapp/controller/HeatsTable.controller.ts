@@ -14,6 +14,7 @@ import { SearchField$SearchEvent } from "sap/m/SearchField";
 import ListItemBase from "sap/m/ListItemBase";
 import ViewSettingsDialog from "sap/m/ViewSettingsDialog";
 import Context from "sap/ui/model/Context";
+import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -32,7 +33,7 @@ export default class HeatsTable extends BaseTableController {
     this.heatsModel = await super.createJSONModel(`/api/regattas/${super.getRegattaId()}/heats`, this.table);
     super.setViewModel(this.heatsModel, "heats");
 
-    super.getRouter()?.getRoute("heats")?.attachMatched(async (_) => await this.loadHeatsModel(), this);
+    super.getRouter()?.getRoute("heats")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadHeatsModel(), this);
 
     const filters: any = (super.getComponentModel("filters") as JSONModel).getData();
     const viewSettingsDialog: ViewSettingsDialog = await this.getViewSettingsDialog("de.regatta_hd.infopoint.view.HeatsFilterDialog");
