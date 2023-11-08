@@ -21,7 +21,7 @@ export default class ClubParticipationsTable extends BaseController {
 
   formatter: Formatter = Formatter;
   private table: Table;
-  private clubId?: int;
+  private clubId?: number;
 
   onInit(): void {
     super.getView()?.addStyleClass((super.getOwnerComponent() as MyComponent).getContentDensityClass());
@@ -102,4 +102,5 @@ export default class ClubParticipationsTable extends BaseController {
   private async loadRegistrationsModel(): Promise<void> {
     await super.updateJSONModel(super.getViewModel("registrations") as JSONModel, `/api/regattas/${super.getRegattaId()}/clubs/${this.clubId}/registrations`, this.table);
   }
+
 }

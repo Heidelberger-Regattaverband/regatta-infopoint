@@ -143,7 +143,7 @@ export default class Formatter {
     return label;
   }
 
-  public static groupValueLabel(groupValue: int): string | undefined {
+  public static groupValueLabel(groupValue: number): string | undefined {
     const PREFIX: string = "AK ";
     switch (groupValue) {
       case 0:
@@ -169,7 +169,7 @@ export default class Formatter {
     }
   }
 
-  public static weekdayLabel(weekday: int): string {
+  public static weekdayLabel(weekday: number): string {
     switch (weekday) {
       case 0: return "So";
       case 1: return "Mo";

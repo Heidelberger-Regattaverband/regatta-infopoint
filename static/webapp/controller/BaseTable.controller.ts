@@ -40,7 +40,7 @@ export default class BaseTable extends BaseController {
   }
 
   private onFirstItemEvent(channelId: string, eventId: string, parametersMap: any): void {
-    const index: int = this.table.indexOfItem(this.table.getSelectedItem());
+    const index: number = this.table.indexOfItem(this.table.getSelectedItem());
     if (index != 0) {
       this.setCurrentItem(0);
     }
@@ -48,25 +48,25 @@ export default class BaseTable extends BaseController {
 
   private onLastItemEvent(channelId: string, eventId: string, parametersMap: any): void {
     this.growTable(400);
-    const index: int = this.table.indexOfItem(this.table.getSelectedItem());
-    const lastIndex: int = this.table.getItems().length - 1;
+    const index: number = this.table.indexOfItem(this.table.getSelectedItem());
+    const lastIndex: number = this.table.getItems().length - 1;
     if (index != lastIndex) {
       this.setCurrentItem(lastIndex);
     }
   }
 
   private onPreviousItemEvent(channelId: string, eventId: string, parametersMap: any): void {
-    const index: int = this.table.indexOfItem(this.table.getSelectedItem());
-    const previousIndex: int = index > 1 ? index - 1 : 0;
+    const index: number = this.table.indexOfItem(this.table.getSelectedItem());
+    const previousIndex: number = index > 1 ? index - 1 : 0;
     if (index != previousIndex) {
       this.setCurrentItem(previousIndex);
     }
   }
 
   private onNextItemEvent(channelId: string, eventId: string, parametersMap: any): void {
-    const index: int = this.table.indexOfItem(this.table.getSelectedItem());
+    const index: number = this.table.indexOfItem(this.table.getSelectedItem());
     const items: ListItemBase[] = this.table.getItems();
-    const nextIndex: int = index < items.length - 1 ? index + 1 : index;
+    const nextIndex: number = index < items.length - 1 ? index + 1 : index;
     if (index != nextIndex) {
       this.growTable(nextIndex);
       this.setCurrentItem(nextIndex);
@@ -77,9 +77,7 @@ export default class BaseTable extends BaseController {
     let dialog: ViewSettingsDialog = this.viewSettingsDialogs.get(dialogFragmentName)!;
 
     if (!dialog) {
-      dialog = await Fragment.load({
-        id: this.getView()?.getId(), name: dialogFragmentName, controller: this
-      }) as ViewSettingsDialog;
+      dialog = await Fragment.load({ id: this.getView()?.getId(), name: dialogFragmentName, controller: this }) as ViewSettingsDialog;
       dialog.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
       this.getView()?.addDependent(dialog);
       this.viewSettingsDialogs.set(dialogFragmentName, dialog);
@@ -111,12 +109,12 @@ export default class BaseTable extends BaseController {
     this.updateFilterBar(params.filterString);
   }
 
-  private updateFilterBar(sText: string): void {
+  private updateFilterBar(text: string): void {
     // update filter bar
     const infoToolbar = this.table.getInfoToolbar();
     if (infoToolbar?.getContent()[0]) {
       infoToolbar.setVisible(this.filters.length > 0);
-      (infoToolbar.getContent()[0] as Text).setText(sText);
+      (infoToolbar.getContent()[0] as Text).setText(text);
     }
   }
 
@@ -144,7 +142,7 @@ export default class BaseTable extends BaseController {
     (this.table.getBinding("items") as ListBinding).filter(allFilters);
   }
 
-  private setCurrentItem(index: int): void {
+  private setCurrentItem(index: number): void {
     const items: ListItemBase[] = this.table.getItems();
     this.table.setSelectedItem(items[index]);
 
@@ -160,12 +158,13 @@ export default class BaseTable extends BaseController {
   onItemChanged(item: any): void {
   }
 
-  private growTable(index: int): void {
-    const actual: int = this.table.getGrowingInfo()?.actual || 0;
+  private growTable(index: number): void {
+    const actual: number = this.table.getGrowingInfo()?.actual || 0;
     if (index >= actual - 5) {
       this.table.setGrowingThreshold(index + 5);
       const allFilters: Filter[] = this.filters.concat(this.searchFilters);
       (this.table.getBinding("items") as ListBinding).filter(allFilters);
     }
   }
+
 };

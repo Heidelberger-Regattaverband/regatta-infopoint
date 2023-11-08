@@ -69,8 +69,8 @@ export default class RacesTable extends BaseTableController {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("races");
       const race: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
 
-      const index: int = this.table.indexOfItem(selectedItem);
-      const count: int = this.table.getItems().length;
+      const index: number = this.table.indexOfItem(selectedItem);
+      const count: number = this.table.getItems().length;
       // store navigation meta information in selected item
       race._nav = { isFirst: index == 0, isLast: index == count - 1 };
 

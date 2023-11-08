@@ -85,7 +85,7 @@ export default class HeatsTable extends BaseTableController {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("heats");
       const heat: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
 
-      const index: int = this.table.indexOfItem(selectedItem);
+      const index: number = this.table.indexOfItem(selectedItem);
       const count = this.table.getItems().length;
       // store navigation meta information in selected item
       heat._nav = { isFirst: index == 0, isLast: index == count - 1 };

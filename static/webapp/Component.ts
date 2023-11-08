@@ -6,16 +6,17 @@ import JSONModel from "sap/ui/model/json/JSONModel";
  * @namespace de.regatta_hd.infoportal
  */
 export default class Component extends UIComponent {
+
     private regattaModel: JSONModel;
     private filterModel: JSONModel;
     private contentDensityClass: string;
 
-    public static metadata = {
+    static metadata = {
         manifest: "json",
         interfaces: ["sap.ui.core.IAsyncContentCreation"],
     };
 
-    public init(): void {
+    init(): void {
         super.init();
 
         // create the views based on the url/hash
@@ -53,7 +54,7 @@ export default class Component extends UIComponent {
         });
     }
 
-    public getContentDensityClass(): string {
+    getContentDensityClass(): string {
         if (!this.contentDensityClass) {
             if (!Device.support.touch) {
                 this.contentDensityClass = "sapUiSizeCompact";
@@ -64,7 +65,8 @@ export default class Component extends UIComponent {
         return this.contentDensityClass;
     }
 
-    public getRegattaId(): int {
+    getRegattaId(): number {
         return this.regattaModel.getData().id;
     }
+
 }
