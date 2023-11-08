@@ -18,7 +18,10 @@
       ]
     },
     "composite": true,
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "types": [
+      "@openui5/types"
+    ]
   },
   "include": [
     "./webapp/**/*"
