@@ -7,7 +7,7 @@
       <content>
 
         <ScrollContainer horizontal="false" vertical="true" height="100%" width="100%">
-          <core:Fragment fragmentName="de.regatta_hd.infopoint.view.HeatsTable" type="XML" />
+          <core:Fragment fragmentName="de.regatta_hd.infoportal.view.HeatsTable" type="XML" />
         </ScrollContainer>
 
       </content>

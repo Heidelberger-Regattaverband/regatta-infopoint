@@ -36,7 +36,7 @@ export default class HeatsTable extends BaseTableController {
     super.getRouter()?.getRoute("heats")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadHeatsModel(), this);
 
     const filters: any = (super.getComponentModel("filters") as JSONModel).getData();
-    const viewSettingsDialog: ViewSettingsDialog = await this.getViewSettingsDialog("de.regatta_hd.infopoint.view.HeatsFilterDialog");
+    const viewSettingsDialog: ViewSettingsDialog = await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsFilterDialog");
 
     if (filters.dates) {
       const datesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "day", text: "{i18n>common.day}" });
@@ -115,12 +115,12 @@ export default class HeatsTable extends BaseTableController {
   }
 
   async onFilterButtonPress(event: Button$PressEvent): Promise<void> {
-    const viewSettingsDialog: ViewSettingsDialog = await super.getViewSettingsDialog("de.regatta_hd.infopoint.view.HeatsFilterDialog");
+    const viewSettingsDialog: ViewSettingsDialog = await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsFilterDialog");
     viewSettingsDialog.open();
   }
 
   async onClearFilterPress(event: Button$PressEvent): Promise<void> {
-    const viewSettingsDialog: ViewSettingsDialog = await super.getViewSettingsDialog("de.regatta_hd.infopoint.view.HeatsFilterDialog")
+    const viewSettingsDialog: ViewSettingsDialog = await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsFilterDialog")
     viewSettingsDialog.clearFilters();
     super.clearFilters();
     super.applyFilters();
