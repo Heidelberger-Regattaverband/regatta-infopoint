@@ -109,8 +109,8 @@ export default class Kiosk extends BaseController {
     return `/api/regattas/${super.getRegattaId()}/kiosk`;
   }
 
-  private getRegistrationsUrl(sHeatId: number): string {
-    return `/api/heats/${sHeatId}/registrations`;
+  private getRegistrationsUrl(heatId: number): string {
+    return `/api/heats/${heatId}`;
   }
 
 }
