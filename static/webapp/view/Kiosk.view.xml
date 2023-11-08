@@ -19,7 +19,7 @@
               <Panel class="sapUiNoContentPadding">
 
                 <Table autoPopinMode="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding"
-                  items="{path: 'regsFinished>/', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}">
+                  items="{path: 'regsFinished>/registrations', sorter: [{path: 'result/rankSort', descending: false}, {path: 'bib', descending: false} ]}">
 
                   <headerToolbar>
                     <OverflowToolbar>
@@ -91,7 +91,7 @@
                 <content>
 
                   <Table autoPopinMode="true" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding"
-                    items="{path: 'regsNext>/', sorter: [{path: 'bib', descending: false}]}">
+                    items="{path: 'regsNext>/registrations', sorter: [{path: 'bib', descending: false}]}">
                     <headerToolbar>
                       <OverflowToolbar>
                         <layout:VerticalLayout>
