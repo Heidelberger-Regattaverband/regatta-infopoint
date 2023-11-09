@@ -10,40 +10,29 @@ import MessageToast from "sap/m/MessageToast";
  */
 export default class RaceRegistrationsTable extends BaseController {
 
-  public formatter: Formatter = Formatter;
+  formatter: Formatter = Formatter;
+
+  private keyListener: (event: KeyboardEvent) => void;
 
   onInit(): void {
+    // first initialize the view
     super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
-
+    super.getView()?.addEventDelegate({ onBeforeShow: this.onBeforeShow, onBeforeHide: this.onBeforeHide }, this);
     super.setViewModel(new JSONModel(), "raceRegistrations");
-
-    super.getView()?.addEventDelegate({ onBeforeShow: this.onBeforeShow }, this);
 
     super.getEventBus()?.subscribe("race", "itemChanged", this.onItemChanged, this);
 
-    window.addEventListener("keydown", (event: KeyboardEvent) => {
-      switch (event.key) {
-        case "F5":
-          event.preventDefault();
-          break;
-        case "ArrowLeft":
-          this.onPreviousPress();
-          break;
-        case "ArrowRight":
-          this.onNextPress();
-          break;
-        case "ArrowUp":
-          this.onFirstPress();
-          break;
-        case "ArrowDown":
-          this.onLastPress();
-          break;
-      }
-    });
+    // bind keyListener method to this context to have access to navigation methods
+    this.keyListener = this.onKeyDown.bind(this);
   }
 
-  async onBeforeShow(): Promise<void> {
+  private async onBeforeShow(): Promise<void> {
+    window.addEventListener("keydown", this.keyListener);
     await this.loadRaceModel();
+  }
+
+  private onBeforeHide(): void {
+    window.removeEventListener("keydown", this.keyListener);
   }
 
   onNavBack(): void {
@@ -83,4 +72,23 @@ export default class RaceRegistrationsTable extends BaseController {
     await this.loadRaceModel();
   }
 
+  private onKeyDown(event: KeyboardEvent): void {
+    switch (event.key) {
+      case "F5":
+        event.preventDefault();
+        break;
+      case "ArrowLeft":
+        this.onPreviousPress();
+        break;
+      case "ArrowRight":
+        this.onNextPress();
+        break;
+      case "ArrowUp":
+        this.onFirstPress();
+        break;
+      case "ArrowDown":
+        this.onLastPress();
+        break;
+    }
+  }
 }
