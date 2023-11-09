@@ -6,7 +6,7 @@
     <Shell homeIcon="{ 'phone ':'', 'phone@2':'', 'tablet':'', 'tablet@2':'', 'precomposed':true, 'favicon':'icon/favicon.ico' }"
       logo="icon/hrv_bw.jpg">
       <app>
-        <App id="infopointApp" class="infopoint" />
+        <App id="infopointApp" class="infoportal" />
       </app>
     </Shell>
 
