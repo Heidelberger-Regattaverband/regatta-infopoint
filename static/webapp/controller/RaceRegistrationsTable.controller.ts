@@ -84,9 +84,11 @@ export default class RaceRegistrationsTable extends BaseController {
         this.onNextPress();
         break;
       case "ArrowUp":
+      case "Home":
         this.onFirstPress();
         break;
       case "ArrowDown":
+      case "End":
         this.onLastPress();
         break;
     }
