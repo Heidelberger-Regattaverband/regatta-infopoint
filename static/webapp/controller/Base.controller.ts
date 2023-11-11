@@ -82,8 +82,8 @@ export default class BaseController extends Controller {
     this.getRouter()?.getTargets()?.display(target);
   }
 
-  i18n(key: string, args?: any[]): string | undefined {
-    return (super.getOwnerComponent() as MyComponent).getResourceBundle().getText(key, args);
+  i18n(key: string, args?: any[]): string {
+    return (super.getOwnerComponent() as MyComponent).getResourceBundle().getText(key, args) || "";
   }
 
   getRegattaId(): number {
