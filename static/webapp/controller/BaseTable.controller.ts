@@ -22,7 +22,7 @@ export default class BaseTable extends BaseController {
   private bindingModel: string;
   private viewSettingsDialogs: Map<string, ViewSettingsDialog>;
 
-  public init(table: Table, channelId: string): void {
+  init(table: Table, channelId: string): void {
     // Keeps reference to any of the created sap.m.ViewSettingsDialog-s in this sample
     this.viewSettingsDialogs = new Map<string, ViewSettingsDialog>();
 
