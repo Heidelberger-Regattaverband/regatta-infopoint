@@ -30,6 +30,10 @@
       "id": "app",
       "async": true
     },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
     "dependencies": {
       "minUI5Version": "1.110.0",
       "libs": {
@@ -48,7 +52,7 @@
             "de",
             "en"
           ],
-          "fallbackLocale": ""
+          "fallbackLocale": "de"
         }
       }
     },
