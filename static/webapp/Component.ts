@@ -1,6 +1,8 @@
+import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import Device from "sap/ui/Device";
 import UIComponent from "sap/ui/core/UIComponent";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import ResourceModel from "sap/ui/model/resource/ResourceModel";
 
 /**
  * @namespace de.regatta_hd.infoportal
@@ -15,8 +17,9 @@ export default class Component extends UIComponent {
         manifest: "json",
         interfaces: ["sap.ui.core.IAsyncContentCreation"],
     };
+    resourceBundle: ResourceBundle;
 
-    init(): void {
+    async init(): Promise<void> {
         super.init();
 
         // create the views based on the url/hash
@@ -52,6 +55,13 @@ export default class Component extends UIComponent {
             // Chrome requires returnValue to be set.
             event.returnValue = '';
         });
+
+        const bundle: ResourceBundle | Promise<ResourceBundle> = (super.getModel("i18n") as ResourceModel).getResourceBundle();
+        if (bundle instanceof ResourceBundle) {
+            this.resourceBundle = bundle as ResourceBundle;
+        } else {
+            this.resourceBundle = await (bundle as Promise<ResourceBundle>);
+        }
     }
 
     getContentDensityClass(): string {
@@ -67,6 +77,14 @@ export default class Component extends UIComponent {
 
     getRegattaId(): number {
         return this.regattaModel.getData().id;
+    }
+
+    /**
+     * Getter for the resource bundle.
+     * @returns {sap.base.i18n.ResourceBundle} the resourceModel of the component
+    */
+    getResourceBundle(): ResourceBundle {
+        return this.resourceBundle;
     }
 
 }

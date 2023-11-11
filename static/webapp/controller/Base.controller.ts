@@ -5,8 +5,6 @@ import EventBus from "sap/ui/core/EventBus";
 import Model from "sap/ui/model/Model";
 import View from "sap/ui/core/mvc/View";
 import Component from "sap/ui/core/Component";
-import ResourceBundle from "sap/base/i18n/ResourceBundle";
-import ResourceModel from "sap/ui/model/resource/ResourceModel";
 import Router from "sap/ui/core/routing/Router";
 import Control from "sap/ui/core/Control";
 import UIComponent from "sap/ui/core/UIComponent";
@@ -71,14 +69,6 @@ export default class BaseController extends Controller {
     return super.getView()?.setModel(model, name);
   }
 
-  /**
-   * Getter for the resource bundle.
-   * @returns {sap.base.i18n.ResourceBundle} the resourceModel of the component
-   */
-  getResourceBundle(): ResourceBundle | Promise<ResourceBundle> {
-    return (super.getOwnerComponent()?.getModel("i18n") as ResourceModel)?.getResourceBundle();
-  }
-
   navBack(target: string): void {
     const previousHash: string | undefined = History.getInstance().getPreviousHash();
     if (previousHash) {
@@ -92,8 +82,8 @@ export default class BaseController extends Controller {
     this.getRouter()?.getTargets()?.display(target);
   }
 
-  i18n(key: string, args?: any[]): string {
-    return this.getResourceBundle().getText(key, args);
+  i18n(key: string, args?: any[]): string | undefined {
+    return (super.getOwnerComponent() as MyComponent).getResourceBundle().getText(key, args);
   }
 
   getRegattaId(): number {
