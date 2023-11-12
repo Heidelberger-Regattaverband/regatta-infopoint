@@ -23,9 +23,9 @@
                 <Text text="{i18n>common.city}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
+            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
               <header>
-                <Text text="Flagge" class="bold" wrapping="false" />
+                <Text text="{i18n>common.flag}" class="bold" wrapping="false" />
               </header>
             </Column>
             <Column hAlign="Begin" width="20rem" importance="High" popinDisplay="Inline">
