@@ -5,6 +5,19 @@ import { IndicationColor } from "sap/ui/core/library";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class Formatter {
+
+  private static bundle: ResourceBundle;
+
+  static {
+    Formatter.bundle = ResourceBundle.create({
+      // specify url of the base .properties file
+      url: "i18n/i18n.properties",
+      async: false,
+      supportedLocales: ["de", "en"],
+      fallbackLocale: "de",
+    }) as ResourceBundle;
+  }
+
   // -----------------
   // race formatters
   // -----------------
@@ -320,17 +333,7 @@ export default class Formatter {
   }
 
   private static i18n(key: string, args?: any[]): string {
-    if (!Formatter.bundle) {
-      Formatter.bundle = ResourceBundle.create({
-        // specify url of the base .properties file
-        url: "i18n/i18n.properties",
-        async: false,
-        supportedLocales: ["de", "en"],
-        fallbackLocale: "de",
-      }) as ResourceBundle;
-    }
     return Formatter.bundle.getText(key, args) || key;
   }
 
-  private static bundle: ResourceBundle;
 }
