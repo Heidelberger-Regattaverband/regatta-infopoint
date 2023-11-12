@@ -1,3 +1,4 @@
+import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import { IndicationColor } from "sap/ui/core/library";
 
 /**
@@ -55,20 +56,20 @@ export default class Formatter {
       return "";
     }
     if (race.cancelled) {
-      return this.i18n("heat.state.cancelled");
+      return Formatter.i18n("heat.state.cancelled");
     } else {
       switch (race.state) {
         default:
         case 0:
         case 1:
-          return this.i18n("common.scheduled");
+          return Formatter.i18n("common.scheduled");
         case 2:
         case 3:
         case 5:
         case 6:
-          return this.i18n("heat.state.started");
+          return Formatter.i18n("heat.state.started");
         case 4:
-          return this.i18n("common.finished");
+          return Formatter.i18n("common.finished");
       }
     }
   }
@@ -224,22 +225,22 @@ export default class Formatter {
       return undefined;
     }
     if (heat.cancelled) {
-      return this.i18n("heat.state.cancelled");
+      return Formatter.i18n("heat.state.cancelled");
     } else {
       switch (heat.state) {
         default:
         case 0:
-          return this.i18n("common.scheduled");
+          return Formatter.i18n("common.scheduled");
         case 1:
-          return this.i18n("common.seeded");
+          return Formatter.i18n("common.seeded");
         case 2:
-          return this.i18n("heat.state.started");
+          return Formatter.i18n("heat.state.started");
         case 4:
-          return this.i18n("heat.state.official");
+          return Formatter.i18n("heat.state.official");
         case 5:
-          return this.i18n("heat.state.finished");
+          return Formatter.i18n("heat.state.finished");
         case 6:
-          return this.i18n("heat.state.photoFinish");
+          return Formatter.i18n("heat.state.photoFinish");
       }
     }
   }
@@ -283,17 +284,17 @@ export default class Formatter {
 
     switch (heat.roundCode) {
       case "A":
-        return this.i18n("heat.label.division", [heatLabel, groupValue]);
+        return Formatter.i18n("heat.label.division", [heatLabel, groupValue]);
       case "H":
-        return this.i18n("heat.label.repechage", [heatLabel]);
+        return Formatter.i18n("heat.label.repechage", [heatLabel]);
       case "R":
-        return this.i18n("heat.label.mainRace", [heatLabel, groupValue]);
+        return Formatter.i18n("heat.label.mainRace", [heatLabel, groupValue]);
       case "V":
-        return this.i18n("heat.label.forerun", [heatLabel, groupValue]);
+        return Formatter.i18n("heat.label.forerun", [heatLabel, groupValue]);
       case "S":
-        return this.i18n("heat.label.semifinal", [heatLabel, groupValue]);
+        return Formatter.i18n("heat.label.semifinal", [heatLabel, groupValue]);
       case "F":
-        return this.i18n("heat.label.final", [heatLabel, groupValue]);
+        return Formatter.i18n("heat.label.final", [heatLabel, groupValue]);
       default:
         return "";
     }
@@ -317,4 +318,19 @@ export default class Formatter {
         return roundCode;
     }
   }
+
+  private static i18n(key: string, args?: any[]): string {
+    if (!Formatter.bundle) {
+      Formatter.bundle = ResourceBundle.create({
+        // specify url of the base .properties file
+        url: "i18n/i18n.properties",
+        async: false,
+        supportedLocales: ["de", "en"],
+        fallbackLocale: "de",
+      }) as ResourceBundle;
+    }
+    return Formatter.bundle.getText(key, args) || key;
+  }
+
+  private static bundle: ResourceBundle;
 }
