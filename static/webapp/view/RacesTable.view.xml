@@ -14,7 +14,8 @@
                 <SearchField width="10rem" search=".onFilterSearch" />
                 <Button text="{i18n>common.filter}" tooltip="{i18n>common.filter}" icon="sap-icon://filter"
                   press="onFilterButtonPress" />
-                <Button text="{i18n>common.sorting}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort" press="onSortButtonPress" />
+                <Button text="{=${device>system/phone}?'':${i18n>common.sorting}}" tooltip="{i18n>common.sorting}"
+                  icon="sap-icon://sort" press="onSortButtonPress" />
                 <ToolbarSpacer />
                 <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
               </content>
