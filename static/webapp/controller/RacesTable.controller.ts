@@ -11,10 +11,12 @@ import MessageToast from "sap/m/MessageToast";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import Filter from "sap/ui/model/Filter";
 import { SearchField$SearchEvent } from "sap/m/SearchField";
-import ViewSettingsDialog from "sap/m/ViewSettingsDialog";
+import ViewSettingsDialog, { ViewSettingsDialog$ConfirmEvent, ViewSettingsDialog$ConfirmEventParameters, ViewSettingsDialog$ResetEvent } from "sap/m/ViewSettingsDialog";
 import ListItemBase from "sap/m/ListItemBase";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
+import Sorter from "sap/ui/model/Sorter";
+import ListBinding from "sap/ui/model/ListBinding";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -86,15 +88,31 @@ export default class RacesTable extends BaseTableController {
   }
 
   async onFilterButtonPress(event: Button$PressEvent): Promise<void> {
-    const viewSettingsDialog = await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog")
-    viewSettingsDialog.open();
+    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog")).open();
   }
 
   async onClearFilterPress(event: Button$PressEvent): Promise<void> {
-    const viewSettingsDialog: ViewSettingsDialog = await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog")
-    viewSettingsDialog.clearFilters();
+    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog")).clearFilters();
     super.clearFilters();
     super.applyFilters();
+  }
+
+  async onSortButtonPress(event: Button$PressEvent): Promise<void> {
+    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesSortDialog")).open();
+  }
+
+  onSortDialogConfirm(event: ViewSettingsDialog$ConfirmEvent): void {
+    let sorters: Sorter[] = [];
+    const params: ViewSettingsDialog$ConfirmEventParameters = event.getParameters()
+    const path: string = params.sortItem?.getKey() || "";
+    sorters.push(new Sorter(path, params.sortDescending));
+
+    // apply the selected sort and group settings
+    (this.table.getBinding("items") as ListBinding).sort(sorters);
+  }
+
+  onSortDialogReset(event: ViewSettingsDialog$ResetEvent) {
+    (this.table.getBinding("items") as ListBinding).sort([new Sorter("id", false)]);
   }
 
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
