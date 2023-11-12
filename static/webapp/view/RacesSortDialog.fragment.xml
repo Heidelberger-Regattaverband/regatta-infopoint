@@ -1,8 +1,7 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
   <ViewSettingsDialog confirm="onSortDialogConfirm" reset="onSortDialogReset">
     <sortItems>
-      <ViewSettingsItem text="{i18n>sorting.none}" key="id" selected="true" />
-      <ViewSettingsItem text="{i18n>common.number}" key="number" />
+      <ViewSettingsItem text="{i18n>common.number}" key="id" selected="true" />
       <ViewSettingsItem text="{i18n>common.distance}" key="distance" />
       <ViewSettingsItem text="{i18n>common.registrations}" key="registrationsCount" />
       <ViewSettingsItem text="{i18n>common.state}" key="state" />
