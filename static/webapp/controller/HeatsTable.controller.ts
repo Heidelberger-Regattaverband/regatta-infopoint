@@ -12,9 +12,11 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import Filter from "sap/ui/model/Filter";
 import { SearchField$SearchEvent } from "sap/m/SearchField";
 import ListItemBase from "sap/m/ListItemBase";
-import ViewSettingsDialog from "sap/m/ViewSettingsDialog";
+import ViewSettingsDialog, { ViewSettingsDialog$ConfirmEvent, ViewSettingsDialog$ConfirmEventParameters } from "sap/m/ViewSettingsDialog";
 import Context from "sap/ui/model/Context";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import Sorter from "sap/ui/model/Sorter";
+import ListBinding from "sap/ui/model/ListBinding";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -112,6 +114,20 @@ export default class HeatsTable extends BaseTableController {
   onItemChanged(item: any): void {
     (super.getComponentModel("heat") as JSONModel).setData(item);
     super.getEventBus()?.publish("heat", "itemChanged", {});
+  }
+
+  async onSortButtonPress(event: Button$PressEvent): Promise<void> {
+    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsSortDialog")).open();
+  }
+
+  onSortDialogConfirm(event: ViewSettingsDialog$ConfirmEvent): void {
+    let sorters: Sorter[] = [];
+    const params: ViewSettingsDialog$ConfirmEventParameters = event.getParameters()
+    const path: string = params.sortItem?.getKey() || "";
+    sorters.push(new Sorter(path, params.sortDescending));
+
+    // apply the selected sort and group settings
+    (this.table.getBinding("items") as ListBinding).sort(sorters);
   }
 
   async onFilterButtonPress(event: Button$PressEvent): Promise<void> {

@@ -1,0 +1,9 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+  <ViewSettingsDialog confirm="onSortDialogConfirm">
+    <sortItems>
+      <ViewSettingsItem text="{i18n>common.day} / {i18n>common.time}" key="dateTime" selected="true" />
+      <ViewSettingsItem text="{i18n>common.distance}" key="race/distance" />
+      <ViewSettingsItem text="{i18n>common.state}" key="state" />
+    </sortItems>
+  </ViewSettingsDialog>
+</core:FragmentDefinition>
