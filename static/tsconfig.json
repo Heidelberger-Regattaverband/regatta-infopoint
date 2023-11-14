@@ -18,7 +18,8 @@
       ]
     },
     "composite": true,
-    "noImplicitAny": true
+    "noImplicitAny": true,
+    "outDir": "./dist"
   },
   "include": [
     "./webapp/**/*"

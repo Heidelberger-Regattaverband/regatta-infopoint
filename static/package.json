@@ -7,12 +7,14 @@
     "start": "ui5 serve --port 8080 -o index.html",
     "start:dist": "ui5 serve  --port 8080 -o index.html --config ui5-dist.yaml",
     "ts-typecheck": "tsc --noEmit",
-    "lint": "eslint webapp"
+    "lint": "eslint webapp",
+    "watch": "watch 'npm run build' webapp"
   },
   "devDependencies": {
     "@types/openui5": "^1.120.0",
     "@ui5/cli": "^3.7.1",
     "typescript": "^5.2.2",
-    "ui5-tooling-transpile": "^3.2.7"
+    "ui5-tooling-transpile": "^3.2.7",
+    "watch": "^1.0.2"
   }
 }
