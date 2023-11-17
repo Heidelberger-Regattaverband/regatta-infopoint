@@ -3,6 +3,7 @@
     <sortItems>
       <ViewSettingsItem text="{i18n>common.day} / {i18n>common.time}" key="dateTime" selected="true" />
       <ViewSettingsItem text="{i18n>common.distance}" key="race/distance" />
+      <ViewSettingsItem text="{i18n>common.heatNr}" key="number" />
       <ViewSettingsItem text="{i18n>common.state}" key="state" />
     </sortItems>
   </ViewSettingsDialog>
