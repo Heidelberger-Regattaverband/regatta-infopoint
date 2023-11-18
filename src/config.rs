@@ -68,11 +68,16 @@ impl Config {
 
     /// Returns the database configuration required by the tiberius client.
     pub fn get_db_config(&self) -> TiberiusConfig {
+        self.get_db_config_for_user(&self.db_user, &self.db_password)
+    }
+
+    /// Returns the database configuration required by the tiberius client.
+    pub fn get_db_config_for_user(&self, user: &String, password: &String) -> TiberiusConfig {
         let mut config = TiberiusConfig::new();
         config.host(&self.db_host);
         config.port(self.db_port);
         config.database(&self.db_name);
-        config.authentication(AuthMethod::sql_server(&self.db_user, &self.db_password));
+        config.authentication(AuthMethod::sql_server(user, password));
         if self.db_encryption {
             config.encryption(EncryptionLevel::Required);
             config.trust_cert();
