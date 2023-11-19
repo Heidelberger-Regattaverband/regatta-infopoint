@@ -93,4 +93,5 @@ export default class RaceRegistrationsTable extends BaseController {
         break;
     }
   }
+
 }

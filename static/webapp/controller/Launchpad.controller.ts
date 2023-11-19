@@ -165,4 +165,5 @@ export default class Launchpad extends BaseController {
   private isAuthenticated(): boolean {
     return this.getViewModel("identity")?.getProperty("/authenticated");
   }
+
 }

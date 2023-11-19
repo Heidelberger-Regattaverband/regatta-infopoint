@@ -75,4 +75,5 @@ export default class ParticipatingClubsTable extends BaseController {
   private async loadModel(): Promise<void> {
     await super.updateJSONModel(this.participatingClubsModel, `/api/regattas/${this.getRegattaId()}/participating_clubs`, this.table)
   }
+
 }

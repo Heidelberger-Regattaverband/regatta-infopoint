@@ -63,4 +63,5 @@ export default class ScoringTable extends BaseController {
   private async loadScoringModel(): Promise<void> {
     await super.updateJSONModel(this.scoringModel, `/api/regattas/${super.getRegattaId()}/calculateScoring`, this.table)
   }
+
 }
