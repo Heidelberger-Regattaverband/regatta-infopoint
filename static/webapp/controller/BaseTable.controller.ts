@@ -8,8 +8,8 @@ import ListBinding from "sap/ui/model/ListBinding";
 import ListItemBase from "sap/m/ListItemBase";
 import MyComponent from "de/regatta_hd/Component";
 import FilterOperator from "sap/ui/model/FilterOperator";
-import ViewSettingsFilterItem from "sap/m/ViewSettingsFilterItem";
 import CustomData from "sap/ui/core/CustomData";
+import ViewSettingsItem from "sap/m/ViewSettingsItem";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -86,10 +86,9 @@ export default class BaseTable extends BaseController {
   }
 
   onHandleFilterDialogConfirm(event: ViewSettingsDialog$ConfirmEvent): void {
-    const params: Record<string, any> = event.getParameters() as Record<string, any>;
     this.filters = [];
 
-    params.filterItems.forEach((filterItem: ViewSettingsFilterItem) => {
+    event.getParameters().filterItems?.forEach((filterItem: ViewSettingsItem) => {
       const customData: CustomData[] = filterItem.getCustomData();
       if (customData) {
         customData.forEach((data: CustomData) => {
@@ -106,7 +105,7 @@ export default class BaseTable extends BaseController {
     // apply filters
     this.applyFilters();
 
-    this.updateFilterBar(params.filterString);
+    this.updateFilterBar((event.getParameters() as any).filterString);
   }
 
   private updateFilterBar(text: string): void {
