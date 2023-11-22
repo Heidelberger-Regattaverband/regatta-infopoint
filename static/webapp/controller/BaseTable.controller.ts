@@ -31,7 +31,7 @@ export default class BaseTable extends BaseController {
     this.searchFilters = [];
 
     // return the path of the model that is bound to the items, e.g. races or heats
-    this.bindingModel = this.table.getBindingInfo("items").model || "";
+    this.bindingModel = this.table.getBindingInfo("items").model ?? "";
 
     super.getEventBus()?.subscribe(channelId, "first", this.onFirstItemEvent, this);
     super.getEventBus()?.subscribe(channelId, "previous", this.onPreviousItemEvent, this);

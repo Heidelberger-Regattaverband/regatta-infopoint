@@ -104,7 +104,7 @@ export default class RacesTable extends BaseTableController {
   onSortDialogConfirm(event: ViewSettingsDialog$ConfirmEvent): void {
     let sorters: Sorter[] = [];
     const params: ViewSettingsDialog$ConfirmEventParameters = event.getParameters()
-    const path: string = params.sortItem?.getKey() || "";
+    const path: string = params.sortItem?.getKey() ?? "";
     sorters.push(new Sorter(path, params.sortDescending));
 
     // apply the selected sort and group settings

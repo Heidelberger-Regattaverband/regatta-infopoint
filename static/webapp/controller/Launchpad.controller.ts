@@ -118,11 +118,11 @@ export default class Launchpad extends BaseController {
       success: (result: { username: any; }) => {
         this.updateIdentity(true, result.username);
         this.credentialsModel.setProperty("/username", result.username);
-        MessageToast.show(super.i18n("msg.loginSucceeded", undefined));
+        MessageToast.show(super.i18n("msg.loginSucceeded"));
         $(".sapMMessageToast").removeClass("sapMMessageToastDanger").addClass("sapMMessageToastSuccess");
       },
       error: (result: any) => {
-        MessageToast.show(super.i18n("msg.loginFailed", undefined));
+        MessageToast.show(super.i18n("msg.loginFailed"));
         $(".sapMMessageToast").removeClass("sapMMessageToastSuccess").addClass("sapMMessageToastDanger");
       }
     });

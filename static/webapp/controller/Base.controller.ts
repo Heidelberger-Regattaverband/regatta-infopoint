@@ -2,13 +2,14 @@ import Controller from "sap/ui/core/mvc/Controller";
 import History from "sap/ui/core/routing/History";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import EventBus from "sap/ui/core/EventBus";
-import Model from "sap/ui/model/Model";
+import Model, { Model$RequestFailedEvent, Model$RequestFailedEventParameters } from "sap/ui/model/Model";
 import View from "sap/ui/core/mvc/View";
 import Component from "sap/ui/core/Component";
 import Router from "sap/ui/core/routing/Router";
 import Control from "sap/ui/core/Control";
 import UIComponent from "sap/ui/core/UIComponent";
 import MyComponent from "de/regatta_hd/Component";
+import MessageBox from "sap/m/MessageBox";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -83,7 +84,7 @@ export default class BaseController extends Controller {
   }
 
   i18n(key: string, args?: any[]): string {
-    return (super.getOwnerComponent() as MyComponent).getResourceBundle().getText(key, args) || "";
+    return (super.getOwnerComponent() as MyComponent).getResourceBundle().getText(key, args) ?? "";
   }
 
   getRegattaId(): number {
@@ -91,7 +92,13 @@ export default class BaseController extends Controller {
   }
 
   async createJSONModel(url: string, control?: Control): Promise<JSONModel> {
-    return await this.updateJSONModel(new JSONModel(), url, control);
+    const handler = (event: Model$RequestFailedEvent): void => {
+      const params: Model$RequestFailedEventParameters = event.getParameters();
+      MessageBox.error((params.statusCode ?? "") + ": " + params.statusText);
+    };
+    const jsonModel: JSONModel = new JSONModel();
+    jsonModel.attachRequestFailed(handler);
+    return await this.updateJSONModel(jsonModel, url, control);
   }
 
   async updateJSONModel(model: JSONModel, url: string, control?: Control): Promise<JSONModel> {
