@@ -92,19 +92,20 @@ export default class BaseController extends Controller {
   }
 
   async createJSONModel(url: string, control?: Control): Promise<JSONModel> {
-    const handler = (event: Model$RequestFailedEvent): void => {
-      const params: Model$RequestFailedEventParameters = event.getParameters();
-      MessageBox.error((params.statusCode ?? "") + ": " + params.statusText);
-    };
     const jsonModel: JSONModel = new JSONModel();
-    jsonModel.attachRequestFailed(handler);
     return await this.updateJSONModel(jsonModel, url, control);
   }
 
   async updateJSONModel(model: JSONModel, url: string, control?: Control): Promise<JSONModel> {
     control?.setBusy(true);
-    await model.loadData(url);
-    control?.setBusy(false);
+    try {
+      await model.loadData(url);
+    } catch (error: any) {
+      const params: Model$RequestFailedEventParameters = error as Model$RequestFailedEventParameters;
+      MessageBox.error((params.statusCode ?? "") + ": " + params.statusText);
+    } finally {
+      control?.setBusy(false);
+    }
     return model;
   }
 
