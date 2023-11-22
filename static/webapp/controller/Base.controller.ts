@@ -2,7 +2,7 @@ import Controller from "sap/ui/core/mvc/Controller";
 import History from "sap/ui/core/routing/History";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import EventBus from "sap/ui/core/EventBus";
-import Model, { Model$RequestFailedEvent, Model$RequestFailedEventParameters } from "sap/ui/model/Model";
+import Model, { Model$RequestFailedEventParameters } from "sap/ui/model/Model";
 import View from "sap/ui/core/mvc/View";
 import Component from "sap/ui/core/Component";
 import Router from "sap/ui/core/routing/Router";
