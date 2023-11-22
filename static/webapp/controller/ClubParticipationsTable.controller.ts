@@ -3,7 +3,6 @@ import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
 import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import MessageToast from "sap/m/MessageToast";
 import { ListBase$SelectEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
 import Button, { Button$PressEvent } from "sap/m/Button";
@@ -56,7 +55,6 @@ export default class ClubParticipationsTable extends BaseController {
     const source: Button = event.getSource();
     source.setEnabled(false);
     await this.loadRegistrationsModel();
-    MessageToast.show(this.i18n("msg.dataUpdated"));
     source.setEnabled(true);
   }
 

@@ -6,7 +6,6 @@ import { SearchField$SearchEvent } from "sap/m/SearchField";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import ListBinding from "sap/ui/model/ListBinding";
-import MessageToast from "sap/m/MessageToast";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 
@@ -56,7 +55,6 @@ export default class ScoringTable extends BaseController {
     const source: Button = event.getSource();
     source.setEnabled(false);
     await this.loadScoringModel();
-    MessageToast.show(this.i18n("msg.dataUpdated"));
     source.setEnabled(true);
   }
 

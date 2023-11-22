@@ -3,7 +3,6 @@ import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
 import MyComponent from "de/regatta_hd/Component";
 import Button, { Button$PressEvent } from "sap/m/Button";
-import MessageToast from "sap/m/MessageToast";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -59,7 +58,6 @@ export default class RaceRegistrationsTable extends BaseController {
     const source: Button = event.getSource();
     source.setEnabled(false);
     await this.loadRaceModel();
-    MessageToast.show(this.i18n("msg.dataUpdated"));
     source.setEnabled(true);
   }
 

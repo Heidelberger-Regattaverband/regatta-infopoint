@@ -10,6 +10,7 @@ import Control from "sap/ui/core/Control";
 import UIComponent from "sap/ui/core/UIComponent";
 import MyComponent from "de/regatta_hd/Component";
 import MessageBox from "sap/m/MessageBox";
+import MessageToast from "sap/m/MessageToast";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -100,6 +101,7 @@ export default class BaseController extends Controller {
     control?.setBusy(true);
     try {
       await model.loadData(url);
+      MessageToast.show(this.i18n("msg.dataUpdated"));
     } catch (error: any) {
       const params: Model$RequestFailedEventParameters = error as Model$RequestFailedEventParameters;
       MessageBox.error((params.statusCode ?? "") + ": " + params.statusText);

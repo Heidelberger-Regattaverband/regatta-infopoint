@@ -7,7 +7,6 @@ import ViewSettingsFilterItem from "sap/m/ViewSettingsFilterItem";
 import ViewSettingsItem from "sap/m/ViewSettingsItem";
 import { ListBase$SelectEvent } from "sap/m/ListBase";
 import Button, { Button$PressEvent } from "sap/m/Button";
-import MessageToast from "sap/m/MessageToast";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import Filter from "sap/ui/model/Filter";
 import { SearchField$SearchEvent } from "sap/m/SearchField";
@@ -119,7 +118,6 @@ export default class RacesTable extends BaseTableController {
     const source: Button = event.getSource();
     source.setEnabled(false);
     await this.loadRacesModel();
-    MessageToast.show(this.i18n("msg.dataUpdated"));
     source.setEnabled(true);
   }
 

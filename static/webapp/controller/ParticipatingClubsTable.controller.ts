@@ -6,7 +6,6 @@ import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import ListBinding from "sap/ui/model/ListBinding";
 import Button, { Button$PressEvent } from "sap/m/Button";
-import MessageToast from "sap/m/MessageToast";
 import Context from "sap/ui/model/Context";
 import { SearchField$SearchEvent } from "sap/m/SearchField";
 import { ListBase$SelectEvent } from "sap/m/ListBase";
@@ -59,7 +58,6 @@ export default class ParticipatingClubsTable extends BaseController {
     const source: Button = event.getSource();
     source.setEnabled(false);
     await this.loadModel();
-    MessageToast.show(this.i18n("msg.dataUpdated"));
     source.setEnabled(true);
   }
 

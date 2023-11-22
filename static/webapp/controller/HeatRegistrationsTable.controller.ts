@@ -2,7 +2,6 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
 import MyComponent from "de/regatta_hd/Component";
-import MessageToast from "sap/m/MessageToast";
 import Button, { Button$PressEvent } from "sap/m/Button";
 
 /**
@@ -64,7 +63,6 @@ export default class HeatRegistrationsTable extends BaseController {
     const source: Button = event.getSource();
     source.setEnabled(false);
     await this.loadHeatModel();
-    MessageToast.show(this.i18n("msg.dataUpdated"));
     source.setEnabled(true);
   }
 
