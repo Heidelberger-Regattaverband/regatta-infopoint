@@ -61,7 +61,7 @@
         "routerClass": "sap.m.routing.Router",
         "viewType": "XML",
         "path": "de.regatta_hd.infoportal.view",
-        "controlId": "infopointApp",
+        "controlId": "infoportalApp",
         "controlAggregation": "pages",
         "transition": "slide",
         "bypassed": {
