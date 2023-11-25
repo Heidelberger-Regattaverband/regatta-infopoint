@@ -1,5 +1,5 @@
 use crate::db::{
-    model::{utils, Athlete, Club, ToEntity},
+    model::{utils, Athlete, Club},
     tiberius::{RowColumn, TiberiusPool},
 };
 use serde::Serialize;
@@ -54,19 +54,19 @@ impl Crew {
 
         let mut client = pool.get().await;
         let crew = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-        crew.into_iter().map(|row| row.to_entity()).collect()
+        crew.into_iter().map(|row| Crew::from(&row)).collect()
     }
 }
 
-impl ToEntity<Crew> for Row {
-    fn to_entity(&self) -> Crew {
+impl From<&Row> for Crew {
+    fn from(value: &Row) -> Self {
         Crew {
-            id: self.get_column("Crew_ID"),
-            pos: self.get_column("Crew_Pos"),
-            cox: self.get_column("Crew_IsCox"),
-            athlete: self.to_entity(),
-            round_from: self.get_column("Crew_RoundFrom"),
-            round_to: self.get_column("Crew_RoundTo"),
+            id: value.get_column("Crew_ID"),
+            pos: value.get_column("Crew_Pos"),
+            cox: value.get_column("Crew_IsCox"),
+            athlete: Athlete::from(value),
+            round_from: value.get_column("Crew_RoundFrom"),
+            round_to: value.get_column("Crew_RoundTo"),
         }
     }
 }

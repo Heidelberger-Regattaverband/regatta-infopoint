@@ -1,5 +1,5 @@
 use crate::db::{
-    model::{utils, Club, Crew, Heat, Race, ToEntity, TryToEntity},
+    model::{utils, Club, Crew, Heat, Race, TryToEntity},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use futures::future::{join_all, BoxFuture};
@@ -46,22 +46,22 @@ pub struct Registration {
     heat: Option<Heat>,
 }
 
-impl ToEntity<Registration> for Row {
-    fn to_entity(&self) -> Registration {
-        let cancel_value: u8 = self.get_column("Entry_CancelValue");
+impl From<&Row> for Registration {
+    fn from(value: &Row) -> Self {
+        let cancel_value: u8 = value.get_column("Entry_CancelValue");
 
         Registration {
-            id: self.get_column("Entry_ID"),
-            bib: self.try_get_column("Entry_Bib"),
-            comment: self.try_get_column("Entry_Comment"),
-            boat_number: self.try_get_column("Entry_BoatNumber"),
-            short_label: self.get_column("Label_Short"),
+            id: value.get_column("Entry_ID"),
+            bib: value.try_get_column("Entry_Bib"),
+            comment: value.try_get_column("Entry_Comment"),
+            boat_number: value.try_get_column("Entry_BoatNumber"),
+            short_label: value.get_column("Label_Short"),
             cancelled: cancel_value > 0,
-            group_value: self.try_get_column("Entry_GroupValue"),
-            club: self.to_entity(),
+            group_value: value.try_get_column("Entry_GroupValue"),
+            club: Club::from(value),
             crew: None,
-            race: self.to_entity(),
-            heat: self.try_to_entity(),
+            race: Race::from(value),
+            heat: value.try_to_entity(),
         }
     }
 }
@@ -131,7 +131,7 @@ async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Vec
         .await
         .into_iter()
         .map(|row| {
-            let registration: Registration = row.to_entity();
+            let registration = Registration::from(&row);
             crew_futures.push(Box::pin(Crew::query_all(registration.id, round, pool)));
             registration
         })

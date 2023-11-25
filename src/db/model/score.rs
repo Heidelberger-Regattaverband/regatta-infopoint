@@ -1,5 +1,5 @@
 use crate::db::{
-    model::{utils, Club, ToEntity},
+    model::{utils, Club},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
@@ -13,12 +13,12 @@ pub struct Score {
     club: Club,
 }
 
-impl ToEntity<Score> for Row {
-    fn to_entity(&self) -> Score {
+impl From<&Row> for Score {
+    fn from(value: &Row) -> Self {
         Score {
-            rank: self.try_get_column("rank"),
-            points: self.get_column("points"),
-            club: self.to_entity(),
+            rank: value.try_get_column("rank"),
+            points: value.get_column("points"),
+            club: Club::from(value),
         }
     }
 }
@@ -59,7 +59,7 @@ impl Score {
             .into_iter()
             .map(|row| {
                 index += 1;
-                let mut score: Self = row.to_entity();
+                let mut score = Score::from(&row);
                 score.rank = Some(index);
                 score
             })

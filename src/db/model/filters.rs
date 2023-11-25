@@ -1,5 +1,5 @@
 use crate::db::{
-    model::{utils, AgeClass, BoatClass, ToEntity},
+    model::{utils, AgeClass, BoatClass},
     tiberius::{RowColumn, TiberiusPool},
 };
 use chrono::NaiveDate;
@@ -76,7 +76,7 @@ async fn query_boat_classes(regatta_id: i32, pool: &TiberiusPool) -> Vec<BoatCla
 
     let mut client = pool.get().await;
     let rows = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-    rows.into_iter().map(|row| row.to_entity()).collect()
+    rows.into_iter().map(|row| BoatClass::from(&row)).collect()
 }
 
 async fn query_age_classes(regatta_id: i32, pool: &TiberiusPool) -> Vec<AgeClass> {
@@ -92,7 +92,7 @@ async fn query_age_classes(regatta_id: i32, pool: &TiberiusPool) -> Vec<AgeClass
 
     let mut client = pool.get().await;
     let rows = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-    rows.into_iter().map(|row| row.to_entity()).collect()
+    rows.into_iter().map(|row| AgeClass::from(&row)).collect()
 }
 
 async fn query_dates(regatta_id: i32, pool: &TiberiusPool) -> Vec<NaiveDate> {

@@ -1,5 +1,5 @@
 use crate::db::{
-    model::{utils, ToEntity},
+    model::utils,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
@@ -17,19 +17,19 @@ pub struct Regatta {
     url: String,
 }
 
-impl ToEntity<Regatta> for Row {
-    fn to_entity(&self) -> Regatta {
-        let start_date: NaiveDateTime = self.get_column("Event_StartDate");
-        let end_date: NaiveDateTime = self.get_column("Event_EndDate");
+impl From<&Row> for Regatta {
+    fn from(value: &Row) -> Self {
+        let start_date: NaiveDateTime = value.get_column("Event_StartDate");
+        let end_date: NaiveDateTime = value.get_column("Event_EndDate");
 
         Regatta {
-            id: self.get_column("Event_ID"),
-            title: self.get_column("Event_Title"),
-            sub_title: self.try_get_column("Event_SubTitle").unwrap_or_default(),
-            venue: self.try_get_column("Event_Venue").unwrap_or_default(),
+            id: value.get_column("Event_ID"),
+            title: value.get_column("Event_Title"),
+            sub_title: value.try_get_column("Event_SubTitle").unwrap_or_default(),
+            venue: value.try_get_column("Event_Venue").unwrap_or_default(),
             start_date: start_date.date().to_string(),
             end_date: end_date.date().to_string(),
-            url: self.try_get_column("Event_Url").unwrap_or_default(),
+            url: value.try_get_column("Event_Url").unwrap_or_default(),
         }
     }
 }
@@ -41,14 +41,14 @@ impl Regatta {
             .query(&mut client)
             .await
             .unwrap();
-        utils::get_row(stream).await.to_entity()
+        Regatta::from(&utils::get_row(stream).await)
     }
 
     pub async fn query_all(pool: &TiberiusPool) -> Vec<Regatta> {
         let mut client = pool.get().await;
         let stream = Query::new("SELECT * FROM Event").query(&mut client).await.unwrap();
         let regattas = utils::get_rows(stream).await;
-        regattas.into_iter().map(|row| row.to_entity()).collect()
+        regattas.into_iter().map(|row| Regatta::from(&row)).collect()
     }
 
     pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Regatta {
@@ -56,8 +56,6 @@ impl Regatta {
         query.bind(regatta_id);
 
         let mut client = pool.get().await;
-        utils::get_row(query.query(&mut client).await.unwrap())
-            .await
-            .to_entity()
+        Regatta::from(&utils::get_row(query.query(&mut client).await.unwrap()).await)
     }
 }

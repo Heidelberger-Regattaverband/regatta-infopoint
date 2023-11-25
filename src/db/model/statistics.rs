@@ -1,5 +1,5 @@
 use crate::db::{
-    model::{utils, Athlete, ToEntity, TryToEntity},
+    model::{utils, Athlete, TryToEntity},
     tiberius::{RowColumn, TiberiusPool},
 };
 use futures::join;
@@ -45,29 +45,29 @@ pub struct Statistics {
     athletes: Option<Athletes>,
 }
 
-impl ToEntity<Statistics> for Row {
-    fn to_entity(&self) -> Statistics {
+impl From<&Row> for Statistics {
+    fn from(value: &Row) -> Self {
         let races = RacesStatistics {
-            all: self.get_column("races_all"),
-            cancelled: self.get_column("races_cancelled"),
+            all: value.get_column("races_all"),
+            cancelled: value.get_column("races_cancelled"),
         };
         let heats = HeatsStatistics {
-            all: self.get_column("heats_all"),
-            cancelled: self.get_column("heats_cancelled"),
-            scheduled: self.get_column("heats_scheduled"),
-            seeded: self.get_column("heats_seeded"),
-            started: self.get_column("heats_started"),
-            finished: self.get_column("heats_finished"),
-            official: self.get_column("heats_official"),
+            all: value.get_column("heats_all"),
+            cancelled: value.get_column("heats_cancelled"),
+            scheduled: value.get_column("heats_scheduled"),
+            seeded: value.get_column("heats_seeded"),
+            started: value.get_column("heats_started"),
+            finished: value.get_column("heats_finished"),
+            official: value.get_column("heats_official"),
         };
         let registrations = RegistrationsStatistics {
-            all: self.get_column("registrations_all"),
-            cancelled: self.get_column("registrations_cancelled"),
-            registering_clubs: self.get_column("registrations_owner_clubs"),
-            athletes: self.get_column("registrations_athletes"),
-            clubs: self.get_column("registrations_clubs"),
-            seats: self.get_column("registrations_seats"),
-            seats_cox: self.get_column("registrations_seats_cox"),
+            all: value.get_column("registrations_all"),
+            cancelled: value.get_column("registrations_cancelled"),
+            registering_clubs: value.get_column("registrations_owner_clubs"),
+            athletes: value.get_column("registrations_athletes"),
+            clubs: value.get_column("registrations_clubs"),
+            seats: value.get_column("registrations_seats"),
+            seats_cox: value.get_column("registrations_seats_cox"),
         };
         Statistics {
             races,
@@ -142,7 +142,7 @@ impl Statistics {
             Statistics::query_oldest(regatta_id, "M", pool)
         );
 
-        let mut stats: Statistics = utils::get_row(result.0.unwrap()).await.to_entity();
+        let mut stats = Statistics::from(&utils::get_row(result.0.unwrap()).await);
         stats.athletes = Some(Athletes {
             oldest_woman: result.1,
             oldest_man: result.2,

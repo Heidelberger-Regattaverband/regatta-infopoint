@@ -1,7 +1,7 @@
 use std::{cmp::Ordering, time::Duration};
 
 use crate::db::{
-    model::{utils, Club, Crew, Heat, HeatResult, Race, Registration, ToEntity, TryToEntity},
+    model::{utils, Club, Crew, Heat, HeatResult, Race, Registration, TryToEntity},
     tiberius::{RowColumn, TiberiusPool},
 };
 use futures::future::{join_all, BoxFuture};
@@ -18,13 +18,13 @@ pub struct HeatRegistration {
     result: Option<HeatResult>,
 }
 
-impl ToEntity<HeatRegistration> for Row {
-    fn to_entity(&self) -> HeatRegistration {
+impl From<&Row> for HeatRegistration {
+    fn from(value: &Row) -> Self {
         HeatRegistration {
-            id: self.get_column("CE_ID"),
-            lane: self.get_column("CE_Lane"),
-            registration: self.to_entity(),
-            result: self.try_to_entity(),
+            id: value.get_column("CE_ID"),
+            lane: value.get_column("CE_Lane"),
+            registration: Registration::from(value),
+            result: value.try_to_entity(),
         }
     }
 }
@@ -55,7 +55,7 @@ impl HeatRegistration {
         let mut heat_registrations: Vec<HeatRegistration> = rows
             .into_iter()
             .map(|row| {
-                let mut heat_registration: HeatRegistration = row.to_entity();
+                let mut heat_registration = HeatRegistration::from(&row);
                 // if a result is available, the registration isn't cancelled yet
                 if heat_registration.result.is_some() {
                     heat_registration.registration.cancelled = false;

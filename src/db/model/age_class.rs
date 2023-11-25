@@ -1,5 +1,5 @@
 use crate::db::{
-    model::{ToEntity, TryToEntity},
+    model::TryToEntity,
     tiberius::{RowColumn, TryRowColumn},
 };
 use serde::Serialize;
@@ -38,23 +38,23 @@ impl AgeClass {
     }
 }
 
-impl ToEntity<AgeClass> for Row {
-    fn to_entity(&self) -> AgeClass {
+impl From<&Row> for AgeClass {
+    fn from(row: &Row) -> Self {
         AgeClass {
-            id: self.get_column("AgeClass_ID"),
-            caption: self.get_column("AgeClass_Caption"),
-            abbreviation: self.get_column("AgeClass_Abbr"),
-            suffix: self.try_get_column("AgeClass_Suffix").unwrap_or_default(),
-            gender: self.get_column("AgeClass_Gender"),
-            num_sub_classes: self.get_column("AgeClass_NumSubClasses"),
-            min_age: self.get_column("AgeClass_MinAge"),
-            max_age: self.get_column("AgeClass_MaxAge"),
+            id: row.get_column("AgeClass_ID"),
+            caption: row.get_column("AgeClass_Caption"),
+            abbreviation: row.get_column("AgeClass_Abbr"),
+            suffix: row.try_get_column("AgeClass_Suffix").unwrap_or_default(),
+            gender: row.get_column("AgeClass_Gender"),
+            num_sub_classes: row.get_column("AgeClass_NumSubClasses"),
+            min_age: row.get_column("AgeClass_MinAge"),
+            max_age: row.get_column("AgeClass_MaxAge"),
         }
     }
 }
 
 impl TryToEntity<AgeClass> for Row {
     fn try_to_entity(&self) -> Option<AgeClass> {
-        <Row as TryRowColumn<i32>>::try_get_column(self, "AgeClass_ID").map(|_id| self.to_entity())
+        <Row as TryRowColumn<i32>>::try_get_column(self, "AgeClass_ID").map(|_id| AgeClass::from(self))
     }
 }

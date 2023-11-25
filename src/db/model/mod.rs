@@ -31,10 +31,6 @@ pub use registration::Registration;
 pub use score::Score;
 pub use statistics::Statistics;
 
-pub trait ToEntity<T> {
-    fn to_entity(&self) -> T;
-}
-
 pub trait TryToEntity<T> {
     fn try_to_entity(&self) -> Option<T>;
 }
