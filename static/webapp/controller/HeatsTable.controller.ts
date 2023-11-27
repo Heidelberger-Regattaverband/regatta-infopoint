@@ -16,6 +16,7 @@ import Context from "sap/ui/model/Context";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Sorter from "sap/ui/model/Sorter";
 import ListBinding from "sap/ui/model/ListBinding";
+import MessageToast from "sap/m/MessageToast";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -105,7 +106,10 @@ export default class HeatsTable extends BaseTableController {
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    await this.loadHeatsModel();
+    const updated: boolean = await this.loadHeatsModel();
+    if (updated) {
+      MessageToast.show(this.i18n("msg.dataUpdated"));
+    }
     source.setEnabled(true);
   }
 
@@ -159,8 +163,8 @@ export default class HeatsTable extends BaseTableController {
     super.applyFilters();
   }
 
-  private async loadHeatsModel(): Promise<void> {
-    await super.updateJSONModel(this.heatsModel, `/api/regattas/${super.getRegattaId()}/heats`, this.table);
+  private async loadHeatsModel(): Promise<boolean> {
+    return await super.updateJSONModel(this.heatsModel, `/api/regattas/${super.getRegattaId()}/heats`, this.table);
   }
 
 }

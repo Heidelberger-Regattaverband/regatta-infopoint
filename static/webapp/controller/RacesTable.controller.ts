@@ -16,6 +16,7 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
 import Sorter from "sap/ui/model/Sorter";
 import ListBinding from "sap/ui/model/ListBinding";
+import MessageToast from "sap/m/MessageToast";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -117,7 +118,10 @@ export default class RacesTable extends BaseTableController {
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    await this.loadRacesModel();
+    const updated: boolean = await this.loadRacesModel();
+    if (updated) {
+      MessageToast.show(this.i18n("msg.dataUpdated"));
+    }
     source.setEnabled(true);
   }
 
@@ -145,8 +149,8 @@ export default class RacesTable extends BaseTableController {
     super.applyFilters();
   }
 
-  private async loadRacesModel(): Promise<void> {
-    await super.updateJSONModel(this.racesModel, `/api/regattas/${super.getRegattaId()}/races`, this.table);
+  private async loadRacesModel(): Promise<boolean> {
+    return await super.updateJSONModel(this.racesModel, `/api/regattas/${super.getRegattaId()}/races`, this.table);
   }
 
 }

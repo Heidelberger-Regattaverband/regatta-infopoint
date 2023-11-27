@@ -61,9 +61,9 @@ export default class RaceRegistrationsTable extends BaseController {
     source.setEnabled(true);
   }
 
-  private async loadRaceModel(): Promise<void> {
+  private async loadRaceModel(): Promise<boolean> {
     const race: any = (super.getComponentModel("race") as JSONModel).getData();
-    await super.updateJSONModel(super.getViewModel("raceRegistrations") as JSONModel, `/api/races/${race.id}`, super.getView());
+    return await super.updateJSONModel(super.getViewModel("raceRegistrations") as JSONModel, `/api/races/${race.id}`, super.getView());
   }
 
   private async onItemChanged(channelId: string, eventId: string, parametersMap: any): Promise<void> {

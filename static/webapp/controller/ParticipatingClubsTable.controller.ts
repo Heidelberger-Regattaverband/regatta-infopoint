@@ -11,6 +11,7 @@ import { SearchField$SearchEvent } from "sap/m/SearchField";
 import { ListBase$SelectEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import MessageToast from "sap/m/MessageToast";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -57,7 +58,10 @@ export default class ParticipatingClubsTable extends BaseController {
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    await this.loadModel();
+    const updated: boolean = await this.loadModel();
+    if (updated) {
+      MessageToast.show(this.i18n("msg.dataUpdated"));
+    }
     source.setEnabled(true);
   }
 
@@ -70,8 +74,8 @@ export default class ParticipatingClubsTable extends BaseController {
     }
   }
 
-  private async loadModel(): Promise<void> {
-    await super.updateJSONModel(this.participatingClubsModel, `/api/regattas/${this.getRegattaId()}/participating_clubs`, this.table)
+  private async loadModel(): Promise<boolean> {
+    return await super.updateJSONModel(this.participatingClubsModel, `/api/regattas/${this.getRegattaId()}/participating_clubs`, this.table)
   }
 
 }

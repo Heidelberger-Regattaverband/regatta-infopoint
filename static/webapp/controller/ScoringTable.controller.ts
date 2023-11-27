@@ -8,6 +8,7 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import ListBinding from "sap/ui/model/ListBinding";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import MessageToast from "sap/m/MessageToast";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -54,12 +55,15 @@ export default class ScoringTable extends BaseController {
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    await this.loadScoringModel();
+    const updated: boolean = await this.loadScoringModel();
+    if (updated) {
+      MessageToast.show(this.i18n("msg.dataUpdated"));
+    }
     source.setEnabled(true);
   }
 
-  private async loadScoringModel(): Promise<void> {
-    await super.updateJSONModel(this.scoringModel, `/api/regattas/${super.getRegattaId()}/calculateScoring`, this.table)
+  private async loadScoringModel(): Promise<boolean> {
+    return await super.updateJSONModel(this.scoringModel, `/api/regattas/${super.getRegattaId()}/calculateScoring`, this.table)
   }
 
 }
