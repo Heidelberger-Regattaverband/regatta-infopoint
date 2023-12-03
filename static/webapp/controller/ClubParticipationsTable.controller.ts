@@ -12,6 +12,7 @@ import { SearchField$SearchEvent } from "sap/m/SearchField";
 import ListBinding from "sap/ui/model/ListBinding";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
+import MessageToast from "sap/m/MessageToast";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -54,7 +55,10 @@ export default class ClubParticipationsTable extends BaseController {
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    await this.loadRegistrationsModel();
+    const updated: boolean = await this.loadRegistrationsModel();
+    if (updated) {
+      MessageToast.show(this.i18n("msg.dataUpdated"));
+    }
     source.setEnabled(true);
   }
 
@@ -93,12 +97,13 @@ export default class ClubParticipationsTable extends BaseController {
     await Promise.all([this.loadRegistrationsModel(), this.loadClubModel()]);
   }
 
-  private async loadClubModel(): Promise<void> {
-    await super.updateJSONModel(super.getViewModel("club") as JSONModel, `/api/clubs/${this.clubId}`);
+  private async loadClubModel(): Promise<boolean> {
+    return await super.updateJSONModel(super.getViewModel("club") as JSONModel, `/api/clubs/${this.clubId}`);
   }
 
-  private async loadRegistrationsModel(): Promise<void> {
-    await super.updateJSONModel(super.getViewModel("registrations") as JSONModel, `/api/regattas/${super.getRegattaId()}/clubs/${this.clubId}/registrations`, this.table);
+  private async loadRegistrationsModel(): Promise<boolean> {
+    return await super.updateJSONModel(super.getViewModel("registrations") as JSONModel,
+      `/api/regattas/${super.getRegattaId()}/clubs/${this.clubId}/registrations`, this.table);
   }
 
 }
