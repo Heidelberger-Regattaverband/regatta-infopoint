@@ -9,7 +9,7 @@ import { ListBase$SelectEvent } from "sap/m/ListBase";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import Filter from "sap/ui/model/Filter";
-import { SearchField$SearchEvent } from "sap/m/SearchField";
+import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import ViewSettingsDialog, { ViewSettingsDialog$ConfirmEvent, ViewSettingsDialog$ConfirmEventParameters, ViewSettingsDialog$ResetEvent } from "sap/m/ViewSettingsDialog";
 import ListItemBase from "sap/m/ListItemBase";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
@@ -130,23 +130,26 @@ export default class RacesTable extends BaseTableController {
     super.getEventBus()?.publish("race", "itemChanged", {});
   }
 
-  onFilterSearch(event: SearchField$SearchEvent): void {
-    const searchFilters: Filter[] = [];
-    const query: string | undefined = event.getParameter("query")?.trim();
+  onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
+    const query: string | undefined = event.getParameters().newValue?.trim();
     if (query) {
-      searchFilters.push(
-        new Filter({
-          filters: [
-            new Filter("number", FilterOperator.Contains, query),
-            new Filter("shortLabel", FilterOperator.Contains, query),
-            new Filter("longLabel", FilterOperator.Contains, query),
-            new Filter("comment", FilterOperator.Contains, query)
-          ],
-          and: false
-        }))
+      super.setSearchFilters(this.createSearchFilters(query));
+    } else {
+      super.setSearchFilters([]);
     }
-    super.setSearchFilters(searchFilters);
     super.applyFilters();
+  }
+
+  private createSearchFilters(query: string): Filter[] {
+    return [new Filter({
+      filters: [
+        new Filter("number", FilterOperator.Contains, query),
+        new Filter("shortLabel", FilterOperator.Contains, query),
+        new Filter("longLabel", FilterOperator.Contains, query),
+        new Filter("comment", FilterOperator.Contains, query)
+      ],
+      and: false
+    })]
   }
 
   private async loadRacesModel(): Promise<boolean> {
