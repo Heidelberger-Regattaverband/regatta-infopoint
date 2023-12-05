@@ -11,8 +11,10 @@ use tiberius::{Query, Row};
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Club {
+    /// The internal ID of the club.
     pub id: i32,
 
+    /// This is the ID used by the external system to identify the club.
     #[serde(skip_serializing_if = "Option::is_none")]
     extern_id: Option<i32>,
 

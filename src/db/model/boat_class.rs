@@ -5,9 +5,11 @@ use crate::db::{
 use serde::Serialize;
 use tiberius::Row;
 
+/// A boat class is a combination of boat type and number of rowers.
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct BoatClass {
+    /// The internal ID of the boat class.
     id: i32,
 
     /// The caption of the boat class

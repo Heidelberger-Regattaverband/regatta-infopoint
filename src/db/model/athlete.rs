@@ -5,9 +5,11 @@ use crate::db::{
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Row};
 
+/// An athlete is a person who participates in a regatta.
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Athlete {
+    /// The internal ID of the athlete.
     id: i32,
 
     /// First name of the athlete.

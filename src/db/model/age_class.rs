@@ -8,6 +8,7 @@ use tiberius::Row;
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AgeClass {
+    /// The internal ID of the age class.
     id: i32,
 
     /// A long and human readable caption of this age class.
