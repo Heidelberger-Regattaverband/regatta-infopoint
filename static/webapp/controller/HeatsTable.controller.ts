@@ -9,7 +9,7 @@ import { ListBase$SelectEvent } from "sap/m/ListBase";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import Filter from "sap/ui/model/Filter";
-import { SearchField$SearchEvent } from "sap/m/SearchField";
+import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import ListItemBase from "sap/m/ListItemBase";
 import ViewSettingsDialog, { ViewSettingsDialog$ConfirmEvent, ViewSettingsDialog$ConfirmEventParameters } from "sap/m/ViewSettingsDialog";
 import Context from "sap/ui/model/Context";
@@ -103,6 +103,16 @@ export default class HeatsTable extends BaseTableController {
     this.table.setGrowingThreshold(30);
   }
 
+  onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
+    const query: string | undefined = event.getParameters().newValue?.trim();
+    if (query) {
+      super.setSearchFilters(this.createSearchFilters(query));
+    } else {
+      super.setSearchFilters([]);
+    }
+    super.applyFilters();
+  }
+
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
@@ -144,23 +154,16 @@ export default class HeatsTable extends BaseTableController {
     super.applyFilters();
   }
 
-  onFilterSearch(event: SearchField$SearchEvent): void {
-    const searchFilters: Filter[] = [];
-    const query: string | undefined = event.getParameter("query")?.trim();
-    if (query) {
-      searchFilters.push(
-        new Filter({
-          filters: [
-            new Filter("race/number", FilterOperator.Contains, query),
-            new Filter("race/shortLabel", FilterOperator.Contains, query),
-            new Filter("race/longLabel", FilterOperator.Contains, query),
-            new Filter("race/comment", FilterOperator.Contains, query)
-          ],
-          and: false
-        }))
-    }
-    super.setSearchFilters(searchFilters);
-    super.applyFilters();
+  private createSearchFilters(query: string): Filter[] {
+    return [new Filter({
+      filters: [
+        new Filter("race/number", FilterOperator.Contains, query),
+        new Filter("race/shortLabel", FilterOperator.Contains, query),
+        new Filter("race/longLabel", FilterOperator.Contains, query),
+        new Filter("race/comment", FilterOperator.Contains, query)
+      ],
+      and: false
+    })]
   }
 
   private async loadHeatsModel(): Promise<boolean> {

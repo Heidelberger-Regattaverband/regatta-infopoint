@@ -10,11 +10,12 @@ import MyComponent from "de/regatta_hd/Component";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import CustomData from "sap/ui/core/CustomData";
 import ViewSettingsItem from "sap/m/ViewSettingsItem";
+import Toolbar from "sap/m/Toolbar";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class BaseTable extends BaseController {
+export default abstract class BaseTable extends BaseController {
 
   protected table: Table;
   private filters: Filter[];
@@ -110,7 +111,7 @@ export default class BaseTable extends BaseController {
 
   private updateFilterBar(text: string): void {
     // update filter bar
-    const infoToolbar = this.table.getInfoToolbar();
+    const infoToolbar: Toolbar = this.table.getInfoToolbar();
     if (infoToolbar?.getContent()[0]) {
       infoToolbar.setVisible(this.filters.length > 0);
       (infoToolbar.getContent()[0] as Text).setText(text);
@@ -154,8 +155,7 @@ export default class BaseTable extends BaseController {
     this.onItemChanged(item);
   }
 
-  onItemChanged(item: any): void {
-  }
+  abstract onItemChanged(item: any): void;
 
   private growTable(index: number): void {
     const actual: number = this.table.getGrowingInfo()?.actual || 0;

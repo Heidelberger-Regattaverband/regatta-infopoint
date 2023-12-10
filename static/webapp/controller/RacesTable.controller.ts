@@ -87,6 +87,16 @@ export default class RacesTable extends BaseTableController {
     this.table.setGrowingThreshold(30);
   }
 
+  onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
+    const query: string | undefined = event.getParameters().newValue?.trim();
+    if (query) {
+      super.setSearchFilters(this.createSearchFilters(query));
+    } else {
+      super.setSearchFilters([]);
+    }
+    super.applyFilters();
+  }
+
   async onFilterButtonPress(event: Button$PressEvent): Promise<void> {
     (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog")).open();
   }
@@ -128,16 +138,6 @@ export default class RacesTable extends BaseTableController {
   onItemChanged(item: any): void {
     (super.getComponentModel("race") as JSONModel).setData(item);
     super.getEventBus()?.publish("race", "itemChanged", {});
-  }
-
-  onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
-    const query: string | undefined = event.getParameters().newValue?.trim();
-    if (query) {
-      super.setSearchFilters(this.createSearchFilters(query));
-    } else {
-      super.setSearchFilters([]);
-    }
-    super.applyFilters();
   }
 
   private createSearchFilters(query: string): Filter[] {

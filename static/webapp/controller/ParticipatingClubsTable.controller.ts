@@ -7,7 +7,7 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import ListBinding from "sap/ui/model/ListBinding";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import Context from "sap/ui/model/Context";
-import { SearchField$SearchEvent } from "sap/m/SearchField";
+import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import { ListBase$SelectEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
@@ -36,20 +36,11 @@ export default class ParticipatingClubsTable extends BaseController {
     super.navBack("startpage");
   }
 
-  onFilterSearch(event: SearchField$SearchEvent): void {
-    const searchFilters: Filter[] = [];
-    const query: string | undefined = event.getParameters().query?.trim();
+  onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
+    let searchFilters: Filter[] = [];
+    const query: string | undefined = event.getParameters().newValue?.trim();
     if (query) {
-      searchFilters.push(
-        new Filter({
-          filters: [
-            new Filter("shortName", FilterOperator.Contains, query),
-            new Filter("longName", FilterOperator.Contains, query),
-            new Filter("abbreviation", FilterOperator.Contains, query),
-            new Filter("city", FilterOperator.Contains, query)
-          ],
-          and: false
-        }))
+      searchFilters = this.createSearchFilters(query);
     }
     const binding: ListBinding = this.table.getBinding("items") as ListBinding;
     binding.filter(searchFilters);
@@ -72,6 +63,18 @@ export default class ParticipatingClubsTable extends BaseController {
       const club: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
       super.getRouter().navTo("clubParticipations", { clubId: club.id }, false /* history*/);
     }
+  }
+
+  private createSearchFilters(query: string): Filter[] {
+    return [new Filter({
+      filters: [
+        new Filter("shortName", FilterOperator.Contains, query),
+        new Filter("longName", FilterOperator.Contains, query),
+        new Filter("abbreviation", FilterOperator.Contains, query),
+        new Filter("city", FilterOperator.Contains, query)
+      ],
+      and: false
+    })]
   }
 
   private async loadModel(): Promise<boolean> {
