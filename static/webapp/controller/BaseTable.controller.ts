@@ -1,7 +1,7 @@
 import Table from "sap/m/Table";
 import BaseController from "./Base.controller";
 import Filter from "sap/ui/model/Filter";
-import ViewSettingsDialog, { ViewSettingsDialog$ConfirmEvent } from "sap/m/ViewSettingsDialog";
+import ViewSettingsDialog, { ViewSettingsDialog$ConfirmEvent, ViewSettingsDialog$ConfirmEventParameters } from "sap/m/ViewSettingsDialog";
 import Fragment from "sap/ui/core/Fragment";
 import Text from "sap/m/Text";
 import ListBinding from "sap/ui/model/ListBinding";
@@ -11,6 +11,9 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import CustomData from "sap/ui/core/CustomData";
 import ViewSettingsItem from "sap/m/ViewSettingsItem";
 import Toolbar from "sap/m/Toolbar";
+import Sorter from "sap/ui/model/Sorter";
+import Column from "sap/m/Column";
+import { SortOrder } from "sap/ui/core/library";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -141,6 +144,31 @@ export default abstract class BaseTable extends BaseController {
     const allFilters: Filter[] = this.filters.concat(this.searchFilters);
     (this.table.getBinding("items") as ListBinding).filter(allFilters);
   }
+
+  onSortDialogConfirm(event: ViewSettingsDialog$ConfirmEvent): void {
+    let sorters: Sorter[] = [];
+    const params: ViewSettingsDialog$ConfirmEventParameters = event.getParameters()
+    const path: string | undefined = params.sortItem?.getKey();
+
+    const customData: CustomData | undefined = params.sortItem?.getCustomData()?.find((data: CustomData) => data.getKey() === "column");
+    const columnName: string = customData?.getValue();
+    if (columnName) {
+      this.table.getColumns().forEach((col: Column) => {
+        if (col.getId().endsWith(columnName)) {
+          col.setSortIndicator(params.sortDescending ? SortOrder.Descending : SortOrder.Ascending);
+        } else {
+          col.setSortIndicator(SortOrder.None);
+        }
+      })
+    }
+    if (path) {
+      sorters.push(new Sorter(path, params.sortDescending));
+    }
+
+    // apply the selected sort and group settings
+    (this.table.getBinding("items") as ListBinding).sort(sorters);
+  }
+
 
   private setCurrentItem(index: number): void {
     const items: ListItemBase[] = this.table.getItems();

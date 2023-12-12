@@ -10,7 +10,7 @@ import Button, { Button$PressEvent } from "sap/m/Button";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import Filter from "sap/ui/model/Filter";
 import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
-import ViewSettingsDialog, { ViewSettingsDialog$ConfirmEvent, ViewSettingsDialog$ConfirmEventParameters, ViewSettingsDialog$ResetEvent } from "sap/m/ViewSettingsDialog";
+import ViewSettingsDialog, { ViewSettingsDialog$ResetEvent } from "sap/m/ViewSettingsDialog";
 import ListItemBase from "sap/m/ListItemBase";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
@@ -109,16 +109,6 @@ export default class RacesTable extends BaseTableController {
 
   async onSortButtonPress(event: Button$PressEvent): Promise<void> {
     (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesSortDialog")).open();
-  }
-
-  onSortDialogConfirm(event: ViewSettingsDialog$ConfirmEvent): void {
-    let sorters: Sorter[] = [];
-    const params: ViewSettingsDialog$ConfirmEventParameters = event.getParameters()
-    const path: string = params.sortItem?.getKey() ?? "";
-    sorters.push(new Sorter(path, params.sortDescending));
-
-    // apply the selected sort and group settings
-    (this.table.getBinding("items") as ListBinding).sort(sorters);
   }
 
   onSortDialogReset(event: ViewSettingsDialog$ResetEvent) {
