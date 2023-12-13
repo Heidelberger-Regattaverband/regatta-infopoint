@@ -12,9 +12,9 @@
   },
   "devDependencies": {
     "@types/openui5": "^1.120.1",
-    "@ui5/cli": "^3.7.3",
+    "@ui5/cli": "^3.8.0",
     "typescript": "^5.3.3",
-    "ui5-tooling-transpile": "^3.3.0",
+    "ui5-tooling-transpile": "^3.3.1",
     "watch": "^1.0.2"
   }
 }
