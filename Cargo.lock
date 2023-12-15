@@ -1373,6 +1373,7 @@ dependencies = [
  "scraper",
  "serde",
  "stretto",
+ "thiserror",
  "tiberius",
  "tokio",
  "tokio-util",

@@ -12,6 +12,7 @@ license = "Apache-2.0"
 
 [dependencies]
 anyhow = "1"
+thiserror = "1"
 env_logger = "0"
 log = "0"
 dotenv = "0"
