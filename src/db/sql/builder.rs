@@ -1,6 +1,11 @@
 use super::error::SqlBuilderError;
 use anyhow::{Ok, Result};
 
+enum LogicalOperator {
+    And,
+    Or,
+}
+
 #[derive(Clone)]
 pub struct SqlBuilder {
     /// The table to select from.
@@ -9,12 +14,12 @@ pub struct SqlBuilder {
     columns: Option<Vec<String>>,
     /// The number of rows to return.
     limit: Option<i32>,
-    /// The number of rows to skip.
-    offset: Option<i32>,
     /// The orders to apply to the query.
     orders: Option<Vec<(String, bool)>>,
     /// The where clauses to apply to the query.
     wheres: Option<Vec<String>>,
+    /// The error that occurred while building the SQL query.
+    error: Option<SqlBuilderError>,
 }
 
 impl SqlBuilder {
@@ -28,9 +33,9 @@ impl SqlBuilder {
             table: table.to_string(),
             columns: None,
             limit: None,
-            offset: None,
             orders: None,
             wheres: None,
+            error: None,
         }
     }
 
@@ -54,16 +59,6 @@ impl SqlBuilder {
         self
     }
 
-    /// Set the number of rows to skip.
-    /// # Arguments
-    ///    offset: The number of rows to skip.
-    /// # Returns
-    ///   A mutable reference to the SqlBuilder.
-    pub fn offset(&mut self, offset: i32) -> &mut Self {
-        self.offset = Some(offset);
-        self
-    }
-
     /// Set the orders to apply to the query.
     /// # Arguments
     ///   orders: The orders to apply to the query.
@@ -76,6 +71,13 @@ impl SqlBuilder {
 
     /// Set the where clauses to apply to the query.
     pub fn where_eq<S: ToString>(&mut self, column: S, value: S) -> &mut Self {
+        if column.to_string().is_empty() {
+            self.error = Some(SqlBuilderError::NoWhereColumn);
+        }
+        if value.to_string().is_empty() {
+            self.error = Some(SqlBuilderError::NoWhereValue(column.to_string()));
+        }
+
         let where_clause = format!("{} = {}", column.to_string(), value.to_string());
         self.wheres = match &self.wheres {
             Some(wheres) => Some(wheres.iter().map(|where_clause| where_clause.to_string()).collect()),
@@ -91,6 +93,9 @@ impl SqlBuilder {
     /// SqlBuilderError::NoTableName: If the table name is not set.
     /// SqlBuilderError::NoColumnNames: If the column names are not set.
     pub fn build(&self) -> Result<String> {
+        if let Some(error) = &self.error {
+            return Err(error.clone().into());
+        }
         if self.table.is_empty() {
             return Err(SqlBuilderError::NoTableName.into());
         }
@@ -100,11 +105,6 @@ impl SqlBuilder {
 
         let top = if self.limit.is_some() {
             format!(" TOP {}", self.limit.unwrap())
-        } else {
-            String::new()
-        };
-        let offset = if self.offset.is_some() {
-            format!(" OFFSET {}", self.offset.unwrap())
         } else {
             String::new()
         };
@@ -131,7 +131,7 @@ impl SqlBuilder {
         };
 
         let sql = format!(
-            "SELECT{top}{offset} {} FROM {}{wheres}{order_by}",
+            "SELECT{top} {} FROM {}{wheres}{order_by}",
             self.columns.as_ref().unwrap().join(", "),
             self.table
         );
@@ -164,6 +164,14 @@ mod tests {
             .where_eq("Event_ID", "14")
             .build()?;
         assert_eq!(select, "SELECT * FROM Event WHERE Event_ID = 14");
+        Ok(())
+    }
+
+    #[test]
+    fn test_select_from_no_where_column() -> Result<()> {
+        let select = SqlBuilder::select_from("Event").where_eq("", "14").build();
+        assert!(select.is_err());
+        assert_eq!(select.err().unwrap().to_string(), "WHERE column not defined");
         Ok(())
     }
 
