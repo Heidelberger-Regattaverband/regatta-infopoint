@@ -111,10 +111,6 @@ export default class RacesTable extends BaseTableController {
     (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesSortDialog")).open();
   }
 
-  onSortDialogReset(event: ViewSettingsDialog$ResetEvent) {
-    (this.table.getBinding("items") as ListBinding).sort([new Sorter("id", false)]);
-  }
-
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
