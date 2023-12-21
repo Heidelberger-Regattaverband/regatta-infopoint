@@ -2,7 +2,7 @@ import Table from "sap/m/Table";
 import BaseController from "./Base.controller";
 import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import { SearchField$SearchEvent } from "sap/m/SearchField";
+import { SearchField$LiveChangeEvent, SearchField$SearchEvent } from "sap/m/SearchField";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import ListBinding from "sap/ui/model/ListBinding";
@@ -33,21 +33,9 @@ export default class ScoringTable extends BaseController {
     super.navBack("startpage");
   }
 
-  onFilterSearch(event: SearchField$SearchEvent): void {
-    const searchFilters: Filter[] = [];
-    const query: string | undefined = event.getParameter("query")?.trim();
-    if (query) {
-      searchFilters.push(
-        new Filter({
-          filters: [
-            new Filter("club/shortName", FilterOperator.Contains, query),
-            new Filter("club/longName", FilterOperator.Contains, query),
-            new Filter("club/city", FilterOperator.Contains, query),
-            new Filter("club/abbreviation", FilterOperator.Contains, query)
-          ],
-          and: false
-        }))
-    }
+  onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
+    const query: string | undefined = event.getParameters().newValue?.trim();
+    const searchFilters: Filter[] = (query) ? this.createSearchFilters(query) : [];
     const binding: ListBinding = this.table.getBinding("items") as ListBinding;
     binding?.filter(searchFilters);
   }
@@ -60,6 +48,18 @@ export default class ScoringTable extends BaseController {
       MessageToast.show(this.i18n("msg.dataUpdated"));
     }
     source.setEnabled(true);
+  }
+
+  private createSearchFilters(query: string): Filter[] {
+    return [new Filter({
+      filters: [
+        new Filter("club/shortName", FilterOperator.Contains, query),
+        new Filter("club/longName", FilterOperator.Contains, query),
+        new Filter("club/city", FilterOperator.Contains, query),
+        new Filter("club/abbreviation", FilterOperator.Contains, query)
+      ],
+      and: false
+    })]
   }
 
   private async loadScoringModel(): Promise<boolean> {

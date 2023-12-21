@@ -11,7 +11,7 @@
           <headerToolbar>
             <OverflowToolbar>
               <content>
-                <SearchField width="12rem" search=".onFilterSearch" />
+                <SearchField width="12rem" liveChange="onSearchFieldLiveChange" showSearchButton="false" />
                 <ToolbarSpacer />
                 <OverflowToolbarButton text="{i18n>common.refresh}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
                   press="onRefreshButtonPress" />
