@@ -13,7 +13,8 @@
               <content>
                 <SearchField width="12rem" search=".onFilterSearch" />
                 <ToolbarSpacer />
-                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
+                <OverflowToolbarButton text="{i18n>common.refresh}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
+                  press="onRefreshButtonPress" />
               </content>
             </OverflowToolbar>
           </headerToolbar>
