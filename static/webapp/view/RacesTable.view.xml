@@ -12,12 +12,13 @@
             <OverflowToolbar>
               <content>
                 <SearchField width="10rem" liveChange="onSearchFieldLiveChange" showSearchButton="false" />
-                <Button text="{i18n>common.filter}" tooltip="{i18n>common.filter}" icon="sap-icon://filter"
+                <OverflowToolbarButton text="{i18n>common.filter}" tooltip="{i18n>common.filter}" icon="sap-icon://filter"
                   press="onFilterButtonPress" />
-                <Button text="{=${device>/system/phone}?'':${i18n>common.sorting}}" tooltip="{i18n>common.sorting}"
-                  icon="sap-icon://sort" press="onSortButtonPress" />
+                <OverflowToolbarButton text="{i18n>common.sorting}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
+                  press="onSortButtonPress" />
                 <ToolbarSpacer />
-                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
+                <OverflowToolbarButton text="{i18n>common.refresh}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
+                  press="onRefreshButtonPress" />
               </content>
             </OverflowToolbar>
           </headerToolbar>
