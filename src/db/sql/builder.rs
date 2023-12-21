@@ -8,6 +8,8 @@ enum LogicalOperator {
 
 #[derive(Clone)]
 pub struct SqlBuilder {
+    /// Indicates whether or not to return distinct rows.
+    distinct: bool,
     /// The table to select from.
     table: String,
     /// The columns to select.
@@ -36,7 +38,18 @@ impl SqlBuilder {
             orders: None,
             wheres: None,
             error: None,
+            distinct: false,
         }
+    }
+
+    /// Set whether or not to return distinct rows.
+    /// # Arguments
+    ///  distinct: Whether or not to return distinct rows.
+    /// # Returns
+    /// A mutable reference to the SqlBuilder.
+    pub fn distinct(&mut self, distinct: bool) -> &mut Self {
+        self.distinct = distinct;
+        self
     }
 
     /// Set the columns to select.
@@ -103,6 +116,8 @@ impl SqlBuilder {
             return Err(SqlBuilderError::NoColumnNames.into());
         }
 
+        let destinct = if self.distinct { " DISTINCT" } else { "" };
+
         let top = if self.limit.is_some() {
             format!(" TOP {}", self.limit.unwrap())
         } else {
@@ -131,7 +146,7 @@ impl SqlBuilder {
         };
 
         let sql = format!(
-            "SELECT{top} {} FROM {}{wheres}{order_by}",
+            "SELECT{destinct}{top} {} FROM {}{wheres}{order_by}",
             self.columns.as_ref().unwrap().join(", "),
             self.table
         );
@@ -160,10 +175,11 @@ mod tests {
     #[test]
     fn test_select_from_wheres() -> Result<()> {
         let select = SqlBuilder::select_from("Event")
+            .distinct(true)
             .columns(&["*"])
             .where_eq("Event_ID", "14")
             .build()?;
-        assert_eq!(select, "SELECT * FROM Event WHERE Event_ID = 14");
+        assert_eq!(select, "SELECT DISTINCT * FROM Event WHERE Event_ID = 14");
         Ok(())
     }
 
