@@ -13,7 +13,7 @@ pub struct SqlBuilder {
     /// The table to select from.
     table: String,
     /// The columns to select.
-    columns: Option<Vec<String>>,
+    columns: Vec<String>,
     /// The number of rows to return.
     limit: Option<i32>,
     /// The orders to apply to the query.
@@ -27,13 +27,13 @@ pub struct SqlBuilder {
 impl SqlBuilder {
     /// Create a new SqlBuilder.
     /// # Arguments
-    ///   table: The table to select from.
+    /// `table`: The table to select from.
     /// # Returns
-    ///  A new SqlBuilder.
+    /// A new SqlBuilder.
     pub fn select_from<S: ToString>(table: S) -> Self {
         SqlBuilder {
             table: table.to_string(),
-            columns: None,
+            columns: Vec::new(),
             limit: None,
             orders: None,
             wheres: None,
@@ -44,7 +44,7 @@ impl SqlBuilder {
 
     /// Set whether or not to return distinct rows.
     /// # Arguments
-    ///  distinct: Whether or not to return distinct rows.
+    /// `distinct`: Whether or not to return distinct rows.
     /// # Returns
     /// A mutable reference to the SqlBuilder.
     pub fn distinct(&mut self, distinct: bool) -> &mut Self {
@@ -54,11 +54,15 @@ impl SqlBuilder {
 
     /// Set the columns to select.
     /// # Arguments
-    ///    columns: The columns to select.
+    /// `columns`: The columns to select.
     /// # Returns
-    ///   A mutable reference to the SqlBuilder.
+    /// A mutable reference to the SqlBuilder.
     pub fn columns<S: ToString>(&mut self, columns: &[S]) -> &mut Self {
-        self.columns = Some(columns.iter().map(|column| column.to_string()).collect());
+        columns.iter().for_each(|column| self.columns.push(column.to_string()));
+        self
+    }
+
+    pub fn join<S: ToString>(&mut self, table: S, column: S, value: S) -> &mut Self {
         self
     }
 
@@ -74,7 +78,7 @@ impl SqlBuilder {
 
     /// Set the orders to apply to the query.
     /// # Arguments
-    ///   orders: The orders to apply to the query.
+    /// `orders`: The orders to apply to the query.
     /// # Returns
     ///  A mutable reference to the SqlBuilder.
     pub fn order_by<S: ToString>(&mut self, orders: &[(S, bool)]) -> &mut Self {
@@ -101,7 +105,7 @@ impl SqlBuilder {
 
     /// Build the SQL query.
     /// # Returns
-    ///  The SQL query.
+    /// The SQL query.
     /// # Errors
     /// SqlBuilderError::NoTableName: If the table name is not set.
     /// SqlBuilderError::NoColumnNames: If the column names are not set.
@@ -112,11 +116,16 @@ impl SqlBuilder {
         if self.table.is_empty() {
             return Err(SqlBuilderError::NoTableName.into());
         }
-        if self.columns.is_none() {
-            return Err(SqlBuilderError::NoColumnNames.into());
-        }
 
+        // Distinct results
         let destinct = if self.distinct { " DISTINCT" } else { "" };
+
+        // Make column names a string
+        let columns = if self.columns.is_empty() {
+            "*".to_string()
+        } else {
+            format!(" {}", self.columns.join(", "))
+        };
 
         let top = if self.limit.is_some() {
             format!(" TOP {}", self.limit.unwrap())
@@ -126,14 +135,12 @@ impl SqlBuilder {
 
         let order_by = if self.orders.is_some() {
             let orders = self.orders.as_ref().unwrap();
-            format!(
-                " ORDER BY {}",
-                orders
-                    .iter()
-                    .map(|(column, asc)| format!("{} {}", column, if *asc { "ASC" } else { "DESC" }))
-                    .collect::<Vec<String>>()
-                    .join(", ")
-            )
+            let orders_str = orders
+                .iter()
+                .map(|(column, asc)| format!("{} {}", column, if *asc { "ASC" } else { "DESC" }))
+                .collect::<Vec<String>>()
+                .join(", ");
+            format!(" ORDER BY {}", orders_str)
         } else {
             String::new()
         };
@@ -145,11 +152,7 @@ impl SqlBuilder {
             String::new()
         };
 
-        let sql = format!(
-            "SELECT{destinct}{top} {} FROM {}{wheres}{order_by}",
-            self.columns.as_ref().unwrap().join(", "),
-            self.table
-        );
+        let sql = format!("SELECT{destinct}{top}{columns} FROM {}{wheres}{order_by}", self.table);
         Ok(sql)
     }
 }
@@ -192,9 +195,13 @@ mod tests {
     }
 
     #[test]
-    fn test_select_from_no_column_names() -> Result<()> {
-        let select = SqlBuilder::select_from("Event").build();
+    fn test_select_from_no_where_value() -> Result<()> {
+        let select = SqlBuilder::select_from("Event").where_eq("Event_ID", "").build();
         assert!(select.is_err());
+        assert_eq!(
+            select.err().unwrap().to_string(),
+            "WHERE value for field \"Event_ID\" not defined"
+        );
         Ok(())
     }
 
