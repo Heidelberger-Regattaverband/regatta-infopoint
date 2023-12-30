@@ -45,6 +45,10 @@ export default class ParticipatingClubsTable extends BaseTableController {
     binding.filter(searchFilters);
   }
 
+  async onSortButtonPress(event: Button$PressEvent): Promise<void> {
+    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.ParticipatingClubsSortDialog")).open();
+  }
+
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
