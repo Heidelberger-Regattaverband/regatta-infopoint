@@ -2,7 +2,7 @@ import Table from "sap/m/Table";
 import BaseController from "./Base.controller";
 import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import { SearchField$LiveChangeEvent, SearchField$SearchEvent } from "sap/m/SearchField";
+import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import ListBinding from "sap/ui/model/ListBinding";
