@@ -1,12 +1,10 @@
 use crate::db::model::{Club, Filters, Heat, Race, Regatta, Registration};
-use async_trait::async_trait;
 use std::{hash::Hash, time::Duration};
 use stretto::AsyncCache;
 use tokio::task;
 
 const MAX_COST: i64 = 1e6 as i64;
 
-#[async_trait]
 pub trait CacheTrait<K, V> {
     async fn get(&self, key: &K) -> Option<V>;
     async fn set(&self, key: &K, value: &V);
@@ -34,7 +32,6 @@ where
     }
 }
 
-#[async_trait]
 impl<K, V> CacheTrait<K, V> for Cache<K, V>
 where
     K: Hash + Eq + Send + Sync + Copy,

@@ -41,17 +41,19 @@ impl TryToEntity<Referee> for Row {
     }
 }
 
+/// Convert a database Row into a Referee.
 impl From<&Row> for Referee {
+    /// Create a new Referee from a database Row.
+    /// # Arguments
+    /// `row`: The database Row.
+    /// # Returns
+    /// A new Referee.
     fn from(value: &Row) -> Self {
-        let id = value.get_column("Referee_ID");
-        let last_name: String = value.get_column("Referee_LastName");
-        let first_name: String = value.get_column("Referee_FirstName");
-        let city: String = value.get_column("Referee_City");
         Referee {
-            id,
-            last_name,
-            first_name,
-            city,
+            id: value.get_column("Referee_ID"),
+            last_name: value.get_column("Referee_LastName"),
+            first_name: value.get_column("Referee_FirstName"),
+            city: value.get_column("Referee_City"),
         }
     }
 }
