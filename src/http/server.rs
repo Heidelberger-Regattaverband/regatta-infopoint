@@ -179,9 +179,9 @@ impl<'a> Server<'a> {
             .cookie_secure(true)
             .cookie_http_only(true)
             // allow the cookie only from the current domain
-            .cookie_same_site(SameSite::Lax)
+            .cookie_same_site(SameSite::Strict)
             .session_lifecycle(PersistentSession::default().session_ttl(Duration::seconds(SECS_OF_WEEKEND)))
-            .cookie_path(INFOPORTAL.to_string())
+            .cookie_path("".to_string())
             .build()
     }
 

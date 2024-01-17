@@ -1,5 +1,4 @@
 import Table from "sap/m/Table";
-import BaseController from "./Base.controller";
 import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Filter from "sap/ui/model/Filter";
@@ -12,19 +11,19 @@ import { ListBase$SelectEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import MessageToast from "sap/m/MessageToast";
+import BaseTableController from "./BaseTable.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class ParticipatingClubsTable extends BaseController {
+export default class ParticipatingClubsTable extends BaseTableController {
 
-  private table: Table;
   private participatingClubsModel: JSONModel;
 
   async onInit(): Promise<void> {
-    super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
+    super.init(super.getView()?.byId("clubsTable") as Table, "club" /* eventBus channel */);
 
-    this.table = super.getView()?.byId("clubsTable") as Table;
+    super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
 
     this.participatingClubsModel = await super.createJSONModel(`/api/regattas/${this.getRegattaId()}/participating_clubs`, this.table);
     super.setViewModel(this.participatingClubsModel, "clubs");
@@ -46,6 +45,10 @@ export default class ParticipatingClubsTable extends BaseController {
     binding.filter(searchFilters);
   }
 
+  async onSortButtonPress(event: Button$PressEvent): Promise<void> {
+    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.ParticipatingClubsSortDialog")).open();
+  }
+
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
@@ -63,6 +66,10 @@ export default class ParticipatingClubsTable extends BaseController {
       const club: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
       super.getRouter().navTo("clubParticipations", { clubId: club.id }, false /* history*/);
     }
+  }
+
+  onItemChanged(item: any): void {
+    // nothing to do yet
   }
 
   private createSearchFilters(query: string): Filter[] {
