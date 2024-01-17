@@ -29,6 +29,12 @@ jobs:
 
       - name: Generate code coverage
         run: cargo llvm-cov --workspace --all-features --codecov --output-path codecov.json
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          RUST_LOG: ${{ vars.RUST_LOG }}
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
