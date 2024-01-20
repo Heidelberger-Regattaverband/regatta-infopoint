@@ -15,7 +15,16 @@ jobs:
   coverage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          version: 1.56.1
+          tags: tag:ci
+
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install Rust
         uses: actions-rust-lang/setup-rust-toolchain@v1.8.0
@@ -29,9 +38,16 @@ jobs:
 
       - name: Generate code coverage
         run: cargo llvm-cov --workspace --all-features --codecov --output-path codecov.json
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_ENCRYPTION: false
+          RUST_LOG: ${{ vars.RUST_LOG }}
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
           files: codecov.json
-          fail_ci_if_error: true
+          fail_ci_if_error: false
