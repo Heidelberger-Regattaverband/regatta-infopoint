@@ -1,13 +1,13 @@
-.infopoint .bold {
+.infoportal .bold {
   font-weight: bold;
 }
 
-.infopoint .cancelled {
+.infoportal .cancelled {
   text-decoration: line-through;
   text-decoration-thickness: 1px;
 }
 
-.infopoint .boldCancelled {
+.infoportal .boldCancelled {
   font-weight: bold;
   text-decoration: line-through;
   text-decoration-thickness: 1px;

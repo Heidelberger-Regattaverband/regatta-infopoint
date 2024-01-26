@@ -7,13 +7,13 @@
     <Page title="{i18n>common.registrations}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <headerContent>
         <Button type="Transparent" icon="sap-icon://close-command-field" press="onFirstPress" tooltip="First"
-          enabled="{= ${race>/_nav/isFirst} ? false : true }" />
+          enabled="{=!${race>/_nav/isFirst}}" />
         <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="onPreviousPress" tooltip="Previous"
-          enabled="{= ${race>/_nav/isFirst} ? false : true }" />
+          enabled="{=!${race>/_nav/isFirst}}" />
         <Button type="Transparent" icon="sap-icon://navigation-right-arrow" press="onNextPress" tooltip="Next"
-          enabled="{= ${race>/_nav/isLast} ? false : true }" />
+          enabled="{=!${race>/_nav/isLast}}" />
         <Button type="Transparent" icon="sap-icon://open-command-field" press="onLastPress" tooltip="Last"
-          enabled="{= ${race>/_nav/isLast} ? false : true }" />
+          enabled="{=!${race>/_nav/isLast}}" />
       </headerContent>
 
       <content>

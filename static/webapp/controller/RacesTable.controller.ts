@@ -7,14 +7,14 @@ import ViewSettingsFilterItem from "sap/m/ViewSettingsFilterItem";
 import ViewSettingsItem from "sap/m/ViewSettingsItem";
 import { ListBase$SelectEvent } from "sap/m/ListBase";
 import Button, { Button$PressEvent } from "sap/m/Button";
-import MessageToast from "sap/m/MessageToast";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import Filter from "sap/ui/model/Filter";
-import { SearchField$SearchEvent } from "sap/m/SearchField";
+import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import ViewSettingsDialog from "sap/m/ViewSettingsDialog";
 import ListItemBase from "sap/m/ListItemBase";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
+import MessageToast from "sap/m/MessageToast";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -69,8 +69,8 @@ export default class RacesTable extends BaseTableController {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("races");
       const race: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
 
-      const index: int = this.table.indexOfItem(selectedItem);
-      const count: int = this.table.getItems().length;
+      const index: number = this.table.indexOfItem(selectedItem);
+      const count: number = this.table.getItems().length;
       // store navigation meta information in selected item
       race._nav = { isFirst: index == 0, isLast: index == count - 1 };
 
@@ -85,23 +85,37 @@ export default class RacesTable extends BaseTableController {
     this.table.setGrowingThreshold(30);
   }
 
+  onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
+    const query: string | undefined = event.getParameters().newValue?.trim();
+    if (query) {
+      super.setSearchFilters(this.createSearchFilters(query));
+    } else {
+      super.setSearchFilters([]);
+    }
+    super.applyFilters();
+  }
+
   async onFilterButtonPress(event: Button$PressEvent): Promise<void> {
-    const viewSettingsDialog = await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog")
-    viewSettingsDialog.open();
+    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog")).open();
   }
 
   async onClearFilterPress(event: Button$PressEvent): Promise<void> {
-    const viewSettingsDialog: ViewSettingsDialog = await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog")
-    viewSettingsDialog.clearFilters();
+    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog")).clearFilters();
     super.clearFilters();
     super.applyFilters();
+  }
+
+  async onSortButtonPress(event: Button$PressEvent): Promise<void> {
+    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesSortDialog")).open();
   }
 
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    await this.loadRacesModel();
-    MessageToast.show(this.i18n("msg.dataUpdated"));
+    const updated: boolean = await this.loadRacesModel();
+    if (updated) {
+      MessageToast.show(this.i18n("msg.dataUpdated"));
+    }
     source.setEnabled(true);
   }
 
@@ -110,27 +124,20 @@ export default class RacesTable extends BaseTableController {
     super.getEventBus()?.publish("race", "itemChanged", {});
   }
 
-  onFilterSearch(event: SearchField$SearchEvent): void {
-    const searchFilters: Filter[] = [];
-    const query: string | undefined = event.getParameter("query")?.trim();
-    if (query) {
-      searchFilters.push(
-        new Filter({
-          filters: [
-            new Filter("number", FilterOperator.Contains, query),
-            new Filter("shortLabel", FilterOperator.Contains, query),
-            new Filter("longLabel", FilterOperator.Contains, query),
-            new Filter("comment", FilterOperator.Contains, query)
-          ],
-          and: false
-        }))
-    }
-    super.setSearchFilters(searchFilters);
-    super.applyFilters();
+  private createSearchFilters(query: string): Filter[] {
+    return [new Filter({
+      filters: [
+        new Filter("number", FilterOperator.Contains, query),
+        new Filter("shortLabel", FilterOperator.Contains, query),
+        new Filter("longLabel", FilterOperator.Contains, query),
+        new Filter("comment", FilterOperator.Contains, query)
+      ],
+      and: false
+    })]
   }
 
-  private async loadRacesModel(): Promise<void> {
-    await super.updateJSONModel(this.racesModel, `/api/regattas/${super.getRegattaId()}/races`, this.table);
+  private async loadRacesModel(): Promise<boolean> {
+    return await super.updateJSONModel(this.racesModel, `/api/regattas/${super.getRegattaId()}/races`, this.table);
   }
 
 }

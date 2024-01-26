@@ -1,13 +1,15 @@
 use crate::db::{
-    model::{ToEntity, TryToEntity},
+    model::TryToEntity,
     tiberius::{RowColumn, TryRowColumn},
 };
 use serde::Serialize;
 use tiberius::Row;
 
+/// A boat class is a combination of boat type and number of rowers.
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct BoatClass {
+    /// The internal ID of the boat class.
     id: i32,
 
     /// The caption of the boat class
@@ -29,20 +31,20 @@ impl BoatClass {
     }
 }
 
-impl ToEntity<BoatClass> for Row {
-    fn to_entity(&self) -> BoatClass {
+impl From<&Row> for BoatClass {
+    fn from(row: &Row) -> Self {
         BoatClass {
-            id: self.get_column("BoatClass_ID"),
-            caption: self.get_column("BoatClass_Caption"),
-            abbreviation: self.get_column("BoatClass_Abbr"),
-            num_rowers: self.get_column("BoatClass_NumRowers"),
-            coxed: <Row as RowColumn<u8>>::get_column(self, "BoatClass_Coxed") > 0,
+            id: row.get_column("BoatClass_ID"),
+            caption: row.get_column("BoatClass_Caption"),
+            abbreviation: row.get_column("BoatClass_Abbr"),
+            num_rowers: row.get_column("BoatClass_NumRowers"),
+            coxed: <Row as RowColumn<u8>>::get_column(row, "BoatClass_Coxed") > 0,
         }
     }
 }
 
 impl TryToEntity<BoatClass> for Row {
     fn try_to_entity(&self) -> Option<BoatClass> {
-        <Row as TryRowColumn<i32>>::try_get_column(self, "BoatClass_ID").map(|_id| self.to_entity())
+        <Row as TryRowColumn<i32>>::try_get_column(self, "BoatClass_ID").map(|_id| BoatClass::from(self))
     }
 }

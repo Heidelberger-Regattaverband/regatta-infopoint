@@ -1,13 +1,15 @@
 use crate::db::{
-    model::{Club, ToEntity, TryToEntity},
+    model::{Club, TryToEntity},
     tiberius::{RowColumn, TryRowColumn},
 };
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Row};
 
+/// An athlete is a person who participates in a regatta.
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Athlete {
+    /// The internal ID of the athlete.
     id: i32,
 
     /// First name of the athlete.
@@ -35,24 +37,24 @@ impl Athlete {
     }
 }
 
-impl ToEntity<Athlete> for Row {
-    fn to_entity(&self) -> Athlete {
+impl From<&Row> for Athlete {
+    fn from(row: &Row) -> Self {
         Athlete {
-            id: self.get_column("Athlet_ID"),
-            first_name: self.get_column("Athlet_FirstName"),
-            last_name: self.get_column("Athlet_LastName"),
-            gender: self.get_column("Athlet_Gender"),
-            year: <Row as RowColumn<NaiveDateTime>>::get_column(self, "Athlet_DOB")
+            id: row.get_column("Athlet_ID"),
+            first_name: row.get_column("Athlet_FirstName"),
+            last_name: row.get_column("Athlet_LastName"),
+            gender: row.get_column("Athlet_Gender"),
+            year: <Row as RowColumn<NaiveDateTime>>::get_column(row, "Athlet_DOB")
                 .date()
                 .format("%Y")
                 .to_string(),
-            club: self.to_entity(),
+            club: Club::from(row),
         }
     }
 }
 
 impl TryToEntity<Athlete> for Row {
     fn try_to_entity(&self) -> Option<Athlete> {
-        <Row as TryRowColumn<i32>>::try_get_column(self, "Athlet_ID").map(|_id| self.to_entity())
+        <Row as TryRowColumn<i32>>::try_get_column(self, "Athlet_ID").map(|_id| Athlete::from(self))
     }
 }

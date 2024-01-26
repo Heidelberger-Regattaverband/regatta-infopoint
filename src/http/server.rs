@@ -33,16 +33,28 @@ pub const PATH_REST_API: &str = "/api";
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
 
+/// The server struct contains the configuration of the server.
 pub struct Server<'a> {
+    /// The configuration of the server.
     config: &'a Config,
 }
 
+/// The server implementation.
 impl<'a> Server<'a> {
     /// Creates s new server instance with given configuration.
+    /// # Arguments
+    /// * `config` - The configuration of the server.
+    /// # Returns
+    /// * `Server` - The server.
     pub fn new(config: &'a Config) -> Server {
         Server { config }
     }
 
+    /// Starts the server.
+    /// # Returns
+    /// * `io::Result<()>` - The result of the server start.
+    /// # Panics
+    /// If the server can't be started.
     pub async fn start(&self) -> io::Result<()> {
         let start = Instant::now();
 
@@ -117,6 +129,13 @@ impl<'a> Server<'a> {
         server.await
     }
 
+    /// Returns a new App instance with some middlewares initialized.
+    /// # Arguments
+    /// * `secret_key` - The secret key used to encrypt the session cookie.
+    /// * `rl_max_requests` - The maximum number of requests in the given interval.
+    /// * `rl_interval` - The interval in seconds.
+    /// # Returns
+    /// * `App` - The app.
     fn get_app(
         secret_key: Key,
         rl_max_requests: u64,
@@ -146,6 +165,13 @@ impl<'a> Server<'a> {
             })
     }
 
+    /// Returns a new SessionMiddleware instance.
+    /// # Arguments
+    /// * `secret_key` - The secret key used to encrypt the session cookie.
+    /// # Returns
+    /// * `SessionMiddleware` - The session middleware.
+    /// # Panics
+    /// If the session middleware can't be created.
     fn get_session_middleware(secret_key: Key) -> SessionMiddleware<CookieSessionStore> {
         const SECS_OF_WEEKEND: i64 = 60 * 60 * 24 * 2;
         SessionMiddleware::builder(CookieSessionStore::default(), secret_key)
@@ -154,16 +180,24 @@ impl<'a> Server<'a> {
             // allow the cookie only from the current domain
             .cookie_same_site(SameSite::Strict)
             .session_lifecycle(PersistentSession::default().session_ttl(Duration::seconds(SECS_OF_WEEKEND)))
-            .cookie_path(INFOPORTAL.to_string())
+            .cookie_path("".to_string())
             .build()
     }
 
-    // The secret key would usually be read from a configuration file/environment variables.
+    /// Returns a new secret key instance.
+    /// # Returns
+    /// * `Key` - The secret key.
+    /// # Panics
+    /// If the secret key can't be created.
     fn get_secret_key() -> Key {
         Key::generate()
     }
 
     /// Returns a new PrometheusMetrics instance.
+    /// # Returns
+    /// * `PrometheusMetrics` - The prometheus metrics.
+    /// # Panics
+    /// If the prometheus metrics can't be created.
     fn get_prometeus() -> Arc<PrometheusMetrics> {
         Arc::new(
             PrometheusMetricsBuilder::new("api")
@@ -174,6 +208,13 @@ impl<'a> Server<'a> {
     }
 
     /// Returns a new RateLimiter instance.
+    /// # Arguments
+    /// * `max_requests` - The maximum number of requests in the given interval.
+    /// * `interval` - The interval in seconds.
+    /// # Returns
+    /// * `RateLimiter` - The rate limiter.
+    /// # Panics
+    /// If the rate limiter can't be created.
     fn get_rate_limiter(
         max_requests: u64,
         interval: u64,
@@ -188,6 +229,13 @@ impl<'a> Server<'a> {
     }
 
     /// Returns HTTPS server configuration if available.
+    /// # Returns
+    /// * `Option<ServerConfig>` - The HTTPS server configuration.
+    /// # Panics
+    /// If the HTTPS server configuration can't be created.
+    /// # Remarks
+    /// The HTTPS server configuration is only created if the certificate and private key files are available.
+    /// The certificate and private key files are configured in the environment.
     fn get_rustls_config() -> Option<ServerConfig> {
         let cert_pem_path = Path::new(&Config::get().https_cert_path);
         let key_pem_path = Path::new(&Config::get().https_key_path);

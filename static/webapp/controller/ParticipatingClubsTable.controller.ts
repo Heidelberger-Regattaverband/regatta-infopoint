@@ -1,30 +1,29 @@
 import Table from "sap/m/Table";
-import BaseController from "./Base.controller";
 import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import ListBinding from "sap/ui/model/ListBinding";
 import Button, { Button$PressEvent } from "sap/m/Button";
-import MessageToast from "sap/m/MessageToast";
 import Context from "sap/ui/model/Context";
-import { SearchField$SearchEvent } from "sap/m/SearchField";
+import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import { ListBase$SelectEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import MessageToast from "sap/m/MessageToast";
+import BaseTableController from "./BaseTable.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class ParticipatingClubsTable extends BaseController {
+export default class ParticipatingClubsTable extends BaseTableController {
 
-  private table: Table;
   private participatingClubsModel: JSONModel;
 
   async onInit(): Promise<void> {
-    super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
+    super.init(super.getView()?.byId("clubsTable") as Table, "club" /* eventBus channel */);
 
-    this.table = super.getView()?.byId("clubsTable") as Table;
+    super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
 
     this.participatingClubsModel = await super.createJSONModel(`/api/regattas/${this.getRegattaId()}/participating_clubs`, this.table);
     super.setViewModel(this.participatingClubsModel, "clubs");
@@ -36,30 +35,27 @@ export default class ParticipatingClubsTable extends BaseController {
     super.navBack("startpage");
   }
 
-  onFilterSearch(event: SearchField$SearchEvent): void {
-    const searchFilters: Filter[] = [];
-    const query: string | undefined = event.getParameters().query?.trim();
+  onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
+    let searchFilters: Filter[] = [];
+    const query: string | undefined = event.getParameters().newValue?.trim();
     if (query) {
-      searchFilters.push(
-        new Filter({
-          filters: [
-            new Filter("shortName", FilterOperator.Contains, query),
-            new Filter("longName", FilterOperator.Contains, query),
-            new Filter("abbreviation", FilterOperator.Contains, query),
-            new Filter("city", FilterOperator.Contains, query)
-          ],
-          and: false
-        }))
+      searchFilters = this.createSearchFilters(query);
     }
     const binding: ListBinding = this.table.getBinding("items") as ListBinding;
     binding.filter(searchFilters);
   }
 
+  async onSortButtonPress(event: Button$PressEvent): Promise<void> {
+    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.ParticipatingClubsSortDialog")).open();
+  }
+
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    await this.loadModel();
-    MessageToast.show(this.i18n("msg.dataUpdated"));
+    const updated: boolean = await this.loadModel();
+    if (updated) {
+      MessageToast.show(this.i18n("msg.dataUpdated"));
+    }
     source.setEnabled(true);
   }
 
@@ -72,7 +68,24 @@ export default class ParticipatingClubsTable extends BaseController {
     }
   }
 
-  private async loadModel(): Promise<void> {
-    await super.updateJSONModel(this.participatingClubsModel, `/api/regattas/${this.getRegattaId()}/participating_clubs`, this.table)
+  onItemChanged(item: any): void {
+    // nothing to do yet
   }
+
+  private createSearchFilters(query: string): Filter[] {
+    return [new Filter({
+      filters: [
+        new Filter("shortName", FilterOperator.Contains, query),
+        new Filter("longName", FilterOperator.Contains, query),
+        new Filter("abbreviation", FilterOperator.Contains, query),
+        new Filter("city", FilterOperator.Contains, query)
+      ],
+      and: false
+    })]
+  }
+
+  private async loadModel(): Promise<boolean> {
+    return await super.updateJSONModel(this.participatingClubsModel, `/api/regattas/${this.getRegattaId()}/participating_clubs`, this.table)
+  }
+
 }

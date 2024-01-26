@@ -3,7 +3,6 @@ import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
 import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import MessageToast from "sap/m/MessageToast";
 import { ListBase$SelectEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
 import Button, { Button$PressEvent } from "sap/m/Button";
@@ -13,6 +12,7 @@ import { SearchField$SearchEvent } from "sap/m/SearchField";
 import ListBinding from "sap/ui/model/ListBinding";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
+import MessageToast from "sap/m/MessageToast";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -21,7 +21,7 @@ export default class ClubParticipationsTable extends BaseController {
 
   formatter: Formatter = Formatter;
   private table: Table;
-  private clubId?: int;
+  private clubId?: number;
 
   onInit(): void {
     super.getView()?.addStyleClass((super.getOwnerComponent() as MyComponent).getContentDensityClass());
@@ -55,8 +55,10 @@ export default class ClubParticipationsTable extends BaseController {
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    await this.loadRegistrationsModel();
-    MessageToast.show(this.i18n("msg.dataUpdated"));
+    const updated: boolean = await this.loadRegistrationsModel();
+    if (updated) {
+      MessageToast.show(this.i18n("msg.dataUpdated"));
+    }
     source.setEnabled(true);
   }
 
@@ -95,11 +97,13 @@ export default class ClubParticipationsTable extends BaseController {
     await Promise.all([this.loadRegistrationsModel(), this.loadClubModel()]);
   }
 
-  private async loadClubModel(): Promise<void> {
-    await super.updateJSONModel(super.getViewModel("club") as JSONModel, `/api/clubs/${this.clubId}`);
+  private async loadClubModel(): Promise<boolean> {
+    return await super.updateJSONModel(super.getViewModel("club") as JSONModel, `/api/clubs/${this.clubId}`);
   }
 
-  private async loadRegistrationsModel(): Promise<void> {
-    await super.updateJSONModel(super.getViewModel("registrations") as JSONModel, `/api/regattas/${super.getRegattaId()}/clubs/${this.clubId}/registrations`, this.table);
+  private async loadRegistrationsModel(): Promise<boolean> {
+    return await super.updateJSONModel(super.getViewModel("registrations") as JSONModel,
+      `/api/regattas/${super.getRegattaId()}/clubs/${this.clubId}/registrations`, this.table);
   }
+
 }

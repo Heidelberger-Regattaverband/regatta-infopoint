@@ -2,15 +2,14 @@ import Controller from "sap/ui/core/mvc/Controller";
 import History from "sap/ui/core/routing/History";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import EventBus from "sap/ui/core/EventBus";
-import Model from "sap/ui/model/Model";
+import Model, { Model$RequestFailedEventParameters } from "sap/ui/model/Model";
 import View from "sap/ui/core/mvc/View";
 import Component from "sap/ui/core/Component";
-import ResourceBundle from "sap/base/i18n/ResourceBundle";
-import ResourceModel from "sap/ui/model/resource/ResourceModel";
 import Router from "sap/ui/core/routing/Router";
 import Control from "sap/ui/core/Control";
 import UIComponent from "sap/ui/core/UIComponent";
 import MyComponent from "de/regatta_hd/Component";
+import MessageBox from "sap/m/MessageBox";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -21,7 +20,7 @@ export default class BaseController extends Controller {
    * Convenience method for accessing the event bus for this component.
    * @returns {sap.ui.core.EventBus} the event bus for this component
    */
-  public getEventBus(): EventBus | undefined {
+  getEventBus(): EventBus | undefined {
     return super.getOwnerComponent()?.getEventBus();
   }
 
@@ -30,7 +29,7 @@ export default class BaseController extends Controller {
    * @param {string} [name] the model name
    * @returns {sap.ui.model.Model} the model instance
    */
-  public getComponentModel(name: string): Model | undefined {
+  getComponentModel(name: string): Model | undefined {
     return super.getOwnerComponent()?.getModel(name);
   }
 
@@ -40,7 +39,7 @@ export default class BaseController extends Controller {
    * @param {string} name the model name
    * @returns {sap.ui.mvc.View} the view instance
    */
-  public setComponentModel(model: Model, name: string): Component | undefined {
+  setComponentModel(model: Model, name: string): Component | undefined {
     return super.getOwnerComponent()?.setModel(model, name);
   }
 
@@ -48,7 +47,7 @@ export default class BaseController extends Controller {
    * Convenience method for accessing the router.
    * @returns {sap.ui.core.routing.Router} the router for this component
    */
-  public getRouter(): Router {
+  getRouter(): Router {
     return (super.getOwnerComponent() as UIComponent).getRouter();
   }
 
@@ -57,7 +56,7 @@ export default class BaseController extends Controller {
    * @param {string} [name] the model name
    * @returns {sap.ui.model.Model} the model instance
    */
-  public getViewModel(name: string): Model | undefined {
+  getViewModel(name: string): Model | undefined {
     return super.getView()?.getModel(name);
   }
 
@@ -67,19 +66,11 @@ export default class BaseController extends Controller {
    * @param {string} name the model name
    * @returns {sap.ui.mvc.View} the view instance
    */
-  public setViewModel(model: Model, name: string): View | undefined {
+  setViewModel(model: Model, name: string): View | undefined {
     return super.getView()?.setModel(model, name);
   }
 
-  /**
-   * Getter for the resource bundle.
-   * @returns {sap.base.i18n.ResourceBundle} the resourceModel of the component
-   */
-  public getResourceBundle(): ResourceBundle | Promise<ResourceBundle> {
-    return (super.getOwnerComponent()?.getModel("i18n") as ResourceModel)?.getResourceBundle();
-  }
-
-  public navBack(target: string): void {
+  navBack(target: string): void {
     const previousHash: string | undefined = History.getInstance().getPreviousHash();
     if (previousHash) {
       window.history.go(-1);
@@ -88,35 +79,36 @@ export default class BaseController extends Controller {
     }
   }
 
-  public displayTarget(target: string): void {
+  displayTarget(target: string): void {
     this.getRouter()?.getTargets()?.display(target);
   }
 
-  public i18n(key: string, args?: any[]): string {
-    return this.getResourceBundle().getText(key, args);
+  i18n(key: string, args?: any[]): string {
+    return (super.getOwnerComponent() as MyComponent).getResourceBundle().getText(key, args) ?? "";
   }
 
-  public getRegattaId(): int {
+  getRegattaId(): number {
     return (super.getOwnerComponent() as MyComponent).getRegattaId();
   }
 
-  /**
-   * @deprecated
-   */
-  public async getJSONModel(url: string, control?: Control): Promise<JSONModel> {
-    const model: JSONModel = new JSONModel();
-    await this.updateJSONModel(model, url, control);
-    return model;
+  async createJSONModel(url: string, control?: Control): Promise<JSONModel> {
+    const jsonModel: JSONModel = new JSONModel();
+    await this.updateJSONModel(jsonModel, url, control);
+    return jsonModel;
   }
 
-  public async createJSONModel(url: string, control?: Control): Promise<JSONModel> {
-    return await this.updateJSONModel(new JSONModel(), url, control);
-  }
-
-  public async updateJSONModel(model: JSONModel, url: string, control?: Control): Promise<JSONModel> {
+  async updateJSONModel(model: JSONModel, url: string, control?: Control): Promise<boolean> {
     control?.setBusy(true);
-    await model.loadData(url);
-    control?.setBusy(false);
-    return model;
+    try {
+      await model.loadData(url);
+      return true;
+    } catch (error: any) {
+      const params: Model$RequestFailedEventParameters = error as Model$RequestFailedEventParameters;
+      MessageBox.error((params.statusCode ?? "") + ": " + params.statusText);
+      return false;
+    } finally {
+      control?.setBusy(false);
+    }
   }
+
 }

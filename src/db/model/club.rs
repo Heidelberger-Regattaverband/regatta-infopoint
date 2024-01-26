@@ -1,6 +1,6 @@
 use crate::{
     db::{
-        model::{utils, ToEntity},
+        model::utils,
         tiberius::{RowColumn, TiberiusPool, TryRowColumn},
     },
     http::flags_scraper::ClubFlag,
@@ -11,8 +11,10 @@ use tiberius::{Query, Row};
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Club {
+    /// The internal ID of the club.
     pub id: i32,
 
+    /// This is the ID used by the external system to identify the club.
     #[serde(skip_serializing_if = "Option::is_none")]
     extern_id: Option<i32>,
 
@@ -65,7 +67,7 @@ impl Club {
 
         let mut client = pool.get().await;
         let clubs = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-        clubs.into_iter().map(|row| row.to_entity()).collect()
+        clubs.into_iter().map(|row| Club::from(&row)).collect()
     }
 
     pub async fn query_single(club_id: i32, pool: &TiberiusPool) -> Club {
@@ -79,9 +81,7 @@ impl Club {
         query.bind(club_id);
 
         let mut client = pool.get().await;
-        utils::get_row(query.query(&mut client).await.unwrap())
-            .await
-            .to_entity()
+        Club::from(&utils::get_row(query.query(&mut client).await.unwrap()).await)
     }
 
     pub fn select_columns(alias: &str) -> String {
@@ -92,23 +92,23 @@ impl Club {
     }
 }
 
-impl ToEntity<Club> for Row {
-    fn to_entity(&self) -> Club {
+impl From<&Row> for Club {
+    fn from(value: &Row) -> Self {
         let mut flag_url = None;
-        let club_extern_id = self.try_get_column("Club_ExternID");
+        let club_extern_id = value.try_get_column("Club_ExternID");
         if let Some(extern_id) = club_extern_id {
             if let Some(club_flag) = ClubFlag::get(&extern_id) {
                 flag_url = Some(club_flag.flag_url.clone());
             }
         }
         Club {
-            id: self.get_column("Club_ID"),
+            id: value.get_column("Club_ID"),
             extern_id: club_extern_id,
-            short_name: self.get_column("Club_Abbr"),
-            long_name: self.try_get_column("Club_Name"),
-            abbreviation: self.try_get_column("Club_UltraAbbr"),
-            city: self.get_column("Club_City"),
-            participations_count: self.try_get_column("Participations_Count"),
+            short_name: value.get_column("Club_Abbr"),
+            long_name: value.try_get_column("Club_Name"),
+            abbreviation: value.try_get_column("Club_UltraAbbr"),
+            city: value.get_column("Club_City"),
+            participations_count: value.try_get_column("Participations_Count"),
             flag_url,
         }
     }

@@ -1,6 +1,6 @@
 use crate::db::{
     aquarius::AquariusClient,
-    model::{utils, HeatRegistration, Race, Referee, ToEntity, TryToEntity},
+    model::{utils, HeatRegistration, Race, Referee, TryToEntity},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use chrono::{DateTime, Utc};
@@ -73,7 +73,7 @@ impl Heat {
 
         let mut client = pool.get().await;
         let heats = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-        heats.into_iter().map(|row| row.to_entity()).collect()
+        heats.into_iter().map(|row| Heat::from(&row)).collect()
     }
 
     pub async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Heat {
@@ -94,9 +94,7 @@ impl Heat {
         query.bind(heat_id);
 
         let mut client = pool.get().await;
-        let mut heat: Heat = utils::get_row(query.query(&mut client).await.unwrap())
-            .await
-            .to_entity();
+        let mut heat = Heat::from(&utils::get_row(query.query(&mut client).await.unwrap()).await);
 
         let results = join(Referee::query(heat.id, pool), HeatRegistration::query_all(&heat, pool)).await;
         heat.referees = results.0;
@@ -105,28 +103,28 @@ impl Heat {
     }
 }
 
-impl ToEntity<Heat> for Row {
-    fn to_entity(&self) -> Heat {
+impl From<&Row> for Heat {
+    fn from(value: &Row) -> Self {
         Heat {
-            id: self.get_column("Comp_ID"),
-            race: self.to_entity(),
-            number: self.get_column("Comp_Number"),
-            round_code: self.get_column("Comp_RoundCode"),
-            label: self.try_get_column("Comp_Label"),
-            group_value: self.get_column("Comp_GroupValue"),
-            state: self.get_column("Comp_State"),
-            cancelled: self.get_column("Comp_Cancelled"),
-            date_time: self.try_get_column("Comp_DateTime"),
+            id: value.get_column("Comp_ID"),
+            race: Race::from(value),
+            number: value.get_column("Comp_Number"),
+            round_code: value.get_column("Comp_RoundCode"),
+            label: value.try_get_column("Comp_Label"),
+            group_value: value.get_column("Comp_GroupValue"),
+            state: value.get_column("Comp_State"),
+            cancelled: value.get_column("Comp_Cancelled"),
+            date_time: value.try_get_column("Comp_DateTime"),
             referees: vec![],
             registrations: None,
-            round: self.get_column("Comp_Round"),
+            round: value.get_column("Comp_Round"),
         }
     }
 }
 
 impl TryToEntity<Heat> for Row {
     fn try_to_entity(&self) -> Option<Heat> {
-        <Row as TryRowColumn<i32>>::try_get_column(self, "Comp_ID").map(|_id| self.to_entity())
+        <Row as TryRowColumn<i32>>::try_get_column(self, "Comp_ID").map(|_id| Heat::from(self))
     }
 }
 
@@ -147,7 +145,7 @@ impl Kiosk {
         query.bind(regatta_id);
         let stream = query.query(client).await.unwrap();
         let heats = utils::get_rows(stream).await;
-        heats.into_iter().map(|row| row.to_entity()).collect()
+        heats.into_iter().map(|row| Heat::from(&row)).collect()
     }
 
     pub async fn query_next(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Heat> {
@@ -160,6 +158,6 @@ impl Kiosk {
         query.bind(regatta_id);
         let stream = query.query(client).await.unwrap();
         let heats = utils::get_rows(stream).await;
-        heats.into_iter().map(|row| row.to_entity()).collect()
+        heats.into_iter().map(|row| Heat::from(&row)).collect()
     }
 }

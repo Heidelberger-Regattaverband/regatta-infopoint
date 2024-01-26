@@ -6,30 +6,65 @@ use tiberius::{AuthMethod, Config as TiberiusConfig, EncryptionLevel};
 
 static CONFIG: OnceLock<Config> = OnceLock::new();
 
+/// The configuration of the server. The configuration is read from the environment.
+/// The configuration is a singleton and initialized once. The configuration can be accessed by calling `Config::get()`.
 pub struct Config {
+    /// The IP address the HTTP server is listening on. Defaults to `0.0.0.0`.
+    /// The IP address can be set by setting the environment variable `HTTP_BIND`.
     pub http_bind: String,
+    /// The port the HTTP server is listening on. Defaults to `8080`.
+    /// The port can be set by setting the environment variable `HTTP_PORT`.
     pub http_port: u16,
+    /// The IP address the HTTPS server is listening on. Defaults to `0.0.0.0`
+    /// The IP address can be set by setting the environment variable `HTTPS_BIND`.
     pub https_bind: String,
+    /// The port the HTTPS server is listening on. Defaults to `8443`.
+    /// The port can be set by setting the environment variable `HTTPS_PORT`.
     pub https_port: u16,
+    /// The path to the HTTPS certificate. Defaults to `./ssl/cert.pem`.
+    /// The path can be set by setting the environment variable `HTTPS_CERT_PATH`.
     pub https_cert_path: String,
+    /// The path to the HTTPS key. Defaults to `./ssl/key.pem`.
+    /// The path can be set by setting the environment variable `HTTPS_KEY_PATH`.
     pub https_key_path: String,
+    /// The maximum number of requests per interval.
+    /// The maximum number of requests can be set by setting the environment variable `HTTP_RL_MAX_REQUESTS`.
     pub http_rl_max_requests: u64,
+    /// The rate interval in seconds. The rate interval can be set by setting the environment variable `HTTP_RL_INTERVAL`.
     pub http_rl_interval: u64,
+    /// The number of HTTP workers. The number of HTTP workers can be set by setting the environment variable `HTTP_WORKERS`.
     pub http_workers: Option<usize>,
+    /// The database host. The database host can be set by setting the environment variable `DB_HOST`.
     pub db_host: String,
+    /// The database port. The database port can be set by setting the environment variable `DB_PORT`.
     pub db_port: u16,
+    /// The database name. The database name can be set by setting the environment variable `DB_NAME`.
     pub db_name: String,
+    /// The database user. The database user can be set by setting the environment variable `DB_USER`.
     pub db_user: String,
+    /// The database password. The database password can be set by setting the environment variable `DB_PASSWORD`.
     pub db_password: String,
+    /// Whether the database connection should be encrypted.
+    /// The database encryption can be set by setting the environment variable `DB_ENCRYPTION`.
     pub db_encryption: bool,
+    /// The maximum number of connections in the database pool.
+    /// The maximum number of connections can be set by setting the environment variable `DB_POOL_MAX_SIZE`.
     pub db_pool_max_size: u32,
+    /// The minimum number of idle connections in the database pool.
+    /// The minimum number of idle connections can be set by setting the environment variable `DB_POOL_MIN_IDLE`.
     pub db_pool_min_idle: u32,
+    /// The ID of the active regatta. The ID of the active regatta can be set by setting the environment variable `ACTIVE_REGATTA_ID`.
     pub active_regatta_id: Option<i32>,
+    /// The cache TTL in seconds. The cache TTL can be set by setting the environment variable `CACHE_TTL`.
     pub cache_ttl: u64,
+    /// The path to the static content that is delivered to the frontend.
+    /// The path can be set by setting the environment variable `STATIC_CONTENT_PATH`.
     pub static_content_path: String,
 }
 
 impl Config {
+    /// Returns the configuration of the server.
+    /// The configuration is read from the environment.
     pub fn get() -> &'static Config {
         CONFIG.get_or_init(Self::init)
     }
@@ -68,11 +103,16 @@ impl Config {
 
     /// Returns the database configuration required by the tiberius client.
     pub fn get_db_config(&self) -> TiberiusConfig {
+        self.get_db_config_for_user(&self.db_user, &self.db_password)
+    }
+
+    /// Returns the database configuration required by the tiberius client.
+    pub fn get_db_config_for_user(&self, user: &String, password: &String) -> TiberiusConfig {
         let mut config = TiberiusConfig::new();
         config.host(&self.db_host);
         config.port(self.db_port);
         config.database(&self.db_name);
-        config.authentication(AuthMethod::sql_server(&self.db_user, &self.db_password));
+        config.authentication(AuthMethod::sql_server(user, password));
         if self.db_encryption {
             config.encryption(EncryptionLevel::Required);
             config.trust_cert();

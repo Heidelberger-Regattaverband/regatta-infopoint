@@ -5,7 +5,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import Control from "sap/ui/core/Control";
 import { Button$PressEvent } from "sap/m/Button";
-import Route, { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -90,4 +90,5 @@ export default class Statistics extends BaseController {
     this.racesList?.setBusy(busy);
     this.heatsList?.setBusy(busy);
   }
+
 }

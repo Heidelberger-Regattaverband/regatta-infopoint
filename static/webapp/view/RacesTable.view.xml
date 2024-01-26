@@ -11,11 +11,14 @@
           <headerToolbar>
             <OverflowToolbar>
               <content>
-                <SearchField width="10rem" search=".onFilterSearch" />
-                <Button text="{i18n>common.filter}" tooltip="{i18n>common.filter}" icon="sap-icon://filter"
+                <SearchField width="10rem" liveChange="onSearchFieldLiveChange" showSearchButton="false" />
+                <OverflowToolbarButton text="{i18n>common.filter}" tooltip="{i18n>common.filter}" icon="sap-icon://filter"
                   press="onFilterButtonPress" />
+                <OverflowToolbarButton text="{i18n>common.sorting}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
+                  press="onSortButtonPress" />
                 <ToolbarSpacer />
-                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
+                <OverflowToolbarButton text="{i18n>common.refresh}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
+                  press="onRefreshButtonPress" />
               </content>
             </OverflowToolbar>
           </headerToolbar>
@@ -32,22 +35,22 @@
           </infoToolbar>
 
           <columns>
-            <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
+            <Column id="number" hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.number}" class="bold" />
               </header>
             </Column>
-            <Column hAlign="Begin" width="12rem" importance="High" popinDisplay="Inline">
+            <Column id="race" hAlign="Begin" width="12rem" importance="High" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.race}" class="bold" />
               </header>
             </Column>
-            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+            <Column id="distance" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.distance}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+            <Column id="registrationsCount" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.registrations}" class="bold" wrapping="false" />
               </header>
@@ -57,7 +60,7 @@
                 <Text text="{i18n>common.seededLbl}" class="bold" />
               </header>
             </Column> -->
-            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+            <Column id="state" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.state}" class="bold" />
               </header>

@@ -1,20 +1,24 @@
 import Table from "sap/m/Table";
 import BaseController from "./Base.controller";
 import Filter from "sap/ui/model/Filter";
-import ViewSettingsDialog, { ViewSettingsDialog$ConfirmEvent } from "sap/m/ViewSettingsDialog";
+import ViewSettingsDialog, { ViewSettingsDialog$ConfirmEvent, ViewSettingsDialog$ConfirmEventParameters } from "sap/m/ViewSettingsDialog";
 import Fragment from "sap/ui/core/Fragment";
 import Text from "sap/m/Text";
 import ListBinding from "sap/ui/model/ListBinding";
 import ListItemBase from "sap/m/ListItemBase";
 import MyComponent from "de/regatta_hd/Component";
 import FilterOperator from "sap/ui/model/FilterOperator";
-import ViewSettingsFilterItem from "sap/m/ViewSettingsFilterItem";
 import CustomData from "sap/ui/core/CustomData";
+import ViewSettingsItem from "sap/m/ViewSettingsItem";
+import Toolbar from "sap/m/Toolbar";
+import Sorter from "sap/ui/model/Sorter";
+import Column from "sap/m/Column";
+import { SortOrder } from "sap/ui/core/library";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class BaseTable extends BaseController {
+export default abstract class BaseTable extends BaseController {
 
   protected table: Table;
   private filters: Filter[];
@@ -22,7 +26,7 @@ export default class BaseTable extends BaseController {
   private bindingModel: string;
   private viewSettingsDialogs: Map<string, ViewSettingsDialog>;
 
-  public init(table: Table, channelId: string): void {
+  init(table: Table, channelId: string): void {
     // Keeps reference to any of the created sap.m.ViewSettingsDialog-s in this sample
     this.viewSettingsDialogs = new Map<string, ViewSettingsDialog>();
 
@@ -31,7 +35,7 @@ export default class BaseTable extends BaseController {
     this.searchFilters = [];
 
     // return the path of the model that is bound to the items, e.g. races or heats
-    this.bindingModel = this.table.getBindingInfo("items").model || "";
+    this.bindingModel = this.table.getBindingInfo("items").model ?? "";
 
     super.getEventBus()?.subscribe(channelId, "first", this.onFirstItemEvent, this);
     super.getEventBus()?.subscribe(channelId, "previous", this.onPreviousItemEvent, this);
@@ -40,7 +44,7 @@ export default class BaseTable extends BaseController {
   }
 
   private onFirstItemEvent(channelId: string, eventId: string, parametersMap: any): void {
-    const index: int = this.table.indexOfItem(this.table.getSelectedItem());
+    const index: number = this.table.indexOfItem(this.table.getSelectedItem());
     if (index != 0) {
       this.setCurrentItem(0);
     }
@@ -48,25 +52,25 @@ export default class BaseTable extends BaseController {
 
   private onLastItemEvent(channelId: string, eventId: string, parametersMap: any): void {
     this.growTable(400);
-    const index: int = this.table.indexOfItem(this.table.getSelectedItem());
-    const lastIndex: int = this.table.getItems().length - 1;
+    const index: number = this.table.indexOfItem(this.table.getSelectedItem());
+    const lastIndex: number = this.table.getItems().length - 1;
     if (index != lastIndex) {
       this.setCurrentItem(lastIndex);
     }
   }
 
   private onPreviousItemEvent(channelId: string, eventId: string, parametersMap: any): void {
-    const index: int = this.table.indexOfItem(this.table.getSelectedItem());
-    const previousIndex: int = index > 1 ? index - 1 : 0;
+    const index: number = this.table.indexOfItem(this.table.getSelectedItem());
+    const previousIndex: number = index > 1 ? index - 1 : 0;
     if (index != previousIndex) {
       this.setCurrentItem(previousIndex);
     }
   }
 
   private onNextItemEvent(channelId: string, eventId: string, parametersMap: any): void {
-    const index: int = this.table.indexOfItem(this.table.getSelectedItem());
+    const index: number = this.table.indexOfItem(this.table.getSelectedItem());
     const items: ListItemBase[] = this.table.getItems();
-    const nextIndex: int = index < items.length - 1 ? index + 1 : index;
+    const nextIndex: number = index < items.length - 1 ? index + 1 : index;
     if (index != nextIndex) {
       this.growTable(nextIndex);
       this.setCurrentItem(nextIndex);
@@ -77,9 +81,7 @@ export default class BaseTable extends BaseController {
     let dialog: ViewSettingsDialog = this.viewSettingsDialogs.get(dialogFragmentName)!;
 
     if (!dialog) {
-      dialog = await Fragment.load({
-        id: this.getView()?.getId(), name: dialogFragmentName, controller: this
-      }) as ViewSettingsDialog;
+      dialog = await Fragment.load({ id: this.getView()?.getId(), name: dialogFragmentName, controller: this }) as ViewSettingsDialog;
       dialog.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
       this.getView()?.addDependent(dialog);
       this.viewSettingsDialogs.set(dialogFragmentName, dialog);
@@ -88,10 +90,9 @@ export default class BaseTable extends BaseController {
   }
 
   onHandleFilterDialogConfirm(event: ViewSettingsDialog$ConfirmEvent): void {
-    const params: Record<string, any> = event.getParameters() as Record<string, any>;
     this.filters = [];
 
-    params.filterItems.forEach((filterItem: ViewSettingsFilterItem) => {
+    event.getParameters().filterItems?.forEach((filterItem: ViewSettingsItem) => {
       const customData: CustomData[] = filterItem.getCustomData();
       if (customData) {
         customData.forEach((data: CustomData) => {
@@ -108,15 +109,15 @@ export default class BaseTable extends BaseController {
     // apply filters
     this.applyFilters();
 
-    this.updateFilterBar(params.filterString);
+    this.updateFilterBar((event.getParameters() as any).filterString);
   }
 
-  private updateFilterBar(sText: string): void {
+  private updateFilterBar(text: string): void {
     // update filter bar
-    const infoToolbar = this.table.getInfoToolbar();
+    const infoToolbar: Toolbar = this.table.getInfoToolbar();
     if (infoToolbar?.getContent()[0]) {
       infoToolbar.setVisible(this.filters.length > 0);
-      (infoToolbar.getContent()[0] as Text).setText(sText);
+      (infoToolbar.getContent()[0] as Text).setText(text);
     }
   }
 
@@ -144,7 +145,32 @@ export default class BaseTable extends BaseController {
     (this.table.getBinding("items") as ListBinding).filter(allFilters);
   }
 
-  private setCurrentItem(index: int): void {
+  onSortDialogConfirm(event: ViewSettingsDialog$ConfirmEvent): void {
+    let sorters: Sorter[] = [];
+    const params: ViewSettingsDialog$ConfirmEventParameters = event.getParameters()
+    const path: string | undefined = params.sortItem?.getKey();
+
+    const customData: CustomData | undefined = params.sortItem?.getCustomData()?.find((data: CustomData) => data.getKey() === "column");
+    const columnName: string = customData?.getValue();
+    if (columnName) {
+      this.table.getColumns().forEach((col: Column) => {
+        if (col.getId().endsWith(columnName)) {
+          col.setSortIndicator(params.sortDescending ? SortOrder.Descending : SortOrder.Ascending);
+        } else {
+          col.setSortIndicator(SortOrder.None);
+        }
+      })
+    }
+    if (path) {
+      sorters.push(new Sorter(path, params.sortDescending));
+    }
+
+    // apply the selected sort and group settings
+    (this.table.getBinding("items") as ListBinding).sort(sorters);
+  }
+
+
+  private setCurrentItem(index: number): void {
     const items: ListItemBase[] = this.table.getItems();
     this.table.setSelectedItem(items[index]);
 
@@ -157,15 +183,15 @@ export default class BaseTable extends BaseController {
     this.onItemChanged(item);
   }
 
-  onItemChanged(item: any): void {
-  }
+  abstract onItemChanged(item: any): void;
 
-  private growTable(index: int): void {
-    const actual: int = this.table.getGrowingInfo()?.actual || 0;
+  private growTable(index: number): void {
+    const actual: number = this.table.getGrowingInfo()?.actual || 0;
     if (index >= actual - 5) {
       this.table.setGrowingThreshold(index + 5);
       const allFilters: Filter[] = this.filters.concat(this.searchFilters);
       (this.table.getBinding("items") as ListBinding).filter(allFilters);
     }
   }
-};
+
+}

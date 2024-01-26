@@ -7,14 +7,14 @@ import ViewSettingsFilterItem from "sap/m/ViewSettingsFilterItem";
 import ViewSettingsItem from "sap/m/ViewSettingsItem";
 import { ListBase$SelectEvent } from "sap/m/ListBase";
 import Button, { Button$PressEvent } from "sap/m/Button";
-import MessageToast from "sap/m/MessageToast";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import Filter from "sap/ui/model/Filter";
-import { SearchField$SearchEvent } from "sap/m/SearchField";
+import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import ListItemBase from "sap/m/ListItemBase";
 import ViewSettingsDialog from "sap/m/ViewSettingsDialog";
 import Context from "sap/ui/model/Context";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import MessageToast from "sap/m/MessageToast";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -85,7 +85,7 @@ export default class HeatsTable extends BaseTableController {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("heats");
       const heat: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
 
-      const index: int = this.table.indexOfItem(selectedItem);
+      const index: number = this.table.indexOfItem(selectedItem);
       const count = this.table.getItems().length;
       // store navigation meta information in selected item
       heat._nav = { isFirst: index == 0, isLast: index == count - 1 };
@@ -101,17 +101,33 @@ export default class HeatsTable extends BaseTableController {
     this.table.setGrowingThreshold(30);
   }
 
+  onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
+    const query: string | undefined = event.getParameters().newValue?.trim();
+    if (query) {
+      super.setSearchFilters(this.createSearchFilters(query));
+    } else {
+      super.setSearchFilters([]);
+    }
+    super.applyFilters();
+  }
+
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    await this.loadHeatsModel();
-    MessageToast.show(this.i18n("msg.dataUpdated"));
+    const updated: boolean = await this.loadHeatsModel();
+    if (updated) {
+      MessageToast.show(this.i18n("msg.dataUpdated"));
+    }
     source.setEnabled(true);
   }
 
   onItemChanged(item: any): void {
     (super.getComponentModel("heat") as JSONModel).setData(item);
     super.getEventBus()?.publish("heat", "itemChanged", {});
+  }
+
+  async onSortButtonPress(event: Button$PressEvent): Promise<void> {
+    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsSortDialog")).open();
   }
 
   async onFilterButtonPress(event: Button$PressEvent): Promise<void> {
@@ -126,27 +142,20 @@ export default class HeatsTable extends BaseTableController {
     super.applyFilters();
   }
 
-  onFilterSearch(event: SearchField$SearchEvent): void {
-    const searchFilters: Filter[] = [];
-    const query: string | undefined = event.getParameter("query")?.trim();
-    if (query) {
-      searchFilters.push(
-        new Filter({
-          filters: [
-            new Filter("race/number", FilterOperator.Contains, query),
-            new Filter("race/shortLabel", FilterOperator.Contains, query),
-            new Filter("race/longLabel", FilterOperator.Contains, query),
-            new Filter("race/comment", FilterOperator.Contains, query)
-          ],
-          and: false
-        }))
-    }
-    super.setSearchFilters(searchFilters);
-    super.applyFilters();
+  private createSearchFilters(query: string): Filter[] {
+    return [new Filter({
+      filters: [
+        new Filter("race/number", FilterOperator.Contains, query),
+        new Filter("race/shortLabel", FilterOperator.Contains, query),
+        new Filter("race/longLabel", FilterOperator.Contains, query),
+        new Filter("race/comment", FilterOperator.Contains, query)
+      ],
+      and: false
+    })]
   }
 
-  private async loadHeatsModel(): Promise<void> {
-    await super.updateJSONModel(this.heatsModel, `/api/regattas/${super.getRegattaId()}/heats`, this.table);
+  private async loadHeatsModel(): Promise<boolean> {
+    return await super.updateJSONModel(this.heatsModel, `/api/regattas/${super.getRegattaId()}/heats`, this.table);
   }
 
 }

@@ -19,11 +19,11 @@ jobs:
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          version: 1.50.0
+          version: 1.58.0
           tags: tag:ci
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup toolchain
         id: toolchain
@@ -38,10 +38,10 @@ jobs:
         uses: actions-rs/cargo@v1
         env:
           DB_HOST: ${{ secrets.DB_HOST }}
-          DB_PORT: ${{ secrets.DB_PORT }}
           DB_NAME: ${{ secrets.DB_NAME }}
           DB_USER: ${{ secrets.DB_USER }}
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          RUST_LOG: ${{ vars.RUST_LOG }}
         with:
           command: test
           args: --workspace

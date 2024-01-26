@@ -1,13 +1,27 @@
+import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import { IndicationColor } from "sap/ui/core/library";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class Formatter {
+
+  private static bundle: ResourceBundle;
+
+  static {
+    Formatter.bundle = ResourceBundle.create({
+      // specify url of the base .properties file
+      url: "i18n/i18n.properties",
+      async: false,
+      supportedLocales: ["de", "en"],
+      fallbackLocale: "de",
+    }) as ResourceBundle;
+  }
+
   // -----------------
   // race formatters
   // -----------------
-  public static raceLabel(race?: any): string {
+  static raceLabel(race?: any): string {
     if (race) {
       let label: string = race.shortLabel;
       if (race.comment) {
@@ -18,7 +32,7 @@ export default class Formatter {
     return "";
   }
 
-  public static nrRaceLabel(race?: any): string {
+  static nrRaceLabel(race?: any): string {
     if (race) {
       const label: string = race.number + " - " + Formatter.raceLabel(race);
       return label;
@@ -26,7 +40,7 @@ export default class Formatter {
     return "";
   }
 
-  public static raceStateHighlight(race: any): IndicationColor | undefined {
+  static raceStateHighlight(race: any): IndicationColor | undefined {
     if (!race) {
       return undefined;
     }
@@ -50,37 +64,37 @@ export default class Formatter {
     }
   }
 
-  public static raceStateLabel(race?: any): string {
+  static raceStateLabel(race?: any): string {
     if (!race) {
       return "";
     }
     if (race.cancelled) {
-      return this.i18n("heat.state.cancelled");
+      return Formatter.i18n("heat.state.cancelled");
     } else {
       switch (race.state) {
         default:
         case 0:
         case 1:
-          return this.i18n("common.scheduled");
+          return Formatter.i18n("common.scheduled");
         case 2:
         case 3:
         case 5:
         case 6:
-          return this.i18n("heat.state.started");
+          return Formatter.i18n("heat.state.started");
         case 4:
-          return this.i18n("common.finished");
+          return Formatter.i18n("common.finished");
       }
     }
   }
 
-  public static distanceLabel(race?: any): string {
+  static distanceLabel(race?: any): string {
     if (race?.distance) {
       return race.distance + "m";
     }
     return "";
   }
 
-  public static raceRegistrationHighlight(registration: any): IndicationColor {
+  static raceRegistrationHighlight(registration: any): IndicationColor {
     https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
     if (registration.cancelled || registration.race.cancelled) {
       return IndicationColor.Indication02; // cancelled -> red
@@ -92,7 +106,7 @@ export default class Formatter {
   // -----------------
   // heat formatters
   // -----------------
-  public static heatRegistrationHighlight(heatRegistration: any): IndicationColor {
+  static heatRegistrationHighlight(heatRegistration: any): IndicationColor {
     // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
     if (heatRegistration.registration.cancelled) {
       return IndicationColor.Indication02; // cancelled -> red
@@ -107,7 +121,7 @@ export default class Formatter {
         }
   }
 
-  public static athleteLabel(athlete: any): string {
+  static athleteLabel(athlete: any): string {
     let label: string = athlete.firstName + " " + athlete.lastName + " (" + athlete.year + ", ";
     if (athlete.club.abbreviation) {
       label += athlete.club.abbreviation
@@ -118,7 +132,7 @@ export default class Formatter {
     return label;
   }
 
-  public static crewLabel(crews?: any[]): string {
+  static crewLabel(crews?: any[]): string {
     let label: string = "";
     if (crews) {
       for (const crew of crews) {
@@ -129,7 +143,7 @@ export default class Formatter {
     return label;
   }
 
-  public static boatLabel(registration: any): string {
+  static boatLabel(registration: any): string {
     let label: string = "" + registration.shortLabel;
     if (registration.race.groupMode == 2) {
       label += " - " + Formatter.groupValueLabel(registration.groupValue);
@@ -143,7 +157,7 @@ export default class Formatter {
     return label;
   }
 
-  public static groupValueLabel(groupValue: int): string | undefined {
+  static groupValueLabel(groupValue: number): string | undefined {
     const PREFIX: string = "AK ";
     switch (groupValue) {
       case 0:
@@ -169,7 +183,7 @@ export default class Formatter {
     }
   }
 
-  public static weekdayLabel(weekday: int): string {
+  static weekdayLabel(weekday: number): string {
     switch (weekday) {
       case 0: return "So";
       case 1: return "Mo";
@@ -183,7 +197,7 @@ export default class Formatter {
     }
   }
 
-  public static weekDayDateLabel(date?: string): string {
+  static weekDayDateLabel(date?: string): string {
     if (date) {
       const weekday: string = Formatter.weekdayLabel(new Date(date).getDay());
       const dateLabel: string | undefined = Formatter.dateLabel(date);
@@ -192,7 +206,7 @@ export default class Formatter {
     return "";
   }
 
-  public static dayTimeIsoLabel(dateTime?: string): string {
+  static dayTimeIsoLabel(dateTime?: string): string {
     if (dateTime) {
       const oDateTime: Date = new Date(dateTime);
       const weekday: string = Formatter.weekdayLabel(oDateTime.getDay());
@@ -203,7 +217,7 @@ export default class Formatter {
     return "";
   }
 
-  public static timeLabel(time?: string): string {
+  static timeLabel(time?: string): string {
     if (time) {
       const timeSplit: string[] = time.split(":");
       return timeSplit[0] + ":" + timeSplit[1];
@@ -211,7 +225,7 @@ export default class Formatter {
     return "";
   }
 
-  public static dateLabel(date?: string): string {
+  static dateLabel(date?: string): string {
     if (date) {
       const dateSplit: string[] = date.split("-");
       return dateSplit[2] + "." + dateSplit[1] + "." + dateSplit[0];
@@ -219,32 +233,32 @@ export default class Formatter {
     return "";
   }
 
-  public static heatStateLabel(heat?: any): string | undefined {
+  static heatStateLabel(heat?: any): string | undefined {
     if (!heat) {
       return undefined;
     }
     if (heat.cancelled) {
-      return this.i18n("heat.state.cancelled");
+      return Formatter.i18n("heat.state.cancelled");
     } else {
       switch (heat.state) {
         default:
         case 0:
-          return this.i18n("common.scheduled");
+          return Formatter.i18n("common.scheduled");
         case 1:
-          return this.i18n("common.seeded");
+          return Formatter.i18n("common.seeded");
         case 2:
-          return this.i18n("heat.state.started");
+          return Formatter.i18n("heat.state.started");
         case 4:
-          return this.i18n("heat.state.official");
+          return Formatter.i18n("heat.state.official");
         case 5:
-          return this.i18n("heat.state.finished");
+          return Formatter.i18n("heat.state.finished");
         case 6:
-          return this.i18n("heat.state.photoFinish");
+          return Formatter.i18n("heat.state.photoFinish");
       }
     }
   }
 
-  public static heatStateHighlight(oHeat: any): IndicationColor | undefined {
+  static heatStateHighlight(oHeat: any): IndicationColor | undefined {
     if (!oHeat) {
       return undefined; //  -> no color
     }
@@ -270,7 +284,7 @@ export default class Formatter {
     }
   }
 
-  public static heatLabel(heat?: any): string {
+  static heatLabel(heat?: any): string {
     if (!heat) {
       return "";
     }
@@ -283,23 +297,23 @@ export default class Formatter {
 
     switch (heat.roundCode) {
       case "A":
-        return this.i18n("heat.label.division", [heatLabel, groupValue]);
+        return Formatter.i18n("heat.label.division", [heatLabel, groupValue]);
       case "H":
-        return this.i18n("heat.label.repechage", [heatLabel]);
+        return Formatter.i18n("heat.label.repechage", [heatLabel]);
       case "R":
-        return this.i18n("heat.label.mainRace", [heatLabel, groupValue]);
+        return Formatter.i18n("heat.label.mainRace", [heatLabel, groupValue]);
       case "V":
-        return this.i18n("heat.label.forerun", [heatLabel, groupValue]);
+        return Formatter.i18n("heat.label.forerun", [heatLabel, groupValue]);
       case "S":
-        return this.i18n("heat.label.semifinal", [heatLabel, groupValue]);
+        return Formatter.i18n("heat.label.semifinal", [heatLabel, groupValue]);
       case "F":
-        return this.i18n("heat.label.final", [heatLabel, groupValue]);
+        return Formatter.i18n("heat.label.final", [heatLabel, groupValue]);
       default:
         return "";
     }
   }
 
-  public static roundLabel(roundCode: string): string {
+  static roundLabel(roundCode: string): string {
     switch (roundCode) {
       case "A":
         return "Abteilung";
@@ -317,4 +331,9 @@ export default class Formatter {
         return roundCode;
     }
   }
+
+  private static i18n(key: string, args?: any[]): string {
+    return Formatter.bundle.getText(key, args) || key;
+  }
+
 }

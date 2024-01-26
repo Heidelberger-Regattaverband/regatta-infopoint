@@ -1,0 +1,11 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core"
+  xmlns:cust="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
+  <ViewSettingsDialog confirm="onSortDialogConfirm">
+    <sortItems>
+      <ViewSettingsItem text="{i18n>common.number}" key="id" selected="true" cust:column="number" />
+      <ViewSettingsItem text="{i18n>common.distance}" key="distance" cust:column="distance" />
+      <ViewSettingsItem text="{i18n>common.registrations}" key="registrationsCount" cust:column="registrationsCount" />
+      <ViewSettingsItem text="{i18n>common.state}" key="state" cust:column="state" />
+    </sortItems>
+  </ViewSettingsDialog>
+</core:FragmentDefinition>
