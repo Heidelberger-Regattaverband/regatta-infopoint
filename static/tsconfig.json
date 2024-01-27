@@ -19,7 +19,10 @@
     },
     "composite": true,
     "noImplicitAny": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "types": [
+      "@openui5/types"
+    ]
   },
   "include": [
     "./webapp/**/*"

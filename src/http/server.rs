@@ -61,7 +61,7 @@ impl<'a> Server<'a> {
         let aquarius = create_app_data().await;
         let (rl_max_requests, rl_interval) = self.config.get_rate_limiter_config();
         let secret_key = Self::get_secret_key();
-        let static_content_path = self.config.static_content_path.clone();
+        let http_app_content_path = self.config.http_app_content_path.clone();
 
         let worker_count = Arc::new(Mutex::new(0));
         let prometheus = Self::get_prometeus();
@@ -97,7 +97,7 @@ impl<'a> Server<'a> {
                         .service(rest_api::logout),
                 )
                 .service(
-                    Files::new(INFOPORTAL, static_content_path.clone())
+                    Files::new(INFOPORTAL, http_app_content_path.clone())
                         .index_file("index.html")
                         .use_last_modified(true)
                         .use_etag(true)
@@ -178,9 +178,9 @@ impl<'a> Server<'a> {
             .cookie_secure(true)
             .cookie_http_only(true)
             // allow the cookie only from the current domain
-            .cookie_same_site(SameSite::Lax)
+            .cookie_same_site(SameSite::Strict)
             .session_lifecycle(PersistentSession::default().session_ttl(Duration::seconds(SECS_OF_WEEKEND)))
-            .cookie_path(INFOPORTAL.to_string())
+            .cookie_path("".to_string())
             .build()
     }
 
