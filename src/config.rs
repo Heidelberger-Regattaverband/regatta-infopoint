@@ -47,7 +47,7 @@ pub struct Config {
     pub db_user: String,
     /// The database password. The database password can be set by setting the environment variable `DB_PASSWORD`.
     pub db_password: String,
-    /// Whether the database connection should be encrypted.
+    /// Whether the database connection should be encrypted. Defaults to `false`.
     /// The database encryption can be set by setting the environment variable `DB_ENCRYPTION`.
     pub db_encryption: bool,
     /// The maximum number of connections in the database pool.
@@ -170,7 +170,7 @@ impl Config {
         let db_user = env::var("DB_USER").expect("env variable `DB_USER` should be set");
         let db_password = env::var("DB_PASSWORD").expect("env variable `DB_PASSWORD` should be set");
         let db_encryption: bool = env::var("DB_ENCRYPTION")
-            .unwrap_or_else(|_| "true".to_string())
+            .unwrap_or_else(|_| "false".to_string())
             .parse()
             .unwrap();
         let db_pool_max_size: u32 = env::var("DB_POOL_MAX_SIZE")
