@@ -34,6 +34,9 @@ pub struct Config {
     pub http_rl_interval: u64,
     /// The number of HTTP workers. The number of HTTP workers can be set by setting the environment variable `HTTP_WORKERS`.
     pub http_workers: Option<usize>,
+    /// The path to the static application content that is delivered to the browser. Defaults to `./static/dist`.
+    /// The path can be set by setting the environment variable `HTTP_APP_CONTENT_PATH`.
+    pub http_app_content_path: String,
     /// The database host. The database host can be set by setting the environment variable `DB_HOST`.
     pub db_host: String,
     /// The database port. The database port can be set by setting the environment variable `DB_PORT`.
@@ -57,9 +60,6 @@ pub struct Config {
     pub active_regatta_id: Option<i32>,
     /// The cache TTL in seconds. The cache TTL can be set by setting the environment variable `CACHE_TTL`.
     pub cache_ttl: u64,
-    /// The path to the static content that is delivered to the frontend.
-    /// The path can be set by setting the environment variable `STATIC_CONTENT_PATH`.
-    pub static_content_path: String,
 }
 
 impl Config {
@@ -133,6 +133,7 @@ impl Config {
             .unwrap_or_else(|_| "8080".to_string())
             .parse()
             .unwrap();
+        let http_app_content_path = env::var("HTTP_APP_CONTENT_PATH").unwrap_or_else(|_| "./static/dist".to_owned());
 
         // read https config
         let https_bind = env::var("HTTPS_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
@@ -225,7 +226,7 @@ impl Config {
             db_pool_min_idle,
             active_regatta_id,
             cache_ttl,
-            static_content_path: "./static/dist".to_owned(),
+            http_app_content_path,
         }
     }
 }
