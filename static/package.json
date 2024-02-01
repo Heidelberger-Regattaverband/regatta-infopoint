@@ -11,7 +11,7 @@
     "watch": "watch 'npm run build' webapp"
   },
   "devDependencies": {
-    "@openui5/types": "^1.120.3",
+    "@openui5/types": "^1.120.5",
     "@ui5/cli": "^3.9.0",
     "typescript": "^5.3.3",
     "ui5-tooling-transpile": "^3.3.3",
