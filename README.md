@@ -1,3 +1,5 @@
+[![codecov](https://codecov.io/gh/Heidelberger-Regattaverband/regatta-infopoint/graph/badge.svg?token=NBQESMP9HW)](https://codecov.io/gh/Heidelberger-Regattaverband/regatta-infopoint)
+
 # Setup of a new regatta server
 
 ## General steps
