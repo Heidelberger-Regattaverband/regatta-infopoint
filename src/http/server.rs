@@ -17,8 +17,9 @@ use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
 use colored::Colorize;
 use futures::FutureExt;
 use log::{debug, info, warn};
-use rustls::{Certificate, PrivateKey, ServerConfig};
+use rustls::ServerConfig;
 use rustls_pemfile::{certs, pkcs8_private_keys};
+use rustls_pki_types::{PrivateKeyDer, PrivatePkcs8KeyDer};
 use std::{
     fs::File,
     future::Ready,
@@ -115,7 +116,7 @@ impl<'a> Server<'a> {
         // also bind to https if config is available
         if let Some(rustls_cfg) = Self::get_rustls_config() {
             let https_bind = self.config.get_https_bind();
-            http_server = http_server.bind_rustls_021(https_bind, rustls_cfg)?;
+            http_server = http_server.bind_rustls_0_22(https_bind, rustls_cfg)?;
         }
 
         // configure number of workers if env. variable is set
@@ -255,15 +256,12 @@ impl<'a> Server<'a> {
 
             if let (Ok(cert_file), Ok(key_file)) = (File::open(cert_pem_path), File::open(key_pem_path)) {
                 let cert_reader = &mut BufReader::new(cert_file);
-                let cert_chain: Vec<Certificate> = certs(cert_reader).unwrap().into_iter().map(Certificate).collect();
+                let cert_chain = certs(cert_reader).map(|cert| cert.unwrap()).collect();
 
                 let key_reader = &mut BufReader::new(key_file);
                 // convert files to key/cert objects
-                let mut keys: Vec<PrivateKey> = pkcs8_private_keys(key_reader)
-                    .unwrap()
-                    .into_iter()
-                    .map(PrivateKey)
-                    .collect();
+                let mut keys: Vec<PrivatePkcs8KeyDer> =
+                    pkcs8_private_keys(key_reader).map(|cert| cert.unwrap()).collect();
 
                 // no keys could be parsedpter for each variant
                 if keys.is_empty() {
@@ -273,9 +271,8 @@ impl<'a> Server<'a> {
 
                 // init server config builder with safe defaults
                 let config = ServerConfig::builder()
-                    .with_safe_defaults()
                     .with_no_client_auth()
-                    .with_single_cert(cert_chain, keys.remove(0))
+                    .with_single_cert(cert_chain, PrivateKeyDer::Pkcs8(keys.remove(0)))
                     .unwrap();
                 Some(config)
             } else {

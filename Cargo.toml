@@ -20,14 +20,15 @@ tokio = { version = "1", features = ["net"] }
 tokio-util = { version = "0", features = ["compat"] }
 
 # Web
-actix-web = { version = "4", features = ["rustls-0_21"] }
+actix-web = { version = "4", features = ["rustls-0_22"] }
 actix-session = { version = "0", features = ["cookie-session"] }
 actix-identity = "0"
 actix-files = "0"
 actix-extensible-rate-limit = "0"
 actix-web-prometheus = { version = "0", features = ["process"] }
-rustls = "0.21"
-rustls-pemfile = "1"
+rustls = "0.22"
+rustls-pki-types = "1"
+rustls-pemfile = "2"
 serde = { version = "1", features = ["derive"] }
 
 # Database
