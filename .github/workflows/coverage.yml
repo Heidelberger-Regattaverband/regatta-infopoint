@@ -20,7 +20,7 @@ jobs:
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          version: 1.58.0
+          version: 1.58.2
           tags: tag:ci
 
       - name: Checkout
@@ -47,7 +47,7 @@ jobs:
           RUST_LOG: ${{ vars.RUST_LOG }}
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           files: codecov.json
           fail_ci_if_error: false

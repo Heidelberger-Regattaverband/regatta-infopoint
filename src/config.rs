@@ -34,6 +34,9 @@ pub struct Config {
     pub http_rl_interval: u64,
     /// The number of HTTP workers. The number of HTTP workers can be set by setting the environment variable `HTTP_WORKERS`.
     pub http_workers: Option<usize>,
+    /// The path to the static application content that is delivered to the browser. Defaults to `./static/dist`.
+    /// The path can be set by setting the environment variable `HTTP_APP_CONTENT_PATH`.
+    pub http_app_content_path: String,
     /// The database host. The database host can be set by setting the environment variable `DB_HOST`.
     pub db_host: String,
     /// The database port. The database port can be set by setting the environment variable `DB_PORT`.
@@ -44,7 +47,7 @@ pub struct Config {
     pub db_user: String,
     /// The database password. The database password can be set by setting the environment variable `DB_PASSWORD`.
     pub db_password: String,
-    /// Whether the database connection should be encrypted.
+    /// Whether the database connection should be encrypted. Defaults to `false`.
     /// The database encryption can be set by setting the environment variable `DB_ENCRYPTION`.
     pub db_encryption: bool,
     /// The maximum number of connections in the database pool.
@@ -57,9 +60,6 @@ pub struct Config {
     pub active_regatta_id: Option<i32>,
     /// The cache TTL in seconds. The cache TTL can be set by setting the environment variable `CACHE_TTL`.
     pub cache_ttl: u64,
-    /// The path to the static content that is delivered to the frontend.
-    /// The path can be set by setting the environment variable `STATIC_CONTENT_PATH`.
-    pub static_content_path: String,
 }
 
 impl Config {
@@ -133,6 +133,7 @@ impl Config {
             .unwrap_or_else(|_| "8080".to_string())
             .parse()
             .unwrap();
+        let http_app_content_path = env::var("HTTP_APP_CONTENT_PATH").unwrap_or_else(|_| "./static/dist".to_owned());
 
         // read https config
         let https_bind = env::var("HTTPS_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
@@ -169,7 +170,7 @@ impl Config {
         let db_user = env::var("DB_USER").expect("env variable `DB_USER` should be set");
         let db_password = env::var("DB_PASSWORD").expect("env variable `DB_PASSWORD` should be set");
         let db_encryption: bool = env::var("DB_ENCRYPTION")
-            .unwrap_or_else(|_| "true".to_string())
+            .unwrap_or_else(|_| "false".to_string())
             .parse()
             .unwrap();
         let db_pool_max_size: u32 = env::var("DB_POOL_MAX_SIZE")
@@ -225,7 +226,7 @@ impl Config {
             db_pool_min_idle,
             active_regatta_id,
             cache_ttl,
-            static_content_path: "./static/dist".to_owned(),
+            http_app_content_path,
         }
     }
 }
