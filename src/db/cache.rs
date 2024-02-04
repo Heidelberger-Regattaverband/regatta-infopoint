@@ -3,27 +3,53 @@ use std::{hash::Hash, time::Duration};
 use stretto::AsyncCache;
 use tokio::task;
 
+/// The maximum cost of the cache. This is used to limit the number of entries in the cache.
 const MAX_COST: i64 = 1e6 as i64;
 
+/// Trait for a cache. It is used to store and retrieve values from a cache.
 pub trait CacheTrait<K, V> {
+    /// Retrieves a value from the cache. If the value is not present in the cache, `None` is returned.
+    /// # Arguments
+    /// * `key` - The key of the value to retrieve.
+    /// # Returns
+    /// * `Some(value)` - The value associated with the key.
+    /// * `None` - If the value is not present in the cache.
     async fn get(&self, key: &K) -> Option<V>;
+
+    /// Sets a value in the cache.
+    /// # Arguments
+    /// * `key` - The key of the value to set.
+    /// * `value` - The value to set.
     async fn set(&self, key: &K, value: &V);
 }
 
+/// A cache that uses `stretto` as the underlying cache.
 pub struct Cache<K, V>
 where
     K: Hash + Eq + Send + Sync + Copy,
     V: Send + Sync + Clone + 'static,
 {
+    /// The underlying cache.
     cache: AsyncCache<K, V>,
+
+    /// The time-to-live of the entries in the cache.
     ttl: Duration,
 }
 
-impl<K, V> Cache<K, V>
+/// Implementation of the `Cache` struct.
+impl<K: Hash + Eq + Send + Sync + Copy, V> Cache<K, V>
 where
     K: Hash + Eq + Send + Sync + Copy,
     V: Send + Sync + Clone + 'static,
 {
+    /// Creates a new `Cache`.
+    /// # Arguments
+    /// * `size` - The maximum number of entries in the cache.
+    /// * `ttl` - The time-to-live of the entries in the cache.
+    /// # Returns
+    /// A new `Cache`.
+    /// # Panics
+    /// If the creation of the cache fails.
     pub fn new(size: usize, ttl: Duration) -> Self {
         Cache {
             cache: AsyncCache::new(size, MAX_COST, task::spawn).unwrap(),
@@ -91,7 +117,7 @@ impl Caches {
             club: Cache::new(MAX_RACES_COUNT, ttl),
             club_registrations: Cache::new(MAX_RACES_COUNT, ttl),
 
-            // ccaches with entries per heat
+            // caches with entries per heat
             heat: Cache::new(MAX_HEATS_COUNT, ttl),
         }
     }
