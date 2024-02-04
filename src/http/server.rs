@@ -116,7 +116,7 @@ impl<'a> Server<'a> {
         // also bind to https if config is available
         if let Some(rustls_cfg) = Self::get_rustls_config() {
             let https_bind = self.config.get_https_bind();
-            http_server = http_server.bind_rustls_021(https_bind, rustls_cfg)?;
+            http_server = http_server.bind_rustls_0_22(https_bind, rustls_cfg)?;
         }
 
         // configure number of workers if env. variable is set
