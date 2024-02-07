@@ -53,7 +53,7 @@ impl<'a> Server<'a> {
 
     /// Starts the server.
     /// # Returns
-    /// * `io::Result<()>` - The result of the server start.
+    /// `io::Result<()>` - The result of the server start.
     /// # Panics
     /// If the server can't be started.
     pub async fn start(&self) -> io::Result<()> {
@@ -213,7 +213,7 @@ impl<'a> Server<'a> {
     /// * `max_requests` - The maximum number of requests in the given interval.
     /// * `interval` - The interval in seconds.
     /// # Returns
-    /// * `RateLimiter` - The rate limiter.
+    /// `RateLimiter` - The rate limiter.
     /// # Panics
     /// If the rate limiter can't be created.
     fn get_rate_limiter(
@@ -231,15 +231,16 @@ impl<'a> Server<'a> {
 
     /// Returns HTTPS server configuration if available.
     /// # Returns
-    /// * `Option<ServerConfig>` - The HTTPS server configuration.
+    /// `Option<ServerConfig>` - The HTTPS server configuration.
     /// # Panics
     /// If the HTTPS server configuration can't be created.
     /// # Remarks
     /// The HTTPS server configuration is only created if the certificate and private key files are available.
     /// The certificate and private key files are configured in the environment.
     fn get_rustls_config() -> Option<ServerConfig> {
-        let cert_pem_path = Path::new(&Config::get().https_cert_path);
-        let key_pem_path = Path::new(&Config::get().https_key_path);
+        let cfg = Config::get();
+        let cert_pem_path = Path::new(&cfg.https_cert_path);
+        let key_pem_path = Path::new(&cfg.https_key_path);
 
         info!(
             "Current working directory is {}",
@@ -250,11 +251,16 @@ impl<'a> Server<'a> {
             // load TLS key/cert files
             info!(
                 "Try to load TLS config from: certificate {} and private key {}.",
-                &Config::get().https_cert_path.bold(),
-                &Config::get().https_key_path.bold()
+                cfg.https_cert_path.bold(),
+                cfg.https_key_path.bold()
             );
 
             if let (Ok(cert_file), Ok(key_file)) = (File::open(cert_pem_path), File::open(key_pem_path)) {
+                info!(
+                    "TLS config loaded from: certificate {} and private key {}.",
+                    cfg.https_cert_path.bold(),
+                    cfg.https_key_path.bold()
+                );
                 let cert_reader = &mut BufReader::new(cert_file);
                 let cert_chain = certs(cert_reader).map(|cert| cert.unwrap()).collect();
 
@@ -278,16 +284,16 @@ impl<'a> Server<'a> {
             } else {
                 warn!(
                     "Can't open one or both files: certificate {} and private key {}.",
-                    &Config::get().https_cert_path.bold(),
-                    &Config::get().https_key_path.bold()
+                    &cfg.https_cert_path.bold(),
+                    &cfg.https_key_path.bold()
                 );
                 None
             }
         } else {
             warn!(
                 "One or both are not existing or are directories: certificate {} and private key {}.",
-                &Config::get().https_cert_path.bold(),
-                &Config::get().https_key_path.bold()
+                &cfg.https_cert_path.bold(),
+                &cfg.https_key_path.bold()
             );
             None
         }
