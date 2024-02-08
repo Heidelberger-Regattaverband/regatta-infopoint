@@ -62,7 +62,7 @@ impl<'a> Server<'a> {
 
         let aquarius = create_app_data().await;
         let (rl_max_requests, rl_interval) = self.config.get_rate_limiter_config();
-        let secret_key = Self::get_secret_key();
+        let secret_key = Key::generate();
         let http_app_content_path = self.config.http_app_content_path.clone();
 
         let worker_count = Arc::new(Mutex::new(0));
@@ -191,15 +191,6 @@ impl<'a> Server<'a> {
             .session_lifecycle(PersistentSession::default().session_ttl(Duration::seconds(SECS_OF_WEEKEND)))
             .cookie_path("".to_string())
             .build()
-    }
-
-    /// Returns a new secret key instance.
-    /// # Returns
-    /// * `Key` - The secret key.
-    /// # Panics
-    /// If the secret key can't be created.
-    fn get_secret_key() -> Key {
-        Key::generate()
     }
 
     /// Returns a new PrometheusMetrics instance.
