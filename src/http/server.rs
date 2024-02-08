@@ -33,6 +33,7 @@ use std::{
 pub const PATH_REST_API: &str = "/api";
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
+const INFOPORTAL_V2: &str = concat!("{INFOPORTAL}2");
 
 /// The server struct contains the configuration of the server.
 pub struct Server<'a> {
@@ -100,6 +101,13 @@ impl<'a> Server<'a> {
                 .service(
                     Files::new(INFOPORTAL, http_app_content_path.clone())
                         .index_file("index.html")
+                        .use_last_modified(true)
+                        .use_etag(true)
+                        .redirect_to_slash_directory(),
+                )
+                .service(
+                    Files::new(INFOPORTAL_V2, http_app_content_path.clone())
+                        .index_file("index_v2.html")
                         .use_last_modified(true)
                         .use_etag(true)
                         .redirect_to_slash_directory(),
