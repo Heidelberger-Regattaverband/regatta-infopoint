@@ -8,7 +8,7 @@ import ListItemBase from "sap/m/ListItemBase";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
-import { SearchField$SearchEvent } from "sap/m/SearchField";
+import { SearchField$LiveChangeEvent, SearchField$SearchEvent } from "sap/m/SearchField";
 import ListBinding from "sap/ui/model/ListBinding";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
@@ -62,34 +62,35 @@ export default class ClubParticipationsTable extends BaseController {
     source.setEnabled(true);
   }
 
-  onFilterSearch(event: SearchField$SearchEvent): void {
-    const searchFilters: Filter[] = [];
-    const query: string | undefined = event.getParameter("query")?.trim();
-    if (query) {
-      searchFilters.push(
-        new Filter({
-          filters: [
-            new Filter({
-              path: "crew/",
-              test: function (crews: any[]) {
-                let crew: any;
-                for (crew of crews) {
-                  let found = crew.athlete.firstName.toLowerCase().includes(query.toLowerCase())
-                    || crew.athlete.lastName.toLowerCase().includes(query.toLowerCase());
-                  if (found) {
-                    return true;
-                  }
-                }
-                return false;
-              }
-            }),
-            new Filter("race/number", FilterOperator.Contains, query),
-          ],
-          and: false
-        }))
-    }
+  onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
+    const query: string | undefined = event.getParameters().newValue?.trim();
+    const searchFilters: Filter[] = query ? this.createSearchFilters(query) : [];
+
     const binding: ListBinding = this.table.getBinding("items") as ListBinding;
     binding.filter(searchFilters);
+  }
+
+  private createSearchFilters(query: string): Filter[] {
+    return [new Filter({
+      filters: [
+        new Filter({
+          path: "crew/",
+          test: function (crews: any[]) {
+            let crew: any;
+            for (crew of crews) {
+              let found = crew.athlete.firstName.toLowerCase().includes(query.toLowerCase())
+                || crew.athlete.lastName.toLowerCase().includes(query.toLowerCase());
+              if (found) {
+                return true;
+              }
+            }
+            return false;
+          }
+        }),
+        new Filter("race/number", FilterOperator.Contains, query),
+      ],
+      and: false
+    })]
   }
 
   private async onPatternMatched(event: Route$PatternMatchedEvent): Promise<void> {
