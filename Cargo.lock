@@ -389,9 +389,9 @@ dependencies = [
 
 [[package]]
 name = "anstream"
-version = "0.6.11"
+version = "0.6.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e2e1ebcb11de5c03c67de28a7df593d32191b44939c482e97702baaaa6ab6a5"
+checksum = "96b09b5178381e0874812a9b157f7fe84982617e48f71f4e3235482775e5b540"
 dependencies = [
  "anstyle",
  "anstyle-parse",
@@ -448,7 +448,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f28243a43d821d11341ab73c80bed182dc015c514b951616cf79bd4af39af0c3"
 dependencies = [
  "concurrent-queue",
- "event-listener 5.0.0",
+ "event-listener 5.1.0",
  "event-listener-strategy 0.5.0",
  "futures-core",
  "pin-project-lite",
@@ -1044,9 +1044,9 @@ dependencies = [
 
 [[package]]
 name = "event-listener"
-version = "5.0.0"
+version = "5.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b72557800024fabbaa2449dd4bf24e37b93702d457a4d4f2b0dd1f0f039f20c1"
+checksum = "b7ad6fd685ce13acd6d9541a30f6db6567a7a24c9ffd4ba2955d29e3f22c8b27"
 dependencies = [
  "concurrent-queue",
  "parking",
@@ -1069,7 +1069,7 @@ version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "feedafcaa9b749175d5ac357452a9d41ea2911da598fde46ce1fe02c37751291"
 dependencies = [
- "event-listener 5.0.0",
+ "event-listener 5.1.0",
  "pin-project-lite",
 ]
 
@@ -1868,9 +1868,9 @@ checksum = "d231b230927b5e4ad203db57bbcbee2802f6bce620b1e4a9024a07d94e2907ec"
 
 [[package]]
 name = "polling"
-version = "3.4.0"
+version = "3.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30054e72317ab98eddd8561db0f6524df3367636884b7b21b703e4b280a84a14"
+checksum = "24f040dee2588b4963afb4e420540439d126f73fdacf4a9c486a96d840bac3c9"
 dependencies = [
  "cfg-if",
  "concurrent-queue",
@@ -2073,16 +2073,17 @@ dependencies = [
 
 [[package]]
 name = "ring"
-version = "0.17.7"
+version = "0.17.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "688c63d65483050968b2a8937f7995f443e27041a0f7700aa59b0822aedebb74"
+checksum = "c17fa4cb658e3583423e915b9f3acc01cceaee1860e33d59ebae66adc3a2dc0d"
 dependencies = [
  "cc",
+ "cfg-if",
  "getrandom",
  "libc",
  "spin 0.9.8",
  "untrusted 0.9.0",
- "windows-sys 0.48.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2146,7 +2147,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e87c9956bd9807afa1f77e0f7594af32566e830e088a5576d27c5b6f30f49d41"
 dependencies = [
  "log",
- "ring 0.17.7",
+ "ring 0.17.8",
  "rustls-pki-types",
  "rustls-webpki",
  "subtle",
@@ -2196,16 +2197,16 @@ version = "0.102.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "faaa0a62740bedb9b2ef5afa303da42764c012f743917351dc9a237ea1663610"
 dependencies = [
- "ring 0.17.7",
+ "ring 0.17.8",
  "rustls-pki-types",
  "untrusted 0.9.0",
 ]
 
 [[package]]
 name = "ryu"
-version = "1.0.16"
+version = "1.0.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f98d2aa92eebf49b69786be48e4477826b256916e84a57ff2a4f21923b48eb4c"
+checksum = "e86697c916019a8588c99b5fac3cead74ec0b4b819707a682fd4d23fa0ce1ba1"
 
 [[package]]
 name = "schannel"
@@ -2244,7 +2245,7 @@ version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "da046153aa2352493d6cb7da4b6e5c0c057d8a1d0a9aa8560baffdd945acd414"
 dependencies = [
- "ring 0.17.7",
+ "ring 0.17.8",
  "untrusted 0.9.0",
 ]
 
@@ -2298,9 +2299,9 @@ dependencies = [
 
 [[package]]
 name = "semver"
-version = "1.0.21"
+version = "1.0.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b97ed7a9823b74f99c7742f5336af7be5ecd3eeafcb1507d1fa93347b1d589b0"
+checksum = "92d43fe69e652f3df9bdc2b85b2854a0825b86e4fb76bc44d945137d053639ca"
 
 [[package]]
 name = "serde"
@@ -2893,7 +2894,7 @@ version = "0.22.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed63aea5ce73d0ff405984102c42de94fc55a6b75765d621c65262469b3c9b53"
 dependencies = [
- "ring 0.17.7",
+ "ring 0.17.8",
  "untrusted 0.9.0",
 ]
 
@@ -2903,7 +2904,7 @@ version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "58f8542ff1b4f572beb2fa9620c0c5fc9abf6b15cfb609bfd87886328cbff4ef"
 dependencies = [
- "event-listener 5.0.0",
+ "event-listener 5.1.0",
  "event-listener-strategy 0.5.0",
  "pin-project-lite",
 ]
