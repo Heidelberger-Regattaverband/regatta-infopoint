@@ -65,11 +65,13 @@ export default class Statistics extends BaseController {
       registrations.push({ name: this.i18n("common.athletes"), value: statistics.registrations.athletes });
       registrations.push({ name: this.i18n("common.seats"), value: seats });
     }
+
     const races = [];
     if (statistics?.races) {
       races.push({ name: this.i18n("common.overall"), value: statistics.races.all });
       races.push({ name: this.i18n("common.cancelled"), value: statistics.races.cancelled });
     }
+
     const heats = [];
     if (statistics?.heats) {
       heats.push({ name: this.i18n("common.overall"), value: statistics.heats.all });
