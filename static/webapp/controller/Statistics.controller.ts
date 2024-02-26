@@ -16,6 +16,7 @@ export default class Statistics extends BaseController {
   private racesList?: Control;
   private heatsList?: Control;
   private registrationsList?: Control;
+  private athletesList?: Control;
 
   onInit(): void {
     super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
@@ -30,6 +31,7 @@ export default class Statistics extends BaseController {
     this.registrationsList = this.getView()?.byId("registrationsList") as Control;
     this.racesList = this.getView()?.byId("racesList") as Control;
     this.heatsList = this.getView()?.byId("heatsList") as Control;
+    this.athletesList = this.getView()?.byId("athletesList") as Control;
   }
 
   onNavBack(): void {
@@ -86,7 +88,7 @@ export default class Statistics extends BaseController {
       }
     }
 
-    // update model
+    // update statistics model
     this.statisticsModel.setProperty("/registrations", registrations);
     this.statisticsModel.setProperty("/races", races);
     this.statisticsModel.setProperty("/heats", heats);
@@ -99,6 +101,7 @@ export default class Statistics extends BaseController {
     this.registrationsList?.setBusy(busy);
     this.racesList?.setBusy(busy);
     this.heatsList?.setBusy(busy);
+    this.athletesList?.setBusy(busy);
   }
 
 }
