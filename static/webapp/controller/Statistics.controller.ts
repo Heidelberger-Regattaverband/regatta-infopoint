@@ -11,6 +11,7 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class Statistics extends BaseController {
+  private dataLoader: JSONModel;
   private statisticsModel: JSONModel;
   private racesList?: Control;
   private heatsList?: Control;
@@ -23,6 +24,8 @@ export default class Statistics extends BaseController {
 
     this.statisticsModel = new JSONModel();
     super.setViewModel(this.statisticsModel, "statistics");
+
+    this.dataLoader = new JSONModel();
 
     this.registrationsList = this.getView()?.byId("registrationsList") as Control;
     this.racesList = this.getView()?.byId("racesList") as Control;
@@ -41,11 +44,10 @@ export default class Statistics extends BaseController {
     this.setBusy(true);
 
     // load statistic data from backend
-    const dataLoader: JSONModel = new JSONModel();
-    if (await super.updateJSONModel(dataLoader, `/api/regattas/${super.getRegattaId()}/statistics`)) {
+    if (await super.updateJSONModel(this.dataLoader, `/api/regattas/${super.getRegattaId()}/statistics`)) {
       MessageToast.show(super.i18n("msg.dataUpdated"));
     }
-    const statistics: any = dataLoader.getData();
+    const statistics: any = this.dataLoader.getData();
 
     // transform statistic data into human readable format
     const registrations = [];
