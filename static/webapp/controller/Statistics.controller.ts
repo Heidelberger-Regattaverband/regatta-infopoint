@@ -43,37 +43,45 @@ export default class Statistics extends BaseController {
 
     // load statistic data from backend
     const dataLoader: JSONModel = await super.createJSONModel(`/api/regattas/${this.getRegattaId()}/statistics`);
-    const statistics = dataLoader.getData();
+    const statistics: any = dataLoader.getData();
 
     // transform statistic data into human readable format
     const registrations = [];
-    const seats = statistics.registrations.seats + statistics.registrations.seatsCox;
-    registrations.push({ name: this.i18n("common.overall"), value: statistics.registrations.all });
-    registrations.push({ name: this.i18n("statistics.registrations.cancelled"), value: statistics.registrations.cancelled });
-    registrations.push({ name: this.i18n("statistics.reportingClubs"), value: statistics.registrations.registeringClubs });
-    registrations.push({ name: this.i18n("statistics.participatingClubs"), value: statistics.registrations.clubs });
-    registrations.push({ name: this.i18n("common.athletes"), value: statistics.registrations.athletes });
-    registrations.push({ name: this.i18n("common.seats"), value: seats });
-    const races = [];
-    races.push({ name: this.i18n("common.overall"), value: statistics.races.all });
-    races.push({ name: this.i18n("common.cancelled"), value: statistics.races.cancelled });
-    const heats = [];
-    heats.push({ name: this.i18n("common.overall"), value: statistics.heats.all });
-    heats.push({ name: this.i18n("heat.state.official"), value: statistics.heats.official });
-    heats.push({ name: this.i18n("heat.state.finished"), value: statistics.heats.finished });
-    heats.push({ name: this.i18n("heat.state.started"), value: statistics.heats.started });
-    heats.push({ name: this.i18n("common.seeded"), value: statistics.heats.seeded });
-    heats.push({ name: this.i18n("common.scheduled"), value: statistics.heats.scheduled });
-    heats.push({ name: this.i18n("common.cancelled"), value: statistics.heats.cancelled });
-
-    const oldestWoman = statistics.athletes.oldestWoman;
-    const oldestMan = statistics.athletes.oldestMan;
-    const athletes = [];
-    if (oldestWoman) {
-      athletes.push({ name: this.i18n("statistics.athletes.oldestWoman"), value: Formatter.athleteLabel(oldestWoman) });
+    if (statistics?.registrations) {
+      const seats = statistics.registrations.seats + statistics.registrations.seatsCox;
+      registrations.push({ name: this.i18n("common.overall"), value: statistics.registrations.all });
+      registrations.push({ name: this.i18n("statistics.registrations.cancelled"), value: statistics.registrations.cancelled });
+      registrations.push({ name: this.i18n("statistics.reportingClubs"), value: statistics.registrations.registeringClubs });
+      registrations.push({ name: this.i18n("statistics.participatingClubs"), value: statistics.registrations.clubs });
+      registrations.push({ name: this.i18n("common.athletes"), value: statistics.registrations.athletes });
+      registrations.push({ name: this.i18n("common.seats"), value: seats });
     }
-    if (oldestMan) {
-      athletes.push({ name: this.i18n("statistics.athletes.oldestMan"), value: Formatter.athleteLabel(oldestMan) });
+    const races = [];
+    if (statistics?.races) {
+      races.push({ name: this.i18n("common.overall"), value: statistics.races.all });
+      races.push({ name: this.i18n("common.cancelled"), value: statistics.races.cancelled });
+    }
+    const heats = [];
+    if (statistics?.heats) {
+      heats.push({ name: this.i18n("common.overall"), value: statistics.heats.all });
+      heats.push({ name: this.i18n("heat.state.official"), value: statistics.heats.official });
+      heats.push({ name: this.i18n("heat.state.finished"), value: statistics.heats.finished });
+      heats.push({ name: this.i18n("heat.state.started"), value: statistics.heats.started });
+      heats.push({ name: this.i18n("common.seeded"), value: statistics.heats.seeded });
+      heats.push({ name: this.i18n("common.scheduled"), value: statistics.heats.scheduled });
+      heats.push({ name: this.i18n("common.cancelled"), value: statistics.heats.cancelled });
+    }
+
+    const athletes = [];
+    if (statistics?.athletes) {
+      const oldestWoman = statistics.athletes.oldestWoman;
+      const oldestMan = statistics.athletes.oldestMan;
+      if (oldestWoman) {
+        athletes.push({ name: this.i18n("statistics.athletes.oldestWoman"), value: Formatter.athleteLabel(oldestWoman) });
+      }
+      if (oldestMan) {
+        athletes.push({ name: this.i18n("statistics.athletes.oldestMan"), value: Formatter.athleteLabel(oldestMan) });
+      }
     }
 
     // update model
