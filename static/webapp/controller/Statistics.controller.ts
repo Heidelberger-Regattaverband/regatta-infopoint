@@ -44,12 +44,15 @@ export default class Statistics extends BaseController {
 
   private async loadStatistics(): Promise<void> {
     this.setBusy(true);
+    let statistics: any;
 
     // load statistic data from backend
     if (await super.updateJSONModel(this.dataLoader, `/api/regattas/${super.getRegattaId()}/statistics`)) {
+      statistics = this.dataLoader.getData();
       MessageToast.show(super.i18n("msg.dataUpdated"));
+    } else {
+      statistics = {};
     }
-    const statistics: any = this.dataLoader.getData();
 
     // transform statistic data into human readable format
     const registrations = [];
