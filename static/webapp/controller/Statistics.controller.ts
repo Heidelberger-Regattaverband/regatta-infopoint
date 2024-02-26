@@ -35,14 +35,16 @@ export default class Statistics extends BaseController {
 
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     await this.loadStatistics();
-    MessageToast.show(super.i18n("msg.dataUpdated"));
   }
 
   private async loadStatistics(): Promise<void> {
     this.setBusy(true);
 
     // load statistic data from backend
-    const dataLoader: JSONModel = await super.createJSONModel(`/api/regattas/${this.getRegattaId()}/statistics`);
+    const dataLoader: JSONModel = new JSONModel();
+    if (await super.updateJSONModel(dataLoader, `/api/regattas/${super.getRegattaId()}/statistics`)) {
+      MessageToast.show(super.i18n("msg.dataUpdated"));
+    }
     const statistics: any = dataLoader.getData();
 
     // transform statistic data into human readable format
@@ -74,13 +76,11 @@ export default class Statistics extends BaseController {
 
     const athletes = [];
     if (statistics?.athletes) {
-      const oldestWoman = statistics.athletes.oldestWoman;
-      const oldestMan = statistics.athletes.oldestMan;
-      if (oldestWoman) {
-        athletes.push({ name: this.i18n("statistics.athletes.oldestWoman"), value: Formatter.athleteLabel(oldestWoman) });
+      if (statistics.athletes.oldestWoman) {
+        athletes.push({ name: this.i18n("statistics.athletes.oldestWoman"), value: Formatter.athleteLabel(statistics.athletes.oldestWoman) });
       }
-      if (oldestMan) {
-        athletes.push({ name: this.i18n("statistics.athletes.oldestMan"), value: Formatter.athleteLabel(oldestMan) });
+      if (statistics.athletes.oldestMan) {
+        athletes.push({ name: this.i18n("statistics.athletes.oldestMan"), value: Formatter.athleteLabel(statistics.athletes.oldestMan) });
       }
     }
 
