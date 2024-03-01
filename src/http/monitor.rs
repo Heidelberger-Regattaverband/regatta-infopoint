@@ -15,7 +15,7 @@ impl Monitor {
     /// * `state` - The state of the database.
     /// * `created` - The number of created connections.
     /// # Returns
-    /// * `Monitor` - The monitor.
+    /// `Monitor` - The monitor.
     pub fn new(state: State, created: u32) -> Self {
         Monitor {
             db: Db {
@@ -29,6 +29,7 @@ impl Monitor {
     }
 }
 
+/// The Db struct contains the connections of the database.
 #[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Db {
