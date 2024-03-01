@@ -1,4 +1,11 @@
-use crate::{config::Config, db::aquarius::Aquarius, http::rest_api};
+use crate::{
+    config::Config,
+    db::aquarius::Aquarius,
+    http::{
+        monitor::{Connections, Db, Monitor},
+        rest_api,
+    },
+};
 use actix_extensible_rate_limit::{
     backend::{memory::InMemoryBackend, SimpleInput, SimpleInputFunctionBuilder, SimpleOutput},
     RateLimiter,
@@ -68,7 +75,7 @@ impl<'a> Server<'a> {
                 rest_api::monitor,
             ),
             components(
-                schemas()
+                schemas(Monitor, Db, Connections),
             ),
             tags(
                 (name = "regatta-infopoint", description = "Regatta Infopoint endpoints.")

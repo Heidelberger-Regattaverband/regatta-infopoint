@@ -17,6 +17,8 @@ use actix_web::{
 };
 
 #[utoipa::path(
+    get,
+    path = "/monitor",
     responses(
         (status = 200, description = "Monitoring", body = Monitor)
     )

@@ -4,7 +4,8 @@ use utoipa::ToSchema;
 
 /// The monitor struct contains the state of the database.
 #[derive(Serialize, ToSchema)]
-pub struct Monitor {
+pub(crate) struct Monitor {
+    /// The database state.
     db: Db,
 }
 
@@ -30,15 +31,15 @@ impl Monitor {
 
 #[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
-struct Db {
+pub(crate) struct Db {
     /// The connections of the database.
     connections: Connections,
 }
 
 /// The connections struct contains the current, idle and created connections.
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
-struct Connections {
+pub(crate) struct Connections {
     /// The current connections are the number of connections that are currently in use.
     current: u32,
     /// The idle connections are the number of connections that are currently not in use.
