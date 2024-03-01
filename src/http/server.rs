@@ -73,7 +73,7 @@ impl<'a> Server<'a> {
         #[derive(OpenApi)]
         #[openapi(
             paths(
-                rest_api::monitor, rest_api::identity, rest_api::login
+                rest_api::monitor, rest_api::identity, rest_api::login, rest_api::logout,
             ),
             components(
                 schemas(Monitor, Db, Connections, User, Credentials, Scope),

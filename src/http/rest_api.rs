@@ -163,7 +163,13 @@ async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<i
         Err(err) => Err(InternalError::from_response("", err).into()),
     }
 }
-
+#[utoipa::path(
+    path = "/api/logout",
+    responses(
+        (status = 204, description = "Logged out"),
+        (status = 401, description = "Unauthorized", body = User)
+    )
+)]
 #[post("/logout")]
 async fn logout(user: Identity) -> impl Responder {
     user.logout();
