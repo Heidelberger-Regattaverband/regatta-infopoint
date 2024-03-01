@@ -28,6 +28,8 @@ use std::{
     sync::{Arc, Mutex},
     time::{self, Instant},
 };
+use utoipa::OpenApi;
+use utoipa_swagger_ui::SwaggerUi;
 
 /// Path to REST API
 pub const PATH_REST_API: &str = "/api";
@@ -60,6 +62,20 @@ impl<'a> Server<'a> {
     pub async fn start(&self) -> io::Result<()> {
         let start = Instant::now();
 
+        #[derive(OpenApi)]
+        #[openapi(
+            paths(
+                rest_api::monitor,
+            ),
+            components(
+                schemas()
+            ),
+            tags(
+                (name = "regatta-infopoint", description = "Regatta Infopoint endpoints.")
+            )
+        )]
+        struct ApiDoc;
+
         let aquarius = create_app_data().await;
         let (rl_max_requests, rl_interval) = self.config.get_rate_limiter_config();
         let secret_key = Key::generate();
@@ -67,6 +83,8 @@ impl<'a> Server<'a> {
 
         let worker_count = Arc::new(Mutex::new(0));
         let prometheus = Self::get_prometeus();
+        // Make instance variable of ApiDoc so all worker threads gets the same instance.
+        let openapi = ApiDoc::openapi();
 
         let factory_closure = move || {
             let mut current_count = worker_count.lock().unwrap();
@@ -115,6 +133,7 @@ impl<'a> Server<'a> {
                 // redirect from / to /infoportal
                 .service(web::redirect("/", INFOPORTAL))
                 .service(rest_api::monitor)
+                .service(SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", openapi.clone()))
         };
 
         let mut http_server = HttpServer::new(factory_closure)

@@ -1,8 +1,9 @@
 use bb8::State;
 use serde::Serialize;
+use utoipa::ToSchema;
 
 /// The monitor struct contains the state of the database.
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct Monitor {
     db: Db,
 }
@@ -27,7 +28,7 @@ impl Monitor {
     }
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 struct Db {
     /// The connections of the database.

@@ -16,6 +16,11 @@ use actix_web::{
     Error, HttpMessage, HttpRequest, HttpResponse, Responder,
 };
 
+#[utoipa::path(
+    responses(
+        (status = 200, description = "Monitoring", body = Monitor)
+    )
+)]
 #[get("/monitor")]
 async fn monitor(aquarius: Data<Aquarius>) -> Json<Monitor> {
     let pool = aquarius.pool.state();
