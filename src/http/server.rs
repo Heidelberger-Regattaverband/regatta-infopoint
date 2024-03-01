@@ -2,6 +2,7 @@ use crate::{
     config::Config,
     db::aquarius::Aquarius,
     http::{
+        auth::{Credentials, Scope, User},
         monitor::{Connections, Db, Monitor},
         rest_api,
     },
@@ -72,10 +73,10 @@ impl<'a> Server<'a> {
         #[derive(OpenApi)]
         #[openapi(
             paths(
-                rest_api::monitor,
+                rest_api::monitor, rest_api::identity, rest_api::login
             ),
             components(
-                schemas(Monitor, Db, Connections),
+                schemas(Monitor, Db, Connections, User, Credentials, Scope),
             ),
             tags(
                 (name = "regatta-infopoint", description = "Regatta Infopoint endpoints.")

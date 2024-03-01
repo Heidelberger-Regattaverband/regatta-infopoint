@@ -4,10 +4,11 @@ use serde::{Deserialize, Serialize};
 use tiberius::Client;
 use tokio::net::TcpStream;
 use tokio_util::compat::TokioAsyncWriteCompatExt;
+use utoipa::ToSchema;
 
 /// The credentials struct contains the username and the password of the user.
 /// The credentials are used to authenticate the user.
-#[derive(Deserialize)]
+#[derive(Deserialize, ToSchema)]
 pub struct Credentials {
     /// The username of the user.
     username: String,
@@ -17,7 +18,7 @@ pub struct Credentials {
 
 /// The scope enum contains the possible scopes of the user.
 /// The scope is used to determine the permissions of the user.
-#[derive(Serialize, Default)]
+#[derive(Serialize, Default, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub enum Scope {
     /// The user is a guest.
@@ -30,7 +31,7 @@ pub enum Scope {
 }
 
 /// The user struct contains the username and the scope of the user.
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
     /// The username of the user.

@@ -17,8 +17,6 @@ use actix_web::{
 };
 
 #[utoipa::path(
-    get,
-    path = "/monitor",
     responses(
         (status = 200, description = "Monitoring", body = Monitor)
     )
@@ -143,6 +141,14 @@ async fn calculate_scoring(
     }
 }
 
+#[utoipa::path(
+    path = "/api/login",
+    request_body = Credentials,
+    responses(
+        (status = 200, description = "Authenticated", body = User),
+        (status = 401, description = "Unauthorized", body = User)
+    )
+)]
 #[post("/login")]
 async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<impl Responder, Error> {
     match User::authenticate(credentials.into_inner()).await {
@@ -164,6 +170,13 @@ async fn logout(user: Identity) -> impl Responder {
     HttpResponse::NoContent()
 }
 
+#[utoipa::path(
+    path = "/api/identity",
+    responses(
+        (status = 200, description = "Authenticated", body = User),
+        (status = 401, description = "Unauthorized", body = User)
+    )
+)]
 #[get("/identity")]
 async fn identity(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     if let Some(user) = opt_user {
