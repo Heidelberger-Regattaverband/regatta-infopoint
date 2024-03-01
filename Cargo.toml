@@ -30,6 +30,7 @@ rustls = "0.22"
 rustls-pki-types = "1"
 rustls-pemfile = "2"
 serde = { version = "1", features = ["derive"] }
+utoipa = { version = "4", features = ["actix_extras"] }
 
 # Database
 bb8 = "0"
