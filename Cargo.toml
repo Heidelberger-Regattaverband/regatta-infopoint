@@ -1,10 +1,10 @@
 [package]
-name = "infoportal"
+name = "regatta-infoportal"
 version = "0.1.0"
 edition = "2021"
 authors = ["Markus Ofterdinger <markus@ofterdinger.de>"]
 readme = "README.md"
-description = "An infoportal showing results of a rowing regatta in a web browser."
+description = "Infoportal des Heidelberger Regatta-Verbands"
 repository = "https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git"
 license = "Apache-2.0"
 
@@ -30,6 +30,10 @@ rustls = "0.22"
 rustls-pki-types = "1"
 rustls-pemfile = "2"
 serde = { version = "1", features = ["derive"] }
+
+# OpenAPI
+utoipa = { version = "4", features = ["actix_extras"] }
+utoipa-swagger-ui = { version = "6", features = ["actix-web"] }
 
 # Database
 bb8 = "0"
