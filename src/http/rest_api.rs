@@ -12,9 +12,12 @@ use actix_identity::Identity;
 use actix_web::{
     error::{ErrorUnauthorized, InternalError},
     get, post,
-    web::{Data, Json, Path},
+    web::{self, Data, Json, Path},
     Error, HttpMessage, HttpRequest, HttpResponse, Responder,
 };
+
+/// Path to REST API
+pub(crate) const PATH: &str = "/api";
 
 #[utoipa::path(
     responses(
@@ -194,4 +197,27 @@ async fn identity(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     } else {
         Err(InternalError::from_response("", HttpResponse::Unauthorized().json(User::new_guest())).into())
     }
+}
+
+pub(crate) fn config(cfg: &mut web::ServiceConfig) {
+    cfg.service(
+        web::scope(PATH)
+            .service(get_club)
+            .service(get_regattas)
+            .service(get_club_registrations)
+            .service(get_participating_clubs)
+            .service(get_active_regatta)
+            .service(get_regatta)
+            .service(get_race)
+            .service(get_races)
+            .service(get_heats)
+            .service(get_filters)
+            .service(get_heat)
+            .service(get_kiosk)
+            .service(calculate_scoring)
+            .service(get_statistics)
+            .service(login)
+            .service(monitor)
+            .service(logout),
+    );
 }

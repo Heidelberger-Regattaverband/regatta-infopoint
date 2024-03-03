@@ -18,7 +18,7 @@ use actix_web::{
     body::{BoxBody, EitherBody},
     cookie::{time::Duration, Key, SameSite},
     dev::{Service, ServiceFactory, ServiceRequest, ServiceResponse},
-    web::{self, scope, Data},
+    web::{self, Data},
     App, Error, HttpServer,
 };
 use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
@@ -39,8 +39,6 @@ use std::{
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
-/// Path to REST API
-pub const PATH_REST_API: &str = "/api";
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
 const INFOPORTAL_V2: &str = concat!("{INFOPORTAL}2");
@@ -104,26 +102,7 @@ impl<'a> Server<'a> {
                 // collect metrics about requests and responses
                 .wrap(prometheus.clone())
                 .app_data(aquarius.clone())
-                .service(
-                    scope(PATH_REST_API)
-                        .service(rest_api::get_club)
-                        .service(rest_api::get_regattas)
-                        .service(rest_api::get_club_registrations)
-                        .service(rest_api::get_participating_clubs)
-                        .service(rest_api::get_active_regatta)
-                        .service(rest_api::get_regatta)
-                        .service(rest_api::get_race)
-                        .service(rest_api::get_races)
-                        .service(rest_api::get_heats)
-                        .service(rest_api::get_filters)
-                        .service(rest_api::get_heat)
-                        .service(rest_api::get_kiosk)
-                        .service(rest_api::calculate_scoring)
-                        .service(rest_api::get_statistics)
-                        .service(rest_api::login)
-                        .service(rest_api::identity)
-                        .service(rest_api::logout),
-                )
+                .configure(rest_api::config)
                 .service(
                     Files::new(INFOPORTAL, http_app_content_path.clone())
                         .index_file("index.html")
@@ -140,7 +119,6 @@ impl<'a> Server<'a> {
                 )
                 // redirect from / to /infoportal
                 .service(web::redirect("/", INFOPORTAL))
-                .service(rest_api::monitor)
                 .service(SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", openapi.clone()))
         };
 
