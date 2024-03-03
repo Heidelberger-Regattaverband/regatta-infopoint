@@ -1,3 +1,4 @@
+mod api_doc;
 mod auth;
 pub(crate) mod flags_scraper;
 mod monitor;

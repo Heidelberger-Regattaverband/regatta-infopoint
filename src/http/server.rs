@@ -1,11 +1,7 @@
 use crate::{
     config::Config,
     db::aquarius::Aquarius,
-    http::{
-        auth::{Credentials, Scope, User},
-        monitor::{Connections, Db, Monitor},
-        rest_api,
-    },
+    http::{api_doc, rest_api},
 };
 use actix_extensible_rate_limit::{
     backend::{memory::InMemoryBackend, SimpleInput, SimpleInputFunctionBuilder, SimpleOutput},
@@ -36,8 +32,6 @@ use std::{
     sync::{Arc, Mutex},
     time::{self, Instant},
 };
-use utoipa::OpenApi;
-use utoipa_swagger_ui::SwaggerUi;
 
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
@@ -56,7 +50,7 @@ impl<'a> Server<'a> {
     /// * `config` - The configuration of the server.
     /// # Returns
     /// * `Server` - The server.
-    pub fn new(config: &'a Config) -> Server {
+    pub(crate) fn new(config: &'a Config) -> Server {
         Server { config }
     }
 
@@ -65,22 +59,8 @@ impl<'a> Server<'a> {
     /// `io::Result<()>` - The result of the server start.
     /// # Panics
     /// If the server can't be started.
-    pub async fn start(&self) -> io::Result<()> {
+    pub(crate) async fn start(&self) -> io::Result<()> {
         let start = Instant::now();
-
-        #[derive(OpenApi)]
-        #[openapi(
-            paths(
-                rest_api::monitor, rest_api::identity, rest_api::login, rest_api::logout,
-            ),
-            components(
-                schemas(Monitor, Db, Connections, User, Credentials, Scope),
-            ),
-            tags(
-                (name = "regatta-infopoint", description = "Regatta Infopoint endpoints.")
-            )
-        )]
-        struct ApiDoc;
 
         let aquarius = create_app_data().await;
         let (rl_max_requests, rl_interval) = self.config.get_rate_limiter_config();
@@ -89,8 +69,6 @@ impl<'a> Server<'a> {
 
         let worker_count = Arc::new(Mutex::new(0));
         let prometheus = Self::get_prometeus();
-        // Make instance variable of ApiDoc so all worker threads gets the same instance.
-        let openapi = ApiDoc::openapi();
 
         let factory_closure = move || {
             let mut current_count = worker_count.lock().unwrap();
@@ -103,6 +81,7 @@ impl<'a> Server<'a> {
                 .wrap(prometheus.clone())
                 .app_data(aquarius.clone())
                 .configure(rest_api::config)
+                .configure(api_doc::config)
                 .service(
                     Files::new(INFOPORTAL, http_app_content_path.clone())
                         .index_file("index.html")
@@ -119,7 +98,6 @@ impl<'a> Server<'a> {
                 )
                 // redirect from / to /infoportal
                 .service(web::redirect("/", INFOPORTAL))
-                .service(SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", openapi.clone()))
         };
 
         let mut http_server = HttpServer::new(factory_closure)

@@ -19,15 +19,22 @@ use actix_web::{
 /// Path to REST API
 pub(crate) const PATH: &str = "/api";
 
+/// Monitor the server.
 #[utoipa::path(
+    context_path = "/api",
     responses(
-        (status = 200, description = "Monitoring", body = Monitor)
+        (status = 200, description = "Monitoring", body = Monitor),
+        (status = 401, description = "Unauthorized")
     )
 )]
 #[get("/monitor")]
-async fn monitor(aquarius: Data<Aquarius>) -> Json<Monitor> {
-    let pool = aquarius.pool.state();
-    Json(Monitor::new(pool, aquarius.pool.created()))
+async fn monitor(aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
+    if opt_user.is_some() {
+        let pool = aquarius.pool.state();
+        Ok(Json(Monitor::new(pool, aquarius.pool.created())))
+    } else {
+        Err(ErrorUnauthorized("Unauthorized"))
+    }
 }
 
 #[get("/regattas")]
