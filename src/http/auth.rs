@@ -9,7 +9,7 @@ use utoipa::ToSchema;
 /// The credentials struct contains the username and the password of the user.
 /// The credentials are used to authenticate the user.
 #[derive(Deserialize, ToSchema)]
-pub struct Credentials {
+pub(crate) struct Credentials {
     /// The username of the user.
     username: String,
     /// The password of the user.
@@ -20,7 +20,7 @@ pub struct Credentials {
 /// The scope is used to determine the permissions of the user.
 #[derive(Serialize, Default, ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub enum Scope {
+pub(crate) enum Scope {
     /// The user is a guest.
     #[default]
     Guest,
@@ -33,9 +33,9 @@ pub enum Scope {
 /// The user struct contains the username and the scope of the user.
 #[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub struct User {
+pub(crate) struct User {
     /// The username of the user.
-    pub username: String,
+    pub(crate) username: String,
     /// The scope of the user.
     scope: Scope,
 }

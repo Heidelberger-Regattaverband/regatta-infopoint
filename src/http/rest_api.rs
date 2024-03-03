@@ -141,12 +141,13 @@ async fn calculate_scoring(
     }
 }
 
+/// Authenticate the user. This will attach the user identity to the current session.
 #[utoipa::path(
-    path = "/api/login",
+    context_path = "/api",
     request_body = Credentials,
     responses(
         (status = 200, description = "Authenticated", body = User),
-        (status = 401, description = "Unauthorized", body = User)
+        (status = 401, description = "Unauthorized", body = User, example = json!({"user": "anonymous", "scope": "guest"}))
     )
 )]
 #[post("/login")]
@@ -163,11 +164,13 @@ async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<i
         Err(err) => Err(InternalError::from_response("", err).into()),
     }
 }
+
+/// Logout the user. This will remove the user identity from the current session.
 #[utoipa::path(
-    path = "/api/logout",
+    context_path = "/api",
     responses(
-        (status = 204, description = "Logged out"),
-        (status = 401, description = "Unauthorized", body = User)
+        (status = 204, description = "User logged out"),
+        (status = 401, description = "Unauthorized")
     )
 )]
 #[post("/logout")]
@@ -176,11 +179,12 @@ async fn logout(user: Identity) -> impl Responder {
     HttpResponse::NoContent()
 }
 
+/// Get the user identity. This will return the user information if the user is authenticated. Otherwise, it will return a guest user.
 #[utoipa::path(
-    path = "/api/identity",
+    context_path = "/api",
     responses(
-        (status = 200, description = "Authenticated", body = User),
-        (status = 401, description = "Unauthorized", body = User)
+        (status = 200, description = "Authenticated", body = User, example = json!({"user": "name", "scope": "user"})),
+        (status = 401, description = "Unauthorized", body = User, example = json!({ "user": "anonymous", "scope": "guest"}))
     )
 )]
 #[get("/identity")]

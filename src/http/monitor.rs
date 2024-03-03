@@ -16,7 +16,7 @@ impl Monitor {
     /// * `created` - The number of created connections.
     /// # Returns
     /// `Monitor` - The monitor.
-    pub fn new(state: State, created: u32) -> Self {
+    pub(crate) fn new(state: State, created: u32) -> Self {
         Monitor {
             db: Db {
                 connections: Connections {
