@@ -36,11 +36,9 @@ export default class ParticipatingClubsTable extends BaseTableController {
   }
 
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
-    let searchFilters: Filter[] = [];
     const query: string | undefined = event.getParameters().newValue?.trim();
-    if (query) {
-      searchFilters = this.createSearchFilters(query);
-    }
+    const searchFilters: Filter[] = query ? this.createSearchFilters(query) : [];
+
     const binding: ListBinding = this.table.getBinding("items") as ListBinding;
     binding.filter(searchFilters);
   }

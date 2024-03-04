@@ -1,5 +1,6 @@
+mod api_doc;
 mod auth;
-pub mod flags_scraper;
-pub mod monitor;
-pub mod rest_api;
-pub mod server;
+pub(crate) mod flags_scraper;
+mod monitor;
+pub(crate) mod rest_api;
+pub(crate) mod server;

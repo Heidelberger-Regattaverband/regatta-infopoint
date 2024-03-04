@@ -1,4 +1,8 @@
-use crate::{config::Config, db::aquarius::Aquarius, http::rest_api};
+use crate::{
+    config::Config,
+    db::aquarius::Aquarius,
+    http::{api_doc, rest_api},
+};
 use actix_extensible_rate_limit::{
     backend::{memory::InMemoryBackend, SimpleInput, SimpleInputFunctionBuilder, SimpleOutput},
     RateLimiter,
@@ -10,7 +14,7 @@ use actix_web::{
     body::{BoxBody, EitherBody},
     cookie::{time::Duration, Key, SameSite},
     dev::{Service, ServiceFactory, ServiceRequest, ServiceResponse},
-    web::{self, scope, Data},
+    web::{self, Data},
     App, Error, HttpServer,
 };
 use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
@@ -29,8 +33,6 @@ use std::{
     time::{self, Instant},
 };
 
-/// Path to REST API
-pub const PATH_REST_API: &str = "/api";
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
 const INFOPORTAL_V2: &str = concat!("{INFOPORTAL}2");
@@ -48,7 +50,7 @@ impl<'a> Server<'a> {
     /// * `config` - The configuration of the server.
     /// # Returns
     /// * `Server` - The server.
-    pub fn new(config: &'a Config) -> Server {
+    pub(crate) fn new(config: &'a Config) -> Server {
         Server { config }
     }
 
@@ -57,7 +59,7 @@ impl<'a> Server<'a> {
     /// `io::Result<()>` - The result of the server start.
     /// # Panics
     /// If the server can't be started.
-    pub async fn start(&self) -> io::Result<()> {
+    pub(crate) async fn start(&self) -> io::Result<()> {
         let start = Instant::now();
 
         let aquarius = create_app_data().await;
@@ -78,26 +80,8 @@ impl<'a> Server<'a> {
                 // collect metrics about requests and responses
                 .wrap(prometheus.clone())
                 .app_data(aquarius.clone())
-                .service(
-                    scope(PATH_REST_API)
-                        .service(rest_api::get_club)
-                        .service(rest_api::get_regattas)
-                        .service(rest_api::get_club_registrations)
-                        .service(rest_api::get_participating_clubs)
-                        .service(rest_api::get_active_regatta)
-                        .service(rest_api::get_regatta)
-                        .service(rest_api::get_race)
-                        .service(rest_api::get_races)
-                        .service(rest_api::get_heats)
-                        .service(rest_api::get_filters)
-                        .service(rest_api::get_heat)
-                        .service(rest_api::get_kiosk)
-                        .service(rest_api::calculate_scoring)
-                        .service(rest_api::get_statistics)
-                        .service(rest_api::login)
-                        .service(rest_api::identity)
-                        .service(rest_api::logout),
-                )
+                .configure(rest_api::config)
+                .configure(api_doc::config)
                 .service(
                     Files::new(INFOPORTAL, http_app_content_path.clone())
                         .index_file("index.html")
@@ -114,7 +98,6 @@ impl<'a> Server<'a> {
                 )
                 // redirect from / to /infoportal
                 .service(web::redirect("/", INFOPORTAL))
-                .service(rest_api::monitor)
         };
 
         let mut http_server = HttpServer::new(factory_closure)

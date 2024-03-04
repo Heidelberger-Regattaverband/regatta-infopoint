@@ -15,8 +15,8 @@ async fn main() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use crate::http::{
-        rest_api,
-        server::{create_app_data, PATH_REST_API},
+        rest_api::{self, PATH},
+        server::create_app_data,
     };
     use actix_identity::IdentityMiddleware;
     use actix_web::{
@@ -35,7 +35,7 @@ mod tests {
 
         let app = test::init_service(
             App::new().service(
-                scope(PATH_REST_API)
+                scope(PATH)
                     .service(rest_api::get_regattas)
                     .app_data(Data::clone(&app_data)),
             ),
@@ -55,7 +55,7 @@ mod tests {
 
         let app = test::init_service(
             App::new().service(
-                scope(PATH_REST_API)
+                scope(PATH)
                     .service(rest_api::get_heats)
                     .wrap(IdentityMiddleware::default())
                     .app_data(Data::clone(&app_data)),
