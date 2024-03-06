@@ -70,6 +70,10 @@ pub(crate) struct Cpu {
     name: String,
     /// The frequency of the CPU.
     frequency: u64,
+    /// The brand of the CPU.
+    brand: String,
+    /// The vendor of the CPU.
+    vendor: String,
 }
 
 /// The memory struct contains the total, used, free and available memory of the system.
@@ -97,6 +101,8 @@ impl From<&sysinfo::Cpu> for Cpu {
             usage: cpu.cpu_usage(),
             name: cpu.name().to_string(),
             frequency: cpu.frequency(),
+            brand: cpu.brand().to_string(),
+            vendor: cpu.vendor_id().to_string(),
         }
     }
 }
