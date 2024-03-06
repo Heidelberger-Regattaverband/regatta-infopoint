@@ -50,6 +50,7 @@ impl Monitor {
     }
 }
 
+/// The sysinfo struct contains the cpus and memory information.
 #[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct SysInfo {
@@ -59,6 +60,7 @@ pub(crate) struct SysInfo {
     mem: Memory,
 }
 
+/// The cpu struct contains the usage, name and frequency of the CPU.
 #[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Cpu {
@@ -66,8 +68,11 @@ pub(crate) struct Cpu {
     usage: f32,
     /// The name of the CPU.
     name: String,
+    /// The frequency of the CPU.
+    frequency: u64,
 }
 
+/// The memory struct contains the total, used, free and available memory of the system.
 #[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Memory {
@@ -81,11 +86,17 @@ pub(crate) struct Memory {
     available: u64,
 }
 
+/// Converts a sysinfo::Cpu to a Cpu.
+/// # Arguments
+/// * `cpu` - The sysinfo::Cpu.
+/// # Returns
+/// `Cpu` - The Cpu.
 impl From<&sysinfo::Cpu> for Cpu {
     fn from(cpu: &sysinfo::Cpu) -> Self {
         Cpu {
             usage: cpu.cpu_usage(),
             name: cpu.name().to_string(),
+            frequency: cpu.frequency(),
         }
     }
 }
