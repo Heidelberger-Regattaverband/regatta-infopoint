@@ -206,6 +206,7 @@ async fn identity(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     }
 }
 
+/// Configure the REST API. This will add all REST API endpoints to the service configuration.
 pub(crate) fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope(PATH)

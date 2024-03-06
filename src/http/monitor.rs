@@ -1,5 +1,6 @@
 use bb8::State;
 use serde::Serialize;
+use sysinfo::{CpuRefreshKind, MemoryRefreshKind, RefreshKind, System};
 use utoipa::ToSchema;
 
 /// The monitor struct contains the state of the database.
@@ -7,6 +8,8 @@ use utoipa::ToSchema;
 pub(crate) struct Monitor {
     /// The database state.
     db: Db,
+    /// The system information.
+    sys: SysInfo,
 }
 
 impl Monitor {
@@ -17,6 +20,15 @@ impl Monitor {
     /// # Returns
     /// `Monitor` - The monitor.
     pub(crate) fn new(state: State, created: u32) -> Self {
+        let mut sys = System::new_with_specifics(
+            RefreshKind::new()
+                .with_cpu(CpuRefreshKind::everything())
+                .with_memory(MemoryRefreshKind::everything()),
+        );
+        // Wait a bit because CPU usage is based on diff.
+        std::thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
+        sys.refresh_cpu();
+
         Monitor {
             db: Db {
                 connections: Connections {
@@ -25,6 +37,55 @@ impl Monitor {
                     created,
                 },
             },
+            sys: SysInfo {
+                cpus: sys.cpus().iter().map(Cpu::from).collect(),
+                mem: Memory {
+                    free: sys.free_memory(),
+                    used: sys.used_memory(),
+                    available: sys.available_memory(),
+                    total: sys.total_memory(),
+                },
+            },
+        }
+    }
+}
+
+#[derive(Serialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct SysInfo {
+    /// The CPUs information.
+    cpus: Vec<Cpu>,
+    /// The memory information.
+    mem: Memory,
+}
+
+#[derive(Serialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct Cpu {
+    /// The usage of the CPU.
+    usage: f32,
+    /// The name of the CPU.
+    name: String,
+}
+
+#[derive(Serialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct Memory {
+    /// The total memory of the system.
+    total: u64,
+    /// The used memory of the system.
+    used: u64,
+    /// The free memory of the system.
+    free: u64,
+    /// The available memory of the system.
+    available: u64,
+}
+
+impl From<&sysinfo::Cpu> for Cpu {
+    fn from(cpu: &sysinfo::Cpu) -> Self {
+        Cpu {
+            usage: cpu.cpu_usage(),
+            name: cpu.name().to_string(),
         }
     }
 }
