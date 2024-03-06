@@ -225,6 +225,7 @@ pub(crate) fn config(cfg: &mut web::ServiceConfig) {
             .service(calculate_scoring)
             .service(get_statistics)
             .service(login)
+            .service(identity)
             .service(monitor)
             .service(logout),
     );
