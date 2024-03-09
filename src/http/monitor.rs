@@ -1,6 +1,6 @@
 use bb8::State;
 use serde::Serialize;
-use sysinfo::{CpuRefreshKind, MemoryRefreshKind, RefreshKind, System};
+use sysinfo::{CpuRefreshKind, Disks, MemoryRefreshKind, RefreshKind, System};
 use utoipa::ToSchema;
 
 /// The monitor struct contains the state of the database.
@@ -45,6 +45,7 @@ impl Monitor {
                     available: sys.available_memory(),
                     total: sys.total_memory(),
                 },
+                disks: Disks::new_with_refreshed_list().iter().map(Disk::from).collect(),
             },
         }
     }
@@ -58,6 +59,8 @@ pub(crate) struct SysInfo {
     cpus: Vec<Cpu>,
     /// The memory information.
     mem: Memory,
+    /// The disks information.
+    disks: Vec<Disk>,
 }
 
 /// The cpu struct contains the usage, name and frequency of the CPU.
@@ -103,6 +106,37 @@ impl From<&sysinfo::Cpu> for Cpu {
             frequency: cpu.frequency(),
             brand: cpu.brand().to_string(),
             vendor: cpu.vendor_id().to_string(),
+        }
+    }
+}
+
+/// The disk struct contains the name, mount point and file system of the disk.
+#[derive(Serialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct Disk {
+    /// The name of the disk.
+    name: String,
+    /// The mount point of the disk.
+    mount_point: String,
+    /// The file system of the disk.
+    fs: String,
+    total: u64,
+    available: u64,
+}
+
+impl From<&sysinfo::Disk> for Disk {
+    fn from(disk: &sysinfo::Disk) -> Self {
+        Disk {
+            name: disk.name().to_owned().into_string().unwrap_or_default(),
+            mount_point: disk
+                .mount_point()
+                .to_owned()
+                .into_os_string()
+                .into_string()
+                .unwrap_or_default(),
+            fs: disk.file_system().to_owned().into_string().unwrap_or_default(),
+            total: disk.total_space(),
+            available: disk.available_space(),
         }
     }
 }
