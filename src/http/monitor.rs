@@ -120,11 +120,20 @@ pub(crate) struct Disk {
     mount_point: String,
     /// The file system of the disk.
     fs: String,
+    /// The total space of the disk.
     total: u64,
+    /// The available space of the disk.
     available: u64,
+    /// The kind of the disk. It can be "HDD", "SSD" or "Unknown".
+    kind: String,
 }
 
+/// Converts a sysinfo::Disk to a Disk.
 impl From<&sysinfo::Disk> for Disk {
+    /// # Arguments
+    /// * `disk` - The sysinfo::Disk.
+    /// # Returns
+    /// `Disk` - The Disk.
     fn from(disk: &sysinfo::Disk) -> Self {
         Disk {
             name: disk.name().to_owned().into_string().unwrap_or_default(),
@@ -137,6 +146,7 @@ impl From<&sysinfo::Disk> for Disk {
             fs: disk.file_system().to_owned().into_string().unwrap_or_default(),
             total: disk.total_space(),
             available: disk.available_space(),
+            kind: disk.kind().to_owned().to_string(),
         }
     }
 }
