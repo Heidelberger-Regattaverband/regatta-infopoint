@@ -5,14 +5,14 @@ use utoipa::ToSchema;
 
 /// The monitor struct contains the state of the database.
 #[derive(Serialize, ToSchema)]
-pub(crate) struct Monitor {
+pub(crate) struct Monitoring {
     /// The database state.
     db: Db,
     /// The system information.
     sys: SysInfo,
 }
 
-impl Monitor {
+impl Monitoring {
     /// Creates a new monitor with the given state and created connections.
     /// # Arguments
     /// * `state` - The state of the database.
@@ -29,7 +29,7 @@ impl Monitor {
         std::thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
         sys.refresh_cpu();
 
-        Monitor {
+        Monitoring {
             db: Db {
                 connections: Connections {
                     current: state.connections,

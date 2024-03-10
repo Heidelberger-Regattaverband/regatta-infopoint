@@ -5,7 +5,7 @@ use crate::{
     },
     http::{
         auth::{Credentials, Scope, User},
-        monitor::Monitor,
+        monitoring::Monitoring,
     },
 };
 use actix_identity::Identity;
@@ -19,19 +19,19 @@ use actix_web::{
 /// Path to REST API
 pub(crate) const PATH: &str = "/api";
 
-/// Monitor the server.
+/// Provides the monitoring information.
 #[utoipa::path(
-    context_path = "/api",
+    context_path = PATH,
     responses(
         (status = 200, description = "Monitoring", body = Monitor),
         (status = 401, description = "Unauthorized")
     )
 )]
-#[get("/monitor")]
+#[get("/monitoring")]
 async fn monitor(aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     if opt_user.is_some() {
         let pool = aquarius.pool.state();
-        Ok(Json(Monitor::new(pool, aquarius.pool.created())))
+        Ok(Json(Monitoring::new(pool, aquarius.pool.created())))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
     }
@@ -153,7 +153,7 @@ async fn calculate_scoring(
 
 /// Authenticate the user. This will attach the user identity to the current session.
 #[utoipa::path(
-    context_path = "/api",
+    context_path = PATH,
     request_body = Credentials,
     responses(
         (status = 200, description = "Authenticated", body = User),
@@ -177,7 +177,7 @@ async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<i
 
 /// Logout the user. This will remove the user identity from the current session.
 #[utoipa::path(
-    context_path = "/api",
+    context_path = PATH,
     responses(
         (status = 204, description = "User logged out"),
         (status = 401, description = "Unauthorized")
@@ -191,7 +191,7 @@ async fn logout(user: Identity) -> impl Responder {
 
 /// Get the user identity. This will return the user information if the user is authenticated. Otherwise, it will return a guest user.
 #[utoipa::path(
-    context_path = "/api",
+    context_path = PATH,
     responses(
         (status = 200, description = "Authenticated", body = User, example = json!({"user": "name", "scope": "user"})),
         (status = 401, description = "Unauthorized", body = User, example = json!({ "user": "anonymous", "scope": "guest"}))
