@@ -46,6 +46,10 @@ export default class Launchpad extends BaseController {
     super.getRouter().navTo("statistics", {}, false /* history */);
   }
 
+  onNavToMonitoring(): void {
+    super.getRouter().navTo("monitoring", {}, false /* history */);
+  }
+
   onNavToKiosk(): void {
     super.getRouter().navTo("kiosk", {}, false /* history */);
   }

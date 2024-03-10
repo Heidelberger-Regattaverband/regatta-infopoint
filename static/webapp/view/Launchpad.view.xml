@@ -70,6 +70,17 @@
               </tileContent>
             </GenericTile>
 
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="Überwachung" visible="{identity>/authenticated}"
+              press=".onNavToMonitoring">
+              <tileContent>
+                <TileContent>
+                  <content>
+                    <ImageContent src="sap-icon://sys-monitor" />
+                  </content>
+                </TileContent>
+              </tileContent>
+            </GenericTile>
+
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="Kiosk" visible="{identity>/authenticated}"
               press=".onNavToKiosk">
               <tileContent>

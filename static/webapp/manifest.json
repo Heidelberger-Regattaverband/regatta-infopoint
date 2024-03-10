@@ -108,6 +108,11 @@
           "target": "statistics"
         },
         {
+          "pattern": "monitoring",
+          "name": "monitoring",
+          "target": "monitoring"
+        },
+        {
           "pattern": "kiosk",
           "name": "kiosk",
           "target": "kiosk"
@@ -158,6 +163,10 @@
         },
         "statistics": {
           "viewName": "Statistics",
+          "viewLevel": 1
+        },
+        "monitoring": {
+          "viewName": "Monitoring",
           "viewLevel": 1
         },
         "kiosk": {

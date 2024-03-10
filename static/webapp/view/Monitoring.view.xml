@@ -1,0 +1,31 @@
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.Monitoring" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
+  <mvc:content>
+
+    <Page title="{i18n>launchpad.statistics.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
+      <headerContent>
+        <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
+      </headerContent>
+
+      <content>
+
+        <List id="registrationsList" items="{statistics>/registrations}" headerText="{i18n>statistics.registrations}">
+          <ObjectListItem title="{statistics>name}" number="{statistics>value}"></ObjectListItem>
+        </List>
+
+        <List id="racesList" items="{statistics>/races}" headerText="{i18n>statistics.races}">
+          <ObjectListItem title="{statistics>name}" number="{statistics>value}"></ObjectListItem>
+        </List>
+
+        <List id="heatsList" items="{statistics>/heats}" headerText="{i18n>statistics.heats}">
+          <ObjectListItem title="{statistics>name}" number="{statistics>value}"></ObjectListItem>
+        </List>
+
+        <List id="athletesList" items="{statistics>/athletes}" headerText="{i18n>statistics.athletes}">
+          <ObjectListItem title="{statistics>name}" number="{statistics>value}"></ObjectListItem>
+        </List>
+
+      </content>
+    </Page>
+
+  </mvc:content>
+</mvc:View>
