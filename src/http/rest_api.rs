@@ -15,6 +15,7 @@ use actix_web::{
     web::{self, Data, Json, Path},
     Error, HttpMessage, HttpRequest, HttpResponse, Responder,
 };
+use prometheus::Registry;
 
 /// Path to REST API
 pub(crate) const PATH: &str = "/api";
@@ -28,9 +29,16 @@ pub(crate) const PATH: &str = "/api";
     )
 )]
 #[get("/monitoring")]
-async fn monitor(aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
+async fn monitor(
+    aquarius: Data<Aquarius>,
+    registry: Data<Registry>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
     if opt_user.is_some() {
         let pool = aquarius.pool.state();
+        registry.gather().iter().for_each(|f| {
+            print!("Metrics: {:?}", f);
+        });
         Ok(Json(Monitoring::new(pool, aquarius.pool.created())))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))

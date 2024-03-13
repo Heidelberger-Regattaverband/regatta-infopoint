@@ -17,10 +17,11 @@ use actix_web::{
     web::{self, Data},
     App, Error, HttpServer,
 };
-use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
+use actix_web_prom::{PrometheusMetrics, PrometheusMetricsBuilder};
 use colored::Colorize;
 use futures::FutureExt;
 use log::{debug, info, warn};
+use prometheus::Registry;
 use rustls::ServerConfig;
 use rustls_pemfile::{certs, pkcs8_private_keys};
 use rustls_pki_types::{PrivateKeyDer, PrivatePkcs8KeyDer};
@@ -80,6 +81,7 @@ impl<'a> Server<'a> {
                 // collect metrics about requests and responses
                 .wrap(prometheus.clone())
                 .app_data(aquarius.clone())
+                .app_data(Data::new(prometheus.registry.clone()))
                 .configure(rest_api::config)
                 .configure(api_doc::config)
                 .service(
@@ -184,6 +186,7 @@ impl<'a> Server<'a> {
     fn get_prometeus() -> Arc<PrometheusMetrics> {
         Arc::new(
             PrometheusMetricsBuilder::new("api")
+                .registry(Registry::new())
                 .endpoint("/metrics")
                 .build()
                 .unwrap(),
