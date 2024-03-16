@@ -24,12 +24,12 @@ pub(crate) const PATH: &str = "/api";
 #[utoipa::path(
     context_path = PATH,
     responses(
-        (status = 200, description = "Monitoring", body = Monitor),
+        (status = 200, description = "Monitoring", body = Monitoring),
         (status = 401, description = "Unauthorized")
     )
 )]
 #[get("/monitoring")]
-async fn monitor(
+async fn monitoring(
     aquarius: Data<Aquarius>,
     registry: Data<Registry>,
     opt_user: Option<Identity>,
@@ -232,7 +232,7 @@ pub(crate) fn config(cfg: &mut web::ServiceConfig) {
             .service(get_statistics)
             .service(login)
             .service(identity)
-            .service(monitor)
-            .service(logout),
+            .service(logout)
+            .service(monitoring),
     );
 }

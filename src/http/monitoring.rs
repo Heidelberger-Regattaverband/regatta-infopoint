@@ -5,23 +5,25 @@ use serde_json::{Map, Number, Value};
 use sysinfo::{CpuRefreshKind, Disks, MemoryRefreshKind, RefreshKind, System};
 use utoipa::ToSchema;
 
-/// The monitor struct contains the state of the database.
+/// The monitoring struct contains the database state, system information and metrics.
 #[derive(Serialize, ToSchema)]
 pub(crate) struct Monitoring {
     /// The database state.
     db: Db,
     /// The system information.
     sys: SysInfo,
+    /// The metrics of the system.
     metrics: Map<String, Value>,
 }
 
 impl Monitoring {
-    /// Creates a new monitor with the given state and created connections.
+    /// Creates a new monitoring struct.
     /// # Arguments
     /// * `state` - The state of the database.
     /// * `created` - The number of created connections.
+    /// * `registry` - The prometheus registry.
     /// # Returns
-    /// `Monitor` - The monitor.
+    /// `Monitoring` - The monitoring struct.
     pub(crate) fn new(state: State, created: u32, registry: &Registry) -> Self {
         let mut sys = System::new_with_specifics(
             RefreshKind::new()
