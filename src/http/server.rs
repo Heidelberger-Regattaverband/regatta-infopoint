@@ -163,7 +163,7 @@ impl<'a> Server<'a> {
     /// # Arguments
     /// * `secret_key` - The secret key used to encrypt the session cookie.
     /// # Returns
-    /// * `SessionMiddleware` - The session middleware.
+    /// `SessionMiddleware<CookieSessionStore>` - The session middleware.
     /// # Panics
     /// If the session middleware can't be created.
     fn get_session_middleware(secret_key: Key) -> SessionMiddleware<CookieSessionStore> {
@@ -180,7 +180,7 @@ impl<'a> Server<'a> {
 
     /// Returns a new PrometheusMetrics instance.
     /// # Returns
-    /// * `PrometheusMetrics` - The prometheus metrics.
+    /// `Arc<PrometheusMetrics>` - The prometheus metrics.
     /// # Panics
     /// If the prometheus metrics can't be created.
     fn get_prometeus() -> Arc<PrometheusMetrics> {
@@ -198,7 +198,7 @@ impl<'a> Server<'a> {
     /// * `max_requests` - The maximum number of requests in the given interval.
     /// * `interval` - The interval in seconds.
     /// # Returns
-    /// `RateLimiter` - The rate limiter.
+    /// `RateLimiter<InMemoryBackend, SimpleOutput, impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>>` - The rate limiter.
     /// # Panics
     /// If the rate limiter can't be created.
     fn get_rate_limiter(
