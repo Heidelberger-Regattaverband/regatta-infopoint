@@ -1,6 +1,7 @@
 use crate::{
     db::{
         model::utils,
+        sql::builder::SqlBuilder,
         tiberius::{RowColumn, TiberiusPool, TryRowColumn},
     },
     http::flags_scraper::ClubFlag,
@@ -71,13 +72,19 @@ impl Club {
     }
 
     pub async fn query_single(club_id: i32, pool: &TiberiusPool) -> Club {
-        let mut query = Query::new(
-            "SELECT".to_string()
-                + &Club::select_columns("c")
-                + "FROM Club c
-            WHERE c.Club_ID = @P1
-            ORDER BY c.Club_City ASC",
-        );
+        let sql = SqlBuilder::select_from("Club")
+            .columns(&[
+                "Club_ID",
+                "Club_Abbr",
+                "Club_Name",
+                "Club_UltraAbbr",
+                "Club_City",
+                "Club_ExternID",
+            ])
+            .where_eq("Club_ID", "@P1")
+            .build()
+            .unwrap();
+        let mut query = Query::new(sql);
         query.bind(club_id);
 
         let mut client = pool.get().await;

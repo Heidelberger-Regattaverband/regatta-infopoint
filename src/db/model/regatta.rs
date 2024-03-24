@@ -1,5 +1,6 @@
 use crate::db::{
     model::utils,
+    sql::builder::SqlBuilder,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
@@ -37,10 +38,13 @@ impl From<&Row> for Regatta {
 impl Regatta {
     pub async fn query_active_regatta(pool: &TiberiusPool) -> Regatta {
         let mut client = pool.get().await;
-        let stream = Query::new("SELECT TOP 1 e.* FROM Event e ORDER BY e.Event_StartDate DESC, e.Event_ID DESC")
-            .query(&mut client)
-            .await
+        let sql = SqlBuilder::select_from("Event")
+            .limit(1)
+            .columns(&["*"])
+            .order_by(&[("Event_StartDate", false), ("Event_ID", false)])
+            .build()
             .unwrap();
+        let stream = Query::new(sql).query(&mut client).await.unwrap();
         Regatta::from(&utils::get_row(stream).await)
     }
 
@@ -52,7 +56,12 @@ impl Regatta {
     }
 
     pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Regatta {
-        let mut query = Query::new("SELECT * FROM Event WHERE Event_ID = @P1");
+        let sql = SqlBuilder::select_from("Event")
+            .columns(&["*"])
+            .where_eq("Event_ID", "@P1")
+            .build()
+            .unwrap();
+        let mut query = Query::new(sql);
         query.bind(regatta_id);
 
         let mut client = pool.get().await;
