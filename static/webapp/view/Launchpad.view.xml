@@ -26,8 +26,7 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.heatsTile.header}"
-              press=".onNavToHeats">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.heatsTile.header}" press=".onNavToHeats">
               <tileContent>
                 <TileContent>
                   <content>
@@ -70,8 +69,8 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="Überwachung" visible="{identity>/authenticated}"
-              press=".onNavToMonitoring">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>monitoring.title}"
+              visible="{identity>/authenticated}" press=".onNavToMonitoring">
               <tileContent>
                 <TileContent>
                   <content>

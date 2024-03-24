@@ -7,15 +7,15 @@
       </headerContent>
 
       <content>
-        <List id="registrationsList" items="{monitoring>/db}" headerText="Datenbankverbindungen">
+        <List id="dbConnectionsList" items="{monitoring>/db}" headerText="{i18n>monitoring.dbConnections.title}">
           <ObjectListItem title="{monitoring>name}" number="{monitoring>value}"></ObjectListItem>
         </List>
 
-        <List id="racesList" items="{monitoring>/mem}" headerText="Speicher">
+        <List id="memList" items="{monitoring>/mem}" headerText="{i18n>monitoring.mem.title}">
           <ObjectListItem title="{monitoring>name}" number="{monitoring>value}"></ObjectListItem>
         </List>
 
-        <List id="heatsList" items="{monitoring>/cpus}" headerText="Prozessoren">
+        <List id="cpusList" items="{monitoring>/cpus}" headerText="{i18n>monitoring.cpus.title}">
           <ObjectListItem title="{monitoring>name}" number="{monitoring>value}"></ObjectListItem>
         </List>
       </content>

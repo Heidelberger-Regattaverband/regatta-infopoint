@@ -2,9 +2,9 @@ import MessageToast from "sap/m/MessageToast";
 import BaseController from "./Base.controller";
 import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import Control from "sap/ui/core/Control";
 import { Button$PressEvent } from "sap/m/Button";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import List from "sap/m/List";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -12,15 +12,15 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 export default class Monitoring extends BaseController {
   private dataLoader: JSONModel;
   private monitoringModel: JSONModel;
-  private racesList?: Control;
-  private heatsList?: Control;
-  private registrationsList?: Control;
-  private athletesList?: Control;
+  private dbConnectionsList?: List;
+  private cpusList?: List;
+  private memList?: List;
 
   private units = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
 
   onInit(): void {
-    super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
+    const component: MyComponent | undefined = this.getOwnerComponent() as MyComponent | undefined;
+    super.getView()?.addStyleClass(component?.getContentDensityClass() || "");
 
     super.getRouter()?.getRoute("monitoring")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadStatistics(), this);
 
@@ -29,10 +29,9 @@ export default class Monitoring extends BaseController {
 
     this.dataLoader = new JSONModel();
 
-    this.registrationsList = this.getView()?.byId("registrationsList") as Control;
-    this.racesList = this.getView()?.byId("racesList") as Control;
-    this.heatsList = this.getView()?.byId("heatsList") as Control;
-    this.athletesList = this.getView()?.byId("athletesList") as Control;
+    this.dbConnectionsList = this.getView()?.byId("dbConnectionsList") as List;
+    this.memList = this.getView()?.byId("memList") as List;
+    this.cpusList = this.getView()?.byId("cpusList") as List;
   }
 
   onNavBack(): void {
@@ -58,17 +57,17 @@ export default class Monitoring extends BaseController {
     // transform monitoring data into human readable format
     const dbConnections = [];
     if (monitoring?.db?.connections) {
-      dbConnections.push({ name: "Aktuell", value: monitoring.db.connections.current });
-      dbConnections.push({ name: "Idle", value: monitoring.db.connections.idle });
-      dbConnections.push({ name: "Erzeugt", value: monitoring.db.connections.created });
+      dbConnections.push({ name: this.i18n("monitoring.dbConnections.current"), value: monitoring.db.connections.current });
+      dbConnections.push({ name: this.i18n("monitoring.dbConnections.idle"), value: monitoring.db.connections.idle });
+      dbConnections.push({ name: this.i18n("monitoring.dbConnections.created"), value: monitoring.db.connections.created });
     }
 
     const mem: any[] = [];
     if (monitoring?.sys?.mem) {
-      mem.push({ name: "Insgesamt", value: this.niceBytes(monitoring.sys.mem.total) });
-      mem.push({ name: "Benutzt", value: this.niceBytes(monitoring.sys.mem.used) });
-      mem.push({ name: "Frei", value: this.niceBytes(monitoring.sys.mem.free) });
-      mem.push({ name: "Verfügbar", value: this.niceBytes(monitoring.sys.mem.available) });
+      mem.push({ name: this.i18n("monitoring.mem.total"), value: this.niceBytes(monitoring.sys.mem.total) });
+      mem.push({ name: this.i18n("monitoring.mem.used"), value: this.niceBytes(monitoring.sys.mem.used) });
+      mem.push({ name: this.i18n("monitoring.mem.available"), value: this.niceBytes(monitoring.sys.mem.available) });
+      mem.push({ name: this.i18n("monitoring.mem.free"), value: this.niceBytes(monitoring.sys.mem.free) });
     }
 
     const cpus: any[] = [];
@@ -86,10 +85,9 @@ export default class Monitoring extends BaseController {
   }
 
   private setBusy(busy: boolean): void {
-    this.registrationsList?.setBusy(busy);
-    this.racesList?.setBusy(busy);
-    this.heatsList?.setBusy(busy);
-    this.athletesList?.setBusy(busy);
+    this.dbConnectionsList?.setBusy(busy);
+    this.memList?.setBusy(busy);
+    this.cpusList?.setBusy(busy);
   }
 
   private niceBytes(n: number): String {
