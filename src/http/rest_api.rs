@@ -15,6 +15,7 @@ use actix_web::{
     web::{self, Data, Json, Path},
     Error, HttpMessage, HttpRequest, HttpResponse, Responder,
 };
+use prometheus::Registry;
 
 /// Path to REST API
 pub(crate) const PATH: &str = "/api";
@@ -23,15 +24,20 @@ pub(crate) const PATH: &str = "/api";
 #[utoipa::path(
     context_path = PATH,
     responses(
-        (status = 200, description = "Monitoring", body = Monitor),
+        (status = 200, description = "Monitoring", body = Monitoring),
         (status = 401, description = "Unauthorized")
     )
 )]
 #[get("/monitoring")]
-async fn monitor(aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
+async fn monitoring(
+    aquarius: Data<Aquarius>,
+    registry: Data<Registry>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
     if opt_user.is_some() {
         let pool = aquarius.pool.state();
-        Ok(Json(Monitoring::new(pool, aquarius.pool.created())))
+        let monitoring = Monitoring::new(pool, aquarius.pool.created(), &registry);
+        Ok(Json(monitoring))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
     }
@@ -226,7 +232,7 @@ pub(crate) fn config(cfg: &mut web::ServiceConfig) {
             .service(get_statistics)
             .service(login)
             .service(identity)
-            .service(monitor)
-            .service(logout),
+            .service(logout)
+            .service(monitoring),
     );
 }

@@ -17,10 +17,11 @@ use actix_web::{
     web::{self, Data},
     App, Error, HttpServer,
 };
-use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
+use actix_web_prom::{PrometheusMetrics, PrometheusMetricsBuilder};
 use colored::Colorize;
 use futures::FutureExt;
 use log::{debug, info, warn};
+use prometheus::Registry;
 use rustls::ServerConfig;
 use rustls_pemfile::{certs, pkcs8_private_keys};
 use rustls_pki_types::{PrivateKeyDer, PrivatePkcs8KeyDer};
@@ -80,6 +81,7 @@ impl<'a> Server<'a> {
                 // collect metrics about requests and responses
                 .wrap(prometheus.clone())
                 .app_data(aquarius.clone())
+                .app_data(Data::new(prometheus.registry.clone()))
                 .configure(rest_api::config)
                 .configure(api_doc::config)
                 .service(
@@ -161,7 +163,7 @@ impl<'a> Server<'a> {
     /// # Arguments
     /// * `secret_key` - The secret key used to encrypt the session cookie.
     /// # Returns
-    /// * `SessionMiddleware` - The session middleware.
+    /// `SessionMiddleware<CookieSessionStore>` - The session middleware.
     /// # Panics
     /// If the session middleware can't be created.
     fn get_session_middleware(secret_key: Key) -> SessionMiddleware<CookieSessionStore> {
@@ -178,12 +180,13 @@ impl<'a> Server<'a> {
 
     /// Returns a new PrometheusMetrics instance.
     /// # Returns
-    /// * `PrometheusMetrics` - The prometheus metrics.
+    /// `Arc<PrometheusMetrics>` - The prometheus metrics.
     /// # Panics
     /// If the prometheus metrics can't be created.
     fn get_prometeus() -> Arc<PrometheusMetrics> {
         Arc::new(
             PrometheusMetricsBuilder::new("api")
+                .registry(Registry::new())
                 .endpoint("/metrics")
                 .build()
                 .unwrap(),
@@ -195,7 +198,7 @@ impl<'a> Server<'a> {
     /// * `max_requests` - The maximum number of requests in the given interval.
     /// * `interval` - The interval in seconds.
     /// # Returns
-    /// `RateLimiter` - The rate limiter.
+    /// `RateLimiter<InMemoryBackend, SimpleOutput, impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>>` - The rate limiter.
     /// # Panics
     /// If the rate limiter can't be created.
     fn get_rate_limiter(

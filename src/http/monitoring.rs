@@ -1,33 +1,32 @@
 use bb8::State;
+use prometheus::Registry;
 use serde::Serialize;
+use serde_json::{Map, Number, Value};
 use sysinfo::{CpuRefreshKind, Disks, MemoryRefreshKind, RefreshKind, System};
 use utoipa::ToSchema;
 
-/// The monitor struct contains the state of the database.
+/// The monitoring struct contains the database state, system information and metrics.
 #[derive(Serialize, ToSchema)]
 pub(crate) struct Monitoring {
     /// The database state.
     db: Db,
     /// The system information.
     sys: SysInfo,
+    /// The metrics of the system.
+    metrics: Map<String, Value>,
 }
 
 impl Monitoring {
-    /// Creates a new monitor with the given state and created connections.
+    /// Creates a new monitoring struct.
     /// # Arguments
     /// * `state` - The state of the database.
     /// * `created` - The number of created connections.
+    /// * `registry` - The prometheus registry.
     /// # Returns
-    /// `Monitor` - The monitor.
-    pub(crate) fn new(state: State, created: u32) -> Self {
-        let mut sys = System::new_with_specifics(
-            RefreshKind::new()
-                .with_cpu(CpuRefreshKind::everything())
-                .with_memory(MemoryRefreshKind::everything()),
-        );
-        // Wait a bit because CPU usage is based on diff.
-        std::thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
-        sys.refresh_cpu();
+    /// `Monitoring` - The monitoring struct.
+    pub(crate) fn new(state: State, created: u32, registry: &Registry) -> Self {
+        let sys = get_system();
+        let metrics = get_metrics(registry);
 
         Monitoring {
             db: Db {
@@ -47,8 +46,45 @@ impl Monitoring {
                 },
                 disks: Disks::new_with_refreshed_list().iter().map(Disk::from).collect(),
             },
+            metrics,
         }
     }
+}
+
+fn get_system() -> System {
+    let mut sys = System::new_with_specifics(
+        RefreshKind::new()
+            .with_cpu(CpuRefreshKind::everything())
+            .with_memory(MemoryRefreshKind::everything()),
+    );
+    // Wait a bit because CPU usage is based on diff.
+    std::thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
+    sys.refresh_cpu();
+    sys
+}
+
+fn get_metrics(registry: &Registry) -> Map<String, Value> {
+    let mut all_metrics = Map::new();
+    registry.gather().iter().for_each(|f| {
+        let mut family_entries = Vec::new();
+        f.get_metric().iter().for_each(|m| {
+            let mut labels: Map<String, Value> = Map::new();
+            m.get_label().iter().for_each(|l| {
+                labels.insert(l.get_name().to_string(), Value::String(l.get_value().to_string()));
+            });
+            labels.insert(
+                "counter".to_string(),
+                Value::Number(Number::from_f64(m.get_counter().get_value()).unwrap()),
+            );
+            labels.insert(
+                "gauge".to_string(),
+                Value::Number(Number::from_f64(m.get_gauge().get_value()).unwrap()),
+            );
+            family_entries.push(Value::Object(labels));
+        });
+        all_metrics.insert(f.get_name().to_string(), Value::Array(family_entries));
+    });
+    all_metrics
 }
 
 /// The sysinfo struct contains the cpus and memory information.
