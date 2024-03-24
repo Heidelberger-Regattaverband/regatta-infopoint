@@ -19,15 +19,17 @@ export default class ParticipatingClubsTable extends BaseTableController {
 
   private participatingClubsModel: JSONModel;
 
-  async onInit(): Promise<void> {
+  onInit(): void {
     super.init(super.getView()?.byId("clubsTable") as Table, "club" /* eventBus channel */);
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
 
-    this.participatingClubsModel = await super.createJSONModel(`/api/regattas/${this.getRegattaId()}/participating_clubs`, this.table);
-    super.setViewModel(this.participatingClubsModel, "clubs");
+    super.createJSONModel(`/api/regattas/${this.getRegattaId()}/participating_clubs`, this.table).then((model: JSONModel) => {
+      this.participatingClubsModel = model;
+      super.setViewModel(this.participatingClubsModel, "clubs");
 
-    super.getRouter()?.getRoute("participatingClubs")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadModel(), this);
+      super.getRouter()?.getRoute("participatingClubs")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadModel(), this);
+    });
   }
 
   onNavBack(): void {
