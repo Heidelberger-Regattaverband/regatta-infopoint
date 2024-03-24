@@ -122,11 +122,13 @@ export default class Formatter {
   }
 
   static athleteLabel(athlete: any): string {
-    let label: string = athlete.firstName + " " + athlete.lastName + " (" + athlete.year + ", ";
-    if (athlete.club.abbreviation) {
-      label += athlete.club.abbreviation
-    } else {
-      label += athlete.club.shortName
+    let label: string = athlete.firstName + " " + athlete.lastName + " (" + athlete.year;
+    if (athlete.club.shortName) {
+      label += ", " + athlete.club.shortName
+    } else if (athlete.club.abbreviation) {
+      label += ", " + athlete.club.abbreviation
+    } else if (athlete.club.longName) {
+      label += ", " + athlete.club.longName
     };
     label += ")"
     return label;

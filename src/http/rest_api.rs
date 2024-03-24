@@ -5,7 +5,7 @@ use crate::{
     },
     http::{
         auth::{Credentials, Scope, User},
-        monitor::Monitor,
+        monitoring::Monitoring,
     },
 };
 use actix_identity::Identity;
@@ -15,23 +15,29 @@ use actix_web::{
     web::{self, Data, Json, Path},
     Error, HttpMessage, HttpRequest, HttpResponse, Responder,
 };
+use prometheus::Registry;
 
 /// Path to REST API
 pub(crate) const PATH: &str = "/api";
 
-/// Monitor the server.
+/// Provides the monitoring information.
 #[utoipa::path(
-    context_path = "/api",
+    context_path = PATH,
     responses(
-        (status = 200, description = "Monitoring", body = Monitor),
+        (status = 200, description = "Monitoring", body = Monitoring),
         (status = 401, description = "Unauthorized")
     )
 )]
-#[get("/monitor")]
-async fn monitor(aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
+#[get("/monitoring")]
+async fn monitoring(
+    aquarius: Data<Aquarius>,
+    registry: Data<Registry>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
     if opt_user.is_some() {
         let pool = aquarius.pool.state();
-        Ok(Json(Monitor::new(pool, aquarius.pool.created())))
+        let monitoring = Monitoring::new(pool, aquarius.pool.created(), &registry);
+        Ok(Json(monitoring))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
     }
@@ -153,7 +159,7 @@ async fn calculate_scoring(
 
 /// Authenticate the user. This will attach the user identity to the current session.
 #[utoipa::path(
-    context_path = "/api",
+    context_path = PATH,
     request_body = Credentials,
     responses(
         (status = 200, description = "Authenticated", body = User),
@@ -177,7 +183,7 @@ async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<i
 
 /// Logout the user. This will remove the user identity from the current session.
 #[utoipa::path(
-    context_path = "/api",
+    context_path = PATH,
     responses(
         (status = 204, description = "User logged out"),
         (status = 401, description = "Unauthorized")
@@ -191,7 +197,7 @@ async fn logout(user: Identity) -> impl Responder {
 
 /// Get the user identity. This will return the user information if the user is authenticated. Otherwise, it will return a guest user.
 #[utoipa::path(
-    context_path = "/api",
+    context_path = PATH,
     responses(
         (status = 200, description = "Authenticated", body = User, example = json!({"user": "name", "scope": "user"})),
         (status = 401, description = "Unauthorized", body = User, example = json!({ "user": "anonymous", "scope": "guest"}))
@@ -206,6 +212,7 @@ async fn identity(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     }
 }
 
+/// Configure the REST API. This will add all REST API endpoints to the service configuration.
 pub(crate) fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope(PATH)
@@ -224,7 +231,8 @@ pub(crate) fn config(cfg: &mut web::ServiceConfig) {
             .service(calculate_scoring)
             .service(get_statistics)
             .service(login)
-            .service(monitor)
-            .service(logout),
+            .service(identity)
+            .service(logout)
+            .service(monitoring),
     );
 }

@@ -1,6 +1,6 @@
 use crate::http::{
     auth::{Credentials, Scope, User},
-    monitor::{Connections, Db, Monitor},
+    monitoring::{Connections, Cpu, Db, Disk, Memory, Monitoring, SysInfo},
     rest_api,
 };
 use actix_web::web;
@@ -10,10 +10,10 @@ use utoipa_swagger_ui::SwaggerUi;
 #[derive(OpenApi)]
 #[openapi(
     paths(
-        rest_api::monitor, rest_api::identity, rest_api::login, rest_api::logout,
+        rest_api::monitoring, rest_api::identity, rest_api::login, rest_api::logout,
     ),
     components(
-        schemas(Monitor, Db, Connections, User, Credentials, Scope),
+        schemas(Monitoring, Db, Connections, User, Credentials, Scope, SysInfo, Cpu, Memory, Disk),
     ),
     tags(
         (name = "regatta-infopoint", description = "Regatta Infopoint endpoints.")
