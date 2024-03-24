@@ -2,7 +2,6 @@ import MessageToast from "sap/m/MessageToast";
 import BaseController from "./Base.controller";
 import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import Formatter from "../model/Formatter";
 import Control from "sap/ui/core/Control";
 import { Button$PressEvent } from "sap/m/Button";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
@@ -12,19 +11,21 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
  */
 export default class Monitoring extends BaseController {
   private dataLoader: JSONModel;
-  private statisticsModel: JSONModel;
+  private monitoringModel: JSONModel;
   private racesList?: Control;
   private heatsList?: Control;
   private registrationsList?: Control;
   private athletesList?: Control;
+
+  private units = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
 
   onInit(): void {
     super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
 
     super.getRouter()?.getRoute("monitoring")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadStatistics(), this);
 
-    this.statisticsModel = new JSONModel();
-    super.setViewModel(this.statisticsModel, "statistics");
+    this.monitoringModel = new JSONModel();
+    super.setViewModel(this.monitoringModel, "monitoring");
 
     this.dataLoader = new JSONModel();
 
@@ -44,60 +45,42 @@ export default class Monitoring extends BaseController {
 
   private async loadStatistics(): Promise<void> {
     this.setBusy(true);
-    let statistics: any;
+    let monitoring: any;
 
     // load statistic data from backend
-    if (await super.updateJSONModel(this.dataLoader, `/api/regattas/${super.getRegattaId()}/statistics`)) {
-      statistics = this.dataLoader.getData();
+    if (await super.updateJSONModel(this.dataLoader, `/api/monitoring`)) {
+      monitoring = this.dataLoader.getData();
       MessageToast.show(super.i18n("msg.dataUpdated"));
     } else {
-      statistics = {};
+      monitoring = {};
     }
 
-    // transform statistic data into human readable format
-    const registrations = [];
-    if (statistics?.registrations) {
-      const seats = statistics.registrations.seats + statistics.registrations.seatsCox;
-      registrations.push({ name: this.i18n("common.overall"), value: statistics.registrations.all });
-      registrations.push({ name: this.i18n("statistics.registrations.cancelled"), value: statistics.registrations.cancelled });
-      registrations.push({ name: this.i18n("statistics.reportingClubs"), value: statistics.registrations.registeringClubs });
-      registrations.push({ name: this.i18n("statistics.participatingClubs"), value: statistics.registrations.clubs });
-      registrations.push({ name: this.i18n("common.athletes"), value: statistics.registrations.athletes });
-      registrations.push({ name: this.i18n("common.seats"), value: seats });
+    // transform monitoring data into human readable format
+    const dbConnections = [];
+    if (monitoring?.db?.connections) {
+      dbConnections.push({ name: "Aktuell", value: monitoring.db.connections.current });
+      dbConnections.push({ name: "Idle", value: monitoring.db.connections.idle });
+      dbConnections.push({ name: "Erzeugt", value: monitoring.db.connections.created });
     }
 
-    const races = [];
-    if (statistics?.races) {
-      races.push({ name: this.i18n("common.overall"), value: statistics.races.all });
-      races.push({ name: this.i18n("common.cancelled"), value: statistics.races.cancelled });
+    const mem: any[] = [];
+    if (monitoring?.sys?.mem) {
+      mem.push({ name: "Insgesamt", value: this.niceBytes(monitoring.sys.mem.total) });
+      mem.push({ name: "Benutzt", value: this.niceBytes(monitoring.sys.mem.used) });
+      mem.push({ name: "Frei", value: this.niceBytes(monitoring.sys.mem.free) });
+      mem.push({ name: "Verfügbar", value: this.niceBytes(monitoring.sys.mem.available) });
     }
 
-    const heats = [];
-    if (statistics?.heats) {
-      heats.push({ name: this.i18n("common.overall"), value: statistics.heats.all });
-      heats.push({ name: this.i18n("heat.state.official"), value: statistics.heats.official });
-      heats.push({ name: this.i18n("heat.state.finished"), value: statistics.heats.finished });
-      heats.push({ name: this.i18n("heat.state.started"), value: statistics.heats.started });
-      heats.push({ name: this.i18n("common.seeded"), value: statistics.heats.seeded });
-      heats.push({ name: this.i18n("common.scheduled"), value: statistics.heats.scheduled });
-      heats.push({ name: this.i18n("common.cancelled"), value: statistics.heats.cancelled });
+    const cpus: any[] = [];
+    if (monitoring?.sys?.cpus) {
+      monitoring.sys.cpus.forEach((cpu: any, index: number) => {
+        cpus.push({ name: cpu.name, value: cpu.usage });
+      });
     }
 
-    const athletes = [];
-    if (statistics?.athletes) {
-      if (statistics.athletes.oldestWoman) {
-        athletes.push({ name: this.i18n("statistics.athletes.oldestWoman"), value: Formatter.athleteLabel(statistics.athletes.oldestWoman) });
-      }
-      if (statistics.athletes.oldestMan) {
-        athletes.push({ name: this.i18n("statistics.athletes.oldestMan"), value: Formatter.athleteLabel(statistics.athletes.oldestMan) });
-      }
-    }
-
-    // update statistics model
-    this.statisticsModel.setProperty("/registrations", registrations);
-    this.statisticsModel.setProperty("/races", races);
-    this.statisticsModel.setProperty("/heats", heats);
-    this.statisticsModel.setProperty("/athletes", athletes);
+    this.monitoringModel.setProperty("/db", dbConnections);
+    this.monitoringModel.setProperty("/mem", mem);
+    this.monitoringModel.setProperty("/cpus", cpus);
 
     this.setBusy(false);
   }
@@ -109,4 +92,11 @@ export default class Monitoring extends BaseController {
     this.athletesList?.setBusy(busy);
   }
 
+  private niceBytes(n: number): String {
+    let l: number = 0;
+    while (n >= 1024 && ++l) {
+      n = n / 1024;
+    }
+    return (n.toFixed(n < 10 && l > 0 ? 1 : 0) + ' ' + this.units[l]);
+  }
 }

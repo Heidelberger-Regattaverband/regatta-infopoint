@@ -7,23 +7,17 @@
       </headerContent>
 
       <content>
-
-        <List id="registrationsList" items="{statistics>/registrations}" headerText="{i18n>statistics.registrations}">
-          <ObjectListItem title="{statistics>name}" number="{statistics>value}"></ObjectListItem>
+        <List id="registrationsList" items="{monitoring>/db}" headerText="Datenbankverbindungen">
+          <ObjectListItem title="{monitoring>name}" number="{monitoring>value}"></ObjectListItem>
         </List>
 
-        <List id="racesList" items="{statistics>/races}" headerText="{i18n>statistics.races}">
-          <ObjectListItem title="{statistics>name}" number="{statistics>value}"></ObjectListItem>
+        <List id="racesList" items="{monitoring>/mem}" headerText="Speicher">
+          <ObjectListItem title="{monitoring>name}" number="{monitoring>value}"></ObjectListItem>
         </List>
 
-        <List id="heatsList" items="{statistics>/heats}" headerText="{i18n>statistics.heats}">
-          <ObjectListItem title="{statistics>name}" number="{statistics>value}"></ObjectListItem>
+        <List id="heatsList" items="{monitoring>/cpus}" headerText="Prozessoren">
+          <ObjectListItem title="{monitoring>name}" number="{monitoring>value}"></ObjectListItem>
         </List>
-
-        <List id="athletesList" items="{statistics>/athletes}" headerText="{i18n>statistics.athletes}">
-          <ObjectListItem title="{statistics>name}" number="{statistics>value}"></ObjectListItem>
-        </List>
-
       </content>
     </Page>
 
