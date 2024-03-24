@@ -8,7 +8,7 @@ import Component from "sap/ui/core/Component";
 import Router from "sap/ui/core/routing/Router";
 import Control from "sap/ui/core/Control";
 import UIComponent from "sap/ui/core/UIComponent";
-import MyComponent from "webapp/Component";
+import MyComponent from "de/regatta_hd/infoportal/Component";
 import MessageBox from "sap/m/MessageBox";
 
 /**
