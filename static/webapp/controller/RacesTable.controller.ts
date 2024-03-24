@@ -24,42 +24,44 @@ export default class RacesTable extends BaseTableController {
 
   private racesModel: JSONModel;
 
-  async onInit(): Promise<void> {
+  onInit(): void {
     super.init(super.getView()?.byId("racesTable") as Table, "race");
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
 
-    this.racesModel = await super.createJSONModel(`/api/regattas/${super.getRegattaId()}/races`, this.table);
-    super.setViewModel(this.racesModel, "races");
+    super.createJSONModel(`/api/regattas/${super.getRegattaId()}/races`, this.table).then((model: JSONModel) => {
+      this.racesModel = model;
+      super.setViewModel(this.racesModel, "races");
 
-    super.getRouter()?.getRoute("races")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadRacesModel(), this);
+      super.getRouter()?.getRoute("races")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadRacesModel(), this);
+    });
 
     const filters: any = (super.getComponentModel("filters") as JSONModel).getData();
-    const viewSettingsDialog: ViewSettingsDialog = await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog");
+    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog").then((viewSettingsDialog: ViewSettingsDialog) => {
+      if (filters.boatClasses) {
+        const boatClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "boatClass", text: "{i18n>common.boatClass}" });
+        filters.boatClasses.forEach((boatClass: any) => {
+          boatClassFilter.addItem(new ViewSettingsItem({ text: boatClass.caption + " (" + boatClass.abbreviation + ")", key: "boatClass/id___EQ___" + boatClass.id }));
+        });
+        viewSettingsDialog.insertFilterItem(boatClassFilter, 0);
+      }
 
-    if (filters.boatClasses) {
-      const boatClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "boatClass", text: "{i18n>common.boatClass}" });
-      filters.boatClasses.forEach((boatClass: any) => {
-        boatClassFilter.addItem(new ViewSettingsItem({ text: boatClass.caption + " (" + boatClass.abbreviation + ")", key: "boatClass/id___EQ___" + boatClass.id }));
-      });
-      viewSettingsDialog.insertFilterItem(boatClassFilter, 0);
-    }
+      if (filters.ageClasses) {
+        const ageClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "ageClass", text: "{i18n>common.ageClass}" });
+        filters.ageClasses.forEach((ageClass: any) => {
+          ageClassFilter.addItem(new ViewSettingsItem({ text: ageClass.caption + " " + ageClass.suffix, key: "ageClass/id___EQ___" + ageClass.id }));
+        });
+        viewSettingsDialog.insertFilterItem(ageClassFilter, 1);
+      }
 
-    if (filters.ageClasses) {
-      const ageClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "ageClass", text: "{i18n>common.ageClass}" });
-      filters.ageClasses.forEach((ageClass: any) => {
-        ageClassFilter.addItem(new ViewSettingsItem({ text: ageClass.caption + " " + ageClass.suffix, key: "ageClass/id___EQ___" + ageClass.id }));
-      });
-      viewSettingsDialog.insertFilterItem(ageClassFilter, 1);
-    }
-
-    if (filters.distances && filters.distances.length > 1) {
-      const distancesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "distance", text: "{i18n>common.distance}" });
-      filters.distances.forEach((distance: any) => {
-        distancesFilter.addItem(new ViewSettingsItem({ text: distance + "m", key: "distance___EQ___" + distance }));
-      });
-      viewSettingsDialog.insertFilterItem(distancesFilter, 3);
-    }
+      if (filters.distances && filters.distances.length > 1) {
+        const distancesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "distance", text: "{i18n>common.distance}" });
+        filters.distances.forEach((distance: any) => {
+          distancesFilter.addItem(new ViewSettingsItem({ text: distance + "m", key: "distance___EQ___" + distance }));
+        });
+        viewSettingsDialog.insertFilterItem(distancesFilter, 3);
+      }
+    });
   }
 
   onItemPress(event: ListBase$SelectEvent): void {
