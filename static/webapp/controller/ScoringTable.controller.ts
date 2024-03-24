@@ -1,6 +1,5 @@
 import Table from "sap/m/Table";
 import BaseController from "./Base.controller";
-import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import Filter from "sap/ui/model/Filter";
@@ -19,7 +18,7 @@ export default class ScoringTable extends BaseController {
   private scoringModel: JSONModel;
 
   async onInit(): Promise<void> {
-    super.getView()?.addStyleClass((super.getOwnerComponent() as MyComponent).getContentDensityClass());
+    super.getView()?.addStyleClass(super.getContentDensityClass());
 
     this.table = super.getView()?.byId("scoringTable") as Table;
 

@@ -8,13 +8,21 @@ import Component from "sap/ui/core/Component";
 import Router from "sap/ui/core/routing/Router";
 import Control from "sap/ui/core/Control";
 import UIComponent from "sap/ui/core/UIComponent";
-import MyComponent from "de/regatta_hd/Component";
+import MyComponent from "webapp/Component";
 import MessageBox from "sap/m/MessageBox";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class BaseController extends Controller {
+
+  /**
+   * Convenience method for accessing the content density class defined in the component.
+   * @returns  {string} the content density class
+   */
+  getContentDensityClass(): string {
+    return (super.getOwnerComponent() as MyComponent | undefined)?.getContentDensityClass() || "sapUiSizeCozy";
+  }
 
   /**
    * Convenience method for accessing the event bus for this component.
@@ -84,11 +92,11 @@ export default class BaseController extends Controller {
   }
 
   i18n(key: string, args?: any[]): string {
-    return (super.getOwnerComponent() as MyComponent).getResourceBundle().getText(key, args) ?? "";
+    return (super.getOwnerComponent() as MyComponent | undefined)?.getResourceBundle().getText(key, args) ?? "";
   }
 
   getRegattaId(): number {
-    return (super.getOwnerComponent() as MyComponent).getRegattaId();
+    return (super.getOwnerComponent() as MyComponent | undefined)?.getRegattaId() || -1;
   }
 
   async createJSONModel(url: string, control?: Control): Promise<JSONModel> {
