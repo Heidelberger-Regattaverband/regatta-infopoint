@@ -1,6 +1,5 @@
 import MessageToast from "sap/m/MessageToast";
 import BaseController from "./Base.controller";
-import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { Button$PressEvent } from "sap/m/Button";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
@@ -19,8 +18,7 @@ export default class Monitoring extends BaseController {
   private units = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
 
   onInit(): void {
-    const component: MyComponent | undefined = this.getOwnerComponent() as MyComponent | undefined;
-    super.getView()?.addStyleClass(component?.getContentDensityClass() || "");
+    super.getView()?.addStyleClass(super.getContentDensityClass());
 
     super.getRouter()?.getRoute("monitoring")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadStatistics(), this);
 
@@ -46,7 +44,7 @@ export default class Monitoring extends BaseController {
     this.setBusy(true);
     let monitoring: any;
 
-    // load statistic data from backend
+    // load monitoring data from backend
     if (await super.updateJSONModel(this.dataLoader, `/api/monitoring`)) {
       monitoring = this.dataLoader.getData();
       MessageToast.show(super.i18n("msg.dataUpdated"));

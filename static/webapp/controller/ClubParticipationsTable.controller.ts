@@ -1,14 +1,13 @@
 import Table from "sap/m/Table";
 import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
-import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { ListBase$SelectEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
-import { SearchField$LiveChangeEvent, SearchField$SearchEvent } from "sap/m/SearchField";
+import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import ListBinding from "sap/ui/model/ListBinding";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
@@ -24,7 +23,7 @@ export default class ClubParticipationsTable extends BaseController {
   private clubId?: number;
 
   onInit(): void {
-    super.getView()?.addStyleClass((super.getOwnerComponent() as MyComponent).getContentDensityClass());
+    super.getView()?.addStyleClass(super.getContentDensityClass());
 
     this.table = super.getView()?.byId("registrationsTable") as Table;
 

@@ -1,7 +1,6 @@
 import Table from "sap/m/Table";
 import Formatter from "../model/Formatter";
 import BaseTableController from "./BaseTable.controller";
-import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ViewSettingsFilterItem from "sap/m/ViewSettingsFilterItem";
 import ViewSettingsItem from "sap/m/ViewSettingsItem";
@@ -28,7 +27,7 @@ export default class RacesTable extends BaseTableController {
   async onInit(): Promise<void> {
     super.init(super.getView()?.byId("racesTable") as Table, "race");
 
-    super.getView()?.addStyleClass((super.getOwnerComponent() as MyComponent).getContentDensityClass());
+    super.getView()?.addStyleClass(super.getContentDensityClass());
 
     this.racesModel = await super.createJSONModel(`/api/regattas/${super.getRegattaId()}/races`, this.table);
     super.setViewModel(this.racesModel, "races");

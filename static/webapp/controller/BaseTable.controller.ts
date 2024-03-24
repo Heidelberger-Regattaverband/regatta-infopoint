@@ -82,7 +82,7 @@ export default abstract class BaseTable extends BaseController {
 
     if (!dialog) {
       dialog = await Fragment.load({ id: this.getView()?.getId(), name: dialogFragmentName, controller: this }) as ViewSettingsDialog;
-      dialog.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
+      dialog.addStyleClass(super.getContentDensityClass());
       this.getView()?.addDependent(dialog);
       this.viewSettingsDialogs.set(dialogFragmentName, dialog);
     }

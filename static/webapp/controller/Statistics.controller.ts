@@ -1,6 +1,5 @@
 import MessageToast from "sap/m/MessageToast";
 import BaseController from "./Base.controller";
-import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import Control from "sap/ui/core/Control";
@@ -19,7 +18,7 @@ export default class Statistics extends BaseController {
   private athletesList?: Control;
 
   onInit(): void {
-    super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
+    super.getView()?.addStyleClass(super.getContentDensityClass());
 
     super.getRouter()?.getRoute("statistics")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadStatistics(), this);
 

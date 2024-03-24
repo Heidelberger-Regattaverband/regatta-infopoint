@@ -1,5 +1,4 @@
 import Table from "sap/m/Table";
-import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
@@ -23,7 +22,7 @@ export default class ParticipatingClubsTable extends BaseTableController {
   async onInit(): Promise<void> {
     super.init(super.getView()?.byId("clubsTable") as Table, "club" /* eventBus channel */);
 
-    super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
+    super.getView()?.addStyleClass(super.getContentDensityClass());
 
     this.participatingClubsModel = await super.createJSONModel(`/api/regattas/${this.getRegattaId()}/participating_clubs`, this.table);
     super.setViewModel(this.participatingClubsModel, "clubs");

@@ -1,6 +1,5 @@
 import JSONModel from "sap/ui/model/json/JSONModel";
 import BaseController from "./Base.controller";
-import MyComponent from "de/regatta_hd/Component";
 import MessageToast from "sap/m/MessageToast";
 import ResponsivePopover from "sap/m/ResponsivePopover";
 import Fragment from "sap/ui/core/Fragment";
@@ -19,7 +18,7 @@ export default class Launchpad extends BaseController {
   private popoverPromise?: Promise<ResponsivePopover>;
 
   onInit(): void {
-    super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
+    super.getView()?.addStyleClass(super.getContentDensityClass());
 
     this.credentialsModel = new JSONModel({ username: "", password: "" });
     super.setViewModel(this.credentialsModel, "credentials");
@@ -94,7 +93,7 @@ export default class Launchpad extends BaseController {
           }).then((popover: any) => {
             // ... and initialize
             super.getView()?.addDependent(popover);
-            popover.addStyleClass((super.getOwnerComponent() as MyComponent).getContentDensityClass());
+            popover.addStyleClass(super.getContentDensityClass());
             return popover;
           });
         }

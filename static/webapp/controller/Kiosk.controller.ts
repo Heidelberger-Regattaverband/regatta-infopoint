@@ -1,7 +1,6 @@
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
-import MyComponent from "de/regatta_hd/Component";
 import { Button$PressEvent } from "sap/m/Button";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 
@@ -21,7 +20,7 @@ export default class Kiosk extends BaseController {
   private intervalId?: number;
 
   onInit(): void {
-    super.getView()?.addStyleClass((super.getOwnerComponent() as MyComponent).getContentDensityClass());
+    super.getView()?.addStyleClass(super.getContentDensityClass());
 
     this.indexFinished = 0;
     this.indexNext = 0;

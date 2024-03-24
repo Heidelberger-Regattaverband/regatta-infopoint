@@ -1,7 +1,6 @@
 import Table from "sap/m/Table";
 import Formatter from "../model/Formatter";
 import BaseTableController from "./BaseTable.controller";
-import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ViewSettingsFilterItem from "sap/m/ViewSettingsFilterItem";
 import ViewSettingsItem from "sap/m/ViewSettingsItem";
@@ -28,7 +27,7 @@ export default class HeatsTable extends BaseTableController {
   async onInit(): Promise<void> {
     super.init(super.getView()?.byId("heatsTable") as Table, "heat" /* eventBus channel */);
 
-    super.getView()?.addStyleClass((super.getOwnerComponent() as MyComponent).getContentDensityClass());
+    super.getView()?.addStyleClass(super.getContentDensityClass());
 
     this.heatsModel = await super.createJSONModel(`/api/regattas/${super.getRegattaId()}/heats`, this.table);
     super.setViewModel(this.heatsModel, "heats");
