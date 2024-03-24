@@ -6,7 +6,6 @@ import Fragment from "sap/ui/core/Fragment";
 import Text from "sap/m/Text";
 import ListBinding from "sap/ui/model/ListBinding";
 import ListItemBase from "sap/m/ListItemBase";
-import MyComponent from "de/regatta_hd/Component";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import CustomData from "sap/ui/core/CustomData";
 import ViewSettingsItem from "sap/m/ViewSettingsItem";
