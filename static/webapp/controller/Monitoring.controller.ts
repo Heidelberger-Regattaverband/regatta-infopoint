@@ -71,7 +71,7 @@ export default class Monitoring extends BaseController {
     const cpus: any[] = [];
     if (monitoring?.sys?.cpus) {
       monitoring.sys.cpus.forEach((cpu: any, index: number) => {
-        cpus.push({ name: cpu.name, value: cpu.usage });
+        cpus.push({ name: cpu.name, value: cpu.usage.toFixed(1) + " %" });
       });
     }
 
