@@ -8,15 +8,15 @@
 
       <content>
         <List id="dbConnectionsList" items="{monitoring>/db}" headerText="{i18n>monitoring.dbConnections.title}">
-          <ObjectListItem title="{monitoring>name}" number="{monitoring>value}"></ObjectListItem>
+          <ObjectListItem title="{monitoring>name}" number="{monitoring>value}" />
         </List>
 
         <List id="memList" items="{monitoring>/mem}" headerText="{i18n>monitoring.mem.title}">
-          <ObjectListItem title="{monitoring>name}" number="{monitoring>value}"></ObjectListItem>
+          <ObjectListItem title="{monitoring>name}" number="{monitoring>value}" />
         </List>
 
         <List id="cpusList" items="{monitoring>/cpus}" headerText="{i18n>monitoring.cpus.title}">
-          <ObjectListItem title="{monitoring>name}" number="{monitoring>value}"></ObjectListItem>
+          <ObjectListItem title="{monitoring>name}" number="{monitoring>value}" />
         </List>
       </content>
     </Page>
