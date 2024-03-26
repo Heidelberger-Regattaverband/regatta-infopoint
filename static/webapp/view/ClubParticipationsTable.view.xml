@@ -57,12 +57,12 @@
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>
-                  <Text text="{path: 'registrations>race', formatter: '.formatter.nrRaceLabel'}"
-                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
-                    class="boldCancelled sapUiTinyMarginBottom" />
-                  <Text text="{path: 'registrations>race', formatter: '.formatter.nrRaceLabel'}"
-                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}"
-                    class="bold sapUiTinyMarginBottom" />
+                  <Text
+                    text="{path: 'registrations>race', formatter: '.formatter.nrRaceLabel'}, {path: 'registrations>heat', formatter: '.formatter.heatLabel'}"
+                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="boldCancelled sapUiTinyMarginBottom" />
+                  <Text
+                    text="{path: 'registrations>race', formatter: '.formatter.nrRaceLabel'}, {path: 'registrations>heat', formatter: '.formatter.heatLabel'}"
+                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" class="bold sapUiTinyMarginBottom" />
 
                   <Text text="{registrations>race/longLabel}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
                     class="cancelled" />
@@ -71,16 +71,13 @@
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>
-                  <Text text="{path: 'registrations>', formatter: '.formatter.boatLabel'}"
-                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
-                    class="boldCancelled sapUiTinyMarginBottom" />
-                  <Text text="{path: 'registrations>', formatter: '.formatter.boatLabel'}"
-                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}"
-                    class="bold sapUiTinyMarginBottom" />
+                  <Text text="{path: 'registrations>', formatter: '.formatter.boatLabel'}" class="boldCancelled sapUiTinyMarginBottom"
+                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
+                  <Text text="{path: 'registrations>', formatter: '.formatter.boatLabel'}" class="bold sapUiTinyMarginBottom"
+                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
 
-                  <Text text="{path: 'registrations>crew', formatter: '.formatter.crewLabel'}"
-                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
-                    class="cancelled" />
+                  <Text text="{path: 'registrations>crew', formatter: '.formatter.crewLabel'}" class="cancelled"
+                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
                   <Text text="{path: 'registrations>crew', formatter: '.formatter.crewLabel'}"
                     visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
                 </layout:VerticalLayout>
