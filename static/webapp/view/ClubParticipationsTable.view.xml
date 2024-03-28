@@ -9,7 +9,7 @@
       <content>
 
         <Table id="registrationsTable" autoPopinMode="true" items="{path:'registrations>/'}" growing="true" growingThreshold="50"
-          growingScrollToLoad="true" sticky="ColumnHeaders" class="sapUiNoContentPadding" mode="SingleSelectMaster"
+          growingScrollToLoad="true" sticky="ColumnHeaders,HeaderToolbar" class="sapUiNoContentPadding" mode="SingleSelectMaster"
           itemPress="onSelectionChange">
           <headerToolbar>
             <OverflowToolbar>
