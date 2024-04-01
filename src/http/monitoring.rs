@@ -33,7 +33,7 @@ impl Monitoring {
                 connections: Connections {
                     total: state.connections,
                     idle: state.idle_connections,
-                    active: state.connections - state.idle_connections,
+                    used: state.connections - state.idle_connections,
                     created,
                 },
             },
@@ -205,7 +205,7 @@ pub(crate) struct Connections {
     /// The number of connections that are currently not in use.
     idle: u32,
     /// The number of connections that are currently activly being used.
-    active: u32,
+    used: u32,
     /// The number of connections that have been created.
     created: u32,
 }
