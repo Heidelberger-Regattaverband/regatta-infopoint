@@ -39,20 +39,15 @@ const INFOPORTAL: &str = "infoportal";
 const INFOPORTAL_V2: &str = concat!("{INFOPORTAL}2");
 
 /// The server struct contains the configuration of the server.
-pub struct Server<'a> {
-    /// The configuration of the server.
-    config: &'a Config,
-}
+pub struct Server {}
 
 /// The server implementation.
-impl<'a> Server<'a> {
+impl Server {
     /// Creates s new server instance with given configuration.
-    /// # Arguments
-    /// * `config` - The configuration of the server.
     /// # Returns
     /// * `Server` - The server.
-    pub(crate) fn new(config: &'a Config) -> Server {
-        Server { config }
+    pub(crate) fn new() -> Server {
+        Server {}
     }
 
     /// Starts the server.
@@ -63,10 +58,11 @@ impl<'a> Server<'a> {
     pub(crate) async fn start(&self) -> io::Result<()> {
         let start = Instant::now();
 
+        let config = Config::get();
         let aquarius = create_app_data().await;
-        let (rl_max_requests, rl_interval) = self.config.get_rate_limiter_config();
+        let (rl_max_requests, rl_interval) = config.get_rate_limiter_config();
         let secret_key = Key::generate();
-        let http_app_content_path = self.config.http_app_content_path.clone();
+        let http_app_content_path = config.http_app_content_path.clone();
 
         let worker_count = Arc::new(Mutex::new(0));
         let prometheus = Self::get_prometeus();
@@ -104,16 +100,16 @@ impl<'a> Server<'a> {
 
         let mut http_server = HttpServer::new(factory_closure)
             // always bind to http
-            .bind(self.config.get_http_bind())?;
+            .bind(config.get_http_bind())?;
 
         // also bind to https if config is available
         if let Some(rustls_cfg) = Self::get_rustls_config() {
-            let https_bind = self.config.get_https_bind();
+            let https_bind = config.get_https_bind();
             http_server = http_server.bind_rustls_0_22(https_bind, rustls_cfg)?;
         }
 
         // configure number of workers if env. variable is set
-        if let Some(workers) = self.config.http_workers {
+        if let Some(workers) = config.http_workers {
             http_server = http_server.workers(workers);
         }
 

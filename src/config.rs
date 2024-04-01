@@ -174,7 +174,7 @@ impl Config {
             .parse()
             .unwrap();
         let db_pool_max_size: u32 = env::var("DB_POOL_MAX_SIZE")
-            .unwrap_or_else(|_| "60".to_string())
+            .unwrap_or_else(|_| "100".to_string())
             .parse()
             .unwrap();
         let db_pool_min_idle: u32 = env::var("DB_POOL_MIN_IDLE")

@@ -55,7 +55,8 @@ export default class Monitoring extends BaseController {
     // transform monitoring data into human readable format
     const dbConnections = [];
     if (monitoring?.db?.connections) {
-      dbConnections.push({ name: this.i18n("monitoring.dbConnections.current"), value: monitoring.db.connections.current });
+      dbConnections.push({ name: this.i18n("monitoring.dbConnections.total"), value: monitoring.db.connections.total });
+      dbConnections.push({ name: this.i18n("monitoring.dbConnections.active"), value: monitoring.db.connections.active });
       dbConnections.push({ name: this.i18n("monitoring.dbConnections.idle"), value: monitoring.db.connections.idle });
       dbConnections.push({ name: this.i18n("monitoring.dbConnections.created"), value: monitoring.db.connections.created });
     }

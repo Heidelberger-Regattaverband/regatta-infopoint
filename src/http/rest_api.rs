@@ -35,8 +35,7 @@ async fn monitoring(
     opt_user: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     if opt_user.is_some() {
-        let pool = aquarius.pool.state();
-        let monitoring = Monitoring::new(pool, aquarius.pool.created(), &registry);
+        let monitoring = Monitoring::new(aquarius.pool.state(), aquarius.pool.created(), &registry);
         Ok(Json(monitoring))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))

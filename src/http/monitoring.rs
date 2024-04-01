@@ -31,8 +31,9 @@ impl Monitoring {
         Monitoring {
             db: Db {
                 connections: Connections {
-                    current: state.connections,
+                    total: state.connections,
                     idle: state.idle_connections,
+                    active: state.connections - state.idle_connections,
                     created,
                 },
             },
@@ -199,10 +200,12 @@ pub(crate) struct Db {
 #[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct Connections {
-    /// The current connections are the number of connections that are currently in use.
-    current: u32,
-    /// The idle connections are the number of connections that are currently not in use.
+    /// The total number of connections.
+    total: u32,
+    /// The number of connections that are currently not in use.
     idle: u32,
-    /// The created connections are the number of connections that have been created.
+    /// The number of connections that are currently activly being used.
+    active: u32,
+    /// The number of connections that have been created.
     created: u32,
 }
