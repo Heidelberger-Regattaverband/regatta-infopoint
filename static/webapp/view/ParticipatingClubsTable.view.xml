@@ -44,7 +44,7 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation">
+            <ColumnListItem type="Navigation" vAlign="Top">
               <cells>
                 <Text text="{clubs>city}" />
                 <HBox>
