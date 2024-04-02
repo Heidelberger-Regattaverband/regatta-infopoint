@@ -1,7 +1,7 @@
 use crate::{
     config::Config,
     db::aquarius::Aquarius,
-    http::{api_doc, rest_api},
+    http::{api_doc, rest_api, ws},
 };
 use actix_extensible_rate_limit::{
     backend::{memory::InMemoryBackend, SimpleInput, SimpleInputFunctionBuilder, SimpleOutput},
@@ -80,6 +80,7 @@ impl Server {
                 .app_data(Data::new(prometheus.registry.clone()))
                 .configure(rest_api::config)
                 .configure(api_doc::config)
+                .configure(ws::config)
                 .service(
                     Files::new(INFOPORTAL, http_app_content_path.clone())
                         .index_file("index.html")

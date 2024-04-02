@@ -8,7 +8,9 @@ version = "0.13.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fb72882332b6d6282f428b77ba0358cb2687e61a6f6df6a6d3871e8a177c2d4f"
 dependencies = [
+ "actix-macros",
  "actix-rt",
+ "actix_derive",
  "bitflags 2.5.0",
  "bytes",
  "crossbeam-channel",
@@ -324,6 +326,17 @@ dependencies = [
  "prometheus",
  "regex",
  "strfmt",
+]
+
+[[package]]
+name = "actix_derive"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7c7db3d5a9718568e4cf4a537cfd7070e6e6ff7481510d0237fb529ac850f6d3"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.57",
 ]
 
 [[package]]
@@ -1488,6 +1501,7 @@ dependencies = [
 name = "infoportal"
 version = "0.1.0"
 dependencies = [
+ "actix",
  "actix-extensible-rate-limit",
  "actix-files",
  "actix-identity",
