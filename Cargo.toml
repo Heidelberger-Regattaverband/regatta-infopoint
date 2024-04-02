@@ -21,6 +21,7 @@ tokio-util = { version = "0", features = ["compat"] }
 
 # Actix + Middlewares
 actix-web = { version = "4", features = ["rustls-0_22"] }
+actix-web-actors = { version = "4" }
 actix-session = { version = "0", features = ["cookie-session"] }
 actix-identity = "0"
 actix-files = "0"
