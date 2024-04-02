@@ -14,6 +14,7 @@ export default class Monitoring extends BaseController {
   private dbConnectionsList?: List;
   private cpusList?: List;
   private memList?: List;
+  private socket?: WebSocket;
 
   private units = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
 
@@ -30,6 +31,8 @@ export default class Monitoring extends BaseController {
     this.dbConnectionsList = this.getView()?.byId("dbConnectionsList") as List;
     this.memList = this.getView()?.byId("memList") as List;
     this.cpusList = this.getView()?.byId("cpusList") as List;
+
+    this.connect();
   }
 
   onNavBack(): void {
@@ -96,4 +99,38 @@ export default class Monitoring extends BaseController {
     }
     return (n.toFixed(n < 10 && l > 0 ? 1 : 0) + ' ' + this.units[l]);
   }
+
+  private connect() {
+    this.disconnect();
+
+    const { location } = window;
+
+    const proto = location.protocol.startsWith('https') ? 'wss' : 'ws';
+    const wsUri = `${proto}://${location.host}/ws`;
+
+    console.log('Connecting...');
+    this.socket = new WebSocket(wsUri);
+
+    this.socket.onopen = (ev: Event) => {
+      console.log('Connected');
+    }
+
+    this.socket.onmessage = (ev: MessageEvent) => {
+      console.log('Received: ' + ev.data, 'message');
+    }
+
+    this.socket.onclose = () => {
+      console.log('Disconnected');
+      this.socket = undefined;
+    }
+  }
+
+  private disconnect() {
+    if (this.socket) {
+      console.log('Disconnecting...');
+      this.socket.close();
+      this.socket = undefined;
+    }
+  }
+
 }
