@@ -29,13 +29,13 @@ impl StreamHandler<Result<Message, ProtocolError>> for MonitoringWs {
 
 #[get("/ws")]
 async fn index(req: HttpRequest, stream: Payload, opt_user: Option<Identity>) -> Result<HttpResponse, Error> {
-    if opt_user.is_some() {
-        let resp = start(MonitoringWs {}, &req, stream);
-        println!("{:?}", resp);
-        resp
-    } else {
-        Err(ErrorUnauthorized("Unauthorized"))
-    }
+    // if opt_user.is_some() {
+    let resp = start(MonitoringWs {}, &req, stream);
+    println!("{:?}", resp);
+    resp
+    // } else {
+    //     Err(ErrorUnauthorized("Unauthorized"))
+    // }
 }
 
 /// Configure the websocket service
