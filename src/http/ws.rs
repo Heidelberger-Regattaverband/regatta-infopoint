@@ -49,7 +49,8 @@ impl WsMonitoring {
                 return;
             }
 
-            ctx.text("Hello World!");
+            let json = serde_json::to_string(&act.monitoring).unwrap();
+            ctx.text(json);
             ctx.ping(b"");
         });
     }
