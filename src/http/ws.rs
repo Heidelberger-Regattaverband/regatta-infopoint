@@ -1,7 +1,5 @@
 use actix::{Actor, ActorContext, AsyncContext, StreamHandler};
-use actix_identity::Identity;
 use actix_web::{
-    error::ErrorUnauthorized,
     get,
     web::{Payload, ServiceConfig},
     Error, HttpRequest, HttpResponse,
@@ -44,6 +42,7 @@ impl WsMonitoring {
                 return;
             }
 
+            ctx.text("Hello World!");
             ctx.ping(b"");
         });
     }
@@ -90,21 +89,15 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsMonitoring {
 }
 
 #[get("/ws")]
-async fn index(request: HttpRequest, stream: Payload, opt_user: Option<Identity>) -> Result<HttpResponse, Error> {
-    // if opt_user.is_some() {
+async fn index(request: HttpRequest, stream: Payload) -> Result<HttpResponse, Error> {
     let response = start(WsMonitoring::new(), &request, stream);
-
     if response.is_ok() {
         debug!("Websocket connection established");
     } else {
         debug!("Websocket connection failed");
     }
-
-    println!("{:?}", response);
+    debug!("{:?}", response);
     response
-    // } else {
-    //     Err(ErrorUnauthorized("Unauthorized"))
-    // }
 }
 
 /// Configure the websocket service
