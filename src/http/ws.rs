@@ -1,11 +1,13 @@
+use crate::{db::aquarius::Aquarius, http::monitoring::Monitoring};
 use actix::{Actor, ActorContext, AsyncContext, StreamHandler};
 use actix_web::{
     get,
-    web::{Payload, ServiceConfig},
+    web::{Data, Payload, ServiceConfig},
     Error, HttpRequest, HttpResponse,
 };
 use actix_web_actors::ws::{start, Message, ProtocolError, WebsocketContext};
 use log::{debug, warn};
+use prometheus::Registry;
 use std::time::{Duration, Instant};
 
 /// How often heartbeat pings are sent
@@ -19,11 +21,16 @@ struct WsMonitoring {
     /// Client must send ping at least once per 10 seconds (CLIENT_TIMEOUT),
     /// otherwise we drop connection.
     hb: Instant,
+
+    monitoring: Monitoring,
 }
 
 impl WsMonitoring {
-    fn new() -> Self {
-        Self { hb: Instant::now() }
+    fn new(monitoring: Monitoring) -> Self {
+        Self {
+            hb: Instant::now(),
+            monitoring,
+        }
     }
 
     /// helper method that sends ping to client every 5 seconds (HEARTBEAT_INTERVAL).
@@ -89,8 +96,14 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsMonitoring {
 }
 
 #[get("/ws")]
-async fn index(request: HttpRequest, stream: Payload) -> Result<HttpResponse, Error> {
-    let response = start(WsMonitoring::new(), &request, stream);
+async fn index(
+    request: HttpRequest,
+    stream: Payload,
+    aquarius: Data<Aquarius>,
+    registry: Data<Registry>,
+) -> Result<HttpResponse, Error> {
+    let monitoring = Monitoring::new(aquarius.pool.state(), aquarius.pool.created(), &registry);
+    let response = start(WsMonitoring::new(monitoring), &request, stream);
     if response.is_ok() {
         debug!("Websocket connection established");
     } else {
