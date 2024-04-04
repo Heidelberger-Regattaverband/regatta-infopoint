@@ -1,6 +1,6 @@
 use actix::{Actor, StreamHandler};
 use actix_identity::Identity;
-use actix_web::{error::ErrorUnauthorized, web, Error, HttpRequest, HttpResponse};
+use actix_web::{error::ErrorUnauthorized, get, web, Error, HttpRequest, HttpResponse};
 use actix_web_actors::ws;
 
 /// Define HTTP actor
@@ -22,6 +22,7 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for MyWs {
     }
 }
 
+#[get("/ws")]
 async fn index(req: HttpRequest, stream: web::Payload, opt_user: Option<Identity>) -> Result<HttpResponse, Error> {
     if opt_user.is_some() {
         let resp = ws::start(MyWs {}, &req, stream);
@@ -34,5 +35,5 @@ async fn index(req: HttpRequest, stream: web::Payload, opt_user: Option<Identity
 
 /// Configure the websocket service
 pub(crate) fn config(cfg: &mut web::ServiceConfig) {
-    cfg.service(web::resource("/ws").route(web::get().to(index)));
+    cfg.service(index);
 }
