@@ -1,6 +1,11 @@
 use actix::{Actor, StreamHandler};
 use actix_identity::Identity;
-use actix_web::{error::ErrorUnauthorized, get, web, Error, HttpRequest, HttpResponse};
+use actix_web::{
+    error::ErrorUnauthorized,
+    get,
+    web::{Payload, ServiceConfig},
+    Error, HttpRequest, HttpResponse,
+};
 use actix_web_actors::ws::{start, Message, ProtocolError, WebsocketContext};
 
 /// Define HTTP actor
@@ -23,7 +28,7 @@ impl StreamHandler<Result<Message, ProtocolError>> for MonitoringWs {
 }
 
 #[get("/ws")]
-async fn index(req: HttpRequest, stream: web::Payload, opt_user: Option<Identity>) -> Result<HttpResponse, Error> {
+async fn index(req: HttpRequest, stream: Payload, opt_user: Option<Identity>) -> Result<HttpResponse, Error> {
     if opt_user.is_some() {
         let resp = start(MonitoringWs {}, &req, stream);
         println!("{:?}", resp);
@@ -34,6 +39,6 @@ async fn index(req: HttpRequest, stream: web::Payload, opt_user: Option<Identity
 }
 
 /// Configure the websocket service
-pub(crate) fn config(cfg: &mut web::ServiceConfig) {
+pub(crate) fn config(cfg: &mut ServiceConfig) {
     cfg.service(index);
 }
