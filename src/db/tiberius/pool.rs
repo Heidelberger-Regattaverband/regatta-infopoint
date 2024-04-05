@@ -74,15 +74,13 @@ impl TiberiusPool {
         let manager = TiberiusConnectionManager::new();
         let count = manager.count.clone();
 
-        TiberiusPool {
-            inner: Pool::builder()
-                .max_size(Config::get().db_pool_max_size)
-                .min_idle(Some(Config::get().db_pool_min_idle))
-                .build(manager)
-                .await
-                .unwrap(),
-            count,
-        }
+        let inner = Pool::builder()
+            .max_size(Config::get().db_pool_max_size)
+            .min_idle(Some(Config::get().db_pool_min_idle))
+            .build(manager)
+            .await
+            .unwrap();
+        TiberiusPool { inner, count }
     }
 
     /// Returns a connection from the pool. The connection is automatically returned to the pool when it goes out of scope.
