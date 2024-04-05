@@ -9,8 +9,8 @@ import List from "sap/m/List";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class Monitoring extends BaseController {
-  private dataLoader: JSONModel;
-  private monitoringModel: JSONModel;
+  private dataLoader: JSONModel = new JSONModel();
+  private monitoringModel: JSONModel = new JSONModel();
   private dbConnectionsList?: List;
   private cpusList?: List;
   private memList?: List;
@@ -21,12 +21,9 @@ export default class Monitoring extends BaseController {
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
 
-    super.getRouter()?.getRoute("monitoring")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadStatistics(), this);
+    super.getRouter()?.getRoute("monitoring")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadMonitoring(), this);
 
-    this.monitoringModel = new JSONModel();
     super.setViewModel(this.monitoringModel, "monitoring");
-
-    this.dataLoader = new JSONModel();
 
     this.dbConnectionsList = this.getView()?.byId("dbConnectionsList") as List;
     this.memList = this.getView()?.byId("memList") as List;
@@ -40,10 +37,10 @@ export default class Monitoring extends BaseController {
   }
 
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
-    await this.loadStatistics();
+    await this.loadMonitoring();
   }
 
-  private async loadStatistics(): Promise<void> {
+  private async loadMonitoring(): Promise<void> {
     this.setBusy(true);
     let monitoring: any;
 

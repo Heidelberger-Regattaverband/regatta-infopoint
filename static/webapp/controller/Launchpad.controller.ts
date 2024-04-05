@@ -13,14 +13,12 @@ import { Input$SubmitEvent } from "sap/m/Input";
  */
 export default class Launchpad extends BaseController {
 
-  private credentialsModel: JSONModel;
+  private credentialsModel: JSONModel = new JSONModel({ username: "", password: "" });
   private popover?: ResponsivePopover;
   private popoverPromise?: Promise<ResponsivePopover>;
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
-
-    this.credentialsModel = new JSONModel({ username: "", password: "" });
     super.setViewModel(this.credentialsModel, "credentials");
     this.getIdentity();
   }

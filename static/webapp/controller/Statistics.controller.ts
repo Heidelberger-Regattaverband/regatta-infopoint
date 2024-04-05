@@ -10,8 +10,8 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class Statistics extends BaseController {
-  private dataLoader: JSONModel;
-  private statisticsModel: JSONModel;
+  private dataLoader: JSONModel = new JSONModel();
+  private statisticsModel: JSONModel = new JSONModel();
   private racesList?: Control;
   private heatsList?: Control;
   private registrationsList?: Control;
@@ -22,10 +22,7 @@ export default class Statistics extends BaseController {
 
     super.getRouter()?.getRoute("statistics")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadStatistics(), this);
 
-    this.statisticsModel = new JSONModel();
     super.setViewModel(this.statisticsModel, "statistics");
-
-    this.dataLoader = new JSONModel();
 
     this.registrationsList = this.getView()?.byId("registrationsList") as Control;
     this.racesList = this.getView()?.byId("racesList") as Control;
