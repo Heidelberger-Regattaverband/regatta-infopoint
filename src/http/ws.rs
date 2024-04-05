@@ -11,14 +11,14 @@ use prometheus::Registry;
 use std::time::{Duration, Instant};
 
 /// How often heartbeat pings are sent
-const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
+const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(2);
 
 /// How long before lack of client response causes a timeout
-const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
+const CLIENT_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// Define HTTP actor
 struct WsMonitoring {
-    /// Client must send ping at least once per 10 seconds (CLIENT_TIMEOUT),
+    /// Client must send ping at least once per 5 seconds (CLIENT_TIMEOUT),
     /// otherwise we drop connection.
     hb: Instant,
 
@@ -105,11 +105,6 @@ async fn index(
 ) -> Result<HttpResponse, Error> {
     let monitoring = Monitoring::new(aquarius.pool.state(), aquarius.pool.created(), &registry);
     let response = start(WsMonitoring::new(monitoring), &request, stream);
-    if response.is_ok() {
-        debug!("Websocket connection established");
-    } else {
-        debug!("Websocket connection failed");
-    }
     debug!("{:?}", response);
     response
 }

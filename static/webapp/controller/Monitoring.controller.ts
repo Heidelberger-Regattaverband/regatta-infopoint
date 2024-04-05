@@ -56,6 +56,12 @@ export default class Monitoring extends BaseController {
     }
 
     // transform monitoring data into human readable format
+    this.updateModel(monitoring);
+
+    this.setBusy(false);
+  }
+
+  private updateModel(monitoring: any) {
     const dbConnections = [];
     if (monitoring?.db?.connections) {
       dbConnections.push({ name: this.i18n("monitoring.dbConnections.total"), value: monitoring.db.connections.total });
@@ -82,8 +88,6 @@ export default class Monitoring extends BaseController {
     this.monitoringModel.setProperty("/db", dbConnections);
     this.monitoringModel.setProperty("/mem", mem);
     this.monitoringModel.setProperty("/cpus", cpus);
-
-    this.setBusy(false);
   }
 
   private setBusy(busy: boolean): void {
@@ -92,7 +96,7 @@ export default class Monitoring extends BaseController {
     this.cpusList?.setBusy(busy);
   }
 
-  private niceBytes(n: number): String {
+  private niceBytes(n: number): string {
     let l: number = 0;
     while (n >= 1024 && ++l) {
       n = n / 1024;
@@ -117,6 +121,8 @@ export default class Monitoring extends BaseController {
 
     this.socket.onmessage = (ev: MessageEvent) => {
       console.log('Received: ' + ev.data, 'message');
+      const monitoring = JSON.parse(ev.data);
+      this.updateModel(monitoring);
     }
 
     this.socket.onclose = () => {
