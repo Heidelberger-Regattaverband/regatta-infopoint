@@ -8,9 +8,13 @@ use tiberius::{error::Error, Client, Config as TiberiusConfig};
 use tokio::net::TcpStream;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
 
+/// A connection manager for Tiberius connections.
 #[derive(Debug)]
 pub struct TiberiusConnectionManager {
+    /// The database configuration.
     config: TiberiusConfig,
+
+    /// The number of created connections.
     count: Arc<Mutex<u32>>,
 }
 
@@ -23,6 +27,7 @@ impl TiberiusConnectionManager {
         }
     }
 
+    /// Increments the connection count.
     fn inc_count(&self) {
         let mut count = self.count.lock().unwrap();
         *count += 1;
@@ -54,36 +59,42 @@ impl ManageConnection for TiberiusConnectionManager {
     }
 }
 
-pub struct TiberiusPool {
+/// A pool of Tiberius connections.
+pub(crate) struct TiberiusPool {
+    /// The inner pool.
     inner: Pool<TiberiusConnectionManager>,
+
+    /// The number of created connections.
     count: Arc<Mutex<u32>>,
 }
 
 impl TiberiusPool {
-    pub async fn new() -> Self {
+    /// Creates a new `TiberiusPool`.
+    pub(crate) async fn new() -> Self {
         let manager = TiberiusConnectionManager::new();
         let count = manager.count.clone();
 
-        TiberiusPool {
-            inner: Pool::builder()
-                .max_size(Config::get().db_pool_max_size)
-                .min_idle(Some(Config::get().db_pool_min_idle))
-                .build(manager)
-                .await
-                .unwrap(),
-            count,
-        }
+        let inner = Pool::builder()
+            .max_size(Config::get().db_pool_max_size)
+            .min_idle(Some(Config::get().db_pool_min_idle))
+            .build(manager)
+            .await
+            .unwrap();
+        TiberiusPool { inner, count }
     }
 
-    pub async fn get(&self) -> PooledConnection<'_, TiberiusConnectionManager> {
+    /// Returns a connection from the pool. The connection is automatically returned to the pool when it goes out of scope.
+    pub(crate) async fn get(&self) -> PooledConnection<'_, TiberiusConnectionManager> {
         self.inner.get().await.unwrap()
     }
 
-    pub fn state(&self) -> State {
+    /// Returns the current state of the pool.
+    pub(crate) fn state(&self) -> State {
         self.inner.state()
     }
 
-    pub fn created(&self) -> u32 {
+    /// Returns the number of created connections.
+    pub(crate) fn created(&self) -> u32 {
         *self.count.lock().unwrap()
     }
 }
