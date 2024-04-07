@@ -3,10 +3,12 @@ use async_trait::async_trait;
 use bb8::{ManageConnection, Pool, PooledConnection, State};
 use colored::Colorize;
 use log::debug;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
 use tiberius::{error::Error, Client, Config as TiberiusConfig};
 use tokio::net::TcpStream;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
+
+static POOL: OnceLock<TiberiusPool> = OnceLock::new();
 
 /// A connection manager for Tiberius connections.
 #[derive(Debug)]
@@ -59,6 +61,7 @@ impl ManageConnection for TiberiusConnectionManager {
     }
 }
 
+#[derive(Debug)]
 /// A pool of Tiberius connections.
 pub(crate) struct TiberiusPool {
     /// The inner pool.
@@ -69,8 +72,13 @@ pub(crate) struct TiberiusPool {
 }
 
 impl TiberiusPool {
+    /// Returns the current instance of the `TiberiusPool`.
+    pub(crate) fn instance() -> &'static TiberiusPool {
+        POOL.get().expect("TiberiusPool not set")
+    }
+
     /// Creates a new `TiberiusPool`.
-    pub(crate) async fn new() -> Self {
+    pub(crate) async fn init() {
         let manager = TiberiusConnectionManager::new();
         let count = manager.count.clone();
 
@@ -80,7 +88,8 @@ impl TiberiusPool {
             .build(manager)
             .await
             .unwrap();
-        TiberiusPool { inner, count }
+
+        POOL.set(TiberiusPool { inner, count }).expect("msg")
     }
 
     /// Returns a connection from the pool. The connection is automatically returned to the pool when it goes out of scope.

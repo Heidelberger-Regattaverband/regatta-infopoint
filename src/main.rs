@@ -2,11 +2,13 @@ mod config;
 mod db;
 mod http;
 
-use crate::http::server::Server;
+use db::tiberius::TiberiusPool;
+use http::server::Server;
 use std::io::Result;
 
 #[actix_web::main]
 async fn main() -> Result<()> {
+    TiberiusPool::init().await;
     Server::new().start().await
 }
 
