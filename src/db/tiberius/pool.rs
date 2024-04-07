@@ -89,8 +89,10 @@ impl TiberiusPool {
             .await
             .unwrap();
 
-        POOL.set(TiberiusPool { inner, count })
-            .expect("TiberiusPool already set")
+        if POOL.get().is_none() {
+            POOL.set(TiberiusPool { inner, count })
+                .expect("TiberiusPool already set")
+        }
     }
 
     /// Returns a connection from the pool. The connection is automatically returned to the pool when it goes out of scope.
