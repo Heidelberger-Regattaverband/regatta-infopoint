@@ -2,9 +2,9 @@
   <mvc:content>
 
     <Page title="{i18n>monitoring.title}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
-      <headerContent>
+      <!-- <headerContent>
         <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
-      </headerContent>
+      </headerContent> -->
 
       <content>
         <List id="dbConnectionsList" items="{monitoring>/db}" headerText="{i18n>monitoring.dbConnections.title}">

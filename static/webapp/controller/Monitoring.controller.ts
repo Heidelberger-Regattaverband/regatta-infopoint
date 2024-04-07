@@ -1,7 +1,5 @@
-import MessageToast from "sap/m/MessageToast";
 import BaseController from "./Base.controller";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import { Button$PressEvent } from "sap/m/Button";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import List from "sap/m/List";
 
@@ -9,7 +7,6 @@ import List from "sap/m/List";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class Monitoring extends BaseController {
-  private dataLoader: JSONModel = new JSONModel();
   private monitoringModel: JSONModel = new JSONModel();
   private dbConnectionsList?: List;
   private cpusList?: List;
@@ -28,34 +25,16 @@ export default class Monitoring extends BaseController {
     this.dbConnectionsList = this.getView()?.byId("dbConnectionsList") as List;
     this.memList = this.getView()?.byId("memList") as List;
     this.cpusList = this.getView()?.byId("cpusList") as List;
-
-    this.connect();
   }
 
   onNavBack(): void {
     super.navBack("startpage");
-  }
-
-  async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
-    await this.loadMonitoring();
+    this.disconnect();
   }
 
   private async loadMonitoring(): Promise<void> {
     this.setBusy(true);
-    let monitoring: any;
-
-    // load monitoring data from backend
-    if (await super.updateJSONModel(this.dataLoader, `/api/monitoring`)) {
-      monitoring = this.dataLoader.getData();
-      MessageToast.show(super.i18n("msg.dataUpdated"));
-    } else {
-      monitoring = {};
-    }
-
-    // transform monitoring data into human readable format
-    this.updateModel(monitoring);
-
-    this.setBusy(false);
+    this.connect();
   }
 
   private updateModel(monitoring: any) {
@@ -104,22 +83,21 @@ export default class Monitoring extends BaseController {
   private connect() {
     this.disconnect();
 
-    const { location } = window;
-
+    const location: Location = window.location;
     const proto = location.protocol.startsWith('https') ? 'wss' : 'ws';
-    const wsUri = `${proto}://${location.host}/ws`;
 
     console.log('Connecting...');
-    this.socket = new WebSocket(wsUri);
+    this.socket = new WebSocket(`${proto}://${location.host}/ws`);
 
-    this.socket.onopen = (ev: Event) => {
+    this.socket.onopen = (event: Event) => {
       console.log('Connected');
     }
 
-    this.socket.onmessage = (ev: MessageEvent) => {
-      console.log('Received: ' + ev.data, 'message');
-      const monitoring = JSON.parse(ev.data);
+    this.socket.onmessage = (event: MessageEvent) => {
+      // console.log('Received: ' + ev.data, 'message');
+      const monitoring = JSON.parse(event.data);
       this.updateModel(monitoring);
+      this.setBusy(false);
     }
 
     this.socket.onclose = () => {

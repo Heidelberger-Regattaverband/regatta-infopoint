@@ -32,8 +32,7 @@ pub(crate) const PATH: &str = "/api";
 #[get("/monitoring")]
 async fn monitoring(registry: Data<Registry>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     if opt_user.is_some() {
-        let pool = TiberiusPool::instance();
-        let monitoring = Monitoring::new(pool.state(), pool.created(), &registry);
+        let monitoring = Monitoring::new(TiberiusPool::instance(), &registry);
         Ok(Json(monitoring))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))

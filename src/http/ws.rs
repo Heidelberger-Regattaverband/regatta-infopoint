@@ -44,12 +44,15 @@ impl WsMonitoring {
                 return;
             }
 
-            let pool = TiberiusPool::instance();
-            let monitoring = Monitoring::new(pool.state(), pool.created(), &Registry::default());
-            let json = serde_json::to_string(&monitoring).unwrap();
-            ctx.text(json);
+            Self::send_monitoring(ctx);
             ctx.ping(b"");
         });
+    }
+
+    fn send_monitoring(ctx: &mut WebsocketContext<WsMonitoring>) {
+        let monitoring = Monitoring::new(TiberiusPool::instance(), &Registry::default());
+        let json = serde_json::to_string(&monitoring).unwrap();
+        ctx.text(json);
     }
 }
 
@@ -59,6 +62,7 @@ impl Actor for WsMonitoring {
     /// Method is called on actor start. We start the heartbeat process here.
     fn started(&mut self, ctx: &mut Self::Context) {
         debug!("Websocket actor started");
+        Self::send_monitoring(ctx);
         self.hb(ctx);
     }
 
