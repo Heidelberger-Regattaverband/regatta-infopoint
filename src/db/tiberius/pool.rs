@@ -77,7 +77,7 @@ impl TiberiusPool {
         POOL.get().expect("TiberiusPool not set")
     }
 
-    /// Creates a new `TiberiusPool`.
+    /// Initializes the `TiberiusPool`.
     pub(crate) async fn init() {
         let manager = TiberiusConnectionManager::new();
         let count = manager.count.clone();
@@ -89,7 +89,8 @@ impl TiberiusPool {
             .await
             .unwrap();
 
-        POOL.set(TiberiusPool { inner, count }).expect("msg")
+        POOL.set(TiberiusPool { inner, count })
+            .expect("TiberiusPool already set")
     }
 
     /// Returns a connection from the pool. The connection is automatically returned to the pool when it goes out of scope.
