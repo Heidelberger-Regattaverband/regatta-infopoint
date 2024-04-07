@@ -1,16 +1,12 @@
 import BaseController from "./Base.controller";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
-import List from "sap/m/List";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class Monitoring extends BaseController {
   private monitoringModel: JSONModel = new JSONModel();
-  private dbConnectionsList?: List;
-  private cpusList?: List;
-  private memList?: List;
   private socket?: WebSocket;
 
   private units = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
@@ -18,13 +14,9 @@ export default class Monitoring extends BaseController {
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
 
-    super.getRouter()?.getRoute("monitoring")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadMonitoring(), this);
+    super.getRouter()?.getRoute("monitoring")?.attachMatched((_: Route$MatchedEvent) => this.loadMonitoring(), this);
 
     super.setViewModel(this.monitoringModel, "monitoring");
-
-    this.dbConnectionsList = this.getView()?.byId("dbConnectionsList") as List;
-    this.memList = this.getView()?.byId("memList") as List;
-    this.cpusList = this.getView()?.byId("cpusList") as List;
   }
 
   onNavBack(): void {
@@ -32,8 +24,7 @@ export default class Monitoring extends BaseController {
     this.disconnect();
   }
 
-  private async loadMonitoring(): Promise<void> {
-    this.setBusy(true);
+  private loadMonitoring(): void {
     this.connect();
   }
 
@@ -66,12 +57,6 @@ export default class Monitoring extends BaseController {
     this.monitoringModel.setProperty("/cpus", cpus);
   }
 
-  private setBusy(busy: boolean): void {
-    this.dbConnectionsList?.setBusy(busy);
-    this.memList?.setBusy(busy);
-    this.cpusList?.setBusy(busy);
-  }
-
   private niceBytes(n: number): string {
     let l: number = 0;
     while (n >= 1024 && ++l) {
@@ -87,7 +72,7 @@ export default class Monitoring extends BaseController {
     const proto = location.protocol.startsWith('https') ? 'wss' : 'ws';
 
     console.log('Connecting...');
-    this.socket = new WebSocket(`${proto}://${location.host}/ws`);
+    this.socket = new WebSocket(`${proto}://${location.host}/ws/monitoring`);
 
     this.socket.onopen = (event: Event) => {
       console.log('Connected');
@@ -97,7 +82,6 @@ export default class Monitoring extends BaseController {
       // console.log('Received: ' + ev.data, 'message');
       const monitoring = JSON.parse(event.data);
       this.updateModel(monitoring);
-      this.setBusy(false);
     }
 
     this.socket.onclose = () => {

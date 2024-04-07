@@ -97,7 +97,7 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsMonitoring {
     }
 }
 
-#[get("/ws")]
+#[get("/ws/monitoring")]
 async fn index(request: HttpRequest, stream: Payload) -> Result<HttpResponse, Error> {
     let response = start(WsMonitoring::new(), &request, stream);
     debug!("{:?}", response);
