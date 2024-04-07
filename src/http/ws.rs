@@ -1,8 +1,8 @@
-use crate::{db::aquarius::Aquarius, http::monitoring::Monitoring};
+use crate::{db::tiberius::TiberiusPool, http::monitoring::Monitoring};
 use actix::{Actor, ActorContext, AsyncContext, StreamHandler};
 use actix_web::{
     get,
-    web::{Data, Payload, ServiceConfig},
+    web::{Payload, ServiceConfig},
     Error, HttpRequest, HttpResponse,
 };
 use actix_web_actors::ws::{start, Message, ProtocolError, WebsocketContext};
@@ -21,16 +21,11 @@ struct WsMonitoring {
     /// Client must send ping at least once per 5 seconds (CLIENT_TIMEOUT),
     /// otherwise we drop connection.
     hb: Instant,
-
-    monitoring: Monitoring,
 }
 
 impl WsMonitoring {
-    fn new(monitoring: Monitoring) -> Self {
-        Self {
-            hb: Instant::now(),
-            monitoring,
-        }
+    fn new() -> Self {
+        Self { hb: Instant::now() }
     }
 
     /// helper method that sends ping to client every 5 seconds (HEARTBEAT_INTERVAL).
@@ -49,7 +44,9 @@ impl WsMonitoring {
                 return;
             }
 
-            let json = serde_json::to_string(&act.monitoring).unwrap();
+            let pool = TiberiusPool::instance();
+            let monitoring = Monitoring::new(pool.state(), pool.created(), &Registry::default());
+            let json = serde_json::to_string(&monitoring).unwrap();
             ctx.text(json);
             ctx.ping(b"");
         });
@@ -97,14 +94,8 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsMonitoring {
 }
 
 #[get("/ws")]
-async fn index(
-    request: HttpRequest,
-    stream: Payload,
-    aquarius: Data<Aquarius>,
-    registry: Data<Registry>,
-) -> Result<HttpResponse, Error> {
-    let monitoring = Monitoring::new(aquarius.pool.state(), aquarius.pool.created(), &registry);
-    let response = start(WsMonitoring::new(monitoring), &request, stream);
+async fn index(request: HttpRequest, stream: Payload) -> Result<HttpResponse, Error> {
+    let response = start(WsMonitoring::new(), &request, stream);
     debug!("{:?}", response);
     response
 }
