@@ -2,6 +2,7 @@ use crate::{
     db::{
         aquarius::Aquarius,
         model::{Club, Filters, Heat, Race, Regatta},
+        tiberius::TiberiusPool,
     },
     http::{
         auth::{Credentials, Scope, User},
@@ -29,13 +30,10 @@ pub(crate) const PATH: &str = "/api";
     )
 )]
 #[get("/monitoring")]
-async fn monitoring(
-    aquarius: Data<Aquarius>,
-    registry: Data<Registry>,
-    opt_user: Option<Identity>,
-) -> Result<impl Responder, Error> {
+async fn monitoring(registry: Data<Registry>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     if opt_user.is_some() {
-        let monitoring = Monitoring::new(aquarius.pool.state(), aquarius.pool.created(), &registry);
+        let pool = TiberiusPool::instance();
+        let monitoring = Monitoring::new(pool.state(), pool.created(), &registry);
         Ok(Json(monitoring))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
