@@ -14,18 +14,19 @@ use std::time::{Duration, Instant};
 pub type AquariusClient<'a> = PooledConnection<'a, TiberiusConnectionManager>;
 
 pub struct Aquarius {
+    /// The caches for the database queries.
     caches: Caches,
-    pub pool: TiberiusPool,
+
+    /// The identifier of the active regatta.
     active_regatta_id: i32,
 }
 
 impl Aquarius {
-    /// Create a new `Aquarius`.
+    /// Creates a new `Aquarius`.
     pub async fn new() -> Self {
-        let pool = TiberiusPool::new().await;
         let active_regatta_id: i32 = if Config::get().active_regatta_id.is_none() {
             let start: Instant = Instant::now();
-            let regatta = Regatta::query_active_regatta(&pool).await;
+            let regatta = Regatta::query_active_regatta(TiberiusPool::instance()).await;
             debug!("Query active regatta from DB: {:?}", start.elapsed());
             regatta.id
         } else {
@@ -33,7 +34,6 @@ impl Aquarius {
         };
         Aquarius {
             caches: Caches::new(Duration::from_secs(Config::get().cache_ttl)),
-            pool,
             active_regatta_id,
         }
     }
@@ -54,7 +54,7 @@ impl Aquarius {
 
     pub async fn query_regattas(&self) -> Vec<Regatta> {
         let start = Instant::now();
-        let regattas = Regatta::query_all(&self.pool).await;
+        let regattas = Regatta::query_all(TiberiusPool::instance()).await;
         debug!("Query all regattas from DB: {:?}", start.elapsed());
         regattas
     }
@@ -145,7 +145,7 @@ impl Aquarius {
 
     pub async fn calculate_scoring(&self, regatta_id: i32) -> Vec<Score> {
         let start = Instant::now();
-        let scores = Score::calculate(regatta_id, &self.pool).await;
+        let scores = Score::calculate(regatta_id, TiberiusPool::instance()).await;
         debug!(
             "Calculate scoring of regatta {} from DB: {:?}",
             regatta_id,
@@ -156,7 +156,7 @@ impl Aquarius {
 
     pub async fn query_statistics(&self, regatta_id: i32) -> Statistics {
         let start = Instant::now();
-        let stats = Statistics::query(regatta_id, &self.pool).await;
+        let stats = Statistics::query(regatta_id, TiberiusPool::instance()).await;
         debug!(
             "Query statistics of regatta {} from DB: {:?}",
             regatta_id,
@@ -168,8 +168,8 @@ impl Aquarius {
     pub async fn query_kiosk(&self, regatta_id: i32) -> Kiosk {
         let start = Instant::now();
 
-        let finished = Kiosk::query_finished(regatta_id, &mut self.pool.get().await).await;
-        let next = Kiosk::query_next(regatta_id, &mut self.pool.get().await).await;
+        let finished = Kiosk::query_finished(regatta_id, &mut TiberiusPool::instance().get().await).await;
+        let next = Kiosk::query_next(regatta_id, &mut TiberiusPool::instance().get().await).await;
 
         let kiosk = Kiosk {
             finished,
@@ -182,7 +182,7 @@ impl Aquarius {
 
     async fn _query_filters(&self, regatta_id: i32) -> Filters {
         let start = Instant::now();
-        let filters = Filters::query(regatta_id, &self.pool).await;
+        let filters = Filters::query(regatta_id, TiberiusPool::instance()).await;
         self.caches.filters.set(&regatta_id, &filters).await;
         debug!("Query filters from DB: {:?}", start.elapsed());
         filters
@@ -190,7 +190,7 @@ impl Aquarius {
 
     async fn _query_regatta(&self, regatta_id: i32) -> Regatta {
         let start = Instant::now();
-        let regatta = Regatta::query(regatta_id, &self.pool).await;
+        let regatta = Regatta::query(regatta_id, TiberiusPool::instance()).await;
         self.caches.regatta.set(&regatta.id, &regatta).await;
         debug!("Query regatta {} from DB: {:?}", regatta_id, start.elapsed());
         regatta
@@ -199,9 +199,9 @@ impl Aquarius {
     async fn _query_race(&self, race_id: i32) -> Race {
         let start = Instant::now();
         // query the race details
-        let mut race: Race = Race::query_single(race_id, &self.pool).await;
+        let mut race: Race = Race::query_single(race_id, TiberiusPool::instance()).await;
         // then query the registrations
-        race.registrations = Some(Registration::query_for_race(race_id, &self.pool).await);
+        race.registrations = Some(Registration::query_for_race(race_id, TiberiusPool::instance()).await);
         self.caches.race.set(&race.id, &race).await;
         debug!("Query race {} from DB: {:?}", race_id, start.elapsed());
         race
@@ -209,7 +209,7 @@ impl Aquarius {
 
     async fn _query_races(&self, regatta_id: i32) -> Vec<Race> {
         let start = Instant::now();
-        let races = Race::query_all(regatta_id, &self.pool).await;
+        let races = Race::query_all(regatta_id, TiberiusPool::instance()).await;
         self.caches.races.set(&regatta_id, &races).await;
         debug!("Query races of regatta {} from DB: {:?}", regatta_id, start.elapsed());
         races
@@ -217,7 +217,7 @@ impl Aquarius {
 
     async fn _query_heats(&self, regatta_id: i32) -> Vec<Heat> {
         let start = Instant::now();
-        let heats: Vec<Heat> = Heat::query_all(regatta_id, &self.pool).await;
+        let heats: Vec<Heat> = Heat::query_all(regatta_id, TiberiusPool::instance()).await;
         self.caches.heats.set(&regatta_id, &heats).await;
         debug!("Query heats of regatta {} from DB: {:?}", regatta_id, start.elapsed());
         heats
@@ -225,7 +225,7 @@ impl Aquarius {
 
     async fn _query_heat(&self, heat_id: i32) -> Heat {
         let start = Instant::now();
-        let heat = Heat::query_single(heat_id, &self.pool).await;
+        let heat = Heat::query_single(heat_id, TiberiusPool::instance()).await;
         self.caches.heat.set(&heat_id, &heat).await;
         debug!(
             "Query heat {} with registrations from DB: {:?}",
@@ -237,7 +237,7 @@ impl Aquarius {
 
     async fn _query_participating_clubs(&self, regatta_id: i32) -> Vec<Club> {
         let start = Instant::now();
-        let clubs = Club::query_participating(regatta_id, &self.pool).await;
+        let clubs = Club::query_participating(regatta_id, TiberiusPool::instance()).await;
         self.caches.participating_clubs.set(&regatta_id, &clubs).await;
         debug!(
             "Query participating clubs of regatta {} from DB: {:?}",
@@ -249,7 +249,7 @@ impl Aquarius {
 
     async fn _query_club_registrations(&self, regatta_id: i32, club_id: i32) -> Vec<Registration> {
         let start = Instant::now();
-        let registrations = Registration::query_of_club(regatta_id, club_id, &self.pool).await;
+        let registrations = Registration::query_of_club(regatta_id, club_id, TiberiusPool::instance()).await;
         self.caches
             .club_registrations
             .set(&(regatta_id, club_id), &registrations)
@@ -265,7 +265,7 @@ impl Aquarius {
 
     async fn _query_club(&self, club_id: i32) -> Club {
         let start = Instant::now();
-        let club = Club::query_single(club_id, &self.pool).await;
+        let club = Club::query_single(club_id, TiberiusPool::instance()).await;
         self.caches.club.set(&club.id, &club).await;
         debug!("Query club {} from DB: {:?}", club_id, start.elapsed());
         club
