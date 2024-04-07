@@ -14,9 +14,12 @@ async fn main() -> Result<()> {
 
 #[cfg(test)]
 mod tests {
-    use crate::http::{
-        rest_api::{self, PATH},
-        server::create_app_data,
+    use crate::{
+        db::tiberius::TiberiusPool,
+        http::{
+            rest_api::{self, PATH},
+            server::create_app_data,
+        },
     };
     use actix_identity::IdentityMiddleware;
     use actix_web::{
@@ -30,6 +33,7 @@ mod tests {
     #[actix_web::test]
     async fn test_get_regattas() {
         dotenv().ok();
+        TiberiusPool::init().await;
 
         let app_data = create_app_data().await;
 
@@ -50,6 +54,7 @@ mod tests {
     #[actix_web::test]
     async fn test_get_heats() {
         dotenv().ok();
+        TiberiusPool::init().await;
 
         let app_data = create_app_data().await;
 
