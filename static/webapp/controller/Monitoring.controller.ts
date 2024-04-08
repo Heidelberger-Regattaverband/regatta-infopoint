@@ -1,6 +1,8 @@
 import BaseController from "./Base.controller";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import Icon from "sap/ui/core/Icon";
+import { IconColor } from "sap/ui/core/library";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -8,24 +10,22 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 export default class Monitoring extends BaseController {
   private monitoringModel: JSONModel = new JSONModel();
   private socket?: WebSocket;
+  private statusIcon: Icon;
 
   private units = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
 
-    super.getRouter()?.getRoute("monitoring")?.attachMatched((_: Route$MatchedEvent) => this.loadMonitoring(), this);
+    super.getRouter()?.getRoute("monitoring")?.attachMatched((_: Route$MatchedEvent) => this.connect(), this);
 
     super.setViewModel(this.monitoringModel, "monitoring");
+    this.statusIcon = this.byId("statusIcon") as Icon;
   }
 
   onNavBack(): void {
     super.navBack("startpage");
     this.disconnect();
-  }
-
-  private loadMonitoring(): void {
-    this.connect();
   }
 
   private updateModel(monitoring: any) {
@@ -76,6 +76,8 @@ export default class Monitoring extends BaseController {
 
     this.socket.onopen = (event: Event) => {
       console.log('Connected');
+      this.statusIcon.setSrc('sap-icon://connected');
+      this.statusIcon.setColor(IconColor.Positive);
     }
 
     this.socket.onmessage = (event: MessageEvent) => {
@@ -85,6 +87,8 @@ export default class Monitoring extends BaseController {
     }
 
     this.socket.onclose = () => {
+      this.statusIcon.setSrc('sap-icon://disconnected');
+      this.statusIcon.setColor(IconColor.Critical);
       console.log('Disconnected');
       this.socket = undefined;
     }
