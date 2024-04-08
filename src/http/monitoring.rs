@@ -1,10 +1,9 @@
+use crate::db::tiberius::TiberiusPool;
 use prometheus::Registry;
 use serde::Serialize;
 use serde_json::{Map, Number, Value};
 use sysinfo::{CpuRefreshKind, Disks, MemoryRefreshKind, RefreshKind, System};
 use utoipa::ToSchema;
-
-use crate::db::tiberius::TiberiusPool;
 
 /// The monitoring struct contains the database state, system information and metrics.
 #[derive(Serialize, ToSchema)]
