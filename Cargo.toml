@@ -16,7 +16,7 @@ env_logger = "0"
 log = "0"
 dotenv = "0"
 chrono = { version = "0", features = ["serde"] }
-tokio = { version = "1", features = ["net"] }
+tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
 tokio-util = { version = "0", features = ["compat"] }
 
 # Actix + Middlewares
@@ -57,3 +57,6 @@ sysinfo = "0"
 
 # html
 scraper = "0"
+
+[dev-dependencies]
+tokio-shared-rt = "0"
