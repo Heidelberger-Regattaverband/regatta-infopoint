@@ -71,17 +71,16 @@ export default class Monitoring extends BaseController {
     const location: Location = window.location;
     const proto = location.protocol.startsWith('https') ? 'wss' : 'ws';
 
-    console.log('Connecting...');
+    console.debug('Connecting...');
     this.socket = new WebSocket(`${proto}://${location.host}/ws/monitoring`);
 
     this.socket.onopen = (event: Event) => {
-      console.log('Connected');
+      console.debug('Connected');
       this.statusIcon.setSrc('sap-icon://connected');
       this.statusIcon.setColor(IconColor.Positive);
     }
 
     this.socket.onmessage = (event: MessageEvent) => {
-      // console.log('Received: ' + ev.data, 'message');
       const monitoring = JSON.parse(event.data);
       this.updateModel(monitoring);
     }
@@ -89,14 +88,14 @@ export default class Monitoring extends BaseController {
     this.socket.onclose = () => {
       this.statusIcon.setSrc('sap-icon://disconnected');
       this.statusIcon.setColor(IconColor.Critical);
-      console.log('Disconnected');
+      console.debug('Disconnected');
       this.socket = undefined;
     }
   }
 
   private disconnect() {
     if (this.socket) {
-      console.log('Disconnecting...');
+      console.debug('Disconnecting...');
       this.socket.close();
       this.socket = undefined;
     }
