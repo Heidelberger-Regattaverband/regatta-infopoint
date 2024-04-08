@@ -1,9 +1,9 @@
-<mvc:View controllerName="de.regatta_hd.infoportal.controller.Monitoring" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.Monitoring" xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
     <Page title="{i18n>monitoring.title}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <headerContent>
-        <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
+        <core:Icon id="statusIcon" src="sap-icon://disconnected" />
       </headerContent>
 
       <content>

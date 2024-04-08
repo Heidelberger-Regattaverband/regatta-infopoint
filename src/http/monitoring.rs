@@ -1,4 +1,4 @@
-use bb8::State;
+use crate::db::tiberius::TiberiusPool;
 use prometheus::Registry;
 use serde::Serialize;
 use serde_json::{Map, Number, Value};
@@ -19,15 +19,15 @@ pub(crate) struct Monitoring {
 impl Monitoring {
     /// Creates a new monitoring struct.
     /// # Arguments
-    /// * `state` - The state of the database.
-    /// * `created` - The number of created connections.
+    /// * `pool` - The tiberius pool.
     /// * `registry` - The prometheus registry.
     /// # Returns
     /// `Monitoring` - The monitoring struct.
-    pub(crate) fn new(state: State, created: u32, registry: &Registry) -> Self {
+    pub(crate) fn new(pool: &TiberiusPool, registry: &Registry) -> Self {
         let sys = get_system();
         let metrics = get_metrics(registry);
-
+        let state = pool.state();
+        let created = pool.created();
         Monitoring {
             db: Db {
                 connections: Connections {

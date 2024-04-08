@@ -6,7 +6,7 @@ use db::tiberius::TiberiusPool;
 use http::server::Server;
 use std::io::Result;
 
-#[actix_web::main]
+#[tokio::main]
 async fn main() -> Result<()> {
     TiberiusPool::init().await;
     Server::new().start().await
@@ -30,7 +30,7 @@ mod tests {
     };
     use dotenv::dotenv;
 
-    #[actix_web::test]
+    #[tokio_shared_rt::test(shared)]
     async fn test_get_regattas() {
         dotenv().ok();
         TiberiusPool::init().await;
@@ -51,7 +51,7 @@ mod tests {
         assert!(response.status().is_success());
     }
 
-    #[actix_web::test]
+    #[tokio_shared_rt::test(shared)]
     async fn test_get_heats() {
         dotenv().ok();
         TiberiusPool::init().await;
