@@ -3,7 +3,8 @@
 
     <Page title="{i18n>monitoring.title}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <headerContent>
-        <core:Icon id="statusIcon" src="sap-icon://disconnected" />
+        <Button id="statusButton" activeIcon="sap-icon://disconnected" icon="sap-icon://disconnected" enabled="true" type="Transparent"
+          press="onStatusButtonPress" />
       </headerContent>
 
       <content>
