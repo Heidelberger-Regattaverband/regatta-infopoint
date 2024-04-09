@@ -18,6 +18,8 @@ use actix_web::{
 };
 use prometheus::Registry;
 
+use super::ws;
+
 /// Path to REST API
 pub(crate) const PATH: &str = "/api";
 
@@ -29,7 +31,7 @@ pub(crate) const PATH: &str = "/api";
         (status = 401, description = "Unauthorized")
     )
 )]
-#[get("/monitoring")]
+#[get("/monitoring2")]
 async fn monitoring(registry: Data<Registry>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     if opt_user.is_some() {
         let monitoring = Monitoring::new(TiberiusPool::instance(), &registry);
@@ -229,6 +231,7 @@ pub(crate) fn config(cfg: &mut web::ServiceConfig) {
             .service(login)
             .service(identity)
             .service(logout)
-            .service(monitoring),
+            .service(monitoring)
+            .service(ws::index),
     );
 }
