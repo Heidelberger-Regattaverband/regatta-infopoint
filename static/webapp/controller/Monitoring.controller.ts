@@ -1,8 +1,7 @@
 import BaseController from "./Base.controller";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
-import Icon from "sap/ui/core/Icon";
-import { IconColor } from "sap/ui/core/library";
+import Button from "sap/m/Button";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -10,22 +9,25 @@ import { IconColor } from "sap/ui/core/library";
 export default class Monitoring extends BaseController {
   private monitoringModel: JSONModel = new JSONModel();
   private socket?: WebSocket;
-  private statusIcon: Icon;
+  private statusButton: Button;
 
   private units = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
-
     super.getRouter()?.getRoute("monitoring")?.attachMatched((_: Route$MatchedEvent) => this.connect(), this);
-
     super.setViewModel(this.monitoringModel, "monitoring");
-    this.statusIcon = this.byId("statusIcon") as Icon;
+    this.statusButton = this.byId("statusButton") as Button;
   }
 
   onNavBack(): void {
     super.navBack("startpage");
     this.disconnect();
+    this.updateModel({});
+  }
+
+  onStatusButtonPress(): void {
+    this.connect();
   }
 
   private updateModel(monitoring: any) {
@@ -47,7 +49,7 @@ export default class Monitoring extends BaseController {
 
     const cpus: any[] = [];
     if (monitoring?.sys?.cpus) {
-      monitoring.sys.cpus.forEach((cpu: any, index: number) => {
+      monitoring.sys.cpus.forEach((cpu: any, _index: number) => {
         cpus.push({ name: cpu.name, value: cpu.usage.toFixed(1) + " %" });
       });
     }
@@ -74,10 +76,9 @@ export default class Monitoring extends BaseController {
     console.debug('Connecting...');
     this.socket = new WebSocket(`${proto}://${location.host}/ws/monitoring`);
 
-    this.socket.onopen = (event: Event) => {
+    this.socket.onopen = (_event: Event) => {
       console.debug('Connected');
-      this.statusIcon.setSrc('sap-icon://connected');
-      this.statusIcon.setColor(IconColor.Positive);
+      this.statusButton.setIcon('sap-icon://connected');
     }
 
     this.socket.onmessage = (event: MessageEvent) => {
@@ -85,9 +86,8 @@ export default class Monitoring extends BaseController {
       this.updateModel(monitoring);
     }
 
-    this.socket.onclose = () => {
-      this.statusIcon.setSrc('sap-icon://disconnected');
-      this.statusIcon.setColor(IconColor.Critical);
+    this.socket.onclose = (_event: CloseEvent) => {
+      this.statusButton.setIcon('sap-icon://disconnected');
       console.debug('Disconnected');
       this.socket = undefined;
     }
@@ -100,5 +100,4 @@ export default class Monitoring extends BaseController {
       this.socket = undefined;
     }
   }
-
 }
