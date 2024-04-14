@@ -74,7 +74,7 @@ export default class Monitoring extends BaseController {
     const proto = location.protocol.startsWith('https') ? 'wss' : 'ws';
 
     console.debug('Connecting...');
-    this.socket = new WebSocket(`${proto}://${location.host}/ws/monitoring`);
+    this.socket = new WebSocket(`${proto}://${location.host}/api/monitoring`);
 
     this.socket.onopen = (_event: Event) => {
       console.debug('Connected');

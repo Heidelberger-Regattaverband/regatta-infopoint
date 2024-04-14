@@ -1,10 +1,7 @@
 use crate::{db::tiberius::TiberiusPool, http::monitoring::Monitoring};
 use actix::{Actor, ActorContext, AsyncContext, StreamHandler};
-use actix_web::{
-    get,
-    web::{Payload, ServiceConfig},
-    Error, HttpRequest, HttpResponse,
-};
+use actix_identity::Identity;
+use actix_web::{error::ErrorUnauthorized, get, web::Payload, Error, HttpRequest, HttpResponse};
 use actix_web_actors::ws::{start, Message, ProtocolError, WebsocketContext};
 use log::{debug, warn};
 use prometheus::Registry;
@@ -97,14 +94,13 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsMonitoring {
     }
 }
 
-#[get("/ws/monitoring")]
-async fn index(request: HttpRequest, stream: Payload) -> Result<HttpResponse, Error> {
-    let response = start(WsMonitoring::new(), &request, stream);
-    debug!("{:?}", response);
-    response
-}
-
-/// Configure the websocket service
-pub(crate) fn config(cfg: &mut ServiceConfig) {
-    cfg.service(index);
+#[get("/monitoring")]
+async fn index(request: HttpRequest, stream: Payload, opt_user: Option<Identity>) -> Result<HttpResponse, Error> {
+    if opt_user.is_some() {
+        let response = start(WsMonitoring::new(), &request, stream);
+        debug!("{:?}", response);
+        response
+    } else {
+        Err(ErrorUnauthorized("Unauthorized"))
+    }
 }
