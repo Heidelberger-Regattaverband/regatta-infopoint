@@ -46,7 +46,7 @@
             <ColumnListItem vAlign="Top">
               <cells>
                 <Text text="{scoring>rank}" />
-                <Text text="{path: 'scoring>points', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 3} }" />
+                <Text text="{path: 'scoring>points', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 2} }" />
                 <HBox>
                   <Image src="{scoring>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
                   <Text text="{scoring>club/longName}" />
