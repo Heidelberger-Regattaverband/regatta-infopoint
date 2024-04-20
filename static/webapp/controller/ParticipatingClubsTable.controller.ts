@@ -6,7 +6,7 @@ import ListBinding from "sap/ui/model/ListBinding";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import Context from "sap/ui/model/Context";
 import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
-import { ListBase$SelectEvent } from "sap/m/ListBase";
+import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import MessageToast from "sap/m/MessageToast";
@@ -58,7 +58,7 @@ export default class ParticipatingClubsTable extends BaseTableController {
     source.setEnabled(true);
   }
 
-  onItemPress(event: ListBase$SelectEvent): void {
+  onItemPress(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameters().listItem;
     if (selectedItem) {
       const bindingCtx: Context | undefined | null = selectedItem.getBindingContext("clubs");

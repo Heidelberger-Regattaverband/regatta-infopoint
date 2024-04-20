@@ -4,7 +4,6 @@ import BaseTableController from "./BaseTable.controller";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ViewSettingsFilterItem from "sap/m/ViewSettingsFilterItem";
 import ViewSettingsItem from "sap/m/ViewSettingsItem";
-import { ListBase$SelectEvent } from "sap/m/ListBase";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import Filter from "sap/ui/model/Filter";
@@ -14,6 +13,7 @@ import ListItemBase from "sap/m/ListItemBase";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
 import MessageToast from "sap/m/MessageToast";
+import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -22,19 +22,14 @@ export default class RacesTable extends BaseTableController {
 
   formatter: Formatter = Formatter;
 
-  private racesModel: JSONModel;
+  private racesModel: JSONModel = new JSONModel();
 
   onInit(): void {
-    super.init(super.getView()?.byId("racesTable") as Table, "race");
+    super.init(super.getView()?.byId("racesTable") as Table, "race" /* eventBus channel */);
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
-
-    super.createJSONModel(`/api/regattas/${super.getRegattaId()}/races`, this.table).then((model: JSONModel) => {
-      this.racesModel = model;
-      super.setViewModel(this.racesModel, "races");
-
-      super.getRouter()?.getRoute("races")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadRacesModel(), this);
-    });
+    super.setViewModel(this.racesModel, "races");
+    super.getRouter()?.getRoute("races")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadRacesModel(), this);
 
     const filters: any = (super.getComponentModel("filters") as JSONModel).getData();
     super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog").then((viewSettingsDialog: ViewSettingsDialog) => {
@@ -64,7 +59,7 @@ export default class RacesTable extends BaseTableController {
     });
   }
 
-  onItemPress(event: ListBase$SelectEvent): void {
+  onItemPress(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("races");

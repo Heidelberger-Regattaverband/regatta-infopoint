@@ -2,7 +2,7 @@ import Table from "sap/m/Table";
 import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import { ListBase$SelectEvent } from "sap/m/ListBase";
+import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import Filter from "sap/ui/model/Filter";
@@ -33,7 +33,7 @@ export default class ClubParticipationsTable extends BaseController {
     super.getRouter()?.getRoute("clubParticipations")?.attachPatternMatched(async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
   }
 
-  onSelectionChange(oEvent: ListBase$SelectEvent): void {
+  onSelectionChange(oEvent: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = oEvent.getParameter("listItem");
     if (selectedItem) {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("registrations");

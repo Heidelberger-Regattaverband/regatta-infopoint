@@ -4,7 +4,7 @@ import BaseTableController from "./BaseTable.controller";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ViewSettingsFilterItem from "sap/m/ViewSettingsFilterItem";
 import ViewSettingsItem from "sap/m/ViewSettingsItem";
-import { ListBase$SelectEvent } from "sap/m/ListBase";
+import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import Filter from "sap/ui/model/Filter";
@@ -22,19 +22,14 @@ export default class HeatsTable extends BaseTableController {
 
   formatter: Formatter = Formatter;
 
-  private heatsModel: JSONModel;
+  private heatsModel: JSONModel = new JSONModel();
 
   onInit(): void {
     super.init(super.getView()?.byId("heatsTable") as Table, "heat" /* eventBus channel */);
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
-
-    super.createJSONModel(`/api/regattas/${super.getRegattaId()}/heats`, this.table).then((model: JSONModel) => {
-      this.heatsModel = model;
-      super.setViewModel(this.heatsModel, "heats");
-
-      super.getRouter()?.getRoute("heats")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadHeatsModel(), this);
-    });
+    super.setViewModel(this.heatsModel, "heats");
+    super.getRouter()?.getRoute("heats")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadHeatsModel(), this);
 
     const filters: any = (super.getComponentModel("filters") as JSONModel).getData();
     super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsFilterDialog").then((viewSettingsDialog: ViewSettingsDialog) => {
@@ -76,7 +71,7 @@ export default class HeatsTable extends BaseTableController {
     });
   }
 
-  onSelectionChange(event: ListBase$SelectEvent): void {
+  onSelectionChange(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("heats");
