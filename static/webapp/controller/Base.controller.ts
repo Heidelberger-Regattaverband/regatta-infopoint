@@ -18,10 +18,10 @@ export default class BaseController extends Controller {
 
   /**
    * Convenience method for accessing the content density class defined in the component.
-   * @returns  {string} the content density class
+   * @returns {string} the content density class
    */
   getContentDensityClass(): string {
-    return (super.getOwnerComponent() as MyComponent | undefined)?.getContentDensityClass() || "sapUiSizeCozy";
+    return (super.getOwnerComponent() as MyComponent | undefined)?.getContentDensityClass() ?? "sapUiSizeCozy";
   }
 
   /**
@@ -91,18 +91,22 @@ export default class BaseController extends Controller {
     this.getRouter()?.getTargets()?.display(target);
   }
 
+  /**
+   * Translates the given key using the resource bundle of the component.
+   * @param {string} key  The key to be translated
+   * @param {any[]}  args The arguments to be passed to the translation
+   * @returns {string} The translated text
+   */
   i18n(key: string, args?: any[]): string {
     return (super.getOwnerComponent() as MyComponent | undefined)?.getResourceBundle().getText(key, args) ?? "";
   }
 
+  /**
+   * Returns the regatta ID. If the regatta ID is not available, -1 is returned.
+   * @returns {number} the regatta ID or -1
+   */
   getRegattaId(): number {
-    return (super.getOwnerComponent() as MyComponent | undefined)?.getRegattaId() || -1;
-  }
-
-  async createJSONModel(url: string, control?: Control): Promise<JSONModel> {
-    const jsonModel: JSONModel = new JSONModel();
-    await this.updateJSONModel(jsonModel, url, control);
-    return jsonModel;
+    return (super.getOwnerComponent() as MyComponent | undefined)?.getRegattaId() ?? -1;
   }
 
   async updateJSONModel(model: JSONModel, url: string, control?: Control): Promise<boolean> {

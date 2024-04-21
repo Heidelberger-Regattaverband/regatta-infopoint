@@ -75,9 +75,8 @@ export default class ClubParticipationsTable extends BaseController {
         new Filter({
           path: "crew/",
           test: function (crews: any[]) {
-            let crew: any;
-            for (crew of crews) {
-              let found = crew.athlete.firstName.toLowerCase().includes(query.toLowerCase())
+            for (let crew of crews) {
+              const found = crew.athlete.firstName.toLowerCase().includes(query.toLowerCase())
                 || crew.athlete.lastName.toLowerCase().includes(query.toLowerCase());
               if (found) {
                 return true;

@@ -17,19 +17,14 @@ import BaseTableController from "./BaseTable.controller";
  */
 export default class ParticipatingClubsTable extends BaseTableController {
 
-  private participatingClubsModel: JSONModel;
+  private participatingClubsModel: JSONModel = new JSONModel();
 
   onInit(): void {
     super.init(super.getView()?.byId("clubsTable") as Table, "club" /* eventBus channel */);
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
-
-    super.createJSONModel(`/api/regattas/${this.getRegattaId()}/participating_clubs`, this.table).then((model: JSONModel) => {
-      this.participatingClubsModel = model;
-      super.setViewModel(this.participatingClubsModel, "clubs");
-
-      super.getRouter()?.getRoute("participatingClubs")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadModel(), this);
-    });
+    super.setViewModel(this.participatingClubsModel, "clubs");
+    super.getRouter()?.getRoute("participatingClubs")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadModel(), this);
   }
 
   onNavBack(): void {

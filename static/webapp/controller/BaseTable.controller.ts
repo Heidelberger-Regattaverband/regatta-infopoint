@@ -145,7 +145,7 @@ export default abstract class BaseTable extends BaseController {
   }
 
   onSortDialogConfirm(event: ViewSettingsDialog$ConfirmEvent): void {
-    let sorters: Sorter[] = [];
+    const sorters: Sorter[] = [];
     const params: ViewSettingsDialog$ConfirmEventParameters = event.getParameters()
     const path: string | undefined = params.sortItem?.getKey();
 

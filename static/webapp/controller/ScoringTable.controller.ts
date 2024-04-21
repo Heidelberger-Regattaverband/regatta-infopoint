@@ -15,19 +15,15 @@ import MessageToast from "sap/m/MessageToast";
 export default class ScoringTable extends BaseController {
 
   private table: Table;
-  private scoringModel: JSONModel;
+  private scoringModel: JSONModel = new JSONModel();
 
   onInit(): void {
-    super.getView()?.addStyleClass(super.getContentDensityClass());
-
     this.table = super.getView()?.byId("scoringTable") as Table;
 
-    super.createJSONModel(`/api/regattas/${super.getRegattaId()}/calculateScoring`, this.table).then((model: JSONModel) => {
-      this.scoringModel = model;
-      super.setViewModel(this.scoringModel, "scoring");
+    super.getView()?.addStyleClass(super.getContentDensityClass());
+    super.setViewModel(this.scoringModel, "scoring");
+    super.getRouter()?.getRoute("scoring")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadScoringModel(), this);
 
-      super.getRouter()?.getRoute("scoring")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadScoringModel(), this);
-    });
   }
 
   onNavBack(): void {
