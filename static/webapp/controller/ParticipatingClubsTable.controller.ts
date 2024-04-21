@@ -1,5 +1,4 @@
 import Table from "sap/m/Table";
-import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
@@ -7,7 +6,7 @@ import ListBinding from "sap/ui/model/ListBinding";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import Context from "sap/ui/model/Context";
 import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
-import { ListBase$SelectEvent } from "sap/m/ListBase";
+import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import MessageToast from "sap/m/MessageToast";
@@ -18,16 +17,13 @@ import BaseTableController from "./BaseTable.controller";
  */
 export default class ParticipatingClubsTable extends BaseTableController {
 
-  private participatingClubsModel: JSONModel;
+  private participatingClubsModel: JSONModel = new JSONModel();
 
-  async onInit(): Promise<void> {
+  onInit(): void {
     super.init(super.getView()?.byId("clubsTable") as Table, "club" /* eventBus channel */);
 
-    super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
-
-    this.participatingClubsModel = await super.createJSONModel(`/api/regattas/${this.getRegattaId()}/participating_clubs`, this.table);
+    super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.participatingClubsModel, "clubs");
-
     super.getRouter()?.getRoute("participatingClubs")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadModel(), this);
   }
 
@@ -57,7 +53,7 @@ export default class ParticipatingClubsTable extends BaseTableController {
     source.setEnabled(true);
   }
 
-  onItemPress(event: ListBase$SelectEvent): void {
+  onItemPress(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameters().listItem;
     if (selectedItem) {
       const bindingCtx: Context | undefined | null = selectedItem.getBindingContext("clubs");

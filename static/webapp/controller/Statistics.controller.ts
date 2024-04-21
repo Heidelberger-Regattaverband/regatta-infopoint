@@ -1,6 +1,5 @@
 import MessageToast from "sap/m/MessageToast";
 import BaseController from "./Base.controller";
-import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import Control from "sap/ui/core/Control";
@@ -11,22 +10,19 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class Statistics extends BaseController {
-  private dataLoader: JSONModel;
-  private statisticsModel: JSONModel;
+  private dataLoader: JSONModel = new JSONModel();
+  private statisticsModel: JSONModel = new JSONModel();
   private racesList?: Control;
   private heatsList?: Control;
   private registrationsList?: Control;
   private athletesList?: Control;
 
   onInit(): void {
-    super.getView()?.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
+    super.getView()?.addStyleClass(super.getContentDensityClass());
 
     super.getRouter()?.getRoute("statistics")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadStatistics(), this);
 
-    this.statisticsModel = new JSONModel();
     super.setViewModel(this.statisticsModel, "statistics");
-
-    this.dataLoader = new JSONModel();
 
     this.registrationsList = this.getView()?.byId("registrationsList") as Control;
     this.racesList = this.getView()?.byId("racesList") as Control;

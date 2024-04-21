@@ -1,11 +1,10 @@
 import Table from "sap/m/Table";
 import Formatter from "../model/Formatter";
 import BaseTableController from "./BaseTable.controller";
-import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ViewSettingsFilterItem from "sap/m/ViewSettingsFilterItem";
 import ViewSettingsItem from "sap/m/ViewSettingsItem";
-import { ListBase$SelectEvent } from "sap/m/ListBase";
+import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import Filter from "sap/ui/model/Filter";
@@ -23,63 +22,56 @@ export default class HeatsTable extends BaseTableController {
 
   formatter: Formatter = Formatter;
 
-  private heatsModel: JSONModel;
+  private heatsModel: JSONModel = new JSONModel();
 
-  async onInit(): Promise<void> {
+  onInit(): void {
     super.init(super.getView()?.byId("heatsTable") as Table, "heat" /* eventBus channel */);
 
-    super.getView()?.addStyleClass((super.getOwnerComponent() as MyComponent).getContentDensityClass());
-
-    this.heatsModel = await super.createJSONModel(`/api/regattas/${super.getRegattaId()}/heats`, this.table);
+    super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.heatsModel, "heats");
-
     super.getRouter()?.getRoute("heats")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadHeatsModel(), this);
 
     const filters: any = (super.getComponentModel("filters") as JSONModel).getData();
-    const viewSettingsDialog: ViewSettingsDialog = await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsFilterDialog");
-
-    if (filters.dates) {
-      const datesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "day", text: "{i18n>common.day}" });
-      filters.dates.forEach((date: any) => {
-        datesFilter.addItem(new ViewSettingsItem({ text: Formatter.weekDayDateLabel(date), key: "dateTime___Contains___" + date }));
-      });
-      viewSettingsDialog.insertFilterItem(datesFilter, 0);
-    }
-
-    if (filters.rounds) {
-      const roundFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "round", text: "{i18n>common.round}" });
-      filters.rounds.forEach((round: any) => {
-        roundFilter.addItem(new ViewSettingsItem({ text: Formatter.roundLabel(round.code), key: "roundCode___EQ___" + round.code }))
-      });
-      viewSettingsDialog.insertFilterItem(roundFilter, 1);
-    }
-
-    if (filters.boatClasses) {
-      const boatClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "boatClass", text: "{i18n>common.boatClass}" });
-      filters.boatClasses.forEach((boatClass: any) => {
-        boatClassFilter.addItem(new ViewSettingsItem({ text: boatClass.caption + " (" + boatClass.abbreviation + ")", key: "race/boatClass/id___EQ___" + boatClass.id }));
-      });
-      viewSettingsDialog.insertFilterItem(boatClassFilter, 2);
-    }
-
-    if (filters.ageClasses) {
-      const ageClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "ageClass", text: "{i18n>common.ageClass}" });
-      filters.ageClasses.forEach((ageClass: any) => {
-        ageClassFilter.addItem(new ViewSettingsItem({ text: ageClass.caption + " " + ageClass.suffix + "", key: "race/ageClass/id___EQ___" + ageClass.id }));
-      });
-      viewSettingsDialog.insertFilterItem(ageClassFilter, 3);
-    }
-
-    if (filters.distances && filters.distances.length > 1) {
-      const distancesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "distance", text: "{i18n>common.distance}" });
-      filters.distances.forEach((distance: any) => {
-        distancesFilter.addItem(new ViewSettingsItem({ text: distance + "m", key: "race/distance___EQ___" + distance }));
-      });
-      viewSettingsDialog.insertFilterItem(distancesFilter, 5);
-    }
+    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsFilterDialog").then((viewSettingsDialog: ViewSettingsDialog) => {
+      if (filters.dates) {
+        const datesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "day", text: "{i18n>common.day}" });
+        filters.dates.forEach((date: any) => {
+          datesFilter.addItem(new ViewSettingsItem({ text: Formatter.weekDayDateLabel(date), key: "dateTime___Contains___" + date }));
+        });
+        viewSettingsDialog.insertFilterItem(datesFilter, 0);
+      }
+      if (filters.rounds) {
+        const roundFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "round", text: "{i18n>common.round}" });
+        filters.rounds.forEach((round: any) => {
+          roundFilter.addItem(new ViewSettingsItem({ text: Formatter.roundLabel(round.code), key: "roundCode___EQ___" + round.code }))
+        });
+        viewSettingsDialog.insertFilterItem(roundFilter, 1);
+      }
+      if (filters.boatClasses) {
+        const boatClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "boatClass", text: "{i18n>common.boatClass}" });
+        filters.boatClasses.forEach((boatClass: any) => {
+          boatClassFilter.addItem(new ViewSettingsItem({ text: boatClass.caption + " (" + boatClass.abbreviation + ")", key: "race/boatClass/id___EQ___" + boatClass.id }));
+        });
+        viewSettingsDialog.insertFilterItem(boatClassFilter, 2);
+      }
+      if (filters.ageClasses) {
+        const ageClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "ageClass", text: "{i18n>common.ageClass}" });
+        filters.ageClasses.forEach((ageClass: any) => {
+          ageClassFilter.addItem(new ViewSettingsItem({ text: ageClass.caption + " " + ageClass.suffix + "", key: "race/ageClass/id___EQ___" + ageClass.id }));
+        });
+        viewSettingsDialog.insertFilterItem(ageClassFilter, 3);
+      }
+      if (filters.distances && filters.distances.length > 1) {
+        const distancesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "distance", text: "{i18n>common.distance}" });
+        filters.distances.forEach((distance: any) => {
+          distancesFilter.addItem(new ViewSettingsItem({ text: distance + "m", key: "race/distance___EQ___" + distance }));
+        });
+        viewSettingsDialog.insertFilterItem(distancesFilter, 5);
+      }
+    });
   }
 
-  onSelectionChange(event: ListBase$SelectEvent): void {
+  onSelectionChange(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("heats");

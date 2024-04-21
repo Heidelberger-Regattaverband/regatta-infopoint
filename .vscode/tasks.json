@@ -1,0 +1,23 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "watch",
+            "type": "npm",
+            "script": "watch",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "runOptions": {
+                "instanceLimit": 1,
+                "runOn": "folderOpen"
+            },
+            "isBackground": true,
+            "problemMatcher": [
+                "$tsc-watch"
+            ],
+            "path": "static"
+        }
+    ]
+}

@@ -17,11 +17,13 @@ env_logger = "0"
 log = "0"
 dotenv = "0"
 chrono = { version = "0", features = ["serde"] }
-tokio = { version = "1", features = ["net"] }
+tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
 tokio-util = { version = "0", features = ["compat"] }
 
 # Actix + Middlewares
+actix = { version = "0" }
 actix-web = { version = "4", features = ["rustls-0_22"] }
+actix-web-actors = { version = "4" }
 actix-session = { version = "0", features = ["cookie-session"] }
 actix-identity = "0"
 actix-files = "0"
@@ -56,3 +58,6 @@ sysinfo = "0"
 
 # html
 scraper = "0"
+
+[dev-dependencies]
+tokio-shared-rt = "0"

@@ -2,6 +2,7 @@ use crate::{
     db::{
         aquarius::Aquarius,
         model::{Club, Filters, Heat, Race, Regatta},
+        tiberius::TiberiusPool,
     },
     http::{
         auth::{Credentials, Scope, User},
@@ -17,6 +18,8 @@ use actix_web::{
 };
 use prometheus::Registry;
 
+use super::ws;
+
 /// Path to REST API
 pub(crate) const PATH: &str = "/api";
 
@@ -28,15 +31,10 @@ pub(crate) const PATH: &str = "/api";
         (status = 401, description = "Unauthorized")
     )
 )]
-#[get("/monitoring")]
-async fn monitoring(
-    aquarius: Data<Aquarius>,
-    registry: Data<Registry>,
-    opt_user: Option<Identity>,
-) -> Result<impl Responder, Error> {
+#[get("/monitoring2")]
+async fn monitoring(registry: Data<Registry>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     if opt_user.is_some() {
-        let pool = aquarius.pool.state();
-        let monitoring = Monitoring::new(pool, aquarius.pool.created(), &registry);
+        let monitoring = Monitoring::new(TiberiusPool::instance(), &registry);
         Ok(Json(monitoring))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
@@ -233,6 +231,7 @@ pub(crate) fn config(cfg: &mut web::ServiceConfig) {
             .service(login)
             .service(identity)
             .service(logout)
-            .service(monitoring),
+            .service(monitoring)
+            .service(ws::index),
     );
 }

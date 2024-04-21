@@ -1,5 +1,5 @@
 import Controller from "sap/ui/core/mvc/Controller";
-import MyComponent from "de/regatta_hd/Component";
+import MyComponent from "de/regatta_hd/infoportal/Component";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller

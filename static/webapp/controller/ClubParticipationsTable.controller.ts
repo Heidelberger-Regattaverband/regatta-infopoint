@@ -1,14 +1,13 @@
 import Table from "sap/m/Table";
 import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
-import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import { ListBase$SelectEvent } from "sap/m/ListBase";
+import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
-import { SearchField$LiveChangeEvent, SearchField$SearchEvent } from "sap/m/SearchField";
+import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import ListBinding from "sap/ui/model/ListBinding";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
@@ -24,7 +23,7 @@ export default class ClubParticipationsTable extends BaseController {
   private clubId?: number;
 
   onInit(): void {
-    super.getView()?.addStyleClass((super.getOwnerComponent() as MyComponent).getContentDensityClass());
+    super.getView()?.addStyleClass(super.getContentDensityClass());
 
     this.table = super.getView()?.byId("registrationsTable") as Table;
 
@@ -34,7 +33,7 @@ export default class ClubParticipationsTable extends BaseController {
     super.getRouter()?.getRoute("clubParticipations")?.attachPatternMatched(async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
   }
 
-  onSelectionChange(oEvent: ListBase$SelectEvent): void {
+  onSelectionChange(oEvent: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = oEvent.getParameter("listItem");
     if (selectedItem) {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("registrations");
@@ -76,9 +75,8 @@ export default class ClubParticipationsTable extends BaseController {
         new Filter({
           path: "crew/",
           test: function (crews: any[]) {
-            let crew: any;
-            for (crew of crews) {
-              let found = crew.athlete.firstName.toLowerCase().includes(query.toLowerCase())
+            for (let crew of crews) {
+              const found = crew.athlete.firstName.toLowerCase().includes(query.toLowerCase())
                 || crew.athlete.lastName.toLowerCase().includes(query.toLowerCase());
               if (found) {
                 return true;
