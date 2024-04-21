@@ -1,5 +1,5 @@
 use crate::{db::tiberius::TiberiusPool, http::monitoring::Monitoring};
-use actix::{registry, Actor, ActorContext, AsyncContext, StreamHandler};
+use actix::{Actor, ActorContext, AsyncContext, StreamHandler};
 use actix_identity::Identity;
 use actix_web::{
     error::ErrorUnauthorized,
@@ -52,13 +52,13 @@ impl WsMonitoring {
                 return;
             }
 
-            Self::send_monitoring(ctx, registry.clone());
+            Self::send_monitoring(ctx, &registry);
             ctx.ping(b"");
         });
     }
 
-    fn send_monitoring(ctx: &mut WebsocketContext<WsMonitoring>, registry: Data<Registry>) {
-        let monitoring = Monitoring::new(TiberiusPool::instance(), registry.as_ref());
+    fn send_monitoring(ctx: &mut WebsocketContext<WsMonitoring>, registry: &Registry) {
+        let monitoring = Monitoring::new(TiberiusPool::instance(), registry);
         let json = serde_json::to_string(&monitoring).unwrap();
         ctx.text(json);
     }
@@ -70,7 +70,7 @@ impl Actor for WsMonitoring {
     /// Method is called on actor start. We start the heartbeat process here.
     fn started(&mut self, ctx: &mut Self::Context) {
         debug!("Websocket actor started");
-        Self::send_monitoring(ctx, self.registry.clone());
+        Self::send_monitoring(ctx, &self.registry);
         self.hb(ctx);
     }
 
