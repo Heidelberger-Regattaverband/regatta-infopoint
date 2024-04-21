@@ -13,7 +13,7 @@
     "rootDir": "./webapp",
     "baseUrl": "./",
     "paths": {
-      "de/regatta_hd/*": [
+      "de/regatta_hd/infoportal/*": [
         "webapp/*"
       ]
     },

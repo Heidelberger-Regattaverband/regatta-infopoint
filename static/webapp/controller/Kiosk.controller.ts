@@ -1,7 +1,6 @@
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
-import MyComponent from "de/regatta_hd/Component";
 import { Button$PressEvent } from "sap/m/Button";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 
@@ -13,23 +12,24 @@ export default class Kiosk extends BaseController {
   formatter: Formatter = Formatter;
   private indexFinished: number;
   private indexNext: number;
-  private heatFinishedModel: JSONModel;
-  private heatNextModel: JSONModel;
-  private kioskModel: JSONModel;
-  private finishedModel: JSONModel;
-  private nextModel: JSONModel;
+  private heatFinishedModel: JSONModel = new JSONModel();
+  private heatNextModel: JSONModel = new JSONModel();
+  private kioskModel: JSONModel = new JSONModel();
+  private finishedModel: JSONModel = new JSONModel();
+  private nextModel: JSONModel = new JSONModel();
   private intervalId?: number;
 
   onInit(): void {
-    super.getView()?.addStyleClass((super.getOwnerComponent() as MyComponent).getContentDensityClass());
+    super.getView()?.addStyleClass(super.getContentDensityClass());
 
     this.indexFinished = 0;
     this.indexNext = 0;
 
-    this.heatFinishedModel = new JSONModel();
     super.setViewModel(this.heatFinishedModel, "heatFinished");
-    this.heatNextModel = new JSONModel();
     super.setViewModel(this.heatNextModel, "heatNext");
+    super.setViewModel(this.finishedModel, "regsFinished");
+    super.setViewModel(this.nextModel, "regsNext");
+    super.setViewModel(this.kioskModel, "kiosk");
 
     super.getRouter()?.getRoute("kiosk")?.attachMatched((_: Route$MatchedEvent) => {
       this.loadKioskModel();
@@ -77,30 +77,15 @@ export default class Kiosk extends BaseController {
   }
 
   private async loadRegsFinishedModel(heatId: number): Promise<void> {
-    if (!this.finishedModel) {
-      this.finishedModel = await super.createJSONModel(this.getRegistrationsUrl(heatId), super.getView());
-      super.setViewModel(this.finishedModel, "regsFinished");
-    } else {
-      await super.updateJSONModel(this.finishedModel, this.getRegistrationsUrl(heatId), super.getView());
-    }
+    await super.updateJSONModel(this.finishedModel, this.getRegistrationsUrl(heatId), super.getView());
   }
 
   private async loadRegsNextModel(iHeatId: number): Promise<void> {
-    if (!this.nextModel) {
-      this.nextModel = await super.createJSONModel(this.getRegistrationsUrl(iHeatId), super.getView());
-      super.setViewModel(this.nextModel, "regsNext");
-    } else {
-      await super.updateJSONModel(this.nextModel, this.getRegistrationsUrl(iHeatId), super.getView());
-    }
+    await super.updateJSONModel(this.nextModel, this.getRegistrationsUrl(iHeatId), super.getView());
   }
 
   private async loadKioskModel(): Promise<void> {
-    if (!this.kioskModel) {
-      this.kioskModel = await super.createJSONModel(this.getKioskUrl(), super.getView());
-      super.setViewModel(this.kioskModel, "kiosk");
-    } else {
-      await super.updateJSONModel(this.kioskModel, this.getKioskUrl(), super.getView());
-    }
+    await super.updateJSONModel(this.kioskModel, this.getKioskUrl(), super.getView());
 
     this.updateModels();
   }

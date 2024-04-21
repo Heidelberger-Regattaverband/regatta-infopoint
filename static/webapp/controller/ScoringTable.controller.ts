@@ -1,6 +1,5 @@
 import Table from "sap/m/Table";
 import BaseController from "./Base.controller";
-import MyComponent from "de/regatta_hd/Component";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import Filter from "sap/ui/model/Filter";
@@ -16,17 +15,15 @@ import MessageToast from "sap/m/MessageToast";
 export default class ScoringTable extends BaseController {
 
   private table: Table;
-  private scoringModel: JSONModel;
+  private scoringModel: JSONModel = new JSONModel();
 
-  async onInit(): Promise<void> {
-    super.getView()?.addStyleClass((super.getOwnerComponent() as MyComponent).getContentDensityClass());
-
+  onInit(): void {
     this.table = super.getView()?.byId("scoringTable") as Table;
 
-    this.scoringModel = await super.createJSONModel(`/api/regattas/${super.getRegattaId()}/calculateScoring`, this.table);
+    super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.scoringModel, "scoring");
-
     super.getRouter()?.getRoute("scoring")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadScoringModel(), this);
+
   }
 
   onNavBack(): void {

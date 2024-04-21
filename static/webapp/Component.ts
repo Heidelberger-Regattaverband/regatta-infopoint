@@ -19,7 +19,7 @@ export default class Component extends UIComponent {
     };
     resourceBundle: ResourceBundle;
 
-    async init(): Promise<void> {
+    init(): void {
         super.init();
 
         // create the views based on the url/hash
@@ -60,7 +60,9 @@ export default class Component extends UIComponent {
         if (bundle instanceof ResourceBundle) {
             this.resourceBundle = bundle as ResourceBundle;
         } else {
-            this.resourceBundle = await (bundle as Promise<ResourceBundle>);
+            (bundle as Promise<ResourceBundle>).then((bundle: ResourceBundle) => {
+                this.resourceBundle = bundle;
+            });
         }
     }
 

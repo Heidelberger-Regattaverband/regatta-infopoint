@@ -1,4 +1,8 @@
-use crate::{config::Config, db::aquarius::Aquarius, http::rest_api};
+use crate::{
+    config::Config,
+    db::aquarius::Aquarius,
+    http::{api_doc, rest_api},
+};
 use actix_extensible_rate_limit::{
     backend::{memory::InMemoryBackend, SimpleInput, SimpleInputFunctionBuilder, SimpleOutput},
     RateLimiter,
@@ -10,13 +14,14 @@ use actix_web::{
     body::{BoxBody, EitherBody},
     cookie::{time::Duration, Key, SameSite},
     dev::{Service, ServiceFactory, ServiceRequest, ServiceResponse},
-    web::{self, scope, Data},
+    web::{self, Data},
     App, Error, HttpServer,
 };
-use actix_web_prometheus::{PrometheusMetrics, PrometheusMetricsBuilder};
+use actix_web_prom::{PrometheusMetrics, PrometheusMetricsBuilder};
 use colored::Colorize;
 use futures::FutureExt;
 use log::{debug, info, warn};
+use prometheus::Registry;
 use rustls::ServerConfig;
 use rustls_pemfile::{certs, pkcs8_private_keys};
 use rustls_pki_types::{PrivateKeyDer, PrivatePkcs8KeyDer};
@@ -29,27 +34,20 @@ use std::{
     time::{self, Instant},
 };
 
-/// Path to REST API
-pub const PATH_REST_API: &str = "/api";
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
 const INFOPORTAL_V2: &str = concat!("{INFOPORTAL}2");
 
 /// The server struct contains the configuration of the server.
-pub struct Server<'a> {
-    /// The configuration of the server.
-    config: &'a Config,
-}
+pub struct Server {}
 
 /// The server implementation.
-impl<'a> Server<'a> {
+impl Server {
     /// Creates s new server instance with given configuration.
-    /// # Arguments
-    /// * `config` - The configuration of the server.
     /// # Returns
     /// * `Server` - The server.
-    pub fn new(config: &'a Config) -> Server {
-        Server { config }
+    pub(crate) fn new() -> Server {
+        Server {}
     }
 
     /// Starts the server.
@@ -57,13 +55,14 @@ impl<'a> Server<'a> {
     /// `io::Result<()>` - The result of the server start.
     /// # Panics
     /// If the server can't be started.
-    pub async fn start(&self) -> io::Result<()> {
+    pub(crate) async fn start(&self) -> io::Result<()> {
         let start = Instant::now();
 
+        let config = Config::get();
         let aquarius = create_app_data().await;
-        let (rl_max_requests, rl_interval) = self.config.get_rate_limiter_config();
+        let (rl_max_requests, rl_interval) = config.get_rate_limiter_config();
         let secret_key = Key::generate();
-        let http_app_content_path = self.config.http_app_content_path.clone();
+        let http_app_content_path = config.http_app_content_path.clone();
 
         let worker_count = Arc::new(Mutex::new(0));
         let prometheus = Self::get_prometeus();
@@ -78,26 +77,9 @@ impl<'a> Server<'a> {
                 // collect metrics about requests and responses
                 .wrap(prometheus.clone())
                 .app_data(aquarius.clone())
-                .service(
-                    scope(PATH_REST_API)
-                        .service(rest_api::get_club)
-                        .service(rest_api::get_regattas)
-                        .service(rest_api::get_club_registrations)
-                        .service(rest_api::get_participating_clubs)
-                        .service(rest_api::get_active_regatta)
-                        .service(rest_api::get_regatta)
-                        .service(rest_api::get_race)
-                        .service(rest_api::get_races)
-                        .service(rest_api::get_heats)
-                        .service(rest_api::get_filters)
-                        .service(rest_api::get_heat)
-                        .service(rest_api::get_kiosk)
-                        .service(rest_api::calculate_scoring)
-                        .service(rest_api::get_statistics)
-                        .service(rest_api::login)
-                        .service(rest_api::identity)
-                        .service(rest_api::logout),
-                )
+                .app_data(Data::new(prometheus.registry.clone()))
+                .configure(rest_api::config)
+                .configure(api_doc::config)
                 .service(
                     Files::new(INFOPORTAL, http_app_content_path.clone())
                         .index_file("index.html")
@@ -114,21 +96,20 @@ impl<'a> Server<'a> {
                 )
                 // redirect from / to /infoportal
                 .service(web::redirect("/", INFOPORTAL))
-                .service(rest_api::monitor)
         };
 
         let mut http_server = HttpServer::new(factory_closure)
             // always bind to http
-            .bind(self.config.get_http_bind())?;
+            .bind(config.get_http_bind())?;
 
         // also bind to https if config is available
         if let Some(rustls_cfg) = Self::get_rustls_config() {
-            let https_bind = self.config.get_https_bind();
+            let https_bind = config.get_https_bind();
             http_server = http_server.bind_rustls_0_22(https_bind, rustls_cfg)?;
         }
 
         // configure number of workers if env. variable is set
-        if let Some(workers) = self.config.http_workers {
+        if let Some(workers) = config.http_workers {
             http_server = http_server.workers(workers);
         }
 
@@ -178,7 +159,7 @@ impl<'a> Server<'a> {
     /// # Arguments
     /// * `secret_key` - The secret key used to encrypt the session cookie.
     /// # Returns
-    /// * `SessionMiddleware` - The session middleware.
+    /// `SessionMiddleware<CookieSessionStore>` - The session middleware.
     /// # Panics
     /// If the session middleware can't be created.
     fn get_session_middleware(secret_key: Key) -> SessionMiddleware<CookieSessionStore> {
@@ -195,12 +176,13 @@ impl<'a> Server<'a> {
 
     /// Returns a new PrometheusMetrics instance.
     /// # Returns
-    /// * `PrometheusMetrics` - The prometheus metrics.
+    /// `Arc<PrometheusMetrics>` - The prometheus metrics.
     /// # Panics
     /// If the prometheus metrics can't be created.
     fn get_prometeus() -> Arc<PrometheusMetrics> {
         Arc::new(
             PrometheusMetricsBuilder::new("api")
+                .registry(Registry::new())
                 .endpoint("/metrics")
                 .build()
                 .unwrap(),
@@ -212,7 +194,7 @@ impl<'a> Server<'a> {
     /// * `max_requests` - The maximum number of requests in the given interval.
     /// * `interval` - The interval in seconds.
     /// # Returns
-    /// `RateLimiter` - The rate limiter.
+    /// `RateLimiter<InMemoryBackend, SimpleOutput, impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>>` - The rate limiter.
     /// # Panics
     /// If the rate limiter can't be created.
     fn get_rate_limiter(

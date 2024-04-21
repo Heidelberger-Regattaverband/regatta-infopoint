@@ -3,14 +3,20 @@ use async_trait::async_trait;
 use bb8::{ManageConnection, Pool, PooledConnection, State};
 use colored::Colorize;
 use log::debug;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
 use tiberius::{error::Error, Client, Config as TiberiusConfig};
 use tokio::net::TcpStream;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
 
+static POOL: OnceLock<TiberiusPool> = OnceLock::new();
+
+/// A connection manager for Tiberius connections.
 #[derive(Debug)]
 pub struct TiberiusConnectionManager {
+    /// The database configuration.
     config: TiberiusConfig,
+
+    /// The number of created connections.
     count: Arc<Mutex<u32>>,
 }
 
@@ -23,6 +29,7 @@ impl TiberiusConnectionManager {
         }
     }
 
+    /// Increments the connection count.
     fn inc_count(&self) {
         let mut count = self.count.lock().unwrap();
         *count += 1;
@@ -54,36 +61,52 @@ impl ManageConnection for TiberiusConnectionManager {
     }
 }
 
-pub struct TiberiusPool {
+#[derive(Debug)]
+/// A pool of Tiberius connections.
+pub(crate) struct TiberiusPool {
+    /// The inner pool.
     inner: Pool<TiberiusConnectionManager>,
+
+    /// The number of created connections.
     count: Arc<Mutex<u32>>,
 }
 
 impl TiberiusPool {
-    pub async fn new() -> Self {
+    /// Returns the current instance of the `TiberiusPool`.
+    pub(crate) fn instance() -> &'static TiberiusPool {
+        POOL.get().expect("TiberiusPool not set")
+    }
+
+    /// Initializes the `TiberiusPool`.
+    pub(crate) async fn init() {
         let manager = TiberiusConnectionManager::new();
         let count = manager.count.clone();
 
-        TiberiusPool {
-            inner: Pool::builder()
-                .max_size(Config::get().db_pool_max_size)
-                .min_idle(Some(Config::get().db_pool_min_idle))
-                .build(manager)
-                .await
-                .unwrap(),
-            count,
+        let inner = Pool::builder()
+            .max_size(Config::get().db_pool_max_size)
+            .min_idle(Some(Config::get().db_pool_min_idle))
+            .build(manager)
+            .await
+            .unwrap();
+
+        if POOL.get().is_none() {
+            POOL.set(TiberiusPool { inner, count })
+                .expect("TiberiusPool already set")
         }
     }
 
-    pub async fn get(&self) -> PooledConnection<'_, TiberiusConnectionManager> {
+    /// Returns a connection from the pool. The connection is automatically returned to the pool when it goes out of scope.
+    pub(crate) async fn get(&self) -> PooledConnection<'_, TiberiusConnectionManager> {
         self.inner.get().await.unwrap()
     }
 
-    pub fn state(&self) -> State {
+    /// Returns the current state of the pool.
+    pub(crate) fn state(&self) -> State {
         self.inner.state()
     }
 
-    pub fn created(&self) -> u32 {
+    /// Returns the number of created connections.
+    pub(crate) fn created(&self) -> u32 {
         *self.count.lock().unwrap()
     }
 }

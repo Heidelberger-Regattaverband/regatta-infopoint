@@ -6,7 +6,6 @@ import Fragment from "sap/ui/core/Fragment";
 import Text from "sap/m/Text";
 import ListBinding from "sap/ui/model/ListBinding";
 import ListItemBase from "sap/m/ListItemBase";
-import MyComponent from "de/regatta_hd/Component";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import CustomData from "sap/ui/core/CustomData";
 import ViewSettingsItem from "sap/m/ViewSettingsItem";
@@ -82,7 +81,7 @@ export default abstract class BaseTable extends BaseController {
 
     if (!dialog) {
       dialog = await Fragment.load({ id: this.getView()?.getId(), name: dialogFragmentName, controller: this }) as ViewSettingsDialog;
-      dialog.addStyleClass((this.getOwnerComponent() as MyComponent).getContentDensityClass());
+      dialog.addStyleClass(super.getContentDensityClass());
       this.getView()?.addDependent(dialog);
       this.viewSettingsDialogs.set(dialogFragmentName, dialog);
     }
@@ -146,7 +145,7 @@ export default abstract class BaseTable extends BaseController {
   }
 
   onSortDialogConfirm(event: ViewSettingsDialog$ConfirmEvent): void {
-    let sorters: Sorter[] = [];
+    const sorters: Sorter[] = [];
     const params: ViewSettingsDialog$ConfirmEventParameters = event.getParameters()
     const path: string | undefined = params.sortItem?.getKey();
 

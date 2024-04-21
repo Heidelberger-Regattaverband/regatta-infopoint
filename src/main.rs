@@ -2,21 +2,24 @@ mod config;
 mod db;
 mod http;
 
-use crate::http::server::Server;
-use config::Config;
+use db::tiberius::TiberiusPool;
+use http::server::Server;
 use std::io::Result;
 
-#[actix_web::main]
+#[tokio::main]
 async fn main() -> Result<()> {
-    let server = Server::new(Config::get());
-    server.start().await
+    TiberiusPool::init().await;
+    Server::new().start().await
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::http::{
-        rest_api,
-        server::{create_app_data, PATH_REST_API},
+    use crate::{
+        db::tiberius::TiberiusPool,
+        http::{
+            rest_api::{self, PATH},
+            server::create_app_data,
+        },
     };
     use actix_identity::IdentityMiddleware;
     use actix_web::{
@@ -27,15 +30,16 @@ mod tests {
     };
     use dotenv::dotenv;
 
-    #[actix_web::test]
+    #[tokio_shared_rt::test(shared)]
     async fn test_get_regattas() {
         dotenv().ok();
+        TiberiusPool::init().await;
 
         let app_data = create_app_data().await;
 
         let app = test::init_service(
             App::new().service(
-                scope(PATH_REST_API)
+                scope(PATH)
                     .service(rest_api::get_regattas)
                     .app_data(Data::clone(&app_data)),
             ),
@@ -47,15 +51,16 @@ mod tests {
         assert!(response.status().is_success());
     }
 
-    #[actix_web::test]
+    #[tokio_shared_rt::test(shared)]
     async fn test_get_heats() {
         dotenv().ok();
+        TiberiusPool::init().await;
 
         let app_data = create_app_data().await;
 
         let app = test::init_service(
             App::new().service(
-                scope(PATH_REST_API)
+                scope(PATH)
                     .service(rest_api::get_heats)
                     .wrap(IdentityMiddleware::default())
                     .app_data(Data::clone(&app_data)),

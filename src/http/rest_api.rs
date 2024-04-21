@@ -2,24 +2,43 @@ use crate::{
     db::{
         aquarius::Aquarius,
         model::{Club, Filters, Heat, Race, Regatta},
+        tiberius::TiberiusPool,
     },
     http::{
         auth::{Credentials, Scope, User},
-        monitor::Monitor,
+        monitoring::Monitoring,
     },
 };
 use actix_identity::Identity;
 use actix_web::{
     error::{ErrorUnauthorized, InternalError},
     get, post,
-    web::{Data, Json, Path},
+    web::{self, Data, Json, Path},
     Error, HttpMessage, HttpRequest, HttpResponse, Responder,
 };
+use prometheus::Registry;
 
-#[get("/monitor")]
-async fn monitor(aquarius: Data<Aquarius>) -> Json<Monitor> {
-    let pool = aquarius.pool.state();
-    Json(Monitor::new(pool, aquarius.pool.created()))
+use super::ws;
+
+/// Path to REST API
+pub(crate) const PATH: &str = "/api";
+
+/// Provides the monitoring information.
+#[utoipa::path(
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Monitoring", body = Monitoring),
+        (status = 401, description = "Unauthorized")
+    )
+)]
+#[get("/monitoring2")]
+async fn monitoring(registry: Data<Registry>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
+    if opt_user.is_some() {
+        let monitoring = Monitoring::new(TiberiusPool::instance(), &registry);
+        Ok(Json(monitoring))
+    } else {
+        Err(ErrorUnauthorized("Unauthorized"))
+    }
 }
 
 #[get("/regattas")]
@@ -136,6 +155,15 @@ async fn calculate_scoring(
     }
 }
 
+/// Authenticate the user. This will attach the user identity to the current session.
+#[utoipa::path(
+    context_path = PATH,
+    request_body = Credentials,
+    responses(
+        (status = 200, description = "Authenticated", body = User),
+        (status = 401, description = "Unauthorized", body = User, example = json!({"user": "anonymous", "scope": "guest"}))
+    )
+)]
 #[post("/login")]
 async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<impl Responder, Error> {
     match User::authenticate(credentials.into_inner()).await {
@@ -151,12 +179,28 @@ async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<i
     }
 }
 
+/// Logout the user. This will remove the user identity from the current session.
+#[utoipa::path(
+    context_path = PATH,
+    responses(
+        (status = 204, description = "User logged out"),
+        (status = 401, description = "Unauthorized")
+    )
+)]
 #[post("/logout")]
 async fn logout(user: Identity) -> impl Responder {
     user.logout();
     HttpResponse::NoContent()
 }
 
+/// Get the user identity. This will return the user information if the user is authenticated. Otherwise, it will return a guest user.
+#[utoipa::path(
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Authenticated", body = User, example = json!({"user": "name", "scope": "user"})),
+        (status = 401, description = "Unauthorized", body = User, example = json!({ "user": "anonymous", "scope": "guest"}))
+    )
+)]
 #[get("/identity")]
 async fn identity(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     if let Some(user) = opt_user {
@@ -164,4 +208,30 @@ async fn identity(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     } else {
         Err(InternalError::from_response("", HttpResponse::Unauthorized().json(User::new_guest())).into())
     }
+}
+
+/// Configure the REST API. This will add all REST API endpoints to the service configuration.
+pub(crate) fn config(cfg: &mut web::ServiceConfig) {
+    cfg.service(
+        web::scope(PATH)
+            .service(get_club)
+            .service(get_regattas)
+            .service(get_club_registrations)
+            .service(get_participating_clubs)
+            .service(get_active_regatta)
+            .service(get_regatta)
+            .service(get_race)
+            .service(get_races)
+            .service(get_heats)
+            .service(get_filters)
+            .service(get_heat)
+            .service(get_kiosk)
+            .service(calculate_scoring)
+            .service(get_statistics)
+            .service(login)
+            .service(identity)
+            .service(logout)
+            .service(monitoring)
+            .service(ws::index),
+    );
 }
