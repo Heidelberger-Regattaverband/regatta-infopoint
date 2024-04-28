@@ -22,6 +22,7 @@ export default class ClubParticipationsTable extends BaseController {
   private table: Table;
   private clubId?: number;
   private readonly heatsModel: JSONModel = new JSONModel();
+  private readonly clubModel: JSONModel = new JSONModel();
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
@@ -29,7 +30,7 @@ export default class ClubParticipationsTable extends BaseController {
     this.table = super.getView()?.byId("heatsTable") as Table;
 
     super.setViewModel(this.heatsModel, "heats");
-    super.setViewModel(new JSONModel(), "club");
+    super.setViewModel(this.clubModel, "club");
 
     super.getRouter()?.getRoute("clubHeats")?.attachPatternMatched(
       async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
@@ -99,7 +100,7 @@ export default class ClubParticipationsTable extends BaseController {
   }
 
   private async loadClubModel(): Promise<boolean> {
-    return await super.updateJSONModel(super.getViewModel("club") as JSONModel, `/api/clubs/${this.clubId}`);
+    return await super.updateJSONModel(this.clubModel, `/api/clubs/${this.clubId}`);
   }
 
   private async loadRegistrationsModel(): Promise<boolean> {
