@@ -105,6 +105,6 @@ export default class ClubParticipationsTable extends BaseController {
 
   private async loadRegistrationsModel(): Promise<boolean> {
     return await super.updateJSONModel(this.heatsModel,
-      `/api/regattas/${super.getRegattaId()}/clubs/${this.clubId}/registrations`, this.table);
+      `/api/regattas/${super.getRegattaId()}/clubs/${this.clubId}/heats`, this.table);
   }
 }
