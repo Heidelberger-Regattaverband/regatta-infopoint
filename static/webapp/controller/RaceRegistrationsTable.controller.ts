@@ -10,7 +10,6 @@ import MessageToast from "sap/m/MessageToast";
 export default class RaceRegistrationsTable extends BaseController {
 
   formatter: Formatter = Formatter;
-
   private keyListener: (event: KeyboardEvent) => void;
 
   onInit(): void {

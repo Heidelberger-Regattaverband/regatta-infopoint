@@ -1,0 +1,100 @@
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.ClubHeatsTable" xmlns="sap.m" xmlns:layout="sap.ui.layout"
+  xmlns:mvc="sap.ui.core.mvc">
+  <mvc:content>
+
+    <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
+    https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
+    <Page title="{i18n>common.heats} von {club>/shortName}" class="sapUiNoContentPadding" showNavButton="true"
+      navButtonPress="onNavBack">
+      <content>
+
+        <Table id="heatsTable" autoPopinMode="true" items="{path:'heats>/'}" growing="true" growingThreshold="50"
+          growingScrollToLoad="true" sticky="ColumnHeaders,HeaderToolbar" class="sapUiNoContentPadding" mode="SingleSelectMaster"
+          itemPress="onSelectionChange">
+          <headerToolbar>
+            <OverflowToolbar>
+              <content>
+                <SearchField width="12rem" liveChange="onSearchFieldLiveChange" showSearchButton="false" />
+                <ToolbarSpacer />
+                <OverflowToolbarButton tooltip="{i18n>common.refresh}" text="{i18n>common.refresh}" icon="sap-icon://refresh"
+                  press="onRefreshButtonPress" />
+              </content>
+            </OverflowToolbar>
+          </headerToolbar>
+
+          <columns>
+            <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.time}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column hAlign="Begin" width="6rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.heat}" class="bold" />
+              </header>
+            </Column>
+            <Column hAlign="Begin" width="14rem" importance="Medium" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.boat}" class="bold" />
+              </header>
+            </Column>
+            <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.clubRegistration}" class="bold" />
+              </header>
+            </Column>
+          </columns>
+
+          <items>
+            <ColumnListItem vAlign="Top" highlight="{path: 'heats>heat', formatter: '.formatter.heatStateHighlight'}"
+              type="Navigation">
+              <cells>
+                <layout:VerticalLayout>
+                  <Text text="{path: 'heats>heat/dateTime', formatter: '.formatter.dayTimeIsoLabel'}"
+                    visible="{=${heats>cancelled} || ${heats>race/cancelled}}" class="cancelled" />
+                  <Text text="{path: 'heats>heat/dateTime', formatter: '.formatter.dayTimeIsoLabel'}"
+                    visible="{=!${heats>cancelled} &amp;&amp; !${heats>race/cancelled}}" />
+                </layout:VerticalLayout>
+
+                <layout:VerticalLayout>
+                  <Text
+                    text="{path: 'heats>race', formatter: '.formatter.nrRaceLabel'}, {path: 'heats>heat', formatter: '.formatter.heatLabel'}"
+                    visible="{=${heats>cancelled} || ${heats>race/cancelled}}" class="boldCancelled sapUiTinyMarginBottom" />
+                  <Text
+                    text="{path: 'heats>race', formatter: '.formatter.nrRaceLabel'}, {path: 'heats>heat', formatter: '.formatter.heatLabel'}"
+                    visible="{=!${heats>cancelled} &amp;&amp; !${heats>race/cancelled}}" class="bold sapUiTinyMarginBottom" />
+
+                  <Text text="{heats>race/longLabel}" visible="{=${heats>cancelled} || ${heats>race/cancelled}}"
+                    class="cancelled" />
+                  <Text text="{heats>race/longLabel}"
+                    visible="{=!${heats>cancelled} &amp;&amp; !${heats>race/cancelled}}" />
+                </layout:VerticalLayout>
+
+                <layout:VerticalLayout>
+                  <Text text="{path: 'heats>', formatter: '.formatter.boatLabel'}" class="boldCancelled sapUiTinyMarginBottom"
+                    visible="{=${heats>cancelled} || ${heats>race/cancelled}}" />
+                  <Text text="{path: 'heats>', formatter: '.formatter.boatLabel'}" class="bold sapUiTinyMarginBottom"
+                    visible="{=!${heats>cancelled} &amp;&amp; !${heats>race/cancelled}}" />
+
+                  <Text text="{path: 'heats>crew', formatter: '.formatter.crewLabel'}" class="cancelled"
+                    visible="{=${heats>cancelled} || ${heats>race/cancelled}}" />
+                  <Text text="{path: 'heats>crew', formatter: '.formatter.crewLabel'}"
+                    visible="{=!${heats>cancelled} &amp;&amp; !${heats>race/cancelled}}" />
+                </layout:VerticalLayout>
+
+                <layout:VerticalLayout>
+                  <Text text="{heats>club/shortName}" visible="{=${heats>cancelled} || ${heats>race/cancelled}}"
+                    class="cancelled" />
+                  <Text text="{heats>club/shortName}"
+                    visible="{=!${heats>cancelled} &amp;&amp; !${heats>race/cancelled}}" />
+                </layout:VerticalLayout>
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table>
+
+      </content>
+    </Page>
+
+  </mvc:content>
+</mvc:View>

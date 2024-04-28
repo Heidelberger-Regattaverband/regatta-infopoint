@@ -21,8 +21,7 @@ import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 export default class RacesTable extends BaseTableController {
 
   formatter: Formatter = Formatter;
-
-  private racesModel: JSONModel = new JSONModel();
+  private readonly racesModel: JSONModel = new JSONModel();
 
   onInit(): void {
     super.init(super.getView()?.byId("racesTable") as Table, "race" /* eventBus channel */);
