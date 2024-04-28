@@ -89,15 +89,14 @@ export default class Monitoring extends BaseController {
     this.socket.onclose = (_event: CloseEvent) => {
       this.statusButton.setIcon('sap-icon://disconnected');
       console.debug('Disconnected');
-      this.socket = undefined;
     }
   }
 
   private disconnect() {
     if (this.socket) {
-      console.debug('Disconnecting...');
       this.socket.close();
-      this.socket = undefined;
+      delete this.socket;
+      console.debug('Disconnecting...');
     }
   }
 }
