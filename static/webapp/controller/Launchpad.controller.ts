@@ -13,7 +13,7 @@ import { Input$SubmitEvent } from "sap/m/Input";
  */
 export default class Launchpad extends BaseController {
 
-  private credentialsModel: JSONModel = new JSONModel({ username: "", password: "" });
+  private readonly credentialsModel: JSONModel = new JSONModel({ username: "", password: "" });
   private popover?: ResponsivePopover;
   private popoverPromise?: Promise<ResponsivePopover>;
 

@@ -15,7 +15,7 @@ import MessageToast from "sap/m/MessageToast";
 export default class ScoringTable extends BaseController {
 
   private table: Table;
-  private scoringModel: JSONModel = new JSONModel();
+  private readonly scoringModel: JSONModel = new JSONModel();
 
   onInit(): void {
     this.table = super.getView()?.byId("scoringTable") as Table;

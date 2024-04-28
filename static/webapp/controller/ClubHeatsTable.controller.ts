@@ -21,25 +21,28 @@ export default class ClubParticipationsTable extends BaseController {
   formatter: Formatter = Formatter;
   private table: Table;
   private clubId?: number;
+  private readonly heatsModel: JSONModel = new JSONModel();
+  private readonly clubModel: JSONModel = new JSONModel();
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
 
-    this.table = super.getView()?.byId("registrationsTable") as Table;
+    this.table = super.getView()?.byId("heatsTable") as Table;
 
-    super.setViewModel(new JSONModel(), "registrations");
-    super.setViewModel(new JSONModel(), "club");
+    super.setViewModel(this.heatsModel, "heats");
+    super.setViewModel(this.clubModel, "club");
 
-    super.getRouter()?.getRoute("clubParticipations")?.attachPatternMatched(async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
+    super.getRouter()?.getRoute("clubHeats")?.attachPatternMatched(
+      async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
   }
 
   onSelectionChange(oEvent: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = oEvent.getParameter("listItem");
     if (selectedItem) {
-      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("registrations");
+      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("heats");
       const registration: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
 
-      registration.heat._nav = { disabled: true, back: "clubParticipations" };
+      registration.heat._nav = { disabled: true, back: "clubHeats" };
 
       (super.getComponentModel("heat") as JSONModel).setData(registration.heat);
       super.displayTarget("heatRegistrations");
@@ -97,12 +100,11 @@ export default class ClubParticipationsTable extends BaseController {
   }
 
   private async loadClubModel(): Promise<boolean> {
-    return await super.updateJSONModel(super.getViewModel("club") as JSONModel, `/api/clubs/${this.clubId}`);
+    return await super.updateJSONModel(this.clubModel, `/api/clubs/${this.clubId}`);
   }
 
   private async loadRegistrationsModel(): Promise<boolean> {
-    return await super.updateJSONModel(super.getViewModel("registrations") as JSONModel,
-      `/api/regattas/${super.getRegattaId()}/clubs/${this.clubId}/registrations`, this.table);
+    return await super.updateJSONModel(this.heatsModel,
+      `/api/regattas/${super.getRegattaId()}/clubs/${this.clubId}/heats`, this.table);
   }
-
 }

@@ -21,8 +21,7 @@ import MessageToast from "sap/m/MessageToast";
 export default class HeatsTable extends BaseTableController {
 
   formatter: Formatter = Formatter;
-
-  private heatsModel: JSONModel = new JSONModel();
+  private readonly heatsModel: JSONModel = new JSONModel();
 
   onInit(): void {
     super.init(super.getView()?.byId("heatsTable") as Table, "heat" /* eventBus channel */);
