@@ -8,12 +8,20 @@ use futures::future::{join_all, BoxFuture};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
+/// A registration of a boat in a heat.
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct HeatRegistration {
-    pub id: i32,
+    /// The unique id of the registration.
+    pub(crate) id: i32,
+
+    /// The lane in which the boat is supposed to start.
     lane: i16,
-    pub registration: Registration,
+
+    /// The registration of the boat.
+    pub(crate) registration: Registration,
+
+    /// The result of the boat in the heat
     #[serde(skip_serializing_if = "Option::is_none")]
     result: Option<HeatResult>,
 }
