@@ -1534,6 +1534,7 @@ dependencies = [
  "serde_json",
  "stretto",
  "sysinfo",
+ "thiserror",
  "tiberius",
  "tokio",
  "tokio-shared-rt",
