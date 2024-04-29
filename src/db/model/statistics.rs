@@ -31,6 +31,8 @@ struct RegistrationsStatistics {
     cancelled: i32,
     registering_clubs: i32,
     athletes: i32,
+    athletes_male: i32,
+    athletes_female: i32,
     clubs: i32,
     seats: i32,
     seats_cox: i32,
@@ -60,11 +62,15 @@ impl From<&Row> for Statistics {
             finished: value.get_column("heats_finished"),
             official: value.get_column("heats_official"),
         };
+        let athletes_female = value.get_column("registrations_athletes_female");
+        let athletes_male = value.get_column("registrations_athletes_male");
         let registrations = RegistrationsStatistics {
             all: value.get_column("registrations_all"),
             cancelled: value.get_column("registrations_cancelled"),
             registering_clubs: value.get_column("registrations_owner_clubs"),
-            athletes: value.get_column("registrations_athletes"),
+            athletes_female,
+            athletes_male,
+            athletes: athletes_female + athletes_male,
             clubs: value.get_column("registrations_clubs"),
             seats: value.get_column("registrations_seats"),
             seats_cox: value.get_column("registrations_seats_cox"),
@@ -111,8 +117,15 @@ impl Statistics {
           (SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Athlete_ID_FK
             FROM  Entry
-            JOIN  Crew ON Crew_Entry_ID_FK = Entry_ID
-            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) AS registrations_athletes,
+            JOIN  Crew   ON Crew_Entry_ID_FK = Entry_ID
+            JOIN  Athlet ON Athlet_ID        = Crew_Athlete_ID_FK
+            WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'M' AND Entry_CancelValue = 0) AS count) AS registrations_athletes_male,
+          (SELECT COUNT(*) FROM (
+            SELECT DISTINCT Crew_Athlete_ID_FK
+            FROM  Entry
+            JOIN  Crew   ON Crew_Entry_ID_FK = Entry_ID
+            JOIN  Athlet ON Athlet_ID        = Crew_Athlete_ID_FK
+            WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'W' AND Entry_CancelValue = 0) AS count) AS registrations_athletes_female,
           (SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Club_ID_FK
             FROM  Entry
