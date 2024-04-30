@@ -9,7 +9,7 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class Statistics extends BaseController {
+export default class StatisticsController extends BaseController {
 
   private readonly dataLoader: JSONModel = new JSONModel();
   private readonly statisticsModel: JSONModel = new JSONModel();

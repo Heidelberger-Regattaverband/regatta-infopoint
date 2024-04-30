@@ -18,7 +18,7 @@ import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class RacesTable extends BaseTableController {
+export default class RacesTableController extends BaseTableController {
 
   formatter: Formatter = Formatter;
   private readonly racesModel: JSONModel = new JSONModel();

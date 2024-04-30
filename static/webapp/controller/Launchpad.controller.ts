@@ -11,7 +11,7 @@ import { Input$SubmitEvent } from "sap/m/Input";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class Launchpad extends BaseController {
+export default class LaunchpadController extends BaseController {
 
   private readonly credentialsModel: JSONModel = new JSONModel({ username: "", password: "" });
   private popover?: ResponsivePopover;

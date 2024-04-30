@@ -18,7 +18,7 @@ import MessageToast from "sap/m/MessageToast";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class HeatsTable extends BaseTableController {
+export default class HeatsTableController extends BaseTableController {
 
   formatter: Formatter = Formatter;
   private readonly heatsModel: JSONModel = new JSONModel();
@@ -122,13 +122,11 @@ export default class HeatsTable extends BaseTableController {
   }
 
   async onFilterButtonPress(event: Button$PressEvent): Promise<void> {
-    const viewSettingsDialog: ViewSettingsDialog = await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsFilterDialog");
-    viewSettingsDialog.open();
+    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsFilterDialog")).open();
   }
 
   async onClearFilterPress(event: Button$PressEvent): Promise<void> {
-    const viewSettingsDialog: ViewSettingsDialog = await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsFilterDialog")
-    viewSettingsDialog.clearFilters();
+    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsFilterDialog")).clearFilters();
     super.clearFilters();
     super.applyFilters();
   }

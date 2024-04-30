@@ -6,7 +6,7 @@ import Button from "sap/m/Button";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class Monitoring extends BaseController {
+export default class MonitoringController extends BaseController {
 
   private readonly units = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
   private readonly monitoringModel: JSONModel = new JSONModel();

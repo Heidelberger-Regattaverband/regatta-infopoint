@@ -12,7 +12,7 @@ import MessageToast from "sap/m/MessageToast";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class ScoringTable extends BaseController {
+export default class ScoringTableController extends BaseController {
 
   private table: Table;
   private readonly scoringModel: JSONModel = new JSONModel();

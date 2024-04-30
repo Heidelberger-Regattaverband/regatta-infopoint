@@ -16,7 +16,7 @@ import MessageToast from "sap/m/MessageToast";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class ClubParticipationsTable extends BaseController {
+export default class ClubHeatsTableController extends BaseController {
 
   formatter: Formatter = Formatter;
   private table: Table;
