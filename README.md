@@ -30,10 +30,9 @@ mkdir git && cd git
 git clone https://github.com/Heidelberger-Regattaverband/docker.git
 ```
 
-## Password-less ssh login
-Add public authorization key:
+Set hostname:
 ```bash
-nano ~/.ssh/authorized_keys
+nano /etc/hostname
 ```
 
 ## [Setting up Tailscale](https://tailscale.com/kb/1187/install-ubuntu-2204)
@@ -93,8 +92,13 @@ Add a new mssql user:
 adduser mssql -u 10001
 ```
 
-## Create and copy public key
-Create a new private SSH key:
+## Enable password-less ssh login
+Add public authorization key:
+```bash
+nano ~/.ssh/authorized_keys
+```
+
+Alternatively create a new private SSH key:
 ```bash
 ssh-keygen -b 4096
 ```
