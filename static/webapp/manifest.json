@@ -126,6 +126,11 @@
           "pattern": "clubHeats/{clubId}",
           "name": "clubHeats",
           "target": "clubHeats"
+        },
+        {
+          "pattern": "clubRegistrations/{clubId}",
+          "name": "clubRegistrations",
+          "target": "clubRegistrations"
         }
       ],
       "targets": {
@@ -156,6 +161,10 @@
         "participatingClubs": {
           "viewName": "ParticipatingClubsTable",
           "viewLevel": 1
+        },
+        "clubRegistrations": {
+          "viewName": "ClubRegistrationsTable",
+          "viewLevel": 2
         },
         "clubHeats": {
           "viewName": "ClubHeatsTable",

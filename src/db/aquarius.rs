@@ -130,12 +130,16 @@ impl Aquarius {
 
     pub async fn get_club_heats(&self, regatta_id: i32, club_id: i32, opt_user: Option<Identity>) -> Vec<Registration> {
         if opt_user.is_some() {
-            self._query_club_registrations(regatta_id, club_id).await
+            self._query_club_heats(regatta_id, club_id).await
         } else if let Some(registrations) = self.caches.club_registrations.get(&(regatta_id, club_id)).await {
             registrations
         } else {
-            self._query_club_registrations(regatta_id, club_id).await
+            self._query_club_heats(regatta_id, club_id).await
         }
+    }
+
+    pub(crate) async fn get_club_registrations(&self, regatta_id: i32, club_id: i32, opt_user: Option<Identity>) -> Vec<Registration> {
+        self._query_club_registrations(regatta_id, club_id).await
     }
 
     pub async fn calculate_scoring(&self, regatta_id: i32) -> Vec<Score> {
@@ -242,7 +246,7 @@ impl Aquarius {
         clubs
     }
 
-    async fn _query_club_registrations(&self, regatta_id: i32, club_id: i32) -> Vec<Registration> {
+    async fn _query_club_heats(&self, regatta_id: i32, club_id: i32) -> Vec<Registration> {
         let start = Instant::now();
         let registrations = Registration::query_of_club(regatta_id, club_id, TiberiusPool::instance()).await;
         self.caches

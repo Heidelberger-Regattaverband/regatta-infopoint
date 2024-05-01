@@ -103,6 +103,16 @@ async fn get_club_heats(ids: Path<(i32, i32)>, aquarius: Data<Aquarius>, opt_use
     Json(aquarius.get_club_heats(ids.0, ids.1, opt_user).await)
 }
 
+#[get("/regattas/{regatta_id}/clubs/{club_id}/registrations")]
+async fn get_club_registrations(
+    ids: Path<(i32, i32)>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> impl Responder {
+    let ids = ids.into_inner();
+    Json(aquarius.get_club_registrations(ids.0, ids.1, opt_user).await)
+}
+
 #[get("/clubs/{id}")]
 async fn get_club(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Club> {
     let club_id = path.into_inner();
@@ -213,6 +223,7 @@ pub(crate) fn config(cfg: &mut web::ServiceConfig) {
             .service(get_club)
             .service(get_regattas)
             .service(get_club_heats)
+            .service(get_club_registrations)
             .service(get_participating_clubs)
             .service(get_active_regatta)
             .service(get_regatta)
