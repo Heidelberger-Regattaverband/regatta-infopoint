@@ -30,6 +30,12 @@ mkdir git && cd git
 git clone https://github.com/Heidelberger-Regattaverband/docker.git
 ```
 
+## Password-less ssh login
+Add public authorization key:
+```bash
+nano ~/.ssh/authorized_keys
+```
+
 ## Setup MS-SQL Server
 Prepare MS-SQL server directories:
 ```bash
