@@ -143,7 +143,7 @@ impl Aquarius {
     }
 
     pub(crate) async fn get_club_registrations(&self, regatta_id: i32, club_id: i32, opt_user: Option<Identity>) -> Vec<Registration> {
-        self._query_club_registrations(regatta_id, club_id).await
+        Vec::new()
     }
 
     pub async fn calculate_scoring(&self, regatta_id: i32) -> Vec<Score> {
