@@ -1,5 +1,5 @@
 use crate::db::{
-    model::{utils, AgeClass, BoatClass, Registration, TryToEntity},
+    model::{utils, AgeClass, BoatClass, Heat, Registration, TryToEntity},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use chrono::{DateTime, Utc};
@@ -17,6 +17,7 @@ pub struct Race {
     distance: i16,
     lightweight: bool,
     state: i32,
+
     cancelled: bool,
     registrations_count: i32,
     seeded: bool,
@@ -28,8 +29,13 @@ pub struct Race {
     #[serde(skip_serializing_if = "Option::is_none")]
     date_time: Option<DateTime<Utc>>,
 
+    /// All registrations to this race
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub registrations: Option<Vec<Registration>>,
+    pub(crate) registrations: Option<Vec<Registration>>,
+
+    /// All heats of this race
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) heats: Option<Vec<Heat>>,
 }
 
 impl Race {
@@ -62,6 +68,7 @@ impl From<&Row> for Race {
             group_mode: row.get_column("Offer_GroupMode"),
             date_time: row.try_get_column("Race_DateTime"),
             registrations: None,
+            heats: None,
         }
     }
 }
@@ -101,6 +108,7 @@ impl Race {
             WHERE o.Offer_ID = @P1");
         query.bind(race_id);
         let stream = query.query(&mut client).await.unwrap();
+
         Race::from(&utils::get_row(stream).await)
     }
 }

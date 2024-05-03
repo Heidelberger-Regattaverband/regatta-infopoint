@@ -66,7 +66,7 @@ async fn get_races(path: Path<i32>, aquarius: Data<Aquarius>, opt_user: Option<I
 #[get("/races/{id}")]
 async fn get_race(path: Path<i32>, aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Json<Race> {
     let race_id = path.into_inner();
-    Json(aquarius.get_race(race_id, opt_user).await)
+    Json(aquarius.get_race_heats_registrations(race_id, opt_user).await)
 }
 
 #[get("/regattas/{id}/heats")]

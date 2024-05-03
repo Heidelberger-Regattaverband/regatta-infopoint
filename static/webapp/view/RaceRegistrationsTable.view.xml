@@ -78,7 +78,8 @@
               </columns>
 
               <items>
-                <ColumnListItem highlight="{path: 'raceRegistrations>', formatter: '.formatter.raceRegistrationHighlight'}" vAlign="Top">
+                <ColumnListItem vAlign="Top"
+                  highlight="{parts:[{path:'race>/'},{path:'raceRegistrations>'}], formatter: '.formatter.raceRegistrationHighlight'}">
                   <cells>
                     <layout:VerticalLayout>
                       <Text text="{raceRegistrations>bib}" visible="{=${raceRegistrations>cancelled}}" class="cancelled" />

@@ -13,7 +13,7 @@ pub struct Registration {
     pub id: i32,
 
     /** The race for which the registration was made. */
-    race: Race,
+    race: Option<Race>,
 
     /** The club that made the registration and has to pay an entry fee for it. */
     club: Club,
@@ -60,7 +60,7 @@ impl From<&Row> for Registration {
             group_value: value.try_get_column("Entry_GroupValue"),
             club: Club::from(value),
             crew: None,
-            race: Race::from(value),
+            race: value.try_to_entity(),
             heat: value.try_to_entity(),
         }
     }
@@ -97,21 +97,18 @@ impl Registration {
         execute_query(pool, query, round).await
     }
 
-    pub async fn query_for_race(race_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
+    pub(crate) async fn query_registrations_for_race(race_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
         let round = 64;
         let mut query = Query::new(
             "SELECT DISTINCT".to_string()
                 + &Registration::select_columns("e")
                 + ", Label_Short, "
                 + &Club::select_columns("c")
-                + ", "
-                + &Race::select_columns("o")
                 + " 
             FROM Entry e
             JOIN EntryLabel ON EL_Entry_ID_FK   = e.Entry_ID
             JOIN Label      ON EL_Label_ID_FK   = Label_ID
             JOIN Club c     ON c.Club_ID        = Entry_OwnerClub_ID_FK
-            JOIN Offer o    ON Entry_Race_ID_FK = o.Offer_ID
             WHERE e.Entry_Race_ID_FK = @P1 AND EL_RoundFrom <= @P2 AND @P2 <= EL_RoundTo
             ORDER BY e.Entry_Bib ASC",
         );

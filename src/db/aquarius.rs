@@ -8,12 +8,15 @@ use crate::{
 };
 use actix_identity::Identity;
 use bb8::PooledConnection;
+use futures::future::join3;
 use log::debug;
 use std::time::{Duration, Instant};
 
+/// The type of the database connection.
 pub type AquariusClient<'a> = PooledConnection<'a, TiberiusConnectionManager>;
 
-pub struct Aquarius {
+/// The `Aquarius` struct is the main interface to the database. It is used to query data from the database.
+pub(crate) struct Aquarius {
     /// The caches for the database queries.
     caches: Caches,
 
@@ -21,6 +24,7 @@ pub struct Aquarius {
     active_regatta_id: i32,
 }
 
+/// Implementation of the `Aquarius` struct.
 impl Aquarius {
     /// Creates a new `Aquarius`.
     pub async fn new() -> Self {
@@ -79,13 +83,13 @@ impl Aquarius {
         }
     }
 
-    pub async fn get_race(&self, race_id: i32, opt_user: Option<Identity>) -> Race {
+    pub(crate) async fn get_race_heats_registrations(&self, race_id: i32, opt_user: Option<Identity>) -> Race {
         if opt_user.is_some() {
-            self._query_race(race_id).await
-        } else if let Some(race) = self.caches.race.get(&race_id).await {
+            self._query_race_heats_registrations(race_id).await
+        } else if let Some(race) = self.caches.race_heats_registrations.get(&race_id).await {
             race
         } else {
-            self._query_race(race_id).await
+            self._query_race_heats_registrations(race_id).await
         }
     }
 
@@ -191,15 +195,23 @@ impl Aquarius {
         regatta
     }
 
-    async fn _query_race(&self, race_id: i32) -> Race {
+    async fn _query_race_heats_registrations(&self, race_id: i32) -> Race {
         let start = Instant::now();
-        // query the race details
-        let mut race: Race = Race::query_single(race_id, TiberiusPool::instance()).await;
-        // then query the registrations
-        race.registrations = Some(Registration::query_for_race(race_id, TiberiusPool::instance()).await);
-        self.caches.race.set(&race.id, &race).await;
+        let mut result = join3(
+            Race::query_single(race_id, TiberiusPool::instance()),
+            Heat::query_heats_of_race(race_id, TiberiusPool::instance()),
+            Registration::query_registrations_for_race(race_id, TiberiusPool::instance()),
+        )
+        .await;
+        if result.1.is_empty() {
+            result.0.heats = None;
+        } else {
+            result.0.heats = Some(result.1.clone());
+        }
+        result.0.registrations = Some(result.2);
+        self.caches.race_heats_registrations.set(&result.0.id, &result.0).await;
         debug!("Query race {} from DB: {:?}", race_id, start.elapsed());
-        race
+        result.0
     }
 
     async fn _query_races(&self, regatta_id: i32) -> Vec<Race> {
