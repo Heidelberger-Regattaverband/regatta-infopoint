@@ -9,27 +9,48 @@ use tiberius::{Query, Row};
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Race {
-    pub id: i32,
+    /// The unique identifier of the race.
+    pub(crate) id: i32,
+
+    /// The race number, e.g. "101", "115a", ...
     number: String,
+
+    /// The short label of the race, e.g. "OFF 2x", "MM 4x", ...
     short_label: String,
+
+    /// The long label of the race, e.g. "Offene Klasse-Doppelzweier", "Masters-Männer-Doppelvierer", ...
     long_label: String,
+
+    /// An optional comment, e.g. "A-K" or "Lgr. III"
     comment: String,
+
+    /// The distance of the race, e.g. 1000, 1500 or 350
     distance: i16,
+
     lightweight: bool,
     state: i32,
 
     cancelled: bool,
+
+    /// The number of registrations
     registrations_count: i32,
+
     seeded: bool,
+
+    /// The age class of this race
     #[serde(skip_serializing_if = "Option::is_none")]
     age_class: Option<AgeClass>,
+
+    /// The boat class of this race
     #[serde(skip_serializing_if = "Option::is_none")]
     boat_class: Option<BoatClass>,
     group_mode: u8,
+
+    /// The date when the race is scheduled
     #[serde(skip_serializing_if = "Option::is_none")]
     date_time: Option<DateTime<Utc>>,
 
-    /// All registrations to this race
+    /// All registrations for this race
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) registrations: Option<Vec<Registration>>,
 
