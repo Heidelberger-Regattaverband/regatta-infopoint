@@ -62,7 +62,7 @@ impl Heat {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of heats
-    pub async fn query_all(regatta_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
+    pub(crate) async fn query_all(regatta_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
         let mut query = Query::new(
             "SELECT DISTINCT".to_string()
                 + &Heat::select_columns("c")

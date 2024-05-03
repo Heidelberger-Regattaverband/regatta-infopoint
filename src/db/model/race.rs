@@ -83,12 +83,9 @@ impl Race {
     pub async fn query_all(regatta_id: i32, pool: &TiberiusPool) -> Vec<Race> {
         let mut client = pool.get().await;
         let mut query = Query::new("SELECT DISTINCT".to_string() + &Race::select_columns("o")
-                + ","
-                + &AgeClass::select_columns("a")
-                + ","
-                + &BoatClass::select_columns("b")
-                + ", (SELECT Count(*) FROM Entry WHERE Entry_Race_ID_FK = Offer_ID AND Entry_CancelValue = 0) as Registrations_Count,
-                (SELECT AVG(Comp_State) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_State
+            + "," + &AgeClass::select_columns("a") + ","+ &BoatClass::select_columns("b")
+            + ", (SELECT Count(*) FROM Entry WHERE Entry_Race_ID_FK = Offer_ID AND Entry_CancelValue = 0) as Registrations_Count,
+            (SELECT AVG(Comp_State) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_State
             FROM Offer o
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
@@ -99,16 +96,18 @@ impl Race {
         races.into_iter().map(|row| Race::from(&row)).collect()
     }
 
-    pub async fn query_single(race_id: i32, pool: &TiberiusPool) -> Race {
+    pub(crate) async fn query_single(race_id: i32, pool: &TiberiusPool) -> Race {
         let mut client = pool.get().await;
         let mut query = Query::new("SELECT".to_string() + &Race::select_columns("o")
-                + ", (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count,
+            + "," + &AgeClass::select_columns("a") + "," + &BoatClass::select_columns("b")
+            + ", (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count,
                 (SELECT AVG(c.Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0) as Race_State
-            FROM  Offer o
+            FROM Offer o
+            JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
+            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
             WHERE o.Offer_ID = @P1");
         query.bind(race_id);
         let stream = query.query(&mut client).await.unwrap();
-
         Race::from(&utils::get_row(stream).await)
     }
 }

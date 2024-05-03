@@ -197,21 +197,30 @@ impl Aquarius {
 
     async fn _query_race_heats_registrations(&self, race_id: i32) -> Race {
         let start = Instant::now();
-        let mut result = join3(
+        let result = join3(
             Race::query_single(race_id, TiberiusPool::instance()),
             Heat::query_heats_of_race(race_id, TiberiusPool::instance()),
             Registration::query_registrations_for_race(race_id, TiberiusPool::instance()),
         )
         .await;
+        let mut race = result.0;
         if result.1.is_empty() {
-            result.0.heats = None;
+            race.heats = None;
         } else {
-            result.0.heats = Some(result.1.clone());
+            race.heats = Some(result.1);
         }
-        result.0.registrations = Some(result.2);
-        self.caches.race_heats_registrations.set(&result.0.id, &result.0).await;
-        debug!("Query race {} from DB: {:?}", race_id, start.elapsed());
-        result.0
+        if result.2.is_empty() {
+            race.registrations = None;
+        } else {
+            race.registrations = Some(result.2);
+        }
+        self.caches.race_heats_registrations.set(&race.id, &race).await;
+        debug!(
+            "Query race {} with heats and registrations from DB: {:?}",
+            race_id,
+            start.elapsed()
+        );
+        race
     }
 
     async fn _query_races(&self, regatta_id: i32) -> Vec<Race> {
