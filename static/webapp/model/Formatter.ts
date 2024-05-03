@@ -108,14 +108,14 @@ export default class Formatter {
   // -----------------
   static heatsLabel(race: any, heats?: any[]): string {
     if (heats) {
-      return heats.map(heat => {
-        let time: Date = new Date(heat.dateTime);
-        let label: string = Formatter.timeLabel(time.toLocaleTimeString()) + " - " + Formatter.heatLabel(heat);
-        if (race.groupMode > 0) {
-          label += " " + Formatter.groupValueLabel(heat.groupValue);
-        }
-        return label;
-      }).join(", ");
+      return heats.filter(heat => !heat.cancelled)
+        .map(heat => {
+          let label: string = Formatter.dayTimeIsoLabel(heat.dateTime) + " - " + Formatter.heatLabel(heat);
+          if (race.groupMode > 0) {
+            label += " " + Formatter.groupValueLabel(heat.groupValue);
+          }
+          return label;
+        }).join(", ");
     }
     return Formatter.i18n("sorting.none");
   }
