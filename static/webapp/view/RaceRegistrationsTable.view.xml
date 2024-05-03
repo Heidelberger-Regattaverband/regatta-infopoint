@@ -44,8 +44,8 @@
                 </layout:VerticalLayout>
               </layout:HorizontalLayout>
               <layout:VerticalLayout>
-                <!-- <ObjectAttribute title="{i18n>common.seededLbl}" text="{= ${raceRegistrations>/seeded} ? ${i18n>common.yes} :
-                ${i18n>common.no}}" /> -->
+                <ObjectAttribute title="{i18n>common.seededLbl}"
+                  text="{= ${raceRegistrations>/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
                 <ObjectStatus title="{i18n>common.state}" text="{path:'raceRegistrations>/',formatter:'.formatter.raceStateLabel'}"
                   state="{path:'raceRegistrations>/',formatter:'.formatter.raceStateHighlight'}" />
               </layout:VerticalLayout>
@@ -78,7 +78,8 @@
               </columns>
 
               <items>
-                <ColumnListItem highlight="{path: 'raceRegistrations>', formatter: '.formatter.raceRegistrationHighlight'}" vAlign="Top">
+                <ColumnListItem vAlign="Top"
+                  highlight="{parts:[{path:'race>/'},{path:'raceRegistrations>'}], formatter: '.formatter.raceRegistrationHighlight'}">
                   <cells>
                     <layout:VerticalLayout>
                       <Text text="{raceRegistrations>bib}" visible="{=${raceRegistrations>cancelled}}" class="cancelled" />

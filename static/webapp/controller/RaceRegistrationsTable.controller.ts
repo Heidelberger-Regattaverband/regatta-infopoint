@@ -11,12 +11,13 @@ export default class RaceRegistrationsTable extends BaseController {
 
   formatter: Formatter = Formatter;
   private keyListener: (event: KeyboardEvent) => void;
+  private readonly raceModel: JSONModel = new JSONModel();
 
   onInit(): void {
     // first initialize the view
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getView()?.addEventDelegate({ onBeforeShow: this.onBeforeShow, onBeforeHide: this.onBeforeHide }, this);
-    super.setViewModel(new JSONModel(), "raceRegistrations");
+    super.setViewModel(this.raceModel, "raceRegistrations");
 
     super.getEventBus()?.subscribe("race", "itemChanged", this.onItemChanged, this);
 
@@ -24,9 +25,10 @@ export default class RaceRegistrationsTable extends BaseController {
     this.keyListener = this.onKeyDown.bind(this);
   }
 
-  private async onBeforeShow(): Promise<void> {
-    window.addEventListener("keydown", this.keyListener);
-    await this.loadRaceModel();
+  private onBeforeShow(): void {
+    this.loadRaceModel().then(() => {
+      window.addEventListener("keydown", this.keyListener);
+    })
   }
 
   private onBeforeHide(): void {
@@ -65,7 +67,7 @@ export default class RaceRegistrationsTable extends BaseController {
 
   private async loadRaceModel(): Promise<boolean> {
     const race: any = (super.getComponentModel("race") as JSONModel).getData();
-    return await super.updateJSONModel(super.getViewModel("raceRegistrations") as JSONModel, `/api/races/${race.id}`, super.getView());
+    return await super.updateJSONModel(this.raceModel, `/api/races/${race.id}`, super.getView());
   }
 
   private async onItemChanged(channelId: string, eventId: string, parametersMap: any): Promise<void> {

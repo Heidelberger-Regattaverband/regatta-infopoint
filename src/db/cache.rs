@@ -89,7 +89,7 @@ pub(super) struct Caches {
     pub filters: Cache<i32, Filters>,
 
     // caches with entries per race
-    pub race: Cache<i32, Race>,
+    pub race_heats_registrations: Cache<i32, Race>,
     pub club: Cache<i32, Club>,
     pub club_registrations: Cache<(i32, i32), Vec<Registration>>,
 
@@ -113,7 +113,7 @@ impl Caches {
             filters: Cache::new(MAX_REGATTAS_COUNT, ttl),
 
             // caches with entries per race
-            race: Cache::new(MAX_RACES_COUNT, ttl),
+            race_heats_registrations: Cache::new(MAX_RACES_COUNT, ttl),
             club: Cache::new(MAX_RACES_COUNT, ttl),
             club_registrations: Cache::new(MAX_RACES_COUNT, ttl),
 

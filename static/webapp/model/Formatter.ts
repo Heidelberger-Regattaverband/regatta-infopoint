@@ -94,9 +94,9 @@ export default class Formatter {
     return "";
   }
 
-  static raceRegistrationHighlight(registration: any): IndicationColor {
+  static raceRegistrationHighlight(race: any, registration: any): IndicationColor {
     https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
-    if (registration.cancelled || registration.race.cancelled) {
+    if (registration.cancelled || race.cancelled) {
       return IndicationColor.Indication02; // cancelled -> red
     } else {
       return IndicationColor.Indication04; // official -> green
@@ -147,7 +147,8 @@ export default class Formatter {
 
   static boatLabel(registration: any): string {
     let label: string = "" + registration.shortLabel;
-    if (registration.race.groupMode == 2) {
+    // if (registration.race && registration.race.groupMode == 2) {
+    if (registration.groupValue) {
       label += " - " + Formatter.groupValueLabel(registration.groupValue);
     }
     if (registration.boatNumber) {
