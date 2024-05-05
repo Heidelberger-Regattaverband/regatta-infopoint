@@ -69,10 +69,13 @@
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>
-                  <Text text="{registrations>club/shortName}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
-                    class="cancelled" />
-                  <Text text="{registrations>club/shortName}"
-                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                  <HBox>
+                    <Image src="{registrations>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
+                    <Text text="{registrations>club/shortName}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
+                      class="cancelled" />
+                    <Text text="{registrations>club/shortName}"
+                      visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                  </HBox>
                 </layout:VerticalLayout>
               </cells>
             </ColumnListItem>
