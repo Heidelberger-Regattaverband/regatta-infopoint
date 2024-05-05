@@ -97,16 +97,14 @@ async fn get_participating_clubs(
     Json(aquarius.get_participating_clubs(regatta_id, opt_user).await)
 }
 
-#[get("/regattas/{regatta_id}/clubs/{club_id}/heats")]
-async fn get_club_heats(ids: Path<(i32, i32)>, aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> impl Responder {
-    let ids = ids.into_inner();
-    Json(aquarius.get_club_heats(ids.0, ids.1, opt_user).await)
-}
-
 #[get("/regattas/{regatta_id}/clubs/{club_id}/registrations")]
-async fn get_club_registrations(ids: Path<(i32, i32)>, aquarius: Data<Aquarius>) -> impl Responder {
+async fn get_club_registrations(
+    ids: Path<(i32, i32)>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> impl Responder {
     let ids = ids.into_inner();
-    Json(aquarius.get_club_registrations(ids.0, ids.1).await)
+    Json(aquarius.get_club_registrations(ids.0, ids.1, opt_user).await)
 }
 
 #[get("/clubs/{id}")]
@@ -218,7 +216,6 @@ pub(crate) fn config(cfg: &mut web::ServiceConfig) {
         web::scope(PATH)
             .service(get_club)
             .service(get_regattas)
-            .service(get_club_heats)
             .service(get_club_registrations)
             .service(get_participating_clubs)
             .service(get_active_regatta)
