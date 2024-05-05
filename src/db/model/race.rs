@@ -8,7 +8,7 @@ use tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct Race {
+pub(crate) struct Race {
     /// The unique identifier of the race.
     pub(crate) id: i32,
 
@@ -27,34 +27,36 @@ pub struct Race {
     /// The distance of the race, e.g. 1000, 1500 or 350
     distance: i16,
 
+    /// Indicates whether the race is a lightweight or not.
     lightweight: bool,
     state: i32,
 
+    /// Indicates whether the race is canceled or not.
     cancelled: bool,
 
-    /// The number of registrations
+    /// The number of registrations for this race.
     registrations_count: i32,
 
     seeded: bool,
 
-    /// The age class of this race
+    /// The age class of this race.
     #[serde(skip_serializing_if = "Option::is_none")]
     age_class: Option<AgeClass>,
 
-    /// The boat class of this race
+    /// The boat class of this race.
     #[serde(skip_serializing_if = "Option::is_none")]
     boat_class: Option<BoatClass>,
     group_mode: u8,
 
-    /// The date when the first heat of this race is scheduled
+    /// The date and time of the first heat of this race.
     #[serde(skip_serializing_if = "Option::is_none")]
     date_time: Option<DateTime<Utc>>,
 
-    /// All registrations for this race
+    /// All registrations for this race.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) registrations: Option<Vec<Registration>>,
 
-    /// All heats of this race
+    /// All heats of this race.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) heats: Option<Vec<Heat>>,
 }
@@ -105,7 +107,7 @@ impl Race {
         let mut client = pool.get().await;
         let mut query = Query::new("SELECT DISTINCT".to_string() + &Race::select_columns("o")
             + "," + &AgeClass::select_columns("a") + ","+ &BoatClass::select_columns("b")
-            + ", (SELECT Count(*) FROM Entry WHERE Entry_Race_ID_FK = Offer_ID AND Entry_CancelValue = 0) as Registrations_Count,
+            + ", (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count,
             (SELECT AVG(Comp_State) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_State
             FROM Offer o
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
