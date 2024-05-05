@@ -1,11 +1,10 @@
-use std::{cmp::Ordering, time::Duration};
-
 use crate::db::{
     model::{utils, Club, Crew, Heat, HeatResult, Race, Registration, TryToEntity},
     tiberius::{RowColumn, TiberiusPool},
 };
 use futures::future::{join_all, BoxFuture};
 use serde::Serialize;
+use std::{cmp::Ordering, time::Duration};
 use tiberius::{Query, Row};
 
 /// A registration of a boat in a heat.
@@ -38,12 +37,13 @@ impl From<&Row> for HeatRegistration {
 }
 
 impl HeatRegistration {
-    pub async fn query_all(heat: &Heat, pool: &TiberiusPool) -> Vec<HeatRegistration> {
-        let mut query = Query::new("SELECT DISTINCT
-                ce.CE_ID, ce.CE_Lane, ".to_string() + &Registration::select_columns("e") + ", Label_Short, BoatClass_NumRowers,"
-                + &Club::select_columns("c") + ", " + &Race::select_columns("o") + ", " + &HeatResult::select_columns("r")
-            + "
-            FROM CompEntries ce
+    pub(crate) async fn query_all(heat: &Heat, pool: &TiberiusPool) -> Vec<HeatRegistration> {
+        let mut query = Query::new("SELECT DISTINCT ce.CE_ID, ce.CE_Lane, ".to_string() +
+            &Registration::select_columns("e") + ", Label_Short, BoatClass_NumRowers," +
+            &Club::select_columns("c") + ", " + 
+            &Race::select_columns("o") + ", " + 
+            &HeatResult::select_columns("r") +
+            " FROM CompEntries ce
             JOIN Comp                  ON CE_Comp_ID_FK     = Comp_ID
             JOIN Offer o               ON o.Offer_ID        = Comp_Race_ID_FK
             JOIN BoatClass             ON o.Offer_BoatClass_ID_FK = BoatClass_ID
