@@ -24,9 +24,10 @@ export default class HeatRegistrationsTable extends BaseController {
     this.keyListener = this.onKeyDown.bind(this);
   }
 
-  private async onBeforeShow(): Promise<void> {
-    window.addEventListener("keydown", this.keyListener);
-    await this.loadHeatModel();
+  private onBeforeShow(): void {
+    this.loadHeatModel().then(() => {
+      window.addEventListener("keydown", this.keyListener);
+    });
   }
 
   private onBeforeHide(): void {

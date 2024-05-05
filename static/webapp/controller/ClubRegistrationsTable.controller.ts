@@ -36,32 +36,32 @@ export default class ClubRegistrationsTableController extends BaseController {
       async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
   }
 
+  onNavBack(): void {
+    super.navBack("participatingClubs");
+    delete this.clubId;
+  }
+
   onSelectionChange(oEvent: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = oEvent.getParameter("listItem");
     if (selectedItem) {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("registrations");
       const registration: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
 
-      registration.heat._nav = { disabled: true, back: "clubRegistrations" };
+      registration.race._nav = { disabled: true, back: "clubRegistrations" };
 
-      (super.getComponentModel("heat") as JSONModel).setData(registration.heat);
-      super.displayTarget("heatRegistrations");
+      (super.getComponentModel("race") as JSONModel).setData(registration.race);
+      super.displayTarget("raceRegistrations");
     }
   }
 
-  onNavBack(): void {
-    super.navBack("participatingClubs");
-    delete this.clubId;
-  }
-
-  async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
+  onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    const updated: boolean = await this.loadRegistrationsModel();
-    if (updated) {
-      MessageToast.show(this.i18n("msg.dataUpdated"));
-    }
-    source.setEnabled(true);
+    this.loadRegistrationsModel().then((updated) => {
+      if (updated) {
+        MessageToast.show(this.i18n("msg.dataUpdated"));
+      }
+    }).finally(() => source.setEnabled(true));
   }
 
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
