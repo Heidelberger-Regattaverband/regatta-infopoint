@@ -104,13 +104,9 @@ async fn get_club_heats(ids: Path<(i32, i32)>, aquarius: Data<Aquarius>, opt_use
 }
 
 #[get("/regattas/{regatta_id}/clubs/{club_id}/registrations")]
-async fn get_club_registrations(
-    ids: Path<(i32, i32)>,
-    aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
-) -> impl Responder {
+async fn get_club_registrations(ids: Path<(i32, i32)>, aquarius: Data<Aquarius>) -> impl Responder {
     let ids = ids.into_inner();
-    Json(aquarius.get_club_registrations(ids.0, ids.1, opt_user).await)
+    Json(aquarius.get_club_registrations(ids.0, ids.1).await)
 }
 
 #[get("/clubs/{id}")]

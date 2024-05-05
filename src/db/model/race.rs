@@ -46,7 +46,7 @@ pub struct Race {
     boat_class: Option<BoatClass>,
     group_mode: u8,
 
-    /// The date when the race is scheduled
+    /// The date when the first heat of this race is scheduled
     #[serde(skip_serializing_if = "Option::is_none")]
     date_time: Option<DateTime<Utc>>,
 

@@ -71,12 +71,16 @@ impl Registration {
         format!(" {0}.Entry_ID, {0}.Entry_Bib, {0}.Entry_Comment, {0}.Entry_BoatNumber, {0}.Entry_GroupValue, {0}.Entry_CancelValue ", alias)
     }
 
-    pub async fn query_of_club(regatta_id: i32, club_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
+    pub async fn query_registrations_heats_of_club(
+        regatta_id: i32,
+        club_id: i32,
+        pool: &TiberiusPool,
+    ) -> Vec<Registration> {
         let round = 64;
         let mut query = Query::new(
           "SELECT DISTINCT".to_string() + &Registration::select_columns("e") + ", Label_Short, "
-                + &Club::select_columns("oc") + ", " + &Race::select_columns("o") + ", " + &Heat::select_columns("c") +
-                ", (SELECT MIN(Comp_DateTime) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID) as Race_DateTime
+            + &Club::select_columns("oc") + ", " + &Race::select_columns("o") + ", " + &Heat::select_columns("c") +
+            ", (SELECT MIN(Comp_DateTime) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_DateTime
             FROM Club AS ac
             JOIN Athlet      ON Athlet_Club_ID_FK  = ac.Club_ID
             JOIN Crew        ON Crew_Athlete_ID_FK = Athlet_ID
@@ -89,6 +93,30 @@ impl Registration {
             JOIN Comp c      ON CE_Comp_ID_FK = c.Comp_ID AND CE_Entry_ID_FK = e.Entry_ID
             WHERE e.Entry_Event_ID_FK = @P1 AND ac.Club_ID = @P2 AND EL_RoundFrom <= @P3 AND @P3 <= EL_RoundTo AND Crew_RoundTo = @P3
             ORDER BY c.Comp_DateTime ASC, o.Offer_ID ASC",
+        );
+        query.bind(regatta_id);
+        query.bind(club_id);
+        query.bind(round);
+        execute_query(pool, query, round).await
+    }
+
+    pub async fn query_registrations_of_club(regatta_id: i32, club_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
+        let round = 64;
+        let mut query = Query::new("SELECT DISTINCT".to_string() + &Registration::select_columns("e") + ", Label_Short, "
+            + &Club::select_columns("oc") + ", " + &Race::select_columns("o") +
+            ", (SELECT MIN(Comp_DateTime) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_DateTime,
+            (SELECT AVG(Comp_State) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_State
+            FROM Club AS ac
+            JOIN Athlet      ON Athlet_Club_ID_FK  = ac.Club_ID
+            JOIN Crew        ON Crew_Athlete_ID_FK = Athlet_ID
+            JOIN Entry e     ON Crew_Entry_ID_FK   = e.Entry_ID
+            JOIN Club as oc  ON e.Entry_OwnerClub_ID_FK = oc.Club_ID
+            JOIN EntryLabel  ON EL_Entry_ID_FK     = e.Entry_ID
+            JOIN Label       ON EL_Label_ID_FK     = Label_ID
+            JOIN Offer o     ON e.Entry_Race_ID_FK = o.Offer_ID
+            JOIN CompEntries ON CE_Entry_ID_FK     = e.Entry_ID
+            WHERE e.Entry_Event_ID_FK = @P1 AND ac.Club_ID = @P2 AND EL_RoundFrom <= @P3 AND @P3 <= EL_RoundTo AND Crew_RoundTo = @P3
+            ORDER BY o.Offer_ID ASC",
         );
         query.bind(regatta_id);
         query.bind(club_id);
