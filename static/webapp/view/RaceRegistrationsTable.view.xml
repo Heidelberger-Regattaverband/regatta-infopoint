@@ -39,16 +39,18 @@
             <f:DynamicPageHeader>
               <layout:HorizontalLayout allowWrapping="true">
                 <layout:VerticalLayout class="sapUiMediumMarginEnd">
-                  <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceRegistrations>/', formatter:'.formatter.distanceLabel'}" />
+                  <ObjectStatus title="{i18n>common.state}" text="{path:'raceRegistrations>/',formatter:'.formatter.raceStateLabel'}"
+                    state="{path:'raceRegistrations>/',formatter:'.formatter.raceStateHighlight'}" />
                   <ObjectAttribute title="{i18n>common.registrations}" text="{raceRegistrations>/registrationsCount}" />
                 </layout:VerticalLayout>
               </layout:HorizontalLayout>
               <layout:VerticalLayout>
+                <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceRegistrations>/', formatter:'.formatter.distanceLabel'}" />
                 <ObjectAttribute title="{i18n>common.seededLbl}"
-                  text="{= ${raceRegistrations>/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
-                <ObjectStatus title="{i18n>common.state}" text="{path:'raceRegistrations>/',formatter:'.formatter.raceStateLabel'}"
-                  state="{path:'raceRegistrations>/',formatter:'.formatter.raceStateHighlight'}" />
+                  text="{=${raceRegistrations>/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
               </layout:VerticalLayout>
+              <ObjectAttribute title="{i18n>common.heats}"
+                text="{parts:[{path:'raceRegistrations>/'},{path:'raceRegistrations>/heats'}],formatter:'.formatter.heatsLabel'}" />
             </f:DynamicPageHeader>
           </f:header>
 
@@ -79,7 +81,7 @@
 
               <items>
                 <ColumnListItem vAlign="Top"
-                  highlight="{parts:[{path:'race>/'},{path:'raceRegistrations>'}], formatter: '.formatter.raceRegistrationHighlight'}">
+                  highlight="{parts:[{path:'race>/'},{path:'raceRegistrations>'}],formatter:'.formatter.raceRegistrationHighlight'}">
                   <cells>
                     <layout:VerticalLayout>
                       <Text text="{raceRegistrations>bib}" visible="{=${raceRegistrations>cancelled}}" class="cancelled" />
