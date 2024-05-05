@@ -88,7 +88,6 @@ impl Registration {
             JOIN EntryLabel  ON EL_Entry_ID_FK     = e.Entry_ID
             JOIN Label       ON EL_Label_ID_FK     = Label_ID
             JOIN Offer o     ON e.Entry_Race_ID_FK = o.Offer_ID
-            JOIN CompEntries ON CE_Entry_ID_FK     = e.Entry_ID
             WHERE e.Entry_Event_ID_FK = @P1 AND ac.Club_ID = @P2 AND EL_RoundFrom <= @P3 AND @P3 <= EL_RoundTo AND Crew_RoundTo = @P3
             ORDER BY o.Offer_ID ASC",
         );
