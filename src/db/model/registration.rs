@@ -79,8 +79,7 @@ impl Registration {
         let round = 64;
         let mut query = Query::new("SELECT DISTINCT".to_string() + &Registration::select_columns("e") + ", Label_Short, "
             + &Club::select_columns("oc") + ", " + &Race::select_columns("o") +
-            ", (SELECT MIN(Comp_DateTime) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_DateTime,
-            (SELECT AVG(Comp_State) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_State
+            " 
             FROM Club AS ac
             JOIN Athlet      ON Athlet_Club_ID_FK  = ac.Club_ID
             JOIN Crew        ON Crew_Athlete_ID_FK = Athlet_ID
