@@ -51,8 +51,12 @@ pub struct Heat {
 }
 
 impl Heat {
-    pub fn select_columns(alias: &str) -> String {
-        format!(" {0}.Comp_ID, {0}.Comp_Number, {0}.Comp_RoundCode, {0}.Comp_Label, {0}.Comp_GroupValue, {0}.Comp_State, {0}.Comp_Cancelled, {0}.Comp_DateTime, {0}.Comp_Round ", alias)
+    pub(crate) fn select_columns(alias: &str) -> String {
+        format!(
+            " {0}.Comp_ID, {0}.Comp_Number, {0}.Comp_RoundCode, {0}.Comp_Label, {0}.Comp_GroupValue, \
+            {0}.Comp_State, {0}.Comp_Cancelled, {0}.Comp_DateTime, {0}.Comp_Round ",
+            alias
+        )
     }
 
     /// Query all heats of a regatta.
@@ -91,7 +95,7 @@ impl Heat {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of heats
-    pub async fn query_heats_of_race(race_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
+    pub(crate) async fn query_heats_of_race(race_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
         let mut query = Query::new(
             "SELECT ".to_string()
                 + &Heat::select_columns("c")
@@ -104,7 +108,7 @@ impl Heat {
         heats.into_iter().map(|row| Heat::from(&row)).collect()
     }
 
-    pub async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Heat {
+    pub(crate) async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Heat {
         let mut query = Query::new(
             "SELECT DISTINCT".to_string()
                 + &Heat::select_columns("c")

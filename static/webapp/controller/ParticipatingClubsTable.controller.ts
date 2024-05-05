@@ -58,7 +58,7 @@ export default class ParticipatingClubsTable extends BaseTableController {
     if (selectedItem) {
       const bindingCtx: Context | undefined | null = selectedItem.getBindingContext("clubs");
       const club: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
-      super.getRouter().navTo("clubHeats", { clubId: club.id }, false /* history*/);
+      super.getRouter().navTo("clubRegistrations", { clubId: club.id }, false /* history*/);
     }
   }
 

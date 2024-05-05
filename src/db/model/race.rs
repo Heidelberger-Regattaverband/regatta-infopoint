@@ -27,42 +27,38 @@ pub struct Race {
     /// The distance of the race, e.g. 1000, 1500 or 350
     distance: i16,
 
+    /// Indicates whether the race is a lightweight or not.
     lightweight: bool,
     state: i32,
 
+    /// Indicates whether the race is canceled or not.
     cancelled: bool,
 
-    /// The number of registrations
+    /// The number of registrations for this race.
     registrations_count: i32,
 
     seeded: bool,
 
-    /// The age class of this race
+    /// The age class of this race.
     #[serde(skip_serializing_if = "Option::is_none")]
     age_class: Option<AgeClass>,
 
-    /// The boat class of this race
+    /// The boat class of this race.
     #[serde(skip_serializing_if = "Option::is_none")]
     boat_class: Option<BoatClass>,
     group_mode: u8,
 
-    /// The date when the race is scheduled
+    /// The date and time of the first heat of this race.
     #[serde(skip_serializing_if = "Option::is_none")]
     date_time: Option<DateTime<Utc>>,
 
-    /// All registrations for this race
+    /// All registrations for this race.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) registrations: Option<Vec<Registration>>,
 
-    /// All heats of this race
+    /// All heats of this race.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) heats: Option<Vec<Heat>>,
-}
-
-impl Race {
-    pub fn select_columns(alias: &str) -> String {
-        format!(" {0}.Offer_ID, {0}.Offer_RaceNumber, {0}.Offer_Distance, {0}.Offer_IsLightweight, {0}.Offer_Cancelled, {0}.Offer_ShortLabel, {0}.Offer_LongLabel, {0}.Offer_Comment, {0}.Offer_GroupMode, {0}.Offer_SortValue, {0}.Offer_HRV_Seeded ", alias)
-    }
 }
 
 impl From<&Row> for Race {
@@ -101,16 +97,30 @@ impl TryToEntity<Race> for Row {
 }
 
 impl Race {
-    pub async fn query_all(regatta_id: i32, pool: &TiberiusPool) -> Vec<Race> {
+    pub(crate) fn select_columns(alias: &str) -> String {
+        format!(" {0}.Offer_ID, {0}.Offer_RaceNumber, {0}.Offer_Distance, {0}.Offer_IsLightweight, {0}.Offer_Cancelled, {0}.Offer_ShortLabel, \
+            {0}.Offer_LongLabel, {0}.Offer_Comment, {0}.Offer_GroupMode, {0}.Offer_SortValue, {0}.Offer_HRV_Seeded, \
+            (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count, \
+            (SELECT AVG(Comp_State) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_State, \
+            (SELECT MIN(Comp_DateTime) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_DateTime \
+        ", alias)
+    }
+
+    pub(crate) async fn query_all(regatta_id: i32, pool: &TiberiusPool) -> Vec<Race> {
         let mut client = pool.get().await;
-        let mut query = Query::new("SELECT DISTINCT".to_string() + &Race::select_columns("o")
-            + "," + &AgeClass::select_columns("a") + ","+ &BoatClass::select_columns("b")
-            + ", (SELECT Count(*) FROM Entry WHERE Entry_Race_ID_FK = Offer_ID AND Entry_CancelValue = 0) as Registrations_Count,
-            (SELECT AVG(Comp_State) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_State
+        let mut query = Query::new(
+            "SELECT".to_string()
+                + &Race::select_columns("o")
+                + ","
+                + &AgeClass::select_columns("a")
+                + ","
+                + &BoatClass::select_columns("b")
+                + " 
             FROM Offer o
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
-            WHERE o.Offer_Event_ID_FK = @P1 ORDER BY o.Offer_SortValue ASC");
+            WHERE o.Offer_Event_ID_FK = @P1 ORDER BY o.Offer_SortValue ASC",
+        );
         query.bind(regatta_id);
         let stream = query.query(&mut client).await.unwrap();
         let races = utils::get_rows(stream).await;
@@ -119,14 +129,19 @@ impl Race {
 
     pub(crate) async fn query_single(race_id: i32, pool: &TiberiusPool) -> Race {
         let mut client = pool.get().await;
-        let mut query = Query::new("SELECT".to_string() + &Race::select_columns("o")
-            + "," + &AgeClass::select_columns("a") + "," + &BoatClass::select_columns("b")
-            + ", (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count,
-                (SELECT AVG(c.Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0) as Race_State
+        let mut query = Query::new(
+            "SELECT".to_string()
+                + &Race::select_columns("o")
+                + ","
+                + &AgeClass::select_columns("a")
+                + ","
+                + &BoatClass::select_columns("b")
+                + "
             FROM Offer o
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
-            WHERE o.Offer_ID = @P1");
+            WHERE o.Offer_ID = @P1",
+        );
         query.bind(race_id);
         let stream = query.query(&mut client).await.unwrap();
         Race::from(&utils::get_row(stream).await)
