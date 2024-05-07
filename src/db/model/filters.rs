@@ -24,6 +24,9 @@ pub struct Filters {
 
     /// All rounds: 4 - Vorlauf, 16 - Hoffnungslauf, 32 - Semifinal, 64 - Final
     rounds: Vec<Round>,
+
+    /// All used lightweight categories
+    lightweight: Vec<bool>,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -52,7 +55,9 @@ impl Filters {
 
         let rounds = query_rounds(regatta_id, pool);
 
-        let result = join!(distances, dates, age_classes, boat_classes, rounds);
+        let lightweight = query_lighweight(regatta_id, pool);
+
+        let result = join!(distances, dates, age_classes, boat_classes, rounds, lightweight);
 
         Filters {
             distances: result.0,
@@ -60,6 +65,7 @@ impl Filters {
             age_classes: result.2,
             boat_classes: result.3,
             rounds: result.4,
+            lightweight: result.5,
         }
     }
 }
@@ -115,6 +121,18 @@ async fn query_distances(regatta_id: i32, pool: &TiberiusPool) -> Vec<i16> {
     let mut client = pool.get().await;
     let rows = utils::get_rows(query.query(&mut client).await.unwrap()).await;
     rows.into_iter().map(|row| row.get_column("Offer_Distance")).collect()
+}
+
+async fn query_lighweight(regatta_id: i32, pool: &TiberiusPool) -> Vec<bool> {
+    let mut query: Query<'_> =
+        Query::new("SELECT DISTINCT Offer_IsLightweight FROM Offer WHERE Offer_Event_ID_FK = @P1");
+    query.bind(regatta_id);
+
+    let mut client = pool.get().await;
+    let rows = utils::get_rows(query.query(&mut client).await.unwrap()).await;
+    rows.into_iter()
+        .map(|row| row.get_column("Offer_IsLightweight"))
+        .collect()
 }
 
 async fn query_rounds(regatta_id: i32, pool: &TiberiusPool) -> Vec<Round> {

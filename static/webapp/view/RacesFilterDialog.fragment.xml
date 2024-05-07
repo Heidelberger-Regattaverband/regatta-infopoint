@@ -1,6 +1,4 @@
-<core:FragmentDefinition
-  xmlns="sap.m"
-  xmlns:core="sap.ui.core">
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
   <ViewSettingsDialog confirm="onHandleFilterDialogConfirm">
     <filterItems>
       <ViewSettingsFilterItem text="{i18n>common.gender}" key="gender" multiSelect="false">
@@ -17,13 +15,6 @@
           <ViewSettingsItem text="{i18n>heat.state.cancelled}" key="cancelled___EQ___true" />
         </items>
       </ViewSettingsFilterItem>
-
-      <!-- <ViewSettingsFilterItem text="{i18n>common.lightweight}" key="lightweight" multiSelect="false">
-        <items>
-          <ViewSettingsItem text="{i18n>common.yes}" key="lightweight___EQ___true" />
-          <ViewSettingsItem text="{i18n>common.no}" key="lightweight___EQ___false" />
-        </items>
-      </ViewSettingsFilterItem> -->
 
       <!-- <ViewSettingsFilterItem text="{i18n>common.seededLbl}" key="seeded" multiSelect="false">
         <items>
