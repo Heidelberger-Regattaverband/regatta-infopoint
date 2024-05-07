@@ -60,3 +60,9 @@ scraper = "0"
 
 [dev-dependencies]
 tokio-shared-rt = "0"
+
+[profile.release]
+# https://nnethercote.github.io/perf-book/build-configuration.html#codegen-units
+codegen-units = 1
+# https://nnethercote.github.io/perf-book/build-configuration.html#link-time-optimization
+lto = "fat"
