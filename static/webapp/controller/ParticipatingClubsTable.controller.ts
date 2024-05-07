@@ -43,14 +43,14 @@ export default class ParticipatingClubsTable extends BaseTableController {
     (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.ParticipatingClubsSortDialog")).open();
   }
 
-  async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
+  onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    const updated: boolean = await this.loadModel();
-    if (updated) {
-      MessageToast.show(this.i18n("msg.dataUpdated"));
-    }
-    source.setEnabled(true);
+    this.loadModel().then((updated: boolean) => {
+      if (updated) {
+        MessageToast.show(this.i18n("msg.dataUpdated"));
+      }
+    }).finally(() => source.setEnabled(true));
   }
 
   onItemPress(event: ListBase$SelectionChangeEvent): void {

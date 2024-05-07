@@ -57,7 +57,7 @@ export default class ClubRegistrationsTableController extends BaseController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadRegistrationsModel().then((updated) => {
+    this.loadRegistrationsModel().then((updated: boolean) => {
       if (updated) {
         MessageToast.show(this.i18n("msg.dataUpdated"));
       }
