@@ -35,7 +35,7 @@ rustls-pemfile = "2"
 
 # OpenAPI
 utoipa = { version = "4", features = ["actix_extras"] }
-utoipa-swagger-ui = { version = "6", features = ["actix-web"] }
+utoipa-swagger-ui = { version = "7", features = ["actix-web"] }
 
 # Database + Pool
 bb8 = "0"
