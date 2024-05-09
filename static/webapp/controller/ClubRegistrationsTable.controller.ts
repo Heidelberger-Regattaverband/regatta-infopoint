@@ -16,21 +16,29 @@ import MessageToast from "sap/m/MessageToast";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class ClubParticipationsTable extends BaseController {
+export default class ClubRegistrationsTableController extends BaseController {
 
   formatter: Formatter = Formatter;
   private table: Table;
   private clubId?: number;
+  private readonly registrationsModel: JSONModel = new JSONModel();
+  private readonly clubModel: JSONModel = new JSONModel();
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
 
     this.table = super.getView()?.byId("registrationsTable") as Table;
 
-    super.setViewModel(new JSONModel(), "registrations");
-    super.setViewModel(new JSONModel(), "club");
+    super.setViewModel(this.registrationsModel, "registrations");
+    super.setViewModel(this.clubModel, "club");
 
-    super.getRouter()?.getRoute("clubParticipations")?.attachPatternMatched(async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
+    super.getRouter()?.getRoute("clubRegistrations")?.attachPatternMatched(
+      async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
+  }
+
+  onNavBack(): void {
+    super.navBack("participatingClubs");
+    delete this.clubId;
   }
 
   onSelectionChange(oEvent: ListBase$SelectionChangeEvent): void {
@@ -39,26 +47,21 @@ export default class ClubParticipationsTable extends BaseController {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("registrations");
       const registration: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
 
-      registration.heat._nav = { disabled: true, back: "clubParticipations" };
+      registration.race._nav = { disabled: true, back: "clubRegistrations" };
 
-      (super.getComponentModel("heat") as JSONModel).setData(registration.heat);
-      super.displayTarget("heatRegistrations");
+      (super.getComponentModel("race") as JSONModel).setData(registration.race);
+      super.displayTarget("raceRegistrations");
     }
   }
 
-  onNavBack(): void {
-    super.navBack("participatingClubs");
-    delete this.clubId;
-  }
-
-  async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
+  onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    const updated: boolean = await this.loadRegistrationsModel();
-    if (updated) {
-      MessageToast.show(this.i18n("msg.dataUpdated"));
-    }
-    source.setEnabled(true);
+    this.loadRegistrationsModel().then((updated: boolean) => {
+      if (updated) {
+        MessageToast.show(this.i18n("msg.dataUpdated"));
+      }
+    }).finally(() => source.setEnabled(true));
   }
 
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
@@ -97,12 +100,11 @@ export default class ClubParticipationsTable extends BaseController {
   }
 
   private async loadClubModel(): Promise<boolean> {
-    return await super.updateJSONModel(super.getViewModel("club") as JSONModel, `/api/clubs/${this.clubId}`);
+    return await super.updateJSONModel(this.clubModel, `/api/clubs/${this.clubId}`);
   }
 
   private async loadRegistrationsModel(): Promise<boolean> {
-    return await super.updateJSONModel(super.getViewModel("registrations") as JSONModel,
+    return await super.updateJSONModel(this.registrationsModel,
       `/api/regattas/${super.getRegattaId()}/clubs/${this.clubId}/registrations`, this.table);
   }
-
 }

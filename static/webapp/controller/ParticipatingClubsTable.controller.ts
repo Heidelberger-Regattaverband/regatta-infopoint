@@ -17,7 +17,7 @@ import BaseTableController from "./BaseTable.controller";
  */
 export default class ParticipatingClubsTable extends BaseTableController {
 
-  private participatingClubsModel: JSONModel = new JSONModel();
+  private readonly participatingClubsModel: JSONModel = new JSONModel();
 
   onInit(): void {
     super.init(super.getView()?.byId("clubsTable") as Table, "club" /* eventBus channel */);
@@ -43,14 +43,14 @@ export default class ParticipatingClubsTable extends BaseTableController {
     (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.ParticipatingClubsSortDialog")).open();
   }
 
-  async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
+  onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    const updated: boolean = await this.loadModel();
-    if (updated) {
-      MessageToast.show(this.i18n("msg.dataUpdated"));
-    }
-    source.setEnabled(true);
+    this.loadModel().then((updated: boolean) => {
+      if (updated) {
+        MessageToast.show(this.i18n("msg.dataUpdated"));
+      }
+    }).finally(() => source.setEnabled(true));
   }
 
   onItemPress(event: ListBase$SelectionChangeEvent): void {
@@ -58,7 +58,7 @@ export default class ParticipatingClubsTable extends BaseTableController {
     if (selectedItem) {
       const bindingCtx: Context | undefined | null = selectedItem.getBindingContext("clubs");
       const club: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
-      super.getRouter().navTo("clubParticipations", { clubId: club.id }, false /* history*/);
+      super.getRouter().navTo("clubRegistrations", { clubId: club.id }, false /* history*/);
     }
   }
 

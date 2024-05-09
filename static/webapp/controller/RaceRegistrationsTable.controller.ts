@@ -10,14 +10,14 @@ import MessageToast from "sap/m/MessageToast";
 export default class RaceRegistrationsTable extends BaseController {
 
   formatter: Formatter = Formatter;
-
   private keyListener: (event: KeyboardEvent) => void;
+  private readonly raceModel: JSONModel = new JSONModel();
 
   onInit(): void {
     // first initialize the view
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getView()?.addEventDelegate({ onBeforeShow: this.onBeforeShow, onBeforeHide: this.onBeforeHide }, this);
-    super.setViewModel(new JSONModel(), "raceRegistrations");
+    super.setViewModel(this.raceModel, "raceRegistrations");
 
     super.getEventBus()?.subscribe("race", "itemChanged", this.onItemChanged, this);
 
@@ -25,9 +25,10 @@ export default class RaceRegistrationsTable extends BaseController {
     this.keyListener = this.onKeyDown.bind(this);
   }
 
-  private async onBeforeShow(): Promise<void> {
-    window.addEventListener("keydown", this.keyListener);
-    await this.loadRaceModel();
+  private onBeforeShow(): void {
+    this.loadRaceModel().then(() => {
+      window.addEventListener("keydown", this.keyListener);
+    })
   }
 
   private onBeforeHide(): void {
@@ -35,7 +36,12 @@ export default class RaceRegistrationsTable extends BaseController {
   }
 
   onNavBack(): void {
-    super.displayTarget("races");
+    const data = (super.getComponentModel("race") as JSONModel).getData();
+    if (data._nav.back) {
+      super.displayTarget(data._nav.back);
+    } else {
+      super.displayTarget("races");
+    }
   }
 
   onFirstPress(): void {
@@ -54,19 +60,19 @@ export default class RaceRegistrationsTable extends BaseController {
     super.getEventBus()?.publish("race", "last", {});
   }
 
-  async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
+  onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    const updated: boolean = await this.loadRaceModel();
-    if (updated) {
-      MessageToast.show(this.i18n("msg.dataUpdated"));
-    }
-    source.setEnabled(true);
+    this.loadRaceModel().then((updated: boolean) => {
+      if (updated) {
+        MessageToast.show(this.i18n("msg.dataUpdated"));
+      }
+    }).finally(() => source.setEnabled(true));
   }
 
   private async loadRaceModel(): Promise<boolean> {
     const race: any = (super.getComponentModel("race") as JSONModel).getData();
-    return await super.updateJSONModel(super.getViewModel("raceRegistrations") as JSONModel, `/api/races/${race.id}`, super.getView());
+    return await super.updateJSONModel(this.raceModel, `/api/races/${race.id}`, super.getView());
   }
 
   private async onItemChanged(channelId: string, eventId: string, parametersMap: any): Promise<void> {

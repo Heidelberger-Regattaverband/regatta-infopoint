@@ -12,10 +12,10 @@ import MessageToast from "sap/m/MessageToast";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class ScoringTable extends BaseController {
+export default class ScoringTableController extends BaseController {
 
   private table: Table;
-  private scoringModel: JSONModel = new JSONModel();
+  private readonly scoringModel: JSONModel = new JSONModel();
 
   onInit(): void {
     this.table = super.getView()?.byId("scoringTable") as Table;
@@ -37,14 +37,14 @@ export default class ScoringTable extends BaseController {
     binding?.filter(searchFilters);
   }
 
-  async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
+  onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    const updated: boolean = await this.loadScoringModel();
-    if (updated) {
-      MessageToast.show(this.i18n("msg.dataUpdated"));
-    }
-    source.setEnabled(true);
+    this.loadScoringModel().then((updated: boolean) => {
+      if (updated) {
+        MessageToast.show(this.i18n("msg.dataUpdated"));
+      }
+    }).finally(() => source.setEnabled(true));
   }
 
   private createSearchFilters(query: string): Filter[] {

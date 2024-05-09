@@ -27,14 +27,14 @@ pub struct Crew {
 }
 
 impl Crew {
-    pub fn select_columns(alias: &str) -> String {
+    pub(crate) fn select_columns(alias: &str) -> String {
         format!(
             " {0}.Crew_ID, {0}.Crew_Pos, {0}.Crew_IsCox, {0}.Crew_RoundFrom, {0}.Crew_RoundTo ",
             alias
         )
     }
 
-    pub async fn query_all(registration_id: i32, round: i16, pool: &TiberiusPool) -> Vec<Crew> {
+    pub(crate) async fn query_all(registration_id: i32, round: i16, pool: &TiberiusPool) -> Vec<Crew> {
         let mut query = Query::new(
             "SELECT".to_string()
                 + &Crew::select_columns("cr")

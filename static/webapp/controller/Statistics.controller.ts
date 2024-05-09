@@ -9,9 +9,10 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class Statistics extends BaseController {
-  private dataLoader: JSONModel = new JSONModel();
-  private statisticsModel: JSONModel = new JSONModel();
+export default class StatisticsController extends BaseController {
+
+  private readonly dataLoader: JSONModel = new JSONModel();
+  private readonly statisticsModel: JSONModel = new JSONModel();
   private racesList?: Control;
   private heatsList?: Control;
   private registrationsList?: Control;
@@ -58,7 +59,9 @@ export default class Statistics extends BaseController {
       registrations.push({ name: this.i18n("statistics.registrations.cancelled"), value: statistics.registrations.cancelled });
       registrations.push({ name: this.i18n("statistics.reportingClubs"), value: statistics.registrations.registeringClubs });
       registrations.push({ name: this.i18n("statistics.participatingClubs"), value: statistics.registrations.clubs });
-      registrations.push({ name: this.i18n("common.athletes"), value: statistics.registrations.athletes });
+      registrations.push({ name: this.i18n("statistics.athletes.overall"), value: statistics.registrations.athletes });
+      registrations.push({ name: this.i18n("statistics.athletes.female"), value: statistics.registrations.athletesFemale });
+      registrations.push({ name: this.i18n("statistics.athletes.male"), value: statistics.registrations.athletesMale });
       registrations.push({ name: this.i18n("common.seats"), value: seats });
     }
 

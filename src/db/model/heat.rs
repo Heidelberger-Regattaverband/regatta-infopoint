@@ -20,7 +20,8 @@ pub struct Heat {
     number: i16,
 
     /// The race the heat belongs to.
-    race: Race,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    race: Option<Race>,
 
     /// The round code of the heat. Known values are: "R" - main race, "A" - division, "V" - Vorlauf
     round_code: String,
@@ -50,11 +51,22 @@ pub struct Heat {
 }
 
 impl Heat {
-    pub fn select_columns(alias: &str) -> String {
-        format!(" {0}.Comp_ID, {0}.Comp_Number, {0}.Comp_RoundCode, {0}.Comp_Label, {0}.Comp_GroupValue, {0}.Comp_State, {0}.Comp_Cancelled, {0}.Comp_DateTime, {0}.Comp_Round ", alias)
+    pub(crate) fn select_columns(alias: &str) -> String {
+        format!(
+            " {0}.Comp_ID, {0}.Comp_Number, {0}.Comp_RoundCode, {0}.Comp_Label, {0}.Comp_GroupValue, \
+            {0}.Comp_State, {0}.Comp_Cancelled, {0}.Comp_DateTime, {0}.Comp_Round ",
+            alias
+        )
     }
 
-    pub async fn query_all(regatta_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
+    /// Query all heats of a regatta.
+    ///
+    /// # Arguments
+    /// * `regatta_id` - The regatta identifier
+    /// * `pool` - The database connection pool
+    /// # Returns
+    /// A list of heats
+    pub(crate) async fn query_all(regatta_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
         let mut query = Query::new(
             "SELECT DISTINCT".to_string()
                 + &Heat::select_columns("c")
@@ -76,7 +88,27 @@ impl Heat {
         heats.into_iter().map(|row| Heat::from(&row)).collect()
     }
 
-    pub async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Heat {
+    /// Query all heats of a race. The heats are ordered by their number.
+    ///
+    /// # Arguments
+    /// * `race_id` - The race identifier
+    /// * `pool` - The database connection pool
+    /// # Returns
+    /// A list of heats
+    pub(crate) async fn query_heats_of_race(race_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
+        let mut query = Query::new(
+            "SELECT ".to_string()
+                + &Heat::select_columns("c")
+                + " FROM Comp c WHERE c.Comp_Race_ID_FK = @P1 ORDER BY c.Comp_Number ASC",
+        );
+        query.bind(race_id);
+
+        let mut client = pool.get().await;
+        let heats = utils::get_rows(query.query(&mut client).await.unwrap()).await;
+        heats.into_iter().map(|row| Heat::from(&row)).collect()
+    }
+
+    pub(crate) async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Heat {
         let mut query = Query::new(
             "SELECT DISTINCT".to_string()
                 + &Heat::select_columns("c")
@@ -107,7 +139,7 @@ impl From<&Row> for Heat {
     fn from(value: &Row) -> Self {
         Heat {
             id: value.get_column("Comp_ID"),
-            race: Race::from(value),
+            race: value.try_to_entity(),
             number: value.get_column("Comp_Number"),
             round_code: value.get_column("Comp_RoundCode"),
             label: value.try_get_column("Comp_Label"),

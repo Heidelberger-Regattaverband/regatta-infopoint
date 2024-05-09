@@ -17,7 +17,7 @@ import { SortOrder } from "sap/ui/core/library";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default abstract class BaseTable extends BaseController {
+export default abstract class BaseTableController extends BaseController {
 
   protected table: Table;
   private filters: Filter[];

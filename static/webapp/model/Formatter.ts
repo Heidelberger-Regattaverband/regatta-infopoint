@@ -94,9 +94,9 @@ export default class Formatter {
     return "";
   }
 
-  static raceRegistrationHighlight(registration: any): IndicationColor {
-    https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
-    if (registration.cancelled || registration.race.cancelled) {
+  static raceRegistrationHighlight(race: any, registration: any): IndicationColor {
+    // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
+    if (registration.cancelled || race.cancelled) {
       return IndicationColor.Indication02; // cancelled -> red
     } else {
       return IndicationColor.Indication04; // official -> green
@@ -106,6 +106,20 @@ export default class Formatter {
   // -----------------
   // heat formatters
   // -----------------
+  static heatsLabel(race: any, heats?: any[]): string {
+    if (heats) {
+      return heats.filter(heat => !heat.cancelled)
+        .map(heat => {
+          let label: string = Formatter.dayTimeIsoLabel(heat.dateTime) + " - " + Formatter.heatLabel(heat);
+          if (race.groupMode > 0) {
+            label += " " + Formatter.groupValueLabel(heat.groupValue);
+          }
+          return label;
+        }).join(", ");
+    }
+    return Formatter.i18n("sorting.none");
+  }
+
   static heatRegistrationHighlight(heatRegistration: any): IndicationColor {
     // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
     if (heatRegistration.registration.cancelled) {
@@ -147,7 +161,8 @@ export default class Formatter {
 
   static boatLabel(registration: any): string {
     let label: string = "" + registration.shortLabel;
-    if (registration.race.groupMode == 2) {
+    // if (registration.race && registration.race.groupMode == 2) {
+    if (registration.groupValue) {
       label += " - " + Formatter.groupValueLabel(registration.groupValue);
     }
     if (registration.boatNumber) {

@@ -7,13 +7,13 @@
     <Page title="{i18n>common.registrations}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
       <headerContent>
         <Button type="Transparent" icon="sap-icon://close-command-field" press="onFirstPress" tooltip="First"
-          enabled="{=!${race>/_nav/isFirst}}" />
+          enabled="{=!${race>/_nav/isFirst}}" visible="{=!${race>/_nav/disabled}}" />
         <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press="onPreviousPress" tooltip="Previous"
-          enabled="{=!${race>/_nav/isFirst}}" />
+          enabled="{=!${race>/_nav/isFirst}}" visible="{=!${race>/_nav/disabled}}" />
         <Button type="Transparent" icon="sap-icon://navigation-right-arrow" press="onNextPress" tooltip="Next"
-          enabled="{=!${race>/_nav/isLast}}" />
+          enabled="{=!${race>/_nav/isLast}}" visible="{=!${race>/_nav/disabled}}" />
         <Button type="Transparent" icon="sap-icon://open-command-field" press="onLastPress" tooltip="Last"
-          enabled="{=!${race>/_nav/isLast}}" />
+          enabled="{=!${race>/_nav/isLast}}" visible="{=!${race>/_nav/disabled}}" />
       </headerContent>
 
       <content>
@@ -39,16 +39,18 @@
             <f:DynamicPageHeader>
               <layout:HorizontalLayout allowWrapping="true">
                 <layout:VerticalLayout class="sapUiMediumMarginEnd">
-                  <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceRegistrations>/', formatter:'.formatter.distanceLabel'}" />
+                  <ObjectStatus title="{i18n>common.state}" text="{path:'raceRegistrations>/',formatter:'.formatter.raceStateLabel'}"
+                    state="{path:'raceRegistrations>/',formatter:'.formatter.raceStateHighlight'}" />
                   <ObjectAttribute title="{i18n>common.registrations}" text="{raceRegistrations>/registrationsCount}" />
                 </layout:VerticalLayout>
               </layout:HorizontalLayout>
               <layout:VerticalLayout>
-                <!-- <ObjectAttribute title="{i18n>common.seededLbl}" text="{= ${raceRegistrations>/seeded} ? ${i18n>common.yes} :
-                ${i18n>common.no}}" /> -->
-                <ObjectStatus title="{i18n>common.state}" text="{path:'raceRegistrations>/',formatter:'.formatter.raceStateLabel'}"
-                  state="{path:'raceRegistrations>/',formatter:'.formatter.raceStateHighlight'}" />
+                <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceRegistrations>/', formatter:'.formatter.distanceLabel'}" />
+                <ObjectAttribute title="{i18n>common.seededLbl}"
+                  text="{=${raceRegistrations>/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
               </layout:VerticalLayout>
+              <ObjectAttribute title="{i18n>common.heats}"
+                text="{parts:[{path:'raceRegistrations>/'},{path:'raceRegistrations>/heats'}],formatter:'.formatter.heatsLabel'}" />
             </f:DynamicPageHeader>
           </f:header>
 
@@ -78,7 +80,8 @@
               </columns>
 
               <items>
-                <ColumnListItem highlight="{path: 'raceRegistrations>', formatter: '.formatter.raceRegistrationHighlight'}" vAlign="Top">
+                <ColumnListItem vAlign="Top"
+                  highlight="{parts:[{path:'race>/'},{path:'raceRegistrations>'}],formatter:'.formatter.raceRegistrationHighlight'}">
                   <cells>
                     <layout:VerticalLayout>
                       <Text text="{raceRegistrations>bib}" visible="{=${raceRegistrations>cancelled}}" class="cancelled" />

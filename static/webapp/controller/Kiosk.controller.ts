@@ -12,11 +12,11 @@ export default class Kiosk extends BaseController {
   formatter: Formatter = Formatter;
   private indexFinished: number;
   private indexNext: number;
-  private heatFinishedModel: JSONModel = new JSONModel();
-  private heatNextModel: JSONModel = new JSONModel();
-  private kioskModel: JSONModel = new JSONModel();
-  private finishedModel: JSONModel = new JSONModel();
-  private nextModel: JSONModel = new JSONModel();
+  private readonly heatFinishedModel: JSONModel = new JSONModel();
+  private readonly heatNextModel: JSONModel = new JSONModel();
+  private readonly kioskModel: JSONModel = new JSONModel();
+  private readonly finishedModel: JSONModel = new JSONModel();
+  private readonly nextModel: JSONModel = new JSONModel();
   private intervalId?: number;
 
   onInit(): void {

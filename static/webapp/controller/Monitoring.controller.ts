@@ -6,12 +6,12 @@ import Button from "sap/m/Button";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class Monitoring extends BaseController {
-  private monitoringModel: JSONModel = new JSONModel();
+export default class MonitoringController extends BaseController {
+
+  private readonly units = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+  private readonly monitoringModel: JSONModel = new JSONModel();
   private socket?: WebSocket;
   private statusButton: Button;
-
-  private units = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
@@ -89,15 +89,14 @@ export default class Monitoring extends BaseController {
     this.socket.onclose = (_event: CloseEvent) => {
       this.statusButton.setIcon('sap-icon://disconnected');
       console.debug('Disconnected');
-      this.socket = undefined;
     }
   }
 
   private disconnect() {
     if (this.socket) {
-      console.debug('Disconnecting...');
       this.socket.close();
-      this.socket = undefined;
+      delete this.socket;
+      console.debug('Disconnecting...');
     }
   }
 }

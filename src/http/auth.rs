@@ -67,11 +67,12 @@ impl User {
     /// # Returns
     /// * `Ok(User)` - The authenticated user.
     /// * `Err(HttpResponse)` - The error response.
-    pub async fn authenticate(mut credentials: Credentials) -> Result<Self, HttpResponse> {
-        credentials.username = credentials.username.trim().to_owned();
+    pub async fn authenticate(credentials: Credentials) -> Result<Self, HttpResponse> {
+        let mut username: String = Default::default();
+        credentials.username.trim().clone_into(&mut username);
 
         // get database config with given credentials
-        let db_cfg = Config::get().get_db_config_for_user(&credentials.username, &credentials.password);
+        let db_cfg = Config::get().get_db_config_for_user(&username, &credentials.password);
 
         // then try to open a connection to the MS-SQL server ...
         let tcp = TcpStream::connect(db_cfg.get_addr()).await.unwrap();
