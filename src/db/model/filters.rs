@@ -55,7 +55,7 @@ impl Filters {
 
         let rounds = query_rounds(regatta_id, pool);
 
-        let lightweight = query_lighweight(regatta_id, pool);
+        let lightweight = query_lightweight(regatta_id, pool);
 
         let result = join!(distances, dates, age_classes, boat_classes, rounds, lightweight);
 
@@ -123,7 +123,7 @@ async fn query_distances(regatta_id: i32, pool: &TiberiusPool) -> Vec<i16> {
     rows.into_iter().map(|row| row.get_column("Offer_Distance")).collect()
 }
 
-async fn query_lighweight(regatta_id: i32, pool: &TiberiusPool) -> Vec<bool> {
+async fn query_lightweight(regatta_id: i32, pool: &TiberiusPool) -> Vec<bool> {
     let mut query: Query<'_> =
         Query::new("SELECT DISTINCT Offer_IsLightweight FROM Offer WHERE Offer_Event_ID_FK = @P1");
     query.bind(regatta_id);

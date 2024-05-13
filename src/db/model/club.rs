@@ -36,6 +36,16 @@ pub struct Club {
     #[serde(skip_serializing_if = "Option::is_none")]
     participations_count: Option<i32>,
 
+    /// The number of athletes in this club that are participating.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    ahtletes_count: Option<i32>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    ahtletes_female_count: Option<i32>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    ahtletes_male_count: Option<i32>,
+
     /// An optional URL showing the flag of the club.
     #[serde(skip_serializing_if = "Option::is_none")]
     flag_url: Option<String>,
@@ -47,14 +57,32 @@ impl Club {
             "SELECT DISTINCT".to_string()
                 + &Club::select_columns("c")
                 + ", (SELECT COUNT(*) FROM ( 
-                    SELECT DISTINCT Entry_ID
-                    FROM Club
-                    JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
-                    JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
-                    JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
-                    JOIN Event      ON Entry_Event_ID_FK  = Event_ID
-                    WHERE Event_ID = e.Event_ID AND c.Club_ID = Club_ID AND Entry_CancelValue = 0 AND Crew_RoundTo = 64
-                ) AS Participations_Count) AS Participations_Count
+                SELECT DISTINCT Entry_ID
+                FROM Club
+                JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
+                JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
+                JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
+                JOIN Event      ON Entry_Event_ID_FK  = Event_ID
+                WHERE Event_ID = e.Event_ID AND c.Club_ID = Club_ID AND Entry_CancelValue = 0 AND Crew_RoundTo = 64
+            ) AS Participations_Count) AS Participations_Count,
+            (SELECT COUNT(*) FROM (
+                SELECT DISTINCT Athlet_ID
+                FROM Club
+                JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
+                JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
+                JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
+                JOIN Event      ON Entry_Event_ID_FK  = Event_ID
+                WHERE Event_ID = e.Event_ID AND c.Club_ID = Club_ID AND Entry_CancelValue = 0 AND Crew_RoundTo = 64 AND Athlet_Gender = 'W'
+            ) AS Athletes_Female_Count) AS Athletes_Female_Count,
+            (SELECT COUNT(*) FROM (
+                SELECT DISTINCT Athlet_ID
+                FROM Club
+                JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
+                JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
+                JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
+                JOIN Event      ON Entry_Event_ID_FK  = Event_ID
+                WHERE Event_ID = e.Event_ID AND c.Club_ID = Club_ID AND Entry_CancelValue = 0 AND Crew_RoundTo = 64 AND Athlet_Gender = 'M'
+            ) AS Athletes_Male_Count) AS Athletes_Male_Count
             FROM Club c
             JOIN Athlet ON Athlet_Club_ID_FK      = c.Club_ID
             JOIN Crew   ON Crew_Athlete_ID_FK     = Athlet_ID
@@ -101,6 +129,11 @@ impl From<&Row> for Club {
                 flag_url = Some(club_flag.flag_url.clone());
             }
         }
+
+        let ahtletes_female_count = value.try_get_column("Athletes_Female_Count");
+        let ahtletes_male_count = value.try_get_column("Athletes_Male_Count");
+        let ahtletes_count = ahtletes_female_count.zip(ahtletes_male_count).map(|(x, y)| x + y);
+
         Club {
             id: value.get_column("Club_ID"),
             extern_id: club_extern_id,
@@ -109,6 +142,9 @@ impl From<&Row> for Club {
             abbreviation: value.try_get_column("Club_UltraAbbr"),
             city: value.get_column("Club_City"),
             participations_count: value.try_get_column("Participations_Count"),
+            ahtletes_count,
+            ahtletes_female_count,
+            ahtletes_male_count,
             flag_url,
         }
     }
