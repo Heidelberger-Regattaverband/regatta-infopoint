@@ -132,10 +132,7 @@ impl From<&Row> for Club {
 
         let ahtletes_female_count = value.try_get_column("Athletes_Female_Count");
         let ahtletes_male_count = value.try_get_column("Athletes_Male_Count");
-        let ahtletes_count = match ahtletes_female_count.zip(ahtletes_male_count) {
-            Some((x, y)) => Some(x + y),
-            None => None,
-        };
+        let ahtletes_count = ahtletes_female_count.zip(ahtletes_male_count).map(|(x, y)| x + y);
 
         Club {
             id: value.get_column("Club_ID"),
