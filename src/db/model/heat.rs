@@ -134,7 +134,7 @@ impl Heat {
         let mut heat = Heat::from(&utils::get_row(query.query(&mut client).await.unwrap()).await);
 
         let results = join(
-            Referee::query(heat.id, pool),
+            Referee::query_referees_for_heat(heat.id, pool),
             HeatRegistration::query_registrations_of_heat(&heat, pool),
         )
         .await;

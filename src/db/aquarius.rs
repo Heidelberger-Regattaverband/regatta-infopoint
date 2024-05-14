@@ -203,7 +203,7 @@ impl Aquarius {
     async fn _query_race_heats_registrations(&self, race_id: i32) -> Race {
         let start = Instant::now();
         let result = join3(
-            Race::query_single(race_id, TiberiusPool::instance()),
+            Race::query_race_by_id(race_id, TiberiusPool::instance()),
             Heat::query_heats_of_race(race_id, TiberiusPool::instance()),
             Registration::query_registrations_for_race(race_id, TiberiusPool::instance()),
         )
@@ -230,7 +230,7 @@ impl Aquarius {
 
     async fn _query_races(&self, regatta_id: i32) -> Vec<Race> {
         let start = Instant::now();
-        let races = Race::query_all(regatta_id, TiberiusPool::instance()).await;
+        let races = Race::query_races_of_regatta(regatta_id, TiberiusPool::instance()).await;
         self.caches.races.set(&regatta_id, &races).await;
         debug!("Query races of regatta {} from DB: {:?}", regatta_id, start.elapsed());
         races

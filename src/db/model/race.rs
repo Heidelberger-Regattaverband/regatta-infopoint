@@ -106,42 +106,44 @@ impl Race {
         ", alias)
     }
 
-    pub(crate) async fn query_all(regatta_id: i32, pool: &TiberiusPool) -> Vec<Race> {
-        let mut client = pool.get().await;
-        let mut query = Query::new(
-            "SELECT".to_string()
-                + &Race::select_columns("o")
-                + ","
-                + &AgeClass::select_columns("a")
-                + ","
-                + &BoatClass::select_columns("b")
-                + " 
-            FROM Offer o
+    /// Query all races of a regatta.
+    /// # Arguments
+    /// * `regatta_id` - The regatta identifier
+    /// * `pool` - The database connection pool
+    /// # Returns
+    /// A list with races of the regatta
+    pub(crate) async fn query_races_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Vec<Race> {
+        let sql = format!(
+            "SELECT {0}, {1}, {2} FROM Offer o
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
-            WHERE o.Offer_Event_ID_FK = @P1 ORDER BY o.Offer_SortValue ASC",
+            WHERE o.Offer_Event_ID_FK = @P1
+            ORDER BY o.Offer_SortValue ASC",
+            Race::select_columns("o"),
+            AgeClass::select_columns("a"),
+            BoatClass::select_columns("b")
         );
+        let mut query = Query::new(sql);
         query.bind(regatta_id);
+
+        let mut client = pool.get().await;
         let stream = query.query(&mut client).await.unwrap();
         let races = utils::get_rows(stream).await;
         races.into_iter().map(|row| Race::from(&row)).collect()
     }
 
-    pub(crate) async fn query_single(race_id: i32, pool: &TiberiusPool) -> Race {
-        let mut client = pool.get().await;
-        let mut query = Query::new(
-            "SELECT".to_string()
-                + &Race::select_columns("o")
-                + ","
-                + &AgeClass::select_columns("a")
-                + ","
-                + &BoatClass::select_columns("b")
-                + "
-            FROM Offer o
+    pub(crate) async fn query_race_by_id(race_id: i32, pool: &TiberiusPool) -> Race {
+        let sql = format!(
+            "SELECT {0}, {1}, {2} FROM Offer o
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
             WHERE o.Offer_ID = @P1",
+            Race::select_columns("o"),
+            AgeClass::select_columns("a"),
+            BoatClass::select_columns("b")
         );
+        let mut client = pool.get().await;
+        let mut query = Query::new(sql);
         query.bind(race_id);
         let stream = query.query(&mut client).await.unwrap();
         Race::from(&utils::get_row(stream).await)
