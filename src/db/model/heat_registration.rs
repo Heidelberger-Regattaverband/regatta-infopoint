@@ -89,7 +89,7 @@ impl HeatRegistration {
 
         let mut crew_futures: Vec<BoxFuture<Vec<Crew>>> = Vec::new();
         for (pos, heat_registration) in heat_registrations.iter_mut().enumerate() {
-            crew_futures.push(Box::pin(Crew::query_all(
+            crew_futures.push(Box::pin(Crew::query_crew_of_registration(
                 heat_registration.registration.id,
                 heat.round,
                 pool,

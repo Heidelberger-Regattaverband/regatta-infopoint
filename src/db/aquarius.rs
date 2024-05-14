@@ -238,7 +238,7 @@ impl Aquarius {
 
     async fn _query_heats(&self, regatta_id: i32) -> Vec<Heat> {
         let start = Instant::now();
-        let heats: Vec<Heat> = Heat::query_all(regatta_id, TiberiusPool::instance()).await;
+        let heats: Vec<Heat> = Heat::query_heats_of_regatta(regatta_id, TiberiusPool::instance()).await;
         self.caches.heats.set(&regatta_id, &heats).await;
         debug!("Query heats of regatta {} from DB: {:?}", regatta_id, start.elapsed());
         heats

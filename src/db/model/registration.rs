@@ -130,7 +130,7 @@ async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Vec
         .into_iter()
         .map(|row| {
             let registration = Registration::from(&row);
-            crew_futures.push(Box::pin(Crew::query_all(registration.id, round, pool)));
+            crew_futures.push(Box::pin(Crew::query_crew_of_registration(registration.id, round, pool)));
             registration
         })
         .collect();
