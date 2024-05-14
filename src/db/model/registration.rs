@@ -84,19 +84,23 @@ impl Registration {
         pool: &TiberiusPool,
     ) -> Vec<Registration> {
         let round = 64;
-        let sql = format!("SELECT DISTINCT {0}, {1}, {2}, l.Label_Short
+        let mut query = Query::new(format!(
+            "SELECT DISTINCT {0}, {1}, {2}, l.Label_Short
             FROM Club AS ac
-            JOIN Athlet      ON Athlet_Club_ID_FK  = ac.Club_ID
-            JOIN Crew        ON Crew_Athlete_ID_FK = Athlet_ID
-            JOIN Entry e     ON Crew_Entry_ID_FK   = e.Entry_ID
-            JOIN Club     oc ON e.Entry_OwnerClub_ID_FK = oc.Club_ID
-            JOIN EntryLabel  ON EL_Entry_ID_FK     = e.Entry_ID
-            JOIN Label     l ON EL_Label_ID_FK     = l.Label_ID
-            JOIN Offer o     ON e.Entry_Race_ID_FK = o.Offer_ID
-            WHERE e.Entry_Event_ID_FK = @P1 AND ac.Club_ID = @P2 AND EL_RoundFrom <= @P3 AND @P3 <= EL_RoundTo AND Crew_RoundTo = @P3
-            ORDER BY o.Offer_ID ASC", 
-            Registration::select_columns("e"), Club::select_columns("oc"), Race::select_columns("o"));
-        let mut query = Query::new(sql);
+            JOIN Athlet      a ON ac.Club_ID  = a.Athlet_Club_ID_FK
+            JOIN Crew       cr ON a.Athlet_ID = cr.Crew_Athlete_ID_FK
+            JOIN Entry       e ON e.Entry_ID  = cr.Crew_Entry_ID_FK 
+            JOIN Club       oc ON oc.Club_ID  = e.Entry_OwnerClub_ID_FK
+            JOIN EntryLabel el ON e.Entry_ID  = el.EL_Entry_ID_FK
+            JOIN Label       l ON l.Label_ID  = el.EL_Label_ID_FK
+            JOIN Offer       o ON o.Offer_ID  = e.Entry_Race_ID_FK
+            WHERE e.Entry_Event_ID_FK = @P1 AND ac.Club_ID = @P2
+                AND el.EL_RoundFrom <= @P3 AND @P3 <= el.EL_RoundTo AND cr.Crew_RoundTo = @P3
+            ORDER BY o.Offer_ID ASC",
+            Registration::select_columns("e"),
+            Club::select_columns("oc"),
+            Race::select_columns("o")
+        ));
         query.bind(regatta_id);
         query.bind(club_id);
         query.bind(round);
@@ -104,20 +108,25 @@ impl Registration {
         execute_query(pool, query, round).await
     }
 
+    /// Queries all registrations for a race.
+    /// # Arguments
+    /// * `race_id` - The unique race identifier
+    /// * `pool` - The connection pool to the database
+    /// # Returns
+    /// A vector of registrations for the given race
     pub(crate) async fn query_registrations_for_race(race_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
         let round = 64;
-        let sql = format!(
+        let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, l.Label_Short
             FROM Entry       e
             JOIN EntryLabel el ON el.EL_Entry_ID_FK = e.Entry_ID
             JOIN Label       l ON el.EL_Label_ID_FK = l.Label_ID
             JOIN Club        c ON c.Club_ID         = e.Entry_OwnerClub_ID_FK
-            WHERE e.Entry_Race_ID_FK = @P1 AND EL_RoundFrom <= @P2 AND @P2 <= EL_RoundTo
+            WHERE e.Entry_Race_ID_FK = @P1 AND el.EL_RoundFrom <= @P2 AND @P2 <= el.EL_RoundTo
             ORDER BY e.Entry_Bib ASC",
             Registration::select_columns("e"),
             Club::select_columns("c")
-        );
-        let mut query = Query::new(sql);
+        ));
         query.bind(race_id);
         query.bind(round);
 
