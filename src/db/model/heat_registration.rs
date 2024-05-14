@@ -37,13 +37,15 @@ impl From<&Row> for HeatRegistration {
 }
 
 impl HeatRegistration {
-    pub(crate) async fn query_all(heat: &Heat, pool: &TiberiusPool) -> Vec<HeatRegistration> {
-        let mut query = Query::new("SELECT DISTINCT ce.CE_ID, ce.CE_Lane, ".to_string() +
-            &Registration::select_columns("e") + ", Label_Short, BoatClass_NumRowers," +
-            &Club::select_columns("c") + ", " + 
-            &Race::select_columns("o") + ", " + 
-            &HeatResult::select_columns("r") +
-            " FROM CompEntries ce
+    /// Query all registrations of a heat.
+    /// # Arguments
+    /// * `heat` - The heat to query the registrations for
+    /// * `pool` - The database connection pool
+    /// # Returns
+    /// A list of registrations of the heat
+    pub(crate) async fn query_registrations_of_heat(heat: &Heat, pool: &TiberiusPool) -> Vec<HeatRegistration> {
+        let sql = format!("SELECT DISTINCT ce.CE_ID, ce.CE_Lane, {0}, Label_Short, BoatClass_NumRowers, {1}, {2}, {3}
+            FROM CompEntries ce
             JOIN Comp                  ON CE_Comp_ID_FK     = Comp_ID
             JOIN Offer o               ON o.Offer_ID        = Comp_Race_ID_FK
             JOIN BoatClass             ON o.Offer_BoatClass_ID_FK = BoatClass_ID
@@ -53,7 +55,9 @@ impl HeatRegistration {
             FULL OUTER JOIN Result r   ON r.Result_CE_ID_FK = ce.CE_ID
             JOIN Club c                ON c.Club_ID = Entry_OwnerClub_ID_FK
             WHERE CE_Comp_ID_FK = @P1 AND ((Result_SplitNr = 64 AND Comp_State >=4) OR (Result_SplitNr = 0 AND Comp_State < 3) OR (Comp_State < 2 AND Result_SplitNr IS NULL))
-                AND EL_RoundFrom <= Comp_Round AND Comp_Round <= EL_RoundTo");
+            AND EL_RoundFrom <= Comp_Round AND Comp_Round <= EL_RoundTo", 
+            Registration::select_columns("e"), Club::select_columns("c"), Race::select_columns("o"), HeatResult::select_columns("r"));
+        let mut query = Query::new(sql);
         query.bind(heat.id);
 
         let mut client = pool.get().await;
