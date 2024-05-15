@@ -58,36 +58,38 @@ impl Club {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of clubs that are participating in the regatta
-    pub(crate) async fn query_participating(regatta_id: i32, pool: &TiberiusPool) -> Vec<Club> {
+    pub(crate) async fn query_clubs_participating_regatta(regatta_id: i32, pool: &TiberiusPool) -> Vec<Club> {
         let sql = format!(
             "SELECT DISTINCT {0},
-            (SELECT COUNT(*) FROM (
-                SELECT DISTINCT Entry_ID
-                FROM Club
-                JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
-                JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
-                JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
-                JOIN Event      ON Entry_Event_ID_FK  = Event_ID
-                WHERE Event_ID = e.Event_ID AND c.Club_ID = Club_ID AND Entry_CancelValue = 0 AND Crew_RoundTo = 64
-            ) AS Participations_Count) AS Participations_Count,
-            (SELECT COUNT(*) FROM (
-                SELECT DISTINCT Athlet_ID
-                FROM Club
-                JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
-                JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
-                JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
-                JOIN Event      ON Entry_Event_ID_FK  = Event_ID
-                WHERE Event_ID = e.Event_ID AND c.Club_ID = Club_ID AND Entry_CancelValue = 0 AND Crew_RoundTo = 64 AND Athlet_Gender = 'W'
-            ) AS Athletes_Female_Count) AS Athletes_Female_Count,
-            (SELECT COUNT(*) FROM (
-                SELECT DISTINCT Athlet_ID
-                FROM Club
-                JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
-                JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
-                JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
-                JOIN Event      ON Entry_Event_ID_FK  = Event_ID
-                WHERE Event_ID = e.Event_ID AND c.Club_ID = Club_ID AND Entry_CancelValue = 0 AND Crew_RoundTo = 64 AND Athlet_Gender = 'M'
-            ) AS Athletes_Male_Count) AS Athletes_Male_Count
+                (SELECT COUNT(*) FROM (
+                    SELECT DISTINCT Entry_ID FROM Club
+                    JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
+                    JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
+                    JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
+                    JOIN Event      ON Entry_Event_ID_FK  = Event_ID
+                    WHERE Event_ID = e.Event_ID AND c.Club_ID = Club_ID AND Entry_CancelValue = 0
+                        AND Crew_RoundTo = 64
+                ) AS Participations_Count) AS Participations_Count,
+                (SELECT COUNT(*) FROM (
+                    SELECT DISTINCT Athlet_ID
+                    FROM Club
+                    JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
+                    JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
+                    JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
+                    JOIN Event      ON Entry_Event_ID_FK  = Event_ID
+                    WHERE Event_ID = e.Event_ID AND c.Club_ID = Club_ID AND Entry_CancelValue = 0
+                        AND Crew_RoundTo = 64 AND Athlet_Gender = 'W'
+                ) AS Athletes_Female_Count) AS Athletes_Female_Count,
+                (SELECT COUNT(*) FROM (
+                    SELECT DISTINCT Athlet_ID
+                    FROM Club
+                    JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
+                    JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
+                    JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
+                    JOIN Event      ON Entry_Event_ID_FK  = Event_ID
+                    WHERE Event_ID = e.Event_ID AND c.Club_ID = Club_ID AND Entry_CancelValue = 0
+                        AND Crew_RoundTo = 64 AND Athlet_Gender = 'M'
+                ) AS Athletes_Male_Count) AS Athletes_Male_Count
             FROM Club c
             JOIN Athlet ON Athlet_Club_ID_FK      = c.Club_ID
             JOIN Crew   ON Crew_Athlete_ID_FK     = Athlet_ID
@@ -111,14 +113,13 @@ impl Club {
     /// * `pool` - The database connection pool
     /// # Returns
     /// The club with the given ID
-    pub(crate) async fn query_single(club_id: i32, pool: &TiberiusPool) -> Club {
-        let sql = format!(
+    pub(crate) async fn query_club_by_id(club_id: i32, pool: &TiberiusPool) -> Club {
+        let mut query = Query::new(format!(
             "SELECT {0} FROM Club c
             WHERE c.Club_ID = @P1
             ORDER BY c.Club_City ASC",
             Club::select_columns("c")
-        );
-        let mut query = Query::new(sql);
+        ));
         query.bind(club_id);
 
         let mut client = pool.get().await;

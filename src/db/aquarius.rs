@@ -258,7 +258,7 @@ impl Aquarius {
 
     async fn _query_participating_clubs(&self, regatta_id: i32) -> Vec<Club> {
         let start = Instant::now();
-        let clubs = Club::query_participating(regatta_id, TiberiusPool::instance()).await;
+        let clubs = Club::query_clubs_participating_regatta(regatta_id, TiberiusPool::instance()).await;
         self.caches.participating_clubs.set(&regatta_id, &clubs).await;
         debug!(
             "Query participating clubs of regatta {} from DB: {:?}",
@@ -287,7 +287,7 @@ impl Aquarius {
 
     async fn _query_club(&self, club_id: i32) -> Club {
         let start = Instant::now();
-        let club = Club::query_single(club_id, TiberiusPool::instance()).await;
+        let club = Club::query_club_by_id(club_id, TiberiusPool::instance()).await;
         self.caches.club.set(&club.id, &club).await;
         debug!("Query club {} from DB: {:?}", club_id, start.elapsed());
         club
