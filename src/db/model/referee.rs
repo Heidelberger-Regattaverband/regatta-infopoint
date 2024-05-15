@@ -21,7 +21,13 @@ pub struct Referee {
 }
 
 impl Referee {
-    pub async fn query(heat_id: i32, pool: &TiberiusPool) -> Vec<Referee> {
+    /// Query all referees for a specific heat.
+    /// # Arguments
+    /// `heat_id`: The unique identifier of the heat.
+    /// `pool`: The database connection pool.
+    /// # Returns
+    /// A list of referees.
+    pub(crate) async fn query_referees_for_heat(heat_id: i32, pool: &TiberiusPool) -> Vec<Referee> {
         let mut query = Query::new(
             "SELECT r.* FROM Referee r
             JOIN CompReferee cr ON cr.CompReferee_Referee_ID_FK = r.Referee_ID

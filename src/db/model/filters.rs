@@ -7,6 +7,7 @@ use futures::join;
 use serde::Serialize;
 use tiberius::Query;
 
+/// A struct containing all available filter values for a regatta.
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Filters {
@@ -40,7 +41,13 @@ struct Round {
 }
 
 impl Filters {
-    pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Self {
+    /// Query all available filter values of a regatta.
+    /// # Arguments
+    /// * `regatta_id` - The regatta identifier
+    ///  * `pool` - The database connection pool
+    /// # Returns
+    /// A struct containing all available filters
+    pub(crate) async fn query(regatta_id: i32, pool: &TiberiusPool) -> Self {
         // get all available distances
         let distances = query_distances(regatta_id, pool);
 
@@ -71,13 +78,13 @@ impl Filters {
 }
 
 async fn query_boat_classes(regatta_id: i32, pool: &TiberiusPool) -> Vec<BoatClass> {
-    let mut query = Query::new(
-        "SELECT DISTINCT".to_string()
-            + &BoatClass::select_columns("b")
-            + "FROM BoatClass b
-            JOIN Offer o ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID 
-            WHERE o.Offer_Event_ID_FK = @P1 ORDER BY b.BoatClass_NumRowers ASC, b.BoatClass_Coxed ASC",
-    );
+    let mut query = Query::new(format!(
+        "SELECT DISTINCT {0} FROM BoatClass b
+        JOIN Offer o ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID 
+        WHERE o.Offer_Event_ID_FK = @P1
+        ORDER BY b.BoatClass_NumRowers ASC, b.BoatClass_Coxed ASC",
+        BoatClass::select_columns("b")
+    ));
     query.bind(regatta_id);
 
     let mut client = pool.get().await;
@@ -86,14 +93,13 @@ async fn query_boat_classes(regatta_id: i32, pool: &TiberiusPool) -> Vec<BoatCla
 }
 
 async fn query_age_classes(regatta_id: i32, pool: &TiberiusPool) -> Vec<AgeClass> {
-    let mut query = Query::new(
-        "SELECT DISTINCT".to_string()
-            + &AgeClass::select_columns("a")
-            + "FROM AgeClass a
-            JOIN Offer o ON o.Offer_AgeClass_ID_FK = a.AgeClass_ID
-            WHERE o.Offer_Event_ID_FK = @P1
-            ORDER BY a.AgeClass_MinAge DESC, a.AgeClass_MaxAge DESC",
-    );
+    let mut query = Query::new(format!(
+        "SELECT DISTINCT {0} FROM AgeClass a
+        JOIN Offer o ON o.Offer_AgeClass_ID_FK = a.AgeClass_ID
+        WHERE o.Offer_Event_ID_FK = @P1
+        ORDER BY a.AgeClass_MinAge DESC, a.AgeClass_MaxAge DESC",
+        AgeClass::select_columns("a")
+    ));
     query.bind(regatta_id);
 
     let mut client = pool.get().await;
@@ -115,7 +121,7 @@ async fn query_dates(regatta_id: i32, pool: &TiberiusPool) -> Vec<NaiveDate> {
 }
 
 async fn query_distances(regatta_id: i32, pool: &TiberiusPool) -> Vec<i16> {
-    let mut query: Query<'_> = Query::new("SELECT DISTINCT Offer_Distance FROM Offer WHERE Offer_Event_ID_FK = @P1");
+    let mut query = Query::new("SELECT DISTINCT Offer_Distance FROM Offer WHERE Offer_Event_ID_FK = @P1");
     query.bind(regatta_id);
 
     let mut client = pool.get().await;
@@ -124,8 +130,7 @@ async fn query_distances(regatta_id: i32, pool: &TiberiusPool) -> Vec<i16> {
 }
 
 async fn query_lightweight(regatta_id: i32, pool: &TiberiusPool) -> Vec<bool> {
-    let mut query: Query<'_> =
-        Query::new("SELECT DISTINCT Offer_IsLightweight FROM Offer WHERE Offer_Event_ID_FK = @P1");
+    let mut query = Query::new("SELECT DISTINCT Offer_IsLightweight FROM Offer WHERE Offer_Event_ID_FK = @P1");
     query.bind(regatta_id);
 
     let mut client = pool.get().await;

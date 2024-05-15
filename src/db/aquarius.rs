@@ -203,7 +203,7 @@ impl Aquarius {
     async fn _query_race_heats_registrations(&self, race_id: i32) -> Race {
         let start = Instant::now();
         let result = join3(
-            Race::query_single(race_id, TiberiusPool::instance()),
+            Race::query_race_by_id(race_id, TiberiusPool::instance()),
             Heat::query_heats_of_race(race_id, TiberiusPool::instance()),
             Registration::query_registrations_for_race(race_id, TiberiusPool::instance()),
         )
@@ -230,7 +230,7 @@ impl Aquarius {
 
     async fn _query_races(&self, regatta_id: i32) -> Vec<Race> {
         let start = Instant::now();
-        let races = Race::query_all(regatta_id, TiberiusPool::instance()).await;
+        let races = Race::query_races_of_regatta(regatta_id, TiberiusPool::instance()).await;
         self.caches.races.set(&regatta_id, &races).await;
         debug!("Query races of regatta {} from DB: {:?}", regatta_id, start.elapsed());
         races
@@ -238,7 +238,7 @@ impl Aquarius {
 
     async fn _query_heats(&self, regatta_id: i32) -> Vec<Heat> {
         let start = Instant::now();
-        let heats: Vec<Heat> = Heat::query_all(regatta_id, TiberiusPool::instance()).await;
+        let heats: Vec<Heat> = Heat::query_heats_of_regatta(regatta_id, TiberiusPool::instance()).await;
         self.caches.heats.set(&regatta_id, &heats).await;
         debug!("Query heats of regatta {} from DB: {:?}", regatta_id, start.elapsed());
         heats
@@ -258,7 +258,7 @@ impl Aquarius {
 
     async fn _query_participating_clubs(&self, regatta_id: i32) -> Vec<Club> {
         let start = Instant::now();
-        let clubs = Club::query_participating(regatta_id, TiberiusPool::instance()).await;
+        let clubs = Club::query_clubs_participating_regatta(regatta_id, TiberiusPool::instance()).await;
         self.caches.participating_clubs.set(&regatta_id, &clubs).await;
         debug!(
             "Query participating clubs of regatta {} from DB: {:?}",
@@ -287,7 +287,7 @@ impl Aquarius {
 
     async fn _query_club(&self, club_id: i32) -> Club {
         let start = Instant::now();
-        let club = Club::query_single(club_id, TiberiusPool::instance()).await;
+        let club = Club::query_club_by_id(club_id, TiberiusPool::instance()).await;
         self.caches.club.set(&club.id, &club).await;
         debug!("Query club {} from DB: {:?}", club_id, start.elapsed());
         club

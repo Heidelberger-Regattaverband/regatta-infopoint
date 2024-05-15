@@ -34,21 +34,25 @@ impl Crew {
         )
     }
 
-    pub(crate) async fn query_all(registration_id: i32, round: i16, pool: &TiberiusPool) -> Vec<Crew> {
-        let mut query = Query::new(
-            "SELECT".to_string()
-                + &Crew::select_columns("cr")
-                + ", "
-                + &Athlete::select_columns("a")
-                + ", "
-                + &Club::select_columns("cl")
-                + "
-            FROM Crew cr
-            JOIN Athlet a ON cr.Crew_Athlete_ID_FK = a.Athlet_ID
-            JOIN Club cl  ON a.Athlet_Club_ID_FK   = cl.Club_ID
+    /// Query all crew members of a registration.
+    /// # Arguments
+    /// * `registration_id` - The registration identifier
+    /// * `round` - The round of the heat this crew is participating in
+    /// * `pool` - The database connection pool
+    /// # Returns
+    /// A list of crew members of the registration
+    pub(crate) async fn query_crew_of_registration(registration_id: i32, round: i16, pool: &TiberiusPool) -> Vec<Crew> {
+        let sql = format!(
+            "SELECT {0}, {1}, {2} FROM Crew cr
+            JOIN Athlet a  ON cr.Crew_Athlete_ID_FK = a.Athlet_ID
+            JOIN Club   cl ON a.Athlet_Club_ID_FK   = cl.Club_ID
             WHERE Crew_Entry_ID_FK = @P1 AND cr.Crew_RoundFrom <= @P2 AND @P2 <= cr.Crew_RoundTo
-            ORDER BY Crew_pos ASC",
+            ORDER BY cr.Crew_pos ASC",
+            Crew::select_columns("cr"),
+            Athlete::select_columns("a"),
+            Club::select_columns("cl")
         );
+        let mut query = Query::new(sql);
         query.bind(registration_id);
         query.bind(round);
 
