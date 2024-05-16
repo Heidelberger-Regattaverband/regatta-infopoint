@@ -1,5 +1,8 @@
+use actix_web::cookie::time::Date;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
+
+use super::Regatta;
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -25,4 +28,14 @@ pub(crate) struct ScheduleEntry {
 
     /// distance in meters
     distance: i32,
+}
+
+impl Schedule {
+    pub(crate) fn query_schedule_for_regatta(regatta_id: i32) -> Self {
+        
+        Schedule {
+            generated: Utc::now(),
+            entries: Vec::new(),
+        }
+    }
 }
