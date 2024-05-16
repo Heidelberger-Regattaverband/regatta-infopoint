@@ -39,7 +39,7 @@ RUN npm install && npx ui5 build --clean-dest
 ###############
 ## run stage ##
 ###############
-FROM ubuntu:23.10
+FROM ubuntu:24.04
 RUN apt-get update && apt-get upgrade -y \
   && apt-get install -y --no-install-recommends iputils-ping \
   && apt-get clean \
