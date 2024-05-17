@@ -52,7 +52,7 @@
               <tileContent>
                 <TileContent>
                   <content>
-                    <ImageContent src="sap-icon://competitor" />
+                    <ImageContent src="sap-icon://date-time" />
                   </content>
                 </TileContent>
               </tileContent>
