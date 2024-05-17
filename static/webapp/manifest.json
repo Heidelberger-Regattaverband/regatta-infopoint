@@ -126,6 +126,11 @@
           "pattern": "clubRegistrations/{clubId}",
           "name": "clubRegistrations",
           "target": "clubRegistrations"
+        },
+        {
+          "pattern": "schedule",
+          "name": "schedule",
+          "target": "schedule"
         }
       ],
       "targets": {
@@ -167,6 +172,10 @@
         },
         "monitoring": {
           "viewName": "Monitoring",
+          "viewLevel": 1
+        },
+        "schedule": {
+          "viewName": "ScheduleTable",
           "viewLevel": 1
         },
         "kiosk": {
