@@ -51,10 +51,8 @@ export default class ScheduleTableController extends BaseController {
   private createSearchFilters(query: string): Filter[] {
     return [new Filter({
       filters: [
-        new Filter("club/shortName", FilterOperator.Contains, query),
-        new Filter("club/longName", FilterOperator.Contains, query),
-        new Filter("club/city", FilterOperator.Contains, query),
-        new Filter("club/abbreviation", FilterOperator.Contains, query)
+        new Filter("raceNumber", FilterOperator.Contains, query),
+        new Filter("raceShortLabel", FilterOperator.Contains, query),
       ],
       and: false
     })]
