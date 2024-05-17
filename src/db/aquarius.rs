@@ -2,7 +2,7 @@ use crate::{
     config::Config,
     db::{
         cache::{CacheTrait, Caches},
-        model::{Club, Filters, Heat, Kiosk, Race, Regatta, Registration, Score, Statistics},
+        model::{Club, Filters, Heat, Kiosk, Race, Regatta, Registration, Schedule, Score, Statistics},
         tiberius::{TiberiusConnectionManager, TiberiusPool},
     },
 };
@@ -167,6 +167,17 @@ impl Aquarius {
             start.elapsed()
         );
         stats
+    }
+
+    pub(crate) async fn query_schedule(&self, regatta_id: i32) -> Schedule {
+        let start = Instant::now();
+        let schedule = Schedule::query_schedule_for_regatta(regatta_id, TiberiusPool::instance()).await;
+        debug!(
+            "Query schedule of regatta {} from DB: {:?}",
+            regatta_id,
+            start.elapsed()
+        );
+        schedule
     }
 
     pub async fn query_kiosk(&self, regatta_id: i32) -> Kiosk {

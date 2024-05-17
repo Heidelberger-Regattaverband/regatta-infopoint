@@ -1,7 +1,7 @@
 use crate::{
     db::{
         aquarius::Aquarius,
-        model::{Club, Filters, Heat, Race, Regatta},
+        model::{Club, Filters, Heat, Race, Regatta, Schedule},
         tiberius::TiberiusPool,
     },
     http::{
@@ -155,6 +155,12 @@ async fn calculate_scoring(
     }
 }
 
+#[get("/regattas/{id}/schedule")]
+async fn get_schedule(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Schedule> {
+    let regatta_id = path.into_inner();
+    Json(aquarius.query_schedule(regatta_id).await)
+}
+
 /// Authenticate the user. This will attach the user identity to the current session.
 #[utoipa::path(
     context_path = PATH,
@@ -228,6 +234,7 @@ pub(crate) fn config(cfg: &mut web::ServiceConfig) {
             .service(get_kiosk)
             .service(calculate_scoring)
             .service(get_statistics)
+            .service(get_schedule)
             .service(login)
             .service(identity)
             .service(logout)

@@ -10,6 +10,7 @@ mod heat_result;
 mod race;
 mod referee;
 mod regatta;
+mod schedule;
 mod score;
 mod statistics;
 mod utils;
@@ -30,7 +31,7 @@ pub use registration::Registration;
 pub use score::Score;
 pub use statistics::Statistics;
 mod registration;
-mod schedule;
+pub(crate) use schedule::Schedule;
 
 pub trait TryToEntity<T> {
     fn try_to_entity(&self) -> Option<T>;
