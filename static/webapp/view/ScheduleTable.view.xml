@@ -54,7 +54,7 @@
           </columns>
 
           <items>
-            <ColumnListItem vAlign="Top">
+            <ColumnListItem>
               <cells>
                 <Text text="{schedule>raceNumber}" />
                 <Text text="{schedule>raceShortLabel}" />
