@@ -86,6 +86,7 @@ impl Schedule {
             .await
             .into_iter()
             .map(|row| ScheduleEntry::from(&row))
+            .filter(|entry| entry.final_heats > 0 || entry.forerun_heats > 0)
             .collect();
         Schedule {
             generated: Utc::now(),
