@@ -32,14 +32,14 @@ pub(crate) struct ScheduleEntry {
     distance: i16,
 
     /// The number of heats in the finals
-    finals_heats: i32,
+    final_heats: i32,
 
     /// The number of heats in the forerun
     forerun_heats: i32,
 
     /// The date and time when the finals start
     #[serde(skip_serializing_if = "Option::is_none")]
-    finals_start: Option<DateTime<Utc>>,
+    final_start: Option<DateTime<Utc>>,
 
     /// The date and time when the forerun starts
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -53,10 +53,10 @@ impl From<&Row> for ScheduleEntry {
             distance: row.get_column("Offer_Distance"),
             boats: row.get_column("Boats"),
             race_short_label: row.get_column("Offer_ShortLabel"),
-            finals_heats: row.get_column("Heats_Finals"),
-            forerun_heats: row.get_column("Heats_Forerun"),
-            finals_start: row.try_get_column("Start_Finals").map(|f: NaiveDateTime| f.and_utc()),
-            forerun_start: row.try_get_column("Start_Forerun").map(|f: NaiveDateTime| f.and_utc()),
+            final_heats: row.get_column("Final_Heats"),
+            forerun_heats: row.get_column("Forerun_Heats"),
+            final_start: row.try_get_column("Final_Start").map(|f: NaiveDateTime| f.and_utc()),
+            forerun_start: row.try_get_column("Forerun_Start").map(|f: NaiveDateTime| f.and_utc()),
         }
     }
 }
@@ -66,15 +66,15 @@ impl Schedule {
         let sql = "SELECT o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_Distance,
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Boats,
             (SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0 
-                AND c.Comp_RoundCode IN ('R', 'A', 'F')) as Heats_Finals,
+                AND c.Comp_RoundCode IN ('R', 'A', 'F')) as Final_Heats,
             (SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0 
-                AND c.Comp_RoundCode IN ('V')) as Heats_Forerun,
+                AND c.Comp_RoundCode IN ('V')) as Forerun_Heats,
             (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0 
-                AND c.Comp_RoundCode IN ('R', 'A', 'F')) as Start_Finals,
+                AND c.Comp_RoundCode IN ('R', 'A', 'F')) as Final_Start,
             (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0 
-                AND c.Comp_RoundCode IN ('V')) as Start_Forerun
+                AND c.Comp_RoundCode IN ('V')) as Forerun_Start
             FROM Offer o
-            WHERE o.Offer_Event_ID_FK = @P1 AND o.Offer_Cancelled = 0
+            WHERE o.Offer_Event_ID_FK = @P1 AND o.Offer_Cancelled = 0 
             ORDER BY o.Offer_SortValue";
 
         let mut query: Query = Query::new(sql);

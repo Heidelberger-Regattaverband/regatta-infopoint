@@ -61,8 +61,8 @@
                 <Text text="{schedule>boats}" />
                 <Text text="{path:'schedule>forerunStart',formatter:'.formatter.dayTimeIsoLabel'} ({schedule>forerunHeats})"
                   visible="{=${schedule>forerunHeats}>0}" />
-                <Text text="{path:'schedule>finalsStart',formatter:'.formatter.dayTimeIsoLabel'} ({schedule>finalsHeats})"
-                  visible="{=${schedule>finalsHeats}>0}" />
+                <Text text="{path:'schedule>finalStart',formatter:'.formatter.dayTimeIsoLabel'} ({schedule>finalHeats})"
+                  visible="{=${schedule>finalHeats}>0}" />
                 <Text text="{schedule>distance}" />
               </cells>
             </ColumnListItem>
