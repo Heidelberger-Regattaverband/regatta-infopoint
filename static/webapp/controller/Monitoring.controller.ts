@@ -15,9 +15,14 @@ export default class MonitoringController extends BaseController {
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
+    super.getView()?.addEventDelegate({ onBeforeHide: this.onBeforeHide }, this);
     super.getRouter()?.getRoute("monitoring")?.attachMatched((_: Route$MatchedEvent) => this.connect(), this);
     super.setViewModel(this.monitoringModel, "monitoring");
     this.statusButton = this.byId("statusButton") as Button;
+  }
+
+  private onBeforeHide(): void {
+    this.disconnect();
   }
 
   onNavBack(): void {
