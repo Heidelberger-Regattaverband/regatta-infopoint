@@ -1,5 +1,5 @@
 {
-  "_version": "1.53.0",
+  "_version": "1.63.0",
   "start_url": "index.html",
   "sap.app": {
     "id": "de.regatta_hd.infoportal",
@@ -35,7 +35,7 @@
       "cozy": true
     },
     "dependencies": {
-      "minUI5Version": "1.120.0",
+      "minUI5Version": "1.123",
       "libs": {
         "sap.ui.core": {},
         "sap.f": {},
