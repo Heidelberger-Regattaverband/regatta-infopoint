@@ -78,44 +78,24 @@
           "target": "startpage"
         },
         {
-          "pattern": "heats",
-          "name": "heats",
-          "target": "heats"
-        },
-        {
-          "pattern": "heatRegistrations",
-          "name": "heatRegistrations",
-          "target": "heatRegistrations"
-        },
-        {
-          "pattern": "scoring",
-          "name": "scoring",
-          "target": "scoring"
-        },
-        {
           "pattern": "races",
           "name": "races",
           "target": "races"
         },
         {
-          "pattern": "raceRegistrations",
+          "pattern": "raceRegistrations/:raceId:",
           "name": "raceRegistrations",
           "target": "raceRegistrations"
         },
         {
-          "pattern": "statistics",
-          "name": "statistics",
-          "target": "statistics"
+          "pattern": "heats",
+          "name": "heats",
+          "target": "heats"
         },
         {
-          "pattern": "monitoring",
-          "name": "monitoring",
-          "target": "monitoring"
-        },
-        {
-          "pattern": "kiosk",
-          "name": "kiosk",
-          "target": "kiosk"
+          "pattern": "heatRegistrations/:heatId:",
+          "name": "heatRegistrations",
+          "target": "heatRegistrations"
         },
         {
           "pattern": "participatingClubs",
@@ -131,6 +111,26 @@
           "pattern": "schedule",
           "name": "schedule",
           "target": "schedule"
+        },
+        {
+          "pattern": "scoring",
+          "name": "scoring",
+          "target": "scoring"
+        },
+        {
+          "pattern": "statistics",
+          "name": "statistics",
+          "target": "statistics"
+        },
+        {
+          "pattern": "monitoring",
+          "name": "monitoring",
+          "target": "monitoring"
+        },
+        {
+          "pattern": "kiosk",
+          "name": "kiosk",
+          "target": "kiosk"
         }
       ],
       "targets": {
@@ -138,24 +138,20 @@
           "viewName": "Launchpad",
           "viewLevel": 0
         },
-        "heats": {
-          "viewName": "HeatsTable",
-          "viewLevel": 1
-        },
-        "heatRegistrations": {
-          "viewName": "HeatRegistrationsTable",
-          "viewLevel": 2
-        },
-        "scoring": {
-          "viewName": "ScoringTable",
-          "viewLevel": 1
-        },
         "races": {
           "viewName": "RacesTable",
           "viewLevel": 1
         },
         "raceRegistrations": {
           "viewName": "RaceRegistrationsTable",
+          "viewLevel": 2
+        },
+        "heats": {
+          "viewName": "HeatsTable",
+          "viewLevel": 1
+        },
+        "heatRegistrations": {
+          "viewName": "HeatRegistrationsTable",
           "viewLevel": 2
         },
         "participatingClubs": {
@@ -166,16 +162,20 @@
           "viewName": "ClubRegistrationsTable",
           "viewLevel": 2
         },
+        "schedule": {
+          "viewName": "ScheduleTable",
+          "viewLevel": 1
+        },
+        "scoring": {
+          "viewName": "ScoringTable",
+          "viewLevel": 1
+        },
         "statistics": {
           "viewName": "Statistics",
           "viewLevel": 1
         },
         "monitoring": {
           "viewName": "Monitoring",
-          "viewLevel": 1
-        },
-        "schedule": {
-          "viewName": "ScheduleTable",
           "viewLevel": 1
         },
         "kiosk": {
