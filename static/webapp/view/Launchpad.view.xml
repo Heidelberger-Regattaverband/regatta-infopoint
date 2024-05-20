@@ -47,6 +47,17 @@
               </tileContent>
             </GenericTile>
 
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.scheduleTile.header}"
+              press=".onNavToSchedule">
+              <tileContent>
+                <TileContent>
+                  <content>
+                    <ImageContent src="sap-icon://date-time" />
+                  </content>
+                </TileContent>
+              </tileContent>
+            </GenericTile>
+
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.scoringTile.header}"
               visible="{identity>/authenticated}" press=".onNavToScoring">
               <tileContent>

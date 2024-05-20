@@ -1,5 +1,5 @@
 {
-  "_version": "1.53.0",
+  "_version": "1.63.0",
   "start_url": "index.html",
   "sap.app": {
     "id": "de.regatta_hd.infoportal",
@@ -35,7 +35,7 @@
       "cozy": true
     },
     "dependencies": {
-      "minUI5Version": "1.120.0",
+      "minUI5Version": "1.123",
       "libs": {
         "sap.ui.core": {},
         "sap.f": {},
@@ -78,29 +78,44 @@
           "target": "startpage"
         },
         {
-          "pattern": "heats",
-          "name": "heats",
-          "target": "heats"
-        },
-        {
-          "pattern": "heatRegistrations",
-          "name": "heatRegistrations",
-          "target": "heatRegistrations"
-        },
-        {
-          "pattern": "scoring",
-          "name": "scoring",
-          "target": "scoring"
-        },
-        {
           "pattern": "races",
           "name": "races",
           "target": "races"
         },
         {
-          "pattern": "raceRegistrations",
+          "pattern": "raceRegistrations/:raceId:",
           "name": "raceRegistrations",
           "target": "raceRegistrations"
+        },
+        {
+          "pattern": "heats",
+          "name": "heats",
+          "target": "heats"
+        },
+        {
+          "pattern": "heatRegistrations/:heatId:",
+          "name": "heatRegistrations",
+          "target": "heatRegistrations"
+        },
+        {
+          "pattern": "participatingClubs",
+          "name": "participatingClubs",
+          "target": "participatingClubs"
+        },
+        {
+          "pattern": "clubRegistrations/{clubId}",
+          "name": "clubRegistrations",
+          "target": "clubRegistrations"
+        },
+        {
+          "pattern": "schedule",
+          "name": "schedule",
+          "target": "schedule"
+        },
+        {
+          "pattern": "scoring",
+          "name": "scoring",
+          "target": "scoring"
         },
         {
           "pattern": "statistics",
@@ -116,34 +131,12 @@
           "pattern": "kiosk",
           "name": "kiosk",
           "target": "kiosk"
-        },
-        {
-          "pattern": "participatingClubs",
-          "name": "participatingClubs",
-          "target": "participatingClubs"
-        },
-        {
-          "pattern": "clubRegistrations/{clubId}",
-          "name": "clubRegistrations",
-          "target": "clubRegistrations"
         }
       ],
       "targets": {
         "startpage": {
           "viewName": "Launchpad",
           "viewLevel": 0
-        },
-        "heats": {
-          "viewName": "HeatsTable",
-          "viewLevel": 1
-        },
-        "heatRegistrations": {
-          "viewName": "HeatRegistrationsTable",
-          "viewLevel": 2
-        },
-        "scoring": {
-          "viewName": "ScoringTable",
-          "viewLevel": 1
         },
         "races": {
           "viewName": "RacesTable",
@@ -153,6 +146,14 @@
           "viewName": "RaceRegistrationsTable",
           "viewLevel": 2
         },
+        "heats": {
+          "viewName": "HeatsTable",
+          "viewLevel": 1
+        },
+        "heatRegistrations": {
+          "viewName": "HeatRegistrationsTable",
+          "viewLevel": 2
+        },
         "participatingClubs": {
           "viewName": "ParticipatingClubsTable",
           "viewLevel": 1
@@ -160,6 +161,14 @@
         "clubRegistrations": {
           "viewName": "ClubRegistrationsTable",
           "viewLevel": 2
+        },
+        "schedule": {
+          "viewName": "ScheduleTable",
+          "viewLevel": 1
+        },
+        "scoring": {
+          "viewName": "ScoringTable",
+          "viewLevel": 1
         },
         "statistics": {
           "viewName": "Statistics",

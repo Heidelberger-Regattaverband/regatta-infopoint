@@ -15,7 +15,7 @@ pub struct BoatClass {
     /// The caption of the boat class
     caption: String,
 
-    /// An abbrevation of the boat class
+    /// An abbreviation of the boat class
     abbreviation: String,
 
     /// Number of rowers in the boat
