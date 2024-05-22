@@ -1853,7 +1853,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0c2a198fb6b0eada2a8df47933734e6d35d350665a33a3593d7164fa52c75c19"
 dependencies = [
  "cfg-if",
- "windows-targets 0.48.5",
+ "windows-targets 0.52.5",
 ]
 
 [[package]]
@@ -3431,9 +3431,9 @@ dependencies = [
 
 [[package]]
 name = "utoipa-swagger-ui"
-version = "7.0.1"
+version = "7.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c49396bb19184d3ac1220bb56b3ec91e3d6275baa6cbd5a0f36f110a88d6afb"
+checksum = "ecc99cb909a0a82f94cbbbcad5fb220c3167b83e399c61b6e97fb6842ffbd317"
 dependencies = [
  "actix-web",
  "mime_guess",
@@ -3442,6 +3442,7 @@ dependencies = [
  "rust-embed",
  "serde",
  "serde_json",
+ "url",
  "utoipa",
  "zip",
 ]
