@@ -38,7 +38,8 @@ export default class RaceRegistrationsTable extends BaseController {
   onNavBack(): void {
     const data = (super.getComponentModel("race") as JSONModel).getData();
     if (data._nav.back) {
-      super.displayTarget(data._nav.back);
+      super.navBack(data._nav.back);
+      // super.displayTarget(data._nav.back);
     } else {
       super.displayTarget("races");
     }
