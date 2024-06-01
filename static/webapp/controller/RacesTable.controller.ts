@@ -35,21 +35,21 @@ export default class RacesTableController extends BaseTableController {
       if (filters.boatClasses && filters.boatClasses.length > 1) {
         const boatClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "boatClass", text: "{i18n>common.boatClass}" });
         filters.boatClasses.forEach((boatClass: any) => {
-          boatClassFilter.addItem(new ViewSettingsItem({ text: boatClass.caption + " (" + boatClass.abbreviation + ")", key: "boatClass/id___EQ___" + boatClass.id }));
+          boatClassFilter.addItem(new ViewSettingsItem({ text: `${boatClass.caption} (${boatClass.abbreviation})`, key: `boatClass/id___EQ___${boatClass.id}` }));
         });
         viewSettingsDialog.insertFilterItem(boatClassFilter, 0);
       }
       if (filters.ageClasses && filters.ageClasses.length > 1) {
         const ageClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "ageClass", text: "{i18n>common.ageClass}" });
         filters.ageClasses.forEach((ageClass: any) => {
-          ageClassFilter.addItem(new ViewSettingsItem({ text: ageClass.caption + " " + ageClass.suffix, key: "ageClass/id___EQ___" + ageClass.id }));
+          ageClassFilter.addItem(new ViewSettingsItem({ text: `${ageClass.caption} ${ageClass.suffix}`, key: `ageClass/id___EQ___${ageClass.id}` }));
         });
         viewSettingsDialog.insertFilterItem(ageClassFilter, 1);
       }
       if (filters.distances && filters.distances.length > 1) {
         const distancesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "distance", text: "{i18n>common.distance}" });
         filters.distances.forEach((distance: any) => {
-          distancesFilter.addItem(new ViewSettingsItem({ text: distance + "m", key: "distance___EQ___" + distance }));
+          distancesFilter.addItem(new ViewSettingsItem({ text: distance + "m", key: `distance___EQ___${distance}` }));
         });
         viewSettingsDialog.insertFilterItem(distancesFilter, 2);
       }
@@ -57,7 +57,7 @@ export default class RacesTableController extends BaseTableController {
         const lightweightFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: false, key: "lightweight", text: "{i18n>common.lightweight}" });
         filters.lightweight.forEach((lightweight: any) => {
           const text: string = lightweight ? this.i18n("common.yes") : this.i18n("common.no");
-          lightweightFilter.addItem(new ViewSettingsItem({ text: text, key: "lightweight___EQ___" + lightweight }));
+          lightweightFilter.addItem(new ViewSettingsItem({ text: text, key: `lightweight___EQ___${lightweight}` }));
         });
         viewSettingsDialog.insertFilterItem(lightweightFilter, 5);
       }

@@ -35,7 +35,7 @@ export default class HeatsTableController extends BaseTableController {
       if (filters.dates && filters.dates.length > 1) {
         const datesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "day", text: "{i18n>common.day}" });
         filters.dates.forEach((date: any) => {
-          datesFilter.addItem(new ViewSettingsItem({ text: Formatter.weekDayDateLabel(date), key: "dateTime___Contains___" + date }));
+          datesFilter.addItem(new ViewSettingsItem({ text: Formatter.weekDayDateLabel(date), key: `dateTime___Contains___${date}` }));
         });
         viewSettingsDialog.insertFilterItem(datesFilter, 0);
       }
@@ -68,14 +68,14 @@ export default class HeatsTableController extends BaseTableController {
       if (filters.distances && filters.distances.length > 1) {
         const distancesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "distance", text: "{i18n>common.distance}" });
         filters.distances.forEach((distance: any) => {
-          distancesFilter.addItem(new ViewSettingsItem({ text: distance + "m", key: "race/distance___EQ___" + distance }));
+          distancesFilter.addItem(new ViewSettingsItem({ text: distance + "m", key: `race/distance___EQ___${distance}` }));
         });
         viewSettingsDialog.insertFilterItem(distancesFilter, 5);
       }
       if (filters.rounds && filters.rounds.length > 1) {
         const roundFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "round", text: "{i18n>common.round}" });
         filters.rounds.forEach((round: any) => {
-          roundFilter.addItem(new ViewSettingsItem({ text: Formatter.roundLabel(round.code), key: "roundCode___EQ___" + round.code }))
+          roundFilter.addItem(new ViewSettingsItem({ text: Formatter.roundLabel(round.code), key: `roundCode___EQ___${round.code}` }))
         });
         viewSettingsDialog.insertFilterItem(roundFilter, 6);
       }
@@ -83,7 +83,7 @@ export default class HeatsTableController extends BaseTableController {
         const lightweightFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: false, key: "lightweight", text: "{i18n>common.lightweight}" });
         filters.lightweight.forEach((lightweight: any) => {
           const text: string = lightweight ? this.i18n("common.yes") : this.i18n("common.no");
-          lightweightFilter.addItem(new ViewSettingsItem({ text: text, key: "race/lightweight___EQ___" + lightweight }));
+          lightweightFilter.addItem(new ViewSettingsItem({ text: text, key: `race/lightweight___EQ___${lightweight}` }));
         });
         viewSettingsDialog.insertFilterItem(lightweightFilter, 7);
       }
