@@ -63,7 +63,7 @@
                   visible="{=${schedule>forerunHeats}>0}" />
                 <Text text="{path:'schedule>finalStart',formatter:'.formatter.dayTimeIsoLabel'} ({schedule>finalHeats})"
                   visible="{=${schedule>finalHeats}>0}" />
-                <Text text="{schedule>distance}" />
+                <Text text="{schedule>distance}m" />
               </cells>
             </ColumnListItem>
           </items>
