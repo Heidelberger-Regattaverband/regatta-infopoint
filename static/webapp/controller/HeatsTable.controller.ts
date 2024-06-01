@@ -43,8 +43,8 @@ export default class HeatsTableController extends BaseTableController {
         const blocksFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "block", text: "Block" });
         filters.blocks.forEach((block: any) => {
           blocksFilter.addItem(new ViewSettingsItem({
-            text: Formatter.dayTimeIsoLabel(block.begin) + " - " + Formatter.dayTimeIsoLabel(block.end),
-            key: "dateTime___BT___" + block.begin + "___" + block.end
+            text: `${Formatter.dayTimeIsoLabel(block.begin)} - ${Formatter.dayTimeIsoLabel(block.end)}: ${block.heats} {i18n>common.heats}`,
+            key: `dateTime___BT___${block.begin}___${block.end}`
           }));
         });
         viewSettingsDialog.insertFilterItem(blocksFilter, 1);
@@ -52,14 +52,16 @@ export default class HeatsTableController extends BaseTableController {
       if (filters.boatClasses && filters.boatClasses.length > 1) {
         const boatClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "boatClass", text: "{i18n>common.boatClass}" });
         filters.boatClasses.forEach((boatClass: any) => {
-          boatClassFilter.addItem(new ViewSettingsItem({ text: boatClass.caption + " (" + boatClass.abbreviation + ")", key: "race/boatClass/id___EQ___" + boatClass.id }));
+          boatClassFilter.addItem(new ViewSettingsItem({
+            text: `${boatClass.caption} (${boatClass.abbreviation})`, key: `race/boatClass/id___EQ___${boatClass.id}`
+          }));
         });
         viewSettingsDialog.insertFilterItem(boatClassFilter, 2);
       }
       if (filters.ageClasses && filters.ageClasses.length > 1) {
         const ageClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "ageClass", text: "{i18n>common.ageClass}" });
         filters.ageClasses.forEach((ageClass: any) => {
-          ageClassFilter.addItem(new ViewSettingsItem({ text: ageClass.caption + " " + ageClass.suffix + "", key: "race/ageClass/id___EQ___" + ageClass.id }));
+          ageClassFilter.addItem(new ViewSettingsItem({ text: `${ageClass.caption} ${ageClass.suffix}`, key: `race/ageClass/id___EQ___${ageClass.id}` }));
         });
         viewSettingsDialog.insertFilterItem(ageClassFilter, 3);
       }

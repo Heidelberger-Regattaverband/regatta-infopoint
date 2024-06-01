@@ -11,6 +11,9 @@ pub(crate) struct Block {
 
     /// End of the race block
     end: DateTime<Utc>,
+
+    /// Number of heats in the block
+    heats: i32,
 }
 
 impl Block {
@@ -31,24 +34,30 @@ impl Block {
 
         let mut start: NaiveDateTime = rows[0].get(0).unwrap();
         let mut end: NaiveDateTime = rows[0].get(0).unwrap();
+        let mut heats: i32 = 0;
 
         let mut blocks = Vec::new();
         for i in 0..rows.len() - 2 {
             let current: NaiveDateTime = rows[i].get(0).unwrap();
             let next: NaiveDateTime = rows[i + 1].get(0).unwrap();
+            heats += 1;
 
             if next.signed_duration_since(current).num_minutes() > 15 {
                 blocks.push(Block {
                     begin: start.and_utc(),
                     end: end.and_utc(),
+                    heats,
                 });
                 start = next;
+                heats = 0;
             }
             end = next;
         }
+        heats += 1;
         blocks.push(Block {
             begin: start.and_utc(),
             end: end.and_utc(),
+            heats,
         });
         blocks
     }
