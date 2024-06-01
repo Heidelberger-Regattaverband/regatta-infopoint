@@ -200,7 +200,7 @@ export default class Formatter {
     }
   }
 
-  static weekdayLabel(weekday: number): string {
+  private static weekdayLabel(weekday: number): string {
     switch (weekday) {
       case 0: return "So";
       case 1: return "Mo";
@@ -242,7 +242,7 @@ export default class Formatter {
     return "";
   }
 
-  static dateLabel(date?: string): string {
+  private static dateLabel(date?: string): string {
     if (date) {
       const dateSplit: string[] = date.split("-");
       return dateSplit[2] + "." + dateSplit[1] + "." + dateSplit[0];
