@@ -1,5 +1,5 @@
 use crate::db::{
-    model::{utils, AgeClass, BoatClass},
+    model::{block::Block, utils, AgeClass, BoatClass},
     tiberius::{RowColumn, TiberiusPool},
 };
 use chrono::NaiveDate;
@@ -10,7 +10,7 @@ use tiberius::Query;
 /// A struct containing all available filter values for a regatta.
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct Filters {
+pub(crate) struct Filters {
     /// Available distances of all races.
     distances: Vec<i16>,
 
@@ -28,6 +28,9 @@ pub struct Filters {
 
     /// All used lightweight categories
     lightweight: Vec<bool>,
+
+    /// All blocks
+    blocks: Vec<Block>,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -64,7 +67,15 @@ impl Filters {
 
         let lightweight = query_lightweight(regatta_id, pool);
 
-        let result = join!(distances, dates, age_classes, boat_classes, rounds, lightweight);
+        let result = join!(
+            distances,
+            dates,
+            age_classes,
+            boat_classes,
+            rounds,
+            lightweight,
+            Block::query_blocks(regatta_id, pool)
+        );
 
         Filters {
             distances: result.0,
@@ -73,6 +84,7 @@ impl Filters {
             boat_classes: result.3,
             rounds: result.4,
             lightweight: result.5,
+            blocks: result.6,
         }
     }
 }

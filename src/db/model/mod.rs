@@ -1,5 +1,6 @@
 mod age_class;
 mod athlete;
+mod block;
 mod boat_class;
 mod club;
 mod crew;
@@ -20,7 +21,7 @@ pub use athlete::Athlete;
 pub use boat_class::BoatClass;
 pub use club::Club;
 pub use crew::Crew;
-pub use filters::Filters;
+pub(crate) use filters::Filters;
 pub use heat::{Heat, Kiosk};
 pub use heat_registration::HeatRegistration;
 pub use heat_result::HeatResult;
