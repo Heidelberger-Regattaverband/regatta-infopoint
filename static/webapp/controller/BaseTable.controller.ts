@@ -125,8 +125,8 @@ export default abstract class BaseTableController extends BaseController {
     const path: string = split[0];
     const operator: FilterOperator = split[1] as FilterOperator;
     const value1: string | boolean = split[2] === 'true' || (split[2] === 'false' ? false : split[2]);
-    // sValue2 = aSplit[3],
-    return new Filter(path, operator, value1);
+    const value2: string | undefined = split[3];
+    return new Filter(path, operator, value1, value2);
   }
 
   setSearchFilters(searchFilters: Filter[]): void {

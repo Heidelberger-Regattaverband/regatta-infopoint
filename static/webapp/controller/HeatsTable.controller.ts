@@ -39,12 +39,15 @@ export default class HeatsTableController extends BaseTableController {
         });
         viewSettingsDialog.insertFilterItem(datesFilter, 0);
       }
-      if (filters.rounds && filters.rounds.length > 1) {
-        const roundFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "round", text: "{i18n>common.round}" });
-        filters.rounds.forEach((round: any) => {
-          roundFilter.addItem(new ViewSettingsItem({ text: Formatter.roundLabel(round.code), key: "roundCode___EQ___" + round.code }))
+      if (filters.blocks && filters.blocks.length > 1) {
+        const blocksFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "block", text: "Block" });
+        filters.blocks.forEach((block: any) => {
+          blocksFilter.addItem(new ViewSettingsItem({
+            text: Formatter.dayTimeIsoLabel(block.begin) + " - " + Formatter.dayTimeIsoLabel(block.end),
+            key: "dateTime___BT___" + block.begin + "___" + block.end
+          }));
         });
-        viewSettingsDialog.insertFilterItem(roundFilter, 1);
+        viewSettingsDialog.insertFilterItem(blocksFilter, 1);
       }
       if (filters.boatClasses && filters.boatClasses.length > 1) {
         const boatClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "boatClass", text: "{i18n>common.boatClass}" });
@@ -67,13 +70,20 @@ export default class HeatsTableController extends BaseTableController {
         });
         viewSettingsDialog.insertFilterItem(distancesFilter, 5);
       }
+      if (filters.rounds && filters.rounds.length > 1) {
+        const roundFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "round", text: "{i18n>common.round}" });
+        filters.rounds.forEach((round: any) => {
+          roundFilter.addItem(new ViewSettingsItem({ text: Formatter.roundLabel(round.code), key: "roundCode___EQ___" + round.code }))
+        });
+        viewSettingsDialog.insertFilterItem(roundFilter, 6);
+      }
       if (filters.lightweight && filters.lightweight.length > 1) {
         const lightweightFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: false, key: "lightweight", text: "{i18n>common.lightweight}" });
         filters.lightweight.forEach((lightweight: any) => {
           const text: string = lightweight ? this.i18n("common.yes") : this.i18n("common.no");
           lightweightFilter.addItem(new ViewSettingsItem({ text: text, key: "race/lightweight___EQ___" + lightweight }));
         });
-        viewSettingsDialog.insertFilterItem(lightweightFilter, 6);
+        viewSettingsDialog.insertFilterItem(lightweightFilter, 7);
       }
     });
   }
