@@ -13,6 +13,8 @@
   text-decoration-thickness: 1px;
 }
 
+#map { height: 280px; }
+
 .sapMMessageToastSuccess {
   color: #4F8A10 !important;
   background-color: #DFF2BF !important;
