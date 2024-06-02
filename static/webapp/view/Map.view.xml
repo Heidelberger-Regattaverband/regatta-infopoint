@@ -1,4 +1,5 @@
-<mvc:View controllerName="de.regatta_hd.infoportal.controller.Map" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" xmlns:core="sap.ui.core">
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.Map" xmlns="sap.m" xmlns:l="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc"
+  xmlns:core="sap.ui.core">
   <mvc:content>
 
     <Page title="{i18n>launchpad.map.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
@@ -7,9 +8,11 @@
       </headerContent>
 
       <content>
-        <core:HTML
-          content="&lt;div id=&quot;map&quot; /&gt;">
-        </core:HTML>
+        <l:VerticalLayout class="sapUiContentPadding" width="100%">
+          <l:content>
+            <core:HTML content="&lt;div id=&quot;map&quot; /&gt;" />
+          </l:content>
+        </l:VerticalLayout>
       </content>
     </Page>
 
