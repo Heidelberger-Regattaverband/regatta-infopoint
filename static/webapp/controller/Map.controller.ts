@@ -1,7 +1,4 @@
-import MessageToast from "sap/m/MessageToast";
 import BaseController from "./Base.controller";
-import JSONModel from "sap/ui/model/json/JSONModel";
-import Formatter from "../model/Formatter";
 import { Button$PressEvent } from "sap/m/Button";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 
@@ -13,6 +10,11 @@ export default class MapController extends BaseController {
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getRouter()?.getRoute("map")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadStatistics(), this);
+    sap.ui.loader.config({ paths: { "osm": "https://www.openlayers.org/api/OpenLayers" } });
+    sap.ui.require(["osm"], () => this.onOsmLoaded());
+  }
+  onOsmLoaded() {
+    alert("OSM loaded");
   }
 
   onNavBack(): void {
