@@ -199,7 +199,7 @@
           "uri": "css/style.css"
         },
         {
-          "uri": "resources/leaflet/dist/leaflet.css"
+          "uri": "css/leaflet.css"
         }
       ]
     }
