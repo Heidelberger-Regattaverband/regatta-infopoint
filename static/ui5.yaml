@@ -8,5 +8,11 @@ builder:
       afterTask: replaceVersion
       configuration:
         prependPathMappings: true
+        includeAssets:
+          leaflet:
+          - "dist/*.js"
+          - "dist/*.js.map"
+          - "dist/*.css"
+
     - name: ui5-tooling-transpile-task
       afterTask: replaceVersion

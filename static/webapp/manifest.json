@@ -197,11 +197,14 @@
       "css": [
         {
           "uri": "css/style.css"
+        },
+        {
+          "uri": "resources/leaflet/dist/leaflet.css"
         }
       ],
       "js": [
         {
-          "uri": "resources/leaflet.js"
+          "uri": "resources/leaflet/dist/leaflet.js"
         }
       ]
     }
