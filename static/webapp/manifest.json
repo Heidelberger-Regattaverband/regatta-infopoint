@@ -201,11 +201,6 @@
         {
           "uri": "resources/leaflet/dist/leaflet.css"
         }
-      ],
-      "js": [
-        {
-          "uri": "resources/leaflet/dist/leaflet.js"
-        }
       ]
     }
   }
