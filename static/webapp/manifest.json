@@ -27,8 +27,7 @@
     "rootView": {
       "viewName": "de.regatta_hd.infoportal.view.App",
       "type": "XML",
-      "id": "app",
-      "async": true
+      "id": "app"
     },
     "contentDensities": {
       "compact": true,
@@ -68,8 +67,7 @@
           "target": [
             "startpage"
           ]
-        },
-        "async": true
+        }
       },
       "routes": [
         {
