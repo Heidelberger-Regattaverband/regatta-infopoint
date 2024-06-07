@@ -29,8 +29,8 @@ export default class MapController extends BaseController {
   private loadMap(): void {
     // debugger;
     const options: MapOptions = {
-      center: latLng(40.731253, -73.996139),
-      zoom: 12,
+      center: latLng(49.4093582, 8.694724),
+      zoom: 14,
     };
 
     const mymap: Map = map("map", options);
@@ -43,20 +43,19 @@ export default class MapController extends BaseController {
 
     const data: any[] = this.participatingClubsModel.getData();
     data.forEach((club: any) => {
-      $.ajax({
-        type: "GET",
-        url: "https://nominatim.openstreetmap.org/search",
-        contentType: "application/json",
-        data: {
-          format: "json",
-          city: club.city
-        },
-        success: (result: { username: string; }) => {
-        },
-        error: (result: any) => {
-        }
-      });
-
+      // $.ajax({
+      //   type: "GET",
+      //   url: "https://nominatim.openstreetmap.org/search",
+      //   contentType: "application/json",
+      //   data: {
+      //     format: "json",
+      //     city: club.city
+      //   },
+      //   success: (result: { username: string; }) => {
+      //   },
+      //   error: (result: any) => {
+      //   }
+      // });
     });
   }
 }
