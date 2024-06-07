@@ -1,8 +1,12 @@
-specVersion: "3.1"
+specVersion: "3.2"
 metadata:
   name: infoportal
 type: application
 builder:
   customTasks:
+    - name: ui5-tooling-modules-task
+      afterTask: replaceVersion
+      configuration:
+        prependPathMappings: true
     - name: ui5-tooling-transpile-task
       afterTask: replaceVersion

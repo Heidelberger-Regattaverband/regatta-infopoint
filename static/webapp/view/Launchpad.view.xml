@@ -47,6 +47,17 @@
               </tileContent>
             </GenericTile>
 
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.map.header}"
+              press=".onNavToMap">
+              <tileContent>
+                <TileContent>
+                  <content>
+                    <ImageContent src="sap-icon://map" />
+                  </content>
+                </TileContent>
+              </tileContent>
+            </GenericTile>
+
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.scheduleTile.header}"
               press=".onNavToSchedule">
               <tileContent>

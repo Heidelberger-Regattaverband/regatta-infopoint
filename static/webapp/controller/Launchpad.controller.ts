@@ -35,6 +35,10 @@ export default class LaunchpadController extends BaseController {
     super.getRouter().navTo("participatingClubs", {}, false /* history */);
   }
 
+  onNavToMap(): void {
+    super.getRouter().navTo("map", {}, false /* history */);
+  }
+
   onNavToScoring(): void {
     super.getRouter().navTo("scoring", {}, false /* history */);
   }
