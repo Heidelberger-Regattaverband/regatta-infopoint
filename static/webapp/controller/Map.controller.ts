@@ -53,14 +53,18 @@ export default class MapController extends BaseController {
     const pos3: LatLng = latLng(49.41160717484899, 8.678471999709972);
     const pos4: LatLng = latLng(49.41216728849354, 8.692195935777665);
     const pos5: LatLng = latLng(49.41322332864892, 8.700159951566343);
+    const posRgh: LatLng = latLng(49.40969496815664, 8.681028083836926);
+    const posHrk: LatLng = latLng(49.41350127718461, 8.694310983201063);
     marker(pos1).bindPopup(popup().setContent("Sattelplatz")).addTo(this.map);
     marker(pos2).bindPopup(popup().setContent("Regattabüro")).addTo(this.map);
     marker(pos3).bindPopup(popup().setContent("Ziel")).addTo(this.map);
     marker(pos4).bindPopup(popup().setContent("Start 1000m")).addTo(this.map);
     marker(pos5).bindPopup(popup().setContent("Start 1500m")).addTo(this.map);
+    marker(posRgh).bindPopup(popup().setContent("Rudergesellschaft Heidelberg 1898 e.V.")).addTo(this.map);
+    marker(posHrk).bindPopup(popup().setContent("Heidelberger Ruderklub 1872 e.V.")).addTo(this.map);
 
     this.bounds = new LatLngBounds(pos1, pos2);
-    this.bounds.extend(pos3).extend(pos4).extend(pos5);
+    this.bounds.extend(pos3).extend(pos4).extend(pos5).extend(posRgh).extend(posHrk);
     this.map.fitBounds(this.bounds);
 
     const data: any[] = this.participatingClubsModel.getData();
