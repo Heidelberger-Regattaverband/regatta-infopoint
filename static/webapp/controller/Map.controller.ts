@@ -12,6 +12,7 @@ export default class MapController extends BaseController {
   private readonly participatingClubsModel: JSONModel = new JSONModel();
   private readonly center: LatLng = latLng(49.4093582, 8.694724);
   private map: Map | undefined;
+  private bounds: LatLngBounds | undefined;
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
@@ -25,8 +26,8 @@ export default class MapController extends BaseController {
   }
 
   onCenterButtonPress(_event: Button$PressEvent): void {
-    if (this.map) {
-      this.map.setView(this.center);
+    if (this.map && this.bounds) {
+      this.map.fitBounds(this.bounds);
     }
   }
 
@@ -58,9 +59,9 @@ export default class MapController extends BaseController {
     marker(pos4).bindPopup(popup().setContent("Start 1000m")).addTo(this.map);
     marker(pos5).bindPopup(popup().setContent("Start 1500m")).addTo(this.map);
 
-    const bounds = new LatLngBounds(pos1, pos2);
-    bounds.extend(pos3).extend(pos4).extend(pos5);
-    this.map.fitBounds(bounds);
+    this.bounds = new LatLngBounds(pos1, pos2);
+    this.bounds.extend(pos3).extend(pos4).extend(pos5);
+    this.map.fitBounds(this.bounds);
 
     const data: any[] = this.participatingClubsModel.getData();
     data.forEach((club: any) => {
