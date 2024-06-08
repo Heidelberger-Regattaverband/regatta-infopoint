@@ -1,6 +1,6 @@
 import BaseController from "./Base.controller";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
-import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds } from "leaflet";
+import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds, icon } from "leaflet";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { Button$PressEvent } from "sap/m/Button";
 
@@ -48,22 +48,31 @@ export default class MapController extends BaseController {
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(this.map);
 
+    const iconRgh = icon({
+      iconUrl: 'https://verwaltung.rudern.de/uploads/clubs/fdd52f8c4b5b15538341ea3e9edb11c3_small.png',
+      iconSize: [30, 30], // size of the icon
+    });
+    const iconHrk = icon({
+      iconUrl: 'https://verwaltung.rudern.de/uploads/clubs/f0d388c2e2956a1f596c7dae5880131d_small.png',
+      iconSize: [30, 30], // size of the icon
+    });
+
     const pos1: LatLng = latLng(49.41294441086431, 8.690510474742936);
-    const pos2: LatLng = latLng(49.41315519733915, 8.691352456928998);
+    const posOffice: LatLng = latLng(49.41315519733915, 8.691352456928998);
     const pos3: LatLng = latLng(49.41160717484899, 8.678471999709972);
     const pos4: LatLng = latLng(49.41216728849354, 8.692195935777665);
     const pos5: LatLng = latLng(49.41322332864892, 8.700159951566343);
     const posRgh: LatLng = latLng(49.40969496815664, 8.681028083836926);
     const posHrk: LatLng = latLng(49.41350127718461, 8.694310983201063);
     marker(pos1).bindPopup(popup().setContent("Sattelplatz")).addTo(this.map);
-    marker(pos2).bindPopup(popup().setContent("Regattabüro")).addTo(this.map);
+    marker(posOffice).bindPopup(popup().setContent("Regattabüro")).addTo(this.map);
     marker(pos3).bindPopup(popup().setContent("Ziel")).addTo(this.map);
     marker(pos4).bindPopup(popup().setContent("Start 1000m")).addTo(this.map);
     marker(pos5).bindPopup(popup().setContent("Start 1500m")).addTo(this.map);
-    marker(posRgh).bindPopup(popup().setContent("Rudergesellschaft Heidelberg 1898 e.V.")).addTo(this.map);
-    marker(posHrk).bindPopup(popup().setContent("Heidelberger Ruderklub 1872 e.V.")).addTo(this.map);
+    marker(posRgh, { icon: iconRgh }).bindPopup(popup().setContent("Rudergesellschaft Heidelberg 1898 e.V.")).addTo(this.map);
+    marker(posHrk, { icon: iconHrk }).bindPopup(popup().setContent("Heidelberger Ruderklub 1872 e.V.")).addTo(this.map);
 
-    this.bounds = new LatLngBounds(pos1, pos2);
+    this.bounds = new LatLngBounds(pos1, posOffice);
     this.bounds.extend(pos3).extend(pos4).extend(pos5).extend(posRgh).extend(posHrk);
     this.map.fitBounds(this.bounds);
 
