@@ -1,6 +1,6 @@
 import BaseController from "./Base.controller";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
-import { map, latLng, tileLayer, MapOptions, Map, LatLng } from "leaflet";
+import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds } from "leaflet";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { Button$PressEvent } from "sap/m/Button";
 
@@ -35,7 +35,6 @@ export default class MapController extends BaseController {
   }
 
   private loadMap(): void {
-    // debugger;
     const options: MapOptions = {
       center: this.center,
       zoom: 14,
@@ -47,6 +46,21 @@ export default class MapController extends BaseController {
       maxZoom: 19,
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(this.map);
+
+    const pos1: LatLng = latLng(49.41294441086431, 8.690510474742936);
+    const pos2: LatLng = latLng(49.41315519733915, 8.691352456928998);
+    const pos3: LatLng = latLng(49.41160717484899, 8.678471999709972);
+    const pos4: LatLng = latLng(49.41216728849354, 8.692195935777665);
+    const pos5: LatLng = latLng(49.41322332864892, 8.700159951566343);
+    marker(pos1).bindPopup(popup().setContent("Sattelplatz")).addTo(this.map);
+    marker(pos2).bindPopup(popup().setContent("Regattabüro")).addTo(this.map);
+    marker(pos3).bindPopup(popup().setContent("Ziel")).addTo(this.map);
+    marker(pos4).bindPopup(popup().setContent("Start 1000m")).addTo(this.map);
+    marker(pos5).bindPopup(popup().setContent("Start 1500m")).addTo(this.map);
+
+    const bounds = new LatLngBounds(pos1, pos2);
+    bounds.extend(pos3).extend(pos4).extend(pos5);
+    this.map.fitBounds(bounds);
 
     const data: any[] = this.participatingClubsModel.getData();
     data.forEach((club: any) => {
