@@ -59,21 +59,21 @@ export default class MapController extends BaseController {
 
     const pos1: LatLng = latLng(49.41294441086431, 8.690510474742936);
     const posOffice: LatLng = latLng(49.41315519733915, 8.691352456928998);
-    const pos3: LatLng = latLng(49.41160717484899, 8.678471999709972);
-    const pos4: LatLng = latLng(49.41216728849354, 8.692195935777665);
-    const pos5: LatLng = latLng(49.41322332864892, 8.700159951566343);
+    const posFinsih: LatLng = latLng(49.41160717484899, 8.678471999709972);
+    const posStart1000m: LatLng = latLng(49.41216728849354, 8.692195935777665);
+    const posStart1500m: LatLng = latLng(49.41322332864892, 8.700159951566343);
     const posRgh: LatLng = latLng(49.40969496815664, 8.681028083836926);
     const posHrk: LatLng = latLng(49.41350127718461, 8.694310983201063);
     marker(pos1).bindPopup(popup().setContent("Sattelplatz")).addTo(this.map);
     marker(posOffice).bindPopup(popup().setContent("Regattabüro")).addTo(this.map);
-    marker(pos3).bindPopup(popup().setContent("Ziel")).addTo(this.map);
-    marker(pos4).bindPopup(popup().setContent("Start 1000m")).addTo(this.map);
-    marker(pos5).bindPopup(popup().setContent("Start 1500m")).addTo(this.map);
+    marker(posFinsih).bindPopup(popup().setContent("Ziel")).addTo(this.map);
+    marker(posStart1000m).bindPopup(popup().setContent("Start 1000m")).addTo(this.map);
+    marker(posStart1500m).bindPopup(popup().setContent("Start 1500m")).addTo(this.map);
     marker(posRgh, { icon: iconRgh }).bindPopup(popup().setContent("Rudergesellschaft Heidelberg 1898 e.V.")).addTo(this.map);
     marker(posHrk, { icon: iconHrk }).bindPopup(popup().setContent("Heidelberger Ruderklub 1872 e.V.")).addTo(this.map);
 
     this.bounds = new LatLngBounds(pos1, posOffice);
-    this.bounds.extend(pos3).extend(pos4).extend(pos5).extend(posRgh).extend(posHrk);
+    this.bounds.extend(posFinsih).extend(posStart1000m).extend(posStart1500m).extend(posRgh).extend(posHrk);
     this.map.fitBounds(this.bounds);
 
     const data: any[] = this.participatingClubsModel.getData();
