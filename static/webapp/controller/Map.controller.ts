@@ -10,7 +10,6 @@ import { Button$PressEvent } from "sap/m/Button";
 export default class MapController extends BaseController {
 
   private readonly participatingClubsModel: JSONModel = new JSONModel();
-  private readonly center: LatLng = latLng(49.4093582, 8.694724);
   private map: Map | undefined;
   private bounds: LatLngBounds | undefined;
 
@@ -36,58 +35,59 @@ export default class MapController extends BaseController {
   }
 
   private loadMap(): void {
-    const layerOsm: TileLayer = tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    });
-    const layerOsmHOT: TileLayer = tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team hosted by OpenStreetMap France'
-    });
+    if (!this.map) {
+      const layerOsm: TileLayer = tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      });
+      const layerOsmHOT: TileLayer = tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team hosted by OpenStreetMap France'
+      });
 
-    const iconRgh = icon({
-      iconUrl: 'https://verwaltung.rudern.de/uploads/clubs/fdd52f8c4b5b15538341ea3e9edb11c3_small.png',
-      iconSize: [30, 30], // size of the icon
-    });
-    const iconHrk = icon({
-      iconUrl: 'https://verwaltung.rudern.de/uploads/clubs/f0d388c2e2956a1f596c7dae5880131d_small.png',
-      iconSize: [30, 30], // size of the icon
-    });
+      const iconRgh = icon({
+        iconUrl: 'https://verwaltung.rudern.de/uploads/clubs/fdd52f8c4b5b15538341ea3e9edb11c3_small.png',
+        iconSize: [30, 30], // size of the icon
+      });
+      const iconHrk = icon({
+        iconUrl: 'https://verwaltung.rudern.de/uploads/clubs/f0d388c2e2956a1f596c7dae5880131d_small.png',
+        iconSize: [30, 30], // size of the icon
+      });
 
-    const pos1: LatLng = latLng(49.41294441086431, 8.690510474742936);
-    const posOffice: LatLng = latLng(49.41315519733915, 8.691352456928998);
-    const posFinsih: LatLng = latLng(49.41160717484899, 8.678471999709972);
-    const posStart1000m: LatLng = latLng(49.41216728849354, 8.692195935777665);
-    const posStart1500m: LatLng = latLng(49.41322332864892, 8.700159951566343);
-    const posRgh: LatLng = latLng(49.40969496815664, 8.681028083836926);
-    const posHrk: LatLng = latLng(49.41350127718461, 8.694310983201063);
-    const mark1: Marker = marker(pos1).bindPopup(popup().setContent("Sattelplatz"));
-    const markOffice: Marker = marker(posOffice).bindPopup(popup().setContent("Regattabüro"));
-    const markFinish: Marker = marker(posFinsih).bindPopup(popup().setContent("Ziel"));
-    const markStart1000m: Marker = marker(posStart1000m).bindPopup(popup().setContent("Start 1000m"));
-    const markStart1500m: Marker = marker(posStart1500m).bindPopup(popup().setContent("Start 1500m"));
-    const markRgh: Marker = marker(posRgh, { icon: iconRgh }).bindPopup(popup().setContent("Rudergesellschaft Heidelberg 1898 e.V."));
-    const markHrk: Marker = marker(posHrk, { icon: iconHrk }).bindPopup(popup().setContent("Heidelberger Ruderklub 1872 e.V."));
-    const layerRegatta: LayerGroup = layerGroup([mark1, markOffice, markFinish, markStart1000m, markStart1500m, markRgh, markHrk]);
+      const pos1: LatLng = latLng(49.41294441086431, 8.690510474742936);
+      const posOffice: LatLng = latLng(49.41315519733915, 8.691352456928998);
+      const posFinsih: LatLng = latLng(49.41160717484899, 8.678471999709972);
+      const posStart1000m: LatLng = latLng(49.41216728849354, 8.692195935777665);
+      const posStart1500m: LatLng = latLng(49.41322332864892, 8.700159951566343);
+      const posRgh: LatLng = latLng(49.40969496815664, 8.681028083836926);
+      const posHrk: LatLng = latLng(49.41350127718461, 8.694310983201063);
+      const mark1: Marker = marker(pos1).bindPopup(popup().setContent("Sattelplatz"));
+      const markOffice: Marker = marker(posOffice).bindPopup(popup().setContent("Regattabüro"));
+      const markFinish: Marker = marker(posFinsih).bindPopup(popup().setContent("Ziel"));
+      const markStart1000m: Marker = marker(posStart1000m).bindPopup(popup().setContent("Start 1000m"));
+      const markStart1500m: Marker = marker(posStart1500m).bindPopup(popup().setContent("Start 1500m"));
+      const markRgh: Marker = marker(posRgh, { icon: iconRgh }).bindPopup(popup().setContent("Rudergesellschaft Heidelberg 1898 e.V."));
+      const markHrk: Marker = marker(posHrk, { icon: iconHrk }).bindPopup(popup().setContent("Heidelberger Ruderklub 1872 e.V."));
+      const layerRegatta: LayerGroup = layerGroup([mark1, markOffice, markFinish, markStart1000m, markStart1500m, markRgh, markHrk]);
 
-    const baseMaps = {
-      "OpenStreetMap": layerOsm,
-      "OpenStreetMap.HOT": layerOsmHOT
-    };
-    const overlayMaps = {
-      "Regatta": layerRegatta
-    };
+      const baseMaps = {
+        "OpenStreetMap": layerOsm,
+        "OpenStreetMap.HOT": layerOsmHOT
+      };
+      const overlayMaps = {
+        "Regatta": layerRegatta
+      };
 
-    const options: MapOptions = {
-      center: this.center,
-      zoom: 14,
-      layers: [layerOsm, layerRegatta]
-    };
-    this.map = map("map", options);
-    control.layers(baseMaps, overlayMaps).addTo(this.map);
+      const options: MapOptions = {
+        zoom: 14,
+        layers: [layerOsm, layerRegatta]
+      };
+      this.map = map("map", options);
+      control.layers(baseMaps, overlayMaps).addTo(this.map);
 
-    this.bounds = new LatLngBounds(pos1, posOffice);
-    this.bounds.extend(posFinsih).extend(posStart1000m).extend(posStart1500m).extend(posRgh).extend(posHrk);
-    this.map.fitBounds(this.bounds);
+      this.bounds = new LatLngBounds(pos1, posOffice);
+      this.bounds.extend(posFinsih).extend(posStart1000m).extend(posStart1500m).extend(posRgh).extend(posHrk);
+      this.map.fitBounds(this.bounds);
+    }
   }
 }
