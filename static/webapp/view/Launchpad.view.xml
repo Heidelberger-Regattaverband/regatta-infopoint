@@ -52,7 +52,7 @@
               <tileContent>
                 <TileContent>
                   <content>
-                    <ImageContent src="sap-icon://map" />
+                    <ImageContent src="sap-icon://map-3" />
                   </content>
                 </TileContent>
               </tileContent>
