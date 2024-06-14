@@ -131,3 +131,21 @@ impl TryRowColumn<DateTime<Utc>> for Row {
         }
     }
 }
+
+impl TryRowColumn<f64> for Row {
+    fn try_get_column(&self, col_name: &str) -> Option<f64> {
+        match self.try_get::<f64, _>(col_name) {
+            Ok(value) => value,
+            _ => None,
+        }
+    }
+}
+
+impl TryRowColumn<f32> for Row {
+    fn try_get_column(&self, col_name: &str) -> Option<f32> {
+        match self.try_get::<f32, _>(col_name) {
+            Ok(value) => value,
+            _ => None,
+        }
+    }
+}

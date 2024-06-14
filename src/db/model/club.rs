@@ -49,6 +49,12 @@ pub struct Club {
     /// An optional URL showing the flag of the club.
     #[serde(skip_serializing_if = "Option::is_none")]
     flag_url: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    latitude: Option<f32>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    longitude: Option<f32>,
 }
 
 impl Club {
@@ -128,7 +134,7 @@ impl Club {
 
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
-            " {0}.Club_ID, {0}.Club_Abbr, {0}.Club_Name, {0}.Club_UltraAbbr, {0}.Club_City, {0}.Club_ExternID  ",
+            " {0}.Club_ID, {0}.Club_Abbr, {0}.Club_Name, {0}.Club_UltraAbbr, {0}.Club_City, {0}.Club_ExternID, {0}.Club_HRV_Latitude, {0}.Club_HRV_Longitude ",
             alias
         )
     }
@@ -160,6 +166,8 @@ impl From<&Row> for Club {
             ahtletes_female_count,
             ahtletes_male_count,
             flag_url,
+            latitude: value.try_get_column("Club_HRV_Latitude"),
+            longitude: value.try_get_column("Club_HRV_Longitude"),
         }
     }
 }
