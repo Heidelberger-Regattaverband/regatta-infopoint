@@ -27,14 +27,17 @@ impl Monitoring {
         let sys = get_system();
         let metrics = get_metrics(registry);
         let state = pool.state();
-        let created = pool.created();
+        let stats = state.statistics;
         Monitoring {
             db: Db {
                 connections: Connections {
                     total: state.connections,
                     idle: state.idle_connections,
                     used: state.connections - state.idle_connections,
-                    created,
+                    created: stats.connections_created,
+                    closed_idle_timeout: stats.connections_closed_idle_timeout,
+                    closed_max_lifetime: stats.connections_closed_max_lifetime,
+                    closed_error: stats.connections_closed_broken + stats.connections_closed_invalid,
                 },
             },
             sys: SysInfo {
@@ -207,5 +210,11 @@ pub(crate) struct Connections {
     /// The number of connections that are currently activly being used.
     used: u32,
     /// The number of connections that have been created.
-    created: u32,
+    created: u64,
+    /// The number of connections that have been closed due to a timeout.
+    closed_idle_timeout: u64,
+    /// The number of connections that have been closed due to max lifetime.
+    closed_max_lifetime: u64,
+    /// The number of connections that have been closed due to an error.
+    closed_error: u64,
 }

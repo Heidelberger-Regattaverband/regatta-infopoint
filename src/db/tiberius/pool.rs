@@ -1,23 +1,17 @@
 use crate::config::Config;
 use async_trait::async_trait;
 use bb8::{ManageConnection, Pool, PooledConnection, State};
-use colored::Colorize;
-use log::debug;
-use std::sync::{Arc, Mutex, OnceLock};
+use std::sync::OnceLock;
 use tiberius::{error::Error, Client, Config as TiberiusConfig};
 use tokio::net::TcpStream;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
 
 static POOL: OnceLock<TiberiusPool> = OnceLock::new();
-
 /// A connection manager for Tiberius connections.
 #[derive(Debug)]
 pub struct TiberiusConnectionManager {
     /// The database configuration.
     config: TiberiusConfig,
-
-    /// The number of created connections.
-    count: Arc<Mutex<u32>>,
 }
 
 impl TiberiusConnectionManager {
@@ -25,15 +19,7 @@ impl TiberiusConnectionManager {
     fn new() -> TiberiusConnectionManager {
         TiberiusConnectionManager {
             config: Config::get().get_db_config(),
-            count: Arc::new(Mutex::new(0)),
         }
-    }
-
-    /// Increments the connection count.
-    fn inc_count(&self) {
-        let mut count = self.count.lock().unwrap();
-        *count += 1;
-        debug!("Created new DB connection: count={}", count.to_string().bold());
     }
 }
 
@@ -45,9 +31,7 @@ impl ManageConnection for TiberiusConnectionManager {
     async fn connect(&self) -> Result<Self::Connection, Self::Error> {
         let tcp = TcpStream::connect(self.config.get_addr()).await?;
         tcp.set_nodelay(true)?;
-        let result = Client::connect(self.config.clone(), tcp.compat_write()).await;
-        self.inc_count();
-        result
+        Client::connect(self.config.clone(), tcp.compat_write()).await
     }
 
     async fn is_valid(&self, connection: &mut Self::Connection) -> Result<(), Self::Error> {
@@ -66,9 +50,6 @@ impl ManageConnection for TiberiusConnectionManager {
 pub(crate) struct TiberiusPool {
     /// The inner pool.
     inner: Pool<TiberiusConnectionManager>,
-
-    /// The number of created connections.
-    count: Arc<Mutex<u32>>,
 }
 
 impl TiberiusPool {
@@ -80,7 +61,6 @@ impl TiberiusPool {
     /// Initializes the `TiberiusPool`.
     pub(crate) async fn init() {
         let manager = TiberiusConnectionManager::new();
-        let count = manager.count.clone();
 
         let inner = Pool::builder()
             .max_size(Config::get().db_pool_max_size)
@@ -90,8 +70,7 @@ impl TiberiusPool {
             .unwrap();
 
         if POOL.get().is_none() {
-            POOL.set(TiberiusPool { inner, count })
-                .expect("TiberiusPool already set")
+            POOL.set(TiberiusPool { inner }).expect("TiberiusPool already set")
         }
     }
 
@@ -103,10 +82,5 @@ impl TiberiusPool {
     /// Returns the current state of the pool.
     pub(crate) fn state(&self) -> State {
         self.inner.state()
-    }
-
-    /// Returns the number of created connections.
-    pub(crate) fn created(&self) -> u32 {
-        *self.count.lock().unwrap()
     }
 }
