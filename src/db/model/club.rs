@@ -6,7 +6,7 @@ use crate::{
     http::flags_scraper::ClubFlag,
 };
 use serde::Serialize;
-use tiberius::{Query, Row};
+use tiberius::{numeric::Decimal, Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -51,10 +51,10 @@ pub struct Club {
     flag_url: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    latitude: Option<f32>,
+    latitude: Option<Decimal>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    longitude: Option<f32>,
+    longitude: Option<Decimal>,
 }
 
 impl Club {

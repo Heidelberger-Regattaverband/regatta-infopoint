@@ -1,5 +1,5 @@
 use chrono::{DateTime, NaiveDate, Utc};
-use tiberius::{time::chrono::NaiveDateTime, Row};
+use tiberius::{numeric::Decimal, time::chrono::NaiveDateTime, Row};
 
 pub trait RowColumn<T>
 where
@@ -36,6 +36,12 @@ impl RowColumn<i16> for Row {
 impl RowColumn<i32> for Row {
     fn get_column(&self, col_name: &str) -> i32 {
         self.try_get::<i32, _>(col_name).unwrap().unwrap()
+    }
+}
+
+impl RowColumn<f32> for Row {
+    fn get_column(&self, col_name: &str) -> f32 {
+        self.try_get::<f32, _>(col_name).unwrap().unwrap()
     }
 }
 
@@ -144,6 +150,15 @@ impl TryRowColumn<f64> for Row {
 impl TryRowColumn<f32> for Row {
     fn try_get_column(&self, col_name: &str) -> Option<f32> {
         match self.try_get::<f32, _>(col_name) {
+            Ok(value) => value,
+            _ => None,
+        }
+    }
+}
+
+impl TryRowColumn<Decimal> for Row {
+    fn try_get_column(&self, col_name: &str) -> Option<Decimal> {
+        match self.try_get::<Decimal, _>(col_name) {
             Ok(value) => value,
             _ => None,
         }

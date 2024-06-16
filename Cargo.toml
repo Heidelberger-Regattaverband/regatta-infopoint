@@ -45,6 +45,7 @@ tiberius = { version = "0", features = [
   "chrono",
   "rustls",
   "tds73",
+  "rust_decimal",
 ], default-features = false }
 stretto = { version = "0", features = ["async"] }
 
