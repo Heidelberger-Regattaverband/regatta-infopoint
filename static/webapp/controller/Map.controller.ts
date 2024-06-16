@@ -1,6 +1,6 @@
 import BaseController from "./Base.controller";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
-import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds, icon, layerGroup, Marker, TileLayer, LayerGroup, control } from "leaflet";
+import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds, icon, layerGroup, Marker, TileLayer, LayerGroup, control, latLngBounds, FitBoundsOptions } from "leaflet";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { Button$PressEvent } from "sap/m/Button";
 
@@ -10,6 +10,7 @@ import { Button$PressEvent } from "sap/m/Button";
 export default class MapController extends BaseController {
 
   private readonly participatingClubsModel: JSONModel = new JSONModel();
+  private readonly boundsOpts: FitBoundsOptions = { paddingTopLeft: [0, 0], paddingBottomRight: [0, 0] };
   private map: Map | undefined;
   private bounds: LatLngBounds | undefined;
 
@@ -26,7 +27,7 @@ export default class MapController extends BaseController {
 
   onCenterButtonPress(_event: Button$PressEvent): void {
     if (this.map && this.bounds) {
-      this.map.fitBounds(this.bounds);
+      this.map.fitBounds(this.bounds, this.boundsOpts);
     }
   }
 
@@ -45,29 +46,9 @@ export default class MapController extends BaseController {
         attribution: '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team hosted by OpenStreetMap France'
       });
 
-      const iconRgh = icon({
-        iconUrl: 'https://verwaltung.rudern.de/uploads/clubs/fdd52f8c4b5b15538341ea3e9edb11c3_small.png',
-        iconSize: [30, 30], // size of the icon
-      });
-      const iconHrk = icon({
-        iconUrl: 'https://verwaltung.rudern.de/uploads/clubs/f0d388c2e2956a1f596c7dae5880131d_small.png',
-        iconSize: [30, 30], // size of the icon
-      });
-
-      const pos1: LatLng = latLng(49.41294441086431, 8.690510474742936);
-      const posOffice: LatLng = latLng(49.41315519733915, 8.691352456928998);
-      const posFinsih: LatLng = latLng(49.41160717484899, 8.678471999709972);
-      const posStart1000m: LatLng = latLng(49.41216728849354, 8.692195935777665);
-      const posStart1500m: LatLng = latLng(49.41322332864892, 8.700159951566343);
-      const mark1: Marker = marker(pos1).bindPopup(popup().setContent("Sattelplatz"));
-      const markOffice: Marker = marker(posOffice).bindPopup(popup().setContent("Regattabüro"));
-      const markFinish: Marker = marker(posFinsih).bindPopup(popup().setContent("Ziel"));
-      const markStart1000m: Marker = marker(posStart1000m).bindPopup(popup().setContent("Start 1000m"));
-      const markStart1500m: Marker = marker(posStart1500m).bindPopup(popup().setContent("Start 1500m"));
-      // const markRgh: Marker = marker(posRgh, { icon: iconRgh }).bindPopup(popup().setContent("Rudergesellschaft Heidelberg 1898 e.V."));
-      // const markHrk: Marker = marker(posHrk, { icon: iconHrk }).bindPopup(popup().setContent("Heidelberger Ruderklub 1872 e.V."));
-      const layerRegatta: LayerGroup = layerGroup([mark1, markOffice, markFinish, markStart1000m, markStart1500m]);
-      const layerClubs: LayerGroup = this.getClubsLayerGroup();
+      const layerRegatta: LayerGroup = this.getRegattaLayerGroup()[0];
+      const clubs = this.getClubsLayerGroup();
+      const layerClubs: LayerGroup = clubs[0];
 
       const baseMaps = {
         "OpenStreetMap": layerOsm,
@@ -79,22 +60,36 @@ export default class MapController extends BaseController {
       };
 
       const options: MapOptions = {
-        zoom: 14,
+        // zoom: 14,
         layers: [layerOsm, layerRegatta, layerClubs]
       };
       this.map = map("map", options);
       control.layers(baseMaps, overlayMaps).addTo(this.map);
 
-      this.bounds = new LatLngBounds(pos1, posOffice);
-      this.bounds.extend(posFinsih).extend(posStart1000m).extend(posStart1500m);
-      this.map.fitBounds(this.bounds);
+      this.bounds = clubs[1];
+      this.map.fitBounds(this.bounds, this.boundsOpts);
     }
   }
 
-  private getClubsLayerGroup(): LayerGroup {
+  private getRegattaLayerGroup(): [LayerGroup, LatLngBounds] {
+    const pos1: LatLng = latLng(49.41294441086431, 8.690510474742936);
+    const posOffice: LatLng = latLng(49.41315519733915, 8.691352456928998);
+    const posFinsih: LatLng = latLng(49.41160717484899, 8.678471999709972);
+    const posStart1000m: LatLng = latLng(49.41216728849354, 8.692195935777665);
+    const posStart1500m: LatLng = latLng(49.41322332864892, 8.700159951566343);
+    const mark1: Marker = marker(pos1).bindPopup(popup().setContent("Sattelplatz"));
+    const markOffice: Marker = marker(posOffice).bindPopup(popup().setContent("Regattabüro"));
+    const markFinish: Marker = marker(posFinsih).bindPopup(popup().setContent("Ziel"));
+    const markStart1000m: Marker = marker(posStart1000m).bindPopup(popup().setContent("Start 1000m"));
+    const markStart1500m: Marker = marker(posStart1500m).bindPopup(popup().setContent("Start 1500m"));
+    const layer: LayerGroup = layerGroup([mark1, markOffice, markFinish, markStart1000m, markStart1500m]);
+    const bounds: LatLngBounds = latLngBounds([mark1.getLatLng(), markOffice.getLatLng(), markFinish.getLatLng(), markStart1000m.getLatLng(), markStart1500m.getLatLng()]);
+    return [layer, bounds];
+  }
+
+  private getClubsLayerGroup(): [LayerGroup, LatLngBounds] {
     const marks: Marker[] = [];
-    const clubs: any[] = this.participatingClubsModel.getData();
-    clubs.forEach((club: any) => {
+    this.participatingClubsModel.getData().forEach((club: any) => {
       if (club.latitude && club.longitude) {
         const pos: LatLng = latLng(club.latitude, club.longitude);
         const mark: Marker = marker(pos).bindPopup(popup().setContent(club.longName));
@@ -108,6 +103,6 @@ export default class MapController extends BaseController {
         marks.push(mark);
       }
     });
-    return layerGroup(marks);
+    return [layerGroup(marks), latLngBounds(marks.map(mark => mark.getLatLng()))];
   }
 }
