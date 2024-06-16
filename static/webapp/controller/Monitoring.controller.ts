@@ -42,6 +42,9 @@ export default class MonitoringController extends BaseController {
       dbConnections.push({ name: this.i18n("monitoring.dbConnections.used"), value: monitoring.db.connections.used });
       dbConnections.push({ name: this.i18n("monitoring.dbConnections.idle"), value: monitoring.db.connections.idle });
       dbConnections.push({ name: this.i18n("monitoring.dbConnections.created"), value: monitoring.db.connections.created });
+      dbConnections.push({ name: this.i18n("monitoring.dbConnections.closedIdleTimeout"), value: monitoring.db.connections.closedIdleTimeout });
+      dbConnections.push({ name: this.i18n("monitoring.dbConnections.closedMaxLifetime"), value: monitoring.db.connections.closedMaxLifetime });
+      dbConnections.push({ name: this.i18n("monitoring.dbConnections.closedError"), value: monitoring.db.connections.closedError });
     }
 
     const mem: any[] = [];
