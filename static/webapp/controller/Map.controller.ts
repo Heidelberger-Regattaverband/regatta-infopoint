@@ -60,7 +60,7 @@ export default class MapController extends BaseController {
       };
 
       const options: MapOptions = {
-        // zoom: 14,
+        doubleClickZoom: true,
         layers: [layerOsm, layerRegatta, layerClubs]
       };
       this.map = map("map", options);
@@ -92,11 +92,12 @@ export default class MapController extends BaseController {
     this.participatingClubsModel.getData().forEach((club: any) => {
       if (club.latitude && club.longitude) {
         const pos: LatLng = latLng(club.latitude, club.longitude);
-        const mark: Marker = marker(pos).bindPopup(popup().setContent(club.longName));
+        const content: string = `<a href="#/clubRegistrations/${club.id}">${club.longName}<br>${club.city}</a>`;
+        const mark: Marker = marker(pos).bindPopup(popup().setContent(content));
         if (club.flagUrl) {
           const iconClub = icon({
             iconUrl: club.flagUrl,
-            iconSize: [30, 30], // size of the icon
+            iconSize: [25, 25], // size of the icon
           });
           mark.setIcon(iconClub);
         }
