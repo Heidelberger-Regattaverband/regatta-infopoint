@@ -98,6 +98,13 @@ export default class MapController extends BaseController {
       if (club.latitude && club.longitude) {
         const pos: LatLng = latLng(club.latitude, club.longitude);
         const mark: Marker = marker(pos).bindPopup(popup().setContent(club.longName));
+        if (club.flagUrl) {
+          const iconClub = icon({
+            iconUrl: club.flagUrl,
+            iconSize: [30, 30], // size of the icon
+          });
+          mark.setIcon(iconClub);
+        }
         marks.push(mark);
       }
     });
