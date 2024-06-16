@@ -1,8 +1,9 @@
 import BaseController from "./Base.controller";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
-import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds, icon, layerGroup, Marker, TileLayer, LayerGroup, control, latLngBounds, FitBoundsOptions, Control } from "leaflet";
+import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds, icon, layerGroup, Marker, TileLayer, LayerGroup, control, latLngBounds, FitBoundsOptions, markerClusterGroup, MarkerClusterGroup } from "leaflet";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { Button$PressEvent } from "sap/m/Button";
+import "leaflet.markercluster";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -45,8 +46,8 @@ export default class MapController extends BaseController {
         maxZoom: 19,
         attribution: '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team hosted by OpenStreetMap France'
       });
-
-      const layerRegatta: LayerGroup = this.getRegattaLayerGroup()[0];
+      const markers: MarkerClusterGroup = markerClusterGroup();
+      const layerRegatta: LayerGroup = this.getRegattaLayerGroup(markers)[0];
       const clubs = this.getClubsLayerGroup();
       const layerClubs: LayerGroup = clubs[0];
 
@@ -71,7 +72,7 @@ export default class MapController extends BaseController {
     }
   }
 
-  private getRegattaLayerGroup(): [LayerGroup, LatLngBounds] {
+  private getRegattaLayerGroup(markers: MarkerClusterGroup): [LayerGroup, LatLngBounds] {
     const pos1: LatLng = latLng(49.41294441086431, 8.690510474742936);
     const posOffice: LatLng = latLng(49.41315519733915, 8.691352456928998);
     const posFinsih: LatLng = latLng(49.41160717484899, 8.678471999709972);
@@ -82,9 +83,10 @@ export default class MapController extends BaseController {
     const markFinish: Marker = marker(posFinsih).bindPopup(popup().setContent("Ziel"));
     const markStart1000m: Marker = marker(posStart1000m).bindPopup(popup().setContent("Start 1000m"));
     const markStart1500m: Marker = marker(posStart1500m).bindPopup(popup().setContent("Start 1500m"));
-    const layer: LayerGroup = layerGroup([mark1, markOffice, markFinish, markStart1000m, markStart1500m]);
+    const layerRegatta: LayerGroup = layerGroup([mark1, markOffice, markFinish, markStart1000m, markStart1500m]);
     const bounds: LatLngBounds = latLngBounds([mark1.getLatLng(), markOffice.getLatLng(), markFinish.getLatLng(), markStart1000m.getLatLng(), markStart1500m.getLatLng()]);
-    return [layer, bounds];
+    markers.addLayer(layerRegatta);
+    return [layerRegatta, bounds];
   }
 
   private getClubsLayerGroup(): [LayerGroup, LatLngBounds] {
