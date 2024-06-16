@@ -69,18 +69,20 @@ export default class MapController extends BaseController {
       const markRgh: Marker = marker(posRgh, { icon: iconRgh }).bindPopup(popup().setContent("Rudergesellschaft Heidelberg 1898 e.V."));
       const markHrk: Marker = marker(posHrk, { icon: iconHrk }).bindPopup(popup().setContent("Heidelberger Ruderklub 1872 e.V."));
       const layerRegatta: LayerGroup = layerGroup([mark1, markOffice, markFinish, markStart1000m, markStart1500m, markRgh, markHrk]);
+      const layerClubs: LayerGroup = this.getClubsLayerGroup();
 
       const baseMaps = {
         "OpenStreetMap": layerOsm,
         "OpenStreetMap.HOT": layerOsmHOT
       };
       const overlayMaps = {
-        "Regatta": layerRegatta
+        "Regatta": layerRegatta,
+        "Vereine": layerClubs
       };
 
       const options: MapOptions = {
         zoom: 14,
-        layers: [layerOsm, layerRegatta]
+        layers: [layerOsm, layerRegatta, layerClubs]
       };
       this.map = map("map", options);
       control.layers(baseMaps, overlayMaps).addTo(this.map);
@@ -89,5 +91,18 @@ export default class MapController extends BaseController {
       this.bounds.extend(posFinsih).extend(posStart1000m).extend(posStart1500m).extend(posRgh).extend(posHrk);
       this.map.fitBounds(this.bounds);
     }
+  }
+
+  private getClubsLayerGroup(): LayerGroup {
+    const marks: Marker[] = [];
+    const clubs: any[] = this.participatingClubsModel.getData();
+    clubs.forEach((club: any) => {
+      if (club.latitude && club.longitude) {
+        const pos: LatLng = latLng(club.latitude, club.longitude);
+        const mark: Marker = marker(pos).bindPopup(popup().setContent(club.longName));
+        marks.push(mark);
+      }
+    });
+    return layerGroup(marks);
   }
 }
