@@ -1,6 +1,6 @@
 import BaseController from "./Base.controller";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
-import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds, icon, layerGroup, Marker, TileLayer, LayerGroup, control, latLngBounds, FitBoundsOptions } from "leaflet";
+import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds, icon, layerGroup, Marker, TileLayer, LayerGroup, control, latLngBounds, FitBoundsOptions, Control } from "leaflet";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { Button$PressEvent } from "sap/m/Button";
 
@@ -65,7 +65,7 @@ export default class MapController extends BaseController {
       };
       this.map = map("map", options);
       control.layers(baseMaps, overlayMaps).addTo(this.map);
-
+      control.scale({ imperial: false, metric: true }).addTo(this.map);
       this.bounds = clubs[1];
       this.map.fitBounds(this.bounds, this.boundsOpts);
     }
