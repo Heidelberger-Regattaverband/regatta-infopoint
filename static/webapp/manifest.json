@@ -198,6 +198,12 @@
         },
         {
           "uri": "css/leaflet.css"
+        },
+        {
+          "uri": "css/MarkerCluster.css"
+        },
+        {
+          "uri": "css/MarkerCluster.Default.css"
         }
       ]
     }
