@@ -3,7 +3,6 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds, icon, layerGroup, Marker, TileLayer, LayerGroup, control, latLngBounds, FitBoundsOptions, Control } from "leaflet";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { Button$PressEvent } from "sap/m/Button";
-import "leaflet/dist/leaflet.css";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
