@@ -1,6 +1,6 @@
 import BaseController from "./Base.controller";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
-import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds, icon, layerGroup, Marker, TileLayer, LayerGroup, control, latLngBounds, FitBoundsOptions, Control } from "leaflet";
+import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds, icon, layerGroup, Marker, TileLayer, LayerGroup, control, latLngBounds, FitBoundsOptions, Control, circle, Circle } from "leaflet";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { Button$PressEvent } from "sap/m/Button";
 
@@ -56,7 +56,8 @@ export default class MapController extends BaseController {
       };
       const overlayMaps = {
         "Regatta": layerRegatta,
-        "Vereine": layerClubs
+        "Vereine": layerClubs,
+        "Kreis 250km": this.getCircleLayerGroup()
       };
 
       const options: MapOptions = {
@@ -69,6 +70,11 @@ export default class MapController extends BaseController {
       this.bounds = clubs[1];
       this.map.fitBounds(this.bounds, this.boundsOpts);
     }
+  }
+
+  private getCircleLayerGroup(): LayerGroup {
+    const circle250: Circle = circle(latLng(49.41315519733915, 8.691352456928998), { radius: 250000 });
+    return layerGroup([circle250]);
   }
 
   private getRegattaLayerGroup(): [LayerGroup, LatLngBounds] {
