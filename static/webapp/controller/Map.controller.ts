@@ -55,9 +55,9 @@ export default class MapController extends BaseController {
         "OpenStreetMap.HOT": layerOsmHOT
       };
       const overlayMaps = {
-        "Regatta": layerRegatta,
+        "Regatta Orte": layerRegatta,
         "Vereine": layerClubs,
-        "Kreis 250km": this.getCircleLayerGroup()
+        "Entfernung 250km": this.getCircleLayerGroup()
       };
 
       const options: MapOptions = {
