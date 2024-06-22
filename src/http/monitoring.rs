@@ -7,16 +7,16 @@ use utoipa::ToSchema;
 
 /// The monitoring struct contains the database state, system information and metrics.
 #[derive(Serialize, ToSchema)]
-pub(crate) struct Monitoring {
+pub(crate) struct Monitoring<'a> {
     /// The database state.
     db: Db,
     /// The system information.
-    sys: SysInfo,
+    sys: SysInfo<'a>,
     /// The metrics of the system.
     metrics: Map<String, Value>,
 }
 
-impl Monitoring {
+impl <'a> Monitoring<'a> {
     /// Creates a new monitoring struct.
     /// # Arguments
     /// * `pool` - The tiberius pool.
@@ -94,13 +94,13 @@ fn get_metrics(registry: &Registry) -> Map<String, Value> {
 /// The sysinfo struct contains the cpus and memory information.
 #[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct SysInfo {
+pub(crate) struct SysInfo<'a> {
     /// The CPUs information.
     cpus: Vec<Cpu>,
     /// The memory information.
     mem: Memory,
     /// The disks information.
-    disks: Vec<Disk>,
+    disks: Vec<Disk<'a>>,
 }
 
 /// The cpu struct contains the usage, name and frequency of the CPU.
@@ -153,40 +153,40 @@ impl From<&sysinfo::Cpu> for Cpu {
 /// The disk struct contains the name, mount point and file system of the disk.
 #[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct Disk {
+pub(crate) struct Disk<'a> {
     /// The name of the disk.
-    name: String,
+    name: &'a str,
     /// The mount point of the disk.
-    mount_point: String,
+    mount_point: &'a str,
     /// The file system of the disk.
-    fs: String,
+    fs: &'a str,
     /// The total space of the disk.
     total: u64,
     /// The available space of the disk.
     available: u64,
     /// The kind of the disk. It can be "HDD", "SSD" or "Unknown".
-    kind: String,
+    kind: &'a str,
 }
 
 /// Converts a sysinfo::Disk to a Disk.
-impl From<&sysinfo::Disk> for Disk {
+impl <'a> From<&sysinfo::Disk> for Disk<'a> {
     /// # Arguments
     /// * `disk` - The sysinfo::Disk.
     /// # Returns
     /// `Disk` - The Disk.
     fn from(disk: &sysinfo::Disk) -> Self {
         Disk {
-            name: disk.name().to_owned().into_string().unwrap_or_default(),
-            mount_point: disk
+            name: &disk.name().to_owned().into_string().unwrap_or_default(),
+            mount_point: &disk
                 .mount_point()
                 .to_owned()
                 .into_os_string()
                 .into_string()
                 .unwrap_or_default(),
-            fs: disk.file_system().to_owned().into_string().unwrap_or_default(),
+            fs: &disk.file_system().to_owned().into_string().unwrap_or_default(),
             total: disk.total_space(),
             available: disk.available_space(),
-            kind: disk.kind().to_owned().to_string(),
+            kind: &disk.kind().to_owned().to_string(),
         }
     }
 }
