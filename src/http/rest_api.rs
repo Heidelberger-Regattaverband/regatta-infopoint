@@ -113,6 +113,12 @@ async fn get_club(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Club> {
     Json(aquarius.get_club(club_id).await)
 }
 
+#[get("/regattas/{regatta_id}/clubs/{club_id}")]
+async fn get_regatta_club(ids: Path<(i32, i32)>, aquarius: Data<Aquarius>) -> Json<Club> {
+    let ids = ids.into_inner();
+    Json(aquarius.get_regatta_club(ids.0, ids.1).await)
+}
+
 #[get("/regattas/{id}/statistics")]
 async fn get_statistics(
     path: Path<i32>,
@@ -222,6 +228,7 @@ pub(crate) fn config(cfg: &mut web::ServiceConfig) {
         web::scope(PATH)
             .service(get_club)
             .service(get_regattas)
+            .service(get_regatta_club)
             .service(get_club_registrations)
             .service(get_participating_clubs)
             .service(get_active_regatta)

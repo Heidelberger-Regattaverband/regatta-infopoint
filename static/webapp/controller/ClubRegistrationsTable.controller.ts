@@ -100,7 +100,7 @@ export default class ClubRegistrationsTableController extends BaseController {
   }
 
   private async loadClubModel(): Promise<boolean> {
-    return await super.updateJSONModel(this.clubModel, `/api/clubs/${this.clubId}`);
+    return await super.updateJSONModel(this.clubModel, `/api/regattas/${super.getRegattaId()}/clubs/${this.clubId}`);
   }
 
   private async loadRegistrationsModel(): Promise<boolean> {

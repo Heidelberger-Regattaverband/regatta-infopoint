@@ -93,12 +93,16 @@ impl Aquarius {
         }
     }
 
-    pub async fn get_club(&self, club_id: i32) -> Club {
+    pub(crate) async fn get_club(&self, club_id: i32) -> Club {
         if let Some(race) = self.caches.club.get(&club_id).await {
             race
         } else {
             self._query_club(club_id).await
         }
+    }
+
+    pub(crate) async fn get_regatta_club(&self, regatta_id: i32, club_id: i32) -> Club {
+        Club::query_regatta_club_by_id(regatta_id, club_id, TiberiusPool::instance()).await
     }
 
     pub async fn get_heats(&self, regatta_id: i32, opt_user: Option<Identity>) -> Vec<Heat> {

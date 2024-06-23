@@ -132,6 +132,50 @@ impl Club {
         Club::from(&utils::get_row(query.query(&mut client).await.unwrap()).await)
     }
 
+    pub(crate) async fn query_regatta_club_by_id(regatta_id: i32, club_id: i32, pool: &TiberiusPool) -> Club {
+        let mut query = Query::new(format!(
+            "SELECT {0},
+                (SELECT COUNT(*) FROM (
+                    SELECT DISTINCT Entry_ID FROM Club
+                    JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
+                    JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
+                    JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
+                    JOIN Event      ON Entry_Event_ID_FK  = Event_ID
+                    WHERE Event_ID = @P1 AND c.Club_ID = Club_ID AND Entry_CancelValue = 0
+                        AND Crew_RoundTo = 64
+                ) AS Participations_Count) AS Participations_Count,
+                (SELECT COUNT(*) FROM (
+                    SELECT DISTINCT Athlet_ID
+                    FROM Club
+                    JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
+                    JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
+                    JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
+                    JOIN Event      ON Entry_Event_ID_FK  = Event_ID
+                    WHERE Event_ID = @P1 AND c.Club_ID = Club_ID AND Entry_CancelValue = 0
+                        AND Crew_RoundTo = 64 AND Athlet_Gender = 'W'
+                ) AS Athletes_Female_Count) AS Athletes_Female_Count,
+                (SELECT COUNT(*) FROM (
+                    SELECT DISTINCT Athlet_ID
+                    FROM Club
+                    JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
+                    JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
+                    JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
+                    JOIN Event      ON Entry_Event_ID_FK  = Event_ID
+                    WHERE Event_ID = @P1 AND c.Club_ID = Club_ID AND Entry_CancelValue = 0
+                        AND Crew_RoundTo = 64 AND Athlet_Gender = 'M'
+                ) AS Athletes_Male_Count) AS Athletes_Male_Count
+            FROM Club c
+            WHERE c.Club_ID = @P2
+            ORDER BY c.Club_City ASC",
+            Club::select_columns("c")
+        ));
+        query.bind(regatta_id);
+        query.bind(club_id);
+
+        let mut client = pool.get().await;
+        Club::from(&utils::get_row(query.query(&mut client).await.unwrap()).await)
+    }
+
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
             " {0}.Club_ID, {0}.Club_Abbr, {0}.Club_Name, {0}.Club_UltraAbbr, {0}.Club_City, {0}.Club_ExternID, {0}.Club_HRV_Latitude, {0}.Club_HRV_Longitude ",

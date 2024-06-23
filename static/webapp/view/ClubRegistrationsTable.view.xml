@@ -6,6 +6,8 @@
     https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
     <Page title="Teilnahmen von {club>/shortName}" class="sapUiNoContentPadding" showNavButton="true"
       navButtonPress="onNavBack">
+      <headerContent>
+      </headerContent>
       <content>
 
         <Table id="registrationsTable" autoPopinMode="true" items="{path:'registrations>/'}" growing="true" growingThreshold="50"
@@ -15,6 +17,8 @@
             <OverflowToolbar>
               <content>
                 <SearchField width="12rem" liveChange="onSearchFieldLiveChange" showSearchButton="false" />
+                <Label text="{i18n>common.participations}: {club>/participationsCount}" />
+                <Label text="{i18n>statistics.athletes} (w/m): {club>/ahtletesCount} ({club>/ahtletesFemaleCount}/{club>/ahtletesMaleCount})" />
                 <ToolbarSpacer />
                 <OverflowToolbarButton tooltip="{i18n>common.refresh}" text="{i18n>common.refresh}" icon="sap-icon://refresh"
                   press="onRefreshButtonPress" />
