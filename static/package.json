@@ -18,7 +18,7 @@
     "leaflet": "^1.9.4",
     "typescript": "^5.5.2",
     "ui5-tooling-modules": "^3.6.2",
-    "ui5-tooling-transpile": "^3.4.3",
+    "ui5-tooling-transpile": "^3.4.4",
     "watch": "^1.0.2"
   }
 }
