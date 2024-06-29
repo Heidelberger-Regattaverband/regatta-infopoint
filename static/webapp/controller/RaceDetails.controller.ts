@@ -7,7 +7,7 @@ import MessageToast from "sap/m/MessageToast";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class RaceRegistrationsTable extends BaseController {
+export default class RaceDetailsController extends BaseController {
 
   formatter: Formatter = Formatter;
   private keyListener: (event: KeyboardEvent) => void;
@@ -39,9 +39,8 @@ export default class RaceRegistrationsTable extends BaseController {
     const data = (super.getComponentModel("race") as JSONModel).getData();
     if (data._nav.back) {
       super.navBack(data._nav.back);
-      // super.displayTarget(data._nav.back);
     } else {
-      super.displayTarget("races");
+      super.navToRaces();
     }
   }
 

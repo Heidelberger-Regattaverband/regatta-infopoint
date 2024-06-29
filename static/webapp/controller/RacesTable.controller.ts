@@ -76,12 +76,12 @@ export default class RacesTableController extends BaseTableController {
       race._nav = { isFirst: index == 0, isLast: index == count - 1 };
 
       this.onItemChanged(race);
-      super.displayTarget("raceRegistrations");
+      super.navToRaceDetails(race.id);
     }
   }
 
   onNavBack(): void {
-    super.navBack("startpage");
+    super.navToStartPage();
     // reduce table growing threshold to improve performance next time table is shown
     this.table.setGrowingThreshold(30);
   }

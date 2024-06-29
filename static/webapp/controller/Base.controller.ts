@@ -123,4 +123,16 @@ export default class BaseController extends Controller {
     }
   }
 
+  navToStartPage(): void {
+    this.getRouter().navTo("startpage", {}, undefined, false /* history*/);
+  }
+
+  navToRaces(): void {
+    this.getRouter().navTo("races", {}, undefined, false /* history*/);
+  }
+
+  navToRaceDetails(raceId: number): void {
+    this.getRouter().navTo("raceDetails", { "raceId": raceId }, undefined, false /* history*/);
+  }
+
 }

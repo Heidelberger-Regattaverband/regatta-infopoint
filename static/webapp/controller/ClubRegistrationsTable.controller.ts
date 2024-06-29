@@ -50,7 +50,7 @@ export default class ClubRegistrationsTableController extends BaseController {
       registration.race._nav = { disabled: true, back: "clubRegistrations" };
 
       (super.getComponentModel("race") as JSONModel).setData(registration.race);
-      this.getRouter().navTo("raceRegistrations", {}, undefined, false /* history*/);
+      super.navToRaceDetails(registration.race.id);
     }
   }
 

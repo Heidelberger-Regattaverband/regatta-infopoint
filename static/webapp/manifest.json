@@ -81,9 +81,9 @@
           "target": "races"
         },
         {
-          "pattern": "raceRegistrations/:raceId:",
-          "name": "raceRegistrations",
-          "target": "raceRegistrations"
+          "pattern": "raceDetails/{raceId}",
+          "name": "raceDetails",
+          "target": "raceDetails"
         },
         {
           "pattern": "heats",
@@ -145,9 +145,10 @@
           "viewName": "RacesTable",
           "viewLevel": 1
         },
-        "raceRegistrations": {
-          "viewName": "RaceRegistrationsTable",
-          "viewLevel": 2
+        "raceDetails": {
+          "viewName": "RaceDetails",
+          "viewLevel": 2,
+          "viewType": "XML"
         },
         "heats": {
           "viewName": "HeatsTable",
