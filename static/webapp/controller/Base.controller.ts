@@ -81,9 +81,10 @@ export default class BaseController extends Controller {
   navBack(target: string): void {
     const previousHash: string | undefined = History.getInstance().getPreviousHash();
     if (previousHash) {
-      window.history.go(-1);
+      alert(previousHash);
+      window.history.back();
     } else {
-      this.getRouter().navTo(target, {}, undefined, true /* no history*/);
+      this.getRouter().navTo(target, {}, undefined, false /* history*/);
     }
   }
 

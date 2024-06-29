@@ -10,7 +10,8 @@ import MessageToast from "sap/m/MessageToast";
 export default class RaceDetailsController extends BaseController {
 
   formatter: Formatter = Formatter;
-  private keyListener: (event: KeyboardEvent) => void;
+  // bind keyListener method to this context to have access to navigation methods
+  private readonly keyListener: (event: KeyboardEvent) => void = this.onKeyDown.bind(this);
   private readonly raceModel: JSONModel = new JSONModel();
 
   onInit(): void {
@@ -20,9 +21,6 @@ export default class RaceDetailsController extends BaseController {
     super.setViewModel(this.raceModel, "raceRegistrations");
 
     super.getEventBus()?.subscribe("race", "itemChanged", this.onItemChanged, this);
-
-    // bind keyListener method to this context to have access to navigation methods
-    this.keyListener = this.onKeyDown.bind(this);
   }
 
   private onBeforeShow(): void {
