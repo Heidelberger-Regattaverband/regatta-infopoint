@@ -15,7 +15,7 @@ export default class Component extends UIComponent {
 
     static metadata = {
         manifest: "json",
-        interfaces: ["sap.ui.core.IAsyncContentCreation"],
+        interfaces: ["sap.ui.core.IAsyncContentCreation"]
     };
     resourceBundle: ResourceBundle;
 
@@ -36,8 +36,7 @@ export default class Component extends UIComponent {
         super.setModel(this.filterModel, "filters");
 
         // set device model
-        const deviceModel: JSONModel = new JSONModel(Device).setDefaultBindingMode("OneWay");
-        super.setModel(deviceModel, "device");
+        super.setModel(new JSONModel(Device).setDefaultBindingMode("OneWay"), "device");
 
         // set identity model
         const identityModel: JSONModel = new JSONModel({ authenticated: false, username: "anonymous", roles: [] }).setDefaultBindingMode("OneWay");
