@@ -81,7 +81,7 @@ export default class RacesTableController extends BaseTableController {
   }
 
   onNavBack(): void {
-    super.navToStartPage();
+    super.navBack("startpage");
     // reduce table growing threshold to improve performance next time table is shown
     this.table.setGrowingThreshold(30);
   }

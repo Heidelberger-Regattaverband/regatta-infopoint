@@ -81,15 +81,10 @@ export default class BaseController extends Controller {
   navBack(target: string): void {
     const previousHash: string | undefined = History.getInstance().getPreviousHash();
     if (previousHash) {
-      alert(previousHash);
       window.history.back();
     } else {
       this.getRouter().navTo(target, {}, undefined, false /* history*/);
     }
-  }
-
-  displayTarget(target: string): void {
-    this.getRouter()?.getTargets()?.display(target);
   }
 
   /**
@@ -134,6 +129,14 @@ export default class BaseController extends Controller {
 
   navToRaceDetails(raceId: number): void {
     this.getRouter().navTo("raceDetails", { "raceId": raceId }, undefined, false /* history*/);
+  }
+
+  navToHeats(): void {
+    this.getRouter().navTo("heats", {}, undefined, false /* history*/);
+  }
+
+  navToHeatDetails(heatId: number): void {
+    this.getRouter().navTo("heatDetails", { "heatId": heatId }, undefined, false /* history*/);
   }
 
 }
