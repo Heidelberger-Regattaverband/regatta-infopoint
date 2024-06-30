@@ -120,23 +120,23 @@ export default class BaseController extends Controller {
   }
 
   navToStartPage(): void {
-    this.getRouter().navTo("startpage", {}, undefined, false /* history*/);
+    this.getRouter().navTo("startpage");
   }
 
   navToRaces(): void {
-    this.getRouter().navTo("races", {}, undefined, false /* history*/);
+    this.getRouter().navTo("races");
   }
 
   navToRaceDetails(raceId: number): void {
-    this.getRouter().navTo("raceDetails", { "raceId": raceId }, undefined, false /* history*/);
+    this.getRouter().navTo("raceDetails", { "raceId": raceId });
   }
 
   navToHeats(): void {
-    this.getRouter().navTo("heats", {}, undefined, false /* history*/);
+    this.getRouter().navTo("heats");
   }
 
   navToHeatDetails(heatId: number): void {
-    this.getRouter().navTo("heatDetails", { "heatId": heatId }, undefined, false /* history*/);
+    this.getRouter().navTo("heatDetails", { "heatId": heatId });
   }
 
 }
