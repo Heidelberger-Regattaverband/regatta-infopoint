@@ -23,22 +23,6 @@ export default class LaunchpadController extends BaseController {
     this.getIdentity();
   }
 
-  onNavToRaces(): void {
-    super.navToRaces();
-  }
-
-  onNavToHeats(): void {
-    super.navToHeats();
-  }
-
-  onNavToParticipatingClubs(): void {
-    super.getRouter().navTo("participatingClubs", {}, false /* history */);
-  }
-
-  onNavToMap(): void {
-    super.getRouter().navTo("map", {}, false /* history */);
-  }
-
   onNavToScoring(): void {
     super.getRouter().navTo("scoring", {}, false /* history */);
   }

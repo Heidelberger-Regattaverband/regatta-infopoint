@@ -164,7 +164,8 @@
         },
         "participatingClubs": {
           "viewName": "ParticipatingClubsTable",
-          "viewLevel": 1
+          "viewLevel": 1,
+          "viewType": "XML"
         },
         "clubRegistrations": {
           "viewName": "ClubRegistrationsTable",
@@ -176,7 +177,8 @@
         },
         "map": {
           "viewName": "Map",
-          "viewLevel": 1
+          "viewLevel": 1,
+          "viewType": "XML"
         },
         "scoring": {
           "viewName": "ScoringTable",

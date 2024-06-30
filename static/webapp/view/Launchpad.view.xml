@@ -16,7 +16,7 @@
         <layout:HorizontalLayout allowWrapping="true">
           <layout:content>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>common.offerAndRegistrations}" press=".onNavToRaces">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>common.offerAndRegistrations}" press=".navToRaces">
               <tileContent>
                 <TileContent>
                   <content>
@@ -26,7 +26,7 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.heatsTile.header}" press=".onNavToHeats">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.heatsTile.header}" press=".navToHeats">
               <tileContent>
                 <TileContent>
                   <content>
@@ -37,7 +37,7 @@
             </GenericTile>
 
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>statistics.participatingClubs}"
-              press=".onNavToParticipatingClubs">
+              press=".navToParticipatingClubs">
               <tileContent>
                 <TileContent>
                   <content>
@@ -47,8 +47,7 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.map.header}"
-              press=".onNavToMap">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.map.header}" press=".navToMap">
               <tileContent>
                 <TileContent>
                   <content>

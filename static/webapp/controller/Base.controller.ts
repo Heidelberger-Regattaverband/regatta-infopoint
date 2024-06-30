@@ -10,6 +10,7 @@ import Control from "sap/ui/core/Control";
 import UIComponent from "sap/ui/core/UIComponent";
 import MyComponent from "de/regatta_hd/infoportal/Component";
 import MessageBox from "sap/m/MessageBox";
+import { LatLng } from "leaflet";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -139,4 +140,15 @@ export default class BaseController extends Controller {
     this.getRouter().navTo("heatDetails", { "heatId": heatId });
   }
 
+  navToParticipatingClubs(): void {
+    this.getRouter().navTo("participatingClubs");
+  }
+
+  navToMap(location?: LatLng): void {
+    let params: any = {};
+    if (location) {
+      params = { "lat": location.lat, "lng": location.lng };
+    }
+    this.getRouter().navTo("map", params);
+  }
 }
