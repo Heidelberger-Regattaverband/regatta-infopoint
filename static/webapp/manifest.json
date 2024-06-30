@@ -154,7 +154,8 @@
         },
         "heats": {
           "viewName": "HeatsTable",
-          "viewLevel": 1
+          "viewLevel": 1,
+          "viewType": "XML"
         },
         "heatDetails": {
           "viewName": "HeatDetails",
