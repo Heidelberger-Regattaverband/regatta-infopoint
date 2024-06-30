@@ -1,4 +1,4 @@
-<mvc:View controllerName="de.regatta_hd.infoportal.controller.HeatRegistrationsTable" xmlns="sap.m" xmlns:f="sap.f"
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.HeatDetails" xmlns="sap.m" xmlns:f="sap.f"
   xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
     <Page title="{= ${heatRegistrations>/state} >= 4 ? ${i18n>common.result} : ${i18n>common.assignment}}" class="sapUiNoContentPadding"

@@ -102,7 +102,7 @@ export default class HeatsTableController extends BaseTableController {
       heat._nav = { isFirst: index == 0, isLast: index == count - 1 };
 
       this.onItemChanged(heat);
-      super.displayTarget("heatRegistrations");
+      super.navToHeatDetails(heat.id);
     }
   }
 

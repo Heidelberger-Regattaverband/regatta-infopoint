@@ -81,9 +81,9 @@
           "target": "races"
         },
         {
-          "pattern": "raceRegistrations/:raceId:",
-          "name": "raceRegistrations",
-          "target": "raceRegistrations"
+          "pattern": "raceDetails/{raceId}",
+          "name": "raceDetails",
+          "target": "raceDetails"
         },
         {
           "pattern": "heats",
@@ -91,9 +91,9 @@
           "target": "heats"
         },
         {
-          "pattern": "heatRegistrations/:heatId:",
-          "name": "heatRegistrations",
-          "target": "heatRegistrations"
+          "pattern": "heatDetails/{heatId}",
+          "name": "heatDetails",
+          "target": "heatDetails"
         },
         {
           "pattern": "participatingClubs",
@@ -139,23 +139,28 @@
       "targets": {
         "startpage": {
           "viewName": "Launchpad",
-          "viewLevel": 0
+          "viewLevel": 0,
+          "viewType": "XML"
         },
         "races": {
           "viewName": "RacesTable",
-          "viewLevel": 1
+          "viewLevel": 1,
+          "viewType": "XML"
         },
-        "raceRegistrations": {
-          "viewName": "RaceRegistrationsTable",
-          "viewLevel": 2
+        "raceDetails": {
+          "viewName": "RaceDetails",
+          "viewLevel": 2,
+          "viewType": "XML"
         },
         "heats": {
           "viewName": "HeatsTable",
-          "viewLevel": 1
+          "viewLevel": 1,
+          "viewType": "XML"
         },
-        "heatRegistrations": {
-          "viewName": "HeatRegistrationsTable",
-          "viewLevel": 2
+        "heatDetails": {
+          "viewName": "HeatDetails",
+          "viewLevel": 2,
+          "viewType": "XML"
         },
         "participatingClubs": {
           "viewName": "ParticipatingClubsTable",

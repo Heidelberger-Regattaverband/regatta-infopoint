@@ -81,14 +81,10 @@ export default class BaseController extends Controller {
   navBack(target: string): void {
     const previousHash: string | undefined = History.getInstance().getPreviousHash();
     if (previousHash) {
-      window.history.go(-1);
+      window.history.back();
     } else {
-      this.getRouter().navTo(target, {}, undefined, true /* no history*/);
+      this.getRouter().navTo(target, {}, undefined, false /* history*/);
     }
-  }
-
-  displayTarget(target: string): void {
-    this.getRouter()?.getTargets()?.display(target);
   }
 
   /**
@@ -121,6 +117,26 @@ export default class BaseController extends Controller {
     } finally {
       control?.setBusy(false);
     }
+  }
+
+  navToStartPage(): void {
+    this.getRouter().navTo("startpage");
+  }
+
+  navToRaces(): void {
+    this.getRouter().navTo("races");
+  }
+
+  navToRaceDetails(raceId: number): void {
+    this.getRouter().navTo("raceDetails", { "raceId": raceId });
+  }
+
+  navToHeats(): void {
+    this.getRouter().navTo("heats");
+  }
+
+  navToHeatDetails(heatId: number): void {
+    this.getRouter().navTo("heatDetails", { "heatId": heatId });
   }
 
 }

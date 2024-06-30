@@ -7,10 +7,11 @@ import MessageToast from "sap/m/MessageToast";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class RaceRegistrationsTable extends BaseController {
+export default class RaceDetailsController extends BaseController {
 
   formatter: Formatter = Formatter;
-  private keyListener: (event: KeyboardEvent) => void;
+  // bind keyListener method to this context to have access to navigation methods
+  private readonly keyListener: (event: KeyboardEvent) => void = this.onKeyDown.bind(this);
   private readonly raceModel: JSONModel = new JSONModel();
 
   onInit(): void {
@@ -20,9 +21,6 @@ export default class RaceRegistrationsTable extends BaseController {
     super.setViewModel(this.raceModel, "raceRegistrations");
 
     super.getEventBus()?.subscribe("race", "itemChanged", this.onItemChanged, this);
-
-    // bind keyListener method to this context to have access to navigation methods
-    this.keyListener = this.onKeyDown.bind(this);
   }
 
   private onBeforeShow(): void {
@@ -39,9 +37,8 @@ export default class RaceRegistrationsTable extends BaseController {
     const data = (super.getComponentModel("race") as JSONModel).getData();
     if (data._nav.back) {
       super.navBack(data._nav.back);
-      // super.displayTarget(data._nav.back);
     } else {
-      super.displayTarget("races");
+      super.navBack("races");
     }
   }
 

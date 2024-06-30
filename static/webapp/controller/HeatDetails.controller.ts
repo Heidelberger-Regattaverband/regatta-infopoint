@@ -7,10 +7,11 @@ import MessageToast from "sap/m/MessageToast";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class HeatRegistrationsTable extends BaseController {
+export default class HeatDetailsController extends BaseController {
 
   formatter: Formatter = Formatter;
-  private keyListener: (event: KeyboardEvent) => void;
+  // bind keyListener method to this context to have access to navigation methods
+  private readonly keyListener: (event: KeyboardEvent) => void = this.onKeyDown.bind(this);
 
   onInit(): void {
     // first initialize the view
@@ -19,9 +20,6 @@ export default class HeatRegistrationsTable extends BaseController {
     super.setViewModel(new JSONModel(), "heatRegistrations");
 
     super.getEventBus()?.subscribe("heat", "itemChanged", this.onItemChanged, this);
-
-    // bind keyListener method to this context to have access to navigation methods
-    this.keyListener = this.onKeyDown.bind(this);
   }
 
   private onBeforeShow(): void {
@@ -37,9 +35,9 @@ export default class HeatRegistrationsTable extends BaseController {
   onNavBack(): void {
     const data = (super.getComponentModel("heat") as JSONModel).getData();
     if (data._nav.back) {
-      super.displayTarget(data._nav.back);
+      super.navBack(data._nav.back);
     } else {
-      super.displayTarget("heats");
+      super.navBack("heats");
     }
   }
 
