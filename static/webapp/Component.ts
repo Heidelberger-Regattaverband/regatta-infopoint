@@ -10,7 +10,6 @@ import ResourceModel from "sap/ui/model/resource/ResourceModel";
 export default class Component extends UIComponent {
 
     private regattaModel: JSONModel;
-    private filterModel: JSONModel;
     private contentDensityClass: string;
 
     static metadata = {
@@ -30,10 +29,10 @@ export default class Component extends UIComponent {
         this.regattaModel.loadData("/api/active_regatta", {}, false);
         super.setModel(this.regattaModel, "regatta");
 
-        this.filterModel = new JSONModel();
+        const filterModel: JSONModel = new JSONModel();
         const regattaId = this.regattaModel.getData().id;
-        this.filterModel.loadData(`/api/regattas/${regattaId}/filters`, {}, false);
-        super.setModel(this.filterModel, "filters");
+        filterModel.loadData(`/api/regattas/${regattaId}/filters`, {}, false);
+        super.setModel(filterModel, "filters");
 
         // set device model
         super.setModel(new JSONModel(Device).setDefaultBindingMode("OneWay"), "device");
