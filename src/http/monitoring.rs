@@ -63,7 +63,7 @@ fn get_system() -> System {
     );
     // Wait a bit because CPU usage is based on diff.
     std::thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
-    sys.refresh_cpu();
+    sys.refresh_cpu_all();
     sys
 }
 
