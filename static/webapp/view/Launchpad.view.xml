@@ -7,9 +7,10 @@
 
       <headerContent>
         <Button icon="{=${identity>/authenticated}?'sap-icon://log':'sap-icon://person-placeholder'}" press="onShowLoginPress"
-          text="{=${identity>/authenticated}?${i18n>common.logoff}:${i18n>common.login}}" visible="{=!${device>/system/phone}}" />
+          text="{=${identity>/authenticated}?${i18n>common.logoff}:${i18n>common.login}}" visible="{=!${device>/system/phone}}"
+          enabled="{path: '', formatter : '.isSecureContext' } " />
         <Button icon="{=${identity>/authenticated}?'sap-icon://log':'sap-icon://person-placeholder'}" press="onShowLoginPress"
-          visible="{device>/system/phone}" />
+          visible="{device>/system/phone}" enabled="{path: '', formatter : '.isSecureContext' } " />
       </headerContent>
 
       <content>

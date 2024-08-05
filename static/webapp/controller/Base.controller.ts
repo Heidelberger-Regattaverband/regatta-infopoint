@@ -18,6 +18,15 @@ import { LatLng } from "leaflet";
 export default class BaseController extends Controller {
 
   /**
+   * Convenience method for getting the secure context of the application.
+   * @returns {boolean} whether the application is running in a secure context
+   */
+  isSecureContext(): boolean {
+    console.debug(`isSecureContext: ${window.isSecureContext}`);
+    return window.isSecureContext;
+  }
+
+  /**
    * Convenience method for accessing the content density class defined in the component.
    * @returns {string} the content density class
    */
