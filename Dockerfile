@@ -26,6 +26,7 @@ WORKDIR /code
 COPY Cargo.toml Cargo.toml
 COPY Cargo.lock Cargo.lock
 COPY infoportal/ infoportal/
+COPY aquarius/ aquarius/
 COPY static/ static/
 
 # build rust application
