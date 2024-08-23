@@ -2,6 +2,7 @@
 resolver = "2"
 members = ["infoportal"]
 
+package.version = "0.1.0"
 package.edition = "2021"
 package.license = "Apache-2.0"
 package.rust-version = "1.80.1"
