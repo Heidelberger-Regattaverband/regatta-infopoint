@@ -19,5 +19,15 @@ dependencies.tiberius = { version = "0", features = [
 dependencies.chrono = { version = "0", features = ["serde"] }
 dependencies.bb8 = "0"
 dependencies.async-trait = "0"
-dependencies.tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
+dependencies.tokio = { version = "1", features = [
+  "net",
+  "rt-multi-thread",
+  "macros",
+] }
 dependencies.tokio-util = { version = "0", features = ["compat"] }
+
+[profile.release]
+# https://nnethercote.github.io/perf-book/build-configuration.html#codegen-units
+codegen-units = 1
+# https://nnethercote.github.io/perf-book/build-configuration.html#link-time-optimization
+lto = "fat"
