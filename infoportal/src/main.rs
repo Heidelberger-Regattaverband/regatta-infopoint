@@ -2,19 +2,21 @@ mod config;
 mod db;
 mod http;
 
+use config::Config;
 use db::tiberius::TiberiusPool;
 use http::server::Server;
 use std::io::Result;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    TiberiusPool::init().await;
+    TiberiusPool::init(Config::get().get_db_config()).await;
     Server::new().start().await
 }
 
 #[cfg(test)]
 mod tests {
     use crate::{
+        config::Config,
         db::tiberius::TiberiusPool,
         http::{
             rest_api::{self, PATH},
@@ -33,7 +35,7 @@ mod tests {
     #[tokio_shared_rt::test(shared)]
     async fn test_get_regattas() {
         dotenv().ok();
-        TiberiusPool::init().await;
+        TiberiusPool::init(Config::get().get_db_config()).await;
 
         let app_data = create_app_data().await;
 
@@ -54,7 +56,7 @@ mod tests {
     #[tokio_shared_rt::test(shared)]
     async fn test_get_heats() {
         dotenv().ok();
-        TiberiusPool::init().await;
+        TiberiusPool::init(Config::get().get_db_config()).await;
 
         let app_data = create_app_data().await;
 

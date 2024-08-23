@@ -2,6 +2,7 @@ use crate::config::Config;
 use aquarius::db::tiberius::TiberiusConnectionManager;
 use bb8::{Pool, PooledConnection, State};
 use std::sync::OnceLock;
+use tiberius::Config as TiberiusConfig;
 
 static POOL: OnceLock<TiberiusPool> = OnceLock::new();
 
@@ -19,8 +20,8 @@ impl TiberiusPool {
     }
 
     /// Initializes the `TiberiusPool`.
-    pub(crate) async fn init() {
-        let manager = TiberiusConnectionManager::new(Config::get().get_db_config());
+    pub(crate) async fn init(config: TiberiusConfig) {
+        let manager = TiberiusConnectionManager::new(config);
 
         let inner = Pool::builder()
             .max_size(Config::get().db_pool_max_size)
