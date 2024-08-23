@@ -1,7 +1,6 @@
-use crate::db::{
-    model::{block::Block, utils, AgeClass, BoatClass},
-    tiberius::TiberiusPool,
-};
+use crate::db::{model::block::Block, tiberius::TiberiusPool};
+use aquarius::db::model::utils;
+use aquarius::db::model::{AgeClass, BoatClass};
 use aquarius::db::tiberius::RowColumn;
 use chrono::NaiveDate;
 use futures::join;

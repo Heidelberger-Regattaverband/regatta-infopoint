@@ -1,5 +1,7 @@
-use crate::db::model::TryToEntity;
-use aquarius::db::tiberius::{RowColumn, TryRowColumn};
+use crate::db::{
+    model::TryToEntity,
+    tiberius::{RowColumn, TryRowColumn},
+};
 use serde::Serialize;
 use tiberius::Row;
 
@@ -35,7 +37,7 @@ pub struct AgeClass {
 }
 
 impl AgeClass {
-    pub(crate) fn select_columns(alias: &str) -> String {
+    pub fn select_columns(alias: &str) -> String {
         format!(
             " {0}.AgeClass_ID, {0}.AgeClass_Caption, {0}.AgeClass_Abbr, {0}.AgeClass_Suffix, {0}.AgeClass_Gender, \
             {0}.AgeClass_NumSubClasses, {0}.AgeClass_MinAge, {0}.AgeClass_MaxAge ",

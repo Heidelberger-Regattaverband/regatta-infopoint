@@ -1,15 +1,17 @@
 use crate::db::{
     aquarius::AquariusClient,
-    model::{utils, HeatRegistration, Race, Referee, TryToEntity},
+    model::{HeatRegistration, Race, Referee},
     tiberius::TiberiusPool,
+};
+use aquarius::db::model::utils;
+use aquarius::db::{
+    model::{AgeClass, BoatClass, TryToEntity},
+    tiberius::{RowColumn, TryRowColumn},
 };
 use chrono::{DateTime, Utc};
 use futures::future::join;
 use serde::Serialize;
 use tiberius::{Query, Row};
-
-use super::{AgeClass, BoatClass};
-use aquarius::db::tiberius::{RowColumn, TryRowColumn};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]

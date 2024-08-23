@@ -1,4 +1,5 @@
-use crate::db::{model::utils, tiberius::TiberiusPool};
+use crate::db::tiberius::TiberiusPool;
+use aquarius::db::model::utils;
 use aquarius::db::tiberius::{RowColumn, TryRowColumn};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::Serialize;

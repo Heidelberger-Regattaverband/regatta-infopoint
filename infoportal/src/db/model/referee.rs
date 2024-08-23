@@ -1,8 +1,9 @@
-use crate::db::{
-    model::{utils, TryToEntity},
-    tiberius::TiberiusPool,
+use crate::db::tiberius::TiberiusPool;
+use aquarius::db::model::utils;
+use aquarius::db::{
+    model::TryToEntity,
+    tiberius::{RowColumn, TryRowColumn},
 };
-use aquarius::db::tiberius::{RowColumn, TryRowColumn};
 use serde::Serialize;
 use tiberius::{Query, Row};
 

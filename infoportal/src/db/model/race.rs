@@ -1,8 +1,12 @@
 use crate::db::{
-    model::{utils, AgeClass, BoatClass, Heat, Registration, TryToEntity},
+    model::{Heat, Registration},
     tiberius::TiberiusPool,
 };
-use aquarius::db::tiberius::{RowColumn, TryRowColumn};
+use aquarius::db::model::utils;
+use aquarius::db::{
+    model::{AgeClass, BoatClass, TryToEntity},
+    tiberius::{RowColumn, TryRowColumn},
+};
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 use tiberius::{Query, Row};

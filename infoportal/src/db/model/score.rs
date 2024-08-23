@@ -1,7 +1,5 @@
-use crate::db::{
-    model::{utils, Club},
-    tiberius::TiberiusPool,
-};
+use crate::db::{model::Club, tiberius::TiberiusPool};
+use aquarius::db::model::utils;
 use aquarius::db::tiberius::{RowColumn, TryRowColumn};
 use serde::Serialize;
 use tiberius::{Query, Row};

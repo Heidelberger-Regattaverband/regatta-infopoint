@@ -11,6 +11,7 @@ repository.workspace = true
 async-trait.workspace = true
 tokio.workspace = true
 tokio-util.workspace = true
+serde.workspace = true
 
 # DB
 tiberius.workspace = true
