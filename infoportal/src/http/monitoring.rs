@@ -1,4 +1,4 @@
-use crate::db::tiberius::TiberiusPool;
+use aquarius::db::tiberius::TiberiusPool;
 use prometheus::Registry;
 use serde::Serialize;
 use serde_json::{Map, Number, Value};

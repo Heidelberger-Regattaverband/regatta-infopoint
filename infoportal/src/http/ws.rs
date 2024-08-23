@@ -1,4 +1,4 @@
-use crate::{db::tiberius::TiberiusPool, http::monitoring::Monitoring};
+use crate::http::monitoring::Monitoring;
 use actix::{Actor, ActorContext, AsyncContext, StreamHandler};
 use actix_identity::Identity;
 use actix_web::{
@@ -8,6 +8,7 @@ use actix_web::{
     Error, HttpRequest, HttpResponse,
 };
 use actix_web_actors::ws::{start, Message, ProtocolError, WebsocketContext};
+use aquarius::db::tiberius::TiberiusPool;
 use log::{debug, warn};
 use prometheus::Registry;
 use std::time::{Duration, Instant};

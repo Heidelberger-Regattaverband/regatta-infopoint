@@ -1,8 +1,6 @@
-use crate::db::{
-    model::{Club, Crew, Heat, Race},
-    tiberius::TiberiusPool,
-};
+use crate::db::model::{Club, Crew, Heat, Race};
 use aquarius::db::model::utils;
+use aquarius::db::tiberius::TiberiusPool;
 use aquarius::db::{
     model::TryToEntity,
     tiberius::{RowColumn, TryRowColumn},

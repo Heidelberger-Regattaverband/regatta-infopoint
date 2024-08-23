@@ -2,14 +2,19 @@ mod config;
 mod db;
 mod http;
 
+use aquarius::db::tiberius::TiberiusPool;
 use config::Config;
-use db::tiberius::TiberiusPool;
 use http::server::Server;
 use std::io::Result;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    TiberiusPool::init(Config::get().get_db_config()).await;
+    TiberiusPool::init(
+        Config::get().get_db_config(),
+        Config::get().db_pool_max_size,
+        Config::get().db_pool_min_idle,
+    )
+    .await;
     Server::new().start().await
 }
 
@@ -17,7 +22,6 @@ async fn main() -> Result<()> {
 mod tests {
     use crate::{
         config::Config,
-        db::tiberius::TiberiusPool,
         http::{
             rest_api::{self, PATH},
             server::create_app_data,
@@ -30,12 +34,18 @@ mod tests {
         web::{scope, Data},
         App,
     };
+    use aquarius::db::tiberius::TiberiusPool;
     use dotenv::dotenv;
 
     #[tokio_shared_rt::test(shared)]
     async fn test_get_regattas() {
         dotenv().ok();
-        TiberiusPool::init(Config::get().get_db_config()).await;
+        TiberiusPool::init(
+            Config::get().get_db_config(),
+            Config::get().db_pool_max_size,
+            Config::get().db_pool_min_idle,
+        )
+        .await;
 
         let app_data = create_app_data().await;
 
@@ -56,7 +66,12 @@ mod tests {
     #[tokio_shared_rt::test(shared)]
     async fn test_get_heats() {
         dotenv().ok();
-        TiberiusPool::init(Config::get().get_db_config()).await;
+        TiberiusPool::init(
+            Config::get().get_db_config(),
+            Config::get().db_pool_max_size,
+            Config::get().db_pool_min_idle,
+        )
+        .await;
 
         let app_data = create_app_data().await;
 

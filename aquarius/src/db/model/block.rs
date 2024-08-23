@@ -5,7 +5,7 @@ use tiberius::Query;
 
 /// A block of races.
 #[derive(Debug, Serialize, Clone)]
-pub(crate) struct Block {
+pub struct Block {
     /// Begin of the race block
     begin: DateTime<Utc>,
 
@@ -20,7 +20,7 @@ impl Block {
     /// Query all race blocks of a regatta. The blocks are ordered by their begin date and time.
     /// # Arguments
     /// * `regatta_id` - The unique identifier of the regatta.
-    pub(crate) async fn query_blocks(regatta_id: i32, pool: &TiberiusPool) -> Vec<Block> {
+    pub async fn query_blocks(regatta_id: i32, pool: &TiberiusPool) -> Vec<Block> {
         let mut query = Query::new(
             "SELECT c.Comp_DateTime FROM Comp c
               WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_DateTime IS NOT NULL

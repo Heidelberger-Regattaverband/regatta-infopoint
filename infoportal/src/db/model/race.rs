@@ -1,8 +1,6 @@
-use crate::db::{
-    model::{Heat, Registration},
-    tiberius::TiberiusPool,
-};
+use crate::db::model::{Heat, Registration};
 use aquarius::db::model::utils;
+use aquarius::db::tiberius::TiberiusPool;
 use aquarius::db::{
     model::{AgeClass, BoatClass, TryToEntity},
     tiberius::{RowColumn, TryRowColumn},

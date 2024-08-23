@@ -1,5 +1,4 @@
 mod athlete;
-mod block;
 mod club;
 mod crew;
 mod filters;
