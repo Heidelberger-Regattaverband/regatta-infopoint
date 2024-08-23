@@ -1,7 +1,8 @@
 use crate::db::{
     model::{block::Block, utils, AgeClass, BoatClass},
-    tiberius::{RowColumn, TiberiusPool},
+    tiberius::TiberiusPool,
 };
+use aquarius::db::tiberius::RowColumn;
 use chrono::NaiveDate;
 use futures::join;
 use serde::Serialize;

@@ -1,0 +1,18 @@
+[package]
+name = "aquarius"
+description = "The Aquarius DB layer"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+# Utils
+async-trait.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
+
+# DB
+tiberius.workspace = true
+chrono.workspace = true
+bb8.workspace = true

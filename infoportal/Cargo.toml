@@ -13,13 +13,14 @@ workspace = "../"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+aquarius = { path = "../aquarius" }
 anyhow = "1"
 env_logger = "0"
 log = "0"
 dotenv = "0"
-chrono = { version = "0", features = ["serde"] }
-tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
-tokio-util = { version = "0", features = ["compat"] }
+chrono.workspace = true
+tokio.workspace = true
+tokio-util.workspace = true
 
 # Actix + Middlewares
 actix = { version = "0" }
@@ -40,15 +41,9 @@ utoipa = { version = "4", features = ["actix_extras"] }
 utoipa-swagger-ui = { version = "7", features = ["actix-web"] }
 
 # Database + Pool
-bb8 = "0"
-async-trait = "0"
-# https://github.com/prisma/tiberius#feature-flags
-tiberius = { version = "0", features = [
-  "chrono",
-  "rustls",
-  "tds73",
-  "rust_decimal",
-], default-features = false }
+bb8.workspace = true
+async-trait.workspace = true
+tiberius.workspace = true
 stretto = { version = "0", features = ["async"] }
 
 # Utils

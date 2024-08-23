@@ -1,7 +1,5 @@
-use crate::db::{
-    model::utils,
-    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
-};
+use crate::db::{model::utils, tiberius::TiberiusPool};
+use aquarius::db::tiberius::{RowColumn, TryRowColumn};
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
 

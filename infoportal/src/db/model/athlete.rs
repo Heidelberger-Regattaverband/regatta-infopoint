@@ -1,7 +1,5 @@
-use crate::db::{
-    model::{Club, TryToEntity},
-    tiberius::{RowColumn, TryRowColumn},
-};
+use crate::db::model::{Club, TryToEntity};
+use aquarius::db::tiberius::{RowColumn, TryRowColumn};
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Row};
 

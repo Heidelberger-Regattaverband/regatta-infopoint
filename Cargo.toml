@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["infoportal"]
+members = ["aquarius", "infoportal"]
 
 package.version = "0.1.0"
 package.edition = "2021"
@@ -8,3 +8,16 @@ package.license = "Apache-2.0"
 package.rust-version = "1.80.1"
 package.authors = ["Markus Ofterdinger <markus@ofterdinger.de>"]
 package.repository = "https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git"
+
+# https://github.com/prisma/tiberius#feature-flags
+dependencies.tiberius = { version = "0", features = [
+  "chrono",
+  "rustls",
+  "tds73",
+  "rust_decimal",
+], default-features = false }
+dependencies.chrono = { version = "0", features = ["serde"] }
+dependencies.bb8 = "0"
+dependencies.async-trait = "0"
+dependencies.tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
+dependencies.tokio-util = { version = "0", features = ["compat"] }

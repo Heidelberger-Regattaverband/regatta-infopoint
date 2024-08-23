@@ -1,10 +1,8 @@
 use crate::{
-    db::{
-        model::utils,
-        tiberius::{RowColumn, TiberiusPool, TryRowColumn},
-    },
+    db::{model::utils, tiberius::TiberiusPool},
     http::flags_scraper::ClubFlag,
 };
+use aquarius::db::tiberius::{RowColumn, TryRowColumn};
 use serde::Serialize;
 use tiberius::{numeric::Decimal, Query, Row};
 
