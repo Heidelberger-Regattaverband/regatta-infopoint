@@ -42,7 +42,6 @@ utoipa-swagger-ui = { version = "7", features = ["actix-web"] }
 
 # Database + Pool
 bb8.workspace = true
-async-trait.workspace = true
 tiberius.workspace = true
 stretto = { version = "0", features = ["async"] }
 

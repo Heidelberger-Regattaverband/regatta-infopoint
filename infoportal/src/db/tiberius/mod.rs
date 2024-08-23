@@ -1,3 +1,3 @@
 mod pool;
 
-pub(crate) use pool::{TiberiusConnectionManager, TiberiusPool};
+pub(crate) use pool::TiberiusPool;

@@ -521,10 +521,13 @@ checksum = "b3d1d046238990b9cf5bcde22a3fb3584ee5cf65fb2765f454ed428c7a0063da"
 name = "aquarius"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "bb8",
  "chrono",
  "serde",
  "tiberius",
+ "tokio",
+ "tokio-util",
 ]
 
 [[package]]
@@ -1780,7 +1783,6 @@ dependencies = [
  "actix-web-prom",
  "anyhow",
  "aquarius",
- "async-trait",
  "bb8",
  "chrono",
  "colored",

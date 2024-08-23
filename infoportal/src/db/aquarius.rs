@@ -3,10 +3,11 @@ use crate::{
     db::{
         cache::{CacheTrait, Caches},
         model::{Club, Filters, Heat, Kiosk, Race, Regatta, Registration, Schedule, Score, Statistics},
-        tiberius::{TiberiusConnectionManager, TiberiusPool},
+        tiberius::TiberiusPool,
     },
 };
 use actix_identity::Identity;
+use aquarius::db::tiberius::TiberiusConnectionManager;
 use bb8::PooledConnection;
 use futures::future::join3;
 use log::debug;
