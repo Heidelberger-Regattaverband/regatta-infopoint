@@ -1,69 +1,9 @@
-[package]
-name = "infoportal"
-version = "0.1.0"
-edition = "2021"
-authors = ["Markus Ofterdinger <markus@ofterdinger.de>"]
-readme = "README.md"
-description = "Infoportal des Heidelberger Regatta-Verbands"
-repository = "https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git"
-license = "Apache-2.0"
-rust-version = "1.79.0"
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace]
+resolver = "2"
+members = ["infoportal"]
 
-[dependencies]
-anyhow = "1"
-env_logger = "0"
-log = "0"
-dotenv = "0"
-chrono = { version = "0", features = ["serde"] }
-tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
-tokio-util = { version = "0", features = ["compat"] }
-
-# Actix + Middlewares
-actix = { version = "0" }
-actix-web = { version = "4", features = ["rustls-0_23"] }
-actix-web-actors = { version = "4" }
-actix-session = { version = "0.9", features = ["cookie-session"] }
-actix-identity = "0"
-actix-files = "0"
-actix-extensible-rate-limit = "0"
-actix-web-prom = { version = "0", features = ["process"] }
-prometheus = { version = "0", default-features = false }
-rustls = "0.23"
-rustls-pki-types = "1"
-rustls-pemfile = "2"
-
-# OpenAPI
-utoipa = { version = "4", features = ["actix_extras"] }
-utoipa-swagger-ui = { version = "7", features = ["actix-web"] }
-
-# Database + Pool
-bb8 = "0"
-async-trait = "0"
-# https://github.com/prisma/tiberius#feature-flags
-tiberius = { version = "0", features = [
-  "chrono",
-  "rustls",
-  "tds73",
-  "rust_decimal",
-], default-features = false }
-stretto = { version = "0", features = ["async"] }
-
-# Utils
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-colored = "2"
-futures = "0"
-sysinfo = "0"
-
-# html
-scraper = "0"
-
-[dev-dependencies]
-tokio-shared-rt = "0"
-
-[profile.release]
-# https://nnethercote.github.io/perf-book/build-configuration.html#codegen-units
-codegen-units = 1
-# https://nnethercote.github.io/perf-book/build-configuration.html#link-time-optimization
-lto = "fat"
+package.edition = "2021"
+package.license = "Apache-2.0"
+package.rust-version = "1.80.1"
+package.authors = ["Markus Ofterdinger <markus@ofterdinger.de>"]
+package.repository = "https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git"
