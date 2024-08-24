@@ -1,5 +1,7 @@
-use aquarius::db::model::{utils, Athlete, Club};
-use aquarius::db::tiberius::{RowColumn, TiberiusPool};
+use crate::db::{
+    model::{utils, Athlete, Club},
+    tiberius::{RowColumn, TiberiusPool},
+};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -39,7 +41,7 @@ impl Crew {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of crew members of the registration
-    pub(crate) async fn query_crew_of_registration(registration_id: i32, round: i16, pool: &TiberiusPool) -> Vec<Crew> {
+    pub async fn query_crew_of_registration(registration_id: i32, round: i16, pool: &TiberiusPool) -> Vec<Crew> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Crew cr
             JOIN Athlet a  ON cr.Crew_Athlete_ID_FK = a.Athlet_ID
