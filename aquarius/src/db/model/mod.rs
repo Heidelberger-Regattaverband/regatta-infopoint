@@ -1,6 +1,7 @@
 mod age_class;
 mod block;
 mod boat_class;
+mod filters;
 mod heat_result;
 mod referee;
 mod regatta;
@@ -10,6 +11,7 @@ pub mod utils;
 pub use age_class::AgeClass;
 pub use block::Block;
 pub use boat_class::BoatClass;
+pub use filters::Filters;
 pub use heat_result::HeatResult;
 pub use referee::Referee;
 pub use regatta::Regatta;

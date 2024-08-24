@@ -1,5 +1,5 @@
-use crate::db::model::{Club, Filters, Heat, Race, Registration};
-use aquarius::db::model::Regatta;
+use crate::db::model::{Club, Heat, Race, Registration};
+use aquarius::db::model::{Filters, Regatta};
 use std::{hash::Hash, time::Duration};
 use stretto::AsyncCache;
 use tokio::task;

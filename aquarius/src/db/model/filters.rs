@@ -1,5 +1,5 @@
-use aquarius::db::model::{utils, AgeClass, Block, BoatClass};
-use aquarius::db::tiberius::{RowColumn, TiberiusPool};
+use super::{utils, AgeClass, Block, BoatClass};
+use crate::db::tiberius::{RowColumn, TiberiusPool};
 use chrono::NaiveDate;
 use futures::join;
 use serde::Serialize;
@@ -8,7 +8,7 @@ use tiberius::Query;
 /// A struct containing all available filter values for a regatta.
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct Filters {
+pub struct Filters {
     /// Available distances of all races.
     distances: Vec<i16>,
 
@@ -48,7 +48,7 @@ impl Filters {
     ///  * `pool` - The database connection pool
     /// # Returns
     /// A struct containing all available filters
-    pub(crate) async fn query(regatta_id: i32, pool: &TiberiusPool) -> Self {
+    pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Self {
         // get all available distances
         let distances = query_distances(regatta_id, pool);
 

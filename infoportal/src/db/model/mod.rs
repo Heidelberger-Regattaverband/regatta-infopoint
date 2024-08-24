@@ -1,7 +1,6 @@
 mod athlete;
 mod club;
 mod crew;
-mod filters;
 mod heat;
 mod heat_registration;
 mod race;
@@ -11,7 +10,6 @@ mod statistics;
 pub use athlete::Athlete;
 pub use club::Club;
 pub use crew::Crew;
-pub(crate) use filters::Filters;
 pub use heat::{Heat, Kiosk};
 pub use heat_registration::HeatRegistration;
 pub use race::Race;
