@@ -1,6 +1,6 @@
-use crate::db::model::{Club, Crew, Heat, Race, Registration};
+use crate::db::model::{Crew, Heat, Race, Registration};
 use aquarius::db::{
-    model::{utils, HeatResult, TryToEntity},
+    model::{utils, Club, HeatResult, TryToEntity},
     tiberius::{RowColumn, TiberiusPool},
 };
 use futures::future::{join_all, BoxFuture};

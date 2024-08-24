@@ -1,5 +1,4 @@
 mod athlete;
-mod club;
 mod crew;
 mod heat;
 mod heat_registration;
@@ -8,7 +7,6 @@ mod score;
 mod statistics;
 
 pub use athlete::Athlete;
-pub use club::Club;
 pub use crew::Crew;
 pub use heat::{Heat, Kiosk};
 pub use heat_registration::HeatRegistration;

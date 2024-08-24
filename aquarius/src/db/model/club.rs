@@ -1,7 +1,8 @@
-use aquarius::db::flags_scraper::ClubFlag;
-use aquarius::db::model::utils;
-use aquarius::db::tiberius::TiberiusPool;
-use aquarius::db::tiberius::{RowColumn, TryRowColumn};
+use crate::db::{
+    flags_scraper::ClubFlag,
+    model::utils,
+    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
+};
 use serde::Serialize;
 use tiberius::{numeric::Decimal, Query, Row};
 
@@ -61,7 +62,7 @@ impl Club {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of clubs that are participating in the regatta
-    pub(crate) async fn query_clubs_participating_regatta(regatta_id: i32, pool: &TiberiusPool) -> Vec<Club> {
+    pub async fn query_clubs_participating_regatta(regatta_id: i32, pool: &TiberiusPool) -> Vec<Club> {
         let sql = format!(
             "SELECT DISTINCT {0},
                 (SELECT COUNT(*) FROM (
@@ -116,7 +117,7 @@ impl Club {
     /// * `pool` - The database connection pool
     /// # Returns
     /// The club with the given ID
-    pub(crate) async fn query_club_by_id(club_id: i32, pool: &TiberiusPool) -> Club {
+    pub async fn query_club_by_id(club_id: i32, pool: &TiberiusPool) -> Club {
         let mut query = Query::new(format!(
             "SELECT {0} FROM Club c
             WHERE c.Club_ID = @P1
@@ -129,7 +130,7 @@ impl Club {
         Club::from(&utils::get_row(query.query(&mut client).await.unwrap()).await)
     }
 
-    pub(crate) async fn query_regatta_club_by_id(regatta_id: i32, club_id: i32, pool: &TiberiusPool) -> Club {
+    pub async fn query_regatta_club_by_id(regatta_id: i32, club_id: i32, pool: &TiberiusPool) -> Club {
         let mut query = Query::new(format!(
             "SELECT {0},
                 (SELECT COUNT(*) FROM (
@@ -173,7 +174,7 @@ impl Club {
         Club::from(&utils::get_row(query.query(&mut client).await.unwrap()).await)
     }
 
-    pub(crate) fn select_columns(alias: &str) -> String {
+    pub fn select_columns(alias: &str) -> String {
         format!(
             " {0}.Club_ID, {0}.Club_Abbr, {0}.Club_Name, {0}.Club_UltraAbbr, {0}.Club_City, {0}.Club_ExternID, {0}.Club_HRV_Latitude, {0}.Club_HRV_Longitude ",
             alias

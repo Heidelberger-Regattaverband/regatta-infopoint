@@ -1,6 +1,5 @@
-use crate::db::model::Club;
 use aquarius::db::{
-    model::TryToEntity,
+    model::{Club, TryToEntity},
     tiberius::{RowColumn, TryRowColumn},
 };
 use serde::Serialize;
