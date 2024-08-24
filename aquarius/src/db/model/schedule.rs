@@ -1,13 +1,14 @@
-use aquarius::db::model::utils;
-use aquarius::db::tiberius::TiberiusPool;
-use aquarius::db::tiberius::{RowColumn, TryRowColumn};
+use crate::db::{
+    model::utils,
+    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
+};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct Schedule {
+pub struct Schedule {
     /// The date and time when the schedule was generated
     generated: DateTime<Utc>,
 
@@ -17,7 +18,7 @@ pub(crate) struct Schedule {
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct ScheduleEntry {
+pub struct ScheduleEntry {
     /// The race number
     race_number: String,
 
@@ -61,7 +62,7 @@ impl From<&Row> for ScheduleEntry {
 }
 
 impl Schedule {
-    pub(crate) async fn query_schedule_for_regatta(regatta_id: i32, pool: &TiberiusPool) -> Self {
+    pub async fn query_schedule_for_regatta(regatta_id: i32, pool: &TiberiusPool) -> Self {
         let sql = "SELECT o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_Distance,
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Boats,
             (SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0 

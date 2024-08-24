@@ -8,7 +8,6 @@ mod heat_result;
 mod race;
 mod referee;
 mod regatta;
-mod schedule;
 mod score;
 mod statistics;
 
@@ -26,4 +25,3 @@ pub use registration::Registration;
 pub use score::Score;
 pub use statistics::Statistics;
 mod registration;
-pub(crate) use schedule::Schedule;

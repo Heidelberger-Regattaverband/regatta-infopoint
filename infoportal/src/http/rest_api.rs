@@ -2,7 +2,7 @@ use super::ws;
 use crate::{
     db::{
         aquarius::Aquarius,
-        model::{Club, Filters, Heat, Race, Regatta, Schedule},
+        model::{Club, Filters, Heat, Race, Regatta},
     },
     http::{
         auth::{Credentials, Scope, User},
@@ -16,7 +16,7 @@ use actix_web::{
     web::{self, Data, Json, Path},
     Error, HttpMessage, HttpRequest, HttpResponse, Responder,
 };
-use aquarius::db::tiberius::TiberiusPool;
+use aquarius::db::{model::Schedule, tiberius::TiberiusPool};
 use prometheus::Registry;
 
 /// Path to REST API
