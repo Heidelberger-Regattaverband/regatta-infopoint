@@ -1,4 +1,4 @@
-use aquarius::db::{
+use crate::db::{
     model::{utils, Athlete, TryToEntity},
     tiberius::{RowColumn, TiberiusPool},
 };

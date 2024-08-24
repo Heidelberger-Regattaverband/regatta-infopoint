@@ -10,6 +10,7 @@ mod referee;
 mod regatta;
 mod schedule;
 mod score;
+mod statistics;
 pub mod utils;
 
 pub use age_class::AgeClass;
@@ -24,6 +25,7 @@ pub use referee::Referee;
 pub use regatta::Regatta;
 pub use schedule::{Schedule, ScheduleEntry};
 pub use score::Score;
+pub use statistics::Statistics;
 
 pub trait TryToEntity<T> {
     fn try_to_entity(&self) -> Option<T>;

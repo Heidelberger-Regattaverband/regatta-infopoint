@@ -2,12 +2,12 @@ use crate::{
     config::Config,
     db::{
         cache::{CacheTrait, Caches},
-        model::{Heat, Kiosk, Race, Registration, Statistics},
+        model::{Heat, Kiosk, Race, Registration},
     },
 };
 use actix_identity::Identity;
 use aquarius::db::{
-    model::{Club, Filters, Regatta, Schedule, Score},
+    model::{Club, Filters, Regatta, Schedule, Score, Statistics},
     tiberius::{TiberiusConnectionManager, TiberiusPool},
 };
 use bb8::PooledConnection;
