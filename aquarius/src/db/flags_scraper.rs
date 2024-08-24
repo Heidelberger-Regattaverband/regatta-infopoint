@@ -53,9 +53,9 @@ fn load_club_flags() -> HashMap<i32, ClubFlag> {
 
 #[cfg(test)]
 mod tests {
-    use crate::http::flags_scraper::ClubFlag;
+    use crate::db::flags_scraper::ClubFlag;
 
-    #[actix_web::test]
+    #[tokio_shared_rt::test(shared)]
     async fn test_crawler() {
         let club_flags = ClubFlag::get(&11008);
         assert_eq!(

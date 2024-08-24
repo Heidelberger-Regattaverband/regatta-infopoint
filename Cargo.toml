@@ -27,6 +27,8 @@ dependencies.tokio = { version = "1", features = [
 dependencies.tokio-util = { version = "0", features = ["compat"] }
 dependencies.serde = { version = "1", features = ["derive"] }
 dependencies.futures = { version = "0" }
+dependencies.log = { version = "0" }
+dependencies.scraper = { version = "0" }
 
 [profile.release]
 # https://nnethercote.github.io/perf-book/build-configuration.html#codegen-units

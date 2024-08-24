@@ -525,9 +525,12 @@ dependencies = [
  "bb8",
  "chrono",
  "futures",
+ "log",
+ "scraper",
  "serde",
  "tiberius",
  "tokio",
+ "tokio-shared-rt",
  "tokio-util",
 ]
 
@@ -1795,7 +1798,6 @@ dependencies = [
  "rustls 0.23.12",
  "rustls-pemfile 2.1.3",
  "rustls-pki-types",
- "scraper",
  "serde",
  "serde_json",
  "stretto",

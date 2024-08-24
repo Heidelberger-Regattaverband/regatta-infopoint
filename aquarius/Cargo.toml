@@ -13,8 +13,13 @@ futures.workspace = true
 tokio.workspace = true
 tokio-util.workspace = true
 serde.workspace = true
+log.workspace = true
+scraper.workspace = true
 
 # DB
 tiberius.workspace = true
 chrono.workspace = true
 bb8.workspace = true
+
+[dev-dependencies]
+tokio-shared-rt = "0"

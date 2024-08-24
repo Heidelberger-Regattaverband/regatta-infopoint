@@ -16,7 +16,7 @@ workspace = "../"
 aquarius = { path = "../aquarius" }
 anyhow = "1"
 env_logger = "0"
-log = "0"
+log.workspace = true
 dotenv = "0"
 chrono.workspace = true
 tokio.workspace = true
@@ -51,9 +51,6 @@ serde_json = "1"
 colored = "2"
 futures.workspace = true
 sysinfo = "0"
-
-# html
-scraper = "0"
 
 [dev-dependencies]
 tokio-shared-rt = "0"
