@@ -5,8 +5,6 @@ mod filters;
 mod heat;
 mod heat_registration;
 mod race;
-mod referee;
-mod regatta;
 mod score;
 mod statistics;
 
@@ -17,8 +15,6 @@ pub(crate) use filters::Filters;
 pub use heat::{Heat, Kiosk};
 pub use heat_registration::HeatRegistration;
 pub use race::Race;
-pub use referee::Referee;
-pub use regatta::Regatta;
 pub use registration::Registration;
 pub use score::Score;
 pub use statistics::Statistics;

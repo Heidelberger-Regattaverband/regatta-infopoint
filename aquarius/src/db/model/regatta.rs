@@ -1,13 +1,14 @@
-use aquarius::db::model::utils;
-use aquarius::db::tiberius::TiberiusPool;
-use aquarius::db::tiberius::{RowColumn, TryRowColumn};
+use crate::db::{
+    model::utils,
+    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
+};
 use serde::Serialize;
 use tiberius::{time::chrono::NaiveDateTime, Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Regatta {
-    pub(crate) id: i32,
+    pub id: i32,
     title: String,
     sub_title: String,
     venue: String,
@@ -34,7 +35,7 @@ impl From<&Row> for Regatta {
 }
 
 impl Regatta {
-    pub(crate) async fn query_active_regatta(pool: &TiberiusPool) -> Regatta {
+    pub async fn query_active_regatta(pool: &TiberiusPool) -> Regatta {
         let mut client = pool.get().await;
         let stream = Query::new("SELECT TOP 1 e.* FROM Event e ORDER BY e.Event_StartDate DESC, e.Event_ID DESC")
             .query(&mut client)
@@ -43,14 +44,14 @@ impl Regatta {
         Regatta::from(&utils::get_row(stream).await)
     }
 
-    pub(crate) async fn query_all(pool: &TiberiusPool) -> Vec<Regatta> {
+    pub async fn query_all(pool: &TiberiusPool) -> Vec<Regatta> {
         let mut client = pool.get().await;
         let stream = Query::new("SELECT * FROM Event").query(&mut client).await.unwrap();
         let regattas = utils::get_rows(stream).await;
         regattas.into_iter().map(|row| Regatta::from(&row)).collect()
     }
 
-    pub(crate) async fn query(regatta_id: i32, pool: &TiberiusPool) -> Regatta {
+    pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Regatta {
         let mut query = Query::new("SELECT * FROM Event WHERE Event_ID = @P1");
         query.bind(regatta_id);
 

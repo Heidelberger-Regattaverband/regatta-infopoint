@@ -1,8 +1,6 @@
-use aquarius::db::model::utils;
-use aquarius::db::tiberius::TiberiusPool;
-use aquarius::db::{
-    model::TryToEntity,
-    tiberius::{RowColumn, TryRowColumn},
+use crate::db::{
+    model::{utils, TryToEntity},
+    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
 use tiberius::{Query, Row};
@@ -29,7 +27,7 @@ impl Referee {
     /// `pool`: The database connection pool.
     /// # Returns
     /// A list of referees.
-    pub(crate) async fn query_referees_for_heat(heat_id: i32, pool: &TiberiusPool) -> Vec<Referee> {
+    pub async fn query_referees_for_heat(heat_id: i32, pool: &TiberiusPool) -> Vec<Referee> {
         let mut query = Query::new(
             "SELECT r.* FROM Referee r
             JOIN CompReferee cr ON cr.CompReferee_Referee_ID_FK = r.Referee_ID

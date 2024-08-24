@@ -1,8 +1,8 @@
 use crate::db::{
     aquarius::AquariusClient,
-    model::{HeatRegistration, Race, Referee},
+    model::{HeatRegistration, Race},
 };
-use aquarius::db::model::utils;
+use aquarius::db::model::{utils, Referee};
 use aquarius::db::tiberius::TiberiusPool;
 use aquarius::db::{
     model::{AgeClass, BoatClass, TryToEntity},
