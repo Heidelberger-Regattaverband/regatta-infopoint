@@ -1,4 +1,5 @@
 mod age_class;
+mod athlete;
 mod block;
 mod boat_class;
 mod club;
@@ -10,6 +11,7 @@ mod schedule;
 pub mod utils;
 
 pub use age_class::AgeClass;
+pub use athlete::Athlete;
 pub use block::Block;
 pub use boat_class::BoatClass;
 pub use club::Club;

@@ -1,7 +1,7 @@
-use crate::db::model::Athlete;
-use aquarius::db::model::utils;
-use aquarius::db::tiberius::TiberiusPool;
-use aquarius::db::{model::TryToEntity, tiberius::RowColumn};
+use aquarius::db::{
+    model::{utils, Athlete, TryToEntity},
+    tiberius::{RowColumn, TiberiusPool},
+};
 use futures::join;
 use serde::Serialize;
 use tiberius::{Query, Row};

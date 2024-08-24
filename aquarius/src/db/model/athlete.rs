@@ -1,4 +1,4 @@
-use aquarius::db::{
+use crate::db::{
     model::{Club, TryToEntity},
     tiberius::{RowColumn, TryRowColumn},
 };
@@ -29,7 +29,7 @@ pub struct Athlete {
 }
 
 impl Athlete {
-    pub(crate) fn select_columns(alias: &str) -> String {
+    pub fn select_columns(alias: &str) -> String {
         format!(
             " {0}.Athlet_ID, {0}.Athlet_FirstName, {0}.Athlet_LastName, {0}.Athlet_Gender, {0}.Athlet_DOB ",
             alias
