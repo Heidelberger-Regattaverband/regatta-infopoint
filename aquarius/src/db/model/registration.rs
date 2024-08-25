@@ -1,6 +1,5 @@
-use crate::db::model::{Heat, Race};
-use aquarius::db::{
-    model::{utils, Club, Crew, TryToEntity},
+use crate::db::{
+    model::{utils, Club, Crew, Heat, Race, TryToEntity},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use futures::future::{join_all, BoxFuture};
@@ -79,11 +78,7 @@ impl Registration {
     /// * `pool` - The connection pool to the database.
     /// # Returns
     /// A vector of registrations for the given club and regatta.
-    pub(crate) async fn query_registrations_of_club(
-        regatta_id: i32,
-        club_id: i32,
-        pool: &TiberiusPool,
-    ) -> Vec<Registration> {
+    pub async fn query_registrations_of_club(regatta_id: i32, club_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
         let round = 64;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, {2}, l.Label_Short
@@ -115,7 +110,7 @@ impl Registration {
     /// * `pool` - The connection pool to the database
     /// # Returns
     /// A vector of registrations for the given race
-    pub(crate) async fn query_registrations_for_race(race_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
+    pub async fn query_registrations_for_race(race_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
         let round = 64;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, l.Label_Short

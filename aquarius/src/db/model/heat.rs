@@ -1,12 +1,6 @@
 use crate::db::{
-    aquarius::AquariusClient,
-    model::{HeatRegistration, Race},
-};
-use aquarius::db::model::{utils, Referee};
-use aquarius::db::tiberius::TiberiusPool;
-use aquarius::db::{
-    model::{AgeClass, BoatClass, TryToEntity},
-    tiberius::{RowColumn, TryRowColumn},
+    model::{utils, AgeClass, BoatClass, HeatRegistration, Race, Referee, TryToEntity},
+    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use chrono::{DateTime, Utc};
 use futures::future::join;
@@ -69,7 +63,7 @@ impl Heat {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of heats
-    pub(crate) async fn query_heats_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
+    pub async fn query_heats_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
         let sql = format!(
             "SELECT {0}, {1}, {2}, o.* FROM Comp c
             JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
@@ -97,7 +91,7 @@ impl Heat {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of heats
-    pub(crate) async fn query_heats_of_race(race_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
+    pub async fn query_heats_of_race(race_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
         let sql = format!(
             "SELECT {0} FROM Comp c
             WHERE c.Comp_Race_ID_FK = @P1 AND c.Comp_DateTime IS NOT NULL
@@ -118,7 +112,7 @@ impl Heat {
     /// * `pool` - The database connection pool
     /// # Returns
     /// The heat with the given identifier
-    pub(crate) async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Heat {
+    pub async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Heat {
         let sql = format!(
             "SELECT {0}, {1}, {2}, o.* FROM Comp c
             JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
@@ -179,7 +173,7 @@ pub struct Kiosk {
     pub next: Vec<Heat>,
 }
 impl Kiosk {
-    pub async fn query_finished(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Heat> {
+    pub async fn query_finished(regatta_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
         let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, o.Offer_GroupMode,
             o.Offer_HRV_Seeded, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
             FROM Comp AS c
@@ -187,12 +181,13 @@ impl Kiosk {
             FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
             WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 4 ORDER BY c.Comp_DateTime DESC");
         query.bind(regatta_id);
-        let stream = query.query(client).await.unwrap();
+        let mut client = pool.get().await;
+        let stream = query.query(&mut client).await.unwrap();
         let heats = utils::get_rows(stream).await;
         heats.into_iter().map(|row| Heat::from(&row)).collect()
     }
 
-    pub async fn query_next(regatta_id: i32, client: &mut AquariusClient<'_>) -> Vec<Heat> {
+    pub async fn query_next(regatta_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
         let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, o.Offer_GroupMode,
             o.Offer_HRV_Seeded, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
             FROM Comp AS c
@@ -200,7 +195,8 @@ impl Kiosk {
             FULL OUTER JOIN AgeClass AS ac ON o.Offer_AgeClass_ID_FK = ac.AgeClass_ID
             WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 1 AND c.Comp_Cancelled = 0 ORDER BY c.Comp_DateTime ASC");
         query.bind(regatta_id);
-        let stream = query.query(client).await.unwrap();
+        let mut client = pool.get().await;
+        let stream = query.query(&mut client).await.unwrap();
         let heats = utils::get_rows(stream).await;
         heats.into_iter().map(|row| Heat::from(&row)).collect()
     }

@@ -1,22 +1,15 @@
 use crate::{
     config::Config,
-    db::{
-        cache::{CacheTrait, Caches},
-        model::{Heat, Kiosk, Race, Registration},
-    },
+    db::cache::{CacheTrait, Caches},
 };
 use actix_identity::Identity;
 use aquarius::db::{
-    model::{Club, Filters, Regatta, Schedule, Score, Statistics},
-    tiberius::{TiberiusConnectionManager, TiberiusPool},
+    model::{Club, Filters, Heat, Kiosk, Race, Regatta, Registration, Schedule, Score, Statistics},
+    tiberius::TiberiusPool,
 };
-use bb8::PooledConnection;
 use futures::future::join3;
 use log::debug;
 use std::time::{Duration, Instant};
-
-/// The type of the database connection.
-pub type AquariusClient<'a> = PooledConnection<'a, TiberiusConnectionManager>;
 
 /// The `Aquarius` struct is the main interface to the database. It is used to query data from the database.
 pub(crate) struct Aquarius {
@@ -190,8 +183,8 @@ impl Aquarius {
     pub async fn query_kiosk(&self, regatta_id: i32) -> Kiosk {
         let start = Instant::now();
 
-        let finished = Kiosk::query_finished(regatta_id, &mut TiberiusPool::instance().get().await).await;
-        let next = Kiosk::query_next(regatta_id, &mut TiberiusPool::instance().get().await).await;
+        let finished = Kiosk::query_finished(regatta_id, TiberiusPool::instance()).await;
+        let next = Kiosk::query_next(regatta_id, TiberiusPool::instance()).await;
 
         let kiosk = Kiosk {
             finished,

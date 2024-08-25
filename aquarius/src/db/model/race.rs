@@ -1,9 +1,7 @@
-use crate::db::model::{Heat, Registration};
-use aquarius::db::model::utils;
-use aquarius::db::tiberius::TiberiusPool;
-use aquarius::db::{
+use crate::db::model::{utils, Heat, Registration};
+use crate::db::{
     model::{AgeClass, BoatClass, TryToEntity},
-    tiberius::{RowColumn, TryRowColumn},
+    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use chrono::{DateTime, Utc};
 use serde::Serialize;
@@ -13,7 +11,7 @@ use tiberius::{Query, Row};
 #[serde(rename_all = "camelCase")]
 pub struct Race {
     /// The unique identifier of the race.
-    pub(crate) id: i32,
+    pub id: i32,
 
     /// The race number, e.g. "101", "115a", ...
     number: String,
@@ -57,11 +55,11 @@ pub struct Race {
 
     /// All registrations for this race.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) registrations: Option<Vec<Registration>>,
+    pub registrations: Option<Vec<Registration>>,
 
     /// All heats of this race.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) heats: Option<Vec<Heat>>,
+    pub heats: Option<Vec<Heat>>,
 }
 
 impl From<&Row> for Race {
@@ -115,7 +113,7 @@ impl Race {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list with races of the regatta
-    pub(crate) async fn query_races_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Vec<Race> {
+    pub async fn query_races_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Vec<Race> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
@@ -135,7 +133,7 @@ impl Race {
         races.into_iter().map(|row| Race::from(&row)).collect()
     }
 
-    pub(crate) async fn query_race_by_id(race_id: i32, pool: &TiberiusPool) -> Race {
+    pub async fn query_race_by_id(race_id: i32, pool: &TiberiusPool) -> Race {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID

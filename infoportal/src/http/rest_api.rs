@@ -1,9 +1,6 @@
 use super::ws;
 use crate::{
-    db::{
-        aquarius::Aquarius,
-        model::{Heat, Race},
-    },
+    db::aquarius::Aquarius,
     http::{
         auth::{Credentials, Scope, User},
         monitoring::Monitoring,
@@ -17,7 +14,7 @@ use actix_web::{
     Error, HttpMessage, HttpRequest, HttpResponse, Responder,
 };
 use aquarius::db::{
-    model::{Club, Filters, Regatta, Schedule},
+    model::{Club, Filters, Heat, Race, Regatta, Schedule},
     tiberius::TiberiusPool,
 };
 use prometheus::Registry;
