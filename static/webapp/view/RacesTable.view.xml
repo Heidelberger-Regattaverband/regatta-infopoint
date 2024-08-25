@@ -102,7 +102,6 @@
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>
-                  <!-- <Text text="{path: 'races>', formatter: '.formatter.raceStateLabel'}" /> -->
                   <ObjectStatus text="{path:'races>',formatter:'.formatter.raceStateLabel'}"
                     state="{path:'races>',formatter:'.formatter.raceStateHighlight'}" class="bold" />
                 </layout:VerticalLayout>

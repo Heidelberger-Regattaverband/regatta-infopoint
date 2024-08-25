@@ -95,8 +95,8 @@
             <Text text="{= ${heats>race/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" visible="{=${heats>cancelled}}" class="cancelled" />
             <Text text="{= ${heats>race/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" visible="{=!${heats>cancelled}}" />
           </layout:VerticalLayout> -->
-
-          <Text text="{path: 'heats>', formatter: '.formatter.heatStateLabel'}" />
+          <ObjectStatus text="{path:'heats>',formatter:'.formatter.heatStateLabel'}"
+            state="{path:'heats>',formatter:'.formatter.heatStateHighlight'}" class="bold" />
         </cells>
       </ColumnListItem>
     </items>
