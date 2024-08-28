@@ -15,7 +15,7 @@ workspace = "../"
 [dependencies]
 aquarius = { path = "../aquarius" }
 anyhow = "1"
-env_logger = "0"
+env_logger.workspace = true
 log.workspace = true
 dotenv = "0"
 chrono.workspace = true
