@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["aquarius", "infoportal"]
+members = ["aquarius", "infoportal", "timekeeper"]
 
 package.version = "0.1.0"
 package.edition = "2021"
