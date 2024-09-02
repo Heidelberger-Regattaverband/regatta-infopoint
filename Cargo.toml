@@ -2,35 +2,37 @@
 resolver = "2"
 members = ["aquarius", "infoportal", "timekeeper"]
 
-package.version = "0.1.0"
-package.edition = "2021"
-package.license = "Apache-2.0"
-package.rust-version = "1.80.1"
-package.authors = ["Markus Ofterdinger <markus@ofterdinger.de>"]
-package.repository = "https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git"
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+rust-version = "1.80.1"
+authors = ["Markus Ofterdinger <markus@ofterdinger.de>"]
+repository = "https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git"
 
+[workspace.dependencies]
+async-trait = "0"
+tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
+tokio-util = { version = "0", features = ["compat"] }
+serde = { version = "1", features = ["derive"] }
+futures = { version = "0" }
+scraper = { version = "0" }
+
+# DB
 # https://github.com/prisma/tiberius#feature-flags
-dependencies.tiberius = { version = "0", features = [
+tiberius = { version = "0", features = [
   "chrono",
   "rustls",
   "tds73",
   "rust_decimal",
 ], default-features = false }
-dependencies.chrono = { version = "0", features = ["serde"] }
-dependencies.bb8 = "0"
-dependencies.async-trait = "0"
-dependencies.tokio = { version = "1", features = [
-  "net",
-  "rt-multi-thread",
-  "macros",
-] }
-dependencies.tokio-util = { version = "0", features = ["compat"] }
-dependencies.serde = { version = "1", features = ["derive"] }
-dependencies.futures = { version = "0" }
-dependencies.log = { version = "0" }
-dependencies.env_logger = { version = "0" }
-dependencies.scraper = { version = "0" }
-dependencies.clap = { version = "4", features = ["derive"] }
+chrono = { version = "0", features = ["serde"] }
+bb8 = "0"
+
+# Utils
+clap = { version = "4", features = ["derive"] }
+log = { version = "0" }
+env_logger = { version = "0" }
 
 [profile.release]
 # https://nnethercote.github.io/perf-book/build-configuration.html#codegen-units
