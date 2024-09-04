@@ -1,7 +1,7 @@
 use clap::{command, Parser};
 use log::{info, LevelFilter};
 use std::{
-    io::{Read, Result, Write},
+    io::{BufRead, BufReader, BufWriter, Read, Result, Write},
     net::TcpStream,
 };
 
@@ -17,7 +17,8 @@ struct Args {
 }
 
 struct Client {
-    stream: TcpStream,
+    reader: BufReader<TcpStream>,
+    writer: BufWriter<TcpStream>,
 }
 
 impl Client {
@@ -28,21 +29,23 @@ impl Client {
         info!("Connecting to {}:{}", args.host, args.port);
         let stream = TcpStream::connect(format!("{}:{}", args.host, args.port)).unwrap();
         stream.set_nodelay(true).unwrap();
-        Client { stream }
+        let wstream = stream.try_clone().unwrap();
+        let reader = BufReader::new(stream);
+        let writer = BufWriter::new(wstream);
+        Client { reader, writer }
     }
 
     fn send_cmd(&mut self, cmd: &str) -> Result<()> {
         info!("Writing command: \"{}\"", cmd);
-        let result = self.stream.write(cmd.as_bytes())?;
-        self.stream.flush()?;
+        let result = self.writer.write(cmd.as_bytes())?;
+        self.writer.flush()?;
         info!("Written {} bytes", result);
         Ok(())
     }
 
     fn receive(&mut self) -> Result<String> {
-        info!("Receiving ...");
         let mut line = String::with_capacity(512);
-        self.stream.read_to_string(&mut line)?;
+        self.reader.read_line(&mut line)?; //read_linto_string(&mut line)?;
         Ok(line)
     }
 }
@@ -53,8 +56,12 @@ fn main() -> Result<()> {
     let mut client = Client::new();
     client.send_cmd("?STARTLIST nr=50\r\n")?;
 
-    let received = client.receive()?;
-    info!("Received:\"{}\"", received);
-
-    Ok(())
+    info!("Receiving ...");
+    loop {
+        let received = client.receive()?;
+        if !received.is_empty() {
+            info!("Received:\"{}\"", received);
+        }
+    }
+    //Ok(())
 } // the stream is closed here
