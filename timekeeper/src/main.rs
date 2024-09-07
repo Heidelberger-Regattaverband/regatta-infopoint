@@ -20,7 +20,7 @@ fn main() -> Result<()> {
     env_logger::builder().filter_level(LevelFilter::Info).init();
     let args = Args::parse();
 
-    let mut client = Client::new(args.host, args.port);
+    let mut client = Client::new(args.host, args.port)?;
     client.write("?OPEN\n")?;
 
     info!("Receiving ...");

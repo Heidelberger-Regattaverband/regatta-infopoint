@@ -10,14 +10,14 @@ pub(crate) struct Client {
 }
 
 impl Client {
-    pub(crate) fn new(host: String, port: String) -> Self {
+    pub(crate) fn new(host: String, port: String) -> Result<Self> {
         info!("Connecting to {}:{}", host, port);
         let stream = TcpStream::connect(format!("{}:{}", host, port)).unwrap();
         stream.set_nodelay(true).unwrap();
         let wstream = stream.try_clone().unwrap();
         let reader = BufReader::new(stream);
         let writer = BufWriter::new(wstream);
-        Client { reader, writer }
+        Ok(Client { reader, writer })
     }
 
     pub(crate) fn write(&mut self, cmd: &str) -> Result<()> {
