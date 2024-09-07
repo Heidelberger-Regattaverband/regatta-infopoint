@@ -27,7 +27,7 @@ fn main() -> Result<()> {
     thread::spawn(move || loop {
         let received = client.receive().unwrap();
         if !received.is_empty() {
-            info!("Received:\"{}\"", received);
+            info!("Received: \"{}\"", received);
         }
     })
     .join()

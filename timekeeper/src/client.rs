@@ -29,13 +29,13 @@ impl Client {
     }
 
     pub(crate) fn receive(&mut self) -> Result<String> {
-        let mut line = String::with_capacity(512);
+        let mut line = String::new();
         let count = self.reader.read_line(&mut line)?;
         debug!("{} bytes received", count);
         if count == 0 {
             Err(Error::new(ErrorKind::Other, "No data received"))
         } else {
-            Ok(line)
+            Ok(line.trim_end().to_string())
         }
     }
 }
