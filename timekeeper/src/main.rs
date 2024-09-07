@@ -18,9 +18,10 @@ struct Args {
 
 fn main() -> Result<()> {
     env_logger::builder().filter_level(LevelFilter::Info).init();
+    let args = Args::parse();
 
-    let mut client = Client::new();
-    client.send_cmd("?STARTLIST nr=50\r\n")?;
+    let mut client = Client::new(args.host, args.port);
+    client.write("?OPEN\n")?;
 
     info!("Receiving ...");
     thread::spawn(move || loop {
