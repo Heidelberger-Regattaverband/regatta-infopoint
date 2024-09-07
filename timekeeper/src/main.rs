@@ -3,6 +3,7 @@ use log::{info, LevelFilter};
 use std::{
     io::{BufRead, BufReader, BufWriter, Result, Write},
     net::TcpStream,
+    thread,
 };
 
 #[derive(Parser)]
@@ -57,11 +58,14 @@ fn main() -> Result<()> {
     client.send_cmd("?STARTLIST nr=50\r\n")?;
 
     info!("Receiving ...");
-    loop {
-        let received = client.receive()?;
+    thread::spawn(move || loop {
+        let received = client.receive().unwrap();
         if !received.is_empty() {
             info!("Received:\"{}\"", received);
         }
-    }
-    //Ok(())
+    })
+    .join()
+    .unwrap();
+
+    Ok(())
 } // the stream is closed here
