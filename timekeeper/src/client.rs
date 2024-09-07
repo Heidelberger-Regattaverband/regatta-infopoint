@@ -24,14 +24,14 @@ impl Client {
         info!("Writing command: \"{}\"", cmd);
         let count = self.writer.write(cmd.as_bytes())?;
         self.writer.flush()?;
-        debug!("Written {} bytes", count);
+        debug!("{} bytes written", count);
         Ok(())
     }
 
     pub(crate) fn receive(&mut self) -> Result<String> {
         let mut line = String::with_capacity(512);
         let count = self.reader.read_line(&mut line)?;
-        debug!("Read {} bytes", count);
+        debug!("{} bytes received", count);
         if count == 0 {
             Err(Error::new(ErrorKind::Other, "No data received"))
         } else {
