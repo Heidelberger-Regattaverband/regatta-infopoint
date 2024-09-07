@@ -2,7 +2,7 @@ use crate::Args;
 use clap::Parser;
 use log::info;
 use std::{
-    io::{BufRead, BufReader, BufWriter, Result, Write},
+    io::{BufRead, BufReader, BufWriter, Error, ErrorKind, Result, Write},
     net::TcpStream,
 };
 
@@ -35,7 +35,12 @@ impl Client {
 
     pub(crate) fn receive(&mut self) -> Result<String> {
         let mut line = String::with_capacity(512);
-        self.reader.read_line(&mut line)?; //read_linto_string(&mut line)?;
-        Ok(line)
+        let count = self.reader.read_line(&mut line)?;
+        info!("Read {} bytes", count);
+        if count == 0 {
+            Err(Error::new(ErrorKind::Other, "No data received"))
+        } else {
+            Ok(line)
+        }
     }
 }
