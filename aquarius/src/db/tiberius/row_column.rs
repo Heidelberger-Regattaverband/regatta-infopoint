@@ -86,46 +86,31 @@ impl TryRowColumn<String> for Row {
 
 impl TryRowColumn<i32> for Row {
     fn try_get_column(&self, col_name: &str) -> Option<i32> {
-        match self.try_get::<i32, _>(col_name) {
-            Ok(value) => value,
-            _ => None,
-        }
+        self.try_get::<i32, _>(col_name).unwrap_or_default()
     }
 }
 
 impl TryRowColumn<i16> for Row {
     fn try_get_column(&self, col_name: &str) -> Option<i16> {
-        match self.try_get::<i16, _>(col_name) {
-            Ok(value) => value,
-            _ => None,
-        }
+        self.try_get::<i16, _>(col_name).unwrap_or_default()
     }
 }
 
 impl TryRowColumn<u8> for Row {
     fn try_get_column(&self, col_name: &str) -> Option<u8> {
-        match self.try_get::<u8, _>(col_name) {
-            Ok(value) => value,
-            _ => None,
-        }
+        self.try_get::<u8, _>(col_name).unwrap_or_default()
     }
 }
 
 impl TryRowColumn<bool> for Row {
     fn try_get_column(&self, col_name: &str) -> Option<bool> {
-        match self.try_get::<bool, _>(col_name) {
-            Ok(value) => value,
-            _ => None,
-        }
+        self.try_get::<bool, _>(col_name).unwrap_or_default()
     }
 }
 
 impl TryRowColumn<NaiveDateTime> for Row {
     fn try_get_column(&self, col_name: &str) -> Option<NaiveDateTime> {
-        match self.try_get::<NaiveDateTime, _>(col_name) {
-            Ok(value) => value,
-            _ => None,
-        }
+        self.try_get::<NaiveDateTime, _>(col_name).unwrap_or_default()
     }
 }
 
@@ -140,27 +125,18 @@ impl TryRowColumn<DateTime<Utc>> for Row {
 
 impl TryRowColumn<f64> for Row {
     fn try_get_column(&self, col_name: &str) -> Option<f64> {
-        match self.try_get::<f64, _>(col_name) {
-            Ok(value) => value,
-            _ => None,
-        }
+        self.try_get::<f64, _>(col_name).unwrap_or_default()
     }
 }
 
 impl TryRowColumn<f32> for Row {
     fn try_get_column(&self, col_name: &str) -> Option<f32> {
-        match self.try_get::<f32, _>(col_name) {
-            Ok(value) => value,
-            _ => None,
-        }
+        self.try_get::<f32, _>(col_name).unwrap_or_default()
     }
 }
 
 impl TryRowColumn<Decimal> for Row {
     fn try_get_column(&self, col_name: &str) -> Option<Decimal> {
-        match self.try_get::<Decimal, _>(col_name) {
-            Ok(value) => value,
-            _ => None,
-        }
+        self.try_get::<Decimal, _>(col_name).unwrap_or_default()
     }
 }
