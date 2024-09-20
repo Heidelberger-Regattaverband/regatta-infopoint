@@ -7,6 +7,10 @@ use config::Config;
 use http::server::Server;
 use std::io::Result;
 
+pub mod built_info {
+    include!(concat!(env!("OUT_DIR"), "/built.rs"));
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     TiberiusPool::init(

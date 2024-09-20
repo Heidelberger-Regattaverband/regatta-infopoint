@@ -9,6 +9,7 @@ repository.workspace = true
 license.workspace = true
 rust-version.workspace = true
 workspace = "../"
+build = "build.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -58,3 +59,6 @@ sysinfo = "0"
 
 [dev-dependencies]
 tokio-shared-rt = "0"
+
+[build-dependencies]
+built = { version = "0", features = ["chrono", "git2"] }
