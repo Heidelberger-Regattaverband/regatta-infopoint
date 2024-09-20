@@ -1,5 +1,4 @@
 use colored::Colorize;
-use dotenv::dotenv;
 use log::info;
 use std::{env, sync::OnceLock};
 use tiberius::{AuthMethod, Config as TiberiusConfig, EncryptionLevel};
@@ -124,9 +123,6 @@ impl Config {
 
     /// Initializes the configuration by reading variables from the environment.
     fn init() -> Self {
-        dotenv().ok();
-        env_logger::init();
-
         // read http config
         let http_bind = env::var("HTTP_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
         let http_port: u16 = env::var("HTTP_PORT")

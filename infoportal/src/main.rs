@@ -3,12 +3,29 @@ mod db;
 mod http;
 
 use aquarius::db::tiberius::TiberiusPool;
+use colored::Colorize;
 use config::Config;
+use dotenv::dotenv;
 use http::server::Server;
+use log::info;
 use std::io::Result;
+
+pub mod built_info {
+    include!(concat!(env!("OUT_DIR"), "/built.rs"));
+}
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    dotenv().ok();
+    env_logger::init();
+
+    info!(
+        "Build: time {}, commit {}, head-ref {}, ",
+        built_info::BUILT_TIME_UTC.bold(),
+        built_info::GIT_COMMIT_HASH.unwrap().bold(),
+        built_info::GIT_HEAD_REF.unwrap().bold()
+    );
+
     TiberiusPool::init(
         Config::get().get_db_config(),
         Config::get().db_pool_max_size,
