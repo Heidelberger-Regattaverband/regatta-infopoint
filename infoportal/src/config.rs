@@ -129,10 +129,10 @@ impl Config {
         env_logger::init();
 
         info!(
-            "Build: time {}, commit {}, head-ref {}, ",
+            "Build: time {}, commit {}, head_ref {}, ",
             built_info::BUILT_TIME_UTC.bold(),
             built_info::GIT_COMMIT_HASH.unwrap().bold(),
-            built_info::GIT_HEAD_REF.unwrap().bold()
+            built_info::GIT_HEAD_REF.unwrap_or_default().bold()
         );
 
         // read http config
