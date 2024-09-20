@@ -23,11 +23,7 @@ RUN apt-get upgrade && apt-get update && apt-get install -y --no-install-recomme
 WORKDIR /code
 
 # copy required resources into builder image
-COPY Cargo.toml Cargo.toml
-COPY Cargo.lock Cargo.lock
-COPY infoportal/ infoportal/
-COPY aquarius/ aquarius/
-COPY static/ static/
+COPY . /code/
 
 # build rust application
 RUN cargo fetch && cargo build --release
