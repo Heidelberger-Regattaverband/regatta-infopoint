@@ -61,4 +61,4 @@ sysinfo = "0"
 tokio-shared-rt = "0"
 
 [build-dependencies]
-built = { version = "0.7", features = ["chrono", "git2"] }
+built = { version = "0", features = ["chrono", "git2"] }
