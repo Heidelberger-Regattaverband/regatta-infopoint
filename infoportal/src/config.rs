@@ -1,3 +1,4 @@
+use crate::built_info;
 use colored::Colorize;
 use dotenv::dotenv;
 use log::info;
@@ -126,6 +127,13 @@ impl Config {
     fn init() -> Self {
         dotenv().ok();
         env_logger::init();
+
+        info!(
+            "Build: time '{}', commit '{}', head_ref '{}', ",
+            built_info::BUILT_TIME_UTC.bold(),
+            built_info::GIT_COMMIT_HASH.unwrap_or_default().bold(),
+            built_info::GIT_HEAD_REF.unwrap_or_default().bold()
+        );
 
         // read http config
         let http_bind = env::var("HTTP_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());

@@ -6,19 +6,12 @@ members = ["aquarius", "infoportal", "timekeeper"]
 version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
-rust-version = "1.80.1"
+rust-version = "1.81.0"
 authors = ["Markus Ofterdinger <markus@ofterdinger.de>"]
 repository = "https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git"
 
 [workspace.dependencies]
-async-trait = "0"
-tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
-tokio-util = { version = "0", features = ["compat"] }
-serde = { version = "1", features = ["derive"] }
-futures = { version = "0" }
-scraper = { version = "0" }
-
-# DB
+# Database + Pool
 # https://github.com/prisma/tiberius#feature-flags
 tiberius = { version = "0", features = [
   "chrono",
@@ -26,13 +19,25 @@ tiberius = { version = "0", features = [
   "tds73",
   "rust_decimal",
 ], default-features = false }
+bb8 = { version = "0" }
 chrono = { version = "0", features = ["serde"] }
-bb8 = "0"
+stretto = { version = "0", features = ["async"] }
+
+# Async stuff
+async-trait = { version = "0" }
+futures = { version = "0" }
+tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
+tokio-util = { version = "0", features = ["compat"] }
 
 # Utils
-clap = { version = "4", features = ["derive"] }
+anyhow = { version = "1" }
+dotenv = { version = "0" }
 log = { version = "0" }
 env_logger = { version = "0" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1" }
+scraper = { version = "0" }
+clap = { version = "4", features = ["derive"] }
 
 [profile.release]
 # https://nnethercote.github.io/perf-book/build-configuration.html#codegen-units
