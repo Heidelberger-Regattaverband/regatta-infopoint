@@ -1,4 +1,5 @@
 use crate::db::model::{utils, Heat, Registration};
+use crate::db::tiberius::TiberiusConnectionManager;
 use crate::db::{
     model::{AgeClass, BoatClass, TryToEntity},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
@@ -6,6 +7,7 @@ use crate::db::{
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 use tiberius::{Query, Row};
+use bb8::PooledConnection;
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -113,7 +115,7 @@ impl Race {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list with races of the regatta
-    pub async fn query_races_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Vec<Race> {
+    pub async fn query_races_of_regatta(regatta_id: i32, client: &mut PooledConnection<'_, TiberiusConnectionManager>) -> Vec<Race> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
@@ -127,8 +129,7 @@ impl Race {
         let mut query = Query::new(sql);
         query.bind(regatta_id);
 
-        let mut client = pool.get().await;
-        let stream = query.query(&mut client).await.unwrap();
+        let stream = query.query(client).await.unwrap();
         let races = utils::get_rows(stream).await;
         races.into_iter().map(|row| Race::from(&row)).collect()
     }

@@ -5,8 +5,9 @@ use crate::{
 use actix_identity::Identity;
 use aquarius::db::{
     model::{Club, Filters, Heat, Kiosk, Race, Regatta, Registration, Schedule, Score, Statistics},
-    tiberius::TiberiusPool,
+    tiberius::{TiberiusConnectionManager, TiberiusPool},
 };
+use bb8::PooledConnection;
 use futures::future::join3;
 use log::debug;
 use std::time::{Duration, Instant};
@@ -241,7 +242,8 @@ impl Aquarius {
 
     async fn _query_races(&self, regatta_id: i32) -> Vec<Race> {
         let start = Instant::now();
-        let races = Race::query_races_of_regatta(regatta_id, TiberiusPool::instance()).await;
+        let mut client: PooledConnection<'_, TiberiusConnectionManager> = TiberiusPool::instance().get().await;
+        let races = Race::query_races_of_regatta(regatta_id, &mut client).await;
         self.caches.races.set(&regatta_id, &races).await;
         debug!("Query races of regatta {} from DB: {:?}", regatta_id, start.elapsed());
         races
