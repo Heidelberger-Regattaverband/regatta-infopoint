@@ -26,12 +26,12 @@ export default class Component extends UIComponent {
 
         this.regattaModel = new JSONModel();
         // ensure the active regatta is loaded, otherwise the regatta_id is unedfined
-        this.regattaModel.loadData("/api/active_regatta", {}, false);
+        this.regattaModel.loadData("/api/active_regatta", {});
         super.setModel(this.regattaModel, "regatta");
 
         const filterModel: JSONModel = new JSONModel();
         const regattaId = this.regattaModel.getData().id;
-        filterModel.loadData(`/api/regattas/${regattaId}/filters`, {}, false);
+        filterModel.loadData(`/api/regattas/${regattaId}/filters`, {});
         super.setModel(filterModel, "filters");
 
         // set device model
