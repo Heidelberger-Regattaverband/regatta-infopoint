@@ -7,9 +7,9 @@ use super::TiberiusConnectionManager;
 static POOL: OnceLock<TiberiusPool> = OnceLock::new();
 
 #[derive(Debug)]
-/// A pool of Tiberius connections.
+/// A pool of Tiberius connections. It is a wrapper around a `bb8::Pool` of `TiberiusConnectionManager`s.
 pub struct TiberiusPool {
-    /// The inner pool.
+    /// The inner pool, which is a `bb8::Pool` of `TiberiusConnectionManager`s.
     inner: Pool<TiberiusConnectionManager>,
 }
 
