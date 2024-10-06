@@ -7,6 +7,7 @@ use crate::{
     },
 };
 use actix_identity::Identity;
+use actix_session::Session;
 use actix_web::{
     error::{ErrorUnauthorized, InternalError},
     get, post,
@@ -176,10 +177,15 @@ async fn get_schedule(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Schedul
     )
 )]
 #[post("/login")]
-async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<impl Responder, Error> {
+async fn login(
+    credentials: Json<Credentials>,
+    request: HttpRequest,
+    session: Session,
+) -> Result<impl Responder, Error> {
     match User::authenticate(credentials.into_inner()).await {
         // authentication succeeded
         Ok(user) => {
+            session.insert("username", user.username.clone());
             // attach valid user identity to current session
             Identity::login(&request.extensions(), user.username.clone()).unwrap();
             // return user information: username and scope
