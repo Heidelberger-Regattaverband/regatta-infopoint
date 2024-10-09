@@ -1,5 +1,5 @@
 {
-  "_version": "1.63.0",
+  "_version": "1.65.0",
   "start_url": "index.html",
   "sap.app": {
     "id": "de.regatta_hd.infoportal",
@@ -34,7 +34,7 @@
       "cozy": true
     },
     "dependencies": {
-      "minUI5Version": "1.123",
+      "minUI5Version": "1.126",
       "libs": {
         "sap.ui.core": {},
         "sap.f": {},
@@ -138,63 +138,82 @@
       ],
       "targets": {
         "startpage": {
-          "viewName": "Launchpad",
-          "viewLevel": 0,
+          "type": "View",
+          "name": "Launchpad",
+          "level": 0,
           "viewType": "XML"
         },
         "races": {
-          "viewName": "RacesTable",
-          "viewLevel": 1,
+          "type": "View",
+          "name": "RacesTable",
+          "level": 1,
           "viewType": "XML"
         },
         "raceDetails": {
-          "viewName": "RaceDetails",
-          "viewLevel": 2,
+          "type": "View",
+          "name": "RaceDetails",
+          "level": 2,
           "viewType": "XML"
         },
         "heats": {
-          "viewName": "HeatsTable",
-          "viewLevel": 1,
+          "type": "View",
+          "name": "HeatsTable",
+          "level": 1,
           "viewType": "XML"
         },
         "heatDetails": {
-          "viewName": "HeatDetails",
-          "viewLevel": 2,
+          "type": "View",
+          "name": "HeatDetails",
+          "level": 2,
           "viewType": "XML"
         },
         "participatingClubs": {
-          "viewName": "ParticipatingClubsTable",
-          "viewLevel": 1,
+          "type": "View",
+          "name": "ParticipatingClubsTable",
+          "level": 1,
           "viewType": "XML"
         },
         "clubRegistrations": {
-          "viewName": "ClubRegistrationsTable",
-          "viewLevel": 2
+          "type": "View",
+          "name": "ClubRegistrationsTable",
+          "level": 2,
+          "viewType": "XML"
         },
         "schedule": {
-          "viewName": "ScheduleTable",
-          "viewLevel": 1
+          "type": "View",
+          "name": "ScheduleTable",
+          "level": 1,
+          "viewType": "XML"
         },
         "map": {
-          "viewName": "Map",
-          "viewLevel": 1,
+          "type": "View",
+          "name": "Map",
+          "level": 1,
           "viewType": "XML"
         },
         "scoring": {
-          "viewName": "ScoringTable",
-          "viewLevel": 1
+          "type": "View",
+          "name": "ScoringTable",
+          "level": 1,
+          "viewType": "XML"
         },
         "statistics": {
-          "viewName": "Statistics",
-          "viewLevel": 1
+          "type": "View",
+          "name": "Statistics",
+          "level": 1,
+          "viewType": "XML"
         },
         "monitoring": {
-          "viewName": "Monitoring",
-          "viewLevel": 1
+          "type": "View",
+          "name": "Monitoring",
+          "level": 1,
+          "viewType": "XML"
         },
         "kiosk": {
-          "viewName": "Kiosk",
-          "viewLevel": 1
+          "type": "View",
+          "name": "Kiosk",
+          "level": 1,
+          "viewType": "XML"
         }
       }
     },

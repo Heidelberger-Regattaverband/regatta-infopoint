@@ -24,15 +24,19 @@ export default class Component extends UIComponent {
         // create the views based on the url/hash
         super.getRouter().initialize();
 
+        // set regatta model
         this.regattaModel = new JSONModel();
-        // ensure the active regatta is loaded, otherwise the regatta_id is unedfined
-        this.regattaModel.loadData("/api/active_regatta", {});
         super.setModel(this.regattaModel, "regatta");
 
+        // set filters model
         const filterModel: JSONModel = new JSONModel();
-        const regattaId = this.regattaModel.getData().id;
-        filterModel.loadData(`/api/regattas/${regattaId}/filters`, {});
         super.setModel(filterModel, "filters");
+
+        // ensure the active regatta is loaded, otherwise the regatta_id is unedfined
+        this.regattaModel.loadData("/api/active_regatta")?.then(() => {
+            const regattaId = this.regattaModel.getData().id;
+            filterModel.loadData(`/api/regattas/${regattaId}/filters`);
+        });
 
         // set device model
         super.setModel(new JSONModel(Device).setDefaultBindingMode("OneWay"), "device");
@@ -50,8 +54,6 @@ export default class Component extends UIComponent {
         window.addEventListener('beforeunload', (event: BeforeUnloadEvent) => {
             // Cancel the event as stated by the standard.
             event.preventDefault();
-            // Chrome requires returnValue to be set.
-            event.returnValue = '';
         });
 
         const bundle: ResourceBundle | Promise<ResourceBundle> = (super.getModel("i18n") as ResourceModel).getResourceBundle();
