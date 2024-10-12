@@ -37,7 +37,7 @@ export default class ClubRegistrationsTableController extends BaseController {
   }
 
   onNavBack(): void {
-    super.navBack("participatingClubs");
+    super.navToStartPage();
     delete this.clubId;
   }
 

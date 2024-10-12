@@ -26,7 +26,7 @@ export default class MonitoringController extends BaseController {
   }
 
   onNavBack(): void {
-    super.navBack("startpage");
+    super.navToStartPage();
     this.disconnect();
     this.updateModel({});
   }

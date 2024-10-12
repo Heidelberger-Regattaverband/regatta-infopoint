@@ -22,7 +22,7 @@ export default class MapController extends BaseController {
   }
 
   onNavBack(): void {
-    super.navBack("startpage");
+    super.navToStartPage();
   }
 
   onCenterButtonPress(_event: Button$PressEvent): void {

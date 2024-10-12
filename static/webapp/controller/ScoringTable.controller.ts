@@ -27,7 +27,7 @@ export default class ScoringTableController extends BaseController {
   }
 
   onNavBack(): void {
-    super.navBack("startpage");
+    super.navToStartPage();
   }
 
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {

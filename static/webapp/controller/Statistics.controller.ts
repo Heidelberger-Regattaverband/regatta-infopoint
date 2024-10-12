@@ -32,7 +32,7 @@ export default class StatisticsController extends BaseController {
   }
 
   onNavBack(): void {
-    super.navBack("startpage");
+    super.navToStartPage();
   }
 
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
