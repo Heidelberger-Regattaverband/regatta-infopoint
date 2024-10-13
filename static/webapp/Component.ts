@@ -56,7 +56,7 @@ export default class Component extends UIComponent {
         // create the views based on the url/hash
         super.getRouter().initialize();
 
-        // set regatta model
+        // set regatta and filters model
         this.getActiveRegatta().then((model: JSONModel) => {
             super.setModel(model, "regatta");
 
@@ -117,8 +117,8 @@ export default class Component extends UIComponent {
     }
 
     /**
-     * Loads the active regatta from the server and returns a promise.
-     * @returns {Promise<sap.ui.model.json.JSONModel>} the active regatta model
+     * Loads the active regatta into a JSONModel from the server and returns it as a Promise.
+     * @returns {Promise<sap.ui.model.json.JSONModel>} the active regatta model as a Promise
      */
     private async loadActiveRegatta(): Promise<JSONModel> {
         console.debug("Loading active regatta");
@@ -129,8 +129,8 @@ export default class Component extends UIComponent {
     }
 
     /**
-     * Loads the filters for the active regatta from the server and returns a promise.
-     * @returns {Promise<sap.ui.model.json.JSONModel>} the filters model
+     * Loads the filters into a JSONModel for the active regatta from the server and returns it as a Promise.
+     * @returns {Promise<sap.ui.model.json.JSONModel>} the filters model as a Promise
      */
     private async loadFilters(): Promise<JSONModel> {
         await this.getActiveRegatta();
