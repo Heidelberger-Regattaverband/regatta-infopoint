@@ -9,14 +9,15 @@ import ResourceModel from "sap/ui/model/resource/ResourceModel";
  */
 export default class Component extends UIComponent {
 
-    private regattaModel?: JSONModel;
-    private filtersModel?: JSONModel;
     private contentDensityClass: string;
-    private regattaModelPromise?: Promise<JSONModel>;
-    private filtersModelPromise?: Promise<JSONModel>;
     private resourceBundle: ResourceBundle;
 
-    static metadata = {
+    private regattaModel?: JSONModel;
+    private filtersModel?: JSONModel;
+    private regattaModelPromise?: Promise<JSONModel>;
+    private filtersModelPromise?: Promise<JSONModel>;
+
+    static readonly metadata = {
         manifest: "json",
         interfaces: ["sap.ui.core.IAsyncContentCreation"]
     };
