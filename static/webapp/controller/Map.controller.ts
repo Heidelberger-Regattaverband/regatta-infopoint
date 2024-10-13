@@ -32,7 +32,8 @@ export default class MapController extends BaseController {
   }
 
   private async loadModel(): Promise<void> {
-    await super.updateJSONModel(this.participatingClubsModel, `/api/regattas/${this.getRegattaId()}/participating_clubs`);
+    const regatta: any = await super.getActiveRegatta();
+    await super.updateJSONModel(this.participatingClubsModel, `/api/regattas/${regatta.id}/participating_clubs`);
   }
 
   private loadMap(): void {

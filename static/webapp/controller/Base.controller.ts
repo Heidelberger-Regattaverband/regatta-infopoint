@@ -107,14 +107,6 @@ export default class BaseController extends Controller {
     return (super.getOwnerComponent() as MyComponent | undefined)?.getResourceBundle().getText(key, args) ?? "";
   }
 
-  /**
-   * Returns the regatta ID. If the regatta ID is not available, -1 is returned.
-   * @returns {number} the regatta ID or -1
-   */
-  getRegattaId(): number {
-    return (super.getOwnerComponent() as MyComponent | undefined)?.getRegattaId() ?? -1;
-  }
-
   async updateJSONModel(model: JSONModel, url: string, control?: Control): Promise<boolean> {
     control?.setBusy(true);
     try {

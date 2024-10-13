@@ -9,10 +9,12 @@ import ResourceModel from "sap/ui/model/resource/ResourceModel";
  */
 export default class Component extends UIComponent {
 
-    private regattaModel: JSONModel;
-    private filtersModel: JSONModel;
+    private regattaModel?: JSONModel;
+    private filtersModel?: JSONModel;
     private regattaId: number = -1;
     private contentDensityClass: string;
+    private regattaModelPromise?: Promise<JSONModel>;
+    private filtersModelPromise?: Promise<JSONModel>;
 
     static metadata = {
         manifest: "json",
@@ -38,10 +40,15 @@ export default class Component extends UIComponent {
     }
 
     async getActiveRegatta(): Promise<JSONModel> {
+        if (this.regattaModelPromise) {
+            return this.regattaModelPromise;
+        }
         if (!this.regattaModel) {
-            this.regattaModel = await this.loadActiveRegatta();
+            this.regattaModelPromise = this.loadActiveRegatta();
+            this.regattaModel = await this.regattaModelPromise;
             this.regattaId = this.regattaModel.getData().id;
             console.debug(`Active regatta: ${this.regattaId}`);
+            delete this.regattaModelPromise;
             return this.regattaModel;
         }
         console.debug("Active regatta already loaded");
@@ -49,8 +56,13 @@ export default class Component extends UIComponent {
     }
 
     async getFilters(): Promise<JSONModel> {
+        if (this.filtersModelPromise) {
+            return this.filtersModelPromise;
+        }
         if (!this.filtersModel) {
-            this.filtersModel = await this.loadFilters();
+            this.filtersModelPromise = this.loadFilters();
+            this.filtersModel = await this.filtersModelPromise;
+            delete this.filtersModelPromise;
             return this.filtersModel;
         }
         console.debug("Filters already loaded");
@@ -109,10 +121,6 @@ export default class Component extends UIComponent {
             }
         }
         return this.contentDensityClass;
-    }
-
-    getRegattaId(): number {
-        return this.regattaModel.getData().id;
     }
 
     /**

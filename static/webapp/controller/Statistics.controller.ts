@@ -44,7 +44,8 @@ export default class StatisticsController extends BaseController {
     let statistics: any;
 
     // load statistic data from backend
-    if (await super.updateJSONModel(this.dataLoader, `/api/regattas/${super.getRegattaId()}/statistics`)) {
+    const regatta: any = await super.getActiveRegatta();
+    if (await super.updateJSONModel(this.dataLoader, `/api/regattas/${regatta.id}/statistics`)) {
       statistics = this.dataLoader.getData();
       MessageToast.show(super.i18n("msg.dataUpdated"));
     } else {
@@ -107,5 +108,4 @@ export default class StatisticsController extends BaseController {
     this.heatsList?.setBusy(busy);
     this.athletesList?.setBusy(busy);
   }
-
 }
