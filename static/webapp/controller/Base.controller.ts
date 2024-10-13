@@ -31,7 +31,7 @@ export default class BaseController extends Controller {
    * @returns {string} the content density class
    */
   getContentDensityClass(): string {
-    return (super.getOwnerComponent() as MyComponent | undefined)?.getContentDensityClass() ?? "sapUiSizeCozy";
+    return this.getComponent()?.getContentDensityClass() ?? "sapUiSizeCozy";
   }
 
   /**
@@ -104,7 +104,7 @@ export default class BaseController extends Controller {
    * @returns {string} The translated text
    */
   i18n(key: string, args?: any[]): string {
-    return (super.getOwnerComponent() as MyComponent | undefined)?.getResourceBundle().getText(key, args) ?? "";
+    return this.getComponent()?.getResourceBundle().getText(key, args) ?? "";
   }
 
   async updateJSONModel(model: JSONModel, url: string, control?: Control): Promise<boolean> {
