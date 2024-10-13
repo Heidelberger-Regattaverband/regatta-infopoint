@@ -28,7 +28,7 @@ export default class ParticipatingClubsTable extends BaseTableController {
   }
 
   onNavBack(): void {
-    super.navBack("startpage");
+    super.navToStartPage();
   }
 
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
