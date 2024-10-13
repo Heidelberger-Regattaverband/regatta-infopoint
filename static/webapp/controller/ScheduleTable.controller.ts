@@ -18,7 +18,6 @@ export default class ScheduleTableController extends BaseController {
   formatter: Formatter = Formatter;
   private table: Table;
   private readonly scheduleModel: JSONModel = new JSONModel();
-  private regattaId: number = -1;
 
   onInit(): void {
     this.table = super.getView()?.byId("scheduleTable") as Table;
@@ -26,10 +25,6 @@ export default class ScheduleTableController extends BaseController {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.scheduleModel, "schedule");
     super.getRouter()?.getRoute("schedule")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadScheduleModel(), this);
-
-    super.getActiveRegatta().then((regatta: any) => {
-      this.regattaId = regatta.id;
-    });
   }
 
   onNavBack(): void {
@@ -64,7 +59,7 @@ export default class ScheduleTableController extends BaseController {
   }
 
   private async loadScheduleModel(): Promise<boolean> {
-    return await super.updateJSONModel(this.scheduleModel, `/api/regattas/${this.regattaId}/schedule`, this.table)
+    const regatta: any = await super.getActiveRegatta();
+    return await super.updateJSONModel(this.scheduleModel, `/api/regattas/${regatta.id}/schedule`, this.table)
   }
-
 }
