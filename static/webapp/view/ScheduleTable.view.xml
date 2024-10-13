@@ -43,7 +43,7 @@
             </Column>
             <Column hAlign="Center" width="6rem" importance="High" popinDisplay="Inline">
               <header>
-                <Text text="Finale" class="bold" wrapping="false" />
+                <Text text="{i18n>common.final}" class="bold" wrapping="false" />
               </header>
             </Column>
             <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
