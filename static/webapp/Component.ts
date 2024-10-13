@@ -10,6 +10,8 @@ import ResourceModel from "sap/ui/model/resource/ResourceModel";
 export default class Component extends UIComponent {
 
     private regattaModel: JSONModel;
+    private filtersModel: JSONModel;
+    private regattaId: number = -1;
     private contentDensityClass: string;
 
     static metadata = {
@@ -18,6 +20,34 @@ export default class Component extends UIComponent {
     };
     resourceBundle: ResourceBundle;
 
+    async getActiveRegatta(): Promise<JSONModel> {
+        if (!this.regattaModel) {
+            console.info("Loading active regatta");
+            const model: JSONModel = new JSONModel();
+            await model.loadData("/api/active_regatta");
+            this.regattaId = model.getData().id;
+            console.info(`Active regatta: ${this.regattaId}`);
+            this.regattaModel = model;
+            return this.regattaModel;
+        }
+        console.info("Active regatta already loaded");
+        return Promise.resolve(this.regattaModel);
+    }
+
+    async getFilters(): Promise<JSONModel> {
+        if (this.filtersModel) {
+            console.info("Filters already loaded");
+            return Promise.resolve(this.filtersModel);
+        }
+        await this.getActiveRegatta();
+        console.info("Loading filters");
+        const model: JSONModel = new JSONModel();
+        await model.loadData(`/api/regattas/${this.regattaId}/filters`);
+        console.info("Filters loaded");
+        this.filtersModel = model;
+        return this.filtersModel;
+    }
+
     init(): void {
         super.init();
 
@@ -25,18 +55,13 @@ export default class Component extends UIComponent {
         super.getRouter().initialize();
 
         // set regatta model
-        this.regattaModel = new JSONModel();
-        super.setModel(this.regattaModel, "regatta");
+        this.getActiveRegatta().then((model: JSONModel) => {
+            super.setModel(model, "regatta");
 
-        // set filters model
-        const filterModel: JSONModel = new JSONModel();
-        super.setModel(filterModel, "filters");
-
-        // ensure the active regatta is loaded, otherwise the regatta_id is unedfined
-        this.regattaModel.loadData("/api/active_regatta")?.then(() => {
-            const regattaId = this.regattaModel.getData().id;
-            filterModel.loadData(`/api/regattas/${regattaId}/filters`);
-        });
+            this.getFilters().then((model: JSONModel) => {
+                super.setModel(model, "filters");
+            });
+        })
 
         // set device model
         super.setModel(new JSONModel(Device).setDefaultBindingMode("OneWay"), "device");

@@ -160,4 +160,12 @@ export default class BaseController extends Controller {
     }
     this.getRouter().navTo("map", params);
   }
+
+  async getFilters(): Promise<any> {
+    return (await (super.getOwnerComponent() as MyComponent).getFilters()).getData();
+  }
+
+  async getActiveRegatta(): Promise<any> {
+    return (await (super.getOwnerComponent() as MyComponent).getActiveRegatta()).getData();
+  }
 }
