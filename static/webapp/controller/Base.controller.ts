@@ -162,10 +162,14 @@ export default class BaseController extends Controller {
   }
 
   async getFilters(): Promise<any> {
-    return (await (super.getOwnerComponent() as MyComponent).getFilters()).getData();
+    return (await this.getComponent().getFilters()).getData();
   }
 
   async getActiveRegatta(): Promise<any> {
-    return (await (super.getOwnerComponent() as MyComponent).getActiveRegatta()).getData();
+    return (await this.getComponent().getActiveRegatta()).getData();
+  }
+
+  private getComponent(): MyComponent {
+    return super.getOwnerComponent() as MyComponent;
   }
 }

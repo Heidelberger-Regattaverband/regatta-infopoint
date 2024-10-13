@@ -20,32 +20,41 @@ export default class Component extends UIComponent {
     };
     resourceBundle: ResourceBundle;
 
+    private async loadActiveRegatta(): Promise<JSONModel> {
+        console.debug("Loading active regatta");
+        const model: JSONModel = new JSONModel();
+        await model.loadData("/api/active_regatta");
+        console.debug("Active regatta loaded");
+        return model;
+    }
+
+    private async loadFilters(): Promise<JSONModel> {
+        await this.getActiveRegatta();
+        console.debug("Loading filters");
+        const model: JSONModel = new JSONModel();
+        await model.loadData(`/api/regattas/${this.regattaId}/filters`);
+        console.debug("Filters loaded");
+        return model
+    }
+
     async getActiveRegatta(): Promise<JSONModel> {
         if (!this.regattaModel) {
-            console.info("Loading active regatta");
-            const model: JSONModel = new JSONModel();
-            await model.loadData("/api/active_regatta");
-            this.regattaId = model.getData().id;
-            console.info(`Active regatta: ${this.regattaId}`);
-            this.regattaModel = model;
+            this.regattaModel = await this.loadActiveRegatta();
+            this.regattaId = this.regattaModel.getData().id;
+            console.debug(`Active regatta: ${this.regattaId}`);
             return this.regattaModel;
         }
-        console.info("Active regatta already loaded");
+        console.debug("Active regatta already loaded");
         return Promise.resolve(this.regattaModel);
     }
 
     async getFilters(): Promise<JSONModel> {
-        if (this.filtersModel) {
-            console.info("Filters already loaded");
-            return Promise.resolve(this.filtersModel);
+        if (!this.filtersModel) {
+            this.filtersModel = await this.loadFilters();
+            return this.filtersModel;
         }
-        await this.getActiveRegatta();
-        console.info("Loading filters");
-        const model: JSONModel = new JSONModel();
-        await model.loadData(`/api/regattas/${this.regattaId}/filters`);
-        console.info("Filters loaded");
-        this.filtersModel = model;
-        return this.filtersModel;
+        console.debug("Filters already loaded");
+        return Promise.resolve(this.filtersModel);
     }
 
     init(): void {
