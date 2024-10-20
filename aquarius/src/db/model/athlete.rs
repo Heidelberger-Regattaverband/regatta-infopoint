@@ -1,9 +1,9 @@
 use crate::db::{
-    model::{Club, TryToEntity},
-    tiberius::{RowColumn, TryRowColumn},
+    model::{utils, Club, TryToEntity},
+    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{time::chrono::NaiveDateTime, Row};
+use tiberius::{time::chrono::NaiveDateTime, Query, Row};
 
 /// An athlete is a person who participates in a regatta.
 #[derive(Debug, Serialize, Clone)]
@@ -29,6 +29,22 @@ pub struct Athlete {
 }
 
 impl Athlete {
+    pub async fn query_athletes_participating_in_regatta(regatta_id: i32, pool: &TiberiusPool) -> Vec<Athlete> {
+        let mut query = Query::new(format!(
+            "SELECT DISTINCT {0} FROM Athlet a
+                JOIN Crew   c ON a.Athlet_ID = c.Crew_Athlete_ID_FK
+                JOIN Entry  e ON c.Crew_Entry_ID_FK = e.Entry_ID
+                WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue = 0",
+            Athlete::select_columns("a")
+        ));
+        query.bind(regatta_id);
+
+        let mut client = pool.get().await;
+        let stream = query.query(&mut client).await.unwrap();
+        let athletes = utils::get_rows(stream).await;
+        athletes.into_iter().map(|row| Athlete::from(&row)).collect()
+    }
+
     pub fn select_columns(alias: &str) -> String {
         format!(
             " {0}.Athlet_ID, {0}.Athlet_FirstName, {0}.Athlet_LastName, {0}.Athlet_Gender, {0}.Athlet_DOB ",

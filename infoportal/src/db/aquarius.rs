@@ -4,7 +4,7 @@ use crate::{
 };
 use actix_identity::Identity;
 use aquarius::db::{
-    model::{Club, Filters, Heat, Kiosk, Race, Regatta, Registration, Schedule, Score, Statistics},
+    model::{Athlete, Club, Filters, Heat, Kiosk, Race, Regatta, Registration, Schedule, Score, Statistics},
     tiberius::TiberiusPool,
 };
 use futures::future::join3;
@@ -146,6 +146,8 @@ impl Aquarius {
             self._query_club_registrations(regatta_id, club_id).await
         }
     }
+
+    pub(crate) async fn get_athletes(&self, regatta_id: i32, club_id: Option<i32>) {}
 
     pub(crate) async fn calculate_scoring(&self, regatta_id: i32) -> Vec<Score> {
         let start = Instant::now();
