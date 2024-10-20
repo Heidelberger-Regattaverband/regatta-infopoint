@@ -23,9 +23,9 @@ pub(crate) struct Aquarius {
 /// Implementation of the `Aquarius` struct.
 impl Aquarius {
     /// Creates a new `Aquarius`.
-    pub async fn new() -> Self {
+    pub(crate) async fn new() -> Self {
         let active_regatta_id: i32 = if Config::get().active_regatta_id.is_none() {
-            let start: Instant = Instant::now();
+            let start = Instant::now();
             let regatta = Regatta::query_active_regatta(TiberiusPool::instance()).await;
             debug!("Query active regatta from DB: {:?}", start.elapsed());
             regatta.id
@@ -38,11 +38,11 @@ impl Aquarius {
         }
     }
 
-    pub async fn get_active_regatta(&self, opt_user: Option<Identity>) -> Regatta {
+    pub(crate) async fn get_active_regatta(&self, opt_user: Option<Identity>) -> Regatta {
         self.get_regatta(self.active_regatta_id, opt_user).await
     }
 
-    pub async fn get_filters(&self, regatta_id: i32, opt_user: Option<Identity>) -> Filters {
+    pub(crate) async fn get_filters(&self, regatta_id: i32, opt_user: Option<Identity>) -> Filters {
         if opt_user.is_some() {
             self._query_filters(regatta_id).await
         } else if let Some(filters) = self.caches.filters.get(&regatta_id).await {
@@ -52,14 +52,14 @@ impl Aquarius {
         }
     }
 
-    pub async fn query_regattas(&self) -> Vec<Regatta> {
+    pub(crate) async fn query_regattas(&self) -> Vec<Regatta> {
         let start = Instant::now();
         let regattas = Regatta::query_all(TiberiusPool::instance()).await;
         debug!("Query all regattas from DB: {:?}", start.elapsed());
         regattas
     }
 
-    pub async fn get_regatta(&self, regatta_id: i32, opt_user: Option<Identity>) -> Regatta {
+    pub(crate) async fn get_regatta(&self, regatta_id: i32, opt_user: Option<Identity>) -> Regatta {
         if opt_user.is_some() {
             self._query_regatta(regatta_id).await
         } else if let Some(regatta) = self.caches.regatta.get(&regatta_id).await {
@@ -69,7 +69,7 @@ impl Aquarius {
         }
     }
 
-    pub async fn get_races(&self, regatta_id: i32, opt_user: Option<Identity>) -> Vec<Race> {
+    pub(crate) async fn get_races(&self, regatta_id: i32, opt_user: Option<Identity>) -> Vec<Race> {
         if opt_user.is_some() {
             self._query_races(regatta_id).await
         } else if let Some(races) = self.caches.races.get(&regatta_id).await {
@@ -101,7 +101,7 @@ impl Aquarius {
         Club::query_regatta_club_by_id(regatta_id, club_id, TiberiusPool::instance()).await
     }
 
-    pub async fn get_heats(&self, regatta_id: i32, opt_user: Option<Identity>) -> Vec<Heat> {
+    pub(crate) async fn get_heats(&self, regatta_id: i32, opt_user: Option<Identity>) -> Vec<Heat> {
         if opt_user.is_some() {
             self._query_heats(regatta_id).await
         } else if let Some(heats) = self.caches.heats.get(&regatta_id).await {
@@ -112,7 +112,7 @@ impl Aquarius {
     }
 
     /// Returns heat details for the given identifier.
-    pub async fn get_heat(&self, heat_id: i32, opt_user: Option<Identity>) -> Heat {
+    pub(crate) async fn get_heat(&self, heat_id: i32, opt_user: Option<Identity>) -> Heat {
         if opt_user.is_some() {
             self._query_heat(heat_id).await
         } else if let Some(heat) = self.caches.heat.get(&heat_id).await {
@@ -122,7 +122,7 @@ impl Aquarius {
         }
     }
 
-    pub async fn get_participating_clubs(&self, regatta_id: i32, opt_user: Option<Identity>) -> Vec<Club> {
+    pub(crate) async fn get_participating_clubs(&self, regatta_id: i32, opt_user: Option<Identity>) -> Vec<Club> {
         if opt_user.is_some() {
             self._query_participating_clubs(regatta_id).await
         } else if let Some(clubs) = self.caches.participating_clubs.get(&regatta_id).await {
@@ -147,7 +147,7 @@ impl Aquarius {
         }
     }
 
-    pub async fn calculate_scoring(&self, regatta_id: i32) -> Vec<Score> {
+    pub(crate) async fn calculate_scoring(&self, regatta_id: i32) -> Vec<Score> {
         let start = Instant::now();
         let scores = Score::calculate(regatta_id, TiberiusPool::instance()).await;
         debug!(
@@ -158,7 +158,7 @@ impl Aquarius {
         scores
     }
 
-    pub async fn query_statistics(&self, regatta_id: i32) -> Statistics {
+    pub(crate) async fn query_statistics(&self, regatta_id: i32) -> Statistics {
         let start = Instant::now();
         let stats = Statistics::query(regatta_id, TiberiusPool::instance()).await;
         debug!(
@@ -180,7 +180,7 @@ impl Aquarius {
         schedule
     }
 
-    pub async fn query_kiosk(&self, regatta_id: i32) -> Kiosk {
+    pub(crate) async fn query_kiosk(&self, regatta_id: i32) -> Kiosk {
         let start = Instant::now();
 
         let finished = Kiosk::query_finished(regatta_id, TiberiusPool::instance()).await;
