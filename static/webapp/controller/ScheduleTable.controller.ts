@@ -51,7 +51,6 @@ export default class ScheduleTableController extends BaseController {
 
   onListItemPressed(event: Link$PressEvent): void {
     const raceNumber: number = (event.getSource().getBindingContext("schedule")?.getObject() as any).raceNumber;
-    alert("onListItemPressed: " + raceNumber);
     this.navToRaceDetails(raceNumber);
   }
 

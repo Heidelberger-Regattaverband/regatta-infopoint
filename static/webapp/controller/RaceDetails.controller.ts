@@ -3,6 +3,7 @@ import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import MessageToast from "sap/m/MessageToast";
+import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -21,12 +22,19 @@ export default class RaceDetailsController extends BaseController {
     super.setViewModel(this.raceModel, "raceRegistrations");
 
     super.getEventBus()?.subscribe("race", "itemChanged", this.onItemChanged, this);
+
+    super.getRouter()?.getRoute("raceDetails")?.attachPatternMatched(
+      async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
+  }
+
+  private async onPatternMatched(event: Route$PatternMatchedEvent): Promise<void> {
+    const raceId: number = (event.getParameter("arguments") as any).raceId;
+    await this.loadRaceModel(raceId);
+    alert("Race ID = " + raceId);
   }
 
   private onBeforeShow(): void {
-    this.loadRaceModel().then(() => {
-      window.addEventListener("keydown", this.keyListener);
-    })
+    window.addEventListener("keydown", this.keyListener);
   }
 
   private onBeforeHide(): void {
@@ -61,20 +69,22 @@ export default class RaceDetailsController extends BaseController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadRaceModel().then((updated: boolean) => {
+    this.loadRaceModel(undefined).then((updated: boolean) => {
       if (updated) {
         MessageToast.show(this.i18n("msg.dataUpdated"));
       }
     }).finally(() => source.setEnabled(true));
   }
 
-  private async loadRaceModel(): Promise<boolean> {
-    const race: any = (super.getComponentModel("race") as JSONModel).getData();
-    return await super.updateJSONModel(this.raceModel, `/api/races/${race.id}`, super.getView());
+  private async loadRaceModel(raceId: number | undefined): Promise<boolean> {
+    if (!raceId) {
+      raceId = (super.getComponentModel("race") as JSONModel).getData().raceId;
+    }
+    return await super.updateJSONModel(this.raceModel, `/api/races/${raceId}`, super.getView());
   }
 
   private async onItemChanged(channelId: string, eventId: string, parametersMap: any): Promise<void> {
-    await this.loadRaceModel();
+    await this.loadRaceModel(undefined);
   }
 
   private onKeyDown(event: KeyboardEvent): void {
