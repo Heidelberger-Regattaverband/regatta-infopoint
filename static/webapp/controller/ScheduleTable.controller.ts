@@ -9,6 +9,7 @@ import Button, { Button$PressEvent } from "sap/m/Button";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import MessageToast from "sap/m/MessageToast";
 import Formatter from "../model/Formatter";
+import { Link$PressEvent } from "sap/m/Link";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -46,6 +47,12 @@ export default class ScheduleTableController extends BaseController {
         MessageToast.show(this.i18n("msg.dataUpdated"));
       }
     }).finally(() => source.setEnabled(true));
+  }
+
+  onListItemPressed(event: Link$PressEvent): void {
+    const raceNumber: number = (event.getSource().getBindingContext("schedule")?.getObject() as any).raceNumber;
+    alert("onListItemPressed: " + raceNumber);
+    this.navToRaceDetails(raceNumber);
   }
 
   private createSearchFilters(query: string): Filter[] {

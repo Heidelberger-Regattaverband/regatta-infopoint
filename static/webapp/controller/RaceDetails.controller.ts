@@ -38,7 +38,7 @@ export default class RaceDetailsController extends BaseController {
     if (data._nav && data._nav.back) {
       super.navBack(data._nav.back);
     } else {
-      super.navBack("races");
+      super.navToRaces();
     }
   }
 

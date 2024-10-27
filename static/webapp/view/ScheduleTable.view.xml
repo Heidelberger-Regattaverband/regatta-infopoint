@@ -61,8 +61,8 @@
                 <Text text="{schedule>boats}" />
                 <Text text="{path:'schedule>forerunStart',formatter:'.formatter.dayTimeIsoLabel'} ({schedule>forerunHeats})"
                   visible="{=${schedule>forerunHeats}>0}" />
-                <Text text="{path:'schedule>finalStart',formatter:'.formatter.dayTimeIsoLabel'} ({schedule>finalHeats})"
-                  visible="{=${schedule>finalHeats}>0}" />
+                <Link text="{path:'schedule>finalStart',formatter:'.formatter.dayTimeIsoLabel'} ({schedule>finalHeats})"
+                  visible="{=${schedule>finalHeats}>0}" press="onListItemPressed" />
                 <Text text="{schedule>distance}m" />
               </cells>
             </ColumnListItem>
