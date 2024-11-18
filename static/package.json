@@ -14,7 +14,7 @@
     "leaflet": "^1.9.4"
   },
   "devDependencies": {
-    "@openui5/types": "^1.130.0",
+    "@openui5/types": "^1.130.1",
     "@types/leaflet": "^1.9.14",
     "@ui5/cli": "^4.0.10",
     "@ui5/linter": "^1.3.1",
