@@ -1,17 +1,17 @@
-use super::ws;
 use crate::{
     db::aquarius::Aquarius,
     http::{
-        auth::{Credentials, Scope, User},
+        auth::{Credentials, Scope as UserScope, User},
         monitoring::Monitoring,
+        ws,
     },
 };
 use actix_identity::Identity;
 use actix_web::{
     error::{ErrorUnauthorized, InternalError},
     get, post,
-    web::{self, Data, Json, Path},
-    Error, HttpMessage, HttpRequest, HttpResponse, Responder,
+    web::{Data, Json, Path, ServiceConfig},
+    Error, HttpMessage, HttpRequest, HttpResponse, Responder, Scope as ActixScope,
 };
 use aquarius::db::{
     model::{Club, Filters, Heat, Race, Regatta, Schedule},
@@ -215,16 +215,16 @@ async fn logout(user: Identity) -> impl Responder {
 #[get("/identity")]
 async fn identity(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     if let Some(user) = opt_user {
-        Ok(Json(User::new(user.id().unwrap(), Scope::User)))
+        Ok(Json(User::new(user.id().unwrap(), UserScope::User)))
     } else {
         Err(InternalError::from_response("", HttpResponse::Unauthorized().json(User::new_guest())).into())
     }
 }
 
 /// Configure the REST API. This will add all REST API endpoints to the service configuration.
-pub(crate) fn config(cfg: &mut web::ServiceConfig) {
+pub(crate) fn config(cfg: &mut ServiceConfig) {
     cfg.service(
-        web::scope(PATH)
+        ActixScope::new(PATH)
             .service(get_club)
             .service(get_regattas)
             .service(get_regatta_club)
