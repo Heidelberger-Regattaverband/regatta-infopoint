@@ -31,7 +31,7 @@ RUN cargo fetch && cargo build --release
 WORKDIR /code/static
 
 # build UI5 application
-RUN npm install && npx ui5 build --clean-dest
+RUN npm ci && npx ui5 build --clean-dest
 
 ###############
 ## run stage ##
