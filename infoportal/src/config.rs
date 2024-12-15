@@ -13,18 +13,12 @@ pub struct Config {
     /// The IP address the HTTP server is listening on. Defaults to `0.0.0.0`.
     /// The IP address can be set by setting the environment variable `HTTP_BIND`.
     pub http_bind: String,
-    /// The IP v6 address the HTTP server is listening on. Defaults to `::`.
-    /// The IP address can be set by setting the environment variable `HTTP_BIND_IPV6`.
-    pub http_bind_ipv6: String,
     /// The port the HTTP server is listening on. Defaults to `8080`.
     /// The port can be set by setting the environment variable `HTTP_PORT`.
     pub http_port: u16,
     /// The IP address the HTTPS server is listening on. Defaults to `0.0.0.0`
     /// The IP address can be set by setting the environment variable `HTTPS_BIND`.
     pub https_bind: String,
-    /// The IP v6 address the HTTPS server is listening on. Defaults to `::`
-    /// The IP v6 address can be set by setting the environment variable `HTTPS_BIND_IPV6`.
-    pub https_bind_ipv6: String,
     /// The port the HTTPS server is listening on. Defaults to `8443`.
     /// The port can be set by setting the environment variable `HTTPS_PORT`.
     pub https_port: u16,
@@ -86,16 +80,6 @@ impl Config {
         (self.http_bind.clone(), self.http_port)
     }
 
-    /// Returns the HTTP binding configuration of the server.
-    pub fn get_http_bind_ipv6(&self) -> (String, u16) {
-        info!(
-            "HTTP server is listening on: {}:{}",
-            self.http_bind_ipv6.bold(),
-            self.http_port.to_string().bold()
-        );
-        (self.http_bind_ipv6.clone(), self.http_port)
-    }
-
     /// Returns the HTTPS binding configuration of the server.
     pub fn get_https_bind(&self) -> (String, u16) {
         info!(
@@ -105,17 +89,6 @@ impl Config {
         );
 
         (self.https_bind.clone(), self.https_port)
-    }
-
-    /// Returns the HTTPS binding configuration of the server.
-    pub fn get_https_bind_ipv6(&self) -> (String, u16) {
-        info!(
-            "HTTPS server is listening on: {}:{}",
-            self.https_bind_ipv6.bold(),
-            self.https_port.to_string().bold()
-        );
-
-        (self.https_bind_ipv6.clone(), self.https_port)
     }
 
     /// Returns the rate limiter configuration taken from the environment.
@@ -164,7 +137,6 @@ impl Config {
 
         // read http config
         let http_bind = env::var("HTTP_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
-        let http_bind_ipv6 = env::var("HTTP_BIND_IPV6").unwrap_or_else(|_| "::".to_string());
         let http_port: u16 = env::var("HTTP_PORT")
             .unwrap_or_else(|_| "8080".to_string())
             .parse()
@@ -173,7 +145,6 @@ impl Config {
 
         // read https config
         let https_bind = env::var("HTTPS_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
-        let https_bind_ipv6 = env::var("HTTPS_BIND_IPV6").unwrap_or_else(|_| "::".to_string());
         let https_port: u16 = env::var("HTTPS_PORT")
             .unwrap_or_else(|_| "8443".to_string())
             .parse()
@@ -245,10 +216,8 @@ impl Config {
 
         Config {
             http_bind,
-            http_bind_ipv6,
             http_port,
             https_bind,
-            https_bind_ipv6,
             https_port,
             https_cert_path,
             https_key_path,

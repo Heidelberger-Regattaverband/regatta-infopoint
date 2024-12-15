@@ -100,15 +100,12 @@ impl Server {
 
         let mut http_server = HttpServer::new(factory_closure)
             // always bind to http
-            .bind(config.get_http_bind())?
-            .bind(config.get_http_bind_ipv6())?;
+            .bind(config.get_http_bind())?;
 
         // also bind to https if config is available
         if let Some(rustls_cfg) = Self::get_rustls_config() {
             let https_bind = config.get_https_bind();
-            http_server = http_server
-                .bind_rustls_0_23(https_bind, rustls_cfg.clone())?
-                .bind_rustls_0_23(config.get_https_bind_ipv6(), rustls_cfg)?;
+            http_server = http_server.bind_rustls_0_23(https_bind, rustls_cfg)?;
         }
 
         // configure number of workers if env. variable is set
