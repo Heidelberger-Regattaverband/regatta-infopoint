@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use bb8::ManageConnection;
 use tiberius::{error::Error, Client, Config as TiberiusConfig};
 use tokio::net::TcpStream;
@@ -18,7 +17,6 @@ impl TiberiusConnectionManager {
     }
 }
 
-#[async_trait]
 impl ManageConnection for TiberiusConnectionManager {
     type Connection = Client<Compat<TcpStream>>;
     type Error = Error;

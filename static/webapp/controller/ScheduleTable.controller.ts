@@ -28,7 +28,7 @@ export default class ScheduleTableController extends BaseController {
   }
 
   onNavBack(): void {
-    super.navBack("startpage");
+    super.navToStartPage();
   }
 
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
@@ -59,7 +59,7 @@ export default class ScheduleTableController extends BaseController {
   }
 
   private async loadScheduleModel(): Promise<boolean> {
-    return await super.updateJSONModel(this.scheduleModel, `/api/regattas/${super.getRegattaId()}/schedule`, this.table)
+    const regatta: any = await super.getActiveRegatta();
+    return await super.updateJSONModel(this.scheduleModel, `/api/regattas/${regatta.id}/schedule`, this.table)
   }
-
 }

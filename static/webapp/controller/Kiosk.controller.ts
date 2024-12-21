@@ -85,17 +85,16 @@ export default class Kiosk extends BaseController {
   }
 
   private async loadKioskModel(): Promise<void> {
-    await super.updateJSONModel(this.kioskModel, this.getKioskUrl(), super.getView());
-
+    await super.updateJSONModel(this.kioskModel, await this.getKioskUrl(), super.getView());
     this.updateModels();
   }
 
-  private getKioskUrl(): string {
-    return `/api/regattas/${super.getRegattaId()}/kiosk`;
+  private async getKioskUrl(): Promise<string> {
+    const regatta: any = await super.getActiveRegatta();
+    return `/api/regattas/${regatta.id}/kiosk`;
   }
 
   private getRegistrationsUrl(heatId: number): string {
     return `/api/heats/${heatId}`;
   }
-
 }

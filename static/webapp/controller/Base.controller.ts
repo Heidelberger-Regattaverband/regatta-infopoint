@@ -31,7 +31,7 @@ export default class BaseController extends Controller {
    * @returns {string} the content density class
    */
   getContentDensityClass(): string {
-    return (super.getOwnerComponent() as MyComponent | undefined)?.getContentDensityClass() ?? "sapUiSizeCozy";
+    return this.getComponent()?.getContentDensityClass() ?? "sapUiSizeCozy";
   }
 
   /**
@@ -104,15 +104,7 @@ export default class BaseController extends Controller {
    * @returns {string} The translated text
    */
   i18n(key: string, args?: any[]): string {
-    return (super.getOwnerComponent() as MyComponent | undefined)?.getResourceBundle().getText(key, args) ?? "";
-  }
-
-  /**
-   * Returns the regatta ID. If the regatta ID is not available, -1 is returned.
-   * @returns {number} the regatta ID or -1
-   */
-  getRegattaId(): number {
-    return (super.getOwnerComponent() as MyComponent | undefined)?.getRegattaId() ?? -1;
+    return this.getComponent()?.getResourceBundle().getText(key, args) ?? "";
   }
 
   async updateJSONModel(model: JSONModel, url: string, control?: Control): Promise<boolean> {
@@ -159,5 +151,17 @@ export default class BaseController extends Controller {
       params = { "lat": location.lat, "lng": location.lng };
     }
     this.getRouter().navTo("map", params);
+  }
+
+  async getFilters(): Promise<any> {
+    return (await this.getComponent().getFilters()).getData();
+  }
+
+  async getActiveRegatta(): Promise<any> {
+    return (await this.getComponent().getActiveRegatta()).getData();
+  }
+
+  private getComponent(): MyComponent {
+    return super.getOwnerComponent() as MyComponent;
   }
 }

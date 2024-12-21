@@ -23,11 +23,10 @@ export default class ScoringTableController extends BaseController {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.scoringModel, "scoring");
     super.getRouter()?.getRoute("scoring")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadScoringModel(), this);
-
   }
 
   onNavBack(): void {
-    super.navBack("startpage");
+    super.navToStartPage();
   }
 
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
@@ -60,7 +59,7 @@ export default class ScoringTableController extends BaseController {
   }
 
   private async loadScoringModel(): Promise<boolean> {
-    return await super.updateJSONModel(this.scoringModel, `/api/regattas/${super.getRegattaId()}/calculateScoring`, this.table)
+    const regatta: any = await super.getActiveRegatta();
+    return await super.updateJSONModel(this.scoringModel, `/api/regattas/${regatta.id}/calculateScoring`, this.table)
   }
-
 }
