@@ -1,20 +1,11 @@
+mod args;
 mod client;
 
-use clap::{command, Parser};
+use args::Args;
+use clap::Parser;
 use client::Client;
 use log::{info, LevelFilter};
 use std::{io::Result, thread};
-
-#[derive(Parser)]
-#[command(name = "TimeKeeper")]
-#[command(version = "0.1.0")]
-#[command(about = "A Timekeeper for Aquarius", long_about = None)]
-struct Args {
-    #[arg(long)]
-    host: String,
-    #[arg(long)]
-    port: String,
-}
 
 fn main() -> Result<()> {
     env_logger::builder().filter_level(LevelFilter::Info).init();
