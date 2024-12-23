@@ -4,8 +4,12 @@ use std::{
     net::TcpStream,
 };
 
+/// A client to connect to the Aquarius server.
 pub(crate) struct Client {
+    /// A reader to read from the server.
     reader: BufReader<TcpStream>,
+
+    /// A writer to write to the server.
     writer: BufWriter<TcpStream>,
 }
 
