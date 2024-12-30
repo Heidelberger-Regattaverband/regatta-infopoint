@@ -6,7 +6,7 @@ use args::Args;
 use clap::Parser;
 use client::Client;
 use log::{info, LevelFilter};
-use messages::RequestOpenHeats;
+use messages::{RequestListOpenHeats, ResponseListOpenHeats};
 use std::{io::Result, thread};
 
 fn main() -> Result<()> {
@@ -14,11 +14,17 @@ fn main() -> Result<()> {
     let args = Args::parse();
 
     let mut client = Client::new(args.host, args.port)?;
-    client.write(&RequestOpenHeats::new().to_string())?;
+    client.write(&RequestListOpenHeats::new().to_string())?;
+    let response = client.receive_all()?;
+    let open_heats = ResponseListOpenHeats::new(&response);
+
+    for heat in open_heats.heats {
+        info!("Heat: {}", heat.number);
+    }
 
     info!("Receiving ...");
     thread::spawn(move || loop {
-        let received = client.receive().unwrap();
+        let received = client.receive_line().unwrap();
         if !received.is_empty() {
             info!("Received: \"{}\"", received);
         }

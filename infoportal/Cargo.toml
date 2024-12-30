@@ -54,7 +54,7 @@ stretto.workspace = true
 # Utils
 serde.workspace = true
 serde_json.workspace = true
-colored = "2"
+colored.workspace = true
 sysinfo = "0"
 
 [dev-dependencies]
