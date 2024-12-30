@@ -204,4 +204,18 @@ mod tests {
         assert_eq!(response.boats[2].bib, 3);
         assert_eq!(response.boats[2].club, "'Heidelberger RK'");
     }
+
+    #[test]
+    fn test_boat() {
+        let boat = Boat::new(1, 1, "RV Neptun Konstanz");
+        assert_eq!(boat.lane, 1);
+        assert_eq!(boat.bib, 1);
+        assert_eq!(boat.club, "RV Neptun Konstanz");
+    }
+
+    #[test]
+    fn test_display_boat() {
+        let boat = Boat::new(1, 1, "RV Neptun Konstanz");
+        assert_eq!(boat.to_string(), "Boat: lane=1, bib=1, club=RV Neptun Konstanz\n");
+    }
 }
