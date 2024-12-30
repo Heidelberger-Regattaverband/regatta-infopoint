@@ -22,11 +22,12 @@ impl Client {
         let write_stream = stream.try_clone().unwrap();
         let reader = BufReader::new(stream);
         let writer = BufWriter::new(write_stream);
+        info!("Connected to {}:{}", host.bold(), port.bold());
         Ok(Client { reader, writer })
     }
 
     pub(crate) fn write(&mut self, cmd: &str) -> Result<usize> {
-        info!("Writing command: \"{}\"", cmd.bold());
+        debug!("Writing command: {}", cmd.bold());
         let count = self.writer.write(cmd.as_bytes())?;
         self.writer.flush()?;
         debug!("Written {} bytes", count.to_string().bold());
@@ -44,12 +45,12 @@ impl Client {
         let mut all = String::new();
         loop {
             let count = self.reader.read_line(&mut all)?;
-            debug!("Received {} bytes", count);
+            debug!("Received {} bytes", count.to_string().bold());
             if count <= 2 {
                 break;
             }
         }
-        info!("Received message: \"{}\"", all.bold());
+        debug!("Received message: \"{}\"", all.bold());
         Ok(all.trim_end().to_string())
     }
 }
