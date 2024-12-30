@@ -45,20 +45,35 @@ impl Client {
     pub(crate) fn receive_line(&mut self) -> Result<String> {
         let mut line = String::new();
         let count = self.reader.read_line(&mut line)?;
-        debug!("Received {} bytes", count.to_string().bold());
+        debug!(
+            "Received {:2} bytes: \"{}\"",
+            count.to_string().bold(),
+            print_whitespaces(&line).bold()
+        );
         Ok(line.trim_end().to_string())
     }
 
     pub(crate) fn receive_all(&mut self) -> Result<String> {
         let mut all = String::new();
+        let mut line = String::new();
         loop {
-            let count = self.reader.read_line(&mut all)?;
-            debug!("Received {} bytes", count.to_string().bold());
+            let count = self.reader.read_line(&mut line)?;
+            debug!(
+                "Received {:2} bytes: \"{}\"",
+                count.to_string().bold(),
+                print_whitespaces(&line).bold()
+            );
             if count <= 2 {
                 break;
             }
+            all.push_str(&line);
+            line.clear();
         }
         debug!("Received message: \"{}\"", all.bold());
         Ok(all.trim_end().to_string())
     }
+}
+
+fn print_whitespaces(str: &str) -> String {
+    str.replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t")
 }
