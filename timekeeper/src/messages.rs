@@ -12,7 +12,6 @@ impl RequestListOpenHeats<'_> {
     }
 }
 
-/// Implement the Display trait for RequestListOpenHeats.
 impl Display for RequestListOpenHeats<'_> {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         writeln!(f, "?{}", self.command)
@@ -20,12 +19,13 @@ impl Display for RequestListOpenHeats<'_> {
 }
 
 /// A message to respond with the list of open heats.
-pub(crate) struct ResponseListOpenHeats<'a> {
+#[derive(Debug)]
+pub(crate) struct ResponseListOpenHeats {
     /// A list of open heats.
-    pub(crate) heats: Vec<Heat<'a>>,
+    pub(crate) heats: Vec<Heat>,
 }
 
-impl<'a> ResponseListOpenHeats<'a> {
+impl ResponseListOpenHeats {
     /// Create a new response from the given message.
     pub(crate) fn new(message: &str) -> Self {
         let mut instance = ResponseListOpenHeats { heats: Vec::new() };
@@ -36,19 +36,16 @@ impl<'a> ResponseListOpenHeats<'a> {
                 let id = parts[1].parse().unwrap();
                 let status = parts[2].parse().unwrap();
                 let heat = Heat::new(id, number, status);
-                instance.add_heat(heat);
+                instance.heats.push(heat);
             }
         }
         instance
     }
-
-    fn add_heat(&mut self, heat: Heat<'a>) {
-        self.heats.push(heat);
-    }
 }
 
 /// A heat in a competition.
-pub(crate) struct Heat<'a> {
+#[derive(Debug)]
+pub(crate) struct Heat {
     // The heat identifier.
     pub(crate) id: u16,
     // The heat number.
@@ -56,10 +53,15 @@ pub(crate) struct Heat<'a> {
     // The heat status.
     status: u8,
     // The boats in the heat.
-    pub(crate) boats: Option<Vec<Boat<'a>>>,
+    pub(crate) boats: Option<Vec<Boat>>,
 }
 
-impl Heat<'_> {
+impl Heat {
+    /// Create a new heat with the given id, number, and status.
+    /// # Arguments
+    /// * `id` - The heat identifier.
+    /// * `number` - The heat number.
+    /// * `status` - The heat status.
     fn new(id: u16, number: u16, status: u8) -> Self {
         Heat {
             id,
@@ -67,6 +69,16 @@ impl Heat<'_> {
             status,
             boats: None,
         }
+    }
+}
+
+impl Display for Heat {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        writeln!(
+            f,
+            "Heat: id={}, number={}, status={}",
+            self.id, self.number, self.status
+        )
     }
 }
 
@@ -95,13 +107,13 @@ impl Display for RequestStartList<'_> {
 }
 
 /// A message to respond with the start list of a heat.
-pub(crate) struct ResponseStartList<'a> {
+pub(crate) struct ResponseStartList {
     /// A list of boats in the heat.
-    pub(crate) boats: Vec<Boat<'a>>,
+    pub(crate) boats: Vec<Boat>,
 }
 
-impl<'a> ResponseStartList<'a> {
-    pub(crate) fn new(message: &'a str) -> Self {
+impl ResponseStartList {
+    pub(crate) fn new(message: String) -> Self {
         let mut instance = ResponseStartList { boats: Vec::new() };
 
         for line in message.lines() {
@@ -109,41 +121,38 @@ impl<'a> ResponseStartList<'a> {
             if parts.len() == 3 {
                 let bib = parts[0].parse().unwrap();
                 let lane = parts[1].parse().unwrap();
-                let club = parts[2];
+                let club = parts[2].to_owned();
                 let boat = Boat::new(lane, bib, club);
-                instance.add_boat(boat);
+                instance.boats.push(boat);
             }
         }
         instance
     }
-
-    fn add_boat(&mut self, boat: Boat<'a>) {
-        self.boats.push(boat);
-    }
 }
 
 /// A boat in a heat.
-pub(crate) struct Boat<'a> {
+#[derive(Debug)]
+pub(crate) struct Boat {
     /// The lane number the boat is starting in.
     pub(crate) lane: u8,
-    /// The bib number of the boat.
+    /// The bib of the boat.
     pub(crate) bib: u8,
     /// The club name of the boat.
-    pub(crate) club: &'a str,
+    pub(crate) club: String,
 }
 
-impl Boat<'_> {
+impl Boat {
     /// Create a new boat with the given lane, bib, and club.
     /// # Arguments
     /// * `lane` - The lane number.
-    /// * `bib` - The bib number.
+    /// * `bib` - The bib.
     /// * `club` - The club name.
-    pub(crate) fn new(lane: u8, bib: u8, club: &str) -> Boat<'_> {
+    pub(crate) fn new(lane: u8, bib: u8, club: String) -> Boat {
         Boat { bib, lane, club }
     }
 }
 
-impl Display for Boat<'_> {
+impl Display for Boat {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
         writeln!(f, "Boat: lane={}, bib={}, club={}", self.lane, self.bib, self.club)
     }
@@ -191,7 +200,8 @@ mod tests {
 
     #[test]
     fn test_response_start_list() {
-        let message = "1 1 'RV Neptun Konstanz'\n2 2 'RG Heidelberg'\n3 3 'Heidelberger RK'\n4 4 'Marbacher RV'";
+        let message =
+            "1 1 'RV Neptun Konstanz'\n2 2 'RG Heidelberg'\n3 3 'Heidelberger RK'\n4 4 'Marbacher RV'".to_owned();
         let response = ResponseStartList::new(message);
         assert_eq!(response.boats.len(), 4);
         assert_eq!(response.boats[0].lane, 1);
@@ -207,7 +217,7 @@ mod tests {
 
     #[test]
     fn test_boat() {
-        let boat = Boat::new(1, 1, "RV Neptun Konstanz");
+        let boat = Boat::new(1, 1, "RV Neptun Konstanz".to_owned());
         assert_eq!(boat.lane, 1);
         assert_eq!(boat.bib, 1);
         assert_eq!(boat.club, "RV Neptun Konstanz");
@@ -215,7 +225,7 @@ mod tests {
 
     #[test]
     fn test_display_boat() {
-        let boat = Boat::new(1, 1, "RV Neptun Konstanz");
+        let boat = Boat::new(1, 1, "RV Neptun Konstanz".to_owned());
         assert_eq!(boat.to_string(), "Boat: lane=1, bib=1, club=RV Neptun Konstanz\n");
     }
 }
