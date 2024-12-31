@@ -8,7 +8,9 @@ use clap::Parser;
 use client::Client;
 use colored::Colorize;
 use log::{debug, info, warn};
-use messages::{Heat, RequestListOpenHeats, RequestStartList, ResponseListOpenHeats, ResponseStartList};
+use messages::{
+    EventHeatChanged, Heat, RequestListOpenHeats, RequestStartList, ResponseListOpenHeats, ResponseStartList,
+};
 use std::{io::Result, thread};
 
 fn main() -> Result<()> {
@@ -33,47 +35,48 @@ fn main() -> Result<()> {
     Ok(())
 } // the stream is closed here
 
-fn parse_event(event: &str) {
+fn parse_event(event: &str) -> Option<EventHeatChanged> {
     let parts: Vec<&str> = event.split_whitespace().collect();
     if parts.len() != 4 {
         warn!("Invalid event format: {}", event);
-        return;
+        return None;
     }
 
     let action = parts[0];
-    let heat_number: usize = match parts[1].parse() {
+    let number = match parts[1].parse() {
         Ok(number) => number,
         Err(_) => {
             warn!("Invalid heat number: {}", parts[1]);
-            return;
+            return None;
         }
     };
-    let heat_id: usize = match parts[2].parse() {
+    let id = match parts[2].parse() {
         Ok(id) => id,
         Err(_) => {
             warn!("Invalid heat ID: {}", parts[2]);
-            return;
+            return None;
         }
     };
-    let status: u8 = match parts[3].parse() {
-        Ok(id) => id,
+    let status = match parts[3].parse() {
+        Ok(status) => status,
         Err(_) => {
             warn!("Invalid status: {}", parts[3]);
-            return;
+            return None;
         }
     };
 
     match action {
         "!OPEN+" => {
-            debug!("Opening heat: {}, id: {}, status: {}", heat_number, heat_id, status);
-            // Handle opening heat logic here
+            debug!("Opening heat: {}, id: {}, status: {}", number, id, status);
+            Some(EventHeatChanged::new(Heat::new(id, number, status), true))
         }
         "!OPEN-" => {
-            debug!("Closing heat: {}, id: {}, status: {}", heat_number, heat_id, status);
-            // Handle closing heat logic here
+            debug!("Closing heat: {}, id: {}, status: {}", number, id, status);
+            Some(EventHeatChanged::new(Heat::new(id, number, status), false))
         }
         _ => {
             debug!("Unknown action: {}", action);
+            None
         }
     }
 }
@@ -81,12 +84,12 @@ fn parse_event(event: &str) {
 fn get_open_heats(client: &mut Client) -> Result<Vec<Heat>> {
     client.write(&RequestListOpenHeats::new().to_string())?;
     let response = client.receive_all()?;
-    let mut open_heats = ResponseListOpenHeats::new(&response);
+    let mut open_heats = ResponseListOpenHeats::parse(&response);
 
     for heat in open_heats.heats.iter_mut() {
         client.write(&RequestStartList::new(heat.id).to_string())?;
         let response = client.receive_all()?;
-        let start_list = ResponseStartList::new(response);
+        let start_list = ResponseStartList::parse(response);
         heat.boats = Some(start_list.boats);
     }
 
