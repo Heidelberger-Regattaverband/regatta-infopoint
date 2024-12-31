@@ -11,7 +11,7 @@ use messages::{Heat, RequestListOpenHeats, RequestStartList, ResponseListOpenHea
 use std::{io::Result, thread};
 
 fn main() -> Result<()> {
-    env_logger::builder().filter_level(LevelFilter::Info).init();
+    env_logger::builder().init();
     let args = Args::parse();
 
     let mut client = Client::new(args.host, args.port)?;

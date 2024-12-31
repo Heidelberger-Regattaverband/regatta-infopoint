@@ -68,7 +68,7 @@ impl Client {
                 break;
             }
             all.push_str(&line);
-            line.clear();
+            buf.clear();
         }
         debug!("Received message: \"{}\"", all.bold());
         Ok(all.trim_end().to_string())
