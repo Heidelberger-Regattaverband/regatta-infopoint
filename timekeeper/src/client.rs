@@ -1,3 +1,4 @@
+use crate::utils;
 use colored::Colorize;
 use log::{debug, info};
 use std::{
@@ -35,7 +36,7 @@ impl Client {
     }
 
     pub(crate) fn write(&mut self, cmd: &str) -> Result<usize> {
-        debug!("Writing command: {}", cmd.bold());
+        debug!("Writing command: {}", utils::print_whitespaces(cmd).bold());
         let count = self.writer.write(cmd.as_bytes())?;
         self.writer.flush()?;
         debug!("Written {} bytes", count.to_string().bold());
@@ -48,33 +49,32 @@ impl Client {
         debug!(
             "Received {:2} bytes: \"{}\"",
             count.to_string().bold(),
-            print_whitespaces(&line).bold()
+            utils::print_whitespaces(&line).bold()
         );
         Ok(line.trim_end().to_string())
     }
 
     pub(crate) fn receive_all(&mut self) -> Result<String> {
-        let mut all = String::new();
+        let mut result = String::new();
         let mut buf = Vec::new();
         loop {
+            // Read until a newline character is found.
             let count = self.reader.read_until(b'\n', &mut buf)?;
+            // Convert the buffer to a string, ignoring invalid UTF-8 sequences.
             let line = String::from_utf8_lossy(&buf);
             debug!(
                 "Received {:2} bytes: \"{}\"",
                 count.to_string().bold(),
-                print_whitespaces(&line).bold()
+                utils::print_whitespaces(&line).bold()
             );
             if count <= 2 {
                 break;
             }
-            all.push_str(&line);
+            // Append the line to the result string.
+            result.push_str(&line);
             buf.clear();
         }
-        debug!("Received message: \"{}\"", all.bold());
-        Ok(all.trim_end().to_string())
+        debug!("Received message: \"{}\"", result.bold());
+        Ok(result.trim_end().to_string())
     }
-}
-
-fn print_whitespaces(str: &str) -> String {
-    str.replace("\r", "\\r").replace("\n", "\\n").replace("\t", "\\t")
 }

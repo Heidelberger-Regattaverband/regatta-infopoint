@@ -1,5 +1,7 @@
 use std::fmt::{Display, Formatter, Result};
 
+use crate::utils;
+
 /// A message to request the list of open heats.
 pub(crate) struct RequestListOpenHeats<'a> {
     command: &'a str,
@@ -148,7 +150,11 @@ impl Boat {
     /// * `bib` - The bib.
     /// * `club` - The club name.
     pub(crate) fn new(lane: u8, bib: u8, club: String) -> Boat {
-        Boat { bib, lane, club }
+        Boat {
+            bib,
+            lane,
+            club: utils::unquote(&club),
+        }
     }
 }
 
@@ -206,13 +212,13 @@ mod tests {
         assert_eq!(response.boats.len(), 4);
         assert_eq!(response.boats[0].lane, 1);
         assert_eq!(response.boats[0].bib, 1);
-        assert_eq!(response.boats[0].club, "'RV Neptun Konstanz'");
+        assert_eq!(response.boats[0].club, "RV Neptun Konstanz");
         assert_eq!(response.boats[1].lane, 2);
         assert_eq!(response.boats[1].bib, 2);
-        assert_eq!(response.boats[1].club, "'RG Heidelberg'");
+        assert_eq!(response.boats[1].club, "RG Heidelberg");
         assert_eq!(response.boats[2].lane, 3);
         assert_eq!(response.boats[2].bib, 3);
-        assert_eq!(response.boats[2].club, "'Heidelberger RK'");
+        assert_eq!(response.boats[2].club, "Heidelberger RK");
     }
 
     #[test]

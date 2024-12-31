@@ -1,12 +1,13 @@
 mod args;
 mod client;
 mod messages;
+mod utils;
 
 use args::Args;
 use clap::Parser;
 use client::Client;
 use colored::Colorize;
-use log::info;
+use log::{debug, info};
 use messages::{Heat, RequestListOpenHeats, RequestStartList, ResponseListOpenHeats, ResponseStartList};
 use std::{io::Result, thread};
 
@@ -16,7 +17,7 @@ fn main() -> Result<()> {
 
     let mut client = Client::new(args.host, args.port)?;
     let open_heats = get_open_heats(&mut client)?;
-    info!("Open heats: {:#?}", open_heats);
+    debug!("Open heats: {:#?}", open_heats);
 
     info!("Receiving events ...");
     thread::spawn(move || loop {
