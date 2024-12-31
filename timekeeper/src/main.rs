@@ -6,7 +6,7 @@ use args::Args;
 use clap::Parser;
 use client::Client;
 use colored::Colorize;
-use log::{info, LevelFilter};
+use log::info;
 use messages::{Heat, RequestListOpenHeats, RequestStartList, ResponseListOpenHeats, ResponseStartList};
 use std::{io::Result, thread};
 
