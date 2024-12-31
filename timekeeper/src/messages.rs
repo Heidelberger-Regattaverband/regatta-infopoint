@@ -32,14 +32,8 @@ impl ResponseListOpenHeats {
     pub(crate) fn new(message: &str) -> Self {
         let mut instance = ResponseListOpenHeats { heats: Vec::new() };
         for line in message.lines() {
-            let parts: Vec<&str> = line.split(" ").collect();
-            if parts.len() == 3 {
-                let number = parts[0].parse().unwrap();
-                let id = parts[1].parse().unwrap();
-                let status = parts[2].parse().unwrap();
-                let heat = Heat::new(id, number, status);
-                instance.heats.push(heat);
-            }
+            let heat = Heat::new_from_str(line);
+            instance.heats.push(heat);
         }
         instance
     }
@@ -71,6 +65,17 @@ impl Heat {
             status,
             boats: None,
         }
+    }
+
+    pub(crate) fn new_from_str(heat_str: &str) -> Self {
+        let parts: Vec<&str> = heat_str.split_whitespace().collect();
+        if parts.len() != 3 {
+            panic!("Invalid heat format: {}", heat_str);
+        }
+        let number = parts[0].parse().unwrap();
+        let id = parts[1].parse().unwrap();
+        let status = parts[2].parse().unwrap();
+        Heat::new(id, number, status)
     }
 }
 

@@ -1,6 +1,6 @@
 use crate::utils;
 use colored::Colorize;
-use log::{debug, info};
+use log::{debug, info, trace};
 use std::{
     io::{BufRead, BufReader, BufWriter, Result, Write},
     net::TcpStream,
@@ -36,18 +36,18 @@ impl Client {
     }
 
     pub(crate) fn write(&mut self, cmd: &str) -> Result<usize> {
-        debug!("Writing command: {}", utils::print_whitespaces(cmd).bold());
+        debug!("Writing command: \"{}\"", utils::print_whitespaces(cmd).bold());
         let count = self.writer.write(cmd.as_bytes())?;
         self.writer.flush()?;
-        debug!("Written {} bytes", count.to_string().bold());
+        trace!("Written {} bytes", count.to_string().bold());
         Ok(count)
     }
 
     pub(crate) fn receive_line(&mut self) -> Result<String> {
         let mut line = String::new();
         let count = self.reader.read_line(&mut line)?;
-        debug!(
-            "Received {:2} bytes: \"{}\"",
+        trace!(
+            "Received {} bytes: \"{}\"",
             count.to_string().bold(),
             utils::print_whitespaces(&line).bold()
         );
@@ -63,7 +63,7 @@ impl Client {
             // Convert the buffer to a string, ignoring invalid UTF-8 sequences.
             let line = String::from_utf8_lossy(&buf);
             debug!(
-                "Received {:2} bytes: \"{}\"",
+                "Received {} bytes: \"{}\"",
                 count.to_string().bold(),
                 utils::print_whitespaces(&line).bold()
             );
