@@ -55,9 +55,10 @@ impl Client {
 
     pub(crate) fn receive_all(&mut self) -> Result<String> {
         let mut all = String::new();
-        let mut line = String::new();
+        let mut buf = Vec::new();
         loop {
-            let count = self.reader.read_line(&mut line)?;
+            let count = self.reader.read_until(b'\n', &mut buf)?;
+            let line = String::from_utf8_lossy(&buf);
             debug!(
                 "Received {:2} bytes: \"{}\"",
                 count.to_string().bold(),
