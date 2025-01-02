@@ -78,3 +78,71 @@ impl Client {
         Ok(result.trim_end().to_string())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::{
+        net::{SocketAddr, TcpListener},
+        thread,
+    };
+
+    fn start_test_server() -> SocketAddr {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+
+        thread::spawn(move || {
+            for stream in listener.incoming() {
+                let mut stream = stream.unwrap();
+                let mut reader = BufReader::new(stream.try_clone().unwrap());
+                let mut buffer = String::new();
+                while reader.read_line(&mut buffer).unwrap() > 0 {
+                    stream.write_all(buffer.as_bytes()).unwrap();
+                    buffer.clear();
+                }
+            }
+        });
+        addr
+    }
+
+    #[test]
+    fn test_client_connection() {
+        let addr = start_test_server();
+        let client = Client::new(addr.ip().to_string(), addr.port().to_string());
+        assert!(client.is_ok());
+    }
+
+    #[test]
+    fn test_client_write() {
+        let addr = start_test_server();
+        let mut client = Client::new(addr.ip().to_string(), addr.port().to_string()).unwrap();
+        const MESSAGE: &str = "Hello World!";
+        let result = client.write(MESSAGE);
+        assert!(result.is_ok());
+        assert_eq!(result.unwrap(), MESSAGE.len());
+    }
+
+    #[test]
+    fn test_client_receive_line() {
+        let addr = start_test_server();
+        let mut client = Client::new(addr.ip().to_string(), addr.port().to_string()).unwrap();
+        const MESSAGE: &str = "Hello World!";
+        client.write(MESSAGE).unwrap();
+        client.write("\r\n").unwrap();
+        let response = client.receive_line();
+        assert!(response.is_ok());
+        assert_eq!(response.unwrap(), MESSAGE);
+    }
+
+    #[test]
+    fn test_client_receive_all() {
+        let addr = start_test_server();
+        let mut client = Client::new(addr.ip().to_string(), addr.port().to_string()).unwrap();
+        client.write("Hello World!\n").unwrap();
+        client.write("This is a test.\n").unwrap();
+        client.write("\r\n").unwrap();
+        let response = client.receive_all();
+        assert!(response.is_ok());
+        assert_eq!(response.unwrap(), "Hello World!\nThis is a test.");
+    }
+}
