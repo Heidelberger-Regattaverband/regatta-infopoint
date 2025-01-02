@@ -10,3 +10,15 @@ pub(crate) struct Args {
     #[arg(long, default_value = "2048")]
     pub(crate) port: String,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_args() {
+        let args = Args::parse();
+        assert_eq!(args.host, "localhost");
+        assert_eq!(args.port, "2048");
+    }
+}

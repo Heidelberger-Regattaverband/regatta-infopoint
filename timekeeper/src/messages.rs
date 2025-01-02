@@ -2,20 +2,18 @@ use crate::utils;
 use std::fmt::{Display, Formatter, Result};
 
 /// A message to request the list of open heats.
-pub(crate) struct RequestListOpenHeats<'a> {
-    command: &'a str,
-}
+pub(crate) struct RequestListOpenHeats {}
 
-impl RequestListOpenHeats<'_> {
+impl RequestListOpenHeats {
     /// Create a new request to get the list of open heats.
     pub(crate) fn new() -> Self {
-        RequestListOpenHeats { command: "OPEN" }
+        RequestListOpenHeats {}
     }
 }
 
-impl Display for RequestListOpenHeats<'_> {
+impl Display for RequestListOpenHeats {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        writeln!(f, "?{}", self.command)
+        writeln!(f, "?OPEN")
     }
 }
 
@@ -223,10 +221,16 @@ mod tests {
 
     #[test]
     fn test_heat() {
-        let heat = Heat::new(1, 1, 4);
-        assert_eq!(heat.number, 1);
+        let heat = Heat::new(1, 1234, 4);
         assert_eq!(heat.id, 1);
+        assert_eq!(heat.number, 1234);
         assert_eq!(heat.status, 4);
+    }
+
+    #[test]
+    fn test_display_heat() {
+        let heat = Heat::new(2766, 1, 4);
+        assert_eq!(heat.to_string(), "Heat: id=2766, number=1, status=4\n");
     }
 
     #[test]
