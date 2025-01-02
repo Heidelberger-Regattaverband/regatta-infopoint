@@ -221,10 +221,22 @@ mod tests {
 
     #[test]
     fn test_heat() {
-        let heat = Heat::new(1, 1234, 4);
-        assert_eq!(heat.id, 1);
-        assert_eq!(heat.number, 1234);
+        let heat = Heat::new(1234, 50, 4);
+        assert_eq!(heat.id, 1234);
+        assert_eq!(heat.number, 50);
         assert_eq!(heat.status, 4);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_heat_parse_invalid_string() {
+        Heat::parse("50 1234 4 34");
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_heat_parse_invalid_number() {
+        Heat::parse("50 1234f 4 34");
     }
 
     #[test]
@@ -266,16 +278,16 @@ mod tests {
 
     #[test]
     fn test_display_boat() {
-        let boat = Boat::new(1, 1, "RV Neptun Konstanz".to_owned());
-        assert_eq!(boat.to_string(), "Boat: lane=1, bib=1, club=RV Neptun Konstanz\n");
+        let boat = Boat::new(1, 12, "RV Neptun Konstanz".to_owned());
+        assert_eq!(boat.to_string(), "Boat: lane=1, bib=12, club=RV Neptun Konstanz\n");
     }
 
     #[test]
     fn test_event_heat_changed() {
-        let heat = Heat::new(1, 1, 4);
+        let heat = Heat::new(1234, 50, 4);
         let event = EventHeatChanged::new(heat.clone(), true);
-        assert_eq!(event.heat.id, 1);
-        assert_eq!(event.heat.number, 1);
+        assert_eq!(event.heat.id, 1234);
+        assert_eq!(event.heat.number, 50);
         assert_eq!(event.heat.status, 4);
         assert!(event.opened);
 
