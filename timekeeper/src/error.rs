@@ -10,7 +10,7 @@ pub(crate) enum MessageErr {
     IoError(IoError),
 
     /// Error when the message is invalid.
-    InvalidMessage { message: String },
+    InvalidMessage(String),
 }
 
 #[cfg(test)]
@@ -22,9 +22,7 @@ mod tests {
     fn test_message_err() {
         let parse_error = MessageErr::ParseError("error".parse::<i32>().unwrap_err());
         let io_error = MessageErr::IoError(IoError::new(ErrorKind::Other, "error"));
-        let invalid_message = MessageErr::InvalidMessage {
-            message: "error".to_string(),
-        };
+        let invalid_message = MessageErr::InvalidMessage("error".to_string());
 
         assert!(matches!(parse_error, MessageErr::ParseError(_)));
         assert!(matches!(io_error, MessageErr::IoError(_)));

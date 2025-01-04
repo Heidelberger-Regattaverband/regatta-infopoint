@@ -34,13 +34,7 @@ fn main() -> Result<(), MessageErr> {
                 Ok(mut event) => {
                     read_start_list(&mut client, &mut event.heat).unwrap();
                 }
-                Err(err) => match err {
-                    MessageErr::InvalidMessage { message } => warn!(
-                        "Received invalid message: \"{}\"",
-                        utils::print_whitespaces(&message).bold()
-                    ),
-                    _ => (),
-                },
+                Err(err) => handle_error(err),
             }
         }
     })
@@ -49,6 +43,20 @@ fn main() -> Result<(), MessageErr> {
 
     Ok(())
 } // the stream is closed here
+
+fn handle_error(err: MessageErr) {
+    match err {
+        MessageErr::ParseError(parse_err) => {
+            warn!("Error parsing number: {}", parse_err);
+        }
+        MessageErr::IoError(io_err) => {
+            warn!("I/O error: {}", io_err);
+        }
+        MessageErr::InvalidMessage(message) => {
+            warn!("Invalid message: {}", message);
+        }
+    }
+}
 
 fn read_open_heats(client: &mut Client) -> Result<Vec<Heat>, MessageErr> {
     client

@@ -1,5 +1,4 @@
 use crate::{error::MessageErr, utils};
-use log::warn;
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 /// A message to request the list of open heats.
@@ -113,9 +112,7 @@ impl EventHeatChanged {
     pub(crate) fn parse(event_str: &str) -> Result<Self, MessageErr> {
         let parts: Vec<&str> = event_str.split_whitespace().collect();
         if parts.len() != 4 {
-            return Err(MessageErr::InvalidMessage {
-                message: event_str.to_owned(),
-            });
+            return Err(MessageErr::InvalidMessage(event_str.to_owned()));
         }
 
         let action = parts[0];
@@ -126,9 +123,7 @@ impl EventHeatChanged {
         match action {
             "!OPEN+" => Ok(EventHeatChanged::new(Heat::new(id, number, status), true)),
             "!OPEN-" => Ok(EventHeatChanged::new(Heat::new(id, number, status), false)),
-            _ => Err(MessageErr::InvalidMessage {
-                message: event_str.to_owned(),
-            }),
+            _ => Err(MessageErr::InvalidMessage(event_str.to_owned())),
         }
     }
 }
@@ -171,10 +166,7 @@ impl Heat {
     pub(crate) fn parse(heat_str: &str) -> Result<Self, MessageErr> {
         let parts: Vec<&str> = heat_str.split_whitespace().collect();
         if parts.len() != 3 {
-            warn!("Invalid heat format: {}", heat_str);
-            return Err(MessageErr::InvalidMessage {
-                message: heat_str.to_owned(),
-            });
+            return Err(MessageErr::InvalidMessage(heat_str.to_owned()));
         }
         let number = parts[0].parse().map_err(MessageErr::ParseError)?;
         let id = parts[1].parse().map_err(MessageErr::ParseError)?;
@@ -234,9 +226,7 @@ impl Boat {
             let club = parts[2].to_owned();
             Ok(Boat::new(lane, bib, club))
         } else {
-            Err(MessageErr::InvalidMessage {
-                message: boat_str.to_owned(),
-            })
+            Err(MessageErr::InvalidMessage(boat_str.to_owned()))
         }
     }
 }
