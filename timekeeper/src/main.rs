@@ -7,7 +7,7 @@ use args::Args;
 use clap::Parser;
 use client::Client;
 use colored::Colorize;
-use log::{debug, info, warn};
+use log::{debug, info};
 use messages::{
     EventHeatChanged, Heat, RequestListOpenHeats, RequestStartList, ResponseListOpenHeats, ResponseStartList,
 };
@@ -26,7 +26,7 @@ fn main() -> Result<()> {
         let received = client.receive_line().unwrap();
         if !received.is_empty() {
             debug!("Received: \"{}\"", utils::print_whitespaces(&received).bold());
-            let event_opt = parse_event(&received);
+            let event_opt = EventHeatChanged::parse(&received);
             if let Some(mut event) = event_opt {
                 read_start_list(&mut client, &mut event.heat).unwrap();
             }
@@ -37,52 +37,6 @@ fn main() -> Result<()> {
 
     Ok(())
 } // the stream is closed here
-
-fn parse_event(event: &str) -> Option<EventHeatChanged> {
-    let parts: Vec<&str> = event.split_whitespace().collect();
-    if parts.len() != 4 {
-        warn!("Invalid event format: {}", event);
-        return None;
-    }
-
-    let action = parts[0];
-    let number = match parts[1].parse() {
-        Ok(number) => number,
-        Err(_) => {
-            warn!("Invalid heat number: {}", parts[1]);
-            return None;
-        }
-    };
-    let id = match parts[2].parse() {
-        Ok(id) => id,
-        Err(_) => {
-            warn!("Invalid heat ID: {}", parts[2]);
-            return None;
-        }
-    };
-    let status = match parts[3].parse() {
-        Ok(status) => status,
-        Err(_) => {
-            warn!("Invalid status: {}", parts[3]);
-            return None;
-        }
-    };
-
-    match action {
-        "!OPEN+" => {
-            debug!("Opening heat: {}, id: {}, status: {}", number, id, status);
-            Some(EventHeatChanged::new(Heat::new(id, number, status), true))
-        }
-        "!OPEN-" => {
-            debug!("Closing heat: {}, id: {}, status: {}", number, id, status);
-            Some(EventHeatChanged::new(Heat::new(id, number, status), false))
-        }
-        _ => {
-            debug!("Unknown action: {}", action);
-            None
-        }
-    }
-}
 
 fn read_open_heats(client: &mut Client) -> Result<Vec<Heat>> {
     client.write(&RequestListOpenHeats::new().to_string())?;

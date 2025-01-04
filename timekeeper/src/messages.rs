@@ -1,3 +1,5 @@
+use log::warn;
+
 use crate::utils;
 use std::fmt::{Display, Formatter, Result};
 
@@ -156,6 +158,48 @@ impl EventHeatChanged {
     /// A new event that a heat has changed.
     pub(crate) fn new(heat: Heat, opened: bool) -> Self {
         EventHeatChanged { heat, opened }
+    }
+
+    /// Parse an event from a string.
+    /// # Arguments
+    /// * `event_str` - The string to parse.
+    /// # Returns
+    /// The parsed event.
+    pub(crate) fn parse(event_str: &str) -> Option<Self> {
+        let parts: Vec<&str> = event_str.split_whitespace().collect();
+        if parts.len() != 4 {
+            warn!("Invalid event format: {}", event_str);
+            return None;
+        }
+
+        let action = parts[0];
+        let number = match parts[1].parse() {
+            Ok(number) => number,
+            Err(_) => {
+                warn!("Invalid heat number: {}", parts[1]);
+                return None;
+            }
+        };
+        let id = match parts[2].parse() {
+            Ok(id) => id,
+            Err(_) => {
+                warn!("Invalid heat ID: {}", parts[2]);
+                return None;
+            }
+        };
+        let status = match parts[3].parse() {
+            Ok(status) => status,
+            Err(_) => {
+                warn!("Invalid status: {}", parts[3]);
+                return None;
+            }
+        };
+
+        match action {
+            "!OPEN+" => Some(EventHeatChanged::new(Heat::new(id, number, status), true)),
+            "!OPEN-" => Some(EventHeatChanged::new(Heat::new(id, number, status), false)),
+            _ => None,
+        }
     }
 }
 
