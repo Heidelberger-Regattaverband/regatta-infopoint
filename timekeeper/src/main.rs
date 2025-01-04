@@ -9,7 +9,7 @@ use clap::Parser;
 use client::Client;
 use colored::Colorize;
 use error::MessageErr;
-use log::{debug, info};
+use log::{debug, info, warn};
 use messages::{
     EventHeatChanged, Heat, RequestListOpenHeats, RequestStartList, ResponseListOpenHeats, ResponseStartList,
 };
@@ -29,8 +29,18 @@ fn main() -> Result<(), MessageErr> {
         if !received.is_empty() {
             debug!("Received: \"{}\"", utils::print_whitespaces(&received).bold());
             let event_opt = EventHeatChanged::parse(&received);
-            if let Ok(mut event) = event_opt {
-                read_start_list(&mut client, &mut event.heat).unwrap();
+
+            match event_opt {
+                Ok(mut event) => {
+                    read_start_list(&mut client, &mut event.heat).unwrap();
+                }
+                Err(err) => match err {
+                    MessageErr::InvalidMessage { message } => warn!(
+                        "Received invalid message: \"{}\"",
+                        utils::print_whitespaces(&message).bold()
+                    ),
+                    _ => (),
+                },
             }
         }
     })

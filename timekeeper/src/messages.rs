@@ -41,66 +41,6 @@ impl ResponseListOpenHeats {
     }
 }
 
-/// A heat in a competition.
-#[derive(Debug, Clone)]
-pub(crate) struct Heat {
-    // The heat identifier.
-    pub(crate) id: u16,
-    // The heat number.
-    pub(crate) number: u16,
-    // The heat status.
-    status: u8,
-    // The boats in the heat.
-    pub(crate) boats: Option<Vec<Boat>>,
-}
-
-impl Heat {
-    /// Create a new heat with the given id, number, and status.
-    /// # Arguments
-    /// * `id` - The heat identifier
-    /// * `number` - The heat number.
-    /// * `status` - The heat status.
-    /// # Returns
-    /// A new heat with the given id, number, and status.
-    fn new(id: u16, number: u16, status: u8) -> Self {
-        Heat {
-            id,
-            number,
-            status,
-            boats: None,
-        }
-    }
-
-    /// Parse a heat from a string.
-    /// # Arguments
-    /// * `heat_str` - The string to parse.
-    /// # Returns
-    /// The parsed heat or an error if the string is invalid.
-    pub(crate) fn parse(heat_str: &str) -> Result<Self, MessageErr> {
-        let parts: Vec<&str> = heat_str.split_whitespace().collect();
-        if parts.len() != 3 {
-            warn!("Invalid heat format: {}", heat_str);
-            return Err(MessageErr::InvalidMessage {
-                message: heat_str.to_owned(),
-            });
-        }
-        let number = parts[0].parse().map_err(MessageErr::ParseError)?;
-        let id = parts[1].parse().map_err(MessageErr::ParseError)?;
-        let status = parts[2].parse().map_err(MessageErr::ParseError)?;
-        Ok(Heat::new(id, number, status))
-    }
-}
-
-impl Display for Heat {
-    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        writeln!(
-            f,
-            "Heat: id={}, number={}, status={}",
-            self.id, self.number, self.status
-        )
-    }
-}
-
 /// A message to request the start list of a heat.
 pub(crate) struct RequestStartList {
     id: u16,
@@ -190,6 +130,66 @@ impl EventHeatChanged {
                 message: event_str.to_owned(),
             }),
         }
+    }
+}
+
+/// A heat in a competition.
+#[derive(Debug, Clone)]
+pub(crate) struct Heat {
+    // The heat identifier.
+    pub(crate) id: u16,
+    // The heat number.
+    pub(crate) number: u16,
+    // The heat status.
+    status: u8,
+    // The boats in the heat.
+    pub(crate) boats: Option<Vec<Boat>>,
+}
+
+impl Heat {
+    /// Create a new heat with the given id, number, and status.
+    /// # Arguments
+    /// * `id` - The heat identifier
+    /// * `number` - The heat number.
+    /// * `status` - The heat status.
+    /// # Returns
+    /// A new heat with the given id, number, and status.
+    fn new(id: u16, number: u16, status: u8) -> Self {
+        Heat {
+            id,
+            number,
+            status,
+            boats: None,
+        }
+    }
+
+    /// Parse a heat from a string. The string should be in the format "number id status".
+    /// # Arguments
+    /// * `heat_str` - The string to parse.
+    /// # Returns
+    /// The parsed heat or an error if the string is invalid.
+    pub(crate) fn parse(heat_str: &str) -> Result<Self, MessageErr> {
+        let parts: Vec<&str> = heat_str.split_whitespace().collect();
+        if parts.len() != 3 {
+            warn!("Invalid heat format: {}", heat_str);
+            return Err(MessageErr::InvalidMessage {
+                message: heat_str.to_owned(),
+            });
+        }
+        let number = parts[0].parse().map_err(MessageErr::ParseError)?;
+        let id = parts[1].parse().map_err(MessageErr::ParseError)?;
+        let status = parts[2].parse().map_err(MessageErr::ParseError)?;
+        Ok(Heat::new(id, number, status))
+    }
+}
+
+impl Display for Heat {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        writeln!(
+            f,
+            "Heat: id={}, number={}, status={}",
+            self.id, self.number, self.status
+        )
     }
 }
 
