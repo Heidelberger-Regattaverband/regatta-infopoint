@@ -338,4 +338,38 @@ mod tests {
         let event = EventHeatChanged::new(heat, false);
         assert!(!event.opened);
     }
+
+    #[test]
+    fn test_event_heat_changed_parse() {
+        let event = EventHeatChanged::parse("!OPEN+ 50 1234 4");
+        assert!(event.is_some());
+        let event = event.unwrap();
+        assert_eq!(event.heat.id, 1234);
+        assert_eq!(event.heat.number, 50);
+        assert_eq!(event.heat.status, 4);
+        assert!(event.opened);
+
+        let event = EventHeatChanged::parse("!OPEN- 50 1234 4");
+        assert!(event.is_some());
+        let event = event.unwrap();
+        assert_eq!(event.heat.id, 1234);
+        assert_eq!(event.heat.number, 50);
+        assert_eq!(event.heat.status, 4);
+        assert!(!event.opened);
+
+        let event = EventHeatChanged::parse("!OPEN+ 50 1234");
+        assert!(event.is_none());
+
+        let event = EventHeatChanged::parse("!OPEN+ 50 1234 4 34");
+        assert!(event.is_none());
+
+        let event = EventHeatChanged::parse("!OPEN= 50 1234 4");
+        assert!(event.is_none());
+        let event = EventHeatChanged::parse("!OPEN+ 50f 1234 4");
+        assert!(event.is_none());
+        let event = EventHeatChanged::parse("!OPEN+ 50 1234f 4");
+        assert!(event.is_none());
+        let event = EventHeatChanged::parse("!OPEN+ 50 1234 4f");
+        assert!(event.is_none());
+    }
 }
