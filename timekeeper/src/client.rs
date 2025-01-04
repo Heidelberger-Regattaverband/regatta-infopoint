@@ -2,7 +2,7 @@ use crate::utils;
 use colored::Colorize;
 use log::{debug, info, trace};
 use std::{
-    io::{BufRead, BufReader, BufWriter, Result, Write},
+    io::{BufRead, BufReader, BufWriter, Result as IoResult, Write},
     net::TcpStream,
 };
 
@@ -24,7 +24,7 @@ impl Client {
     /// A new client to connect to the server.
     /// # Errors
     /// If the client cannot connect to the server.
-    pub(crate) fn new(host: String, port: String) -> Result<Self> {
+    pub(crate) fn new(host: String, port: String) -> IoResult<Self> {
         info!("Connecting to {}:{}", host.bold(), port.bold());
         let stream = TcpStream::connect(format!("{}:{}", host, port))?;
         stream.set_nodelay(true)?;
@@ -35,7 +35,7 @@ impl Client {
         Ok(Client { reader, writer })
     }
 
-    pub(crate) fn write(&mut self, cmd: &str) -> Result<usize> {
+    pub(crate) fn write(&mut self, cmd: &str) -> IoResult<usize> {
         debug!("Writing command: \"{}\"", utils::print_whitespaces(cmd).bold());
         let count = self.writer.write(cmd.as_bytes())?;
         self.writer.flush()?;
@@ -43,7 +43,7 @@ impl Client {
         Ok(count)
     }
 
-    pub(crate) fn receive_line(&mut self) -> Result<String> {
+    pub(crate) fn receive_line(&mut self) -> IoResult<String> {
         let mut line = String::new();
         let count = self.reader.read_line(&mut line)?;
         trace!(
@@ -54,7 +54,7 @@ impl Client {
         Ok(line.trim_end().to_string())
     }
 
-    pub(crate) fn receive_all(&mut self) -> Result<String> {
+    pub(crate) fn receive_all(&mut self) -> IoResult<String> {
         let mut result = String::new();
         let mut buf = Vec::new();
         loop {
@@ -82,12 +82,22 @@ impl Client {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use log::LevelFilter;
     use std::{
         net::{SocketAddr, TcpListener},
         thread,
     };
 
+    fn init() {
+        let _ = env_logger::builder()
+            .is_test(true)
+            .filter_level(LevelFilter::Trace)
+            .try_init();
+    }
+
     fn start_test_server() -> SocketAddr {
+        init();
+
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let addr = listener.local_addr().unwrap();
 
@@ -107,6 +117,8 @@ mod tests {
 
     #[test]
     fn test_client_connection() {
+        init();
+
         let addr = start_test_server();
         let client = Client::new(addr.ip().to_string(), addr.port().to_string());
         assert!(client.is_ok());
@@ -114,6 +126,8 @@ mod tests {
 
     #[test]
     fn test_client_write() {
+        init();
+
         let addr = start_test_server();
         let mut client = Client::new(addr.ip().to_string(), addr.port().to_string()).unwrap();
         const MESSAGE: &str = "Hello World!";
@@ -124,6 +138,8 @@ mod tests {
 
     #[test]
     fn test_client_receive_line() {
+        init();
+
         let addr = start_test_server();
         let mut client = Client::new(addr.ip().to_string(), addr.port().to_string()).unwrap();
         const MESSAGE: &str = "Hello World!";

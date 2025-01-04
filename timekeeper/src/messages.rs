@@ -1,5 +1,5 @@
-use crate::utils;
-use std::fmt::{Display, Formatter, Result};
+use crate::{error::MessageErr, utils};
+use std::fmt::{Display, Formatter, Result as FmtResult};
 
 /// A message to request the list of open heats.
 pub(crate) struct RequestListOpenHeats {}
@@ -12,7 +12,7 @@ impl RequestListOpenHeats {
 }
 
 impl Display for RequestListOpenHeats {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         writeln!(f, "?OPEN")
     }
 }
@@ -26,13 +26,105 @@ pub(crate) struct ResponseListOpenHeats {
 
 impl ResponseListOpenHeats {
     /// Create a new response from the given message.
-    pub(crate) fn parse(message: &str) -> Self {
+    /// # Arguments
+    /// * `message` - The message to parse.
+    /// # Returns
+    /// The parsed response or an error if the message is invalid.
+    pub(crate) fn parse(message: &str) -> Result<Self, MessageErr> {
         let mut instance = ResponseListOpenHeats { heats: Vec::new() };
         for line in message.lines() {
-            let heat = Heat::parse(line);
+            let heat = Heat::parse(line)?;
             instance.heats.push(heat);
         }
-        instance
+        Ok(instance)
+    }
+}
+
+/// A message to request the start list of a heat.
+pub(crate) struct RequestStartList {
+    id: u16,
+}
+
+impl RequestStartList {
+    /// Create a new request to get the start list of a heat.
+    /// # Arguments
+    /// * `id` - The heat identifier.
+    /// # Returns
+    /// A new request to get the start list of a heat.
+    pub(crate) fn new(id: u16) -> Self {
+        RequestStartList { id }
+    }
+}
+
+impl Display for RequestStartList {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        writeln!(f, "?STARTLIST id={}", self.id)
+    }
+}
+
+/// A message to respond with the start list of a heat.
+#[derive(Debug)]
+pub(crate) struct ResponseStartList {
+    /// A list of boats in the heat.
+    pub(crate) boats: Vec<Boat>,
+}
+
+impl ResponseStartList {
+    /// Parse the response from a string.
+    /// # Arguments
+    /// * `message` - The message to parse.
+    /// # Returns
+    /// The parsed response or an error if the message is invalid.
+    pub(crate) fn parse(message: String) -> Result<Self, MessageErr> {
+        let mut instance = ResponseStartList { boats: Vec::new() };
+        for line in message.lines() {
+            let boat = Boat::parse(line)?;
+            instance.boats.push(boat);
+        }
+        Ok(instance)
+    }
+}
+
+/// An event that a heat has changed. This event is sent when a heat is opened or closed
+pub(crate) struct EventHeatChanged {
+    /// The heat that has changed.
+    pub(crate) heat: Heat,
+    /// Whether the heat has been opened or closed.
+    pub(crate) opened: bool,
+}
+
+impl EventHeatChanged {
+    /// Create a new event that a heat has changed.
+    /// # Arguments
+    /// * `heat` - The heat that has changed.
+    /// * `opened` - Whether the heat has been opened or closed.
+    /// # Returns
+    /// A new event that a heat has changed.
+    fn new(heat: Heat, opened: bool) -> Self {
+        EventHeatChanged { heat, opened }
+    }
+
+    /// Parse an event from a string.
+    /// # Arguments
+    /// * `event_str` - The string to parse.
+    /// # Returns
+    /// The parsed event or an error if the string is invalid.
+    pub(crate) fn parse(event_str: &str) -> Result<Self, MessageErr> {
+        let parts: Vec<&str> = event_str.split_whitespace().collect();
+        if parts.len() != 4 {
+            return Err(MessageErr::InvalidMessage(event_str.to_owned()));
+        }
+
+        let action = parts[0];
+        let number = parts[1].parse().map_err(MessageErr::ParseError)?;
+        let id = parts[2].parse().map_err(MessageErr::ParseError)?;
+        let status = parts[3].parse().map_err(MessageErr::ParseError)?;
+
+        match action {
+            "!OPEN+" => Ok(EventHeatChanged::new(Heat::new(id, number, status), true)),
+            "!OPEN-" => Ok(EventHeatChanged::new(Heat::new(id, number, status), false)),
+            _ => Err(MessageErr::InvalidMessage(event_str.to_owned())),
+        }
     }
 }
 
@@ -57,7 +149,7 @@ impl Heat {
     /// * `status` - The heat status.
     /// # Returns
     /// A new heat with the given id, number, and status.
-    pub(crate) fn new(id: u16, number: u16, status: u8) -> Self {
+    fn new(id: u16, number: u16, status: u8) -> Self {
         Heat {
             id,
             number,
@@ -66,96 +158,30 @@ impl Heat {
         }
     }
 
-    /// Parse a heat from a string.
+    /// Parse a heat from a string. The string should be in the format "number id status".
     /// # Arguments
     /// * `heat_str` - The string to parse.
     /// # Returns
-    /// The parsed heat.
-    pub(crate) fn parse(heat_str: &str) -> Self {
+    /// The parsed heat or an error if the string is invalid.
+    pub(crate) fn parse(heat_str: &str) -> Result<Self, MessageErr> {
         let parts: Vec<&str> = heat_str.split_whitespace().collect();
         if parts.len() != 3 {
-            panic!("Invalid heat format: {}", heat_str);
+            return Err(MessageErr::InvalidMessage(heat_str.to_owned()));
         }
-        let number = parts[0].parse().unwrap();
-        let id = parts[1].parse().unwrap();
-        let status = parts[2].parse().unwrap();
-        Heat::new(id, number, status)
+        let number = parts[0].parse().map_err(MessageErr::ParseError)?;
+        let id = parts[1].parse().map_err(MessageErr::ParseError)?;
+        let status = parts[2].parse().map_err(MessageErr::ParseError)?;
+        Ok(Heat::new(id, number, status))
     }
 }
 
 impl Display for Heat {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         writeln!(
             f,
             "Heat: id={}, number={}, status={}",
             self.id, self.number, self.status
         )
-    }
-}
-
-/// A message to request the start list of a heat.
-pub(crate) struct RequestStartList {
-    id: u16,
-}
-
-impl RequestStartList {
-    /// Create a new request to get the start list of a heat.
-    /// # Arguments
-    /// * `id` - The heat identifier.
-    /// # Returns
-    /// A new request to get the start list of a heat.
-    pub(crate) fn new(id: u16) -> Self {
-        RequestStartList { id }
-    }
-}
-
-impl Display for RequestStartList {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
-        writeln!(f, "?STARTLIST id={}", self.id)
-    }
-}
-
-/// A message to respond with the start list of a heat.
-pub(crate) struct ResponseStartList {
-    /// A list of boats in the heat.
-    pub(crate) boats: Vec<Boat>,
-}
-
-impl ResponseStartList {
-    pub(crate) fn parse(message: String) -> Self {
-        let mut instance = ResponseStartList { boats: Vec::new() };
-
-        for line in message.lines() {
-            let parts: Vec<&str> = line.splitn(3, ' ').collect();
-            if parts.len() == 3 {
-                let bib = parts[0].parse().unwrap();
-                let lane = parts[1].parse().unwrap();
-                let club = parts[2].to_owned();
-                let boat = Boat::new(lane, bib, club);
-                instance.boats.push(boat);
-            }
-        }
-        instance
-    }
-}
-
-/// An event that a heat has changed. This event is sent when a heat is opened or closed
-pub(crate) struct EventHeatChanged {
-    /// The heat that has changed.
-    pub(crate) heat: Heat,
-    /// Whether the heat has been opened or closed.
-    pub(crate) opened: bool,
-}
-
-impl EventHeatChanged {
-    /// Create a new event that a heat has changed.
-    /// # Arguments
-    /// * `heat` - The heat that has changed.
-    /// * `opened` - Whether the heat has been opened or closed.
-    /// # Returns
-    /// A new event that a heat has changed.
-    pub(crate) fn new(heat: Heat, opened: bool) -> Self {
-        EventHeatChanged { heat, opened }
     }
 }
 
@@ -178,17 +204,35 @@ impl Boat {
     /// * `club` - The club name.
     /// # Returns
     /// A new boat.
-    pub(crate) fn new(lane: u8, bib: u8, club: String) -> Self {
+    fn new(lane: u8, bib: u8, club: String) -> Self {
         Boat {
             bib,
             lane,
             club: utils::unquote(&club),
         }
     }
+
+    /// Parse a boat from a string in the format "lane bib club".
+    ///
+    /// # Arguments
+    /// * `boat_str` - The string to parse.
+    /// # Returns
+    /// The parsed boat or an error if the string is invalid.
+    pub(crate) fn parse(boat_str: &str) -> Result<Self, MessageErr> {
+        let parts: Vec<&str> = boat_str.splitn(3, ' ').collect();
+        if parts.len() == 3 {
+            let lane = parts[0].parse().map_err(MessageErr::ParseError)?;
+            let bib = parts[1].parse().map_err(MessageErr::ParseError)?;
+            let club = parts[2].to_owned();
+            Ok(Boat::new(lane, bib, club))
+        } else {
+            Err(MessageErr::InvalidMessage(boat_str.to_owned()))
+        }
+    }
 }
 
 impl Display for Boat {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         writeln!(f, "Boat: lane={}, bib={}, club={}", self.lane, self.bib, self.club)
     }
 }
@@ -196,6 +240,14 @@ impl Display for Boat {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use log::LevelFilter;
+
+    fn init() {
+        let _ = env_logger::builder()
+            .is_test(true)
+            .filter_level(LevelFilter::Trace)
+            .try_init();
+    }
 
     #[test]
     fn test_request_list_open_heats() {
@@ -207,6 +259,8 @@ mod tests {
     fn test_response_list_open_heats() {
         let message = "3 2766 4\n50 2767 4\n71 2786 4";
         let response = ResponseListOpenHeats::parse(message);
+        assert!(response.is_ok());
+        let response = response.unwrap();
         assert_eq!(response.heats.len(), 3);
         assert_eq!(response.heats[0].id, 2766);
         assert_eq!(response.heats[0].number, 3);
@@ -217,10 +271,13 @@ mod tests {
         assert_eq!(response.heats[2].id, 2786);
         assert_eq!(response.heats[2].number, 71);
         assert_eq!(response.heats[2].status, 4);
+
+        let message = "3 2766 4\n50 2767 4\n71 2786 4f";
+        assert!(ResponseListOpenHeats::parse(message).is_err());
     }
 
     #[test]
-    fn test_heat() {
+    fn test_heat_new() {
         let heat = Heat::new(1234, 50, 4);
         assert_eq!(heat.id, 1234);
         assert_eq!(heat.number, 50);
@@ -228,15 +285,13 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
-    fn test_heat_parse_invalid_string() {
-        Heat::parse("50 1234 4 34");
-    }
+    fn test_heat_parse() {
+        init();
 
-    #[test]
-    #[should_panic]
-    fn test_heat_parse_invalid_number() {
-        Heat::parse("50 1234f 4 34");
+        assert!(Heat::parse("50 1234 4 34").is_err());
+        assert!(Heat::parse("50f 1234 4").is_err());
+        assert!(Heat::parse("50 1234f 4").is_err());
+        assert!(Heat::parse("50 1234 4f").is_err());
     }
 
     #[test]
@@ -256,6 +311,8 @@ mod tests {
         let message =
             "1 1 'RV Neptun Konstanz'\n2 2 'RG Heidelberg'\n3 3 'Heidelberger RK'\n4 4 'Marbacher RV'".to_owned();
         let response = ResponseStartList::parse(message);
+        assert!(response.is_ok());
+        let response = response.unwrap();
         assert_eq!(response.boats.len(), 4);
         assert_eq!(response.boats[0].lane, 1);
         assert_eq!(response.boats[0].bib, 1);
@@ -269,11 +326,23 @@ mod tests {
     }
 
     #[test]
-    fn test_boat() {
-        let boat = Boat::new(1, 1, "RV Neptun Konstanz".to_owned());
+    fn test_boat_new() {
+        let boat = Boat::new(1, 12, "RV Neptun Konstanz".to_owned());
         assert_eq!(boat.lane, 1);
-        assert_eq!(boat.bib, 1);
+        assert_eq!(boat.bib, 12);
         assert_eq!(boat.club, "RV Neptun Konstanz");
+    }
+
+    #[test]
+    fn test_boat_parse() {
+        let boat = Boat::parse("1 12 'RV Neptun Konstanz'");
+        assert!(boat.is_ok());
+        let boat = boat.unwrap();
+        assert_eq!(boat.lane, 1);
+        assert_eq!(boat.bib, 12);
+        assert_eq!(boat.club, "RV Neptun Konstanz");
+
+        assert!(Boat::parse("1 12").is_err());
     }
 
     #[test]
@@ -283,7 +352,7 @@ mod tests {
     }
 
     #[test]
-    fn test_event_heat_changed() {
+    fn test_event_heat_changed_new() {
         let heat = Heat::new(1234, 50, 4);
         let event = EventHeatChanged::new(heat.clone(), true);
         assert_eq!(event.heat.id, 1234);
@@ -293,5 +362,41 @@ mod tests {
 
         let event = EventHeatChanged::new(heat, false);
         assert!(!event.opened);
+    }
+
+    #[test]
+    fn test_event_heat_changed_parse() {
+        init();
+
+        let event = EventHeatChanged::parse("!OPEN+ 50 1234 4");
+        assert!(event.is_ok());
+        let event = event.unwrap();
+        assert_eq!(event.heat.id, 1234);
+        assert_eq!(event.heat.number, 50);
+        assert_eq!(event.heat.status, 4);
+        assert!(event.opened);
+
+        let event = EventHeatChanged::parse("!OPEN- 50 1234 4");
+        assert!(event.is_ok());
+        let event = event.unwrap();
+        assert_eq!(event.heat.id, 1234);
+        assert_eq!(event.heat.number, 50);
+        assert_eq!(event.heat.status, 4);
+        assert!(!event.opened);
+
+        let event = EventHeatChanged::parse("!OPEN+ 50 1234");
+        assert!(event.is_err());
+
+        let event = EventHeatChanged::parse("!OPEN+ 50 1234 4 34");
+        assert!(event.is_err());
+
+        let event = EventHeatChanged::parse("!OPEN= 50 1234 4");
+        assert!(event.is_err());
+        let event = EventHeatChanged::parse("!OPEN+ 50f 1234 4");
+        assert!(event.is_err());
+        let event = EventHeatChanged::parse("!OPEN+ 50 1234f 4");
+        assert!(event.is_err());
+        let event = EventHeatChanged::parse("!OPEN+ 50 1234 4f");
+        assert!(event.is_err());
     }
 }

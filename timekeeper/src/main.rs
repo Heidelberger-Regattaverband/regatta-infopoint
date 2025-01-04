@@ -1,5 +1,6 @@
 mod args;
 mod client;
+mod error;
 mod messages;
 mod utils;
 
@@ -7,18 +8,19 @@ use args::Args;
 use clap::Parser;
 use client::Client;
 use colored::Colorize;
+use error::MessageErr;
 use log::{debug, info, warn};
 use messages::{
     EventHeatChanged, Heat, RequestListOpenHeats, RequestStartList, ResponseListOpenHeats, ResponseStartList,
 };
-use std::{io::Result, thread};
+use std::thread;
 
-fn main() -> Result<()> {
+fn main() -> Result<(), MessageErr> {
     env_logger::builder().init();
     let args = Args::parse();
 
-    let mut client = Client::new(args.host, args.port)?;
-    let open_heats = get_open_heats(&mut client)?;
+    let mut client = Client::new(args.host, args.port).map_err(MessageErr::IoError)?;
+    let open_heats = read_open_heats(&mut client)?;
     debug!("Open heats: {:#?}", open_heats);
 
     info!("Receiving events ...");
@@ -26,7 +28,14 @@ fn main() -> Result<()> {
         let received = client.receive_line().unwrap();
         if !received.is_empty() {
             debug!("Received: \"{}\"", utils::print_whitespaces(&received).bold());
-            parse_event(&received);
+            let event_opt = EventHeatChanged::parse(&received);
+
+            match event_opt {
+                Ok(mut event) => {
+                    read_start_list(&mut client, &mut event.heat).unwrap();
+                }
+                Err(err) => handle_error(err),
+            }
         }
     })
     .join()
@@ -35,63 +44,40 @@ fn main() -> Result<()> {
     Ok(())
 } // the stream is closed here
 
-fn parse_event(event: &str) -> Option<EventHeatChanged> {
-    let parts: Vec<&str> = event.split_whitespace().collect();
-    if parts.len() != 4 {
-        warn!("Invalid event format: {}", event);
-        return None;
-    }
-
-    let action = parts[0];
-    let number = match parts[1].parse() {
-        Ok(number) => number,
-        Err(_) => {
-            warn!("Invalid heat number: {}", parts[1]);
-            return None;
+fn handle_error(err: MessageErr) {
+    match err {
+        MessageErr::ParseError(parse_err) => {
+            warn!("Error parsing number: {}", parse_err);
         }
-    };
-    let id = match parts[2].parse() {
-        Ok(id) => id,
-        Err(_) => {
-            warn!("Invalid heat ID: {}", parts[2]);
-            return None;
+        MessageErr::IoError(io_err) => {
+            warn!("I/O error: {}", io_err);
         }
-    };
-    let status = match parts[3].parse() {
-        Ok(status) => status,
-        Err(_) => {
-            warn!("Invalid status: {}", parts[3]);
-            return None;
-        }
-    };
-
-    match action {
-        "!OPEN+" => {
-            debug!("Opening heat: {}, id: {}, status: {}", number, id, status);
-            Some(EventHeatChanged::new(Heat::new(id, number, status), true))
-        }
-        "!OPEN-" => {
-            debug!("Closing heat: {}, id: {}, status: {}", number, id, status);
-            Some(EventHeatChanged::new(Heat::new(id, number, status), false))
-        }
-        _ => {
-            debug!("Unknown action: {}", action);
-            None
+        MessageErr::InvalidMessage(message) => {
+            warn!("Invalid message: {}", message);
         }
     }
 }
 
-fn get_open_heats(client: &mut Client) -> Result<Vec<Heat>> {
-    client.write(&RequestListOpenHeats::new().to_string())?;
-    let response = client.receive_all()?;
-    let mut open_heats = ResponseListOpenHeats::parse(&response);
+fn read_open_heats(client: &mut Client) -> Result<Vec<Heat>, MessageErr> {
+    client
+        .write(&RequestListOpenHeats::new().to_string())
+        .map_err(MessageErr::IoError)?;
+    let response = client.receive_all().map_err(MessageErr::IoError)?;
+    let mut open_heats = ResponseListOpenHeats::parse(&response).unwrap();
 
     for heat in open_heats.heats.iter_mut() {
-        client.write(&RequestStartList::new(heat.id).to_string())?;
-        let response = client.receive_all()?;
-        let start_list = ResponseStartList::parse(response);
-        heat.boats = Some(start_list.boats);
+        read_start_list(client, heat)?;
     }
 
     Ok(open_heats.heats)
+}
+
+fn read_start_list(client: &mut Client, heat: &mut Heat) -> Result<(), MessageErr> {
+    client
+        .write(&RequestStartList::new(heat.id).to_string())
+        .map_err(MessageErr::IoError)?;
+    let response = client.receive_all().map_err(MessageErr::IoError)?;
+    let start_list = ResponseStartList::parse(response)?;
+    heat.boats = Some(start_list.boats);
+    Ok(())
 }
