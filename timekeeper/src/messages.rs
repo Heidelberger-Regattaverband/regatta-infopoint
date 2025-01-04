@@ -28,13 +28,21 @@ pub(crate) struct ResponseListOpenHeats {
 
 impl ResponseListOpenHeats {
     /// Create a new response from the given message.
-    pub(crate) fn parse(message: &str) -> Self {
+    /// # Arguments
+    /// * `message` - The message to parse.
+    /// # Returns
+    /// The parsed response or `None` if the message is invalid.
+    pub(crate) fn parse(message: &str) -> Option<Self> {
         let mut instance = ResponseListOpenHeats { heats: Vec::new() };
         for line in message.lines() {
-            let heat = Heat::parse(line);
-            instance.heats.push(heat);
+            if let Some(heat) = Heat::parse(line) {
+                instance.heats.push(heat);
+            } else {
+                warn!("Invalid heat format: {}", line);
+                return None;
+            }
         }
-        instance
+        Some(instance)
     }
 }
 
@@ -59,7 +67,7 @@ impl Heat {
     /// * `status` - The heat status.
     /// # Returns
     /// A new heat with the given id, number, and status.
-    pub(crate) fn new(id: u16, number: u16, status: u8) -> Self {
+    fn new(id: u16, number: u16, status: u8) -> Self {
         Heat {
             id,
             number,
@@ -72,16 +80,35 @@ impl Heat {
     /// # Arguments
     /// * `heat_str` - The string to parse.
     /// # Returns
-    /// The parsed heat.
-    pub(crate) fn parse(heat_str: &str) -> Self {
+    /// The parsed heat or `None` if the string is invalid.
+    pub(crate) fn parse(heat_str: &str) -> Option<Self> {
         let parts: Vec<&str> = heat_str.split_whitespace().collect();
         if parts.len() != 3 {
-            panic!("Invalid heat format: {}", heat_str);
+            warn!("Invalid heat format: {}", heat_str);
+            return None;
         }
-        let number = parts[0].parse().unwrap();
-        let id = parts[1].parse().unwrap();
-        let status = parts[2].parse().unwrap();
-        Heat::new(id, number, status)
+        let number = match parts[0].parse() {
+            Ok(number) => number,
+            Err(_) => {
+                warn!("Invalid heat number: {}", parts[0]);
+                return None;
+            }
+        };
+        let id = match parts[1].parse() {
+            Ok(id) => id,
+            Err(_) => {
+                warn!("Invalid heat ID: {}", parts[1]);
+                return None;
+            }
+        };
+        let status = match parts[2].parse() {
+            Ok(status) => status,
+            Err(_) => {
+                warn!("Invalid status: {}", parts[2]);
+                return None;
+            }
+        };
+        Some(Heat::new(id, number, status))
     }
 }
 
@@ -240,6 +267,7 @@ impl Display for Boat {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use log::LevelFilter;
 
     #[test]
     fn test_request_list_open_heats() {
@@ -250,7 +278,9 @@ mod tests {
     #[test]
     fn test_response_list_open_heats() {
         let message = "3 2766 4\n50 2767 4\n71 2786 4";
-        let response = ResponseListOpenHeats::parse(message);
+        let response_opt = ResponseListOpenHeats::parse(message);
+        assert!(response_opt.is_some());
+        let response = response_opt.unwrap();
         assert_eq!(response.heats.len(), 3);
         assert_eq!(response.heats[0].id, 2766);
         assert_eq!(response.heats[0].number, 3);
@@ -261,10 +291,13 @@ mod tests {
         assert_eq!(response.heats[2].id, 2786);
         assert_eq!(response.heats[2].number, 71);
         assert_eq!(response.heats[2].status, 4);
+
+        let message = "3 2766 4\n50 2767 4\n71 2786 4f";
+        assert!(ResponseListOpenHeats::parse(message).is_none());
     }
 
     #[test]
-    fn test_heat() {
+    fn test_heat_new() {
         let heat = Heat::new(1234, 50, 4);
         assert_eq!(heat.id, 1234);
         assert_eq!(heat.number, 50);
@@ -272,15 +305,15 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
-    fn test_heat_parse_invalid_string() {
-        Heat::parse("50 1234 4 34");
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_heat_parse_invalid_number() {
-        Heat::parse("50 1234f 4 34");
+    fn test_heat_parse() {
+        let _ = env_logger::builder()
+            .is_test(true)
+            .filter_level(LevelFilter::Trace)
+            .try_init();
+        assert!(Heat::parse("50 1234 4 34").is_none());
+        assert!(Heat::parse("50f 1234 4").is_none());
+        assert!(Heat::parse("50 1234f 4").is_none());
+        assert!(Heat::parse("50 1234 4f").is_none());
     }
 
     #[test]
@@ -341,6 +374,11 @@ mod tests {
 
     #[test]
     fn test_event_heat_changed_parse() {
+        let _ = env_logger::builder()
+            .is_test(true)
+            .filter_level(LevelFilter::Trace)
+            .try_init();
+
         let event = EventHeatChanged::parse("!OPEN+ 50 1234 4");
         assert!(event.is_some());
         let event = event.unwrap();

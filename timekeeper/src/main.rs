@@ -41,7 +41,7 @@ fn main() -> Result<()> {
 fn read_open_heats(client: &mut Client) -> Result<Vec<Heat>> {
     client.write(&RequestListOpenHeats::new().to_string())?;
     let response = client.receive_all()?;
-    let mut open_heats = ResponseListOpenHeats::parse(&response);
+    let mut open_heats = ResponseListOpenHeats::parse(&response).unwrap();
 
     for heat in open_heats.heats.iter_mut() {
         read_start_list(client, heat)?;
