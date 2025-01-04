@@ -22,8 +22,10 @@ mod tests {
     fn test_message_err() {
         let parse_error = MessageErr::ParseError("error".parse::<i32>().unwrap_err());
         let io_error = MessageErr::IoError(IoError::new(ErrorKind::Other, "error"));
+        let invalid_message = MessageErr::InvalidMessage;
 
         assert!(matches!(parse_error, MessageErr::ParseError(_)));
         assert!(matches!(io_error, MessageErr::IoError(_)));
+        assert!(matches!(invalid_message, MessageErr::InvalidMessage));
     }
 }

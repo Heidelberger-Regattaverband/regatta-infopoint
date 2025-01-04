@@ -248,7 +248,7 @@ impl Boat {
     /// * `club` - The club name.
     /// # Returns
     /// A new boat.
-    pub(crate) fn new(lane: u8, bib: u8, club: String) -> Self {
+    fn new(lane: u8, bib: u8, club: String) -> Self {
         Boat {
             bib,
             lane,
@@ -256,7 +256,7 @@ impl Boat {
         }
     }
 
-    /// Parse a boat from a string.
+    /// Parse a boat from a string in the format "lane bib club".
     ///
     /// # Arguments
     /// * `boat_str` - The string to parse.
@@ -265,8 +265,8 @@ impl Boat {
     pub(crate) fn parse(boat_str: &str) -> Result<Self, MessageErr> {
         let parts: Vec<&str> = boat_str.splitn(3, ' ').collect();
         if parts.len() == 3 {
-            let bib = parts[0].parse().map_err(MessageErr::ParseError)?;
-            let lane = parts[1].parse().map_err(MessageErr::ParseError)?;
+            let lane = parts[0].parse().map_err(MessageErr::ParseError)?;
+            let bib = parts[1].parse().map_err(MessageErr::ParseError)?;
             let club = parts[2].to_owned();
             Ok(Boat::new(lane, bib, club))
         } else {
@@ -365,11 +365,23 @@ mod tests {
     }
 
     #[test]
-    fn test_boat() {
-        let boat = Boat::new(1, 1, "RV Neptun Konstanz".to_owned());
+    fn test_boat_new() {
+        let boat = Boat::new(1, 12, "RV Neptun Konstanz".to_owned());
         assert_eq!(boat.lane, 1);
-        assert_eq!(boat.bib, 1);
+        assert_eq!(boat.bib, 12);
         assert_eq!(boat.club, "RV Neptun Konstanz");
+    }
+
+    #[test]
+    fn test_boat_parse() {
+        let boat = Boat::parse("1 12 'RV Neptun Konstanz'");
+        assert!(boat.is_ok());
+        let boat = boat.unwrap();
+        assert_eq!(boat.lane, 1);
+        assert_eq!(boat.bib, 12);
+        assert_eq!(boat.club, "RV Neptun Konstanz");
+
+        assert!(Boat::parse("1 12").is_err());
     }
 
     #[test]
