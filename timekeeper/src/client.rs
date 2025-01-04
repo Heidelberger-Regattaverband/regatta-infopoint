@@ -62,7 +62,7 @@ impl Client {
             let count = self.reader.read_until(b'\n', &mut buf)?;
             // Convert the buffer to a string, ignoring invalid UTF-8 sequences.
             let line = String::from_utf8_lossy(&buf);
-            debug!(
+            trace!(
                 "Received {} bytes: \"{}\"",
                 count.to_string().bold(),
                 utils::print_whitespaces(&line).bold()
@@ -74,7 +74,11 @@ impl Client {
             result.push_str(&line);
             buf.clear();
         }
-        debug!("Received message: \"{}\"", result.bold());
+        debug!(
+            "Received message (len={}): \"{}\"",
+            result.len(),
+            utils::print_whitespaces(&result).bold()
+        );
         Ok(result.trim_end().to_string())
     }
 }
