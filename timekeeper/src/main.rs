@@ -1,5 +1,6 @@
 mod args;
 mod client;
+mod error;
 mod messages;
 mod utils;
 
