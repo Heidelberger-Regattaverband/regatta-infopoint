@@ -80,7 +80,9 @@ impl Heat {
         let parts: Vec<&str> = heat_str.split_whitespace().collect();
         if parts.len() != 3 {
             warn!("Invalid heat format: {}", heat_str);
-            return Err(MessageErr::InvalidMessage);
+            return Err(MessageErr::InvalidMessage {
+                message: heat_str.to_owned(),
+            });
         }
         let number = parts[0].parse().map_err(MessageErr::ParseError)?;
         let id = parts[1].parse().map_err(MessageErr::ParseError)?;
@@ -171,8 +173,9 @@ impl EventHeatChanged {
     pub(crate) fn parse(event_str: &str) -> Result<Self, MessageErr> {
         let parts: Vec<&str> = event_str.split_whitespace().collect();
         if parts.len() != 4 {
-            warn!("Invalid event format: {}", event_str);
-            return Err(MessageErr::InvalidMessage);
+            return Err(MessageErr::InvalidMessage {
+                message: event_str.to_owned(),
+            });
         }
 
         let action = parts[0];
@@ -183,7 +186,9 @@ impl EventHeatChanged {
         match action {
             "!OPEN+" => Ok(EventHeatChanged::new(Heat::new(id, number, status), true)),
             "!OPEN-" => Ok(EventHeatChanged::new(Heat::new(id, number, status), false)),
-            _ => Err(MessageErr::InvalidMessage),
+            _ => Err(MessageErr::InvalidMessage {
+                message: event_str.to_owned(),
+            }),
         }
     }
 }
@@ -229,7 +234,9 @@ impl Boat {
             let club = parts[2].to_owned();
             Ok(Boat::new(lane, bib, club))
         } else {
-            Err(MessageErr::InvalidMessage)
+            Err(MessageErr::InvalidMessage {
+                message: boat_str.to_owned(),
+            })
         }
     }
 }
