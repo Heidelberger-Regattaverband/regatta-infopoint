@@ -1,7 +1,6 @@
+use crate::{error::MessageErr, utils};
 use log::warn;
-
-use crate::utils;
-use std::fmt::{Display, Formatter, Result};
+use std::fmt::{Display, Formatter, Result as FmtResult};
 
 /// A message to request the list of open heats.
 pub(crate) struct RequestListOpenHeats {}
@@ -14,7 +13,7 @@ impl RequestListOpenHeats {
 }
 
 impl Display for RequestListOpenHeats {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         writeln!(f, "?OPEN")
     }
 }
@@ -113,7 +112,7 @@ impl Heat {
 }
 
 impl Display for Heat {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         writeln!(
             f,
             "Heat: id={}, number={}, status={}",
@@ -139,32 +138,32 @@ impl RequestStartList {
 }
 
 impl Display for RequestStartList {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         writeln!(f, "?STARTLIST id={}", self.id)
     }
 }
 
 /// A message to respond with the start list of a heat.
+#[derive(Debug)]
 pub(crate) struct ResponseStartList {
     /// A list of boats in the heat.
     pub(crate) boats: Vec<Boat>,
 }
 
 impl ResponseStartList {
-    pub(crate) fn parse(message: String) -> Self {
+    /// Parse the response from a string.
+    /// # Arguments
+    /// * `message` - The message to parse.
+    /// # Returns
+    /// The parsed response or an error if the message is invalid.
+    pub(crate) fn parse(message: String) -> Result<Self, MessageErr> {
         let mut instance = ResponseStartList { boats: Vec::new() };
 
         for line in message.lines() {
-            let parts: Vec<&str> = line.splitn(3, ' ').collect();
-            if parts.len() == 3 {
-                let bib = parts[0].parse().unwrap();
-                let lane = parts[1].parse().unwrap();
-                let club = parts[2].to_owned();
-                let boat = Boat::new(lane, bib, club);
-                instance.boats.push(boat);
-            }
+            let boat = Boat::parse(line)?;
+            instance.boats.push(boat);
         }
-        instance
+        Ok(instance)
     }
 }
 
@@ -256,10 +255,28 @@ impl Boat {
             club: utils::unquote(&club),
         }
     }
+
+    /// Parse a boat from a string.
+    ///
+    /// # Arguments
+    /// * `boat_str` - The string to parse.
+    /// # Returns
+    /// The parsed boat or an error if the string is invalid.
+    pub(crate) fn parse(boat_str: &str) -> Result<Self, MessageErr> {
+        let parts: Vec<&str> = boat_str.splitn(3, ' ').collect();
+        if parts.len() == 3 {
+            let bib = parts[0].parse().map_err(MessageErr::ParseError)?;
+            let lane = parts[1].parse().map_err(MessageErr::ParseError)?;
+            let club = parts[2].to_owned();
+            Ok(Boat::new(lane, bib, club))
+        } else {
+            Err(MessageErr::InvalidMessage)
+        }
+    }
 }
 
 impl Display for Boat {
-    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         writeln!(f, "Boat: lane={}, bib={}, club={}", self.lane, self.bib, self.club)
     }
 }
@@ -333,6 +350,8 @@ mod tests {
         let message =
             "1 1 'RV Neptun Konstanz'\n2 2 'RG Heidelberg'\n3 3 'Heidelberger RK'\n4 4 'Marbacher RV'".to_owned();
         let response = ResponseStartList::parse(message);
+        assert!(response.is_ok());
+        let response = response.unwrap();
         assert_eq!(response.boats.len(), 4);
         assert_eq!(response.boats[0].lane, 1);
         assert_eq!(response.boats[0].bib, 1);

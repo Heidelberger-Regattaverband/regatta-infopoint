@@ -1,22 +1,27 @@
-use std::{io, num};
+use std::{io::Error as IoError, num};
 
 /// Error type for the timekeeper crate.
-enum MessageErr {
+#[derive(Debug)]
+pub(crate) enum MessageErr {
     /// Error when parsing a string to a number.
     ParseError(num::ParseIntError),
 
     /// Error when I/O operations fail.
-    IoError(io::Error),
+    IoError(IoError),
+
+    /// Error when the message is invalid.
+    InvalidMessage,
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::ErrorKind;
 
     #[test]
     fn test_message_err() {
         let parse_error = MessageErr::ParseError("error".parse::<i32>().unwrap_err());
-        let io_error = MessageErr::IoError(std::io::Error::new(std::io::ErrorKind::Other, "error"));
+        let io_error = MessageErr::IoError(IoError::new(ErrorKind::Other, "error"));
 
         assert!(matches!(parse_error, MessageErr::ParseError(_)));
         assert!(matches!(io_error, MessageErr::IoError(_)));
