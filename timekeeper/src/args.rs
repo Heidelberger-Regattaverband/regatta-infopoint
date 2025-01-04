@@ -8,7 +8,9 @@ pub(crate) struct Args {
     #[arg(long, default_value = "localhost")]
     pub(crate) host: String,
     #[arg(long, default_value = "2048")]
-    pub(crate) port: String,
+    pub(crate) port: u16,
+    #[arg(long, default_value = "2")]
+    pub(crate) timeout: u16,
 }
 
 #[cfg(test)]
@@ -19,6 +21,7 @@ mod tests {
     fn test_args() {
         let args = Args::parse();
         assert_eq!(args.host, "localhost");
-        assert_eq!(args.port, "2048");
+        assert_eq!(args.port, 2048);
+        assert_eq!(args.timeout, 2);
     }
 }

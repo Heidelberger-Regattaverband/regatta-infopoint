@@ -3,7 +3,9 @@ use colored::Colorize;
 use log::{debug, info, trace};
 use std::{
     io::{BufRead, BufReader, BufWriter, Result as IoResult, Write},
-    net::TcpStream,
+    net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream},
+    str::FromStr,
+    time::Duration,
 };
 
 /// A client to connect to the Aquarius server.
@@ -24,14 +26,15 @@ impl Client {
     /// A new client to connect to the server.
     /// # Errors
     /// If the client cannot connect to the server.
-    pub(crate) fn new(host: String, port: String) -> IoResult<Self> {
-        info!("Connecting to {}:{}", host.bold(), port.bold());
-        let stream = TcpStream::connect(format!("{}:{}", host, port))?;
+    pub(crate) fn new(host: String, port: u16, timeout: u16) -> IoResult<Self> {
+        let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::from_str(&host).unwrap()), port);
+        info!("Connecting to {}", addr.to_string().bold());
+        let stream = TcpStream::connect_timeout(&addr, Duration::new(timeout as u64, 0))?;
         stream.set_nodelay(true)?;
         let write_stream = stream.try_clone()?;
         let reader = BufReader::new(stream);
         let writer = BufWriter::new(write_stream);
-        info!("Connected to {}:{}", host.bold(), port.bold());
+        info!("Connected to {}", addr.to_string().bold());
         Ok(Client { reader, writer })
     }
 
@@ -124,7 +127,7 @@ mod tests {
         init();
 
         let addr = start_test_server();
-        let client = Client::new(addr.ip().to_string(), addr.port().to_string());
+        let client = Client::new(addr.ip().to_string(), addr.port(), 1);
         assert!(client.is_ok());
     }
 
@@ -133,7 +136,7 @@ mod tests {
         init();
 
         let addr = start_test_server();
-        let mut client = Client::new(addr.ip().to_string(), addr.port().to_string()).unwrap();
+        let mut client = Client::new(addr.ip().to_string(), addr.port(), 1).unwrap();
         const MESSAGE: &str = "Hello World!";
         let result = client.write(MESSAGE);
         assert!(result.is_ok());
@@ -145,7 +148,7 @@ mod tests {
         init();
 
         let addr = start_test_server();
-        let mut client = Client::new(addr.ip().to_string(), addr.port().to_string()).unwrap();
+        let mut client = Client::new(addr.ip().to_string(), addr.port(), 1).unwrap();
         const MESSAGE: &str = "Hello World!";
         client.write(MESSAGE).unwrap();
         client.write("\r\n").unwrap();
@@ -157,7 +160,7 @@ mod tests {
     #[test]
     fn test_client_receive_all() {
         let addr = start_test_server();
-        let mut client = Client::new(addr.ip().to_string(), addr.port().to_string()).unwrap();
+        let mut client = Client::new(addr.ip().to_string(), addr.port(), 1).unwrap();
         client.write("Hello World!\n").unwrap();
         client.write("This is a test.\n").unwrap();
         client.write("\r\n").unwrap();
