@@ -30,18 +30,14 @@ impl ResponseListOpenHeats {
     /// # Arguments
     /// * `message` - The message to parse.
     /// # Returns
-    /// The parsed response or `None` if the message is invalid.
-    pub(crate) fn parse(message: &str) -> Option<Self> {
+    /// The parsed response or an error if the message is invalid.
+    pub(crate) fn parse(message: &str) -> Result<Self, MessageErr> {
         let mut instance = ResponseListOpenHeats { heats: Vec::new() };
         for line in message.lines() {
-            if let Some(heat) = Heat::parse(line) {
-                instance.heats.push(heat);
-            } else {
-                warn!("Invalid heat format: {}", line);
-                return None;
-            }
+            let heat = Heat::parse(line)?;
+            instance.heats.push(heat);
         }
-        Some(instance)
+        Ok(instance)
     }
 }
 
@@ -79,35 +75,17 @@ impl Heat {
     /// # Arguments
     /// * `heat_str` - The string to parse.
     /// # Returns
-    /// The parsed heat or `None` if the string is invalid.
-    pub(crate) fn parse(heat_str: &str) -> Option<Self> {
+    /// The parsed heat or an error if the string is invalid.
+    pub(crate) fn parse(heat_str: &str) -> Result<Self, MessageErr> {
         let parts: Vec<&str> = heat_str.split_whitespace().collect();
         if parts.len() != 3 {
             warn!("Invalid heat format: {}", heat_str);
-            return None;
+            return Err(MessageErr::InvalidMessage);
         }
-        let number = match parts[0].parse() {
-            Ok(number) => number,
-            Err(_) => {
-                warn!("Invalid heat number: {}", parts[0]);
-                return None;
-            }
-        };
-        let id = match parts[1].parse() {
-            Ok(id) => id,
-            Err(_) => {
-                warn!("Invalid heat ID: {}", parts[1]);
-                return None;
-            }
-        };
-        let status = match parts[2].parse() {
-            Ok(status) => status,
-            Err(_) => {
-                warn!("Invalid status: {}", parts[2]);
-                return None;
-            }
-        };
-        Some(Heat::new(id, number, status))
+        let number = parts[0].parse().map_err(MessageErr::ParseError)?;
+        let id = parts[1].parse().map_err(MessageErr::ParseError)?;
+        let status = parts[2].parse().map_err(MessageErr::ParseError)?;
+        Ok(Heat::new(id, number, status))
     }
 }
 
@@ -158,7 +136,6 @@ impl ResponseStartList {
     /// The parsed response or an error if the message is invalid.
     pub(crate) fn parse(message: String) -> Result<Self, MessageErr> {
         let mut instance = ResponseStartList { boats: Vec::new() };
-
         for line in message.lines() {
             let boat = Boat::parse(line)?;
             instance.boats.push(boat);
@@ -295,9 +272,9 @@ mod tests {
     #[test]
     fn test_response_list_open_heats() {
         let message = "3 2766 4\n50 2767 4\n71 2786 4";
-        let response_opt = ResponseListOpenHeats::parse(message);
-        assert!(response_opt.is_some());
-        let response = response_opt.unwrap();
+        let response = ResponseListOpenHeats::parse(message);
+        assert!(response.is_ok());
+        let response = response.unwrap();
         assert_eq!(response.heats.len(), 3);
         assert_eq!(response.heats[0].id, 2766);
         assert_eq!(response.heats[0].number, 3);
@@ -310,7 +287,7 @@ mod tests {
         assert_eq!(response.heats[2].status, 4);
 
         let message = "3 2766 4\n50 2767 4\n71 2786 4f";
-        assert!(ResponseListOpenHeats::parse(message).is_none());
+        assert!(ResponseListOpenHeats::parse(message).is_err());
     }
 
     #[test]
@@ -327,10 +304,10 @@ mod tests {
             .is_test(true)
             .filter_level(LevelFilter::Trace)
             .try_init();
-        assert!(Heat::parse("50 1234 4 34").is_none());
-        assert!(Heat::parse("50f 1234 4").is_none());
-        assert!(Heat::parse("50 1234f 4").is_none());
-        assert!(Heat::parse("50 1234 4f").is_none());
+        assert!(Heat::parse("50 1234 4 34").is_err());
+        assert!(Heat::parse("50f 1234 4").is_err());
+        assert!(Heat::parse("50 1234f 4").is_err());
+        assert!(Heat::parse("50 1234 4f").is_err());
     }
 
     #[test]
