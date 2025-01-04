@@ -82,12 +82,22 @@ impl Client {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use log::LevelFilter;
     use std::{
         net::{SocketAddr, TcpListener},
         thread,
     };
 
+    fn init() {
+        let _ = env_logger::builder()
+            .is_test(true)
+            .filter_level(LevelFilter::Trace)
+            .try_init();
+    }
+
     fn start_test_server() -> SocketAddr {
+        init();
+
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let addr = listener.local_addr().unwrap();
 
@@ -107,6 +117,8 @@ mod tests {
 
     #[test]
     fn test_client_connection() {
+        init();
+
         let addr = start_test_server();
         let client = Client::new(addr.ip().to_string(), addr.port().to_string());
         assert!(client.is_ok());
@@ -114,6 +126,8 @@ mod tests {
 
     #[test]
     fn test_client_write() {
+        init();
+
         let addr = start_test_server();
         let mut client = Client::new(addr.ip().to_string(), addr.port().to_string()).unwrap();
         const MESSAGE: &str = "Hello World!";
@@ -124,6 +138,8 @@ mod tests {
 
     #[test]
     fn test_client_receive_line() {
+        init();
+
         let addr = start_test_server();
         let mut client = Client::new(addr.ip().to_string(), addr.port().to_string()).unwrap();
         const MESSAGE: &str = "Hello World!";

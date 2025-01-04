@@ -245,6 +245,13 @@ mod tests {
     use super::*;
     use log::LevelFilter;
 
+    fn init() {
+        let _ = env_logger::builder()
+            .is_test(true)
+            .filter_level(LevelFilter::Trace)
+            .try_init();
+    }
+
     #[test]
     fn test_request_list_open_heats() {
         let request = RequestListOpenHeats::new();
@@ -282,10 +289,8 @@ mod tests {
 
     #[test]
     fn test_heat_parse() {
-        let _ = env_logger::builder()
-            .is_test(true)
-            .filter_level(LevelFilter::Trace)
-            .try_init();
+        init();
+
         assert!(Heat::parse("50 1234 4 34").is_err());
         assert!(Heat::parse("50f 1234 4").is_err());
         assert!(Heat::parse("50 1234f 4").is_err());
@@ -350,7 +355,7 @@ mod tests {
     }
 
     #[test]
-    fn test_event_heat_changed() {
+    fn test_event_heat_changed_new() {
         let heat = Heat::new(1234, 50, 4);
         let event = EventHeatChanged::new(heat.clone(), true);
         assert_eq!(event.heat.id, 1234);
@@ -364,10 +369,7 @@ mod tests {
 
     #[test]
     fn test_event_heat_changed_parse() {
-        let _ = env_logger::builder()
-            .is_test(true)
-            .filter_level(LevelFilter::Trace)
-            .try_init();
+        init();
 
         let event = EventHeatChanged::parse("!OPEN+ 50 1234 4");
         assert!(event.is_ok());
