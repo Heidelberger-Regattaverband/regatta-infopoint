@@ -159,7 +159,7 @@ impl EventHeatChanged {
     /// * `opened` - Whether the heat has been opened or closed.
     /// # Returns
     /// A new event that a heat has changed.
-    pub(crate) fn new(heat: Heat, opened: bool) -> Self {
+    fn new(heat: Heat, opened: bool) -> Self {
         EventHeatChanged { heat, opened }
     }
 
@@ -168,40 +168,22 @@ impl EventHeatChanged {
     /// * `event_str` - The string to parse.
     /// # Returns
     /// The parsed event.
-    pub(crate) fn parse(event_str: &str) -> Option<Self> {
+    pub(crate) fn parse(event_str: &str) -> Result<Self, MessageErr> {
         let parts: Vec<&str> = event_str.split_whitespace().collect();
         if parts.len() != 4 {
             warn!("Invalid event format: {}", event_str);
-            return None;
+            return Err(MessageErr::InvalidMessage);
         }
 
         let action = parts[0];
-        let number = match parts[1].parse() {
-            Ok(number) => number,
-            Err(_) => {
-                warn!("Invalid heat number: {}", parts[1]);
-                return None;
-            }
-        };
-        let id = match parts[2].parse() {
-            Ok(id) => id,
-            Err(_) => {
-                warn!("Invalid heat ID: {}", parts[2]);
-                return None;
-            }
-        };
-        let status = match parts[3].parse() {
-            Ok(status) => status,
-            Err(_) => {
-                warn!("Invalid status: {}", parts[3]);
-                return None;
-            }
-        };
+        let number = parts[1].parse().map_err(MessageErr::ParseError)?;
+        let id = parts[2].parse().map_err(MessageErr::ParseError)?;
+        let status = parts[3].parse().map_err(MessageErr::ParseError)?;
 
         match action {
-            "!OPEN+" => Some(EventHeatChanged::new(Heat::new(id, number, status), true)),
-            "!OPEN-" => Some(EventHeatChanged::new(Heat::new(id, number, status), false)),
-            _ => None,
+            "!OPEN+" => Ok(EventHeatChanged::new(Heat::new(id, number, status), true)),
+            "!OPEN-" => Ok(EventHeatChanged::new(Heat::new(id, number, status), false)),
+            _ => Err(MessageErr::InvalidMessage),
         }
     }
 }
@@ -388,7 +370,7 @@ mod tests {
             .try_init();
 
         let event = EventHeatChanged::parse("!OPEN+ 50 1234 4");
-        assert!(event.is_some());
+        assert!(event.is_ok());
         let event = event.unwrap();
         assert_eq!(event.heat.id, 1234);
         assert_eq!(event.heat.number, 50);
@@ -396,7 +378,7 @@ mod tests {
         assert!(event.opened);
 
         let event = EventHeatChanged::parse("!OPEN- 50 1234 4");
-        assert!(event.is_some());
+        assert!(event.is_ok());
         let event = event.unwrap();
         assert_eq!(event.heat.id, 1234);
         assert_eq!(event.heat.number, 50);
@@ -404,18 +386,18 @@ mod tests {
         assert!(!event.opened);
 
         let event = EventHeatChanged::parse("!OPEN+ 50 1234");
-        assert!(event.is_none());
+        assert!(event.is_err());
 
         let event = EventHeatChanged::parse("!OPEN+ 50 1234 4 34");
-        assert!(event.is_none());
+        assert!(event.is_err());
 
         let event = EventHeatChanged::parse("!OPEN= 50 1234 4");
-        assert!(event.is_none());
+        assert!(event.is_err());
         let event = EventHeatChanged::parse("!OPEN+ 50f 1234 4");
-        assert!(event.is_none());
+        assert!(event.is_err());
         let event = EventHeatChanged::parse("!OPEN+ 50 1234f 4");
-        assert!(event.is_none());
+        assert!(event.is_err());
         let event = EventHeatChanged::parse("!OPEN+ 50 1234 4f");
-        assert!(event.is_none());
+        assert!(event.is_err());
     }
 }

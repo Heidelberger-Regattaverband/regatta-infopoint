@@ -29,7 +29,7 @@ fn main() -> Result<(), MessageErr> {
         if !received.is_empty() {
             debug!("Received: \"{}\"", utils::print_whitespaces(&received).bold());
             let event_opt = EventHeatChanged::parse(&received);
-            if let Some(mut event) = event_opt {
+            if let Ok(mut event) = event_opt {
                 read_start_list(&mut client, &mut event.heat).unwrap();
             }
         }
