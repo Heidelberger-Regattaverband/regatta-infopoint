@@ -169,7 +169,7 @@ impl EventHeatChanged {
     /// # Arguments
     /// * `event_str` - The string to parse.
     /// # Returns
-    /// The parsed event.
+    /// The parsed event or an error if the string is invalid.
     pub(crate) fn parse(event_str: &str) -> Result<Self, MessageErr> {
         let parts: Vec<&str> = event_str.split_whitespace().collect();
         if parts.len() != 4 {
