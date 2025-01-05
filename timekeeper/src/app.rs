@@ -1,12 +1,4 @@
-use crate::{
-    args::Args,
-    client::Client,
-    error::MessageErr,
-    messages::{
-        EventHeatChanged, Heat, RequestListOpenHeats, RequestStartList, ResponseListOpenHeats, ResponseStartList,
-    },
-    utils,
-};
+use crate::{args::Args, client::Client, error::MessageErr, messages::EventHeatChanged, utils};
 use clap::Parser;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use log::{debug, info, warn};
@@ -42,7 +34,7 @@ impl App {
         let args = Args::parse();
 
         let mut client = Client::new(args.host, args.port, args.timeout).map_err(MessageErr::IoError)?;
-        let open_heats = read_open_heats(&mut client)?;
+        let open_heats = client.read_open_heats()?;
         debug!("Open heats: {:#?}", open_heats);
 
         info!("Spawning thread to receive events.");
@@ -55,7 +47,7 @@ impl App {
                 match event_opt {
                     Ok(mut event) => {
                         if event.opened {
-                            read_start_list(&mut client, &mut event.heat).unwrap();
+                            client.read_start_list(&mut event.heat).unwrap();
                         }
                     }
                     Err(err) => handle_error(err),
@@ -144,28 +136,4 @@ fn handle_error(err: MessageErr) {
             warn!("Invalid message: {}", message);
         }
     }
-}
-
-fn read_open_heats(client: &mut Client) -> Result<Vec<Heat>, MessageErr> {
-    client
-        .write(&RequestListOpenHeats::new().to_string())
-        .map_err(MessageErr::IoError)?;
-    let response = client.receive_all().map_err(MessageErr::IoError)?;
-    let mut open_heats = ResponseListOpenHeats::parse(&response).unwrap();
-
-    for heat in open_heats.heats.iter_mut() {
-        read_start_list(client, heat)?;
-    }
-
-    Ok(open_heats.heats)
-}
-
-fn read_start_list(client: &mut Client, heat: &mut Heat) -> Result<(), MessageErr> {
-    client
-        .write(&RequestStartList::new(heat.id).to_string())
-        .map_err(MessageErr::IoError)?;
-    let response = client.receive_all().map_err(MessageErr::IoError)?;
-    let start_list = ResponseStartList::parse(response)?;
-    heat.boats = Some(start_list.boats);
-    Ok(())
 }
