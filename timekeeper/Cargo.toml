@@ -12,3 +12,5 @@ clap.workspace = true
 log.workspace = true
 env_logger.workspace = true
 colored.workspace = true
+ratatui = { version = "0" }
+crossterm = { version = "0" }
