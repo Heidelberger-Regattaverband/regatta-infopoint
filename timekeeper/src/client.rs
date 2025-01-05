@@ -52,7 +52,9 @@ impl Client {
         let mut reader = BufReader::new(self.stream.try_clone()?);
         let mut writer = BufWriter::new(self.stream.try_clone()?);
 
+        debug!("Starting thread to receive events");
         let handle = thread::spawn(move || loop {
+            debug!("Waiting for events");
             let received = Client::receive_line(&mut reader).unwrap();
             if !received.is_empty() {
                 debug!("Received: \"{}\"", utils::print_whitespaces(&received).bold());
