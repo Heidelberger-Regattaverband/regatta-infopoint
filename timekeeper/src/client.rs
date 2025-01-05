@@ -1,4 +1,8 @@
-use crate::utils;
+use crate::{
+    error::MessageErr,
+    messages::{Heat, RequestListOpenHeats, RequestStartList, ResponseListOpenHeats, ResponseStartList},
+    utils,
+};
 use colored::Colorize;
 use log::{debug, info, trace};
 use std::{
@@ -38,7 +42,29 @@ impl Client {
         Ok(Client { reader, writer })
     }
 
-    pub(crate) fn write(&mut self, cmd: &str) -> IoResult<usize> {
+    pub(crate) fn read_open_heats(&mut self) -> Result<Vec<Heat>, MessageErr> {
+        self.write(&RequestListOpenHeats::new().to_string())
+            .map_err(MessageErr::IoError)?;
+        let response = self.receive_all().map_err(MessageErr::IoError)?;
+        let mut open_heats = ResponseListOpenHeats::parse(&response).unwrap();
+
+        for heat in open_heats.heats.iter_mut() {
+            self.read_start_list(heat)?;
+        }
+
+        Ok(open_heats.heats)
+    }
+
+    pub(crate) fn read_start_list(&mut self, heat: &mut Heat) -> Result<(), MessageErr> {
+        self.write(&RequestStartList::new(heat.id).to_string())
+            .map_err(MessageErr::IoError)?;
+        let response = self.receive_all().map_err(MessageErr::IoError)?;
+        let start_list = ResponseStartList::parse(response)?;
+        heat.boats = Some(start_list.boats);
+        Ok(())
+    }
+
+    fn write(&mut self, cmd: &str) -> IoResult<usize> {
         debug!("Writing command: \"{}\"", utils::print_whitespaces(cmd).bold());
         let count = self.writer.write(cmd.as_bytes())?;
         self.writer.flush()?;
@@ -57,7 +83,7 @@ impl Client {
         Ok(line.trim_end().to_string())
     }
 
-    pub(crate) fn receive_all(&mut self) -> IoResult<String> {
+    fn receive_all(&mut self) -> IoResult<String> {
         let mut result = String::new();
         let mut buf = Vec::new();
         loop {
