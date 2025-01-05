@@ -7,11 +7,8 @@ mod utils;
 use args::Args;
 use clap::Parser;
 use client::Client;
-use colored::Colorize;
 use error::MessageErr;
-use log::{debug, info, warn};
-use messages::EventHeatChanged;
-use std::thread;
+use log::debug;
 
 fn main() -> Result<(), MessageErr> {
     env_logger::builder().init();
@@ -21,38 +18,11 @@ fn main() -> Result<(), MessageErr> {
     let open_heats = client.read_open_heats()?;
     debug!("Open heats: {:#?}", open_heats);
 
-    info!("Receiving events ...");
-    thread::spawn(move || loop {
-        let received = client.receive_line().unwrap();
-        if !received.is_empty() {
-            debug!("Received: \"{}\"", utils::print_whitespaces(&received).bold());
-            let event_opt = EventHeatChanged::parse(&received);
-            match event_opt {
-                Ok(mut event) => {
-                    if event.opened {
-                        client.read_start_list(&mut event.heat).unwrap();
-                    }
-                }
-                Err(err) => handle_error(err),
-            }
-        }
-    })
-    .join()
-    .unwrap();
+    client
+        .start_receiving_events()
+        .map_err(MessageErr::IoError)?
+        .join()
+        .unwrap();
 
     Ok(())
 } // the stream is closed here
-
-fn handle_error(err: MessageErr) {
-    match err {
-        MessageErr::ParseError(parse_err) => {
-            warn!("Error parsing number: {}", parse_err);
-        }
-        MessageErr::IoError(io_err) => {
-            warn!("I/O error: {}", io_err);
-        }
-        MessageErr::InvalidMessage(message) => {
-            warn!("Invalid message: {}", message);
-        }
-    }
-}
