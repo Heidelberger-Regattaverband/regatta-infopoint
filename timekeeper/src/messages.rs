@@ -86,6 +86,7 @@ impl ResponseStartList {
 }
 
 /// An event that a heat has changed. This event is sent when a heat is opened or closed
+#[derive(Debug)]
 pub(crate) struct EventHeatChanged {
     /// The heat that has changed.
     pub(crate) heat: Heat,
