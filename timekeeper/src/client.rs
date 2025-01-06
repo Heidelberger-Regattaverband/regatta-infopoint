@@ -6,6 +6,10 @@ use crate::{
     utils,
 };
 use colored::Colorize;
+use encoding::{
+    all::WINDOWS_1252,
+    {DecoderTrap, Encoding},
+};
 use log::{debug, info, trace, warn};
 use std::{
     io::{BufRead, BufReader, BufWriter, Result as IoResult, Write},
@@ -74,8 +78,7 @@ impl Communication {
         loop {
             // Read until a newline character is found.
             let count = self.reader.read_until(b'\n', &mut buf)?;
-            // Convert the buffer to a string, ignoring invalid UTF-8 sequences.
-            let line = String::from_utf8_lossy(&buf);
+            let line = WINDOWS_1252.decode(&buf, DecoderTrap::Ignore).unwrap();
             trace!(
                 "Received {} bytes: \"{}\"",
                 count.to_string().bold(),
