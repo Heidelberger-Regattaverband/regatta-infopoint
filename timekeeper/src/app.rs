@@ -1,4 +1,10 @@
-use crate::{args::Args, client::Client, error::MessageErr, messages::EventHeatChanged, utils};
+use crate::{
+    args::Args,
+    client::{Client, HeatEventReceiver},
+    error::MessageErr,
+    messages::EventHeatChanged,
+    utils,
+};
 use clap::Parser;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use log::{debug, info, warn};
@@ -11,13 +17,23 @@ use ratatui::{
     widgets::{Block, Paragraph, Widget},
     DefaultTerminal, Frame,
 };
-use std::thread;
+use std::{
+    sync::{Arc, Mutex},
+    thread,
+};
+
+struct EventReceiver;
+
+impl HeatEventReceiver for EventReceiver {
+    fn on_event(&mut self, event: &EventHeatChanged) {
+        info!("Received event: {:?}", &event);
+    }
+}
 
 #[derive(Debug)]
 pub struct App {
     counter: u8,
     exit: bool,
-    thread: Option<thread::JoinHandle<()>>,
 }
 
 impl App {
@@ -25,7 +41,6 @@ impl App {
         Self {
             counter: 0,
             exit: false,
-            thread: None,
         }
     }
 
@@ -33,27 +48,13 @@ impl App {
     pub(crate) fn run(&mut self, terminal: &mut DefaultTerminal) -> Result<(), MessageErr> {
         let args = Args::parse();
 
-        let mut client = Client::new(args.host, args.port, args.timeout).map_err(MessageErr::IoError)?;
+        let mut client = Client::connect(args.host, args.port, args.timeout).map_err(MessageErr::IoError)?;
         let open_heats = client.read_open_heats()?;
         debug!("Open heats: {:#?}", open_heats);
 
-        info!("Spawning thread to receive events.");
-        self.thread = Some(thread::spawn(move || loop {
-            info!("Receiving events ...");
-            let received = client.receive_line().unwrap();
-            if !received.is_empty() {
-                debug!("Received: \"{}\"", utils::print_whitespaces(&received));
-                let event_opt = EventHeatChanged::parse(&received);
-                match event_opt {
-                    Ok(mut event) => {
-                        if event.opened {
-                            client.read_start_list(&mut event.heat).unwrap();
-                        }
-                    }
-                    Err(err) => handle_error(err),
-                }
-            }
-        }));
+        let receiver = Arc::new(Mutex::new(EventReceiver));
+
+        client.start_receiving_events(receiver).map_err(MessageErr::IoError)?;
 
         while !self.exit {
             terminal.draw(|frame| self.draw(frame)).map_err(MessageErr::IoError)?;
