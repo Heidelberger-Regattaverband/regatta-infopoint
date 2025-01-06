@@ -3796,6 +3796,7 @@ dependencies = [
 name = "timekeeper"
 version = "0.1.0"
 dependencies = [
+ "built",
  "clap",
  "colored",
  "crossterm",
