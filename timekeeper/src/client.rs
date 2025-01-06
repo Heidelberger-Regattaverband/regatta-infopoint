@@ -48,6 +48,53 @@ impl Communication {
         let writer = BufWriter::new(stream.try_clone()?);
         Ok(Communication { reader, writer })
     }
+
+    fn write(&mut self, cmd: &str) -> IoResult<usize> {
+        debug!("Writing command: \"{}\"", utils::print_whitespaces(cmd).bold());
+        let count = self.writer.write(cmd.as_bytes())?;
+        self.writer.flush()?;
+        trace!("Written {} bytes", count.to_string().bold());
+        Ok(count)
+    }
+
+    fn receive_line(&mut self) -> IoResult<String> {
+        let mut line = String::new();
+        let count = self.reader.read_line(&mut line)?;
+        debug!(
+            "Received {} bytes: \"{}\"",
+            count.to_string().bold(),
+            utils::print_whitespaces(&line).bold()
+        );
+        Ok(line.trim_end().to_string())
+    }
+
+    fn receive_all(&mut self) -> IoResult<String> {
+        let mut result = String::new();
+        let mut buf = Vec::new();
+        loop {
+            // Read until a newline character is found.
+            let count = self.reader.read_until(b'\n', &mut buf)?;
+            // Convert the buffer to a string, ignoring invalid UTF-8 sequences.
+            let line = String::from_utf8_lossy(&buf);
+            trace!(
+                "Received {} bytes: \"{}\"",
+                count.to_string().bold(),
+                utils::print_whitespaces(&line).bold()
+            );
+            if count <= 2 {
+                break;
+            }
+            // Append the line to the result string.
+            result.push_str(&line);
+            buf.clear();
+        }
+        debug!(
+            "Received message (len={}): \"{}\"",
+            result.len(),
+            utils::print_whitespaces(&result).bold()
+        );
+        Ok(result.trim_end().to_string())
+    }
 }
 
 impl Client {
@@ -84,7 +131,7 @@ impl Client {
 
         debug!("Starting thread to receive events");
         let handle = thread::spawn(move || loop {
-            let received = Client::receive_line(&mut comm).unwrap();
+            let received = comm.receive_line().unwrap();
             if !received.is_empty() {
                 debug!("Received: \"{}\"", utils::print_whitespaces(&received).bold());
                 let event_opt = EventHeatChanged::parse(&received);
@@ -103,71 +150,24 @@ impl Client {
     }
 
     pub(crate) fn read_open_heats(&mut self) -> Result<Vec<Heat>, MessageErr> {
-        Client::write(&mut self.communication, &RequestListOpenHeats::new().to_string())
+        self.communication
+            .write(&RequestListOpenHeats::new().to_string())
             .map_err(MessageErr::IoError)?;
-        let response = Client::receive_all(&mut self.communication).map_err(MessageErr::IoError)?;
-        let mut open_heats = ResponseListOpenHeats::parse(&response)?;
-
-        for heat in open_heats.heats.iter_mut() {
+        let response = self.communication.receive_all().map_err(MessageErr::IoError)?;
+        let mut heats = ResponseListOpenHeats::parse(&response)?;
+        for heat in heats.heats.iter_mut() {
             Client::read_start_list(&mut self.communication, heat)?;
         }
-
-        Ok(open_heats.heats)
+        Ok(heats.heats)
     }
 
     fn read_start_list(comm: &mut Communication, heat: &mut Heat) -> Result<(), MessageErr> {
-        Client::write(comm, &RequestStartList::new(heat.id).to_string()).map_err(MessageErr::IoError)?;
-        let response = Client::receive_all(comm).map_err(MessageErr::IoError)?;
+        comm.write(&RequestStartList::new(heat.id).to_string())
+            .map_err(MessageErr::IoError)?;
+        let response = comm.receive_all().map_err(MessageErr::IoError)?;
         let start_list = ResponseStartList::parse(response)?;
         heat.boats = Some(start_list.boats);
         Ok(())
-    }
-
-    fn write(comm: &mut Communication, cmd: &str) -> IoResult<usize> {
-        debug!("Writing command: \"{}\"", utils::print_whitespaces(cmd).bold());
-        let count = comm.writer.write(cmd.as_bytes())?;
-        comm.writer.flush()?;
-        trace!("Written {} bytes", count.to_string().bold());
-        Ok(count)
-    }
-
-    fn receive_line(comm: &mut Communication) -> IoResult<String> {
-        let mut line = String::new();
-        let count = comm.reader.read_line(&mut line)?;
-        debug!(
-            "Received {} bytes: \"{}\"",
-            count.to_string().bold(),
-            utils::print_whitespaces(&line).bold()
-        );
-        Ok(line.trim_end().to_string())
-    }
-
-    fn receive_all(comm: &mut Communication) -> IoResult<String> {
-        let mut result = String::new();
-        let mut buf = Vec::new();
-        loop {
-            // Read until a newline character is found.
-            let count = comm.reader.read_until(b'\n', &mut buf)?;
-            // Convert the buffer to a string, ignoring invalid UTF-8 sequences.
-            let line = String::from_utf8_lossy(&buf);
-            trace!(
-                "Received {} bytes: \"{}\"",
-                count.to_string().bold(),
-                utils::print_whitespaces(&line).bold()
-            );
-            if count <= 2 {
-                break;
-            }
-            // Append the line to the result string.
-            result.push_str(&line);
-            buf.clear();
-        }
-        debug!(
-            "Received message (len={}): \"{}\"",
-            result.len(),
-            utils::print_whitespaces(&result).bold()
-        );
-        Ok(result.trim_end().to_string())
     }
 }
 
@@ -237,7 +237,7 @@ mod tests {
         let addr = start_test_server();
         let mut client = Client::new(addr.ip().to_string(), addr.port(), 1).unwrap();
         const MESSAGE: &str = "Hello World!";
-        let result = Client::write(&mut client.communication, MESSAGE);
+        let result = client.communication.write(MESSAGE);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), MESSAGE.len());
     }
@@ -249,9 +249,9 @@ mod tests {
         let addr = start_test_server();
         let mut client = Client::new(addr.ip().to_string(), addr.port(), 1).unwrap();
         const MESSAGE: &str = "Hello World!";
-        Client::write(&mut client.communication, MESSAGE).unwrap();
-        Client::write(&mut client.communication, "\r\n").unwrap();
-        let response = Client::receive_line(&mut client.communication);
+        client.communication.write(MESSAGE).unwrap();
+        client.communication.write("\r\n").unwrap();
+        let response = client.communication.receive_line();
         assert!(response.is_ok());
         assert_eq!(response.unwrap(), MESSAGE);
     }
@@ -260,10 +260,10 @@ mod tests {
     fn test_client_receive_all() {
         let addr = start_test_server();
         let mut client = Client::new(addr.ip().to_string(), addr.port(), 1).unwrap();
-        Client::write(&mut client.communication, "Hello World!\n").unwrap();
-        Client::write(&mut client.communication, "This is a test.\n").unwrap();
-        Client::write(&mut client.communication, "\r\n").unwrap();
-        let response = Client::receive_all(&mut client.communication);
+        client.communication.write("Hello World!\n").unwrap();
+        client.communication.write("This is a test.\n").unwrap();
+        client.communication.write("\r\n").unwrap();
+        let response = client.communication.receive_all();
         assert!(response.is_ok());
         assert_eq!(response.unwrap(), "Hello World!\nThis is a test.");
     }
