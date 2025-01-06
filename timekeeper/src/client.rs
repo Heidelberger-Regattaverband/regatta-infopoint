@@ -6,10 +6,7 @@ use crate::{
     utils,
 };
 use colored::Colorize;
-use encoding::{
-    all::WINDOWS_1252,
-    {DecoderTrap, Encoding},
-};
+use encoding_rs::WINDOWS_1252;
 use log::{debug, info, trace, warn};
 use std::{
     io::{BufRead, BufReader, BufWriter, Result as IoResult, Write},
@@ -78,7 +75,7 @@ impl Communication {
         loop {
             // Read until a newline character is found.
             let count = self.reader.read_until(b'\n', &mut buf)?;
-            let line = WINDOWS_1252.decode(&buf, DecoderTrap::Ignore).unwrap();
+            let line = WINDOWS_1252.decode(&buf).0;
             trace!(
                 "Received {} bytes: \"{}\"",
                 count.to_string().bold(),
