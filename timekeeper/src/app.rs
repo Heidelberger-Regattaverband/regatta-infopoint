@@ -3,11 +3,10 @@ use crate::{
     client::{Client, HeatEventReceiver},
     error::MessageErr,
     messages::EventHeatChanged,
-    utils,
 };
 use clap::Parser;
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
-use log::{debug, info, warn};
+use log::{debug, info};
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -17,10 +16,7 @@ use ratatui::{
     widgets::{Block, Paragraph, Widget},
     DefaultTerminal, Frame,
 };
-use std::{
-    sync::{Arc, Mutex},
-    thread,
-};
+use std::sync::{Arc, Mutex};
 
 struct EventReceiver;
 
@@ -122,19 +118,5 @@ impl Widget for &App {
         ])]);
 
         Paragraph::new(counter_text).centered().block(block).render(area, buf);
-    }
-}
-
-fn handle_error(err: MessageErr) {
-    match err {
-        MessageErr::ParseError(parse_err) => {
-            warn!("Error parsing number: {}", parse_err);
-        }
-        MessageErr::IoError(io_err) => {
-            warn!("I/O error: {}", io_err);
-        }
-        MessageErr::InvalidMessage(message) => {
-            warn!("Invalid message: {}", message);
-        }
     }
 }

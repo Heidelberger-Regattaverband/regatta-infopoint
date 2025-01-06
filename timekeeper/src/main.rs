@@ -6,9 +6,7 @@ mod messages;
 mod utils;
 
 use app::App;
-use client::{Client, HeatEventReceiver};
 use error::MessageErr;
-use log::{debug, info};
 
 fn main() -> Result<(), MessageErr> {
     env_logger::builder().init();
