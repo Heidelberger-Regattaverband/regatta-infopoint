@@ -23,7 +23,7 @@ fn main() -> Result<(), MessageErr> {
     env_logger::builder().init();
     let args = Args::parse();
 
-    let mut client = Client::new(args.host, args.port, args.timeout).map_err(MessageErr::IoError)?;
+    let mut client = Client::connect(args.host, args.port, args.timeout).map_err(MessageErr::IoError)?;
     let open_heats = client.read_open_heats()?;
     debug!("Open heats: {:#?}", open_heats);
 

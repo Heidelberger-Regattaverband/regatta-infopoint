@@ -98,14 +98,14 @@ impl Communication {
 }
 
 impl Client {
-    /// Create a new client to connect to Aquarius. The client connects to the given host and port.
+    /// Connects the client to Aquarius application. The client connects to the given host and port.
     /// # Arguments
     /// * `host` - The host to connect to.
     /// * `port` - The port to connect to.
     /// * `timeout` - The timeout in seconds to connect to Aquarius.
     /// # Returns
-    /// A new client to connect to Aquarius or an error if the client cannot connect.
-    pub(crate) fn new(host: String, port: u16, timeout: u16) -> IoResult<Self> {
+    /// A new client connected to Aquarius application or an error if the client cannot connect.
+    pub(crate) fn connect(host: String, port: u16, timeout: u16) -> IoResult<Self> {
         let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::from_str(&host).unwrap()), port);
         info!("Connecting to {}", addr.to_string().bold());
         let stream = TcpStream::connect_timeout(&addr, Duration::new(timeout as u64, 0))?;
@@ -137,10 +137,10 @@ impl Client {
                 let event_opt = EventHeatChanged::parse(&received);
                 match event_opt {
                     Ok(mut event) => {
-                        receiver.lock().unwrap().on_event(&event);
                         if event.opened {
                             Client::read_start_list(&mut comm, &mut event.heat).unwrap();
                         }
+                        receiver.lock().unwrap().on_event(&event);
                     }
                     Err(err) => handle_error(err),
                 }
@@ -226,7 +226,7 @@ mod tests {
         init();
 
         let addr = start_test_server();
-        let client = Client::new(addr.ip().to_string(), addr.port(), 1);
+        let client = Client::connect(addr.ip().to_string(), addr.port(), 1);
         assert!(client.is_ok());
     }
 
@@ -235,7 +235,7 @@ mod tests {
         init();
 
         let addr = start_test_server();
-        let mut client = Client::new(addr.ip().to_string(), addr.port(), 1).unwrap();
+        let mut client = Client::connect(addr.ip().to_string(), addr.port(), 1).unwrap();
         const MESSAGE: &str = "Hello World!";
         let result = client.communication.write(MESSAGE);
         assert!(result.is_ok());
@@ -247,7 +247,7 @@ mod tests {
         init();
 
         let addr = start_test_server();
-        let mut client = Client::new(addr.ip().to_string(), addr.port(), 1).unwrap();
+        let mut client = Client::connect(addr.ip().to_string(), addr.port(), 1).unwrap();
         const MESSAGE: &str = "Hello World!";
         client.communication.write(MESSAGE).unwrap();
         client.communication.write("\r\n").unwrap();
@@ -259,7 +259,7 @@ mod tests {
     #[test]
     fn test_client_receive_all() {
         let addr = start_test_server();
-        let mut client = Client::new(addr.ip().to_string(), addr.port(), 1).unwrap();
+        let mut client = Client::connect(addr.ip().to_string(), addr.port(), 1).unwrap();
         client.communication.write("Hello World!\n").unwrap();
         client.communication.write("This is a test.\n").unwrap();
         client.communication.write("\r\n").unwrap();
