@@ -9,8 +9,6 @@ use app::App;
 use error::MessageErr;
 
 fn main() -> Result<(), MessageErr> {
-    env_logger::builder().init();
-
     let mut terminal = ratatui::init();
     let app_result = App::default().run(&mut terminal);
     ratatui::restore();

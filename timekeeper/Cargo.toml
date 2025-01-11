@@ -12,7 +12,6 @@ build = "build.rs"
 [dependencies]
 clap.workspace = true
 log.workspace = true
-env_logger.workspace = true
 colored.workspace = true
 encoding_rs = { version = "0" }
 ratatui = { version = "0" }
@@ -21,6 +20,9 @@ crossterm = { version = "0" }
 # Enum and string utils: https://github.com/Peternator7/strum
 strum = { version = "0" }
 strum_macros = { version = "0" }
+
+[dev-dependencies]
+env_logger.workspace = true
 
 [build-dependencies]
 built = "0"
