@@ -3665,6 +3665,8 @@ dependencies = [
  "env_logger",
  "log",
  "ratatui",
+ "strum",
+ "strum_macros",
 ]
 
 [[package]]
