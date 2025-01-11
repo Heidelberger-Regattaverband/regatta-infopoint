@@ -53,7 +53,7 @@ impl Widget for &App {
 }
 
 fn render_title(area: Rect, buf: &mut Buffer) {
-    "Ratatui Tabs Example".bold().render(area, buf);
+    "Aquarius Zeitmessung".bold().render(area, buf);
 }
 
 fn render_footer(area: Rect, buf: &mut Buffer) {
