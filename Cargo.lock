@@ -3559,7 +3559,6 @@ version = "0.1.0"
 dependencies = [
  "built",
  "clap",
- "colored",
  "crossterm",
  "encoding_rs",
  "env_logger",
@@ -3567,6 +3566,7 @@ dependencies = [
  "ratatui",
  "strum",
  "strum_macros",
+ "tui-logger",
 ]
 
 [[package]]
@@ -3736,6 +3736,20 @@ checksum = "ef8f7726da4807b58ea5c96fdc122f80702030edc33b35aff9190a51148ccc85"
 dependencies = [
  "serde",
  "stable_deref_trait",
+]
+
+[[package]]
+name = "tui-logger"
+version = "0.14.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "55a5249b5e5df37af5389721794f9839dad0b3f7b92445f24528199acf2f1805"
+dependencies = [
+ "chrono",
+ "fxhash",
+ "lazy_static",
+ "log",
+ "parking_lot",
+ "ratatui",
 ]
 
 [[package]]

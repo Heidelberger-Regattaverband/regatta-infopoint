@@ -22,6 +22,7 @@ use ratatui::{
 use std::io::Result as IoResult;
 use std::sync::{Arc, Mutex};
 use strum::{Display, EnumIter, FromRepr, IntoEnumIterator};
+use tui_logger::{TuiLoggerLevelOutput, TuiLoggerWidget};
 
 struct EventReceiver;
 
@@ -177,8 +178,14 @@ impl SelectedTab {
     }
 
     fn render_tab2(self, area: Rect, buf: &mut Buffer) {
-        Paragraph::new("Look! I'm different than others!")
+        TuiLoggerWidget::default()
             .block(self.block())
+            .output_separator('|')
+            .output_timestamp(Some("%F %H:%M:%S%.3f".to_string()))
+            .output_level(Some(TuiLoggerLevelOutput::Long))
+            .output_target(true)
+            .output_file(false)
+            .output_line(false)
             .render(area, buf);
     }
 

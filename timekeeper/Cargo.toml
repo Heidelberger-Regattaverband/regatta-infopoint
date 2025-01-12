@@ -11,11 +11,15 @@ build = "build.rs"
 
 [dependencies]
 clap.workspace = true
-log.workspace = true
-colored.workspace = true
 encoding_rs = { version = "0" }
+
+# UI
 ratatui = { version = "0" }
 crossterm = { version = "0" }
+
+# logging
+log.workspace = true
+tui-logger = { version = "0" }
 
 # Enum and string utils: https://github.com/Peternator7/strum
 strum = { version = "0" }

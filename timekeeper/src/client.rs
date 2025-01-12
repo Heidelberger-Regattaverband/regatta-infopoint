@@ -5,7 +5,6 @@ use crate::{
     },
     utils,
 };
-use colored::Colorize;
 use encoding_rs::WINDOWS_1252;
 use log::{debug, info, trace, warn};
 use std::{
@@ -51,10 +50,10 @@ impl Communication {
     }
 
     fn write(&mut self, cmd: &str) -> IoResult<usize> {
-        debug!("Writing command: \"{}\"", utils::print_whitespaces(cmd).bold());
+        debug!("Writing command: \"{}\"", utils::print_whitespaces(cmd));
         let count = self.writer.write(cmd.as_bytes())?;
         self.writer.flush()?;
-        trace!("Written {} bytes", count.to_string().bold());
+        trace!("Written {} bytes", count.to_string());
         Ok(count)
     }
 
@@ -63,8 +62,8 @@ impl Communication {
         let count = self.reader.read_line(&mut line)?;
         debug!(
             "Received {} bytes: \"{}\"",
-            count.to_string().bold(),
-            utils::print_whitespaces(&line).bold()
+            count.to_string(),
+            utils::print_whitespaces(&line)
         );
         Ok(line.trim_end().to_string())
     }
@@ -78,8 +77,8 @@ impl Communication {
             let line = WINDOWS_1252.decode(&buf).0;
             trace!(
                 "Received {} bytes: \"{}\"",
-                count.to_string().bold(),
-                utils::print_whitespaces(&line).bold()
+                count.to_string(),
+                utils::print_whitespaces(&line)
             );
             if count <= 2 {
                 break;
@@ -91,7 +90,7 @@ impl Communication {
         debug!(
             "Received message (len={}): \"{}\"",
             result.len(),
-            utils::print_whitespaces(&result).bold()
+            utils::print_whitespaces(&result)
         );
         Ok(result.trim_end().to_string())
     }
@@ -107,10 +106,10 @@ impl Client {
     /// A new client connected to Aquarius application or an error if the client cannot connect.
     pub(crate) fn connect(host: String, port: u16, timeout: u16) -> IoResult<Self> {
         let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::from_str(&host).unwrap()), port);
-        info!("Connecting to {}", addr.to_string().bold());
+        info!("Connecting to {}", addr.to_string());
         let stream = TcpStream::connect_timeout(&addr, Duration::new(timeout as u64, 0))?;
         stream.set_nodelay(true)?;
-        info!("Connected to {}", addr.to_string().bold());
+        info!("Connected to {}", addr.to_string());
 
         Ok(Client {
             communication: Communication::new(&stream)?,
@@ -133,7 +132,7 @@ impl Client {
         let handle = thread::spawn(move || loop {
             let received = comm.receive_line().unwrap();
             if !received.is_empty() {
-                debug!("Received: \"{}\"", utils::print_whitespaces(&received).bold());
+                debug!("Received: \"{}\"", utils::print_whitespaces(&received));
                 let event_opt = EventHeatChanged::parse(&received);
                 match event_opt {
                     Ok(mut event) => {
