@@ -15,7 +15,7 @@ pub(crate) struct TimeStamp {
     pub(crate) time: DateTime<Utc>,
 
     /// The type of the time stamp.
-    pub(crate) type: TimeStampType,
+    pub(crate) stamp_type: TimeStampType,
 }
 
 /// The type of a time stamp.
