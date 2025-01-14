@@ -12,9 +12,10 @@ build = "build.rs"
 [dependencies]
 clap.workspace = true
 encoding_rs = { version = "0" }
+chrono.workspace = true
 
 # UI
-ratatui = { version = "0" }
+ratatui = { version = "0", features = ["crossterm"] }
 crossterm = { version = "0" }
 
 # logging

@@ -3558,6 +3558,7 @@ name = "timekeeper"
 version = "0.1.0"
 dependencies = [
  "built",
+ "chrono",
  "clap",
  "crossterm",
  "encoding_rs",

@@ -3,6 +3,7 @@ mod args;
 mod client;
 mod error;
 mod messages;
+mod timestrip;
 mod utils;
 
 use app::App;
