@@ -3,6 +3,7 @@ use crate::{
     client::{Client, HeatEventReceiver},
     error::MessageErr,
     messages::EventHeatChanged,
+    timestrip::{TimeStamp, TimeStampType, TimeStrip},
 };
 use clap::Parser;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
@@ -36,6 +37,7 @@ impl HeatEventReceiver for EventReceiver {
 pub struct App {
     state: AppState,
     selected_tab: SelectedTab,
+    time_strip: TimeStrip,
 }
 
 impl Widget for &App {
@@ -76,10 +78,12 @@ impl App {
 
         client.start_receiving_events(receiver).map_err(MessageErr::IoError)?;
 
+        // main loop, runs until the user quits the application by pressing 'q'
         while self.state == AppState::Running {
             terminal
                 .draw(|frame| frame.render_widget(&*self, frame.area()))
                 .map_err(MessageErr::IoError)?;
+            // handle events, e.g. key presses
             self.handle_events().map_err(MessageErr::IoError)?;
         }
         Ok(())
@@ -98,6 +102,8 @@ impl App {
                     KeyCode::Char('l') | KeyCode::Right => self.next_tab(),
                     KeyCode::Char('h') | KeyCode::Left => self.previous_tab(),
                     KeyCode::Char('q') | KeyCode::Esc => self.quit(),
+                    KeyCode::Char(' ') => self.finish_time_stamp(),
+                    KeyCode::Enter => self.start_time_stamp(),
                     _ => {}
                 }
             }
@@ -115,6 +121,18 @@ impl App {
 
     fn quit(&mut self) {
         self.state = AppState::Quitting;
+    }
+
+    fn finish_time_stamp(&mut self) {
+        let time_stamp = TimeStamp::now(TimeStampType::Finish);
+        self.time_strip.time_stamps.push(time_stamp.clone());
+        info!("Finishing time stamp {:?}", time_stamp);
+    }
+
+    fn start_time_stamp(&mut self) {
+        let time_stamp = TimeStamp::now(TimeStampType::Start);
+        self.time_strip.time_stamps.push(time_stamp.clone());
+        info!("Start time stamp {:?}", time_stamp);
     }
 }
 
