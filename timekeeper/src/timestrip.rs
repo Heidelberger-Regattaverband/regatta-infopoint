@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use log::info;
 use std::time::SystemTime;
 
 /// A time strip is a collection of time stamps.
@@ -6,6 +7,20 @@ use std::time::SystemTime;
 pub(crate) struct TimeStrip {
     // A vector of time stamps.
     pub(crate) time_stamps: Vec<TimeStamp>,
+}
+
+impl TimeStrip {
+    pub(crate) fn add_new_start(&mut self) {
+        let time_stamp = TimeStamp::now(TimeStampType::Start);
+        info!("Start time stamp: {:?}", time_stamp);
+        self.time_stamps.push(time_stamp);
+    }
+
+    pub(crate) fn add_new_finish(&mut self) {
+        let time_stamp = TimeStamp::now(TimeStampType::Finish);
+        info!("Finish time stamp: {:?}", time_stamp);
+        self.time_stamps.push(time_stamp);
+    }
 }
 
 /// A time stamp of an event.

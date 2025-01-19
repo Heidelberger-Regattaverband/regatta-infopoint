@@ -3,7 +3,7 @@ use crate::{
     client::{Client, HeatEventReceiver},
     error::MessageErr,
     messages::EventHeatChanged,
-    timestrip::{TimeStamp, TimeStampType, TimeStrip},
+    timestrip::TimeStrip,
 };
 use clap::Parser;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
@@ -124,22 +124,21 @@ impl App {
     }
 
     fn finish_time_stamp(&mut self) {
-        let time_stamp = TimeStamp::now(TimeStampType::Finish);
-        self.time_strip.time_stamps.push(time_stamp.clone());
-        info!("Finishing time stamp {:?}", time_stamp);
+        self.time_strip.add_new_finish();
     }
 
     fn start_time_stamp(&mut self) {
-        let time_stamp = TimeStamp::now(TimeStampType::Start);
-        self.time_strip.time_stamps.push(time_stamp.clone());
-        info!("Start time stamp {:?}", time_stamp);
+        self.time_strip.add_new_start();
     }
 }
 
+/// The application's state (running or quitting)
 #[derive(Default, Clone, Copy, PartialEq, Eq)]
 enum AppState {
+    /// The application is running
     #[default]
     Running,
+    /// The application is quitting
     Quitting,
 }
 
