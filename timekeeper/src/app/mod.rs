@@ -1,3 +1,5 @@
+pub(crate) mod tabs;
+
 use crate::{
     args::Args,
     client::{Client, HeatEventReceiver},
@@ -23,7 +25,7 @@ use ratatui::{
 use std::io::Result as IoResult;
 use std::sync::{Arc, Mutex};
 use strum::{Display, EnumIter, FromRepr, IntoEnumIterator};
-use tui_logger::{TuiLoggerLevelOutput, TuiLoggerWidget};
+use tabs::logs::LogsTab;
 
 struct EventReceiver;
 
@@ -38,6 +40,7 @@ pub struct App {
     state: AppState,
     selected_tab: SelectedTab,
     time_strip: TimeStrip,
+    log_tab: LogsTab,
 }
 
 impl Widget for &App {
@@ -50,7 +53,7 @@ impl Widget for &App {
 
         render_title(title_area, buf);
         self.render_tabs(tabs_area, buf);
-        self.selected_tab.render(inner_area, buf);
+        self.render_selected_tab(inner_area, buf);
         render_footer(footer_area, buf);
     }
 }
@@ -95,6 +98,13 @@ impl App {
         Tabs::new(titles).select(selected_tab_index).render(area, buf);
     }
 
+    fn render_selected_tab(&self, area: Rect, buf: &mut Buffer) {
+        match self.selected_tab {
+            SelectedTab::Tab1 => self.selected_tab.render(area, buf),
+            SelectedTab::Tab2 => self.selected_tab.render(area, buf),
+            SelectedTab::Logs => self.log_tab.render(area, buf),
+        };
+    }
     fn handle_events(&mut self) -> IoResult<()> {
         if let Event::Key(key) = event::read()? {
             if key.kind == KeyEventKind::Press {
@@ -150,7 +160,7 @@ enum SelectedTab {
     #[strum(to_string = "Zeitstreifen")]
     Tab2,
     #[strum(to_string = "Logs")]
-    Tab3,
+    Logs,
 }
 
 impl Widget for SelectedTab {
@@ -159,7 +169,7 @@ impl Widget for SelectedTab {
         match self {
             Self::Tab1 => self.render_tab0(area, buf),
             Self::Tab2 => self.render_tab1(area, buf),
-            Self::Tab3 => self.render_tab2(area, buf),
+            Self::Logs => {}
         }
     }
 }
@@ -191,18 +201,6 @@ impl SelectedTab {
     fn render_tab1(self, area: Rect, buf: &mut Buffer) {
         Paragraph::new("Welcome to the Ratatui tabs example!")
             .block(self.block())
-            .render(area, buf);
-    }
-
-    fn render_tab2(self, area: Rect, buf: &mut Buffer) {
-        TuiLoggerWidget::default()
-            .block(self.block())
-            .output_separator('|')
-            .output_timestamp(Some("%F %H:%M:%S%.3f".to_string()))
-            .output_level(Some(TuiLoggerLevelOutput::Long))
-            .output_target(true)
-            .output_file(false)
-            .output_line(false)
             .render(area, buf);
     }
 

@@ -38,7 +38,7 @@ impl TimeStamp {
     ///
     /// # Arguments
     /// * `stamp_type` - The type of the time stamp.
-    pub(crate) fn now(stamp_type: TimeStampType) -> TimeStamp {
+    fn now(stamp_type: TimeStampType) -> TimeStamp {
         let now = SystemTime::now();
         let time = DateTime::from(now);
         TimeStamp { time, stamp_type }
