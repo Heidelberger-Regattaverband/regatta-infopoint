@@ -1,9 +1,10 @@
+pub(super) mod logs;
+pub(super) mod timestrip;
+
 use ratatui::{
     symbols::border,
     widgets::{Block, Padding},
 };
-
-pub mod logs;
 
 /// A block surrounding the tab's content
 fn block() -> Block<'static> {

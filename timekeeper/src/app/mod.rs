@@ -1,4 +1,4 @@
-pub(crate) mod tabs;
+mod tabs;
 
 use crate::{
     args::Args,
@@ -25,7 +25,7 @@ use ratatui::{
 use std::io::Result as IoResult;
 use std::sync::{Arc, Mutex};
 use strum::{Display, EnumIter, FromRepr, IntoEnumIterator};
-use tabs::logs::LogsTab;
+use tabs::{logs::LogsTab, timestrip::TimeStripTab};
 
 struct EventReceiver;
 
@@ -39,7 +39,7 @@ impl HeatEventReceiver for EventReceiver {
 pub struct App {
     state: AppState,
     selected_tab: SelectedTab,
-    time_strip: TimeStrip,
+    time_strip_tab: TimeStripTab,
     log_tab: LogsTab,
 }
 
@@ -101,10 +101,11 @@ impl App {
     fn render_selected_tab(&self, area: Rect, buf: &mut Buffer) {
         match self.selected_tab {
             SelectedTab::Tab1 => self.selected_tab.render(area, buf),
-            SelectedTab::Tab2 => self.selected_tab.render(area, buf),
+            SelectedTab::TimeStrip => self.time_strip_tab.render(area, buf),
             SelectedTab::Logs => self.log_tab.render(area, buf),
         };
     }
+
     fn handle_events(&mut self) -> IoResult<()> {
         if let Event::Key(key) = event::read()? {
             if key.kind == KeyEventKind::Press {
@@ -112,8 +113,8 @@ impl App {
                     KeyCode::Char('l') | KeyCode::Right => self.next_tab(),
                     KeyCode::Char('h') | KeyCode::Left => self.previous_tab(),
                     KeyCode::Char('q') | KeyCode::Esc => self.quit(),
-                    KeyCode::Char(' ') => self.finish_time_stamp(),
-                    KeyCode::Enter => self.start_time_stamp(),
+                    KeyCode::Char(' ') => self.time_strip_tab.finish_time_stamp(),
+                    KeyCode::Enter => self.time_strip_tab.start_time_stamp(),
                     _ => {}
                 }
             }
@@ -131,14 +132,6 @@ impl App {
 
     fn quit(&mut self) {
         self.state = AppState::Quitting;
-    }
-
-    fn finish_time_stamp(&mut self) {
-        self.time_strip.add_new_finish();
-    }
-
-    fn start_time_stamp(&mut self) {
-        self.time_strip.add_new_start();
     }
 }
 
@@ -158,7 +151,7 @@ enum SelectedTab {
     #[strum(to_string = "Zeitmessung")]
     Tab1,
     #[strum(to_string = "Zeitstreifen")]
-    Tab2,
+    TimeStrip,
     #[strum(to_string = "Logs")]
     Logs,
 }
@@ -168,7 +161,7 @@ impl Widget for SelectedTab {
         // in a real app these might be separate widgets
         match self {
             Self::Tab1 => self.render_tab0(area, buf),
-            Self::Tab2 => self.render_tab1(area, buf),
+            Self::TimeStrip => {}
             Self::Logs => {}
         }
     }
@@ -196,12 +189,6 @@ impl SelectedTab {
 
     fn render_tab0(self, area: Rect, buf: &mut Buffer) {
         Paragraph::new("Hello, World!").block(self.block()).render(area, buf);
-    }
-
-    fn render_tab1(self, area: Rect, buf: &mut Buffer) {
-        Paragraph::new("Welcome to the Ratatui tabs example!")
-            .block(self.block())
-            .render(area, buf);
     }
 
     /// A block surrounding the tab's content
