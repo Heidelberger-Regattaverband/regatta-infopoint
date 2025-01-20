@@ -110,12 +110,14 @@ impl App {
         if let Event::Key(key) = event::read()? {
             if key.kind == KeyEventKind::Press {
                 match key.code {
-                    KeyCode::Char('l') | KeyCode::Right => self.next_tab(),
-                    KeyCode::Char('h') | KeyCode::Left => self.previous_tab(),
+                    KeyCode::Right => self.next_tab(),
+                    KeyCode::Left => self.previous_tab(),
                     KeyCode::Char('q') | KeyCode::Esc => self.quit(),
                     KeyCode::Char(' ') => self.time_strip_tab.finish_time_stamp(),
                     KeyCode::Enter => self.time_strip_tab.start_time_stamp(),
-                    _ => {}
+                    code => {
+                        debug!("Unhandled key code: {:?}", code);
+                    }
                 }
             }
         }
