@@ -40,7 +40,7 @@ pub struct App {
     selected_tab: SelectedTab,
     measurement_tab: TimeMeasurementTab,
     time_strip_tab: TimeStripTab,
-    log_tab: LogsTab,
+    logs_tab: LogsTab,
 }
 
 impl Widget for &App {
@@ -102,7 +102,7 @@ impl App {
         match self.selected_tab {
             SelectedTab::Measurement => self.measurement_tab.render(area, buf),
             SelectedTab::TimeStrip => self.time_strip_tab.render(area, buf),
-            SelectedTab::Logs => self.log_tab.render(area, buf),
+            SelectedTab::Logs => self.logs_tab.render(area, buf),
         };
     }
 
