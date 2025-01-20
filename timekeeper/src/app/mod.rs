@@ -156,17 +156,6 @@ enum SelectedTab {
     Logs,
 }
 
-impl Widget for SelectedTab {
-    fn render(self, area: Rect, buf: &mut Buffer) {
-        // in a real app these might be separate widgets
-        match self {
-            Self::Measurement => {}
-            Self::TimeStrip => {}
-            Self::Logs => {}
-        }
-    }
-}
-
 impl SelectedTab {
     /// Get the previous tab, if there is no previous tab return the current tab.
     fn previous(self) -> Self {
