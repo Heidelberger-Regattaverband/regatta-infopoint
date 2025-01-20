@@ -1,4 +1,5 @@
 pub(super) mod logs;
+pub(super) mod measurement;
 pub(super) mod timestrip;
 
 use ratatui::{

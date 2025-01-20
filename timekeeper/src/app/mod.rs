@@ -17,15 +17,14 @@ use ratatui::{
         Layout, Rect,
     },
     style::Stylize,
-    symbols::border,
     text::Line,
-    widgets::{Block, Padding, Paragraph, Tabs, Widget},
+    widgets::{Tabs, Widget},
     DefaultTerminal,
 };
 use std::io::Result as IoResult;
 use std::sync::{Arc, Mutex};
 use strum::{Display, EnumIter, FromRepr, IntoEnumIterator};
-use tabs::{logs::LogsTab, timestrip::TimeStripTab};
+use tabs::{logs::LogsTab, measurement::TimeMeasurementTab, timestrip::TimeStripTab};
 
 struct EventReceiver;
 
@@ -39,6 +38,7 @@ impl HeatEventReceiver for EventReceiver {
 pub struct App {
     state: AppState,
     selected_tab: SelectedTab,
+    measurement_tab: TimeMeasurementTab,
     time_strip_tab: TimeStripTab,
     log_tab: LogsTab,
 }
@@ -100,7 +100,7 @@ impl App {
 
     fn render_selected_tab(&self, area: Rect, buf: &mut Buffer) {
         match self.selected_tab {
-            SelectedTab::Tab1 => self.selected_tab.render(area, buf),
+            SelectedTab::Measurement => self.measurement_tab.render(area, buf),
             SelectedTab::TimeStrip => self.time_strip_tab.render(area, buf),
             SelectedTab::Logs => self.log_tab.render(area, buf),
         };
@@ -149,7 +149,7 @@ enum AppState {
 enum SelectedTab {
     #[default]
     #[strum(to_string = "Zeitmessung")]
-    Tab1,
+    Measurement,
     #[strum(to_string = "Zeitstreifen")]
     TimeStrip,
     #[strum(to_string = "Logs")]
@@ -160,7 +160,7 @@ impl Widget for SelectedTab {
     fn render(self, area: Rect, buf: &mut Buffer) {
         // in a real app these might be separate widgets
         match self {
-            Self::Tab1 => self.render_tab0(area, buf),
+            Self::Measurement => {}
             Self::TimeStrip => {}
             Self::Logs => {}
         }
@@ -185,16 +185,5 @@ impl SelectedTab {
     /// Return tab's name as a styled `Line`
     fn title(self) -> Line<'static> {
         format!("  {self}  ").into()
-    }
-
-    fn render_tab0(self, area: Rect, buf: &mut Buffer) {
-        Paragraph::new("Hello, World!").block(self.block()).render(area, buf);
-    }
-
-    /// A block surrounding the tab's content
-    fn block(self) -> Block<'static> {
-        Block::bordered()
-            .border_set(border::PROPORTIONAL_TALL)
-            .padding(Padding::horizontal(1))
     }
 }
