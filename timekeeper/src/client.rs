@@ -8,7 +8,7 @@ use crate::{
 use encoding_rs::WINDOWS_1252;
 use log::{debug, info, trace, warn};
 use std::{
-    io::{BufRead, BufReader, BufWriter, Result as IoResult, Write},
+    io::{BufRead, BufReader, BufWriter, Error, ErrorKind, Result as IoResult, Write},
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream},
     str::FromStr,
     sync::{Arc, Mutex},
@@ -59,13 +59,21 @@ impl Communication {
 
     fn receive_line(&mut self) -> IoResult<String> {
         let mut line = String::new();
-        let count = self.reader.read_line(&mut line)?;
-        debug!(
-            "Received {} bytes: \"{}\"",
-            count.to_string(),
-            utils::print_whitespaces(&line)
-        );
-        Ok(line.trim_end().to_string())
+        match self.reader.read_line(&mut line) {
+            Ok(count) => {
+                if count == 0 {
+                    Err(Error::new(ErrorKind::UnexpectedEof, "Connection closed"))
+                } else {
+                    debug!(
+                        "Received {} bytes: \"{}\"",
+                        count.to_string(),
+                        utils::print_whitespaces(&line)
+                    );
+                    Ok(line.trim_end().to_string())
+                }
+            }
+            Err(err) => Err(err),
+        }
     }
 
     fn receive_all(&mut self) -> IoResult<String> {
@@ -128,22 +136,35 @@ impl Client {
     ) -> IoResult<JoinHandle<()>> {
         let mut comm = Communication::new(&self.stream)?;
 
-        debug!("Starting thread to receive events");
-        let handle = thread::spawn(move || loop {
-            let received = comm.receive_line().unwrap();
-            if !received.is_empty() {
-                debug!("Received: \"{}\"", utils::print_whitespaces(&received));
-                let event_opt = EventHeatChanged::parse(&received);
-                match event_opt {
-                    Ok(mut event) => {
-                        if event.opened {
-                            Client::read_start_list(&mut comm, &mut event.heat).unwrap();
+        debug!("Starting thread to receive Aquarius events.");
+        let handle = thread::spawn(move || {
+            loop {
+                // Read a line from the server. Blocks until a line is received.
+                match comm.receive_line() {
+                    // successfully received a line
+                    Ok(received) => {
+                        if !received.is_empty() {
+                            debug!("Received: \"{}\"", utils::print_whitespaces(&received));
+                            let event_opt = EventHeatChanged::parse(&received);
+                            match event_opt {
+                                Ok(mut event) => {
+                                    if event.opened {
+                                        Client::read_start_list(&mut comm, &mut event.heat).unwrap();
+                                    }
+                                    receiver.lock().unwrap().on_event(&event);
+                                }
+                                Err(err) => handle_error(err),
+                            }
                         }
-                        receiver.lock().unwrap().on_event(&event);
                     }
-                    Err(err) => handle_error(err),
+                    // an error occurred while receiving a line
+                    Err(err) => {
+                        handle_error(MessageErr::IoError(err));
+                        break;
+                    }
                 }
             }
+            debug!("Stopped thread to receive Aquarius events.");
         });
         Ok(handle)
     }
