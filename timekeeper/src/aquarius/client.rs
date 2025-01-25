@@ -75,22 +75,25 @@ impl Client {
         &self,
         receiver: Arc<Mutex<impl HeatEventReceiver>>,
     ) -> IoResult<JoinHandle<()>> {
-        let stream = self.stream.try_clone()?;
+        let address = self.address;
+        let timeout = self.timeout;
 
         // Spawn a thread to watch the thread that receives events from Aquarius
         let watch_dog: JoinHandle<()> = thread::spawn(move || {
             loop {
-                // Spawn a thread to receive events from Aquarius
-                match Self::spawn_communication_thread(&stream, receiver.clone()) {
-                    Ok(handle) => {
-                        // Wait for the thread to finish
-                        let _ = handle.join().is_ok();
-                    }
-                    Err(err) => {
-                        warn!("Error spawning thread: {}", err);
+                // create a new stream to Aquarius
+                if let Ok(stream) = Self::create_stream(&address, timeout) {
+                    // Spawn a thread to receive events from Aquarius
+                    match Self::spawn_communication_thread(&stream, receiver.clone()) {
+                        Ok(handle) => {
+                            // Wait for the thread to finish
+                            let _ = handle.join().is_ok();
+                        }
+                        Err(err) => {
+                            warn!("Error spawning thread: {}", err);
+                        }
                     }
                 }
-                // todo: reconnect to Aquarius
             }
         });
 

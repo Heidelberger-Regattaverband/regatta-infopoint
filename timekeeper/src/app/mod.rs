@@ -89,7 +89,7 @@ impl App {
                 .draw(|frame| frame.render_widget(&*self, frame.area()))
                 .map_err(MessageErr::IoError)?;
             // handle events, e.g. key presses
-            self.handle_events().map_err(MessageErr::IoError)?;
+            self.handle_events(&mut client).map_err(MessageErr::IoError)?;
         }
         Ok(())
     }
@@ -108,7 +108,7 @@ impl App {
         };
     }
 
-    fn handle_events(&mut self) -> IoResult<()> {
+    fn handle_events(&mut self, client: &mut Client) -> IoResult<()> {
         if let Event::Key(key) = event::read()? {
             if key.kind == KeyEventKind::Press {
                 match key.code {
@@ -117,6 +117,9 @@ impl App {
                     KeyCode::Char('q') | KeyCode::Esc => self.quit(),
                     KeyCode::Char(' ') => self.time_strip_tab.finish_time_stamp(),
                     KeyCode::Enter => self.time_strip_tab.start_time_stamp(),
+                    KeyCode::Char('r') => {
+                        let _ = client.read_open_heats();
+                    }
                     code => {
                         debug!("Unhandled key code: {:?}", code);
                     }
