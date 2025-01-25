@@ -1,8 +1,7 @@
 mod app;
+mod aquarius;
 mod args;
-mod client;
 mod error;
-mod messages;
 mod timestrip;
 mod utils;
 

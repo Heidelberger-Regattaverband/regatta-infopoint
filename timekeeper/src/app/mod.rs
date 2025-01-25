@@ -1,10 +1,12 @@
 mod tabs;
 
 use crate::{
+    aquarius::{
+        client::{Client, HeatEventReceiver},
+        messages::EventHeatChanged,
+    },
     args::Args,
-    client::{Client, HeatEventReceiver},
     error::MessageErr,
-    messages::EventHeatChanged,
     timestrip::TimeStrip,
 };
 use clap::Parser;

@@ -1,8 +1,8 @@
 use crate::{
-    error::MessageErr,
-    messages::{
+    aquarius::messages::{
         EventHeatChanged, Heat, RequestListOpenHeats, RequestStartList, ResponseListOpenHeats, ResponseStartList,
     },
+    error::MessageErr,
     utils,
 };
 use encoding_rs::WINDOWS_1252;
