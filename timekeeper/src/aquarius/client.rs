@@ -141,7 +141,7 @@ mod tests {
     use super::*;
     use log::LevelFilter;
     use std::{
-        io::{BufRead, BufReader},
+        io::{BufRead, BufReader, Write},
         net::{SocketAddr, TcpListener},
         thread,
     };
