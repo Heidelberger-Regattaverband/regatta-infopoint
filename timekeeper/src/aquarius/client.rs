@@ -33,6 +33,10 @@ pub(crate) struct Client {
 
     /// The communication struct to handle communication with Aquarius.
     communication: Communication,
+
+    address: SocketAddr,
+
+    timeout: u16,
 }
 
 impl Client {
@@ -44,16 +48,22 @@ impl Client {
     /// # Returns
     /// A new client connected to Aquarius application or an error if the client cannot connect.
     pub(crate) fn connect(host: String, port: u16, timeout: u16) -> IoResult<Self> {
-        let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::from_str(&host).unwrap()), port);
-        info!("Connecting to {}", addr.to_string());
-        let stream = TcpStream::connect_timeout(&addr, Duration::new(timeout as u64, 0))?;
-        stream.set_nodelay(true)?;
-        info!("Connected to {}", addr.to_string());
-
+        let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::from_str(&host).unwrap()), port);
+        let stream = Self::create_stream(&address, timeout)?;
         Ok(Client {
             communication: Communication::new(&stream)?,
             stream,
+            address,
+            timeout,
         })
+    }
+
+    fn create_stream(addr: &SocketAddr, timeout: u16) -> IoResult<TcpStream> {
+        info!("Connecting to {} with a timeout {}", addr.to_string(), timeout);
+        let stream = TcpStream::connect_timeout(addr, Duration::new(timeout as u64, 0))?;
+        stream.set_nodelay(true)?;
+        info!("Connected to {}", addr.to_string());
+        Ok(stream)
     }
 
     /// Start receiving events from Aquarius.
@@ -74,13 +84,13 @@ impl Client {
                 match Self::spawn_communication_thread(&stream, receiver.clone()) {
                     Ok(handle) => {
                         // Wait for the thread to finish
-                        handle.join().unwrap();
+                        let _ = handle.join().is_ok();
                     }
                     Err(err) => {
                         warn!("Error spawning thread: {}", err);
-                        break;
-                    } // todo: reconnect to Aquarius
+                    }
                 }
+                // todo: reconnect to Aquarius
             }
         });
 
