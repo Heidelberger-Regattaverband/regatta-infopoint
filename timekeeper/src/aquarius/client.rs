@@ -62,42 +62,29 @@ impl Client {
     /// # Returns
     /// A handle to the thread that receives events or an error if the thread could not be started.
     pub(crate) fn start_receiving_events(
-        &mut self,
+        &self,
         receiver: Arc<Mutex<impl HeatEventReceiver>>,
     ) -> IoResult<JoinHandle<()>> {
-        let mut comm = Communication::new(&self.stream)?;
+        let stream = self.stream.try_clone()?;
 
-        debug!("Starting thread to receive Aquarius events.");
-        let handle = thread::spawn(move || {
+        // Spawn a thread to watch the thread that receives events from Aquarius
+        let watch_dog: JoinHandle<()> = thread::spawn(move || {
             loop {
-                // Read a line from the server. Blocks until a line is received.
-                match comm.receive_line() {
-                    // successfully received a line
-                    Ok(received) => {
-                        if !received.is_empty() {
-                            debug!("Received: \"{}\"", utils::print_whitespaces(&received));
-                            let event_opt = EventHeatChanged::parse(&received);
-                            match event_opt {
-                                Ok(mut event) => {
-                                    if event.opened {
-                                        Client::read_start_list(&mut comm, &mut event.heat).unwrap();
-                                    }
-                                    receiver.lock().unwrap().on_event(&event);
-                                }
-                                Err(err) => handle_error(err),
-                            }
-                        }
+                // Spawn a thread to receive events from Aquarius
+                match Self::spawn_communication_thread(&stream, receiver.clone()) {
+                    Ok(handle) => {
+                        // Wait for the thread to finish
+                        handle.join().unwrap();
                     }
-                    // an error occurred while receiving a line
                     Err(err) => {
-                        handle_error(MessageErr::IoError(err));
+                        warn!("Error spawning thread: {}", err);
                         break;
-                    }
+                    } // todo: reconnect to Aquarius
                 }
             }
-            debug!("Stopped thread to receive Aquarius events.");
         });
-        Ok(handle)
+
+        Ok(watch_dog)
     }
 
     pub(crate) fn read_open_heats(&mut self) -> Result<Vec<Heat>, MessageErr> {
@@ -119,6 +106,45 @@ impl Client {
         let start_list = ResponseStartList::parse(response)?;
         heat.boats = Some(start_list.boats);
         Ok(())
+    }
+
+    fn spawn_communication_thread(
+        stream: &TcpStream,
+        event_receiver: Arc<Mutex<impl HeatEventReceiver>>,
+    ) -> IoResult<JoinHandle<()>> {
+        let mut comm = Communication::new(stream)?;
+
+        debug!("Starting thread to receive Aquarius events.");
+        let handle = thread::spawn(move || {
+            loop {
+                // Read a line from the server and blocks until a line is received.
+                match comm.receive_line() {
+                    // successfully received a line
+                    Ok(received) => {
+                        if !received.is_empty() {
+                            debug!("Received: \"{}\"", utils::print_whitespaces(&received));
+                            // Parse the received line and handle the event
+                            match EventHeatChanged::parse(&received) {
+                                Ok(mut event) => {
+                                    if event.opened {
+                                        Client::read_start_list(&mut comm, &mut event.heat).unwrap();
+                                    }
+                                    event_receiver.lock().unwrap().on_event(&event);
+                                }
+                                Err(err) => handle_error(err),
+                            }
+                        }
+                    }
+                    // an error occurred while receiving a line
+                    Err(err) => {
+                        handle_error(MessageErr::IoError(err));
+                        break;
+                    }
+                }
+            }
+            debug!("Stopped thread to receive Aquarius events.");
+        });
+        Ok(handle)
     }
 }
 
