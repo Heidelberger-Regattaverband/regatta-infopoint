@@ -16,12 +16,24 @@ pub(super) struct Communication {
 }
 
 impl Communication {
+    /// Create a new `Communication` struct.
+    /// # Arguments
+    /// * `stream` - A reference to a `TcpStream` to communicate with Aquarius.
+    /// # Returns
+    /// A new `Communication` struct.
+    /// # Errors
+    /// An error if the stream cannot be cloned.
     pub(super) fn new(stream: &TcpStream) -> IoResult<Self> {
         let reader = BufReader::new(stream.try_clone()?);
         let writer = BufWriter::new(stream.try_clone()?);
         Ok(Communication { reader, writer })
     }
 
+    /// Write a command to Aquarius.
+    /// # Arguments
+    /// * `cmd` - The command to write.
+    /// # Returns
+    /// The number of bytes written or an error if the command could not be written.
     pub(super) fn write(&mut self, cmd: &str) -> IoResult<usize> {
         debug!("Writing command: \"{}\"", utils::print_whitespaces(cmd));
         let count = self.writer.write(cmd.as_bytes())?;
@@ -30,6 +42,11 @@ impl Communication {
         Ok(count)
     }
 
+    /// Receive a line from Aquarius.
+    /// # Returns
+    /// The line received from Aquarius or an error if the line could not be read.
+    /// # Errors
+    /// An error if the connection is closed or an error occurs while reading.
     pub(super) fn receive_line(&mut self) -> IoResult<String> {
         let mut line = String::new();
         match self.reader.read_line(&mut line) {
@@ -49,6 +66,11 @@ impl Communication {
         }
     }
 
+    /// Receive all data from Aquarius until a newline character is found.
+    /// # Returns
+    /// The data received from Aquarius or an error if the data could not be read.
+    /// # Errors
+    /// An error if the connection is closed or an error occurs while reading.
     pub(super) fn receive_all(&mut self) -> IoResult<String> {
         let mut result = String::new();
         let mut buf = Vec::new();
@@ -61,6 +83,7 @@ impl Communication {
                 count.to_string(),
                 utils::print_whitespaces(&line)
             );
+            // If the line is empty, break the loop. Aquarius sends \r\n at the end of the message.
             if count <= 2 {
                 break;
             }
