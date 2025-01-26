@@ -1,6 +1,6 @@
 use crate::utils;
 use encoding_rs::WINDOWS_1252;
-use log::{debug, trace};
+use log::trace;
 use std::{
     io::{BufRead, BufReader, BufWriter, Error as IoError, ErrorKind, Result as IoResult, Write},
     net::TcpStream,
