@@ -1,7 +1,9 @@
+use crate::app::AppEvent;
 use std::{
     fmt::{Display, Formatter, Result as FmtResult},
     io::Error as IoError,
     num,
+    sync::mpsc::SendError,
 };
 
 /// Error type for the timekeeper crate.
@@ -15,6 +17,8 @@ pub(crate) enum MessageErr {
 
     /// Error when the message is invalid.
     InvalidMessage(String),
+
+    SendError(SendError<AppEvent>),
 }
 
 impl Display for MessageErr {
@@ -23,6 +27,7 @@ impl Display for MessageErr {
             MessageErr::ParseError(err) => write!(f, "Parse error: {}", err),
             MessageErr::IoError(err) => write!(f, "I/O error: {}", err),
             MessageErr::InvalidMessage(msg) => write!(f, "Invalid message: {}", msg),
+            MessageErr::SendError(err) => write!(f, "Send error: {}", err),
         }
     }
 }

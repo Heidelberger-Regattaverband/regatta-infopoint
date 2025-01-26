@@ -121,6 +121,9 @@ fn handle_error(err: MessageErr) {
         MessageErr::InvalidMessage(message) => {
             warn!("Invalid message: {}", message);
         }
+        MessageErr::SendError(send_err) => {
+            warn!("Send error: {}", send_err);
+        }
     }
 }
 

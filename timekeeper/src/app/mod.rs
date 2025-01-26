@@ -11,7 +11,7 @@ use crate::{
 };
 use clap::Parser;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
-use log::{debug, info};
+use log::{debug, info, trace};
 use ratatui::{
     buffer::Buffer,
     layout::{
@@ -23,8 +23,14 @@ use ratatui::{
     widgets::{Tabs, Widget},
     DefaultTerminal,
 };
-use std::io::Result as IoResult;
-use std::sync::{Arc, Mutex};
+use std::{
+    io::Result as IoResult,
+    sync::mpsc::{self, Sender},
+};
+use std::{
+    sync::{Arc, Mutex},
+    thread,
+};
 use strum::{Display, EnumIter, FromRepr, IntoEnumIterator};
 use tabs::{logs::LogsTab, measurement::TimeMeasurementTab, timestrip::TimeStripTab};
 
@@ -70,9 +76,28 @@ fn render_footer(area: Rect, buf: &mut Buffer) {
         .render(area, buf);
 }
 
+fn input_thread(tx_event: Sender<AppEvent>) -> Result<(), MessageErr> {
+    trace!(target:"crossterm", "Starting input thread");
+    while let Ok(event) = event::read() {
+        trace!(target:"crossterm", "Stdin event received {:?}", event);
+        tx_event.send(AppEvent::UiEvent(event)).map_err(MessageErr::SendError)?;
+    }
+    Ok(())
+}
+
 impl App {
+    pub(crate) fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), MessageErr> {
+        // Use an mpsc::channel to combine stdin events with app events
+        let (tx, rx) = mpsc::channel();
+        let event_tx = tx.clone();
+
+        thread::spawn(move || input_thread(event_tx));
+
+        self.run(terminal, rx)
+    }
+
     /// runs the application's main loop until the user quits
-    pub(crate) fn run(&mut self, terminal: &mut DefaultTerminal) -> Result<(), MessageErr> {
+    fn run(&mut self, terminal: &mut DefaultTerminal, rx: mpsc::Receiver<AppEvent>) -> Result<(), MessageErr> {
         let args = Args::parse();
 
         let mut client = Client::connect(args.host, args.port, args.timeout).map_err(MessageErr::IoError)?;
@@ -84,12 +109,16 @@ impl App {
         client.start_receiving_events(receiver).map_err(MessageErr::IoError)?;
 
         // main loop, runs until the user quits the application by pressing 'q'
-        while self.state == AppState::Running {
+        for event in rx {
+            match event {
+                AppEvent::UiEvent(event) => self.handle_ui_event(event, &mut client).map_err(MessageErr::IoError)?,
+            }
+            if self.state == AppState::Quitting {
+                break;
+            }
             terminal
                 .draw(|frame| frame.render_widget(&*self, frame.area()))
                 .map_err(MessageErr::IoError)?;
-            // handle events, e.g. key presses
-            self.handle_events(&mut client).map_err(MessageErr::IoError)?;
         }
         Ok(())
     }
@@ -108,8 +137,8 @@ impl App {
         };
     }
 
-    fn handle_events(&mut self, client: &mut Client) -> IoResult<()> {
-        if let Event::Key(key) = event::read()? {
+    fn handle_ui_event(&mut self, event: Event, client: &mut Client) -> IoResult<()> {
+        if let Event::Key(key) = event {
             if key.kind == KeyEventKind::Press {
                 match key.code {
                     KeyCode::Right => self.next_tab(),
@@ -155,6 +184,12 @@ enum AppState {
     Running,
     /// The application is quitting
     Quitting,
+}
+
+#[derive(Debug)]
+pub(crate) enum AppEvent {
+    /// An UI event
+    UiEvent(Event),
 }
 
 #[derive(Default, Clone, Copy, Display, FromRepr, EnumIter)]
