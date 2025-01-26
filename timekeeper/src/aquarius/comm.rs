@@ -29,6 +29,11 @@ impl Communication {
         Ok(Communication { reader, writer })
     }
 
+    pub(super) fn set_stream(&mut self, stream: &TcpStream) {
+        self.reader = BufReader::new(stream.try_clone().unwrap());
+        self.writer = BufWriter::new(stream.try_clone().unwrap());
+    }
+
     /// Write a command to Aquarius.
     /// # Arguments
     /// * `cmd` - The command to write.
