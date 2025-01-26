@@ -76,20 +76,28 @@ impl Communication {
         let mut buf = Vec::new();
         loop {
             // Read until a newline character is found.
-            let count = self.reader.read_until(b'\n', &mut buf)?;
-            let line = WINDOWS_1252.decode(&buf).0;
-            trace!(
-                "Received {} bytes: \"{}\"",
-                count.to_string(),
-                utils::print_whitespaces(&line)
-            );
-            // If the line is empty, break the loop. Aquarius sends \r\n at the end of the message.
-            if count <= 2 {
-                break;
+            match self.reader.read_until(b'\n', &mut buf) {
+                Ok(count) => {
+                    if count == 0 {
+                        return Err(IoError::new(ErrorKind::UnexpectedEof, "Connection closed"));
+                    } else {
+                        let line = WINDOWS_1252.decode(&buf).0;
+                        trace!(
+                            "Received {} bytes: \"{}\"",
+                            count.to_string(),
+                            utils::print_whitespaces(&line)
+                        );
+                        // If the line is empty, break the loop. Aquarius sends \r\n at the end of the message.
+                        if count <= 2 {
+                            break;
+                        }
+                        // Append the line to the result string.
+                        result.push_str(&line);
+                        buf.clear();
+                    }
+                }
+                Err(err) => return Err(err),
             }
-            // Append the line to the result string.
-            result.push_str(&line);
-            buf.clear();
         }
         debug!(
             "Received message (len={}): \"{}\"",

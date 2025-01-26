@@ -117,9 +117,14 @@ impl App {
                     KeyCode::Char('q') | KeyCode::Esc => self.quit(),
                     KeyCode::Char(' ') => self.time_strip_tab.finish_time_stamp(),
                     KeyCode::Enter => self.time_strip_tab.start_time_stamp(),
-                    KeyCode::Char('r') => {
-                        let _ = client.read_open_heats();
-                    }
+                    KeyCode::Char('r') => match client.read_open_heats() {
+                        Ok(open_heats) => {
+                            debug!("Open heats: {:#?}", open_heats);
+                        }
+                        Err(err) => {
+                            debug!("Error reading open heats: {}", err);
+                        }
+                    },
                     code => {
                         debug!("Unhandled key code: {:?}", code);
                     }

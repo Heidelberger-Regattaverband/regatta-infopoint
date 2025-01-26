@@ -1,4 +1,8 @@
-use std::{io::Error as IoError, num};
+use std::{
+    fmt::{Display, Formatter, Result as FmtResult},
+    io::Error as IoError,
+    num,
+};
 
 /// Error type for the timekeeper crate.
 #[derive(Debug)]
@@ -11,6 +15,16 @@ pub(crate) enum MessageErr {
 
     /// Error when the message is invalid.
     InvalidMessage(String),
+}
+
+impl Display for MessageErr {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        match self {
+            MessageErr::ParseError(err) => write!(f, "Parse error: {}", err),
+            MessageErr::IoError(err) => write!(f, "I/O error: {}", err),
+            MessageErr::InvalidMessage(msg) => write!(f, "Invalid message: {}", msg),
+        }
+    }
 }
 
 #[cfg(test)]
