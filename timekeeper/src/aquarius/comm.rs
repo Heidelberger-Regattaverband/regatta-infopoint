@@ -29,9 +29,17 @@ impl Communication {
         Ok(Communication { reader, writer })
     }
 
-    pub(super) fn set_stream(&mut self, stream: &TcpStream) {
-        self.reader = BufReader::new(stream.try_clone().unwrap());
-        self.writer = BufWriter::new(stream.try_clone().unwrap());
+    /// Set the stream to communicate with Aquarius.
+    /// # Arguments
+    /// * `stream` - A reference to a `TcpStream` to communicate with Aquarius.
+    /// # Returns
+    /// An error if the stream cannot be cloned.
+    /// # Errors
+    /// An error if the stream cannot be cloned.
+    pub(super) fn set_stream(&mut self, stream: &TcpStream) -> IoResult<()> {
+        self.reader = BufReader::new(stream.try_clone()?);
+        self.writer = BufWriter::new(stream.try_clone()?);
+        Ok(())
     }
 
     /// Write a command to Aquarius.
@@ -40,7 +48,7 @@ impl Communication {
     /// # Returns
     /// The number of bytes written or an error if the command could not be written.
     pub(super) fn write(&mut self, cmd: &str) -> IoResult<usize> {
-        debug!("Writing command: \"{}\"", utils::print_whitespaces(cmd));
+        trace!("Writing command: \"{}\"", utils::print_whitespaces(cmd));
         let count = self.writer.write(cmd.as_bytes())?;
         self.writer.flush()?;
         trace!("Written {} bytes", count.to_string());
@@ -59,7 +67,7 @@ impl Communication {
                 if count == 0 {
                     Err(IoError::new(ErrorKind::UnexpectedEof, "Connection closed"))
                 } else {
-                    debug!(
+                    trace!(
                         "Received {} bytes: \"{}\"",
                         count.to_string(),
                         utils::print_whitespaces(&line)
@@ -86,9 +94,10 @@ impl Communication {
                     if count == 0 {
                         return Err(IoError::new(ErrorKind::UnexpectedEof, "Connection closed"));
                     } else {
+                        // Decode the buffer to a string. Aquarius uses Windows-1252 encoding.
                         let line = WINDOWS_1252.decode(&buf).0;
                         trace!(
-                            "Received {} bytes: \"{}\"",
+                            "Received line (len={}:) \"{}\"",
                             count.to_string(),
                             utils::print_whitespaces(&line)
                         );
@@ -104,7 +113,7 @@ impl Communication {
                 Err(err) => return Err(err),
             }
         }
-        debug!(
+        trace!(
             "Received message (len={}): \"{}\"",
             result.len(),
             utils::print_whitespaces(&result)
