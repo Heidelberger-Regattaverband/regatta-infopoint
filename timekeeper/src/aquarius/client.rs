@@ -28,9 +28,6 @@ pub(crate) trait HeatEventReceiver: Send + Sync + 'static {
 
 /// A client to connect to the Aquarius server.
 pub(crate) struct Client {
-    /// The TCP stream to the server.
-    stream: TcpStream,
-
     /// The communication struct to handle communication with Aquarius.
     communication: Communication,
 
@@ -52,7 +49,6 @@ impl Client {
         let stream = Self::create_stream(&address, timeout)?;
         Ok(Client {
             communication: Communication::new(&stream)?,
-            stream,
             address,
             timeout,
         })
