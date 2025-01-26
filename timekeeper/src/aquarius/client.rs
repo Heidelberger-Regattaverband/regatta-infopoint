@@ -46,20 +46,12 @@ impl Client {
     /// A new client connected to Aquarius application or an error if the client cannot connect.
     pub(crate) fn connect(host: String, port: u16, timeout: u16) -> IoResult<Self> {
         let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::from_str(&host).unwrap()), port);
-        let stream = Self::create_stream(&address, timeout)?;
+        let stream = create_stream(&address, timeout)?;
         Ok(Client {
             communication: Communication::new(&stream)?,
             address,
             timeout,
         })
-    }
-
-    fn create_stream(addr: &SocketAddr, timeout: u16) -> IoResult<TcpStream> {
-        info!("Connecting to {} with a timeout {}", addr.to_string(), timeout);
-        let stream = TcpStream::connect_timeout(addr, Duration::new(timeout as u64, 0))?;
-        stream.set_nodelay(true)?;
-        info!("Connected to {}", addr.to_string());
-        Ok(stream)
     }
 
     /// Start receiving events from Aquarius.
@@ -78,9 +70,9 @@ impl Client {
         let watch_dog: JoinHandle<()> = thread::spawn(move || {
             loop {
                 // create a new stream to Aquarius
-                if let Ok(stream) = Self::create_stream(&address, timeout) {
+                if let Ok(stream) = create_stream(&address, timeout) {
                     // Spawn a thread to receive events from Aquarius
-                    match Self::spawn_communication_thread(&stream, receiver.clone()) {
+                    match spawn_communication_thread(&stream, receiver.clone()) {
                         Ok(handle) => {
                             // Wait for the thread to finish
                             let _ = handle.join().is_ok();
@@ -116,45 +108,6 @@ impl Client {
         heat.boats = Some(start_list.boats);
         Ok(())
     }
-
-    fn spawn_communication_thread(
-        stream: &TcpStream,
-        event_receiver: Arc<Mutex<impl HeatEventReceiver>>,
-    ) -> IoResult<JoinHandle<()>> {
-        let mut comm = Communication::new(stream)?;
-
-        debug!("Starting thread to receive Aquarius events.");
-        let handle = thread::spawn(move || {
-            loop {
-                // Read a line from the server and blocks until a line is received.
-                match comm.receive_line() {
-                    // successfully received a line
-                    Ok(received) => {
-                        if !received.is_empty() {
-                            debug!("Received: \"{}\"", utils::print_whitespaces(&received));
-                            // Parse the received line and handle the event
-                            match EventHeatChanged::parse(&received) {
-                                Ok(mut event) => {
-                                    if event.opened {
-                                        Client::read_start_list(&mut comm, &mut event.heat).unwrap();
-                                    }
-                                    event_receiver.lock().unwrap().on_event(&event);
-                                }
-                                Err(err) => handle_error(err),
-                            }
-                        }
-                    }
-                    // an error occurred while receiving a line
-                    Err(err) => {
-                        handle_error(MessageErr::IoError(err));
-                        break;
-                    }
-                }
-            }
-            debug!("Stopped thread to receive Aquarius events.");
-        });
-        Ok(handle)
-    }
 }
 
 fn handle_error(err: MessageErr) {
@@ -169,6 +122,53 @@ fn handle_error(err: MessageErr) {
             warn!("Invalid message: {}", message);
         }
     }
+}
+
+fn create_stream(addr: &SocketAddr, timeout: u16) -> IoResult<TcpStream> {
+    info!("Connecting to {} with a timeout {}", addr.to_string(), timeout);
+    let stream = TcpStream::connect_timeout(addr, Duration::new(timeout as u64, 0))?;
+    stream.set_nodelay(true)?;
+    info!("Connected to {}", addr.to_string());
+    Ok(stream)
+}
+
+fn spawn_communication_thread(
+    stream: &TcpStream,
+    event_receiver: Arc<Mutex<impl HeatEventReceiver>>,
+) -> IoResult<JoinHandle<()>> {
+    let mut comm = Communication::new(stream)?;
+
+    debug!("Starting thread to receive Aquarius events.");
+    let handle = thread::spawn(move || {
+        loop {
+            // Read a line from the server and blocks until a line is received.
+            match comm.receive_line() {
+                // successfully received a line
+                Ok(received) => {
+                    if !received.is_empty() {
+                        debug!("Received: \"{}\"", utils::print_whitespaces(&received));
+                        // Parse the received line and handle the event
+                        match EventHeatChanged::parse(&received) {
+                            Ok(mut event) => {
+                                if event.opened {
+                                    Client::read_start_list(&mut comm, &mut event.heat).unwrap();
+                                }
+                                event_receiver.lock().unwrap().on_event(&event);
+                            }
+                            Err(err) => handle_error(err),
+                        }
+                    }
+                }
+                // an error occurred while receiving a line
+                Err(err) => {
+                    handle_error(MessageErr::IoError(err));
+                    break;
+                }
+            }
+        }
+        debug!("Stopped thread to receive Aquarius events.");
+    });
+    Ok(handle)
 }
 
 #[cfg(test)]
