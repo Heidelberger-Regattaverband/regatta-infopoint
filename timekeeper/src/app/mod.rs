@@ -31,8 +31,8 @@ use std::{
     sync::{Arc, Mutex},
     thread,
 };
-use strum::{Display, EnumIter, FromRepr, IntoEnumIterator};
-use tabs::{logs::LogsTab, measurement::TimeMeasurementTab, timestrip::TimeStripTab};
+use strum::IntoEnumIterator;
+use tabs::{logs::LogsTab, measurement::TimeMeasurementTab, timestrip::TimeStripTab, SelectedTab};
 
 struct EventReceiver;
 
@@ -59,21 +59,13 @@ impl Widget for &App {
         let horizontal = Layout::horizontal([Min(0), Length(20)]);
         let [tabs_area, title_area] = horizontal.areas(header_area);
 
-        render_title(title_area, buf);
+        "Aquarius Zeitmessung".bold().render(title_area, buf);
         self.render_tabs(tabs_area, buf);
         self.render_selected_tab(inner_area, buf);
-        render_footer(footer_area, buf);
+        Line::raw("◄ ► to change tab | Press q to quit")
+            .centered()
+            .render(footer_area, buf);
     }
-}
-
-fn render_title(area: Rect, buf: &mut Buffer) {
-    "Aquarius Zeitmessung".bold().render(area, buf);
-}
-
-fn render_footer(area: Rect, buf: &mut Buffer) {
-    Line::raw("◄ ► to change tab | Press q to quit")
-        .centered()
-        .render(area, buf);
 }
 
 fn input_thread(tx_event: Sender<AppEvent>) -> Result<(), MessageErr> {
@@ -107,6 +99,7 @@ impl App {
         let receiver = Arc::new(Mutex::new(EventReceiver));
 
         client.start_receiving_events(receiver).map_err(MessageErr::IoError)?;
+        self.draw(terminal)?;
 
         // main loop, runs until the user quits the application by pressing 'q'
         for event in rx {
@@ -116,10 +109,15 @@ impl App {
             if self.state == AppState::Quitting {
                 break;
             }
-            terminal
-                .draw(|frame| frame.render_widget(&*self, frame.area()))
-                .map_err(MessageErr::IoError)?;
+            self.draw(terminal)?;
         }
+        Ok(())
+    }
+
+    fn draw(&mut self, terminal: &mut DefaultTerminal) -> Result<(), MessageErr> {
+        terminal
+            .draw(|frame| frame.render_widget(&*self, frame.area()))
+            .map_err(MessageErr::IoError)?;
         Ok(())
     }
 
@@ -190,36 +188,4 @@ enum AppState {
 pub(crate) enum AppEvent {
     /// An UI event
     UiEvent(Event),
-}
-
-#[derive(Default, Clone, Copy, Display, FromRepr, EnumIter)]
-enum SelectedTab {
-    #[default]
-    #[strum(to_string = "Zeitmessung")]
-    Measurement,
-    #[strum(to_string = "Zeitstreifen")]
-    TimeStrip,
-    #[strum(to_string = "Logs")]
-    Logs,
-}
-
-impl SelectedTab {
-    /// Get the previous tab, if there is no previous tab return the current tab.
-    fn previous(self) -> Self {
-        let current_index: usize = self as usize;
-        let previous_index = current_index.saturating_sub(1);
-        Self::from_repr(previous_index).unwrap_or(self)
-    }
-
-    /// Get the next tab, if there is no next tab return the current tab.
-    fn next(self) -> Self {
-        let current_index = self as usize;
-        let next_index = current_index.saturating_add(1);
-        Self::from_repr(next_index).unwrap_or(self)
-    }
-
-    /// Return tab's name as a styled `Line`
-    fn title(self) -> Line<'static> {
-        format!("  {self}  ").into()
-    }
 }
