@@ -1,10 +1,7 @@
 mod tabs;
 
 use crate::{
-    aquarius::{
-        client::{Client, HeatEventReceiver},
-        messages::EventHeatChanged,
-    },
+    aquarius::{client::Client, messages::EventHeatChanged},
     args::Args,
     error::MessageErr,
     timestrip::TimeStrip,
@@ -23,24 +20,13 @@ use ratatui::{
     widgets::{Tabs, Widget},
     DefaultTerminal,
 };
+use std::thread;
 use std::{
     io::Result as IoResult,
-    sync::mpsc::{self, Sender},
-};
-use std::{
-    sync::{Arc, Mutex},
-    thread,
+    sync::mpsc::{self, Receiver, Sender},
 };
 use strum::IntoEnumIterator;
 use tabs::{logs::LogsTab, measurement::TimeMeasurementTab, timestrip::TimeStripTab, SelectedTab};
-
-struct EventReceiver;
-
-impl HeatEventReceiver for EventReceiver {
-    fn on_event(&mut self, event: &EventHeatChanged) {
-        info!("Received event: {:?}", &event);
-    }
-}
 
 #[derive(Default)]
 pub struct App {
@@ -80,31 +66,39 @@ fn input_thread(tx_event: Sender<AppEvent>) -> Result<(), MessageErr> {
 impl App {
     pub(crate) fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), MessageErr> {
         // Use an mpsc::channel to combine stdin events with app events
-        let (tx, rx) = mpsc::channel();
-        let event_tx = tx.clone();
+        let (sender, receiver) = mpsc::channel();
+        let ui_event_sender = sender.clone();
+        let aquarius_event_sender = sender.clone();
 
-        thread::spawn(move || input_thread(event_tx));
+        thread::spawn(move || input_thread(ui_event_sender));
 
-        self.run(terminal, rx)
-    }
-
-    /// runs the application's main loop until the user quits
-    fn run(&mut self, terminal: &mut DefaultTerminal, rx: mpsc::Receiver<AppEvent>) -> Result<(), MessageErr> {
         let args = Args::parse();
-
         let mut client = Client::connect(args.host, args.port, args.timeout).map_err(MessageErr::IoError)?;
         let open_heats = client.read_open_heats()?;
         debug!("Open heats: {:#?}", open_heats);
+        client
+            .start_receiving_events(aquarius_event_sender)
+            .map_err(MessageErr::IoError)?;
 
-        let receiver = Arc::new(Mutex::new(EventReceiver));
+        self.run(terminal, &mut client, receiver)
+    }
 
-        client.start_receiving_events(receiver).map_err(MessageErr::IoError)?;
+    /// runs the application's main loop until the user quits
+    fn run(
+        &mut self,
+        terminal: &mut DefaultTerminal,
+        client: &mut Client,
+        rx: Receiver<AppEvent>,
+    ) -> Result<(), MessageErr> {
         self.draw(terminal)?;
 
         // main loop, runs until the user quits the application by pressing 'q'
         for event in rx {
             match event {
-                AppEvent::UiEvent(event) => self.handle_ui_event(event, &mut client).map_err(MessageErr::IoError)?,
+                AppEvent::UiEvent(event) => self.handle_ui_event(event, client).map_err(MessageErr::IoError)?,
+                AppEvent::AquariusEvent(event) => {
+                    info!("Received event: {:?}", &event);
+                }
             }
             if self.state == AppState::Quitting {
                 break;
@@ -188,4 +182,7 @@ enum AppState {
 pub(crate) enum AppEvent {
     /// An UI event
     UiEvent(Event),
+
+    /// An event from Aquarius
+    AquariusEvent(EventHeatChanged),
 }

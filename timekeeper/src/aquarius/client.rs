@@ -1,4 +1,5 @@
 use crate::{
+    app::AppEvent,
     aquarius::{
         comm::Communication,
         messages::{
@@ -13,18 +14,10 @@ use std::{
     io::Result as IoResult,
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream},
     str::FromStr,
-    sync::{Arc, Mutex},
+    sync::mpsc::Sender,
     thread::{self, JoinHandle},
     time::Duration,
 };
-
-/// A trait to receive heat events from Aquarius.
-pub(crate) trait HeatEventReceiver: Send + Sync + 'static {
-    /// Handle an event from Aquarius.
-    /// # Arguments
-    /// * `event` - The event to handle.
-    fn on_event(&mut self, event: &EventHeatChanged);
-}
 
 /// A client to connect to the Aquarius server.
 pub(crate) struct Client {
@@ -59,10 +52,7 @@ impl Client {
     /// * `receiver` - The receiver to handle the events.
     /// # Returns
     /// A handle to the thread that receives events or an error if the thread could not be started.
-    pub(crate) fn start_receiving_events(
-        &self,
-        receiver: Arc<Mutex<impl HeatEventReceiver>>,
-    ) -> IoResult<JoinHandle<()>> {
+    pub(crate) fn start_receiving_events(&self, tx_event: Sender<AppEvent>) -> IoResult<JoinHandle<()>> {
         let address = self.address;
         let timeout = self.timeout;
 
@@ -72,7 +62,7 @@ impl Client {
                 // create a new stream to Aquarius
                 if let Ok(stream) = create_stream(&address, timeout) {
                     // Spawn a thread to receive events from Aquarius
-                    match spawn_communication_thread(&stream, receiver.clone()) {
+                    match spawn_communication_thread(&stream, tx_event.clone()) {
                         Ok(handle) => {
                             // Wait for the thread to finish
                             let _ = handle.join().is_ok();
@@ -135,10 +125,7 @@ fn create_stream(addr: &SocketAddr, timeout: u16) -> IoResult<TcpStream> {
     Ok(stream)
 }
 
-fn spawn_communication_thread(
-    stream: &TcpStream,
-    event_receiver: Arc<Mutex<impl HeatEventReceiver>>,
-) -> IoResult<JoinHandle<()>> {
+fn spawn_communication_thread(stream: &TcpStream, tx_event: Sender<AppEvent>) -> IoResult<JoinHandle<()>> {
     let mut comm = Communication::new(stream)?;
 
     debug!("Starting thread to receive Aquarius events.");
@@ -156,7 +143,7 @@ fn spawn_communication_thread(
                                 if event.opened {
                                     Client::read_start_list(&mut comm, &mut event.heat).unwrap();
                                 }
-                                event_receiver.lock().unwrap().on_event(&event);
+                                tx_event.send(AppEvent::AquariusEvent(event)).unwrap();
                             }
                             Err(err) => handle_error(err),
                         }
