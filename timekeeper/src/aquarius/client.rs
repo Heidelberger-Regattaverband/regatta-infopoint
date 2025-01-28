@@ -9,7 +9,7 @@ use crate::{
     error::MessageErr,
     utils,
 };
-use log::{debug, info, warn};
+use log::{debug, info, trace, warn};
 use std::{
     io::Result as IoResult,
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream},
@@ -49,10 +49,10 @@ impl Client {
 
     /// Start receiving events from Aquarius.
     /// # Arguments
-    /// * `receiver` - The receiver to handle the events.
+    /// * `sender` - The sender to send events to the application.
     /// # Returns
     /// A handle to the thread that receives events or an error if the thread could not be started.
-    pub(crate) fn start_receiving_events(&self, tx_event: Sender<AppEvent>) -> IoResult<JoinHandle<()>> {
+    pub(crate) fn start_receiving_events(&self, sender: Sender<AppEvent>) -> IoResult<JoinHandle<()>> {
         let address = self.address;
         let timeout = self.timeout;
 
@@ -62,7 +62,7 @@ impl Client {
                 // create a new stream to Aquarius
                 if let Ok(stream) = create_stream(&address, timeout) {
                     // Spawn a thread to receive events from Aquarius
-                    match spawn_communication_thread(&stream, tx_event.clone()) {
+                    match spawn_communication_thread(&stream, sender.clone()) {
                         Ok(handle) => {
                             // Wait for the thread to finish
                             let _ = handle.join().is_ok();
@@ -78,6 +78,11 @@ impl Client {
         Ok(watch_dog)
     }
 
+    /// Reads the open heats from Aquarius.
+    /// # Returns
+    /// A vector of open heats or an error if the heats could not be read. The heats contain the boats that are in the heats.
+    /// # Errors
+    /// If the open heats could not be read from Aquarius.
     pub(crate) fn read_open_heats(&mut self) -> Result<Vec<Heat>, MessageErr> {
         self.communication
             .write(&RequestListOpenHeats::new().to_string())
@@ -118,14 +123,14 @@ fn handle_error(err: MessageErr) {
 }
 
 fn create_stream(addr: &SocketAddr, timeout: u16) -> IoResult<TcpStream> {
-    info!("Connecting to {} with a timeout {}", addr.to_string(), timeout);
+    trace!("Connecting to {} with a timeout {}", addr.to_string(), timeout);
     let stream = TcpStream::connect_timeout(addr, Duration::new(timeout as u64, 0))?;
     stream.set_nodelay(true)?;
     info!("Connected to {}", addr.to_string());
     Ok(stream)
 }
 
-fn spawn_communication_thread(stream: &TcpStream, tx_event: Sender<AppEvent>) -> IoResult<JoinHandle<()>> {
+fn spawn_communication_thread(stream: &TcpStream, sender: Sender<AppEvent>) -> IoResult<JoinHandle<()>> {
     let mut comm = Communication::new(stream)?;
 
     debug!("Starting thread to receive Aquarius events.");
@@ -143,7 +148,7 @@ fn spawn_communication_thread(stream: &TcpStream, tx_event: Sender<AppEvent>) ->
                                 if event.opened {
                                     Client::read_start_list(&mut comm, &mut event.heat).unwrap();
                                 }
-                                tx_event.send(AppEvent::AquariusEvent(event)).unwrap();
+                                sender.send(AppEvent::AquariusEvent(event)).unwrap();
                             }
                             Err(err) => handle_error(err),
                         }
