@@ -22,11 +22,13 @@ use std::{
 /// A client to connect to the Aquarius server.
 pub(crate) struct Client {
     /// The communication struct to handle communication with Aquarius.
-    communication: Communication,
+    communication: Option<Communication>,
 
     address: SocketAddr,
 
     timeout: u16,
+
+    sender: Sender<AppEvent>,
 }
 
 impl Client {
@@ -36,15 +38,15 @@ impl Client {
     /// * `port` - The port to connect to.
     /// * `timeout` - The timeout in seconds to connect to Aquarius.
     /// # Returns
-    /// A new client connected to Aquarius application or an error if the client cannot connect.
-    pub(crate) fn connect(host: String, port: u16, timeout: u16) -> IoResult<Self> {
+    /// A client to communicate with Aquarius.
+    pub(crate) fn new(host: String, port: u16, timeout: u16, sender: Sender<AppEvent>) -> Self {
         let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::from_str(&host).unwrap()), port);
-        let stream = create_stream(&address, timeout)?;
-        Ok(Client {
-            communication: Communication::new(&stream)?,
+        Client {
+            communication: None,
             address,
             timeout,
-        })
+            sender,
+        }
     }
 
     /// Start receiving events from Aquarius.
@@ -52,9 +54,13 @@ impl Client {
     /// * `sender` - The sender to send events to the application.
     /// # Returns
     /// A handle to the thread that receives events or an error if the thread could not be started.
-    pub(crate) fn start_receiving_events(&self, sender: Sender<AppEvent>) -> IoResult<JoinHandle<()>> {
+    pub(crate) fn connect(&mut self) -> IoResult<JoinHandle<()>> {
         let address = self.address;
         let timeout = self.timeout;
+        let sender = self.sender.clone();
+
+        let stream = create_stream(&address, timeout)?;
+        self.communication = Some(Communication::new(&stream)?);
 
         // Spawn a thread to watch the thread that receives events from Aquarius
         let watch_dog: JoinHandle<()> = thread::spawn(move || {
@@ -84,15 +90,20 @@ impl Client {
     /// # Errors
     /// If the open heats could not be read from Aquarius.
     pub(crate) fn read_open_heats(&mut self) -> Result<Vec<Heat>, MessageErr> {
-        self.communication
-            .write(&RequestListOpenHeats::new().to_string())
-            .map_err(MessageErr::IoError)?;
-        let response = self.communication.receive_all().map_err(MessageErr::IoError)?;
-        let mut heats = ResponseListOpenHeats::parse(&response)?;
-        for heat in heats.heats.iter_mut() {
-            Client::read_start_list(&mut self.communication, heat)?;
+        if let Some(comm) = &mut self.communication {
+            comm.write(&RequestListOpenHeats::new().to_string())
+                .map_err(MessageErr::IoError)?;
+            let response = comm.receive_all().map_err(MessageErr::IoError)?;
+            let mut heats = ResponseListOpenHeats::parse(&response)?;
+            for heat in heats.heats.iter_mut() {
+                Client::read_start_list(comm, heat)?;
+            }
+            Ok(heats.heats)
+        } else {
+            Err(MessageErr::InvalidMessage(
+                "Communication is not initialized.".to_string(),
+            ))
         }
-        Ok(heats.heats)
     }
 
     fn read_start_list(comm: &mut Communication, heat: &mut Heat) -> Result<(), MessageErr> {
@@ -173,14 +184,16 @@ mod tests {
     use std::{
         io::{BufRead, BufReader, Write},
         net::{SocketAddr, TcpListener},
+        sync::mpsc::{self, Receiver},
         thread,
     };
 
-    fn init() {
+    fn init() -> (Sender<AppEvent>, Receiver<AppEvent>) {
         let _ = env_logger::builder()
             .is_test(true)
             .filter_level(LevelFilter::Trace)
             .try_init();
+        mpsc::channel()
     }
 
     fn start_test_server() -> SocketAddr {
@@ -205,47 +218,55 @@ mod tests {
 
     #[test]
     fn test_client_connection() {
-        init();
+        let (sender, _) = init();
 
         let addr = start_test_server();
-        let client = Client::connect(addr.ip().to_string(), addr.port(), 1);
-        assert!(client.is_ok());
+        let mut client = Client::new(addr.ip().to_string(), addr.port(), 1, sender);
+        let result = client.connect();
+        assert!(result.is_ok());
     }
 
     #[test]
     fn test_client_write() {
-        init();
+        let (sender, _) = init();
 
         let addr = start_test_server();
-        let mut client = Client::connect(addr.ip().to_string(), addr.port(), 1).unwrap();
+        let mut client = Client::new(addr.ip().to_string(), addr.port(), 1, sender);
+        client.connect().unwrap();
         const MESSAGE: &str = "Hello World!";
-        let result = client.communication.write(MESSAGE);
+        let result = client.communication.unwrap().write(MESSAGE);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), MESSAGE.len());
     }
 
     #[test]
     fn test_client_receive_line() {
-        init();
+        let (sender, _) = init();
 
         let addr = start_test_server();
-        let mut client = Client::connect(addr.ip().to_string(), addr.port(), 1).unwrap();
+        let mut client = Client::new(addr.ip().to_string(), addr.port(), 1, sender);
+        client.connect().unwrap();
         const MESSAGE: &str = "Hello World!";
-        client.communication.write(MESSAGE).unwrap();
-        client.communication.write("\r\n").unwrap();
-        let response = client.communication.receive_line();
+        let comm = client.communication.as_mut().unwrap();
+        comm.write(MESSAGE).unwrap();
+        comm.write("\r\n").unwrap();
+        let response = comm.receive_line();
         assert!(response.is_ok());
         assert_eq!(response.unwrap(), MESSAGE);
     }
 
     #[test]
     fn test_client_receive_all() {
+        let (sender, _) = init();
+
         let addr = start_test_server();
-        let mut client = Client::connect(addr.ip().to_string(), addr.port(), 1).unwrap();
-        client.communication.write("Hello World!\n").unwrap();
-        client.communication.write("This is a test.\n").unwrap();
-        client.communication.write("\r\n").unwrap();
-        let response = client.communication.receive_all();
+        let mut client = Client::new(addr.ip().to_string(), addr.port(), 1, sender);
+        client.connect().unwrap();
+        let comm = client.communication.as_mut().unwrap();
+        comm.write("Hello World!\n").unwrap();
+        comm.write("This is a test.\n").unwrap();
+        comm.write("\r\n").unwrap();
+        let response = comm.receive_all();
         assert!(response.is_ok());
         assert_eq!(response.unwrap(), "Hello World!\nThis is a test.");
     }

@@ -54,11 +54,11 @@ impl Widget for &App {
     }
 }
 
-fn input_thread(tx_event: Sender<AppEvent>) -> Result<(), MessageErr> {
+fn input_thread(sender: Sender<AppEvent>) -> Result<(), MessageErr> {
     trace!(target:"crossterm", "Starting input thread");
     while let Ok(event) = event::read() {
         trace!(target:"crossterm", "Stdin event received {:?}", event);
-        tx_event.send(AppEvent::UiEvent(event)).map_err(MessageErr::SendError)?;
+        sender.send(AppEvent::UiEvent(event)).map_err(MessageErr::SendError)?;
     }
     Ok(())
 }
@@ -68,17 +68,14 @@ impl App {
         // Use an mpsc::channel to combine stdin events with app events
         let (sender, receiver) = mpsc::channel();
         let ui_event_sender = sender.clone();
-        let aquarius_event_sender = sender.clone();
 
         thread::spawn(move || input_thread(ui_event_sender));
 
         let args = Args::parse();
-        let mut client = Client::connect(args.host, args.port, args.timeout).map_err(MessageErr::IoError)?;
+        let mut client = Client::new(args.host, args.port, args.timeout, sender.clone());
+        client.connect().map_err(MessageErr::IoError)?;
         let open_heats = client.read_open_heats()?;
         debug!("Open heats: {:#?}", open_heats);
-        client
-            .start_receiving_events(aquarius_event_sender)
-            .map_err(MessageErr::IoError)?;
 
         self.run(terminal, &mut client, receiver)
     }
