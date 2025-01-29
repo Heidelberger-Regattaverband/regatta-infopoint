@@ -6,7 +6,7 @@ use crate::{
             EventHeatChanged, Heat, RequestListOpenHeats, RequestStartList, ResponseListOpenHeats, ResponseStartList,
         },
     },
-    error::MessageErr,
+    error::TimekeeperErr,
     utils,
 };
 use log::{debug, info, trace, warn};
@@ -89,45 +89,45 @@ impl Client {
     /// A vector of open heats or an error if the heats could not be read. The heats contain the boats that are in the heats.
     /// # Errors
     /// If the open heats could not be read from Aquarius.
-    pub(crate) fn read_open_heats(&mut self) -> Result<Vec<Heat>, MessageErr> {
+    pub(crate) fn read_open_heats(&mut self) -> Result<Vec<Heat>, TimekeeperErr> {
         if let Some(comm) = &mut self.communication {
             comm.write(&RequestListOpenHeats::new().to_string())
-                .map_err(MessageErr::IoError)?;
-            let response = comm.receive_all().map_err(MessageErr::IoError)?;
+                .map_err(TimekeeperErr::IoError)?;
+            let response = comm.receive_all().map_err(TimekeeperErr::IoError)?;
             let mut heats = ResponseListOpenHeats::parse(&response)?;
             for heat in heats.heats.iter_mut() {
                 Client::read_start_list(comm, heat)?;
             }
             Ok(heats.heats)
         } else {
-            Err(MessageErr::InvalidMessage(
+            Err(TimekeeperErr::InvalidMessage(
                 "Communication is not initialized.".to_string(),
             ))
         }
     }
 
-    fn read_start_list(comm: &mut Communication, heat: &mut Heat) -> Result<(), MessageErr> {
+    fn read_start_list(comm: &mut Communication, heat: &mut Heat) -> Result<(), TimekeeperErr> {
         comm.write(&RequestStartList::new(heat.id).to_string())
-            .map_err(MessageErr::IoError)?;
-        let response = comm.receive_all().map_err(MessageErr::IoError)?;
+            .map_err(TimekeeperErr::IoError)?;
+        let response = comm.receive_all().map_err(TimekeeperErr::IoError)?;
         let start_list = ResponseStartList::parse(response)?;
         heat.boats = Some(start_list.boats);
         Ok(())
     }
 }
 
-fn handle_error(err: MessageErr) {
+fn handle_error(err: TimekeeperErr) {
     match err {
-        MessageErr::ParseError(parse_err) => {
+        TimekeeperErr::ParseError(parse_err) => {
             warn!("Error parsing number: {}", parse_err);
         }
-        MessageErr::IoError(io_err) => {
+        TimekeeperErr::IoError(io_err) => {
             warn!("I/O error: {}", io_err);
         }
-        MessageErr::InvalidMessage(message) => {
+        TimekeeperErr::InvalidMessage(message) => {
             warn!("Invalid message: {}", message);
         }
-        MessageErr::SendError(send_err) => {
+        TimekeeperErr::SendError(send_err) => {
             warn!("Send error: {}", send_err);
         }
     }
@@ -167,7 +167,7 @@ fn spawn_communication_thread(stream: &TcpStream, sender: Sender<AppEvent>) -> I
                 }
                 // an error occurred while receiving a line
                 Err(err) => {
-                    handle_error(MessageErr::IoError(err));
+                    handle_error(TimekeeperErr::IoError(err));
                     break;
                 }
             }

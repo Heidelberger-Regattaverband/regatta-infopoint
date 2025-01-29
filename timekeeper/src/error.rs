@@ -2,15 +2,15 @@ use crate::app::AppEvent;
 use std::{
     fmt::{Display, Formatter, Result as FmtResult},
     io::Error as IoError,
-    num,
+    num::ParseIntError,
     sync::mpsc::SendError,
 };
 
 /// Error type for the timekeeper crate.
 #[derive(Debug)]
-pub(crate) enum MessageErr {
+pub(crate) enum TimekeeperErr {
     /// Error when parsing a string to a number.
-    ParseError(num::ParseIntError),
+    ParseError(ParseIntError),
 
     /// Error when I/O operations fail.
     IoError(IoError),
@@ -18,16 +18,17 @@ pub(crate) enum MessageErr {
     /// Error when the message is invalid.
     InvalidMessage(String),
 
+    /// Error when sending a message containing an `AppEvent` fails.
     SendError(SendError<AppEvent>),
 }
 
-impl Display for MessageErr {
+impl Display for TimekeeperErr {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         match self {
-            MessageErr::ParseError(err) => write!(f, "Parse error: {}", err),
-            MessageErr::IoError(err) => write!(f, "I/O error: {}", err),
-            MessageErr::InvalidMessage(msg) => write!(f, "Invalid message: {}", msg),
-            MessageErr::SendError(err) => write!(f, "Send error: {}", err),
+            TimekeeperErr::ParseError(err) => write!(f, "Parse error: {}", err),
+            TimekeeperErr::IoError(err) => write!(f, "I/O error: {}", err),
+            TimekeeperErr::InvalidMessage(msg) => write!(f, "Invalid message: {}", msg),
+            TimekeeperErr::SendError(err) => write!(f, "Send error: {}", err),
         }
     }
 }
@@ -39,12 +40,12 @@ mod tests {
 
     #[test]
     fn test_message_err() {
-        let parse_error = MessageErr::ParseError("error".parse::<i32>().unwrap_err());
-        let io_error = MessageErr::IoError(IoError::new(ErrorKind::Other, "error"));
-        let invalid_message = MessageErr::InvalidMessage("error".to_string());
+        let parse_error = TimekeeperErr::ParseError("error".parse::<i32>().unwrap_err());
+        let io_error = TimekeeperErr::IoError(IoError::new(ErrorKind::Other, "error"));
+        let invalid_message = TimekeeperErr::InvalidMessage("error".to_string());
 
-        assert!(matches!(parse_error, MessageErr::ParseError(_)));
-        assert!(matches!(io_error, MessageErr::IoError(_)));
-        assert!(matches!(invalid_message, MessageErr::InvalidMessage { .. }));
+        assert!(matches!(parse_error, TimekeeperErr::ParseError(_)));
+        assert!(matches!(io_error, TimekeeperErr::IoError(_)));
+        assert!(matches!(invalid_message, TimekeeperErr::InvalidMessage { .. }));
     }
 }

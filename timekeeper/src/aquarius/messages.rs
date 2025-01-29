@@ -1,4 +1,4 @@
-use crate::{error::MessageErr, utils};
+use crate::{error::TimekeeperErr, utils};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 /// A message to request the list of open heats.
@@ -30,7 +30,7 @@ impl ResponseListOpenHeats {
     /// * `message` - The message to parse.
     /// # Returns
     /// The parsed response or an error if the message is invalid.
-    pub(crate) fn parse(message: &str) -> Result<Self, MessageErr> {
+    pub(crate) fn parse(message: &str) -> Result<Self, TimekeeperErr> {
         let mut instance = ResponseListOpenHeats { heats: Vec::new() };
         for line in message.lines() {
             let heat = Heat::parse(line)?;
@@ -75,7 +75,7 @@ impl ResponseStartList {
     /// * `message` - The message to parse.
     /// # Returns
     /// The parsed response or an error if the message is invalid.
-    pub(crate) fn parse(message: String) -> Result<Self, MessageErr> {
+    pub(crate) fn parse(message: String) -> Result<Self, TimekeeperErr> {
         let mut instance = ResponseStartList { boats: Vec::new() };
         for line in message.lines() {
             let boat = Boat::parse(line)?;
@@ -110,21 +110,21 @@ impl EventHeatChanged {
     /// * `event_str` - The string to parse.
     /// # Returns
     /// The parsed event or an error if the string is invalid.
-    pub(crate) fn parse(event_str: &str) -> Result<Self, MessageErr> {
+    pub(crate) fn parse(event_str: &str) -> Result<Self, TimekeeperErr> {
         let parts: Vec<&str> = event_str.split_whitespace().collect();
         if parts.len() != 4 {
-            return Err(MessageErr::InvalidMessage(event_str.to_owned()));
+            return Err(TimekeeperErr::InvalidMessage(event_str.to_owned()));
         }
 
         let action = parts[0];
-        let number = parts[1].parse().map_err(MessageErr::ParseError)?;
-        let id = parts[2].parse().map_err(MessageErr::ParseError)?;
-        let status = parts[3].parse().map_err(MessageErr::ParseError)?;
+        let number = parts[1].parse().map_err(TimekeeperErr::ParseError)?;
+        let id = parts[2].parse().map_err(TimekeeperErr::ParseError)?;
+        let status = parts[3].parse().map_err(TimekeeperErr::ParseError)?;
 
         match action {
             "!OPEN+" => Ok(EventHeatChanged::new(Heat::new(id, number, status), true)),
             "!OPEN-" => Ok(EventHeatChanged::new(Heat::new(id, number, status), false)),
-            _ => Err(MessageErr::InvalidMessage(event_str.to_owned())),
+            _ => Err(TimekeeperErr::InvalidMessage(event_str.to_owned())),
         }
     }
 }
@@ -164,14 +164,14 @@ impl Heat {
     /// * `heat_str` - The string to parse.
     /// # Returns
     /// The parsed heat or an error if the string is invalid.
-    pub(crate) fn parse(heat_str: &str) -> Result<Self, MessageErr> {
+    pub(crate) fn parse(heat_str: &str) -> Result<Self, TimekeeperErr> {
         let parts: Vec<&str> = heat_str.split_whitespace().collect();
         if parts.len() != 3 {
-            return Err(MessageErr::InvalidMessage(heat_str.to_owned()));
+            return Err(TimekeeperErr::InvalidMessage(heat_str.to_owned()));
         }
-        let number = parts[0].parse().map_err(MessageErr::ParseError)?;
-        let id = parts[1].parse().map_err(MessageErr::ParseError)?;
-        let status = parts[2].parse().map_err(MessageErr::ParseError)?;
+        let number = parts[0].parse().map_err(TimekeeperErr::ParseError)?;
+        let id = parts[1].parse().map_err(TimekeeperErr::ParseError)?;
+        let status = parts[2].parse().map_err(TimekeeperErr::ParseError)?;
         Ok(Heat::new(id, number, status))
     }
 }
@@ -219,15 +219,15 @@ impl Boat {
     /// * `boat_str` - The string to parse.
     /// # Returns
     /// The parsed boat or an error if the string is invalid.
-    pub(crate) fn parse(boat_str: &str) -> Result<Self, MessageErr> {
+    pub(crate) fn parse(boat_str: &str) -> Result<Self, TimekeeperErr> {
         let parts: Vec<&str> = boat_str.splitn(3, ' ').collect();
         if parts.len() == 3 {
-            let lane = parts[0].parse().map_err(MessageErr::ParseError)?;
-            let bib = parts[1].parse().map_err(MessageErr::ParseError)?;
+            let lane = parts[0].parse().map_err(TimekeeperErr::ParseError)?;
+            let bib = parts[1].parse().map_err(TimekeeperErr::ParseError)?;
             let club = parts[2].to_owned();
             Ok(Boat::new(lane, bib, club))
         } else {
-            Err(MessageErr::InvalidMessage(boat_str.to_owned()))
+            Err(TimekeeperErr::InvalidMessage(boat_str.to_owned()))
         }
     }
 }

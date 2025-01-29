@@ -3,7 +3,7 @@ mod tabs;
 use crate::{
     aquarius::{client::Client, messages::EventHeatChanged},
     args::Args,
-    error::MessageErr,
+    error::TimekeeperErr,
     timestrip::TimeStrip,
 };
 use clap::Parser;
@@ -54,17 +54,19 @@ impl Widget for &App {
     }
 }
 
-fn input_thread(sender: Sender<AppEvent>) -> Result<(), MessageErr> {
+fn input_thread(sender: Sender<AppEvent>) -> Result<(), TimekeeperErr> {
     trace!(target:"crossterm", "Starting input thread");
     while let Ok(event) = event::read() {
         trace!(target:"crossterm", "Stdin event received {:?}", event);
-        sender.send(AppEvent::UiEvent(event)).map_err(MessageErr::SendError)?;
+        sender
+            .send(AppEvent::UiEvent(event))
+            .map_err(TimekeeperErr::SendError)?;
     }
     Ok(())
 }
 
 impl App {
-    pub(crate) fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), MessageErr> {
+    pub(crate) fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), TimekeeperErr> {
         // Use an mpsc::channel to combine stdin events with app events
         let (sender, receiver) = mpsc::channel();
         let ui_event_sender = sender.clone();
@@ -73,7 +75,7 @@ impl App {
 
         let args = Args::parse();
         let mut client = Client::new(args.host, args.port, args.timeout, sender.clone());
-        client.connect().map_err(MessageErr::IoError)?;
+        client.connect().map_err(TimekeeperErr::IoError)?;
         let open_heats = client.read_open_heats()?;
         debug!("Open heats: {:#?}", open_heats);
 
@@ -86,13 +88,13 @@ impl App {
         terminal: &mut DefaultTerminal,
         client: &mut Client,
         rx: Receiver<AppEvent>,
-    ) -> Result<(), MessageErr> {
+    ) -> Result<(), TimekeeperErr> {
         self.draw(terminal)?;
 
         // main loop, runs until the user quits the application by pressing 'q'
         for event in rx {
             match event {
-                AppEvent::UiEvent(event) => self.handle_ui_event(event, client).map_err(MessageErr::IoError)?,
+                AppEvent::UiEvent(event) => self.handle_ui_event(event, client).map_err(TimekeeperErr::IoError)?,
                 AppEvent::AquariusEvent(event) => {
                     info!("Received event: {:?}", &event);
                 }
@@ -105,10 +107,10 @@ impl App {
         Ok(())
     }
 
-    fn draw(&mut self, terminal: &mut DefaultTerminal) -> Result<(), MessageErr> {
+    fn draw(&mut self, terminal: &mut DefaultTerminal) -> Result<(), TimekeeperErr> {
         terminal
             .draw(|frame| frame.render_widget(&*self, frame.area()))
-            .map_err(MessageErr::IoError)?;
+            .map_err(TimekeeperErr::IoError)?;
         Ok(())
     }
 

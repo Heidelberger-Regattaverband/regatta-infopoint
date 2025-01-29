@@ -6,11 +6,11 @@ mod timestrip;
 mod utils;
 
 use app::App;
-use error::MessageErr;
+use error::TimekeeperErr;
 use log::LevelFilter;
 use tui_logger::{init_logger, set_default_level};
 
-fn main() -> Result<(), MessageErr> {
+fn main() -> Result<(), TimekeeperErr> {
     init_logger(LevelFilter::Debug).unwrap();
     set_default_level(LevelFilter::Trace);
 
