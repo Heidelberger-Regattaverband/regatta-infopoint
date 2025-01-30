@@ -37,10 +37,11 @@ impl Client {
     /// * `host` - The host to connect to.
     /// * `port` - The port to connect to.
     /// * `timeout` - The timeout in seconds to connect to Aquarius.
+    /// * `sender` - The sender to send events to the application.
     /// # Returns
     /// A client to communicate with Aquarius.
-    pub(crate) fn new(host: String, port: u16, timeout: u16, sender: Sender<AppEvent>) -> Self {
-        let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::from_str(&host).unwrap()), port);
+    pub(crate) fn new(host: &str, port: u16, timeout: u16, sender: Sender<AppEvent>) -> Self {
+        let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::from_str(host).unwrap()), port);
         Client {
             communication: None,
             address,
@@ -221,7 +222,7 @@ mod tests {
         let (sender, _) = init();
 
         let addr = start_test_server();
-        let mut client = Client::new(addr.ip().to_string(), addr.port(), 1, sender);
+        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
         let result = client.connect();
         assert!(result.is_ok());
     }
@@ -231,7 +232,7 @@ mod tests {
         let (sender, _) = init();
 
         let addr = start_test_server();
-        let mut client = Client::new(addr.ip().to_string(), addr.port(), 1, sender);
+        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
         client.connect().unwrap();
         const MESSAGE: &str = "Hello World!";
         let result = client.communication.unwrap().write(MESSAGE);
@@ -244,7 +245,7 @@ mod tests {
         let (sender, _) = init();
 
         let addr = start_test_server();
-        let mut client = Client::new(addr.ip().to_string(), addr.port(), 1, sender);
+        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
         client.connect().unwrap();
         const MESSAGE: &str = "Hello World!";
         let comm = client.communication.as_mut().unwrap();
@@ -260,7 +261,7 @@ mod tests {
         let (sender, _) = init();
 
         let addr = start_test_server();
-        let mut client = Client::new(addr.ip().to_string(), addr.port(), 1, sender);
+        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
         client.connect().unwrap();
         let comm = client.communication.as_mut().unwrap();
         comm.write("Hello World!\n").unwrap();

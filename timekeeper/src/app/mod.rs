@@ -74,7 +74,7 @@ impl App {
         thread::spawn(move || input_thread(ui_event_sender));
 
         let args = Args::parse();
-        let mut client = Client::new(args.host, args.port, args.timeout, sender.clone());
+        let mut client = Client::new(&args.host, args.port, args.timeout, sender.clone());
         client.connect().map_err(TimekeeperErr::IoError)?;
         let open_heats = client.read_open_heats()?;
         debug!("Open heats: {:#?}", open_heats);
