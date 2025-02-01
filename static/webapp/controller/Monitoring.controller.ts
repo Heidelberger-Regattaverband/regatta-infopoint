@@ -62,9 +62,15 @@ export default class MonitoringController extends BaseController {
       });
     }
 
+    const sys: any[] = [];
+    if (monitoring?.sys?.uptime) {
+      sys.push({ name: this.i18n("monitoring.sys.uptime"), value: monitoring.sys.uptime.secs });
+    }
+
     this.monitoringModel.setProperty("/db", dbConnections);
     this.monitoringModel.setProperty("/mem", mem);
     this.monitoringModel.setProperty("/cpus", cpus);
+    this.monitoringModel.setProperty("/sys", sys);
   }
 
   private niceBytes(n: number): string {
