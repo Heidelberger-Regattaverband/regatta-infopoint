@@ -1925,6 +1925,7 @@ dependencies = [
  "tokio",
  "tokio-shared-rt",
  "tokio-util",
+ "uptime_lib",
  "utoipa",
  "utoipa-swagger-ui",
 ]
@@ -3561,6 +3562,17 @@ name = "untrusted"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
+
+[[package]]
+name = "uptime_lib"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e64b558561f12a171bbea5325c3f24f129db371adee1d7ae93b6e310bd69192"
+dependencies = [
+ "libc",
+ "thiserror 1.0.69",
+ "windows",
+]
 
 [[package]]
 name = "url"

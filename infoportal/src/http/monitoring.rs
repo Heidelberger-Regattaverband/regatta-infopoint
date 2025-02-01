@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use aquarius::db::tiberius::TiberiusPool;
 use prometheus::Registry;
 use serde::Serialize;
@@ -49,6 +51,7 @@ impl Monitoring {
                     total: sys.total_memory(),
                 },
                 disks: Disks::new_with_refreshed_list().iter().map(Disk::from).collect(),
+                uptime: uptime_lib::get().unwrap_or_default(),
             },
             metrics,
         }
@@ -101,6 +104,8 @@ pub(crate) struct SysInfo {
     mem: Memory,
     /// The disks information.
     disks: Vec<Disk>,
+    /// The system uptime
+    uptime: Duration,
 }
 
 /// The cpu struct contains the usage, name and frequency of the CPU.
