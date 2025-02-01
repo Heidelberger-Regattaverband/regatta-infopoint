@@ -18,6 +18,10 @@
         <List id="cpusList" items="{monitoring>/cpus}" headerText="{i18n>monitoring.cpus.title}">
           <ObjectListItem title="{monitoring>name}" number="{monitoring>value}" />
         </List>
+
+        <List id="sysList" items="{monitoring>/sys}" headerText="{i18n>monitoring.sys.title}">
+          <ObjectListItem title="{monitoring>name}" number="{monitoring>value}" />
+        </List>
       </content>
     </Page>
 

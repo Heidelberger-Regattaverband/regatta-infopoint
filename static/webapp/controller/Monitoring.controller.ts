@@ -62,9 +62,15 @@ export default class MonitoringController extends BaseController {
       });
     }
 
+    const sys: any[] = [];
+    if (monitoring?.sys?.uptime) {
+      sys.push({ name: this.i18n("monitoring.sys.uptime"), value: this.niceDuration(monitoring.sys.uptime.secs) });
+    }
+
     this.monitoringModel.setProperty("/db", dbConnections);
     this.monitoringModel.setProperty("/mem", mem);
     this.monitoringModel.setProperty("/cpus", cpus);
+    this.monitoringModel.setProperty("/sys", sys);
   }
 
   private niceBytes(n: number): string {
@@ -73,6 +79,11 @@ export default class MonitoringController extends BaseController {
       n = n / 1024;
     }
     return (n.toFixed(n < 10 && l > 0 ? 1 : 0) + ' ' + this.units[l]);
+  }
+
+  private niceDuration(seconds: number): string {
+    const duration = new Date(seconds * 1000).toISOString().slice(11, 19);
+    return duration;
   }
 
   private connect() {

@@ -38,6 +38,7 @@ serde_json = { version = "1" }
 scraper = { version = "0" }
 clap = { version = "4", features = ["derive"] }
 colored = { version = "3" }
+uptime_lib = { version = "0" }
 
 [profile.release]
 # https://nnethercote.github.io/perf-book/build-configuration.html#codegen-units
