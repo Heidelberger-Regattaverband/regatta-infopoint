@@ -17,7 +17,6 @@ pub(crate) struct Monitoring {
     sys: SysInfo,
     /// The metrics of the system.
     metrics: Map<String, Value>,
-
     /// The application information.
     app: AppInfo,
 }
@@ -60,7 +59,7 @@ impl Monitoring {
             metrics,
             app: AppInfo {
                 mem_current: PeakAlloc.current_usage(),
-                mem_peak: PeakAlloc.peak_usage(),
+                mem_max: PeakAlloc.peak_usage(),
             },
         }
     }
@@ -237,7 +236,6 @@ pub(crate) struct Connections {
 pub(crate) struct AppInfo {
     /// The current memory usage.
     mem_current: usize,
-
     /// The peak memory usage.
-    mem_peak: usize,
+    mem_max: usize,
 }

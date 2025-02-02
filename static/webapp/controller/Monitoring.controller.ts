@@ -70,7 +70,7 @@ export default class MonitoringController extends BaseController {
     const app: any[] = [];
     if (monitoring?.app) {
       app.push({ name: this.i18n("monitoring.app.mem_current"), value: this.niceBytes(monitoring.app.mem_current) });
-      app.push({ name: this.i18n("monitoring.app.mem_peak"), value: this.niceBytes(monitoring.app.mem_peak) });
+      app.push({ name: this.i18n("monitoring.app.mem_max"), value: this.niceBytes(monitoring.app.mem_max) });
     }
 
     this.monitoringModel.setProperty("/db", dbConnections);
