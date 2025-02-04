@@ -1,11 +1,16 @@
 mod config;
 mod db;
 mod http;
+mod peak_alloc;
 
 use aquarius::db::tiberius::TiberiusPool;
 use config::Config;
 use http::server::Server;
+use peak_alloc::PeakAlloc;
 use std::io::Result;
+
+#[global_allocator]
+static PEAK_ALLOC: PeakAlloc = PeakAlloc;
 
 pub mod built_info {
     include!(concat!(env!("OUT_DIR"), "/built.rs"));

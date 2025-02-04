@@ -1,11 +1,12 @@
-use std::time::Duration;
-
 use aquarius::db::tiberius::TiberiusPool;
 use prometheus::Registry;
 use serde::Serialize;
 use serde_json::{Map, Number, Value};
+use std::time::Duration;
 use sysinfo::{CpuRefreshKind, Disks, MemoryRefreshKind, RefreshKind, System};
 use utoipa::ToSchema;
+
+use crate::peak_alloc::PeakAlloc;
 
 /// The monitoring struct contains the database state, system information and metrics.
 #[derive(Serialize, ToSchema)]
@@ -16,6 +17,8 @@ pub(crate) struct Monitoring {
     sys: SysInfo,
     /// The metrics of the system.
     metrics: Map<String, Value>,
+    /// The application information.
+    app: AppInfo,
 }
 
 impl Monitoring {
@@ -54,6 +57,10 @@ impl Monitoring {
                 uptime: uptime_lib::get().unwrap_or_default(),
             },
             metrics,
+            app: AppInfo {
+                mem_current: PeakAlloc.current_usage(),
+                mem_max: PeakAlloc.peak_usage(),
+            },
         }
     }
 }
@@ -222,4 +229,13 @@ pub(crate) struct Connections {
     closed_max_lifetime: u64,
     /// The number of connections that have been closed due to an error.
     closed_error: u64,
+}
+
+/// The AppInfo struct contains the current and peak memory usage.
+#[derive(Serialize, ToSchema)]
+pub(crate) struct AppInfo {
+    /// The current memory usage.
+    mem_current: usize,
+    /// The peak memory usage.
+    mem_max: usize,
 }
