@@ -104,7 +104,8 @@ impl Client {
 
         // Spawn a thread to watch the thread that receives events from Aquarius
         let watch_dog: JoinHandle<()> = thread::spawn(move || {
-            let timeout_duration = Duration::from_secs(timeout as u64);
+            // The interval to retry connecting to Aquarius in case of a failure
+            let repeat_interval = Duration::from_secs(timeout as u64);
 
             loop {
                 let start = Instant::now();
@@ -134,8 +135,8 @@ impl Client {
                     },
                 }
                 let elapsed = start.elapsed();
-                if elapsed < timeout_duration {
-                    thread::sleep(timeout_duration - elapsed);
+                if elapsed < repeat_interval {
+                    thread::sleep(repeat_interval - elapsed);
                 }
             } // end loop
         });
