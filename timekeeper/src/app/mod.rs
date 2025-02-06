@@ -69,8 +69,7 @@ impl App {
         thread::spawn(move || input_thread(ui_event_sender));
 
         let args = Args::parse();
-        let mut client =
-            Client::new(&args.host, args.port, args.timeout, sender.clone()).map_err(TimekeeperErr::IoError)?;
+        let mut client = Client::new(&args.host, args.port, args.timeout, sender.clone());
 
         self.run(terminal, &mut client, receiver)
     }

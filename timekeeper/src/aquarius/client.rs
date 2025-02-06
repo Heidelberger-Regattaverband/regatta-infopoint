@@ -39,7 +39,7 @@ impl Client {
     /// * `sender` - The sender to send events to the application.
     /// # Returns
     /// A client to communicate with Aquarius.
-    pub(crate) fn new(host: &str, port: u16, timeout: u16, sender: Sender<AppEvent>) -> IoResult<Self> {
+    pub(crate) fn new(host: &str, port: u16, timeout: u16, sender: Sender<AppEvent>) -> Self {
         let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::from_str(host).unwrap()), port);
         let mut client = Client {
             comm_main: None,
@@ -47,8 +47,8 @@ impl Client {
             timeout,
             sender,
         };
-        client.start_watch_dog()?;
-        Ok(client)
+        client.start_watch_dog();
+        client
     }
 
     /// Connects the client to Aquarius application.
@@ -96,7 +96,7 @@ impl Client {
     /// If the thread could not be started.
     /// # Panics
     /// If the sender could not send a message to the application.
-    fn start_watch_dog(&mut self) -> IoResult<JoinHandle<()>> {
+    fn start_watch_dog(&mut self) -> JoinHandle<()> {
         let address = self.address;
         let timeout = self.timeout;
         let sender = self.sender.clone();
@@ -129,7 +129,7 @@ impl Client {
             }
         });
 
-        Ok(watch_dog)
+        watch_dog
     }
 
     fn read_start_list(comm: &mut Communication, heat: &mut Heat) -> Result<(), TimekeeperErr> {
