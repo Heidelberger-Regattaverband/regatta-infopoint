@@ -21,8 +21,7 @@ use std::{
 
 /// A client to connect to the Aquarius server.
 pub(crate) struct Client {
-    /// The communication struct to handle events from Aquarius.
-    comm_events: Option<Communication>,
+    comm_main: Option<Communication>,
 
     address: SocketAddr,
 
@@ -42,47 +41,30 @@ impl Client {
     /// A client to communicate with Aquarius.
     pub(crate) fn new(host: &str, port: u16, timeout: u16, sender: Sender<AppEvent>) -> Self {
         let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::from_str(host).unwrap()), port);
-        Client {
-            comm_events: None,
+        let mut client = Client {
+            comm_main: None,
             address,
             timeout,
             sender,
-        }
+        };
+        client.start_watch_dog().unwrap();
+        client
     }
 
-    /// Start receiving events from Aquarius.
-    /// # Arguments
-    /// * `sender` - The sender to send events to the application.
+    /// Connects the client to Aquarius application.
+    /// # Errors
+    /// If the client could not connect to Aquarius.
     /// # Returns
-    /// A handle to the thread that receives events or an error if the thread could not be started.
-    pub(crate) fn connect(&mut self) -> IoResult<JoinHandle<()>> {
-        let address = self.address;
-        let timeout = self.timeout;
-        let sender = self.sender.clone();
+    /// A result with a unit if the client could connect to Aquarius. Otherwise, an error is returned.
+    pub(crate) fn connect(&mut self) -> IoResult<()> {
+        let stream = create_stream(&self.address, self.timeout)?;
+        self.comm_main = Some(Communication::new(&stream)?);
+        Ok(())
+    }
 
-        let stream = create_stream(&address, timeout)?;
-        self.comm_events = Some(Communication::new(&stream)?);
-
-        // Spawn a thread to watch the thread that receives events from Aquarius
-        let watch_dog: JoinHandle<()> = thread::spawn(move || {
-            loop {
-                // create a new stream to Aquarius
-                if let Ok(stream) = create_stream(&address, timeout) {
-                    // Spawn a thread to receive events from Aquarius
-                    match spawn_communication_thread(&stream, sender.clone()) {
-                        Ok(handle) => {
-                            // Wait for the thread to finish
-                            let _ = handle.join().is_ok();
-                        }
-                        Err(err) => {
-                            warn!("Error spawning thread: {}", err);
-                        }
-                    }
-                }
-            }
-        });
-
-        Ok(watch_dog)
+    /// Disconnects the client from Aquarius application.
+    pub(crate) fn disconnect(&mut self) {
+        self.comm_main = None;
     }
 
     /// Reads the open heats from Aquarius.
@@ -91,7 +73,7 @@ impl Client {
     /// # Errors
     /// If the open heats could not be read from Aquarius.
     pub(crate) fn read_open_heats(&mut self) -> Result<Vec<Heat>, TimekeeperErr> {
-        if let Some(comm) = &mut self.comm_events {
+        if let Some(comm) = &mut self.comm_main {
             comm.write(&RequestListOpenHeats::new().to_string())
                 .map_err(TimekeeperErr::IoError)?;
             let response = comm.receive_all().map_err(TimekeeperErr::IoError)?;
@@ -105,6 +87,49 @@ impl Client {
                 "Communication is not initialized.".to_string(),
             ))
         }
+    }
+
+    /// Starts a thread to watch the thread that receives events from Aquarius.
+    /// # Returns
+    /// A handle to the thread that watches the thread that receives events from Aquarius.
+    /// # Errors
+    /// If the thread could not be started.
+    /// # Panics
+    /// If the sender could not send a message to the application.
+    fn start_watch_dog(&mut self) -> IoResult<JoinHandle<()>> {
+        let address = self.address;
+        let timeout = self.timeout;
+        let sender = self.sender.clone();
+
+        // Spawn a thread to watch the thread that receives events from Aquarius
+        let watch_dog: JoinHandle<()> = thread::spawn(move || {
+            loop {
+                // create a new stream to Aquarius
+                if let Ok(stream) = create_stream(&address, timeout) {
+                    // Spawn a thread to receive events from Aquarius
+                    match spawn_communication_thread(&stream, sender.clone()) {
+                        Ok(handle) => {
+                            // Send a message to the application that the client is connected
+                            sender.send(AppEvent::Client(true)).unwrap();
+                            // Wait for the thread to finish
+                            let _ = handle.join().is_ok();
+                            // Send a message to the application that the client is disconnected
+                            sender.send(AppEvent::Client(false)).unwrap();
+                        }
+                        Err(err) => {
+                            // Send a message to the application that the client is disconnected
+                            sender.send(AppEvent::Client(false)).unwrap();
+                            warn!("Error spawning thread: {}", err);
+                        }
+                    }
+                } else {
+                    // Send a message to the application that the client is disconnected
+                    sender.send(AppEvent::Client(false)).unwrap();
+                }
+            }
+        });
+
+        Ok(watch_dog)
     }
 
     fn read_start_list(comm: &mut Communication, heat: &mut Heat) -> Result<(), TimekeeperErr> {
@@ -160,7 +185,7 @@ fn spawn_communication_thread(stream: &TcpStream, sender: Sender<AppEvent>) -> I
                                 if event.opened {
                                     Client::read_start_list(&mut comm, &mut event.heat).unwrap();
                                 }
-                                sender.send(AppEvent::AquariusEvent(event)).unwrap();
+                                sender.send(AppEvent::Aquarius(event)).unwrap();
                             }
                             Err(err) => handle_error(err),
                         }
@@ -235,7 +260,7 @@ mod tests {
         let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
         client.connect().unwrap();
         const MESSAGE: &str = "Hello World!";
-        let result = client.comm_events.unwrap().write(MESSAGE);
+        let result = client.comm_main.unwrap().write(MESSAGE);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), MESSAGE.len());
     }
@@ -248,7 +273,7 @@ mod tests {
         let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
         client.connect().unwrap();
         const MESSAGE: &str = "Hello World!";
-        let comm = client.comm_events.as_mut().unwrap();
+        let comm = client.comm_main.as_mut().unwrap();
         comm.write(MESSAGE).unwrap();
         comm.write("\r\n").unwrap();
         let response = comm.receive_line();
@@ -263,7 +288,7 @@ mod tests {
         let addr = start_test_server();
         let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
         client.connect().unwrap();
-        let comm = client.comm_events.as_mut().unwrap();
+        let comm = client.comm_main.as_mut().unwrap();
         comm.write("Hello World!\n").unwrap();
         comm.write("This is a test.\n").unwrap();
         comm.write("\r\n").unwrap();

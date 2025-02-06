@@ -8,7 +8,7 @@ use crate::{
 };
 use clap::Parser;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
-use log::{debug, info, trace};
+use log::{debug, info, trace, warn};
 use ratatui::{
     buffer::Buffer,
     layout::{
@@ -58,9 +58,7 @@ fn input_thread(sender: Sender<AppEvent>) -> Result<(), TimekeeperErr> {
     trace!(target:"crossterm", "Starting input thread");
     while let Ok(event) = event::read() {
         trace!(target:"crossterm", "Stdin event received {:?}", event);
-        sender
-            .send(AppEvent::UiEvent(event))
-            .map_err(TimekeeperErr::SendError)?;
+        sender.send(AppEvent::UI(event)).map_err(TimekeeperErr::SendError)?;
     }
     Ok(())
 }
@@ -75,8 +73,6 @@ impl App {
 
         let args = Args::parse();
         let mut client = Client::new(&args.host, args.port, args.timeout, sender.clone());
-        client.connect().map_err(TimekeeperErr::IoError)?;
-        let open_heats = client.read_open_heats()?;
 
         self.run(terminal, &mut client, receiver)
     }
@@ -93,10 +89,11 @@ impl App {
         // main loop, runs until the user quits the application by pressing 'q'
         for event in rx {
             match event {
-                AppEvent::UiEvent(event) => self.handle_ui_event(event, client).map_err(TimekeeperErr::IoError)?,
-                AppEvent::AquariusEvent(event) => {
+                AppEvent::UI(event) => self.handle_ui_event(event, client),
+                AppEvent::Aquarius(event) => {
                     info!("Received event: {:?}", &event);
                 }
+                AppEvent::Client(connected) => self.handle_client_event(connected, client),
             }
             if self.state == AppState::Quitting {
                 break;
@@ -127,7 +124,17 @@ impl App {
         };
     }
 
-    fn handle_ui_event(&mut self, event: Event, client: &mut Client) -> IoResult<()> {
+    fn handle_client_event(&mut self, connected: bool, client: &mut Client) {
+        if !connected {
+            client.disconnect();
+            warn!("Connection lost, reconnecting...");
+        } else {
+            let _ = client.connect();
+            info!("Connection established.");
+        }
+    }
+
+    fn handle_ui_event(&mut self, event: Event, client: &mut Client) {
         if let Event::Key(key) = event {
             if key.kind == KeyEventKind::Press {
                 match key.code {
@@ -145,12 +152,11 @@ impl App {
                         }
                     },
                     code => {
-                        debug!("Unhandled key code: {:?}", code);
+                        trace!("Unhandled key code: {:?}", code);
                     }
                 }
             }
         }
-        Ok(())
     }
 
     fn next_tab(&mut self) {
@@ -179,8 +185,11 @@ enum AppState {
 #[derive(Debug)]
 pub(crate) enum AppEvent {
     /// An UI event
-    UiEvent(Event),
+    UI(Event),
 
     /// An event from Aquarius
-    AquariusEvent(EventHeatChanged),
+    Aquarius(EventHeatChanged),
+
+    /// An event from the client, e.g. connection lost
+    Client(bool),
 }
