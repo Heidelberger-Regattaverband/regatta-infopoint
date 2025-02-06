@@ -9,7 +9,7 @@ use crate::{
     error::TimekeeperErr,
     utils,
 };
-use log::{debug, info, trace, warn};
+use log::{debug, error, info, trace, warn};
 use std::{
     io::Result as IoResult,
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream},
@@ -109,16 +109,13 @@ impl Client {
                     // Spawn a thread to receive events from Aquarius
                     match spawn_communication_thread(&stream, sender.clone()) {
                         Ok(handle) => {
-                            // Send a message to the application that the client is connected
-                            sender.send(AppEvent::Client(true)).unwrap();
+                            send_connected(&sender);
                             // Wait for the thread to finish
                             let _ = handle.join().is_ok();
-                            // Send a message to the application that the client is disconnected
-                            sender.send(AppEvent::Client(false)).unwrap();
+                            send_disconnected(&sender);
                         }
                         Err(err) => {
-                            // Send a message to the application that the client is disconnected
-                            sender.send(AppEvent::Client(false)).unwrap();
+                            send_disconnected(&sender);
                             warn!("Error spawning thread: {}", err);
                         }
                     }
@@ -142,20 +139,17 @@ impl Client {
     }
 }
 
-fn handle_error(err: TimekeeperErr) {
-    match err {
-        TimekeeperErr::ParseError(parse_err) => {
-            warn!("Error parsing number: {}", parse_err);
-        }
-        TimekeeperErr::IoError(io_err) => {
-            warn!("I/O error: {}", io_err);
-        }
-        TimekeeperErr::InvalidMessage(message) => {
-            warn!("Invalid message: {}", message);
-        }
-        TimekeeperErr::SendError(send_err) => {
-            warn!("Send error: {}", send_err);
-        }
+fn send_connected(sender: &Sender<AppEvent>) {
+    // Send a message to the application that the client is connected
+    if let Err(err) = sender.send(AppEvent::Client(true)) {
+        error!("Error sending message to application: {}", err);
+    }
+}
+
+fn send_disconnected(sender: &Sender<AppEvent>) {
+    // Send a message to the application that the client is disconnected
+    if let Err(err) = sender.send(AppEvent::Client(true)) {
+        error!("Error sending message to application: {}", err);
     }
 }
 
@@ -187,13 +181,13 @@ fn spawn_communication_thread(stream: &TcpStream, sender: Sender<AppEvent>) -> I
                                 }
                                 sender.send(AppEvent::Aquarius(event)).unwrap();
                             }
-                            Err(err) => handle_error(err),
+                            Err(err) => log_error(err),
                         }
                     }
                 }
                 // an error occurred while receiving a line
                 Err(err) => {
-                    handle_error(TimekeeperErr::IoError(err));
+                    log_error(TimekeeperErr::IoError(err));
                     break;
                 }
             }
@@ -201,6 +195,18 @@ fn spawn_communication_thread(stream: &TcpStream, sender: Sender<AppEvent>) -> I
         debug!("Stopped thread to receive Aquarius events.");
     });
     Ok(handle)
+}
+
+/// Logs an TimekeeperErr as a warning.
+/// # Arguments
+/// * `err` - The TimekeeperErr to log.
+fn log_error(err: TimekeeperErr) {
+    match err {
+        TimekeeperErr::ParseError(parse_err) => warn!("Error parsing number: {}", parse_err),
+        TimekeeperErr::IoError(io_err) => warn!("I/O error: {}", io_err),
+        TimekeeperErr::InvalidMessage(message) => warn!("Invalid message: {}", message),
+        TimekeeperErr::SendError(send_err) => warn!("Send error: {}", send_err),
+    }
 }
 
 #[cfg(test)]
@@ -247,7 +253,7 @@ mod tests {
         let (sender, _) = init();
 
         let addr = start_test_server();
-        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender).unwrap();
+        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
         let result = client.connect();
         assert!(result.is_ok());
     }
@@ -257,7 +263,7 @@ mod tests {
         let (sender, _) = init();
 
         let addr = start_test_server();
-        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender).unwrap();
+        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
         client.connect().unwrap();
         const MESSAGE: &str = "Hello World!";
         let result = client.comm_main.unwrap().write(MESSAGE);
@@ -270,7 +276,7 @@ mod tests {
         let (sender, _) = init();
 
         let addr = start_test_server();
-        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender).unwrap();
+        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
         client.connect().unwrap();
         const MESSAGE: &str = "Hello World!";
         let comm = client.comm_main.as_mut().unwrap();
@@ -286,7 +292,7 @@ mod tests {
         let (sender, _) = init();
 
         let addr = start_test_server();
-        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender).unwrap();
+        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
         client.connect().unwrap();
         let comm = client.comm_main.as_mut().unwrap();
         comm.write("Hello World!\n").unwrap();
