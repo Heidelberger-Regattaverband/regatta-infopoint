@@ -21,8 +21,8 @@ use std::{
 
 /// A client to connect to the Aquarius server.
 pub(crate) struct Client {
-    /// The communication struct to handle communication with Aquarius.
-    communication: Option<Communication>,
+    /// The communication struct to handle events from Aquarius.
+    comm_events: Option<Communication>,
 
     address: SocketAddr,
 
@@ -43,7 +43,7 @@ impl Client {
     pub(crate) fn new(host: &str, port: u16, timeout: u16, sender: Sender<AppEvent>) -> Self {
         let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::from_str(host).unwrap()), port);
         Client {
-            communication: None,
+            comm_events: None,
             address,
             timeout,
             sender,
@@ -61,7 +61,7 @@ impl Client {
         let sender = self.sender.clone();
 
         let stream = create_stream(&address, timeout)?;
-        self.communication = Some(Communication::new(&stream)?);
+        self.comm_events = Some(Communication::new(&stream)?);
 
         // Spawn a thread to watch the thread that receives events from Aquarius
         let watch_dog: JoinHandle<()> = thread::spawn(move || {
@@ -91,7 +91,7 @@ impl Client {
     /// # Errors
     /// If the open heats could not be read from Aquarius.
     pub(crate) fn read_open_heats(&mut self) -> Result<Vec<Heat>, TimekeeperErr> {
-        if let Some(comm) = &mut self.communication {
+        if let Some(comm) = &mut self.comm_events {
             comm.write(&RequestListOpenHeats::new().to_string())
                 .map_err(TimekeeperErr::IoError)?;
             let response = comm.receive_all().map_err(TimekeeperErr::IoError)?;
@@ -235,7 +235,7 @@ mod tests {
         let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
         client.connect().unwrap();
         const MESSAGE: &str = "Hello World!";
-        let result = client.communication.unwrap().write(MESSAGE);
+        let result = client.comm_events.unwrap().write(MESSAGE);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), MESSAGE.len());
     }
@@ -248,7 +248,7 @@ mod tests {
         let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
         client.connect().unwrap();
         const MESSAGE: &str = "Hello World!";
-        let comm = client.communication.as_mut().unwrap();
+        let comm = client.comm_events.as_mut().unwrap();
         comm.write(MESSAGE).unwrap();
         comm.write("\r\n").unwrap();
         let response = comm.receive_line();
@@ -263,7 +263,7 @@ mod tests {
         let addr = start_test_server();
         let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
         client.connect().unwrap();
-        let comm = client.communication.as_mut().unwrap();
+        let comm = client.comm_events.as_mut().unwrap();
         comm.write("Hello World!\n").unwrap();
         comm.write("This is a test.\n").unwrap();
         comm.write("\r\n").unwrap();
