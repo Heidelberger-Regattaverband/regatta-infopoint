@@ -39,7 +39,7 @@ impl Client {
     /// * `sender` - The sender to send events to the application.
     /// # Returns
     /// A client to communicate with Aquarius.
-    pub(crate) fn new(host: &str, port: u16, timeout: u16, sender: Sender<AppEvent>) -> Self {
+    pub(crate) fn new(host: &str, port: u16, timeout: u16, sender: Sender<AppEvent>) -> IoResult<Self> {
         let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::from_str(host).unwrap()), port);
         let mut client = Client {
             comm_main: None,
@@ -47,8 +47,8 @@ impl Client {
             timeout,
             sender,
         };
-        client.start_watch_dog().unwrap();
-        client
+        client.start_watch_dog()?;
+        Ok(client)
     }
 
     /// Connects the client to Aquarius application.
@@ -247,7 +247,7 @@ mod tests {
         let (sender, _) = init();
 
         let addr = start_test_server();
-        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
+        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender).unwrap();
         let result = client.connect();
         assert!(result.is_ok());
     }
@@ -257,7 +257,7 @@ mod tests {
         let (sender, _) = init();
 
         let addr = start_test_server();
-        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
+        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender).unwrap();
         client.connect().unwrap();
         const MESSAGE: &str = "Hello World!";
         let result = client.comm_main.unwrap().write(MESSAGE);
@@ -270,8 +270,7 @@ mod tests {
         let (sender, _) = init();
 
         let addr = start_test_server();
-        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
-        client.connect().unwrap();
+        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender).unwrap();
         const MESSAGE: &str = "Hello World!";
         let comm = client.comm_main.as_mut().unwrap();
         comm.write(MESSAGE).unwrap();
@@ -286,7 +285,7 @@ mod tests {
         let (sender, _) = init();
 
         let addr = start_test_server();
-        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
+        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender).unwrap();
         client.connect().unwrap();
         let comm = client.comm_main.as_mut().unwrap();
         comm.write("Hello World!\n").unwrap();

@@ -20,11 +20,8 @@ use ratatui::{
     widgets::{Tabs, Widget},
     DefaultTerminal,
 };
+use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
-use std::{
-    io::Result as IoResult,
-    sync::mpsc::{self, Receiver, Sender},
-};
 use strum::IntoEnumIterator;
 use tabs::{logs::LogsTab, measurement::TimeMeasurementTab, timestrip::TimeStripTab, SelectedTab};
 
@@ -72,7 +69,8 @@ impl App {
         thread::spawn(move || input_thread(ui_event_sender));
 
         let args = Args::parse();
-        let mut client = Client::new(&args.host, args.port, args.timeout, sender.clone());
+        let mut client =
+            Client::new(&args.host, args.port, args.timeout, sender.clone()).map_err(TimekeeperErr::IoError)?;
 
         self.run(terminal, &mut client, receiver)
     }
