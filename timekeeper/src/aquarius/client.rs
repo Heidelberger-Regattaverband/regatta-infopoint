@@ -268,7 +268,7 @@ mod tests {
     #[test]
     fn test_client_receive_line() {
         let (sender, _) = init();
-    
+
         let addr = start_test_server();
         let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender).unwrap();
         client.connect().unwrap();
