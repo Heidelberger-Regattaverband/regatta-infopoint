@@ -77,7 +77,6 @@ impl App {
         let mut client = Client::new(&args.host, args.port, args.timeout, sender.clone());
         client.connect().map_err(TimekeeperErr::IoError)?;
         let open_heats = client.read_open_heats()?;
-        debug!("Open heats: {:#?}", open_heats);
 
         self.run(terminal, &mut client, receiver)
     }
@@ -139,7 +138,7 @@ impl App {
                     KeyCode::Enter => self.time_strip_tab.start_time_stamp(),
                     KeyCode::Char('r') => match client.read_open_heats() {
                         Ok(open_heats) => {
-                            debug!("Open heats: {:#?}", open_heats);
+                            debug!("Open heats: {:?}", open_heats);
                         }
                         Err(err) => {
                             debug!("Error reading open heats: {}", err);
