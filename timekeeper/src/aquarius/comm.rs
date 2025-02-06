@@ -29,19 +29,6 @@ impl Communication {
         Ok(Communication { reader, writer })
     }
 
-    /// Set the stream to communicate with Aquarius.
-    /// # Arguments
-    /// * `stream` - A reference to a `TcpStream` to communicate with Aquarius.
-    /// # Returns
-    /// An error if the stream cannot be cloned.
-    /// # Errors
-    /// An error if the stream cannot be cloned.
-    pub(super) fn set_stream(&mut self, stream: &TcpStream) -> IoResult<()> {
-        self.reader = BufReader::new(stream.try_clone()?);
-        self.writer = BufWriter::new(stream.try_clone()?);
-        Ok(())
-    }
-
     /// Write a command to Aquarius.
     /// # Arguments
     /// * `cmd` - The command to write.
@@ -68,7 +55,7 @@ impl Communication {
                     Err(IoError::new(ErrorKind::UnexpectedEof, "Connection closed"))
                 } else {
                     trace!(
-                        "Received {} bytes: \"{}\"",
+                        "Received line (len={}:) \"{}\"",
                         count.to_string(),
                         utils::print_whitespaces(&line)
                     );
