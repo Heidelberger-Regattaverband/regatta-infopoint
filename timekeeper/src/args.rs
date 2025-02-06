@@ -18,7 +18,7 @@ pub(crate) struct Args {
     pub(crate) port: u16,
 
     /// The connection timeout in seconds
-    #[arg(long, default_value = "2")]
+    #[arg(long, default_value = "1")]
     pub(crate) timeout: u16,
 }
 
@@ -31,6 +31,6 @@ mod tests {
         let args = Args::parse();
         assert_eq!(args.host, "localhost");
         assert_eq!(args.port, 2048);
-        assert_eq!(args.timeout, 2);
+        assert_eq!(args.timeout, 1);
     }
 }

@@ -120,8 +120,7 @@ impl Client {
                         }
                     }
                 } else {
-                    // Send a message to the application that the client is disconnected
-                    sender.send(AppEvent::Client(false)).unwrap();
+                    send_disconnected(&sender);
                 }
             }
         });
@@ -148,7 +147,7 @@ fn send_connected(sender: &Sender<AppEvent>) {
 
 fn send_disconnected(sender: &Sender<AppEvent>) {
     // Send a message to the application that the client is disconnected
-    if let Err(err) = sender.send(AppEvent::Client(true)) {
+    if let Err(err) = sender.send(AppEvent::Client(false)) {
         error!("Error sending message to application: {}", err);
     }
 }
