@@ -1,3 +1,5 @@
+use log::warn;
+
 use crate::app::AppEvent;
 use std::{
     fmt::{Display, Formatter, Result as FmtResult},

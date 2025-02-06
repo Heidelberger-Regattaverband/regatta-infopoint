@@ -196,13 +196,13 @@ fn spawn_communication_thread(stream: &TcpStream, sender: Sender<AppEvent>) -> I
                                 }
                                 sender.send(AppEvent::Aquarius(event)).unwrap();
                             }
-                            Err(err) => log_error(err),
+                            Err(err) => warn!("{}", err),
                         }
                     }
                 }
                 // an error occurred while receiving a line
                 Err(err) => {
-                    log_error(TimekeeperErr::IoError(err));
+                    warn!("{}", err);
                     break;
                 }
             }
@@ -210,18 +210,6 @@ fn spawn_communication_thread(stream: &TcpStream, sender: Sender<AppEvent>) -> I
         debug!("Stopped thread to receive Aquarius events.");
     });
     Ok(handle)
-}
-
-/// Logs an TimekeeperErr as a warning.
-/// # Arguments
-/// * `err` - The TimekeeperErr to log.
-fn log_error(err: TimekeeperErr) {
-    match err {
-        TimekeeperErr::ParseError(parse_err) => warn!("Error parsing number: {}", parse_err),
-        TimekeeperErr::IoError(io_err) => warn!("I/O error: {}", io_err),
-        TimekeeperErr::InvalidMessage(message) => warn!("Invalid message: {}", message),
-        TimekeeperErr::SendError(send_err) => warn!("Send error: {}", send_err),
-    }
 }
 
 #[cfg(test)]
