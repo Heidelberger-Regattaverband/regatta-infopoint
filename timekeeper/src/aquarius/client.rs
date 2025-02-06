@@ -17,7 +17,7 @@ use std::{
     str::FromStr,
     sync::mpsc::Sender,
     thread::{self, JoinHandle},
-    time::Duration,
+    time::{Duration, Instant},
 };
 
 /// A client to connect to the Aquarius server.
@@ -104,7 +104,10 @@ impl Client {
 
         // Spawn a thread to watch the thread that receives events from Aquarius
         let watch_dog: JoinHandle<()> = thread::spawn(move || {
+            let timeout_duration = Duration::from_secs(timeout as u64);
+
             loop {
+                let start = Instant::now();
                 // create a new stream to Aquarius
                 match create_stream(&address, timeout) {
                     Ok(stream) => {
@@ -127,11 +130,14 @@ impl Client {
                         ErrorKind::NetworkUnreachable => process::exit(1),
                         _ => {
                             send_disconnected(&sender);
-                            warn!("Error creating stream: {}", err);
                         }
                     },
                 }
-            }
+                let elapsed = start.elapsed();
+                if elapsed < timeout_duration {
+                    thread::sleep(timeout_duration - elapsed);
+                }
+            } // end loop
         });
 
         watch_dog
