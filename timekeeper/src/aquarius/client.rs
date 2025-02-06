@@ -11,8 +11,9 @@ use crate::{
 };
 use log::{debug, error, info, trace, warn};
 use std::{
-    io::Result as IoResult,
+    io::{ErrorKind, Result as IoResult},
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream},
+    process,
     str::FromStr,
     sync::mpsc::Sender,
     thread::{self, JoinHandle},
@@ -105,22 +106,30 @@ impl Client {
         let watch_dog: JoinHandle<()> = thread::spawn(move || {
             loop {
                 // create a new stream to Aquarius
-                if let Ok(stream) = create_stream(&address, timeout) {
-                    // Spawn a thread to receive events from Aquarius
-                    match spawn_communication_thread(&stream, sender.clone()) {
-                        Ok(handle) => {
-                            send_connected(&sender);
-                            // Wait for the thread to finish
-                            let _ = handle.join().is_ok();
-                            send_disconnected(&sender);
-                        }
-                        Err(err) => {
-                            send_disconnected(&sender);
-                            warn!("Error spawning thread: {}", err);
+                match create_stream(&address, timeout) {
+                    Ok(stream) => {
+                        // Spawn a thread to receive events from Aquarius
+                        match spawn_communication_thread(&stream, sender.clone()) {
+                            Ok(handle) => {
+                                send_connected(&sender);
+                                // Wait for the thread to finish
+                                let _ = handle.join().is_ok();
+                                send_disconnected(&sender);
+                            }
+                            Err(err) => {
+                                send_disconnected(&sender);
+                                warn!("Error spawning thread: {}", err);
+                            }
                         }
                     }
-                } else {
-                    send_disconnected(&sender);
+                    Err(err) => match err.kind() {
+                        ErrorKind::HostUnreachable => process::exit(1),
+                        ErrorKind::NetworkUnreachable => process::exit(1),
+                        _ => {
+                            send_disconnected(&sender);
+                            warn!("Error creating stream: {}", err);
+                        }
+                    },
                 }
             }
         });
