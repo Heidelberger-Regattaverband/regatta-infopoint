@@ -15,6 +15,7 @@ use ratatui::{
 
 const TEXT_FG_COLOR: Color = SLATE.c200;
 const COMPLETED_TEXT_FG_COLOR: Color = GREEN.c500;
+const DATE_FORMAT_STR: &str = "%H:%M:%S.%3f";
 
 #[derive(Default)]
 pub(crate) struct TimeStripTab {
@@ -52,8 +53,14 @@ impl TimeStripTab {
 impl From<&TimeStamp> for ListItem<'_> {
     fn from(value: &TimeStamp) -> Self {
         let line = match value.stamp_type {
-            TimeStampType::Start => Line::styled(format!("Start {}", value.time), TEXT_FG_COLOR),
-            TimeStampType::Finish => Line::styled(format!("Ziel  {}", value.time), COMPLETED_TEXT_FG_COLOR),
+            TimeStampType::Start => Line::styled(
+                format!("Start {:4}: {}", value.index, value.time.format(DATE_FORMAT_STR)),
+                TEXT_FG_COLOR,
+            ),
+            TimeStampType::Finish => Line::styled(
+                format!(" Ziel {:4}: {}", value.index, value.time.format(DATE_FORMAT_STR)),
+                COMPLETED_TEXT_FG_COLOR,
+            ),
         };
         ListItem::new(line)
     }

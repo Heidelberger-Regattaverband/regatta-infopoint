@@ -1,6 +1,13 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Local};
 use log::info;
-use std::time::SystemTime;
+use std::sync::atomic::{AtomicU64, Ordering};
+
+static TIME_STAMP_INDEX: AtomicU64 = AtomicU64::new(0);
+
+fn next_index() -> u64 {
+    TIME_STAMP_INDEX.fetch_add(1, Ordering::SeqCst); // Automatically handles wrapping at 256!
+    TIME_STAMP_INDEX.load(Ordering::SeqCst)
+}
 
 /// A time strip is a collection of time stamps.
 #[derive(Default)]
@@ -26,8 +33,11 @@ impl TimeStrip {
 /// A time stamp of an event.
 #[derive(Debug, Clone)]
 pub(crate) struct TimeStamp {
+    /// The index of the time stamp.
+    pub(crate) index: u64,
+
     /// The time of the event.
-    pub(crate) time: DateTime<Utc>,
+    pub(crate) time: DateTime<Local>,
 
     /// The type of the time stamp.
     pub(crate) stamp_type: TimeStampType,
@@ -39,9 +49,11 @@ impl TimeStamp {
     /// # Arguments
     /// * `stamp_type` - The type of the time stamp.
     fn now(stamp_type: TimeStampType) -> TimeStamp {
-        let now = SystemTime::now();
-        let time = DateTime::from(now);
-        TimeStamp { time, stamp_type }
+        TimeStamp {
+            index: next_index(),
+            time: Local::now(),
+            stamp_type,
+        }
     }
 }
 
