@@ -54,11 +54,23 @@ impl From<&TimeStamp> for ListItem<'_> {
     fn from(value: &TimeStamp) -> Self {
         let line = match value.stamp_type {
             TimeStampType::Start => Line::styled(
-                format!("Start {:4}: {}", value.index, value.time.format(DATE_FORMAT_STR)),
+                format!(
+                    "Start {:4}:  {}  {:3}  {:2}",
+                    value.index,
+                    value.time.format(DATE_FORMAT_STR),
+                    value.heat_nr.unwrap_or(0),
+                    value.bib.unwrap_or(0)
+                ),
                 TEXT_FG_COLOR,
             ),
             TimeStampType::Finish => Line::styled(
-                format!(" Ziel {:4}: {}", value.index, value.time.format(DATE_FORMAT_STR)),
+                format!(
+                    " Ziel {:4}:  {}  {:3}  {:2}",
+                    value.index,
+                    value.time.format(DATE_FORMAT_STR),
+                    value.heat_nr.unwrap_or(0),
+                    value.bib.unwrap_or(0)
+                ),
                 COMPLETED_TEXT_FG_COLOR,
             ),
         };

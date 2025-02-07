@@ -5,8 +5,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 static TIME_STAMP_INDEX: AtomicU64 = AtomicU64::new(0);
 
 fn next_index() -> u64 {
-    TIME_STAMP_INDEX.fetch_add(1, Ordering::SeqCst); // Automatically handles wrapping at 256!
-    TIME_STAMP_INDEX.load(Ordering::SeqCst)
+    TIME_STAMP_INDEX.fetch_add(1, Ordering::SeqCst)
 }
 
 /// A time strip is a collection of time stamps.
@@ -41,6 +40,12 @@ pub(crate) struct TimeStamp {
 
     /// The type of the time stamp.
     pub(crate) stamp_type: TimeStampType,
+
+    /// The heat number.
+    pub(crate) heat_nr: Option<u32>,
+
+    /// The heat number.
+    pub(crate) bib: Option<u32>,
 }
 
 impl TimeStamp {
@@ -53,6 +58,8 @@ impl TimeStamp {
             index: next_index(),
             time: Local::now(),
             stamp_type,
+            heat_nr: None,
+            bib: None,
         }
     }
 }
