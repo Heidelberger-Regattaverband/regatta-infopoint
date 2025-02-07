@@ -34,7 +34,7 @@ pub struct App {
     logs_tab: LogsTab,
 }
 
-impl Widget for &App {
+impl Widget for &mut App {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let vertical = Layout::vertical([Constraint::Length(1), Constraint::Min(0), Constraint::Length(1)]);
         let [header_area, inner_area, footer_area] = vertical.areas(area);
@@ -102,7 +102,7 @@ impl App {
 
     fn draw(&mut self, terminal: &mut DefaultTerminal) -> Result<(), TimekeeperErr> {
         terminal
-            .draw(|frame| frame.render_widget(&*self, frame.area()))
+            .draw(|frame| frame.render_widget(self, frame.area()))
             .map_err(TimekeeperErr::IoError)?;
         Ok(())
     }
@@ -113,7 +113,7 @@ impl App {
         Tabs::new(titles).select(selected_tab_index).render(area, buf);
     }
 
-    fn render_selected_tab(&self, area: Rect, buf: &mut Buffer) {
+    fn render_selected_tab(&mut self, area: Rect, buf: &mut Buffer) {
         match self.selected_tab {
             SelectedTab::Measurement => self.measurement_tab.render(area, buf),
             SelectedTab::TimeStrip => self.time_strip_tab.render(area, buf),

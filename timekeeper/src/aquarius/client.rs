@@ -11,9 +11,8 @@ use crate::{
 };
 use log::{debug, error, info, trace, warn};
 use std::{
-    io::{ErrorKind, Result as IoResult},
+    io::Result as IoResult,
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream},
-    process,
     str::FromStr,
     sync::mpsc::Sender,
     thread::{self, JoinHandle},
@@ -126,13 +125,10 @@ impl Client {
                             }
                         }
                     }
-                    Err(err) => match err.kind() {
-                        ErrorKind::HostUnreachable => process::exit(1),
-                        ErrorKind::NetworkUnreachable => process::exit(1),
-                        _ => {
-                            send_disconnected(&sender);
-                        }
-                    },
+                    Err(err) => {
+                        send_disconnected(&sender);
+                        trace!("Error connecting to Aquarius: {}", err);
+                    }
                 }
                 let elapsed = start.elapsed();
                 if elapsed < repeat_interval {
