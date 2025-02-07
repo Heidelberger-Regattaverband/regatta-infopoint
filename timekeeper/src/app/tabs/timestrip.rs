@@ -25,7 +25,7 @@ pub(crate) struct TimeStripTab {
 
 impl Widget for &mut TimeStripTab {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let items: Vec<ListItem> = self.time_strip.time_stamps.iter().map(ListItem::from).collect();
+        let items: Vec<ListItem> = self.time_strip.time_stamps.iter().rev().map(ListItem::from).collect();
 
         // Create a List from all list items and highlight the currently selected one
         let list = List::new(items)
