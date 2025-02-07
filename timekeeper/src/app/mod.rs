@@ -132,27 +132,33 @@ impl App {
     }
 
     fn handle_ui_event(&mut self, event: Event, client: &mut Client) {
-        if let Event::Key(key) = event {
-            if key.kind == KeyEventKind::Press {
-                match key.code {
-                    KeyCode::Right => self.next_tab(),
-                    KeyCode::Left => self.previous_tab(),
-                    KeyCode::Char('q') | KeyCode::Esc => self.quit(),
-                    KeyCode::Char(' ') => self.time_strip_tab.finish_time_stamp(),
-                    KeyCode::Enter => self.time_strip_tab.start_time_stamp(),
-                    KeyCode::Char('r') => match client.read_open_heats() {
-                        Ok(open_heats) => {
-                            debug!("Open heats: {:?}", open_heats);
+        match event {
+            Event::Key(key) => {
+                if key.kind == KeyEventKind::Press {
+                    match key.code {
+                        KeyCode::Right => self.next_tab(),
+                        KeyCode::Left => self.previous_tab(),
+                        KeyCode::Char('q') | KeyCode::Esc => self.quit(),
+                        KeyCode::Char(' ') => self.time_strip_tab.finish_time_stamp(),
+                        KeyCode::Enter => self.time_strip_tab.start_time_stamp(),
+                        KeyCode::Char('r') => match client.read_open_heats() {
+                            Ok(open_heats) => {
+                                debug!("Open heats: {:?}", open_heats);
+                            }
+                            Err(err) => {
+                                debug!("Error reading open heats: {}", err);
+                            }
+                        },
+                        code => {
+                            trace!("Unhandled key code: {:?}", code);
                         }
-                        Err(err) => {
-                            debug!("Error reading open heats: {}", err);
-                        }
-                    },
-                    code => {
-                        trace!("Unhandled key code: {:?}", code);
                     }
                 }
             }
+            Event::Mouse(mouse) => {
+                debug!("Mouse event: {:?}", mouse);
+            }
+            _ => {}
         }
     }
 
