@@ -36,28 +36,32 @@ pub struct App {
 
 impl Widget for &mut App {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let vertical = Layout::vertical([Constraint::Length(1), Constraint::Min(0), Constraint::Length(1)]);
-        let [header_area, inner_area, footer_area] = vertical.areas(area);
+        // vertical layout: header, inner area, footer
+        let [header_area, inner_area, footer_area] =
+            Layout::vertical([Constraint::Length(1), Constraint::Min(0), Constraint::Length(1)]).areas(area);
 
-        let horizontal = Layout::horizontal([Min(0), Length(20)]);
-        let [tabs_area, title_area] = horizontal.areas(header_area);
+        // horizontal header layout: tabs, title
+        let [tabs_area, title_area] = Layout::horizontal([Min(0), Length(20)]).areas(header_area);
 
+        // render tabs header and title
         "Aquarius Zeitmessung".bold().render(title_area, buf);
-        self.render_tabs(tabs_area, buf);
-        self.render_selected_tab(inner_area, buf);
+        let titles = SelectedTab::iter().map(SelectedTab::title);
+
+        // render the selected tab
+        Tabs::new(titles)
+            .select(self.selected_tab as usize)
+            .render(tabs_area, buf);
+        match self.selected_tab {
+            SelectedTab::Measurement => self.measurement_tab.render(inner_area, buf),
+            SelectedTab::TimeStrip => self.time_strip_tab.render(inner_area, buf),
+            SelectedTab::Logs => self.logs_tab.render(inner_area, buf),
+        };
+
+        // render footer
         Line::raw("◄ ► to change tab | Press q to quit")
             .centered()
             .render(footer_area, buf);
     }
-}
-
-fn input_thread(sender: Sender<AppEvent>) -> Result<(), TimekeeperErr> {
-    trace!(target:"crossterm", "Starting input thread");
-    while let Ok(event) = event::read() {
-        trace!(target:"crossterm", "Stdin event received {:?}", event);
-        sender.send(AppEvent::UI(event)).map_err(TimekeeperErr::SendError)?;
-    }
-    Ok(())
 }
 
 impl App {
@@ -79,17 +83,13 @@ impl App {
         &mut self,
         terminal: &mut DefaultTerminal,
         client: &mut Client,
-        rx: Receiver<AppEvent>,
+        receiver: Receiver<AppEvent>,
     ) -> Result<(), TimekeeperErr> {
-        self.draw(terminal)?;
-
         // main loop, runs until the user quits the application by pressing 'q'
-        for event in rx {
+        for event in receiver {
             match event {
                 AppEvent::UI(event) => self.handle_ui_event(event, client),
-                AppEvent::Aquarius(event) => {
-                    info!("Received event: {:?}", &event);
-                }
+                AppEvent::Aquarius(event) => self.handle_aquarius_event(event),
                 AppEvent::Client(connected) => self.handle_client_event(connected, client),
             }
             if self.state == AppState::Quitting {
@@ -105,20 +105,6 @@ impl App {
             .draw(|frame| frame.render_widget(self, frame.area()))
             .map_err(TimekeeperErr::IoError)?;
         Ok(())
-    }
-
-    fn render_tabs(&self, area: Rect, buf: &mut Buffer) {
-        let titles = SelectedTab::iter().map(SelectedTab::title);
-        let selected_tab_index = self.selected_tab as usize;
-        Tabs::new(titles).select(selected_tab_index).render(area, buf);
-    }
-
-    fn render_selected_tab(&mut self, area: Rect, buf: &mut Buffer) {
-        match self.selected_tab {
-            SelectedTab::Measurement => self.measurement_tab.render(area, buf),
-            SelectedTab::TimeStrip => self.time_strip_tab.render(area, buf),
-            SelectedTab::Logs => self.logs_tab.render(area, buf),
-        };
     }
 
     fn handle_client_event(&mut self, connected: bool, client: &mut Client) {
@@ -158,6 +144,10 @@ impl App {
         }
     }
 
+    fn handle_aquarius_event(&mut self, event: EventHeatChanged) {
+        debug!("Received event: {:?}", event);
+    }
+
     fn next_tab(&mut self) {
         self.selected_tab = self.selected_tab.next();
     }
@@ -171,8 +161,17 @@ impl App {
     }
 }
 
+fn input_thread(sender: Sender<AppEvent>) -> Result<(), TimekeeperErr> {
+    trace!(target:"crossterm", "Starting input thread");
+    while let Ok(event) = event::read() {
+        trace!(target:"crossterm", "Stdin event received {:?}", event);
+        sender.send(AppEvent::UI(event)).map_err(TimekeeperErr::SendError)?;
+    }
+    Ok(())
+}
+
 /// The application's state (running or quitting)
-#[derive(Default, Clone, Copy, PartialEq, Eq)]
+#[derive(Default, PartialEq, Eq)]
 enum AppState {
     /// The application is running
     #[default]
@@ -181,7 +180,6 @@ enum AppState {
     Quitting,
 }
 
-#[derive(Debug)]
 pub(crate) enum AppEvent {
     /// An UI event
     UI(Event),
