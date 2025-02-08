@@ -20,9 +20,9 @@ const DATE_FORMAT_STR: &str = "%H:%M:%S.%3f";
 
 #[derive(Default)]
 pub(crate) struct TimeStripTab {
-    // Add fields here
     time_strip: TimeStrip,
     state: ListState,
+    show_popup: bool,
 }
 
 impl Widget for &mut TimeStripTab {
@@ -42,37 +42,25 @@ impl Widget for &mut TimeStripTab {
 }
 
 impl TimeStripTab {
-    pub(crate) fn handle_key_event(&mut self, event: KeyEvent) -> bool {
+    pub(crate) fn handle_key_event(&mut self, event: KeyEvent) {
         match event.code {
-            KeyCode::Char('s') | KeyCode::Char('+') => {
-                self.start_time_stamp();
-                true
-            }
-            KeyCode::Char('f') | KeyCode::Char(' ') => {
-                self.finish_time_stamp();
-                true
-            }
-            KeyCode::Up => {
-                self.select_previous();
-                true
-            }
-            KeyCode::Down => {
-                self.select_next();
-                true
-            }
+            KeyCode::Char('s') | KeyCode::Char('+') => self.start_time_stamp(),
+            KeyCode::Char('f') | KeyCode::Char(' ') => self.finish_time_stamp(),
+            KeyCode::Up => self.select_previous(),
+            KeyCode::Down => self.select_next(),
             KeyCode::Home => {
                 self.select_first();
-                true
             }
             KeyCode::End => {
                 self.select_last();
-                true
             }
             KeyCode::Char('h') => {
                 self.select_none();
-                true
             }
-            _ => false,
+            KeyCode::Enter => {
+                self.show_popup = !self.show_popup;
+            }
+            _ => {}
         }
     }
 

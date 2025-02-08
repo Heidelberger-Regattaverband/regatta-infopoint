@@ -147,11 +147,7 @@ impl App {
                                 debug!("Error reading open heats: {}", err);
                             }
                         },
-                        _ => {
-                            if !self.time_strip_tab.handle_key_event(key_event) {
-                                trace!("Unhandled key event: {:?}", key_event);
-                            }
-                        }
+                        _ => self.time_strip_tab.handle_key_event(key_event),
                     }
                 }
             }
