@@ -48,18 +48,10 @@ impl TimeStripTab {
             KeyCode::Char('f') | KeyCode::Char(' ') => self.finish_time_stamp(),
             KeyCode::Up => self.select_previous(),
             KeyCode::Down => self.select_next(),
-            KeyCode::Home => {
-                self.select_first();
-            }
-            KeyCode::End => {
-                self.select_last();
-            }
-            KeyCode::Char('h') => {
-                self.select_none();
-            }
-            KeyCode::Enter => {
-                self.show_popup = !self.show_popup;
-            }
+            KeyCode::Home => self.select_first(),
+            KeyCode::End => self.select_last(),
+            KeyCode::Char('h') => self.select_none(),
+            KeyCode::Enter => self.show_popup = !self.show_popup,
             _ => {}
         }
     }
