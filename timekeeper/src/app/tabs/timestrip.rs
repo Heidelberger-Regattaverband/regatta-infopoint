@@ -2,6 +2,7 @@ use crate::{
     app::{tabs::block, TimeStrip},
     timestrip::{TimeStamp, TimeStampType},
 };
+use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -41,11 +42,25 @@ impl Widget for &mut TimeStripTab {
 }
 
 impl TimeStripTab {
-    pub(crate) fn finish_time_stamp(&mut self) {
+    pub(crate) fn handle_key_event(&mut self, event: KeyEvent) -> bool {
+        match event.code {
+            KeyCode::Char('s') | KeyCode::Char('+') => {
+                self.start_time_stamp();
+                true
+            }
+            KeyCode::Char('f') | KeyCode::Char(' ') => {
+                self.finish_time_stamp();
+                true
+            }
+            _ => false,
+        }
+    }
+
+    fn finish_time_stamp(&mut self) {
         self.time_strip.add_new_finish();
     }
 
-    pub(crate) fn start_time_stamp(&mut self) {
+    fn start_time_stamp(&mut self) {
         self.time_strip.add_new_start();
     }
 }

@@ -133,14 +133,12 @@ impl App {
 
     fn handle_ui_event(&mut self, event: Event, client: &mut Client) {
         match event {
-            Event::Key(key) => {
-                if key.kind == KeyEventKind::Press {
-                    match key.code {
+            Event::Key(key_event) => {
+                if key_event.kind == KeyEventKind::Press {
+                    match key_event.code {
                         KeyCode::Right => self.next_tab(),
                         KeyCode::Left => self.previous_tab(),
                         KeyCode::Char('q') | KeyCode::Esc => self.quit(),
-                        KeyCode::Char(' ') => self.time_strip_tab.finish_time_stamp(),
-                        KeyCode::Enter => self.time_strip_tab.start_time_stamp(),
                         KeyCode::Char('r') => match client.read_open_heats() {
                             Ok(open_heats) => {
                                 debug!("Open heats: {:?}", open_heats);
@@ -149,8 +147,10 @@ impl App {
                                 debug!("Error reading open heats: {}", err);
                             }
                         },
-                        code => {
-                            trace!("Unhandled key code: {:?}", code);
+                        _ => {
+                            if !self.time_strip_tab.handle_key_event(key_event) {
+                                debug!("Unhandled key event: {:?}", key_event);
+                            }
                         }
                     }
                 }
