@@ -32,7 +32,7 @@ impl Widget for &mut TimeStripTab {
         // Create a List from all list items and highlight the currently selected one
         let list = List::new(items)
             .block(block())
-            .highlight_symbol(">")
+            .highlight_symbol(">> ")
             .highlight_spacing(HighlightSpacing::Always);
 
         // We need to disambiguate this trait method as both `Widget` and `StatefulWidget` share the
@@ -52,6 +52,26 @@ impl TimeStripTab {
                 self.finish_time_stamp();
                 true
             }
+            KeyCode::Up => {
+                self.select_previous();
+                true
+            }
+            KeyCode::Down => {
+                self.select_next();
+                true
+            }
+            KeyCode::Home => {
+                self.select_first();
+                true
+            }
+            KeyCode::End => {
+                self.select_last();
+                true
+            }
+            KeyCode::Char('h') => {
+                self.select_none();
+                true
+            }
             _ => false,
         }
     }
@@ -62,6 +82,26 @@ impl TimeStripTab {
 
     fn start_time_stamp(&mut self) {
         self.time_strip.add_new_start();
+    }
+
+    fn select_none(&mut self) {
+        self.state.select(None);
+    }
+
+    fn select_next(&mut self) {
+        self.state.select_next();
+    }
+
+    fn select_previous(&mut self) {
+        self.state.select_previous();
+    }
+
+    fn select_first(&mut self) {
+        self.state.select_first();
+    }
+
+    fn select_last(&mut self) {
+        self.state.select_last();
     }
 }
 
