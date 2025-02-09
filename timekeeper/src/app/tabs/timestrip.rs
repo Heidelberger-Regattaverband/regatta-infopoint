@@ -20,7 +20,7 @@ const DATE_FORMAT_STR: &str = "%H:%M:%S.%3f";
 
 #[derive(Default)]
 pub(crate) struct TimeStripTab {
-    time_strip: TimeStrip,
+    pub(crate) time_strip: TimeStrip,
     state: ListState,
     show_popup: bool,
 }
@@ -44,8 +44,6 @@ impl Widget for &mut TimeStripTab {
 impl TimeStripTab {
     pub(crate) fn handle_key_event(&mut self, event: KeyEvent) {
         match event.code {
-            KeyCode::Char('s') | KeyCode::Char('+') => self.time_strip.add_new_start(),
-            KeyCode::Char('f') | KeyCode::Char(' ') => self.time_strip.add_new_finish(),
             KeyCode::Up => self.state.select_previous(),
             KeyCode::Down => self.state.select_next(),
             KeyCode::Home => self.state.select_first(),

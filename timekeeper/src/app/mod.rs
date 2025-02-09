@@ -124,6 +124,8 @@ impl App {
                         KeyCode::Right => self.selected_tab = self.selected_tab.next(),
                         KeyCode::Left => self.selected_tab = self.selected_tab.previous(),
                         KeyCode::Char('q') | KeyCode::Esc => self.state = AppState::Quitting,
+                        KeyCode::Char('s') | KeyCode::Char('+') => self.time_strip_tab.time_strip.add_new_start(),
+                        KeyCode::Char('f') | KeyCode::Char(' ') => self.time_strip_tab.time_strip.add_new_finish(),
                         KeyCode::Char('r') => self.read_open_heats(),
                         _ => match self.selected_tab {
                             SelectedTab::Heats => self.heats_tab.handle_key_event(key_event),
