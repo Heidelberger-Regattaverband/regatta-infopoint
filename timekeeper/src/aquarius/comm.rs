@@ -42,15 +42,18 @@ impl Communication {
         Ok(count)
     }
 
-    /// Receive a line from Aquarius.
+    /// Receive a single line from Aquarius.
     /// # Returns
     /// The line received from Aquarius or an error if the line could not be read.
     /// # Errors
     /// An error if the connection is closed or an error occurs while reading.
     pub(super) fn receive_line(&mut self) -> IoResult<String> {
         let mut line = String::new();
+
+        // Read a line from Aquarius and blocks until data is available.
         match self.reader.read_line(&mut line) {
             Ok(count) => {
+                // If no data is read, the connection is closed.
                 if count == 0 {
                     Err(IoError::new(ErrorKind::UnexpectedEof, "Connection closed"))
                 } else {
@@ -75,10 +78,11 @@ impl Communication {
         let mut result = String::new();
         let mut buf = Vec::new();
         loop {
-            // Read until a newline character is found.
+            // Read until a newline character is found and blocks until data is available.
             match self.reader.read_until(b'\n', &mut buf) {
                 Ok(count) => {
                     if count == 0 {
+                        // If no data is read, the connection is closed.
                         return Err(IoError::new(ErrorKind::UnexpectedEof, "Connection closed"));
                     } else {
                         // Decode the buffer to a string. Aquarius uses Windows-1252 encoding.

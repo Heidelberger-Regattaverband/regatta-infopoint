@@ -23,12 +23,12 @@ use ratatui::{
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
 use strum::IntoEnumIterator;
-use tabs::{heats::TimeMeasurementTab, logs::LogsTab, timestrip::TimeStripTab, SelectedTab};
+use tabs::{heats::HeatsTab, logs::LogsTab, timestrip::TimeStripTab, SelectedTab};
 
 pub struct App {
     state: AppState,
     selected_tab: SelectedTab,
-    heats_tab: TimeMeasurementTab,
+    heats_tab: HeatsTab,
     time_strip_tab: TimeStripTab,
     logs_tab: LogsTab,
     client: Client,
@@ -77,7 +77,7 @@ impl App {
         Self {
             state: AppState::Running,
             selected_tab: SelectedTab::Heats,
-            heats_tab: TimeMeasurementTab::default(),
+            heats_tab: HeatsTab::default(),
             time_strip_tab: TimeStripTab::default(),
             logs_tab: LogsTab::default(),
             client,
@@ -132,7 +132,11 @@ impl App {
                                 debug!("Error reading open heats: {}", err);
                             }
                         },
-                        _ => self.time_strip_tab.handle_key_event(key_event),
+                        _ => match self.selected_tab {
+                            SelectedTab::Heats => self.heats_tab.handle_key_event(key_event),
+                            SelectedTab::TimeStrip => self.time_strip_tab.handle_key_event(key_event),
+                            _ => {}
+                        },
                     }
                 }
             }
@@ -144,7 +148,7 @@ impl App {
     }
 
     fn handle_aquarius_event(&mut self, event: EventHeatChanged) {
-        debug!("Received event: {:?}", event);
+        self.heats_tab.handle_aquarius_event(event);
     }
 
     fn next_tab(&mut self) {

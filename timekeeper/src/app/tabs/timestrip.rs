@@ -32,7 +32,7 @@ impl Widget for &mut TimeStripTab {
         // Create a List from all list items and highlight the currently selected one
         let list = List::new(items)
             .block(block())
-            .highlight_symbol(">> ")
+            .highlight_symbol(">>  ")
             .highlight_spacing(HighlightSpacing::Always);
 
         // We need to disambiguate this trait method as both `Widget` and `StatefulWidget` share the
@@ -44,44 +44,16 @@ impl Widget for &mut TimeStripTab {
 impl TimeStripTab {
     pub(crate) fn handle_key_event(&mut self, event: KeyEvent) {
         match event.code {
-            KeyCode::Char('s') | KeyCode::Char('+') => self.start_time_stamp(),
-            KeyCode::Char('f') | KeyCode::Char(' ') => self.finish_time_stamp(),
-            KeyCode::Up => self.select_previous(),
-            KeyCode::Down => self.select_next(),
-            KeyCode::Home => self.select_first(),
-            KeyCode::End => self.select_last(),
-            KeyCode::Char('h') => self.select_none(),
+            KeyCode::Char('s') | KeyCode::Char('+') => self.time_strip.add_new_start(),
+            KeyCode::Char('f') | KeyCode::Char(' ') => self.time_strip.add_new_finish(),
+            KeyCode::Up => self.state.select_previous(),
+            KeyCode::Down => self.state.select_next(),
+            KeyCode::Home => self.state.select_first(),
+            KeyCode::End => self.state.select_last(),
+            KeyCode::Char('h') => self.state.select(None),
             KeyCode::Enter => self.show_popup = !self.show_popup,
             _ => {}
         }
-    }
-
-    fn finish_time_stamp(&mut self) {
-        self.time_strip.add_new_finish();
-    }
-
-    fn start_time_stamp(&mut self) {
-        self.time_strip.add_new_start();
-    }
-
-    fn select_none(&mut self) {
-        self.state.select(None);
-    }
-
-    fn select_next(&mut self) {
-        self.state.select_next();
-    }
-
-    fn select_previous(&mut self) {
-        self.state.select_previous();
-    }
-
-    fn select_first(&mut self) {
-        self.state.select_first();
-    }
-
-    fn select_last(&mut self) {
-        self.state.select_last();
     }
 }
 
