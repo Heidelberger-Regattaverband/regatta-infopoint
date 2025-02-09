@@ -18,7 +18,7 @@ const DATE_FORMAT_STR: &str = "%H:%M:%S.%3f";
 pub(crate) struct TimeStripTab {
     pub(crate) time_strip: TimeStrip,
     state: ListState,
-    show_popup: bool,
+    pub(crate) show_popup: bool,
 }
 
 impl Widget for &mut TimeStripTab {

@@ -10,10 +10,9 @@ use clap::Parser;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use log::{debug, trace, warn};
 use ratatui::{
-    buffer::Buffer,
     layout::{
         Constraint::{self, Length, Min},
-        Layout, Rect,
+        Layout,
     },
     style::Stylize,
     text::Line,
@@ -33,36 +32,6 @@ pub struct App {
     logs_tab: LogsTab,
     client: Client,
     receiver: Receiver<AppEvent>,
-}
-
-impl Widget for &mut App {
-    fn render(self, area: Rect, buf: &mut Buffer) {
-        // vertical layout: header, inner area, footer
-        let [header_area, inner_area, footer_area] =
-            Layout::vertical([Constraint::Length(1), Constraint::Min(0), Constraint::Length(1)]).areas(area);
-
-        // horizontal header layout: tabs, title
-        let [tabs_area, title_area] = Layout::horizontal([Min(0), Length(20)]).areas(header_area);
-
-        // render tabs header and title
-        "Aquarius Zeitmessung".bold().render(title_area, buf);
-        let titles = SelectedTab::iter().map(SelectedTab::title);
-
-        // render the selected tab
-        Tabs::new(titles)
-            .select(self.selected_tab as usize)
-            .render(tabs_area, buf);
-        match self.selected_tab {
-            SelectedTab::Heats => self.heats_tab.render(inner_area, buf),
-            SelectedTab::TimeStrip => self.time_strip_tab.render(inner_area, buf),
-            SelectedTab::Logs => self.logs_tab.render(inner_area, buf),
-        };
-
-        // render footer
-        Line::raw("◄ ► to change tab | Press q to quit")
-            .centered()
-            .render(footer_area, buf);
-    }
 }
 
 impl App {
@@ -101,7 +70,35 @@ impl App {
 
     fn draw(&mut self, terminal: &mut DefaultTerminal) -> Result<(), TimekeeperErr> {
         terminal
-            .draw(|frame| frame.render_widget(self, frame.area()))
+            .draw(|frame| {
+                // vertical layout: header, inner area, footer
+                let [header_area, inner_area, footer_area] =
+                    Layout::vertical([Constraint::Length(1), Constraint::Min(0), Constraint::Length(1)])
+                        .areas(frame.area());
+                // horizontal header layout: tabs, title
+                let [tabs_area, title_area] = Layout::horizontal([Min(0), Length(20)]).areas(header_area);
+
+                let buf = frame.buffer_mut();
+
+                // render tabs header and title
+                "Aquarius Zeitmessung".bold().render(title_area, buf);
+                let titles = SelectedTab::iter().map(SelectedTab::title);
+
+                // render the selected tab
+                Tabs::new(titles)
+                    .select(self.selected_tab as usize)
+                    .render(tabs_area, buf);
+                match self.selected_tab {
+                    SelectedTab::Heats => self.heats_tab.render(inner_area, buf),
+                    SelectedTab::TimeStrip => self.time_strip_tab.render(inner_area, buf),
+                    SelectedTab::Logs => self.logs_tab.render(inner_area, buf),
+                };
+
+                // render footer
+                Line::raw("◄ ► to change tab | Press q to quit")
+                    .centered()
+                    .render(footer_area, buf);
+            })
             .map_err(TimekeeperErr::IoError)?;
         Ok(())
     }
