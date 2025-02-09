@@ -8,7 +8,7 @@ use crate::{
 };
 use clap::Parser;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
-use log::{debug, info, trace, warn};
+use log::{debug, trace, warn};
 use ratatui::{
     buffer::Buffer,
     layout::{
@@ -109,10 +109,10 @@ impl App {
     fn handle_client_event(&mut self, connected: bool) {
         if !connected {
             self.client.disconnect();
-            warn!("Connection lost, reconnecting...");
+            self.heats_tab.clear_heats();
         } else {
             let _ = self.client.connect();
-            info!("Connection established.");
+            self.read_open_heats();
         }
     }
 
@@ -121,17 +121,10 @@ impl App {
             Event::Key(key_event) => {
                 if key_event.kind == KeyEventKind::Press {
                     match key_event.code {
-                        KeyCode::Right => self.next_tab(),
-                        KeyCode::Left => self.previous_tab(),
-                        KeyCode::Char('q') | KeyCode::Esc => self.quit(),
-                        KeyCode::Char('r') => match self.client.read_open_heats() {
-                            Ok(open_heats) => {
-                                debug!("Open heats: {:?}", open_heats);
-                            }
-                            Err(err) => {
-                                debug!("Error reading open heats: {}", err);
-                            }
-                        },
+                        KeyCode::Right => self.selected_tab = self.selected_tab.next(),
+                        KeyCode::Left => self.selected_tab = self.selected_tab.previous(),
+                        KeyCode::Char('q') | KeyCode::Esc => self.state = AppState::Quitting,
+                        KeyCode::Char('r') => self.read_open_heats(),
                         _ => match self.selected_tab {
                             SelectedTab::Heats => self.heats_tab.handle_key_event(key_event),
                             SelectedTab::TimeStrip => self.time_strip_tab.handle_key_event(key_event),
@@ -151,16 +144,11 @@ impl App {
         self.heats_tab.handle_aquarius_event(event);
     }
 
-    fn next_tab(&mut self) {
-        self.selected_tab = self.selected_tab.next();
-    }
-
-    fn previous_tab(&mut self) {
-        self.selected_tab = self.selected_tab.previous();
-    }
-
-    fn quit(&mut self) {
-        self.state = AppState::Quitting;
+    fn read_open_heats(&mut self) {
+        match self.client.read_open_heats() {
+            Ok(open_heats) => self.heats_tab.set_heats(open_heats),
+            Err(err) => warn!("Error reading open heats: {}", err),
+        };
     }
 }
 

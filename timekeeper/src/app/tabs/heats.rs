@@ -55,6 +55,15 @@ impl HeatsTab {
             }
         }
     }
+
+    pub(crate) fn set_heats(&mut self, heats: Vec<Heat>) {
+        self.heats = heats;
+        self.heats.sort_by(|a, b| a.number.cmp(&b.number));
+    }
+
+    pub(crate) fn clear_heats(&mut self) {
+        self.heats.clear();
+    }
 }
 
 impl From<&Heat> for ListItem<'_> {
@@ -65,9 +74,9 @@ impl From<&Heat> for ListItem<'_> {
             .or_else(|| Some(Vec::new()))
             .unwrap()
             .iter()
-            .map(|boat| boat.bib.to_string() + ": " + &boat.club)
+            .map(|boat| format!("{:2}: {}", boat.bib, boat.club))
             .collect::<Vec<String>>()
-            .join(", ");
-        ListItem::new(format!("#{} - {}", heat.number, boats))
+            .join("\n       ");
+        ListItem::new(format!("#{:3} - {}", heat.number, boats))
     }
 }

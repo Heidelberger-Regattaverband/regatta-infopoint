@@ -59,12 +59,14 @@ impl Client {
     pub(crate) fn connect(&mut self) -> IoResult<()> {
         let stream = create_stream(&self.address, self.timeout)?;
         self.comm_main = Some(Communication::new(&stream)?);
+        info!("Connection established.");
         Ok(())
     }
 
     /// Disconnects the client from Aquarius application.
     pub(crate) fn disconnect(&mut self) {
         self.comm_main = None;
+        warn!("Connection lost, reconnecting...");
     }
 
     /// Reads the open heats from Aquarius.
