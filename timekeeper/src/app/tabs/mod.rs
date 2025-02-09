@@ -9,6 +9,8 @@ use ratatui::{
 };
 use strum::{Display, EnumIter, FromRepr};
 
+const HIGHLIGHT_SYMBOL: &str = ">>  ";
+
 /// A block surrounding the tab's content
 fn block() -> Block<'static> {
     Block::bordered()

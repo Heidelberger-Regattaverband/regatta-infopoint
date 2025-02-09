@@ -1,5 +1,5 @@
 use crate::{
-    app::tabs::block,
+    app::tabs::{block, HIGHLIGHT_SYMBOL},
     aquarius::messages::{EventHeatChanged, Heat},
 };
 use crossterm::event::{KeyCode, KeyEvent};
@@ -22,7 +22,7 @@ impl Widget for &mut HeatsTab {
         // Create a List from all list items and highlight the currently selected one
         let list = List::new(items)
             .block(block())
-            .highlight_symbol(">>  ")
+            .highlight_symbol(HIGHLIGHT_SYMBOL)
             .highlight_spacing(HighlightSpacing::Always);
 
         StatefulWidget::render(list, area, buf, &mut self.state);
