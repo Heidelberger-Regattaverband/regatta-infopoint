@@ -5,7 +5,7 @@ pub(super) mod timestrip;
 use ratatui::{
     symbols::border,
     text::Line,
-    widgets::{Block, Padding},
+    widgets::{Block, BorderType, Padding},
 };
 use strum::{Display, EnumIter, FromRepr};
 
@@ -18,10 +18,10 @@ fn block() -> Block<'static> {
         .padding(Padding::horizontal(1))
 }
 
-/// A block surrounding the tab's content
+/// A block surrounding the popup's content
 fn popup_block() -> Block<'static> {
     Block::bordered()
-        .border_set(border::PROPORTIONAL_TALL)
+        .border_type(BorderType::Rounded)
         .padding(Padding::horizontal(1))
 }
 

@@ -60,7 +60,6 @@ impl TimeStripTab {
 }
 
 #[derive(Default)]
-
 pub(crate) struct TimeStripTabPopup<'a> {
     input: TextArea<'a>,
 }
