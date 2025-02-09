@@ -3,7 +3,7 @@ use std::{
     fmt::{Display, Formatter, Result as FmtResult},
     io::Error as IoError,
     num::ParseIntError,
-    sync::mpsc::SendError,
+    sync::mpsc::{RecvError, SendError},
 };
 
 /// Error type for the timekeeper crate.
@@ -20,6 +20,9 @@ pub(crate) enum TimekeeperErr {
 
     /// Error when sending a message containing an `AppEvent` fails.
     SendError(SendError<AppEvent>),
+
+    /// Error when receiving a message containing an `AppEvent` fails.
+    ReceiveError(RecvError),
 }
 
 impl Display for TimekeeperErr {
@@ -29,6 +32,7 @@ impl Display for TimekeeperErr {
             TimekeeperErr::IoError(err) => write!(f, "I/O error: {}", err),
             TimekeeperErr::InvalidMessage(msg) => write!(f, "Invalid message: {}", msg),
             TimekeeperErr::SendError(err) => write!(f, "Send error: {}", err),
+            TimekeeperErr::ReceiveError(err) => write!(f, "Receive error: {}", err),
         }
     }
 }

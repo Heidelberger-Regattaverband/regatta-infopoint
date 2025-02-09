@@ -88,7 +88,7 @@ impl App {
     pub(crate) fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), TimekeeperErr> {
         // main loop, runs until the user quits the application by pressing 'q'
         while self.state == AppState::Running {
-            let event = self.receiver.recv().unwrap();
+            let event = self.receiver.recv().map_err(TimekeeperErr::ReceiveError)?;
             match event {
                 AppEvent::UI(event) => self.handle_ui_event(event),
                 AppEvent::Aquarius(event) => self.handle_aquarius_event(event),
