@@ -12,11 +12,11 @@ use log::{debug, trace, warn};
 use ratatui::{
     layout::{
         Constraint::{self, Length, Min},
-        Layout,
+        Flex, Layout, Rect,
     },
     style::Stylize,
     text::Line,
-    widgets::{Tabs, Widget},
+    widgets::{Block, Clear, Tabs},
     DefaultTerminal,
 };
 use std::sync::mpsc::{self, Receiver, Sender};
@@ -78,26 +78,28 @@ impl App {
                 // horizontal header layout: tabs, title
                 let [tabs_area, title_area] = Layout::horizontal([Min(0), Length(20)]).areas(header_area);
 
-                let buf = frame.buffer_mut();
-
                 // render tabs header and title
-                "Aquarius Zeitmessung".bold().render(title_area, buf);
+                frame.render_widget("Aquarius Zeitmessung".bold(), title_area);
                 let titles = SelectedTab::iter().map(SelectedTab::title);
 
                 // render the selected tab
-                Tabs::new(titles)
-                    .select(self.selected_tab as usize)
-                    .render(tabs_area, buf);
+                frame.render_widget(Tabs::new(titles).select(self.selected_tab as usize), tabs_area);
                 match self.selected_tab {
-                    SelectedTab::Heats => self.heats_tab.render(inner_area, buf),
-                    SelectedTab::TimeStrip => self.time_strip_tab.render(inner_area, buf),
-                    SelectedTab::Logs => self.logs_tab.render(inner_area, buf),
+                    SelectedTab::Heats => frame.render_widget(&mut self.heats_tab, inner_area),
+                    SelectedTab::TimeStrip => {
+                        frame.render_widget(&mut self.time_strip_tab, inner_area);
+                        if self.time_strip_tab.show_popup {
+                            let popup_area = popup_area(inner_area, 60, 20);
+                            let block = Block::bordered().title("Popup");
+                            frame.render_widget(Clear, popup_area); //this clears out the background
+                            frame.render_widget(block, popup_area);
+                        }
+                    }
+                    SelectedTab::Logs => frame.render_widget(&mut self.logs_tab, inner_area),
                 };
 
                 // render footer
-                Line::raw("◄ ► to change tab | Press q to quit")
-                    .centered()
-                    .render(footer_area, buf);
+                frame.render_widget(Line::raw("◄ ► to change tab | Press q to quit").centered(), footer_area);
             })
             .map_err(TimekeeperErr::IoError)?;
         Ok(())
@@ -149,6 +151,15 @@ impl App {
             Err(err) => warn!("Error reading open heats: {}", err),
         };
     }
+}
+
+/// helper function to create a centered rect using up certain percentage of the available rect `r`
+fn popup_area(area: Rect, percent_x: u16, percent_y: u16) -> Rect {
+    let vertical = Layout::vertical([Constraint::Percentage(percent_y)]).flex(Flex::Center);
+    let horizontal = Layout::horizontal([Constraint::Percentage(percent_x)]).flex(Flex::Center);
+    let [area] = vertical.areas(area);
+    let [area] = horizontal.areas(area);
+    area
 }
 
 fn input_thread(sender: Sender<AppEvent>) -> Result<(), TimekeeperErr> {

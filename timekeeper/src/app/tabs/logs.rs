@@ -4,7 +4,7 @@ use tui_logger::{TuiLoggerLevelOutput, TuiLoggerWidget};
 #[derive(Default)]
 pub(crate) struct LogsTab {}
 
-impl Widget for &LogsTab {
+impl Widget for &mut LogsTab {
     fn render(self, area: Rect, buf: &mut Buffer) {
         TuiLoggerWidget::default()
             .block(block())
