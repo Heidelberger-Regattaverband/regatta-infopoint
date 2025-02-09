@@ -77,6 +77,6 @@ impl From<&Heat> for ListItem<'_> {
             .map(|boat| format!("{:2}: {}", boat.bib, boat.club))
             .collect::<Vec<String>>()
             .join("\n       ");
-        ListItem::new(format!("#{:3} - {}", heat.number, boats))
+        ListItem::new(format!("#{:3} - {}\n\n", heat.number, boats))
     }
 }
