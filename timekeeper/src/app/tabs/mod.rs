@@ -1,5 +1,5 @@
+pub(super) mod heats;
 pub(super) mod logs;
-pub(super) mod measurement;
 pub(super) mod timestrip;
 
 use ratatui::{
@@ -19,8 +19,8 @@ fn block() -> Block<'static> {
 #[derive(Default, Clone, Copy, Display, FromRepr, EnumIter)]
 pub(super) enum SelectedTab {
     #[default]
-    #[strum(to_string = "Zeitmessung")]
-    Measurement,
+    #[strum(to_string = "Läufe")]
+    Heats,
     #[strum(to_string = "Zeitstreifen")]
     TimeStrip,
     #[strum(to_string = "Logs")]

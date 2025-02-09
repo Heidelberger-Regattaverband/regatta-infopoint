@@ -23,12 +23,12 @@ use ratatui::{
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
 use strum::IntoEnumIterator;
-use tabs::{logs::LogsTab, measurement::TimeMeasurementTab, timestrip::TimeStripTab, SelectedTab};
+use tabs::{heats::TimeMeasurementTab, logs::LogsTab, timestrip::TimeStripTab, SelectedTab};
 
 pub struct App {
     state: AppState,
     selected_tab: SelectedTab,
-    measurement_tab: TimeMeasurementTab,
+    heats_tab: TimeMeasurementTab,
     time_strip_tab: TimeStripTab,
     logs_tab: LogsTab,
     client: Client,
@@ -53,7 +53,7 @@ impl Widget for &mut App {
             .select(self.selected_tab as usize)
             .render(tabs_area, buf);
         match self.selected_tab {
-            SelectedTab::Measurement => self.measurement_tab.render(inner_area, buf),
+            SelectedTab::Heats => self.heats_tab.render(inner_area, buf),
             SelectedTab::TimeStrip => self.time_strip_tab.render(inner_area, buf),
             SelectedTab::Logs => self.logs_tab.render(inner_area, buf),
         };
@@ -76,8 +76,8 @@ impl App {
 
         Self {
             state: AppState::Running,
-            selected_tab: SelectedTab::Measurement,
-            measurement_tab: TimeMeasurementTab::default(),
+            selected_tab: SelectedTab::Heats,
+            heats_tab: TimeMeasurementTab::default(),
             time_strip_tab: TimeStripTab::default(),
             logs_tab: LogsTab::default(),
             client,
