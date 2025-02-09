@@ -25,13 +25,14 @@ use std::thread;
 use strum::IntoEnumIterator;
 use tabs::{logs::LogsTab, measurement::TimeMeasurementTab, timestrip::TimeStripTab, SelectedTab};
 
-#[derive(Default)]
 pub struct App {
     state: AppState,
     selected_tab: SelectedTab,
     measurement_tab: TimeMeasurementTab,
     time_strip_tab: TimeStripTab,
     logs_tab: LogsTab,
+    client: Client,
+    receiver: Receiver<AppEvent>,
 }
 
 impl Widget for &mut App {
@@ -65,35 +66,33 @@ impl Widget for &mut App {
 }
 
 impl App {
-    pub(crate) fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), TimekeeperErr> {
+    pub(crate) fn new() -> Self {
         // Use an mpsc::channel to combine stdin events with app events
         let (sender, receiver) = mpsc::channel();
-        let ui_event_sender = sender.clone();
-
-        thread::spawn(move || input_thread(ui_event_sender));
 
         let args = Args::parse();
-        let mut client = Client::new(&args.host, args.port, args.timeout, sender.clone());
+        let client = Client::new(&args.host, args.port, args.timeout, sender.clone());
+        thread::spawn(move || input_thread(sender.clone()));
 
-        self.run(terminal, &mut client, receiver)
+        Self {
+            state: AppState::Running,
+            selected_tab: SelectedTab::Measurement,
+            measurement_tab: TimeMeasurementTab::default(),
+            time_strip_tab: TimeStripTab::default(),
+            logs_tab: LogsTab::default(),
+            client,
+            receiver,
+        }
     }
 
-    /// runs the application's main loop until the user quits
-    fn run(
-        &mut self,
-        terminal: &mut DefaultTerminal,
-        client: &mut Client,
-        receiver: Receiver<AppEvent>,
-    ) -> Result<(), TimekeeperErr> {
+    pub(crate) fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), TimekeeperErr> {
         // main loop, runs until the user quits the application by pressing 'q'
-        for event in receiver {
+        while self.state == AppState::Running {
+            let event = self.receiver.recv().unwrap();
             match event {
-                AppEvent::UI(event) => self.handle_ui_event(event, client),
+                AppEvent::UI(event) => self.handle_ui_event(event),
                 AppEvent::Aquarius(event) => self.handle_aquarius_event(event),
-                AppEvent::Client(connected) => self.handle_client_event(connected, client),
-            }
-            if self.state == AppState::Quitting {
-                break;
+                AppEvent::Client(connected) => self.handle_client_event(connected),
             }
             self.draw(terminal)?;
         }
@@ -107,17 +106,17 @@ impl App {
         Ok(())
     }
 
-    fn handle_client_event(&mut self, connected: bool, client: &mut Client) {
+    fn handle_client_event(&mut self, connected: bool) {
         if !connected {
-            client.disconnect();
+            self.client.disconnect();
             warn!("Connection lost, reconnecting...");
         } else {
-            let _ = client.connect();
+            let _ = self.client.connect();
             info!("Connection established.");
         }
     }
 
-    fn handle_ui_event(&mut self, event: Event, client: &mut Client) {
+    fn handle_ui_event(&mut self, event: Event) {
         match event {
             Event::Key(key_event) => {
                 if key_event.kind == KeyEventKind::Press {
@@ -125,7 +124,7 @@ impl App {
                         KeyCode::Right => self.next_tab(),
                         KeyCode::Left => self.previous_tab(),
                         KeyCode::Char('q') | KeyCode::Esc => self.quit(),
-                        KeyCode::Char('r') => match client.read_open_heats() {
+                        KeyCode::Char('r') => match self.client.read_open_heats() {
                             Ok(open_heats) => {
                                 debug!("Open heats: {:?}", open_heats);
                             }

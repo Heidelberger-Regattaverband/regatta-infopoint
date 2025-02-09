@@ -15,7 +15,7 @@ fn main() -> Result<(), TimekeeperErr> {
     set_default_level(LevelFilter::Trace);
 
     let mut terminal = ratatui::init();
-    let app_result = App::default().start(&mut terminal);
+    let app_result = App::new().start(&mut terminal);
     ratatui::restore();
 
     app_result
