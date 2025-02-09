@@ -18,6 +18,13 @@ fn block() -> Block<'static> {
         .padding(Padding::horizontal(1))
 }
 
+/// A block surrounding the tab's content
+fn popup_block() -> Block<'static> {
+    Block::bordered()
+        .border_set(border::PROPORTIONAL_TALL)
+        .padding(Padding::horizontal(1))
+}
+
 #[derive(Default, Clone, Copy, Display, FromRepr, EnumIter)]
 pub(super) enum SelectedTab {
     #[default]

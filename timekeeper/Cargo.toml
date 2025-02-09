@@ -21,6 +21,7 @@ crossterm = { version = "0" }
 # logging
 log.workspace = true
 tui-logger = { version = "0" }
+tui-textarea = { version = "0" }
 
 # Enum and string utils: https://github.com/Peternator7/strum
 strum = { version = "0" }

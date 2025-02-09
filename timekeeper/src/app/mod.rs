@@ -16,19 +16,25 @@ use ratatui::{
     },
     style::Stylize,
     text::Line,
-    widgets::{Block, Clear, Tabs},
+    widgets::{Clear, Tabs},
     DefaultTerminal,
 };
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::thread;
 use strum::IntoEnumIterator;
-use tabs::{heats::HeatsTab, logs::LogsTab, timestrip::TimeStripTab, SelectedTab};
+use tabs::{
+    heats::HeatsTab,
+    logs::LogsTab,
+    timestrip::{TimeStripTab, TimeStripTabPopup},
+    SelectedTab,
+};
 
 pub struct App {
     state: AppState,
     selected_tab: SelectedTab,
     heats_tab: HeatsTab,
     time_strip_tab: TimeStripTab,
+    time_strip_popup: TimeStripTabPopup<'static>,
     logs_tab: LogsTab,
     client: Client,
     receiver: Receiver<AppEvent>,
@@ -48,6 +54,7 @@ impl App {
             selected_tab: SelectedTab::Heats,
             heats_tab: HeatsTab::default(),
             time_strip_tab: TimeStripTab::default(),
+            time_strip_popup: TimeStripTabPopup::default(),
             logs_tab: LogsTab::default(),
             client,
             receiver,
@@ -89,10 +96,9 @@ impl App {
                     SelectedTab::TimeStrip => {
                         frame.render_widget(&mut self.time_strip_tab, inner_area);
                         if self.time_strip_tab.show_popup {
-                            let popup_area = popup_area(inner_area, 60, 20);
-                            let block = Block::bordered().title("Popup");
+                            let popup_area = popup_area(inner_area, 50, 20);
                             frame.render_widget(Clear, popup_area); //this clears out the background
-                            frame.render_widget(block, popup_area);
+                            frame.render_widget(&mut self.time_strip_popup, popup_area);
                         }
                     }
                     SelectedTab::Logs => frame.render_widget(&mut self.logs_tab, inner_area),
@@ -123,12 +129,18 @@ impl App {
                         KeyCode::Right => self.selected_tab = self.selected_tab.next(),
                         KeyCode::Left => self.selected_tab = self.selected_tab.previous(),
                         KeyCode::Char('q') | KeyCode::Esc => self.state = AppState::Quitting,
-                        KeyCode::Char('s') | KeyCode::Char('+') => self.time_strip_tab.time_strip.add_new_start(),
-                        KeyCode::Char('f') | KeyCode::Char(' ') => self.time_strip_tab.time_strip.add_new_finish(),
+                        KeyCode::Char('+') => self.time_strip_tab.time_strip.add_new_start(),
+                        KeyCode::Char(' ') => self.time_strip_tab.time_strip.add_new_finish(),
                         KeyCode::Char('r') => self.read_open_heats(),
                         _ => match self.selected_tab {
                             SelectedTab::Heats => self.heats_tab.handle_key_event(key_event),
-                            SelectedTab::TimeStrip => self.time_strip_tab.handle_key_event(key_event),
+                            SelectedTab::TimeStrip => {
+                                if self.time_strip_tab.show_popup {
+                                    self.time_strip_popup.handle_key_event(key_event);
+                                } else {
+                                    self.time_strip_tab.handle_key_event(key_event);
+                                }
+                            }
                             _ => {}
                         },
                     }
