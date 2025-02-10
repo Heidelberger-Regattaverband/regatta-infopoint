@@ -66,10 +66,9 @@ pub(crate) struct TimeStripTabPopup<'a> {
 
 impl Widget for &mut TimeStripTabPopup<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let mut textarea = TextArea::default();
-        textarea.set_block(popup_block().title(" Lauf "));
-        textarea.set_cursor_line_style(Style::default());
-        textarea.render(area, buf);
+        self.input.set_block(popup_block().title(" Lauf "));
+        self.input.set_cursor_line_style(Style::default());
+        self.input.render(area, buf);
     }
 }
 
