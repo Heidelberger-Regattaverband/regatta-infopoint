@@ -37,28 +37,30 @@ impl Block {
         let mut heats: i32 = 0;
 
         let mut blocks = Vec::new();
-        for i in 0..rows.len() - 2 {
-            let current: NaiveDateTime = rows[i].get(0).unwrap();
-            let next: NaiveDateTime = rows[i + 1].get(0).unwrap();
-            heats += 1;
+        if rows.len() >= 2 {
+            for i in 0..rows.len() - 2 {
+                let current: NaiveDateTime = rows[i].get(0).unwrap();
+                let next: NaiveDateTime = rows[i + 1].get(0).unwrap();
+                heats += 1;
 
-            if next.signed_duration_since(current).num_minutes() > 15 {
-                blocks.push(Block {
-                    begin: start.and_utc(),
-                    end: end.and_utc(),
-                    heats,
-                });
-                start = next;
-                heats = 0;
+                if next.signed_duration_since(current).num_minutes() > 15 {
+                    blocks.push(Block {
+                        begin: start.and_utc(),
+                        end: end.and_utc(),
+                        heats,
+                    });
+                    start = next;
+                    heats = 0;
+                }
+                end = next;
             }
-            end = next;
+            heats += 1;
+            blocks.push(Block {
+                begin: start.and_utc(),
+                end: end.and_utc(),
+                heats,
+            });
         }
-        heats += 1;
-        blocks.push(Block {
-            begin: start.and_utc(),
-            end: end.and_utc(),
-            heats,
-        });
         blocks
     }
 }
