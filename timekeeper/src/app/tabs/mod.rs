@@ -7,7 +7,7 @@ use ratatui::{
     text::Line,
     widgets::{Block, BorderType, Padding},
 };
-use strum::{Display, EnumIter, FromRepr};
+use strum_macros::{Display, EnumIter, FromRepr};
 
 const HIGHLIGHT_SYMBOL: &str = ">>  ";
 
