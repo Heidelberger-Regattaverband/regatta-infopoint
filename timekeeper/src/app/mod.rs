@@ -100,6 +100,7 @@ impl App {
                     SelectedTab::TimeStrip => {
                         frame.render_widget(&mut self.time_strip_tab, inner_area);
                         if self.time_strip_tab.show_popup {
+                            self.time_strip_popup.heats = self.heats_tab.get_heats_nr();
                             let popup_area = popup_area(inner_area, 50, 20);
                             frame.render_widget(Clear, popup_area); //this clears out the background
                             frame.render_widget(&mut self.time_strip_popup, popup_area);

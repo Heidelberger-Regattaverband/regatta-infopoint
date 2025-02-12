@@ -64,6 +64,10 @@ impl HeatsTab {
     pub(crate) fn clear_heats(&mut self) {
         self.heats.clear();
     }
+
+    pub(crate) fn get_heats_nr(&self) -> Vec<u16> {
+        self.heats.iter().map(|heat| -> u16 { heat.number }).collect()
+    }
 }
 
 impl From<&Heat> for ListItem<'_> {
