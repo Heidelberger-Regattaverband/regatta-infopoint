@@ -1,11 +1,12 @@
 mod heats_tab;
 mod logs_tab;
 mod selected_tab;
+mod timestrip_popup;
 mod timestrip_tab;
 mod utils;
 
 use crate::{
-    app::{selected_tab::SelectedTab, timestrip_tab::TimeStripTab, timestrip_tab::TimeStripTabPopup},
+    app::{selected_tab::SelectedTab, timestrip_popup::TimeStripTabPopup, timestrip_tab::TimeStripTab},
     aquarius::{client::Client, messages::EventHeatChanged},
     args::Args,
     error::TimekeeperErr,

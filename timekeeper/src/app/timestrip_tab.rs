@@ -1,17 +1,14 @@
 use crate::{
-    app::utils::{block, popup_block, HIGHLIGHT_SYMBOL},
+    app::utils::{block, HIGHLIGHT_SYMBOL},
     app::TimeStrip,
     timestrip::{TimeStamp, TimeStampType},
 };
 use crossterm::event::{KeyCode, KeyEvent};
-use log::warn;
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
-    style::Style,
     widgets::{HighlightSpacing, List, ListItem, ListState, StatefulWidget, Widget},
 };
-use tui_textarea::{Input, TextArea};
 
 const DATE_FORMAT_STR: &str = "%H:%M:%S.%3f";
 
@@ -54,27 +51,6 @@ impl TimeStripTab {
             }
             _ => {}
         }
-    }
-}
-
-#[derive(Default)]
-pub(crate) struct TimeStripTabPopup<'a> {
-    input: TextArea<'a>,
-}
-
-impl Widget for &mut TimeStripTabPopup<'_> {
-    fn render(self, area: Rect, buf: &mut Buffer) {
-        self.input.set_block(popup_block().title(" Lauf "));
-        self.input.set_cursor_line_style(Style::default());
-        self.input.render(area, buf);
-    }
-}
-
-impl TimeStripTabPopup<'_> {
-    pub(crate) fn handle_key_event(&mut self, event: KeyEvent) {
-        let input: Input = event.into();
-        warn!("Input {:?}", input);
-        self.input.input(input);
     }
 }
 
