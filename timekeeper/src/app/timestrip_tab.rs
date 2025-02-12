@@ -1,8 +1,6 @@
 use crate::{
-    app::{
-        tabs::{block, popup_block, HIGHLIGHT_SYMBOL},
-        TimeStrip,
-    },
+    app::utils::{block, popup_block, HIGHLIGHT_SYMBOL},
+    app::TimeStrip,
     timestrip::{TimeStamp, TimeStampType},
 };
 use crossterm::event::{KeyCode, KeyEvent};

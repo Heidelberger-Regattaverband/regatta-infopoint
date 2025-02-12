@@ -1,6 +1,11 @@
-mod tabs;
+mod heats_tab;
+mod logs_tab;
+mod selected_tab;
+mod timestrip_tab;
+mod utils;
 
 use crate::{
+    app::{selected_tab::SelectedTab, timestrip_tab::TimeStripTab, timestrip_tab::TimeStripTabPopup},
     aquarius::{client::Client, messages::EventHeatChanged},
     args::Args,
     error::TimekeeperErr,
@@ -8,7 +13,9 @@ use crate::{
 };
 use clap::Parser;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
+use heats_tab::HeatsTab;
 use log::{debug, trace, warn};
+use logs_tab::LogsTab;
 use ratatui::{
     layout::{
         Constraint::{self, Length, Min},
@@ -19,15 +26,11 @@ use ratatui::{
     widgets::{Clear, Tabs},
     DefaultTerminal,
 };
-use std::sync::mpsc::{self, Receiver, Sender};
-use std::thread;
-use strum::IntoEnumIterator;
-use tabs::{
-    heats::HeatsTab,
-    logs::LogsTab,
-    timestrip::{TimeStripTab, TimeStripTabPopup},
-    SelectedTab,
+use std::{
+    sync::mpsc::{self, Receiver, Sender},
+    thread,
 };
+use strum::IntoEnumIterator;
 
 pub struct App {
     state: AppState,

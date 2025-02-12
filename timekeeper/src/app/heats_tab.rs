@@ -1,5 +1,5 @@
 use crate::{
-    app::tabs::{block, HIGHLIGHT_SYMBOL},
+    app::utils::{block, HIGHLIGHT_SYMBOL},
     aquarius::messages::{EventHeatChanged, Heat},
 };
 use crossterm::event::{KeyCode, KeyEvent};

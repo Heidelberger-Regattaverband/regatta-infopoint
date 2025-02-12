@@ -1,29 +1,5 @@
-pub(super) mod heats;
-pub(super) mod logs;
-pub(super) mod timestrip;
-
-use ratatui::{
-    symbols::border,
-    text::Line,
-    widgets::{Block, BorderType, Padding},
-};
+use ratatui::text::Line;
 use strum_macros::{Display, EnumIter, FromRepr};
-
-const HIGHLIGHT_SYMBOL: &str = ">>  ";
-
-/// A block surrounding the tab's content
-fn block() -> Block<'static> {
-    Block::bordered()
-        .border_set(border::PROPORTIONAL_TALL)
-        .padding(Padding::horizontal(1))
-}
-
-/// A block surrounding the popup's content
-fn popup_block() -> Block<'static> {
-    Block::bordered()
-        .border_type(BorderType::Rounded)
-        .padding(Padding::horizontal(1))
-}
 
 #[derive(Default, Clone, Copy, Display, FromRepr, EnumIter)]
 pub(super) enum SelectedTab {

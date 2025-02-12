@@ -1,6 +1,7 @@
-use crate::app::tabs::block;
+use crate::app::utils::block;
 use ratatui::{buffer::Buffer, layout::Rect, widgets::Widget};
 use tui_logger::{TuiLoggerLevelOutput, TuiLoggerWidget};
+
 #[derive(Default)]
 pub(crate) struct LogsTab {}
 
