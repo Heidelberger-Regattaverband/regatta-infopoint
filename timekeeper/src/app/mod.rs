@@ -102,7 +102,7 @@ impl App<'_> {
                         if self.time_strip_tab.show_popup {
                             self.time_strip_popup.heats = self.heats_tab.get_heats_nr();
                             let popup_area = popup_area(inner_area, 50, 20);
-                            frame.render_widget(Clear, popup_area); //this clears out the background
+                            frame.render_widget(Clear, popup_area); // this clears out the background
                             frame.render_widget(&mut self.time_strip_popup, popup_area);
                         }
                     }
@@ -133,7 +133,7 @@ impl App<'_> {
                     match key_event.code {
                         KeyCode::Right => self.selected_tab = self.selected_tab.next(),
                         KeyCode::Left => self.selected_tab = self.selected_tab.previous(),
-                        KeyCode::Char('q') | KeyCode::Esc => self.state = AppState::Quitting,
+                        KeyCode::Char('q') => self.state = AppState::Quitting,
                         KeyCode::Char('+') => self.time_strip_tab.time_strip.add_new_start(),
                         KeyCode::Char(' ') => self.time_strip_tab.time_strip.add_new_finish(),
                         KeyCode::Char('r') => self.read_open_heats(),
@@ -142,6 +142,11 @@ impl App<'_> {
                             SelectedTab::TimeStrip => {
                                 if self.time_strip_tab.show_popup {
                                     self.time_strip_popup.handle_key_event(key_event);
+                                    if self.time_strip_popup.selected_heat.is_some() {
+                                        self.time_strip_tab.show_popup = false;
+                                        self.time_strip_popup.selected_heat = None;
+                                        self.time_strip_popup.is_valid = false;
+                                    }
                                 } else {
                                     self.time_strip_tab.handle_key_event(key_event);
                                 }

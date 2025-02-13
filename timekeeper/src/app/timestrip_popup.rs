@@ -1,5 +1,5 @@
 use crate::app::utils::popup_block;
-use crossterm::event::KeyEvent;
+use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -12,7 +12,8 @@ use tui_textarea::{Input, TextArea};
 pub(crate) struct TimeStripTabPopup<'a> {
     input: TextArea<'a>,
     pub(crate) heats: Vec<u16>,
-    is_valid: bool,
+    pub(crate) is_valid: bool,
+    pub(crate) selected_heat: Option<u16>,
 }
 
 impl Widget for &mut TimeStripTabPopup<'_> {
@@ -25,11 +26,26 @@ impl Widget for &mut TimeStripTabPopup<'_> {
 
 impl TimeStripTabPopup<'_> {
     pub(crate) fn handle_key_event(&mut self, event: KeyEvent) {
-        let input: Input = event.into();
-        if self.input.input(input) {
-            self.validate();
+        match event.code {
+            KeyCode::Esc => {
+                self.input.delete_line_by_head();
+            }
+            KeyCode::Enter => {
+                if self.is_valid {
+                    let heat_nr = self.input.lines()[0].parse::<u16>().unwrap();
+                    self.selected_heat = Some(heat_nr);
+                    self.input.delete_line_by_head();
+                }
+            }
+            _ => {
+                let input: Input = event.into();
+                if self.input.input(input) {
+                    self.validate();
+                }
+            }
         }
     }
+
     fn validate(&mut self) {
         if let Ok(heat_nr) = self.input.lines()[0].parse::<u16>() {
             self.is_valid = self.heats.contains(&heat_nr);
