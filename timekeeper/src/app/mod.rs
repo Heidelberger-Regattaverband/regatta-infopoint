@@ -33,18 +33,18 @@ use std::{
 };
 use strum::IntoEnumIterator;
 
-pub struct App {
+pub struct App<'a> {
     state: AppState,
     selected_tab: SelectedTab,
     heats_tab: HeatsTab,
     time_strip_tab: TimeStripTab,
-    time_strip_popup: TimeStripTabPopup<'static>,
+    time_strip_popup: TimeStripTabPopup<'a>,
     logs_tab: LogsTab,
     client: Client,
     receiver: Receiver<AppEvent>,
 }
 
-impl App {
+impl App<'_> {
     pub(crate) fn new() -> Self {
         // Use an mpsc::channel to combine stdin events with app events
         let (sender, receiver) = mpsc::channel();
