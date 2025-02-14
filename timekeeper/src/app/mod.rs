@@ -28,6 +28,8 @@ use ratatui::{
     DefaultTerminal,
 };
 use std::{
+    cell::RefCell,
+    rc::Rc,
     sync::mpsc::{self, Receiver, Sender},
     thread,
 };
@@ -40,7 +42,7 @@ pub struct App<'a> {
     time_strip_tab: TimeStripTab,
     time_strip_popup: TimeStripTabPopup<'a>,
     logs_tab: LogsTab,
-    client: Client,
+    client: Rc<RefCell<Client>>,
     receiver: Receiver<AppEvent>,
 }
 
@@ -52,15 +54,16 @@ impl App<'_> {
         let args = Args::parse();
         let client = Client::new(&args.host, args.port, args.timeout, sender.clone());
         thread::spawn(move || input_thread(sender.clone()));
+        let rc = Rc::new(RefCell::new(client));
 
         Self {
             state: AppState::Running,
             selected_tab: SelectedTab::Heats,
             heats_tab: HeatsTab::default(),
             time_strip_tab: TimeStripTab::default(),
-            time_strip_popup: TimeStripTabPopup::default(),
+            time_strip_popup: TimeStripTabPopup::new(rc.clone()),
             logs_tab: LogsTab::default(),
-            client,
+            client: rc,
             receiver,
         }
     }
@@ -118,10 +121,10 @@ impl App<'_> {
 
     fn handle_client_event(&mut self, connected: bool) {
         if !connected {
-            self.client.disconnect();
+            self.client.borrow_mut().disconnect();
             self.heats_tab.clear_heats();
         } else {
-            let _ = self.client.connect();
+            let _ = self.client.borrow_mut().connect();
             self.read_open_heats();
         }
     }
@@ -168,7 +171,7 @@ impl App<'_> {
     }
 
     fn read_open_heats(&mut self) {
-        match self.client.read_open_heats() {
+        match self.client.borrow_mut().read_open_heats() {
             Ok(open_heats) => self.heats_tab.set_heats(open_heats),
             Err(err) => warn!("Error reading open heats: {}", err),
         };
