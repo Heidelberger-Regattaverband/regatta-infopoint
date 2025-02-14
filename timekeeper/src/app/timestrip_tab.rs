@@ -87,7 +87,6 @@ impl TimeStripTab {
                 .iter()
                 .find(|time_stamp| time_stamp.index == index as u64)
             {
-                // info!("Selected timestamp: {:?}", time_stamp);
                 *self.selected_time_stamp.borrow_mut() = Some(time_stamp.clone());
             } else {
                 *self.selected_time_stamp.borrow_mut() = None;
