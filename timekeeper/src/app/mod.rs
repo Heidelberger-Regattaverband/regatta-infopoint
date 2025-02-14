@@ -180,7 +180,18 @@ impl App<'_> {
     }
 
     fn handle_aquarius_event(&mut self, event: EventHeatChanged) {
-        self.heats_tab.handle_aquarius_event(event);
+        match event.opened {
+            true => {
+                self.heats.borrow_mut().push(event.heat);
+                self.heats.borrow_mut().sort_by(|a, b| a.number.cmp(&b.number));
+            }
+            false => {
+                let index = self.heats.borrow_mut().iter().position(|heat| heat.id == event.heat.id);
+                if let Some(index) = index {
+                    self.heats.borrow_mut().remove(index);
+                }
+            }
+        }
     }
 
     fn read_open_heats(&mut self) {

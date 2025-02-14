@@ -1,6 +1,6 @@
 use crate::{
     app::utils::{block, HIGHLIGHT_SYMBOL},
-    aquarius::messages::{EventHeatChanged, Heat},
+    aquarius::messages::Heat,
 };
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
@@ -46,21 +46,6 @@ impl HeatsTab {
             KeyCode::End => self.state.select_last(),
             KeyCode::Char('h') => self.state.select(None),
             _ => {}
-        }
-    }
-
-    pub(crate) fn handle_aquarius_event(&mut self, event: EventHeatChanged) {
-        match event.opened {
-            true => {
-                self.heats.borrow_mut().push(event.heat);
-                self.heats.borrow_mut().sort_by(|a, b| a.number.cmp(&b.number));
-            }
-            false => {
-                let index = self.heats.borrow_mut().iter().position(|heat| heat.id == event.heat.id);
-                if let Some(index) = index {
-                    self.heats.borrow_mut().remove(index);
-                }
-            }
         }
     }
 }
