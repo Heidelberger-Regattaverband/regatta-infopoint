@@ -1,6 +1,7 @@
 use crate::{
     app::utils::popup_block,
     aquarius::{client::Client, messages::Heat},
+    timestrip::{TimeStamp, TimeStrip},
 };
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
@@ -14,10 +15,14 @@ use tui_textarea::{Input, TextArea};
 
 pub(crate) struct TimeStripTabPopup<'a> {
     input: TextArea<'a>,
-    pub(crate) heats: Rc<RefCell<Vec<Heat>>>,
     pub(crate) is_valid: bool,
     pub(crate) selected_heat: Option<u16>,
+
+    // shared context
     client: Rc<RefCell<Client>>,
+    heats: Rc<RefCell<Vec<Heat>>>,
+    time_strip: Rc<RefCell<TimeStrip>>,
+    selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
 }
 
 impl Widget for &mut TimeStripTabPopup<'_> {
@@ -29,13 +34,20 @@ impl Widget for &mut TimeStripTabPopup<'_> {
 }
 
 impl TimeStripTabPopup<'_> {
-    pub(crate) fn new(client: Rc<RefCell<Client>>, heats: Rc<RefCell<Vec<Heat>>>) -> Self {
+    pub(crate) fn new(
+        client: Rc<RefCell<Client>>,
+        heats: Rc<RefCell<Vec<Heat>>>,
+        time_strip: Rc<RefCell<TimeStrip>>,
+        selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
+    ) -> Self {
         Self {
             input: TextArea::default(),
             is_valid: false,
             selected_heat: None,
             client,
             heats,
+            time_strip,
+            selected_time_stamp,
         }
     }
 
@@ -50,6 +62,9 @@ impl TimeStripTabPopup<'_> {
                     self.selected_heat = Some(heat_nr);
                     self.input.delete_line_by_head();
                     // self.client.borrow_mut().send_heat_change(heat_nr);
+                    if let Some(time_stamp) = self.selected_time_stamp.borrow().as_ref() {
+                        self.time_strip.borrow_mut().assign_heat_nr(time_stamp.index, heat_nr);
+                    }
                 }
             }
             _ => {
@@ -63,7 +78,7 @@ impl TimeStripTabPopup<'_> {
 
     fn validate(&mut self) {
         if let Ok(heat_nr) = self.input.lines()[0].parse::<u16>() {
-            self.is_valid = self.heats.borrow_mut().iter().any(|heat| heat.number == heat_nr);
+            self.is_valid = self.heats.borrow().iter().any(|heat| heat.number == heat_nr);
         } else {
             self.is_valid = false;
         }

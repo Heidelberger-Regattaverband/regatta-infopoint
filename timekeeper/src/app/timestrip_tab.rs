@@ -15,9 +15,12 @@ use ratatui::{
 const DATE_FORMAT_STR: &str = "%H:%M:%S.%3f";
 
 pub(crate) struct TimeStripTab {
-    time_strip: Rc<RefCell<TimeStrip>>,
     state: ListState,
     pub(crate) show_popup: bool,
+
+    // shared context
+    time_strip: Rc<RefCell<TimeStrip>>,
+    selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
 }
 
 impl Widget for &mut TimeStripTab {
@@ -44,9 +47,10 @@ impl Widget for &mut TimeStripTab {
 }
 
 impl TimeStripTab {
-    pub(crate) fn new(time_strip: Rc<RefCell<TimeStrip>>) -> Self {
+    pub(crate) fn new(time_strip: Rc<RefCell<TimeStrip>>, selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>) -> Self {
         Self {
             time_strip,
+            selected_time_stamp,
             state: ListState::default(),
             show_popup: false,
         }
@@ -66,6 +70,26 @@ impl TimeStripTab {
                 }
             }
             _ => {}
+        }
+        self.update_selected_time_stamp();
+    }
+
+    fn update_selected_time_stamp(&mut self) {
+        if let Some(index) = self.state.selected() {
+            if let Some(time_stamp) = self
+                .time_strip
+                .borrow()
+                .time_stamps
+                .iter()
+                .find(|time_stamp| time_stamp.index == index as u64)
+            {
+                // info!("Selected timestamp: {:?}", time_stamp);
+                *self.selected_time_stamp.borrow_mut() = Some(time_stamp.clone());
+            } else {
+                *self.selected_time_stamp.borrow_mut() = None;
+            }
+        } else {
+            *self.selected_time_stamp.borrow_mut() = None;
         }
     }
 }

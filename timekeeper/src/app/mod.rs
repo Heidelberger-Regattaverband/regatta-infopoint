@@ -69,13 +69,19 @@ impl App<'_> {
         let client_rc = Rc::new(RefCell::new(client));
         let heats = Rc::new(RefCell::new(Vec::new()));
         let time_strip = Rc::new(RefCell::new(TimeStrip::default()));
+        let selected_time_stamp = Rc::new(RefCell::new(None));
 
         Self {
             state: AppState::Running,
             selected_tab: SelectedTab::Heats,
             heats_tab: HeatsTab::new(heats.clone()),
-            time_strip_tab: TimeStripTab::new(time_strip.clone()),
-            time_strip_popup: TimeStripTabPopup::new(client_rc.clone(), heats.clone()),
+            time_strip_tab: TimeStripTab::new(time_strip.clone(), selected_time_stamp.clone()),
+            time_strip_popup: TimeStripTabPopup::new(
+                client_rc.clone(),
+                heats.clone(),
+                time_strip.clone(),
+                selected_time_stamp.clone(),
+            ),
             logs_tab: LogsTab::default(),
             client: client_rc,
             receiver,
@@ -119,7 +125,6 @@ impl App<'_> {
                     SelectedTab::TimeStrip => {
                         frame.render_widget(&mut self.time_strip_tab, inner_area);
                         if self.time_strip_tab.show_popup {
-                            // self.time_strip_popup.heats = self.heats_tab.get_heats_nr();
                             let popup_area = popup_area(inner_area, 50, 20);
                             frame.render_widget(Clear, popup_area); // this clears out the background
                             frame.render_widget(&mut self.time_strip_popup, popup_area);
@@ -183,15 +188,16 @@ impl App<'_> {
     }
 
     fn handle_aquarius_event(&mut self, event: EventHeatChanged) {
+        let mut heats = self.heats.borrow_mut();
         match event.opened {
             true => {
-                self.heats.borrow_mut().push(event.heat);
-                self.heats.borrow_mut().sort_by(|a, b| a.number.cmp(&b.number));
+                heats.push(event.heat);
+                heats.sort_by(|a, b| a.number.cmp(&b.number));
             }
             false => {
-                let index = self.heats.borrow_mut().iter().position(|heat| heat.id == event.heat.id);
+                let index = heats.iter().position(|heat| heat.id == event.heat.id);
                 if let Some(index) = index {
-                    self.heats.borrow_mut().remove(index);
+                    heats.remove(index);
                 }
             }
         }
@@ -200,12 +206,13 @@ impl App<'_> {
     fn read_open_heats(&mut self) {
         match self.client.borrow_mut().read_open_heats() {
             Ok(open_heats) => {
+                let mut heats = self.heats.borrow_mut();
                 open_heats.iter().for_each(|heat| {
-                    if !self.heats.borrow_mut().contains(heat) {
-                        self.heats.borrow_mut().push(heat.clone());
+                    if !heats.contains(heat) {
+                        heats.push(heat.clone());
                     }
                 });
-                self.heats.borrow_mut().sort_by(|a, b| a.number.cmp(&b.number));
+                heats.sort_by(|a, b| a.number.cmp(&b.number));
             }
             Err(err) => warn!("Error reading open heats: {}", err),
         };

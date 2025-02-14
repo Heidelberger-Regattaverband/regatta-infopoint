@@ -27,6 +27,16 @@ impl TimeStrip {
         info!("Finish time stamp: {:?}", time_stamp);
         self.time_stamps.push(time_stamp);
     }
+
+    pub(crate) fn assign_heat_nr(&mut self, time_stamp_index: u64, heat_nr: u16) {
+        if let Some(time_stamp) = self
+            .time_stamps
+            .iter_mut()
+            .find(|time_stamp| time_stamp.index == time_stamp_index)
+        {
+            time_stamp.heat_nr = Some(heat_nr);
+        }
+    }
 }
 
 /// A time stamp of an event.
@@ -42,7 +52,7 @@ pub(crate) struct TimeStamp {
     pub(crate) stamp_type: TimeStampType,
 
     /// The heat number.
-    pub(crate) heat_nr: Option<u32>,
+    pub(crate) heat_nr: Option<u16>,
 
     /// The heat number.
     pub(crate) bib: Option<u32>,
