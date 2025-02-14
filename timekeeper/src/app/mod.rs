@@ -7,7 +7,10 @@ mod utils;
 
 use crate::{
     app::{selected_tab::SelectedTab, timestrip_popup::TimeStripTabPopup, timestrip_tab::TimeStripTab},
-    aquarius::{client::Client, messages::EventHeatChanged},
+    aquarius::{
+        client::Client,
+        messages::{EventHeatChanged, Heat},
+    },
     args::Args,
     error::TimekeeperErr,
     timestrip::TimeStrip,
@@ -51,6 +54,7 @@ pub struct App<'a> {
 
     // shared context
     client: Rc<RefCell<Client>>,
+    heats: Rc<RefCell<Vec<Heat>>>,
 }
 
 impl App<'_> {
@@ -63,6 +67,7 @@ impl App<'_> {
         thread::spawn(move || input_thread(sender.clone()));
         let client_rc = Rc::new(RefCell::new(client));
         let heats = Rc::new(RefCell::new(Vec::new()));
+
         Self {
             state: AppState::Running,
             selected_tab: SelectedTab::Heats,
@@ -72,6 +77,7 @@ impl App<'_> {
             logs_tab: LogsTab::default(),
             client: client_rc,
             receiver,
+            heats,
         }
     }
 
@@ -129,7 +135,7 @@ impl App<'_> {
     fn handle_client_event(&mut self, connected: bool) {
         if !connected {
             self.client.borrow_mut().disconnect();
-            self.heats_tab.clear_heats();
+            self.heats.borrow_mut().clear();
         } else {
             let _ = self.client.borrow_mut().connect();
             self.read_open_heats();
@@ -179,7 +185,14 @@ impl App<'_> {
 
     fn read_open_heats(&mut self) {
         match self.client.borrow_mut().read_open_heats() {
-            Ok(open_heats) => self.heats_tab.set_heats(open_heats),
+            Ok(open_heats) => {
+                open_heats.iter().for_each(|heat| {
+                    if !self.heats.borrow_mut().contains(heat) {
+                        self.heats.borrow_mut().push(heat.clone());
+                    }
+                });
+                self.heats.borrow_mut().sort_by(|a, b| a.number.cmp(&b.number));
+            }
             Err(err) => warn!("Error reading open heats: {}", err),
         };
     }

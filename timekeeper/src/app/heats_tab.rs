@@ -63,19 +63,6 @@ impl HeatsTab {
             }
         }
     }
-
-    pub(crate) fn set_heats(&mut self, heats: Vec<Heat>) {
-        heats.iter().for_each(|heat| {
-            if !self.heats.borrow_mut().contains(heat) {
-                self.heats.borrow_mut().push(heat.clone());
-            }
-        });
-        self.heats.borrow_mut().sort_by(|a, b| a.number.cmp(&b.number));
-    }
-
-    pub(crate) fn clear_heats(&mut self) {
-        self.heats.borrow_mut().clear();
-    }
 }
 
 impl From<&Heat> for ListItem<'_> {
