@@ -18,7 +18,7 @@ pub(crate) struct HeatsTab {
 
 impl Widget for &mut HeatsTab {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let items: Vec<ListItem> = self.heats.borrow_mut().iter().map(ListItem::from).collect();
+        let items: Vec<ListItem> = self.heats.borrow().iter().map(ListItem::from).collect();
 
         // Create a List from all list items and highlight the currently selected one
         let list = List::new(items)

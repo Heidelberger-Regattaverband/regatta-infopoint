@@ -55,6 +55,7 @@ pub struct App<'a> {
     // shared context
     client: Rc<RefCell<Client>>,
     heats: Rc<RefCell<Vec<Heat>>>,
+    time_strip: Rc<RefCell<TimeStrip>>,
 }
 
 impl App<'_> {
@@ -67,17 +68,19 @@ impl App<'_> {
         thread::spawn(move || input_thread(sender.clone()));
         let client_rc = Rc::new(RefCell::new(client));
         let heats = Rc::new(RefCell::new(Vec::new()));
+        let time_strip = Rc::new(RefCell::new(TimeStrip::default()));
 
         Self {
             state: AppState::Running,
             selected_tab: SelectedTab::Heats,
             heats_tab: HeatsTab::new(heats.clone()),
-            time_strip_tab: TimeStripTab::default(),
+            time_strip_tab: TimeStripTab::new(time_strip.clone()),
             time_strip_popup: TimeStripTabPopup::new(client_rc.clone(), heats.clone()),
             logs_tab: LogsTab::default(),
             client: client_rc,
             receiver,
             heats,
+            time_strip,
         }
     }
 
@@ -150,8 +153,8 @@ impl App<'_> {
                         KeyCode::Right => self.selected_tab = self.selected_tab.next(),
                         KeyCode::Left => self.selected_tab = self.selected_tab.previous(),
                         KeyCode::Char('q') => self.state = AppState::Quitting,
-                        KeyCode::Char('+') => self.time_strip_tab.time_strip.add_new_start(),
-                        KeyCode::Char(' ') => self.time_strip_tab.time_strip.add_new_finish(),
+                        KeyCode::Char('+') => self.time_strip.borrow_mut().add_new_start(),
+                        KeyCode::Char(' ') => self.time_strip.borrow_mut().add_new_finish(),
                         KeyCode::Char('r') => self.read_open_heats(),
                         _ => match self.selected_tab {
                             SelectedTab::Heats => self.heats_tab.handle_key_event(key_event),

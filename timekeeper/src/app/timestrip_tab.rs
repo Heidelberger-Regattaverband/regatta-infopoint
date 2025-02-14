@@ -1,3 +1,5 @@
+use std::{cell::RefCell, rc::Rc};
+
 use crate::{
     app::utils::{block, HIGHLIGHT_SYMBOL},
     app::TimeStrip,
@@ -12,16 +14,22 @@ use ratatui::{
 
 const DATE_FORMAT_STR: &str = "%H:%M:%S.%3f";
 
-#[derive(Default)]
 pub(crate) struct TimeStripTab {
-    pub(crate) time_strip: TimeStrip,
+    time_strip: Rc<RefCell<TimeStrip>>,
     state: ListState,
     pub(crate) show_popup: bool,
 }
 
 impl Widget for &mut TimeStripTab {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let items: Vec<ListItem> = self.time_strip.time_stamps.iter().rev().map(ListItem::from).collect();
+        let items: Vec<ListItem> = self
+            .time_strip
+            .borrow()
+            .time_stamps
+            .iter()
+            .rev()
+            .map(ListItem::from)
+            .collect();
 
         // Create a List from all list items and highlight the currently selected one
         let list = List::new(items)
@@ -36,6 +44,14 @@ impl Widget for &mut TimeStripTab {
 }
 
 impl TimeStripTab {
+    pub(crate) fn new(time_strip: Rc<RefCell<TimeStrip>>) -> Self {
+        Self {
+            time_strip,
+            state: ListState::default(),
+            show_popup: false,
+        }
+    }
+
     pub(crate) fn handle_key_event(&mut self, event: KeyEvent) {
         match event.code {
             KeyCode::Up => self.state.select_previous(),
