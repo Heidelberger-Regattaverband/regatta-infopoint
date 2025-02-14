@@ -16,11 +16,11 @@ const DATE_FORMAT_STR: &str = "%H:%M:%S.%3f";
 
 pub(crate) struct TimeStripTab {
     state: ListState,
-    pub(crate) show_popup: bool,
 
     // shared context
     time_strip: Rc<RefCell<TimeStrip>>,
     selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
+    show_time_strip_popup: Rc<RefCell<bool>>,
 }
 
 impl Widget for &mut TimeStripTab {
@@ -47,12 +47,16 @@ impl Widget for &mut TimeStripTab {
 }
 
 impl TimeStripTab {
-    pub(crate) fn new(time_strip: Rc<RefCell<TimeStrip>>, selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>) -> Self {
+    pub(crate) fn new(
+        time_strip: Rc<RefCell<TimeStrip>>,
+        selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
+        show_time_strip_popup: Rc<RefCell<bool>>,
+    ) -> Self {
         Self {
+            state: ListState::default(),
             time_strip,
             selected_time_stamp,
-            state: ListState::default(),
-            show_popup: false,
+            show_time_strip_popup,
         }
     }
 
@@ -66,7 +70,7 @@ impl TimeStripTab {
             KeyCode::Enter => {
                 // open popup if a time stamp is selected
                 if self.state.selected().is_some() {
-                    self.show_popup = !self.show_popup;
+                    *self.show_time_strip_popup.borrow_mut() = true;
                 }
             }
             _ => {}

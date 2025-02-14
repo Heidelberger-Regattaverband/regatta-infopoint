@@ -56,6 +56,7 @@ pub struct App<'a> {
     client: Rc<RefCell<Client>>,
     heats: Rc<RefCell<Vec<Heat>>>,
     time_strip: Rc<RefCell<TimeStrip>>,
+    show_time_strip_popup: Rc<RefCell<bool>>,
 }
 
 impl App<'_> {
@@ -66,27 +67,38 @@ impl App<'_> {
         let args = Args::parse();
         let client = Client::new(&args.host, args.port, args.timeout, sender.clone());
         thread::spawn(move || input_thread(sender.clone()));
+
+        // shared context
         let client_rc = Rc::new(RefCell::new(client));
         let heats = Rc::new(RefCell::new(Vec::new()));
         let time_strip = Rc::new(RefCell::new(TimeStrip::default()));
         let selected_time_stamp = Rc::new(RefCell::new(None));
+        let show_time_strip_popup = Rc::new(RefCell::new(false));
 
         Self {
             state: AppState::Running,
             selected_tab: SelectedTab::Heats,
+            // tabs
             heats_tab: HeatsTab::new(heats.clone()),
-            time_strip_tab: TimeStripTab::new(time_strip.clone(), selected_time_stamp.clone()),
+            time_strip_tab: TimeStripTab::new(
+                time_strip.clone(),
+                selected_time_stamp.clone(),
+                show_time_strip_popup.clone(),
+            ),
             time_strip_popup: TimeStripTabPopup::new(
                 client_rc.clone(),
                 heats.clone(),
                 time_strip.clone(),
                 selected_time_stamp.clone(),
+                show_time_strip_popup.clone(),
             ),
             logs_tab: LogsTab::default(),
+            // shared context
             client: client_rc,
             receiver,
             heats,
             time_strip,
+            show_time_strip_popup,
         }
     }
 
@@ -124,7 +136,7 @@ impl App<'_> {
                     SelectedTab::Heats => frame.render_widget(&mut self.heats_tab, inner_area),
                     SelectedTab::TimeStrip => {
                         frame.render_widget(&mut self.time_strip_tab, inner_area);
-                        if self.time_strip_tab.show_popup {
+                        if *self.show_time_strip_popup.borrow() {
                             let popup_area = popup_area(inner_area, 50, 20);
                             frame.render_widget(Clear, popup_area); // this clears out the background
                             frame.render_widget(&mut self.time_strip_popup, popup_area);
@@ -164,13 +176,8 @@ impl App<'_> {
                         _ => match self.selected_tab {
                             SelectedTab::Heats => self.heats_tab.handle_key_event(key_event),
                             SelectedTab::TimeStrip => {
-                                if self.time_strip_tab.show_popup {
+                                if *self.show_time_strip_popup.borrow() {
                                     self.time_strip_popup.handle_key_event(key_event);
-                                    if self.time_strip_popup.selected_heat.is_some() {
-                                        self.time_strip_tab.show_popup = false;
-                                        self.time_strip_popup.selected_heat = None;
-                                        self.time_strip_popup.is_valid = false;
-                                    }
                                 } else {
                                     self.time_strip_tab.handle_key_event(key_event);
                                 }

@@ -15,20 +15,19 @@ use tui_textarea::{Input, TextArea};
 
 pub(crate) struct TimeStripTabPopup<'a> {
     input: TextArea<'a>,
-    pub(crate) is_valid: bool,
-    pub(crate) selected_heat: Option<u16>,
+    is_valid: bool,
 
     // shared context
     client: Rc<RefCell<Client>>,
     heats: Rc<RefCell<Vec<Heat>>>,
     time_strip: Rc<RefCell<TimeStrip>>,
     selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
+    show_time_strip_popup: Rc<RefCell<bool>>,
 }
 
 impl Widget for &mut TimeStripTabPopup<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         self.input.set_block(popup_block().title(" Lauf "));
-        // self.input.set_cursor_line_style(Style::default());
         self.input.render(area, buf);
     }
 }
@@ -39,15 +38,16 @@ impl TimeStripTabPopup<'_> {
         heats: Rc<RefCell<Vec<Heat>>>,
         time_strip: Rc<RefCell<TimeStrip>>,
         selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
+        show_time_strip_popup: Rc<RefCell<bool>>,
     ) -> Self {
         Self {
             input: TextArea::default(),
             is_valid: false,
-            selected_heat: None,
             client,
             heats,
             time_strip,
             selected_time_stamp,
+            show_time_strip_popup,
         }
     }
 
@@ -59,12 +59,12 @@ impl TimeStripTabPopup<'_> {
             KeyCode::Enter => {
                 if self.is_valid {
                     let heat_nr = self.input.lines()[0].parse::<u16>().unwrap();
-                    self.selected_heat = Some(heat_nr);
                     self.input.delete_line_by_head();
-                    // self.client.borrow_mut().send_heat_change(heat_nr);
                     if let Some(time_stamp) = self.selected_time_stamp.borrow().as_ref() {
                         self.time_strip.borrow_mut().assign_heat_nr(time_stamp.index, heat_nr);
+                        *self.show_time_strip_popup.borrow_mut() = false;
                     }
+                    self.is_valid = false;
                 }
             }
             _ => {
