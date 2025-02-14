@@ -130,7 +130,7 @@ impl EventHeatChanged {
 }
 
 /// A heat in a competition.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Heat {
     // The heat identifier.
     pub(crate) id: u16,
@@ -187,7 +187,7 @@ impl Display for Heat {
 }
 
 /// A boat in a heat.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Boat {
     /// The lane number the boat is starting in.
     pub(crate) lane: u8,

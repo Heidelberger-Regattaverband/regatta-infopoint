@@ -36,14 +36,21 @@ use std::{
 use strum::IntoEnumIterator;
 
 pub struct App<'a> {
+    // application state
     state: AppState,
     selected_tab: SelectedTab,
+
+    // event receiver
+    receiver: Receiver<AppEvent>,
+
+    // UI components
     heats_tab: HeatsTab,
     time_strip_tab: TimeStripTab,
     time_strip_popup: TimeStripTabPopup<'a>,
     logs_tab: LogsTab,
+
+    // shared context
     client: Rc<RefCell<Client>>,
-    receiver: Receiver<AppEvent>,
 }
 
 impl App<'_> {
@@ -54,16 +61,16 @@ impl App<'_> {
         let args = Args::parse();
         let client = Client::new(&args.host, args.port, args.timeout, sender.clone());
         thread::spawn(move || input_thread(sender.clone()));
-        let rc = Rc::new(RefCell::new(client));
-
+        let client_rc = Rc::new(RefCell::new(client));
+        let heats = Rc::new(RefCell::new(Vec::new()));
         Self {
             state: AppState::Running,
             selected_tab: SelectedTab::Heats,
-            heats_tab: HeatsTab::default(),
+            heats_tab: HeatsTab::new(heats.clone()),
             time_strip_tab: TimeStripTab::default(),
-            time_strip_popup: TimeStripTabPopup::new(rc.clone()),
+            time_strip_popup: TimeStripTabPopup::new(client_rc.clone(), heats.clone()),
             logs_tab: LogsTab::default(),
-            client: rc,
+            client: client_rc,
             receiver,
         }
     }
@@ -103,7 +110,7 @@ impl App<'_> {
                     SelectedTab::TimeStrip => {
                         frame.render_widget(&mut self.time_strip_tab, inner_area);
                         if self.time_strip_tab.show_popup {
-                            self.time_strip_popup.heats = self.heats_tab.get_heats_nr();
+                            // self.time_strip_popup.heats = self.heats_tab.get_heats_nr();
                             let popup_area = popup_area(inner_area, 50, 20);
                             frame.render_widget(Clear, popup_area); // this clears out the background
                             frame.render_widget(&mut self.time_strip_popup, popup_area);

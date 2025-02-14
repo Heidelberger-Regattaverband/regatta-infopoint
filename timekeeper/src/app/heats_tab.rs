@@ -8,16 +8,17 @@ use ratatui::{
     layout::Rect,
     widgets::{HighlightSpacing, List, ListItem, ListState, StatefulWidget, Widget},
 };
+use std::{cell::RefCell, rc::Rc};
 
-#[derive(Default)]
 pub(crate) struct HeatsTab {
-    heats: Vec<Heat>,
+    heats: Rc<RefCell<Vec<Heat>>>,
+
     state: ListState,
 }
 
 impl Widget for &mut HeatsTab {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let items: Vec<ListItem> = self.heats.iter().map(ListItem::from).collect();
+        let items: Vec<ListItem> = self.heats.borrow_mut().iter().map(ListItem::from).collect();
 
         // Create a List from all list items and highlight the currently selected one
         let list = List::new(items)
@@ -30,6 +31,13 @@ impl Widget for &mut HeatsTab {
 }
 
 impl HeatsTab {
+    pub(crate) fn new(heats: Rc<RefCell<Vec<Heat>>>) -> Self {
+        Self {
+            heats,
+            state: ListState::default(),
+        }
+    }
+
     pub(crate) fn handle_key_event(&mut self, event: KeyEvent) {
         match event.code {
             KeyCode::Up => self.state.select_previous(),
@@ -44,29 +52,29 @@ impl HeatsTab {
     pub(crate) fn handle_aquarius_event(&mut self, event: EventHeatChanged) {
         match event.opened {
             true => {
-                self.heats.push(event.heat);
-                self.heats.sort_by(|a, b| a.number.cmp(&b.number));
+                self.heats.borrow_mut().push(event.heat);
+                self.heats.borrow_mut().sort_by(|a, b| a.number.cmp(&b.number));
             }
             false => {
-                let index = self.heats.iter().position(|heat| heat.id == event.heat.id);
+                let index = self.heats.borrow_mut().iter().position(|heat| heat.id == event.heat.id);
                 if let Some(index) = index {
-                    self.heats.remove(index);
+                    self.heats.borrow_mut().remove(index);
                 }
             }
         }
     }
 
     pub(crate) fn set_heats(&mut self, heats: Vec<Heat>) {
-        self.heats = heats;
-        self.heats.sort_by(|a, b| a.number.cmp(&b.number));
+        heats.iter().for_each(|heat| {
+            if !self.heats.borrow_mut().contains(heat) {
+                self.heats.borrow_mut().push(heat.clone());
+            }
+        });
+        self.heats.borrow_mut().sort_by(|a, b| a.number.cmp(&b.number));
     }
 
     pub(crate) fn clear_heats(&mut self) {
-        self.heats.clear();
-    }
-
-    pub(crate) fn get_heats_nr(&self) -> Vec<u16> {
-        self.heats.iter().map(|heat| -> u16 { heat.number }).collect()
+        self.heats.borrow_mut().clear();
     }
 }
 

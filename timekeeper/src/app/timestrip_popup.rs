@@ -1,4 +1,7 @@
-use crate::{app::utils::popup_block, aquarius::client::Client};
+use crate::{
+    app::utils::popup_block,
+    aquarius::{client::Client, messages::Heat},
+};
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     buffer::Buffer,
@@ -11,7 +14,7 @@ use tui_textarea::{Input, TextArea};
 
 pub(crate) struct TimeStripTabPopup<'a> {
     input: TextArea<'a>,
-    pub(crate) heats: Vec<u16>,
+    pub(crate) heats: Rc<RefCell<Vec<Heat>>>,
     pub(crate) is_valid: bool,
     pub(crate) selected_heat: Option<u16>,
     client: Rc<RefCell<Client>>,
@@ -26,13 +29,13 @@ impl Widget for &mut TimeStripTabPopup<'_> {
 }
 
 impl TimeStripTabPopup<'_> {
-    pub(crate) fn new(client: Rc<RefCell<Client>>) -> Self {
+    pub(crate) fn new(client: Rc<RefCell<Client>>, heats: Rc<RefCell<Vec<Heat>>>) -> Self {
         Self {
             input: TextArea::default(),
-            heats: Vec::new(),
             is_valid: false,
             selected_heat: None,
             client,
+            heats,
         }
     }
 
@@ -60,7 +63,7 @@ impl TimeStripTabPopup<'_> {
 
     fn validate(&mut self) {
         if let Ok(heat_nr) = self.input.lines()[0].parse::<u16>() {
-            self.is_valid = self.heats.contains(&heat_nr);
+            self.is_valid = self.heats.borrow_mut().iter().any(|heat| heat.number == heat_nr);
         } else {
             self.is_valid = false;
         }
