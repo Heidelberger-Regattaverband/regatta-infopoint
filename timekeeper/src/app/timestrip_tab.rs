@@ -79,14 +79,17 @@ impl TimeStripTab {
     }
 
     fn update_selected_time_stamp(&mut self) {
-        if let Some(index) = self.state.selected() {
-            if let Some(time_stamp) = self
-                .time_strip
-                .borrow()
-                .time_stamps
-                .iter()
-                .find(|time_stamp| time_stamp.index == index as u64)
-            {
+        let time_stamps = &self.time_strip.borrow().time_stamps;
+
+        // get the index of the selected time stamp
+        if let Some(mut index) = self.state.selected() {
+            if index >= time_stamps.len() {
+                index = time_stamps.len() - 1;
+            }
+            // as the list is reversed, we need to calculate the correct index in the time strip
+            let time_strip_index = time_stamps.len() - index - 1;
+            // get the time stamp from the time strip
+            if let Some(time_stamp) = time_stamps.get(time_strip_index) {
                 *self.selected_time_stamp.borrow_mut() = Some(time_stamp.clone());
             } else {
                 *self.selected_time_stamp.borrow_mut() = None;
