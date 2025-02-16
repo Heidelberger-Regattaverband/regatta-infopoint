@@ -1,6 +1,7 @@
 use chrono::{DateTime, Local};
 use log::info;
 use std::sync::atomic::{AtomicU64, Ordering};
+use strum_macros::Display;
 
 static TIME_STAMP_INDEX: AtomicU64 = AtomicU64::new(0);
 
@@ -75,11 +76,13 @@ impl TimeStamp {
 }
 
 /// The type of a time stamp.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Display)]
 pub(crate) enum TimeStampType {
     /// A start time stamp.
+    #[strum(to_string = "Start")]
     Start,
 
     /// A finish time stamp.
+    #[strum(to_string = "Ziel")]
     Finish,
 }
