@@ -27,14 +27,10 @@ pub(crate) struct TimeStripTabPopup<'a> {
 
 impl Widget for &mut TimeStripTabPopup<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let ts_index = self
-            .selected_time_stamp
-            .borrow()
-            .as_ref()
-            .map(|ts| ts.index)
-            .unwrap_or(0);
+        let binding = self.selected_time_stamp.borrow_mut();
+        let ts = binding.as_ref().unwrap();
         self.input
-            .set_block(popup_block().title(format!(" Zeitstempel #{} ", ts_index)));
+            .set_block(popup_block().title(format!(" {} #{} ", ts.stamp_type, ts.index)));
         self.input.render(area, buf);
     }
 }
