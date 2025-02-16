@@ -18,7 +18,7 @@ use crate::{
 use clap::Parser;
 use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use heats_tab::HeatsTab;
-use log::{debug, trace, warn};
+use log::{debug, warn};
 use logs_tab::LogsTab;
 use ratatui::{
     layout::{
@@ -65,7 +65,7 @@ impl App<'_> {
         let (sender, receiver) = mpsc::channel();
 
         let args = Args::parse();
-        let client = Client::new(&args.host, args.port, args.timeout, sender.clone());
+        let client: Client = Client::new(&args.host, args.port, args.timeout, sender.clone());
         thread::spawn(move || input_thread(sender.clone()));
 
         // shared context
@@ -236,9 +236,7 @@ fn popup_area(area: Rect, percent_x: u16, percent_y: u16) -> Rect {
 }
 
 fn input_thread(sender: Sender<AppEvent>) -> Result<(), TimekeeperErr> {
-    trace!(target:"crossterm", "Starting input thread");
     while let Ok(event) = event::read() {
-        trace!(target:"crossterm", "Stdin event received {:?}", event);
         sender.send(AppEvent::UI(event)).map_err(TimekeeperErr::SendError)?;
     }
     Ok(())

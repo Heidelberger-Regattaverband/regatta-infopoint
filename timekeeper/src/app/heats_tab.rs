@@ -11,9 +11,10 @@ use ratatui::{
 use std::{cell::RefCell, rc::Rc};
 
 pub(crate) struct HeatsTab {
-    heats: Rc<RefCell<Vec<Heat>>>,
-
     state: ListState,
+
+    // shared context
+    heats: Rc<RefCell<Vec<Heat>>>,
 }
 
 impl Widget for &mut HeatsTab {
