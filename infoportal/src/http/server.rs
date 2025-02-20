@@ -4,18 +4,18 @@ use crate::{
     http::{api_doc, rest_api},
 };
 use actix_extensible_rate_limit::{
-    backend::{memory::InMemoryBackend, SimpleInput, SimpleInputFunctionBuilder, SimpleOutput},
     RateLimiter,
+    backend::{SimpleInput, SimpleInputFunctionBuilder, SimpleOutput, memory::InMemoryBackend},
 };
 use actix_files::Files;
 use actix_identity::IdentityMiddleware;
-use actix_session::{config::PersistentSession, storage::CookieSessionStore, SessionMiddleware};
+use actix_session::{SessionMiddleware, config::PersistentSession, storage::CookieSessionStore};
 use actix_web::{
+    App, Error, HttpServer,
     body::{BoxBody, EitherBody},
-    cookie::{time::Duration, Key, SameSite},
+    cookie::{Key, SameSite, time::Duration},
     dev::{Service, ServiceFactory, ServiceRequest, ServiceResponse},
     web::{self, Data},
-    App, Error, HttpServer,
 };
 use actix_web_prom::{PrometheusMetrics, PrometheusMetricsBuilder};
 use colored::Colorize;

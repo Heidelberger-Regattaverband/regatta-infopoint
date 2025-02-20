@@ -1,8 +1,8 @@
 use crate::db::{
-    model::{utils, Club, Crew, Heat, Race, TryToEntity},
+    model::{Club, Crew, Heat, Race, TryToEntity, utils},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
-use futures::future::{join_all, BoxFuture};
+use futures::future::{BoxFuture, join_all};
 use serde::Serialize;
 use tiberius::{Query, Row};
 
@@ -68,7 +68,10 @@ impl From<&Row> for Registration {
 
 impl Registration {
     pub(crate) fn select_columns(alias: &str) -> String {
-        format!(" {0}.Entry_ID, {0}.Entry_Bib, {0}.Entry_Comment, {0}.Entry_BoatNumber, {0}.Entry_GroupValue, {0}.Entry_CancelValue ", alias)
+        format!(
+            " {0}.Entry_ID, {0}.Entry_Bib, {0}.Entry_Comment, {0}.Entry_BoatNumber, {0}.Entry_GroupValue, {0}.Entry_CancelValue ",
+            alias
+        )
     }
 
     /// Queries all registrations for a given club and regatta.

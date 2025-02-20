@@ -8,10 +8,10 @@ use crate::{
 };
 use actix_identity::Identity;
 use actix_web::{
+    Error, HttpMessage, HttpRequest, HttpResponse, Responder, Scope as ActixScope,
     error::{ErrorUnauthorized, InternalError},
     get, post,
     web::{Data, Json, Path, ServiceConfig},
-    Error, HttpMessage, HttpRequest, HttpResponse, Responder, Scope as ActixScope,
 };
 use aquarius::db::{
     model::{Club, Filters, Heat, Race, Regatta, Schedule},

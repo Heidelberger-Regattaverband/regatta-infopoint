@@ -1,8 +1,8 @@
 use crate::db::{
-    model::{utils, Club, Crew, Heat, HeatResult, Race, Registration, TryToEntity},
+    model::{Club, Crew, Heat, HeatResult, Race, Registration, TryToEntity, utils},
     tiberius::{RowColumn, TiberiusPool},
 };
-use futures::future::{join_all, BoxFuture};
+use futures::future::{BoxFuture, join_all};
 use serde::Serialize;
 use std::{cmp::Ordering, time::Duration};
 use tiberius::{Query, Row};
