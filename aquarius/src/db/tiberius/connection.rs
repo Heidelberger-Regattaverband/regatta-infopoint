@@ -1,5 +1,5 @@
 use bb8::ManageConnection;
-use tiberius::{error::Error, Client, Config as TiberiusConfig};
+use tiberius::{Client, Config as TiberiusConfig, error::Error};
 use tokio::net::TcpStream;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
 

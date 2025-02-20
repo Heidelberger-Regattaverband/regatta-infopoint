@@ -3,7 +3,7 @@ use crate::db::{
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{time::chrono::NaiveDateTime, Query, Row};
+use tiberius::{Query, Row, time::chrono::NaiveDateTime};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]

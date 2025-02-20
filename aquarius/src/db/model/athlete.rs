@@ -3,7 +3,7 @@ use crate::db::{
     tiberius::{RowColumn, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{time::chrono::NaiveDateTime, Row};
+use tiberius::{Row, time::chrono::NaiveDateTime};
 
 /// An athlete is a person who participates in a regatta.
 #[derive(Debug, Serialize, Clone)]

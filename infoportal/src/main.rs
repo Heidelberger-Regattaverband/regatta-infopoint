@@ -38,10 +38,9 @@ mod tests {
     };
     use actix_identity::IdentityMiddleware;
     use actix_web::{
-        test,
+        App, test,
         test::TestRequest,
-        web::{scope, Data},
-        App,
+        web::{Data, scope},
     };
     use aquarius::db::tiberius::TiberiusPool;
     use dotenv::dotenv;
