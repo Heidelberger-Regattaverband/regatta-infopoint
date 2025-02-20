@@ -21,6 +21,7 @@ use heats_tab::HeatsTab;
 use log::{debug, warn};
 use logs_tab::LogsTab;
 use ratatui::{
+    DefaultTerminal,
     layout::{
         Constraint::{self, Length, Min},
         Flex, Layout, Rect,
@@ -28,7 +29,6 @@ use ratatui::{
     style::Stylize,
     text::Line,
     widgets::{Clear, Tabs},
-    DefaultTerminal,
 };
 use std::{
     cell::RefCell,

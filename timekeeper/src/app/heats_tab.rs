@@ -1,5 +1,5 @@
 use crate::{
-    app::utils::{block, HIGHLIGHT_SYMBOL},
+    app::utils::{HIGHLIGHT_SYMBOL, block},
     aquarius::messages::Heat,
 };
 use crossterm::event::{KeyCode, KeyEvent};

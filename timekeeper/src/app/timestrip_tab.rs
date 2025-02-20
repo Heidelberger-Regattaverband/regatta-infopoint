@@ -1,8 +1,8 @@
 use std::{cell::RefCell, rc::Rc};
 
 use crate::{
-    app::utils::{block, HIGHLIGHT_SYMBOL},
     app::TimeStrip,
+    app::utils::{HIGHLIGHT_SYMBOL, block},
     timestrip::{TimeStamp, TimeStampType},
 };
 use crossterm::event::{KeyCode, KeyEvent};
