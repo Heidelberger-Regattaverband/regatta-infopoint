@@ -4,7 +4,7 @@ use crate::db::{
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{numeric::Decimal, Query, Row};
+use tiberius::{Query, Row, numeric::Decimal};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]

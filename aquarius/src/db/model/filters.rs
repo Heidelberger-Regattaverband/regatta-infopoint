@@ -1,5 +1,5 @@
 use crate::db::{
-    model::{utils, AgeClass, Block, BoatClass},
+    model::{AgeClass, Block, BoatClass, utils},
     tiberius::{RowColumn, TiberiusPool},
 };
 use chrono::NaiveDate;

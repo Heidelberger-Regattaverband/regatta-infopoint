@@ -130,19 +130,21 @@ impl Client {
         let mut comm = Communication::new(&self.stream)?;
 
         debug!("Starting thread to receive events");
-        let handle = thread::spawn(move || loop {
-            let received = comm.receive_line().unwrap();
-            if !received.is_empty() {
-                debug!("Received: \"{}\"", utils::print_whitespaces(&received).bold());
-                let event_opt = EventHeatChanged::parse(&received);
-                match event_opt {
-                    Ok(mut event) => {
-                        if event.opened {
-                            Client::read_start_list(&mut comm, &mut event.heat).unwrap();
+        let handle = thread::spawn(move || {
+            loop {
+                let received = comm.receive_line().unwrap();
+                if !received.is_empty() {
+                    debug!("Received: \"{}\"", utils::print_whitespaces(&received).bold());
+                    let event_opt = EventHeatChanged::parse(&received);
+                    match event_opt {
+                        Ok(mut event) => {
+                            if event.opened {
+                                Client::read_start_list(&mut comm, &mut event.heat).unwrap();
+                            }
+                            receiver.lock().unwrap().on_event(&event);
                         }
-                        receiver.lock().unwrap().on_event(&event);
+                        Err(err) => handle_error(err),
                     }
-                    Err(err) => handle_error(err),
                 }
             }
         });

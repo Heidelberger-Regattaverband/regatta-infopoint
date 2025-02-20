@@ -1,4 +1,4 @@
-use crate::db::model::{utils, Heat, Registration};
+use crate::db::model::{Heat, Registration, utils};
 use crate::db::{
     model::{AgeClass, BoatClass, TryToEntity},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
@@ -99,12 +99,15 @@ impl TryToEntity<Race> for Row {
 
 impl Race {
     pub(crate) fn select_columns(alias: &str) -> String {
-        format!(" {0}.Offer_ID, {0}.Offer_RaceNumber, {0}.Offer_Distance, {0}.Offer_IsLightweight, {0}.Offer_Cancelled, {0}.Offer_ShortLabel, \
+        format!(
+            " {0}.Offer_ID, {0}.Offer_RaceNumber, {0}.Offer_Distance, {0}.Offer_IsLightweight, {0}.Offer_Cancelled, {0}.Offer_ShortLabel, \
             {0}.Offer_LongLabel, {0}.Offer_Comment, {0}.Offer_GroupMode, {0}.Offer_SortValue, {0}.Offer_HRV_Seeded, \
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count, \
             (SELECT AVG(Comp_State) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_State, \
             (SELECT MIN(Comp_DateTime) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_DateTime \
-        ", alias)
+        ",
+            alias
+        )
     }
 
     /// Query all races of a regatta.
