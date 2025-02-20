@@ -27,7 +27,7 @@ impl PeakAlloc {
 /// useable as a global allocator (with `#[global_allocator]` attribute).
 unsafe impl GlobalAlloc for PeakAlloc {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        let ret = System.alloc(layout);
+        let ret = unsafe { System.alloc(layout) };
         if !ret.is_null() {
             // as pointed out by @luxalpa, fetch_add returns the PREVIOUS value.
             let prev = CURRENT.fetch_add(layout.size(), Ordering::Relaxed);
@@ -37,7 +37,7 @@ unsafe impl GlobalAlloc for PeakAlloc {
     }
 
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
-        System.dealloc(ptr, layout);
+        unsafe { System.dealloc(ptr, layout) };
         CURRENT.fetch_sub(layout.size(), Ordering::Relaxed);
     }
 }
