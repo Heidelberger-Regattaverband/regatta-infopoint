@@ -220,6 +220,7 @@ mod tests {
         sync::mpsc::{self, Receiver},
         thread,
     };
+    const MESSAGE: &str = "Hello World!";
 
     fn init() -> (Sender<AppEvent>, Receiver<AppEvent>) {
         let _ = env_logger::builder()
@@ -236,8 +237,8 @@ mod tests {
         let addr = listener.local_addr().unwrap();
 
         thread::spawn(move || {
-            for stream in listener.incoming() {
-                let mut stream = stream.unwrap();
+            for incoming in listener.incoming() {
+                let mut stream = incoming.unwrap();
                 let mut reader = BufReader::new(stream.try_clone().unwrap());
                 let mut buffer = String::new();
                 while reader.read_line(&mut buffer).unwrap() > 0 {
@@ -266,7 +267,6 @@ mod tests {
         let addr = start_test_server();
         let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
         client.connect().unwrap();
-        const MESSAGE: &str = "Hello World!";
         let result = client.comm_main.unwrap().write(MESSAGE);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), MESSAGE.len());
@@ -279,7 +279,6 @@ mod tests {
         let addr = start_test_server();
         let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
         client.connect().unwrap();
-        const MESSAGE: &str = "Hello World!";
         let comm = client.comm_main.as_mut().unwrap();
         comm.write(MESSAGE).unwrap();
         comm.write("\r\n").unwrap();
