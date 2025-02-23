@@ -61,7 +61,7 @@ Configure the docker container settings and start MS-SQL Server:
 ```bash
 cd docker/mssql
 nano .env
-docker-compose up -d && docker logs mssql-aquarius -f
+docker compose up -d && docker logs mssql-aquarius -f
 ```
 
 Copy database backup files into restore directory:
@@ -75,7 +75,7 @@ Configure the docker container settings and start Infoportal:
 ```bash
 cd docker/infoportal
 nano .env
-docker-compose up -d && docker logs infoportal -f
+docker compose up -d && docker logs infoportal -f
 ```
 
 ## Setup Watchtower
@@ -83,7 +83,7 @@ docker-compose up -d && docker logs infoportal -f
 Start Watchtower:
 ```bash
 cd docker/watchtower
-docker-compose up -d && docker logs watchtower -f
+docker compose up -d && docker logs watchtower -f
 ```
 
 ## Add MS-SQL User
