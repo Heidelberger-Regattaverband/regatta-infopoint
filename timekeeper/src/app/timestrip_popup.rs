@@ -1,14 +1,13 @@
 use crate::{
-    app::utils::popup_block,
     aquarius::{client::Client, messages::Heat},
     timestrip::{TimeStamp, TimeStrip},
 };
 use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     buffer::Buffer,
-    layout::Rect,
+    layout::{Constraint, Layout, Rect},
     style::{Color, Style},
-    widgets::Widget,
+    widgets::{Block, BorderType, Padding, Paragraph, Widget},
 };
 use std::{cell::RefCell, rc::Rc};
 use tui_textarea::{Input, TextArea};
@@ -29,9 +28,21 @@ impl Widget for &mut TimeStripTabPopup<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let binding = self.selected_time_stamp.borrow_mut();
         let ts = binding.as_ref().unwrap();
-        self.input
-            .set_block(popup_block().title(format!(" {} #{} ", ts.stamp_type, ts.index)));
-        self.input.render(area, buf);
+        let block = Block::bordered()
+            .border_type(BorderType::Rounded)
+            .padding(Padding::horizontal(1))
+            .title(format!(" {} #{} ", ts.stamp_type, ts.index));
+
+        // inner popup area
+        let inner_area = block.inner(area);
+        block.render(area, buf);
+
+        let label_txt = "Lauf #:";
+        // horizontal header layout: tabs, title
+        let [label_area, input_area] =
+            Layout::horizontal([Constraint::Length((label_txt.len() + 2).try_into().unwrap()), Constraint::Fill(1)]).areas(inner_area);
+        Paragraph::new(label_txt).render(label_area, buf);
+        self.input.render(input_area, buf);
     }
 }
 
