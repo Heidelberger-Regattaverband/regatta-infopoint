@@ -1,5 +1,11 @@
-use crate::{error::TimekeeperErr, utils};
+use chrono::{DateTime, Local};
+
+use crate::{error::TimekeeperErr, timestrip::TimeStampType, utils};
 use std::fmt::{Display, Formatter, Result as FmtResult};
+
+pub(super) type Bib = u8;
+type Lane = u8;
+pub(super) type HeatNr = u16;
 
 /// A message to request the list of open heats.
 pub(crate) struct RequestListOpenHeats {}
@@ -85,6 +91,23 @@ impl ResponseStartList {
     }
 }
 
+pub(super) struct RequestSetTime {
+    pub(super) time: DateTime<Local>,
+    pub(super) stamp_type: TimeStampType,
+    pub(super) heat_nr: HeatNr,
+    pub(super) bib: Bib,
+}
+
+impl Display for RequestSetTime {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        let split = match self.stamp_type {
+            TimeStampType::Start => 0,
+            TimeStampType::Finish => 64,
+        };
+        writeln!(f, "?TIME time={} bib={} split={}", self.time, self.bib, split)
+    }
+}
+
 /// An event that a heat has changed. This event is sent when a heat is opened or closed
 #[derive(Debug)]
 pub(crate) struct EventHeatChanged {
@@ -135,7 +158,7 @@ pub(crate) struct Heat {
     // The heat identifier.
     pub(crate) id: u16,
     // The heat number.
-    pub(crate) number: u16,
+    pub(crate) number: HeatNr,
     // The heat status.
     status: u8,
     // The boats in the heat.
@@ -190,9 +213,9 @@ impl Display for Heat {
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Boat {
     /// The lane number the boat is starting in.
-    pub(crate) lane: u8,
+    pub(crate) lane: Lane,
     /// The bib of the boat.
-    pub(crate) bib: u8,
+    pub(crate) bib: Bib,
     /// The club name of the boat.
     pub(crate) club: String,
 }
@@ -205,7 +228,7 @@ impl Boat {
     /// * `club` - The club name.
     /// # Returns
     /// A new boat.
-    fn new(lane: u8, bib: u8, club: String) -> Self {
+    fn new(lane: Lane, bib: Bib, club: String) -> Self {
         Boat {
             bib,
             lane,
@@ -223,7 +246,7 @@ impl Boat {
         let parts: Vec<&str> = boat_str.splitn(3, ' ').collect();
         if parts.len() == 3 {
             let lane = parts[0].parse().map_err(TimekeeperErr::ParseError)?;
-            let bib = parts[1].parse().map_err(TimekeeperErr::ParseError)?;
+            let bib: u8 = parts[1].parse().map_err(TimekeeperErr::ParseError)?;
             let club = parts[2].to_owned();
             Ok(Boat::new(lane, bib, club))
         } else {

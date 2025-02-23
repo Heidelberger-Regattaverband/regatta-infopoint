@@ -39,8 +39,11 @@ impl Widget for &mut TimeStripTabPopup<'_> {
 
         let label_txt = "Lauf #:";
         // horizontal header layout: tabs, title
-        let [label_area, input_area] =
-            Layout::horizontal([Constraint::Length((label_txt.len() + 2).try_into().unwrap()), Constraint::Fill(1)]).areas(inner_area);
+        let [label_area, input_area] = Layout::horizontal([
+            Constraint::Length((label_txt.len() + 2).try_into().unwrap()),
+            Constraint::Fill(1),
+        ])
+        .areas(inner_area);
         Paragraph::new(label_txt).render(label_area, buf);
         self.input.render(input_area, buf);
     }

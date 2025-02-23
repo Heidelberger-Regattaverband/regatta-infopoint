@@ -3,10 +3,12 @@ use crate::{
     aquarius::{
         comm::Communication,
         messages::{
-            EventHeatChanged, Heat, RequestListOpenHeats, RequestStartList, ResponseListOpenHeats, ResponseStartList,
+            Bib, EventHeatChanged, Heat, HeatNr, RequestListOpenHeats, RequestSetTime, RequestStartList,
+            ResponseListOpenHeats, ResponseStartList,
         },
     },
     error::TimekeeperErr,
+    timestrip::TimeStamp,
     utils,
 };
 use log::{debug, error, info, trace, warn};
@@ -84,6 +86,23 @@ impl Client {
                 Client::read_start_list(comm, heat)?;
             }
             Ok(heats.heats)
+        } else {
+            Err(TimekeeperErr::InvalidMessage(
+                "Communication is not initialized.".to_string(),
+            ))
+        }
+    }
+
+    pub(super) fn send_time(&mut self, time_stamp: TimeStamp, heat_nr: HeatNr, bib: Bib) -> Result<(), TimekeeperErr> {
+        if let Some(comm) = &mut self.comm_main {
+            let request = RequestSetTime {
+                time: time_stamp.time,
+                stamp_type: time_stamp.stamp_type,
+                heat_nr,
+                bib,
+            };
+            comm.write(&request.to_string()).map_err(TimekeeperErr::IoError)?;
+            Ok(())
         } else {
             Err(TimekeeperErr::InvalidMessage(
                 "Communication is not initialized.".to_string(),
