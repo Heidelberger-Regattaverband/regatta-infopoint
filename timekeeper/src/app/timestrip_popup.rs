@@ -57,7 +57,11 @@ impl TimeStripTabPopup<'_> {
     pub(crate) fn handle_key_event(&mut self, event: KeyEvent) {
         match event.code {
             KeyCode::Esc => {
-                self.input.delete_line_by_head();
+                if self.input.is_empty() {
+                    *self.show_time_strip_popup.borrow_mut() = false;
+                } else {
+                    self.input.delete_line_by_head();
+                }
             }
             KeyCode::Enter => {
                 if self.is_valid {
