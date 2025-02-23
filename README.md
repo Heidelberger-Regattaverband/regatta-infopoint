@@ -35,11 +35,11 @@ Set hostname:
 nano /etc/hostname
 ```
 
-## [Setting up Tailscale](https://tailscale.com/kb/1187/install-ubuntu-2204)
+## [Setting up Tailscale](https://tailscale.com/kb/1476/install-ubuntu-2404)
 Add Tailscale's package signing key and repository:
 ```bash
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg | tee /usr/share/keyrings/tailscale-archive-keyring.gpg > /dev/null
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.tailscale-keyring.list | tee /etc/apt/sources.list.d/tailscale.list
+curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
 ```
 Install Tailscale:
 ```bash
