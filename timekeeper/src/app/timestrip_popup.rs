@@ -82,8 +82,11 @@ impl TimeStripTabPopup<'_> {
                     let heat_nr = self.input.lines()[0].parse::<u16>().unwrap();
                     self.input.delete_line_by_head();
                     if let Some(time_stamp) = self.selected_time_stamp.borrow().as_ref() {
-                        self.time_strip.borrow_mut().assign_heat_nr(time_stamp.index, heat_nr);
-                        *self.show_time_strip_popup.borrow_mut() = false;
+                        if let Some(time_stamp) = self.time_strip.borrow_mut().assign_heat_nr(time_stamp.index, heat_nr)
+                        {
+                            *self.show_time_strip_popup.borrow_mut() = false;
+                            self.client.borrow_mut().send_time(&time_stamp, None).unwrap();
+                        }
                     }
                     self.is_valid = false;
                 }

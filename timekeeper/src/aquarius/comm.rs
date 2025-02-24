@@ -1,6 +1,6 @@
 use crate::utils;
 use encoding_rs::WINDOWS_1252;
-use log::trace;
+use log::{info, trace};
 use std::{
     io::{BufRead, BufReader, BufWriter, Error as IoError, ErrorKind, Result as IoResult, Write},
     net::TcpStream,
@@ -35,7 +35,7 @@ impl Communication {
     /// # Returns
     /// The number of bytes written or an error if the command could not be written.
     pub(super) fn write(&mut self, cmd: &str) -> IoResult<usize> {
-        trace!("Writing command: \"{}\"", utils::print_whitespaces(cmd));
+        info!("Writing command: \"{}\"", utils::print_whitespaces(cmd));
         let count = self.writer.write(cmd.as_bytes())?;
         self.writer.flush()?;
         trace!("Written {} bytes", count.to_string());

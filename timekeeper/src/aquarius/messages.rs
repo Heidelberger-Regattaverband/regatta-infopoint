@@ -8,14 +8,8 @@ type Lane = u8;
 pub(super) type HeatNr = u16;
 
 /// A message to request the list of open heats.
+#[derive(Default)]
 pub(crate) struct RequestListOpenHeats {}
-
-impl RequestListOpenHeats {
-    /// Create a new request to get the list of open heats.
-    pub(crate) fn new() -> Self {
-        RequestListOpenHeats {}
-    }
-}
 
 impl Display for RequestListOpenHeats {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
@@ -95,16 +89,24 @@ pub(super) struct RequestSetTime {
     pub(super) time: DateTime<Local>,
     pub(super) stamp_type: TimeStampType,
     pub(super) heat_nr: HeatNr,
-    pub(super) bib: Bib,
+    pub(super) bib: Option<Bib>,
 }
 
 impl Display for RequestSetTime {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        let time = format!("{}", self.time.format("%H:%M:%S.000"));
         let split = match self.stamp_type {
             TimeStampType::Start => 0,
             TimeStampType::Finish => 64,
         };
-        writeln!(f, "?TIME time={} bib={} split={}", self.time, self.bib, split)
+        match self.bib {
+            Some(bib) => writeln!(
+                f,
+                "TIME time={} comp={} split={} bib={}",
+                time, self.heat_nr, split, bib
+            ),
+            _ => writeln!(f, "TIME time={} comp={} split={}", time, self.heat_nr, split),
+        }
     }
 }
 
@@ -275,7 +277,7 @@ mod tests {
 
     #[test]
     fn test_request_list_open_heats() {
-        let request = RequestListOpenHeats::new();
+        let request = RequestListOpenHeats::default();
         assert_eq!(request.to_string(), "?OPEN\n");
     }
 

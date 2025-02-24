@@ -3,8 +3,8 @@ use crate::{
     aquarius::{
         comm::Communication,
         messages::{
-            Bib, EventHeatChanged, Heat, HeatNr, RequestListOpenHeats, RequestSetTime, RequestStartList,
-            ResponseListOpenHeats, ResponseStartList,
+            Bib, EventHeatChanged, Heat, RequestListOpenHeats, RequestSetTime, RequestStartList, ResponseListOpenHeats,
+            ResponseStartList,
         },
     },
     error::TimekeeperErr,
@@ -78,7 +78,7 @@ impl Client {
     /// If the open heats could not be read from Aquarius.
     pub(crate) fn read_open_heats(&mut self) -> Result<Vec<Heat>, TimekeeperErr> {
         if let Some(comm) = &mut self.comm_main {
-            comm.write(&RequestListOpenHeats::new().to_string())
+            comm.write(&RequestListOpenHeats::default().to_string())
                 .map_err(TimekeeperErr::IoError)?;
             let response = comm.receive_all().map_err(TimekeeperErr::IoError)?;
             let mut heats = ResponseListOpenHeats::parse(&response)?;
@@ -93,12 +93,12 @@ impl Client {
         }
     }
 
-    pub(super) fn send_time(&mut self, time_stamp: TimeStamp, heat_nr: HeatNr, bib: Bib) -> Result<(), TimekeeperErr> {
+    pub(crate) fn send_time(&mut self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), TimekeeperErr> {
         if let Some(comm) = &mut self.comm_main {
             let request = RequestSetTime {
                 time: time_stamp.time,
                 stamp_type: time_stamp.stamp_type,
-                heat_nr,
+                heat_nr: time_stamp.heat_nr.unwrap_or_default(),
                 bib,
             };
             comm.write(&request.to_string()).map_err(TimekeeperErr::IoError)?;
