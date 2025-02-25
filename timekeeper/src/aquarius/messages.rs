@@ -94,7 +94,7 @@ pub(super) struct RequestSetTime {
 
 impl Display for RequestSetTime {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        let time = format!("{}", self.time.format("%H:%M:%S.000"));
+        let time = format!("{}", self.time.format("%H:%M:%S%.3f"));
         let split = match self.stamp_type {
             TimeStampType::Start => 0,
             TimeStampType::Finish => 64,
