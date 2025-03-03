@@ -18,8 +18,8 @@
     "@types/leaflet": "^1.9.16",
     "@ui5/cli": "^4.0.13",
     "@ui5/linter": "^1.11.0",
-    "typescript": "^5.7.3",
-    "ui5-tooling-modules": "^3.23.2",
+    "typescript": "^5.8.2",
+    "ui5-tooling-modules": "^3.24.1",
     "ui5-tooling-transpile": "^3.7.1",
     "watch": "^1.0.2"
   }
