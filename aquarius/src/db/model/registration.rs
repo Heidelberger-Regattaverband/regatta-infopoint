@@ -13,6 +13,7 @@ pub struct Registration {
     pub id: i32,
 
     /** The race for which the registration was made. */
+    #[serde(skip_serializing_if = "Option::is_none")]
     race: Option<Race>,
 
     /** The club that made the registration and has to pay an entry fee for it. */
