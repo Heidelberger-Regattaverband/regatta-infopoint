@@ -10,6 +10,7 @@ use aquarius::db::{
 use futures::future::join3;
 use log::debug;
 use std::time::{Duration, Instant};
+use tiberius::error::Error as DbError;
 
 /// The `Aquarius` struct is the main interface to the database. It is used to query data from the database.
 pub(crate) struct Aquarius {
@@ -38,32 +39,47 @@ impl Aquarius {
         }
     }
 
-    pub(crate) async fn get_active_regatta(&self, opt_user: Option<Identity>) -> Regatta {
+    /// Returns the active regatta.
+    /// # Arguments
+    /// * `opt_user` - The optional user identity.
+    /// # Returns
+    /// The active regatta.
+    /// # Errors
+    /// Returns a `DbError` if the query fails.
+    pub(crate) async fn get_active_regatta(&self, opt_user: Option<Identity>) -> Result<Regatta, DbError> {
         self.get_regatta(self.active_regatta_id, opt_user).await
     }
 
-    pub(crate) async fn get_filters(&self, regatta_id: i32, opt_user: Option<Identity>) -> Filters {
+    /// Returns filters for the given regatta.
+    /// # Arguments
+    /// * `regatta_id` - The regatta identifier
+    /// * `opt_user` - The optional user identity.
+    /// # Returns
+    /// The filters for the given regatta.  
+    /// # Errors
+    /// Returns a `DbError` if the query fails.
+    pub(crate) async fn get_filters(&self, regatta_id: i32, opt_user: Option<Identity>) -> Result<Filters, DbError> {
         if opt_user.is_some() {
             self._query_filters(regatta_id).await
         } else if let Some(filters) = self.caches.filters.get(&regatta_id).await {
-            filters
+            Ok(filters)
         } else {
             self._query_filters(regatta_id).await
         }
     }
 
-    pub(crate) async fn query_regattas(&self) -> Vec<Regatta> {
+    pub(crate) async fn query_regattas(&self) -> Result<Vec<Regatta>, DbError> {
         let start = Instant::now();
-        let regattas = Regatta::query_all(TiberiusPool::instance()).await;
+        let regattas = Regatta::query_all(TiberiusPool::instance()).await?;
         debug!("Query all regattas from DB: {:?}", start.elapsed());
-        regattas
+        Ok(regattas)
     }
 
-    pub(crate) async fn get_regatta(&self, regatta_id: i32, opt_user: Option<Identity>) -> Regatta {
+    pub(crate) async fn get_regatta(&self, regatta_id: i32, opt_user: Option<Identity>) -> Result<Regatta, DbError> {
         if opt_user.is_some() {
             self._query_regatta(regatta_id).await
         } else if let Some(regatta) = self.caches.regatta.get(&regatta_id).await {
-            regatta
+            Ok(regatta)
         } else {
             self._query_regatta(regatta_id).await
         }
@@ -195,20 +211,20 @@ impl Aquarius {
         kiosk
     }
 
-    async fn _query_filters(&self, regatta_id: i32) -> Filters {
+    async fn _query_filters(&self, regatta_id: i32) -> Result<Filters, DbError> {
         let start = Instant::now();
-        let filters = Filters::query(regatta_id, TiberiusPool::instance()).await;
+        let filters = Filters::query(regatta_id, TiberiusPool::instance()).await?;
         self.caches.filters.set(&regatta_id, &filters).await;
         debug!("Query filters from DB: {:?}", start.elapsed());
-        filters
+        Ok(filters)
     }
 
-    async fn _query_regatta(&self, regatta_id: i32) -> Regatta {
+    async fn _query_regatta(&self, regatta_id: i32) -> Result<Regatta, DbError> {
         let start = Instant::now();
-        let regatta = Regatta::query(regatta_id, TiberiusPool::instance()).await;
+        let regatta = Regatta::query(regatta_id, TiberiusPool::instance()).await?;
         self.caches.regatta.set(&regatta.id, &regatta).await;
         debug!("Query regatta {} from DB: {:?}", regatta_id, start.elapsed());
-        regatta
+        Ok(regatta)
     }
 
     async fn _query_race_heats_registrations(&self, race_id: i32) -> Race {

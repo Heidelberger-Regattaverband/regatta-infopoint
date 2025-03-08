@@ -9,12 +9,12 @@ use crate::{
 use actix_identity::Identity;
 use actix_web::{
     Error, HttpMessage, HttpRequest, HttpResponse, Responder, Scope as ActixScope,
-    error::{ErrorUnauthorized, InternalError},
+    error::{ErrorInternalServerError, ErrorUnauthorized, InternalError},
     get, post,
     web::{Data, Json, Path, ServiceConfig},
 };
 use aquarius::db::{
-    model::{Club, Filters, Heat, Race, Regatta, Schedule},
+    model::{Club, Heat, Race, Regatta, Schedule},
     tiberius::TiberiusPool,
 };
 use prometheus::Registry;
@@ -41,19 +41,27 @@ async fn monitoring(registry: Data<Registry>, opt_user: Option<Identity>) -> Res
 }
 
 #[get("/regattas")]
-async fn get_regattas(aquarius: Data<Aquarius>) -> Json<Vec<Regatta>> {
-    Json(aquarius.query_regattas().await)
+async fn get_regattas(aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
+    let regattas = aquarius
+        .query_regattas()
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(regattas))
 }
 
 #[get("/active_regatta")]
-async fn get_active_regatta(aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Json<Regatta> {
-    Json(aquarius.get_active_regatta(opt_user).await)
+async fn get_active_regatta(aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
+    let regatta = aquarius
+        .get_active_regatta(opt_user)
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(regatta))
 }
 
 #[get("/regattas/{id}")]
 async fn get_regatta(path: Path<i32>, aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Json<Regatta> {
     let regatta_id = path.into_inner();
-    Json(aquarius.get_regatta(regatta_id, opt_user).await)
+    Json(aquarius.get_regatta(regatta_id, opt_user).await.unwrap())
 }
 
 #[get("/regattas/{id}/races")]
@@ -75,9 +83,17 @@ async fn get_heats(path: Path<i32>, aquarius: Data<Aquarius>, opt_user: Option<I
 }
 
 #[get("/regattas/{id}/filters")]
-async fn get_filters(path: Path<i32>, aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Json<Filters> {
+async fn get_filters(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
-    Json(aquarius.get_filters(regatta_id, opt_user).await)
+    let filters = aquarius
+        .get_filters(regatta_id, opt_user)
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(filters))
 }
 
 #[get("/heats/{id}")]

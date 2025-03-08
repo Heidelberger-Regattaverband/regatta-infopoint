@@ -5,7 +5,7 @@ use crate::db::{
 use chrono::NaiveDate;
 use futures::join;
 use serde::Serialize;
-use tiberius::Query;
+use tiberius::{Query, error::Error as DbError};
 
 /// A struct containing all available filter values for a regatta.
 #[derive(Debug, Serialize, Clone)]
@@ -50,7 +50,7 @@ impl Filters {
     ///  * `pool` - The database connection pool
     /// # Returns
     /// A struct containing all available filters
-    pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Self {
+    pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         // get all available distances
         let distances = query_distances(regatta_id, pool);
 
@@ -77,19 +77,19 @@ impl Filters {
             Block::query_blocks(regatta_id, pool)
         );
 
-        Filters {
-            distances: result.0,
-            dates: result.1,
-            age_classes: result.2,
-            boat_classes: result.3,
-            rounds: result.4,
-            lightweight: result.5,
+        Ok(Filters {
+            distances: result.0?,
+            dates: result.1?,
+            age_classes: result.2?,
+            boat_classes: result.3?,
+            rounds: result.4?,
+            lightweight: result.5?,
             blocks: result.6,
-        }
+        })
     }
 }
 
-async fn query_boat_classes(regatta_id: i32, pool: &TiberiusPool) -> Vec<BoatClass> {
+async fn query_boat_classes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<BoatClass>, DbError> {
     let mut query = Query::new(format!(
         "SELECT DISTINCT {0} FROM BoatClass b
         JOIN Offer o ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID 
@@ -100,11 +100,11 @@ async fn query_boat_classes(regatta_id: i32, pool: &TiberiusPool) -> Vec<BoatCla
     query.bind(regatta_id);
 
     let mut client = pool.get().await;
-    let rows = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-    rows.into_iter().map(|row| BoatClass::from(&row)).collect()
+    let rows = utils::get_rows(query.query(&mut client).await?).await;
+    Ok(rows.into_iter().map(|row| BoatClass::from(&row)).collect())
 }
 
-async fn query_age_classes(regatta_id: i32, pool: &TiberiusPool) -> Vec<AgeClass> {
+async fn query_age_classes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<AgeClass>, DbError> {
     let mut query = Query::new(format!(
         "SELECT DISTINCT {0} FROM AgeClass a
         JOIN Offer o ON o.Offer_AgeClass_ID_FK = a.AgeClass_ID
@@ -115,11 +115,11 @@ async fn query_age_classes(regatta_id: i32, pool: &TiberiusPool) -> Vec<AgeClass
     query.bind(regatta_id);
 
     let mut client = pool.get().await;
-    let rows = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-    rows.into_iter().map(|row| AgeClass::from(&row)).collect()
+    let rows = utils::get_rows(query.query(&mut client).await?).await;
+    Ok(rows.into_iter().map(|row| AgeClass::from(&row)).collect())
 }
 
-async fn query_dates(regatta_id: i32, pool: &TiberiusPool) -> Vec<NaiveDate> {
+async fn query_dates(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<NaiveDate>, DbError> {
     let mut query = Query::new(
         "SELECT DISTINCT CAST (c.Comp_Datetime as date) AS Comp_Date
         FROM Comp c
@@ -128,31 +128,32 @@ async fn query_dates(regatta_id: i32, pool: &TiberiusPool) -> Vec<NaiveDate> {
     query.bind(regatta_id);
 
     let mut client = pool.get().await;
-    let rows = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-    rows.into_iter().map(|row| row.get_column("Comp_Date")).collect()
+    let rows = utils::get_rows(query.query(&mut client).await?).await;
+    Ok(rows.into_iter().map(|row| row.get_column("Comp_Date")).collect())
 }
 
-async fn query_distances(regatta_id: i32, pool: &TiberiusPool) -> Vec<i16> {
+async fn query_distances(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<i16>, DbError> {
     let mut query = Query::new("SELECT DISTINCT Offer_Distance FROM Offer WHERE Offer_Event_ID_FK = @P1");
     query.bind(regatta_id);
 
     let mut client = pool.get().await;
-    let rows = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-    rows.into_iter().map(|row| row.get_column("Offer_Distance")).collect()
+    let rows = utils::get_rows(query.query(&mut client).await?).await;
+    Ok(rows.into_iter().map(|row| row.get_column("Offer_Distance")).collect())
 }
 
-async fn query_lightweight(regatta_id: i32, pool: &TiberiusPool) -> Vec<bool> {
+async fn query_lightweight(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<bool>, DbError> {
     let mut query = Query::new("SELECT DISTINCT Offer_IsLightweight FROM Offer WHERE Offer_Event_ID_FK = @P1");
     query.bind(regatta_id);
 
     let mut client = pool.get().await;
-    let rows = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-    rows.into_iter()
+    let rows = utils::get_rows(query.query(&mut client).await?).await;
+    Ok(rows
+        .into_iter()
         .map(|row| row.get_column("Offer_IsLightweight"))
-        .collect()
+        .collect())
 }
 
-async fn query_rounds(regatta_id: i32, pool: &TiberiusPool) -> Vec<Round> {
+async fn query_rounds(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Round>, DbError> {
     let mut query: Query<'_> = Query::new(
         "SELECT DISTINCT
         c.Comp_Round, c.Comp_RoundCode
@@ -162,11 +163,12 @@ async fn query_rounds(regatta_id: i32, pool: &TiberiusPool) -> Vec<Round> {
     query.bind(regatta_id);
 
     let mut client = pool.get().await;
-    let rows = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-    rows.into_iter()
+    let rows = utils::get_rows(query.query(&mut client).await?).await;
+    Ok(rows
+        .into_iter()
         .map(|row| Round {
             id: row.get_column("Comp_Round"),
             code: row.get_column("Comp_RoundCode"),
         })
-        .collect()
+        .collect())
 }
