@@ -62,7 +62,7 @@ impl Club {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of clubs that are participating in the regatta
-    pub async fn query_clubs_participating_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Club>, DbError> {
+    pub async fn query_clubs_participating_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT DISTINCT {0},
                 (SELECT COUNT(*) FROM (
@@ -117,7 +117,7 @@ impl Club {
     /// * `pool` - The database connection pool
     /// # Returns
     /// The club with the given ID
-    pub async fn query_club_by_id(club_id: i32, pool: &TiberiusPool) -> Result<Club, DbError> {
+    pub async fn query_club_by_id(club_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let mut query = Query::new(format!(
             "SELECT {0} FROM Club c
             WHERE c.Club_ID = @P1

@@ -84,7 +84,7 @@ impl Filters {
             boat_classes: result.3?,
             rounds: result.4?,
             lightweight: result.5?,
-            blocks: result.6,
+            blocks: result.6?,
         })
     }
 }
