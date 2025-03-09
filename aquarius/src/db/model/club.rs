@@ -127,7 +127,7 @@ impl Club {
         query.bind(club_id);
 
         let mut client = pool.get().await;
-        let club = Club::from(&utils::get_row(query.query(&mut client).await?).await);
+        let club = Club::from(&utils::get_row(query.query(&mut client).await?).await?);
         Ok(club)
     }
 
@@ -172,7 +172,7 @@ impl Club {
         query.bind(club_id);
 
         let mut client = pool.get().await;
-        Ok(Club::from(&utils::get_row(query.query(&mut client).await?).await))
+        Ok(Club::from(&utils::get_row(query.query(&mut client).await?).await?))
     }
 
     pub fn select_columns(alias: &str) -> String {

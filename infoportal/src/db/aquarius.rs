@@ -237,20 +237,20 @@ impl Aquarius {
 
     async fn _query_race_heats_registrations(&self, race_id: i32) -> Result<Race, DbError> {
         let start = Instant::now();
-        let result = join3(
+        let queries = join3(
             Race::query_race_by_id(race_id, TiberiusPool::instance()),
             Heat::query_heats_of_race(race_id, TiberiusPool::instance()),
             Registration::query_registrations_for_race(race_id, TiberiusPool::instance()),
         )
         .await;
-        let mut race = result.0?;
-        let heats = result.1?;
+        let mut race = queries.0?;
+        let heats = queries.1?;
         if heats.is_empty() {
             race.heats = None;
         } else {
             race.heats = Some(heats);
         }
-        let registrations = result.2?;
+        let registrations = queries.2?;
         if registrations.is_empty() {
             race.registrations = None;
         } else {

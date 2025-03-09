@@ -150,6 +150,6 @@ impl Race {
         let mut query = Query::new(sql);
         query.bind(race_id);
         let stream = query.query(&mut client).await?;
-        Ok(Race::from(&utils::get_row(stream).await))
+        Ok(Race::from(&utils::get_row(stream).await?))
     }
 }

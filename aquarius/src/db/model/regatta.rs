@@ -40,7 +40,7 @@ impl Regatta {
         let stream = Query::new("SELECT TOP 1 e.* FROM Event e ORDER BY e.Event_StartDate DESC, e.Event_ID DESC")
             .query(&mut client)
             .await?;
-        Ok(Regatta::from(&utils::get_row(stream).await))
+        Ok(Regatta::from(&utils::get_row(stream).await?))
     }
 
     pub async fn query_all(pool: &TiberiusPool) -> Result<Vec<Regatta>, DbError> {
@@ -55,6 +55,6 @@ impl Regatta {
         query.bind(regatta_id);
 
         let mut client = pool.get().await;
-        Ok(Regatta::from(&utils::get_row(query.query(&mut client).await?).await))
+        Ok(Regatta::from(&utils::get_row(query.query(&mut client).await?).await?))
     }
 }

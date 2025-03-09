@@ -155,7 +155,7 @@ impl Statistics {
             Statistics::query_oldest(regatta_id, "M", pool)
         );
 
-        let mut stats = Statistics::from(&utils::get_row(result.0?).await);
+        let mut stats = Statistics::from(&utils::get_row(result.0?).await?);
         stats.athletes = Some(Athletes {
             oldest_woman: result.1?,
             oldest_man: result.2?,
@@ -178,7 +178,7 @@ impl Statistics {
         query.bind(gender);
 
         let mut client = pool.get().await;
-        if let Some(row) = utils::try_get_row(query.query(&mut client).await?).await {
+        if let Some(row) = utils::try_get_row(query.query(&mut client).await?).await? {
             Ok(row.try_to_entity())
         } else {
             Ok(None)
