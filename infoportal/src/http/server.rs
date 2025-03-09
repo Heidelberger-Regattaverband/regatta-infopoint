@@ -282,5 +282,5 @@ impl Server {
 }
 
 pub async fn create_app_data() -> Data<Aquarius> {
-    Data::new(Aquarius::new().await)
+    Data::new(Aquarius::new().await.unwrap())
 }

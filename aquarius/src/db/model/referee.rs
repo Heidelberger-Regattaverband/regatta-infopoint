@@ -3,7 +3,7 @@ use crate::db::{
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{Query, Row};
+use tiberius::{Query, Row, error::Error as DbError};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -27,7 +27,7 @@ impl Referee {
     /// `pool`: The database connection pool.
     /// # Returns
     /// A list of referees.
-    pub async fn query_referees_for_heat(heat_id: i32, pool: &TiberiusPool) -> Vec<Referee> {
+    pub async fn query_referees_for_heat(heat_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let mut query = Query::new(
             "SELECT r.* FROM Referee r
             JOIN CompReferee cr ON cr.CompReferee_Referee_ID_FK = r.Referee_ID
@@ -36,8 +36,8 @@ impl Referee {
         query.bind(heat_id);
 
         let mut client = pool.get().await;
-        let heats = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-        heats.into_iter().map(|row| Referee::from(&row)).collect()
+        let heats = utils::get_rows(query.query(&mut client).await?).await?;
+        Ok(heats.into_iter().map(|row| Referee::from(&row)).collect())
     }
 }
 
