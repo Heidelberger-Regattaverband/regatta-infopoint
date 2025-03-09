@@ -24,19 +24,19 @@ pub(crate) struct Aquarius {
 /// Implementation of the `Aquarius` struct.
 impl Aquarius {
     /// Creates a new `Aquarius`.
-    pub(crate) async fn new() -> Self {
+    pub(crate) async fn new() -> Result<Self, DbError> {
         let active_regatta_id: i32 = if Config::get().active_regatta_id.is_none() {
             let start = Instant::now();
-            let regatta = Regatta::query_active_regatta(TiberiusPool::instance()).await;
+            let regatta = Regatta::query_active_regatta(TiberiusPool::instance()).await?;
             debug!("Query active regatta from DB: {:?}", start.elapsed());
             regatta.id
         } else {
             Config::get().active_regatta_id.unwrap()
         };
-        Aquarius {
+        Ok(Aquarius {
             caches: Caches::new(Duration::from_secs(Config::get().cache_ttl)),
             active_regatta_id,
-        }
+        })
     }
 
     /// Returns the active regatta.

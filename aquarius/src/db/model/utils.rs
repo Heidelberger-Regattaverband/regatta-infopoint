@@ -9,5 +9,5 @@ pub async fn try_get_row(stream: QueryStream<'_>) -> Option<Row> {
 }
 
 pub async fn get_rows(stream: QueryStream<'_>) -> Result<Vec<Row>, DbError> {
-    Ok(stream.into_first_result().await?)
+    stream.into_first_result().await
 }

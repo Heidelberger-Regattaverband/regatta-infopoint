@@ -27,7 +27,7 @@ impl Referee {
     /// `pool`: The database connection pool.
     /// # Returns
     /// A list of referees.
-    pub async fn query_referees_for_heat(heat_id: i32, pool: &TiberiusPool) -> Result<Vec<Referee>, DbError> {
+    pub async fn query_referees_for_heat(heat_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let mut query = Query::new(
             "SELECT r.* FROM Referee r
             JOIN CompReferee cr ON cr.CompReferee_Referee_ID_FK = r.Referee_ID

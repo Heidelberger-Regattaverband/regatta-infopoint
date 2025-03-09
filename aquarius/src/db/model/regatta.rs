@@ -35,13 +35,12 @@ impl From<&Row> for Regatta {
 }
 
 impl Regatta {
-    pub async fn query_active_regatta(pool: &TiberiusPool) -> Regatta {
+    pub async fn query_active_regatta(pool: &TiberiusPool) -> Result<Regatta, DbError> {
         let mut client = pool.get().await;
         let stream = Query::new("SELECT TOP 1 e.* FROM Event e ORDER BY e.Event_StartDate DESC, e.Event_ID DESC")
             .query(&mut client)
-            .await
-            .unwrap();
-        Regatta::from(&utils::get_row(stream).await)
+            .await?;
+        Ok(Regatta::from(&utils::get_row(stream).await))
     }
 
     pub async fn query_all(pool: &TiberiusPool) -> Result<Vec<Regatta>, DbError> {

@@ -116,7 +116,7 @@ impl Race {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list with races of the regatta
-    pub async fn query_races_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Race>, DbError> {
+    pub async fn query_races_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
@@ -136,7 +136,7 @@ impl Race {
         Ok(races.into_iter().map(|row| Race::from(&row)).collect())
     }
 
-    pub async fn query_race_by_id(race_id: i32, pool: &TiberiusPool) -> Result<Race, DbError> {
+    pub async fn query_race_by_id(race_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
