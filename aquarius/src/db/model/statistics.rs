@@ -157,14 +157,14 @@ impl Statistics {
 
         let mut stats = Statistics::from(&utils::get_row(result.0?).await);
         stats.athletes = Some(Athletes {
-            oldest_woman: result.1,
-            oldest_man: result.2,
+            oldest_woman: result.1?,
+            oldest_man: result.2?,
         });
 
         Ok(stats)
     }
 
-    async fn query_oldest(regatta_id: i32, gender: &str, pool: &TiberiusPool) -> Option<Athlete> {
+    async fn query_oldest(regatta_id: i32, gender: &str, pool: &TiberiusPool) -> Result<Option<Athlete>, DbError> {
         let mut query = Query::new(
             "SELECT DISTINCT TOP 1 Athlet.*, Club.*
             FROM  Entry
@@ -178,10 +178,10 @@ impl Statistics {
         query.bind(gender);
 
         let mut client = pool.get().await;
-        if let Some(row) = utils::try_get_row(query.query(&mut client).await.unwrap()).await {
-            row.try_to_entity()
+        if let Some(row) = utils::try_get_row(query.query(&mut client).await?).await {
+            Ok(row.try_to_entity())
         } else {
-            None
+            Ok(None)
         }
     }
 }
