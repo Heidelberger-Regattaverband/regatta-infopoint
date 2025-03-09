@@ -3,7 +3,7 @@ use crate::db::{
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{Query, Row, time::chrono::NaiveDateTime};
+use tiberius::{Query, Row, error::Error as DbError, time::chrono::NaiveDateTime};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -35,27 +35,26 @@ impl From<&Row> for Regatta {
 }
 
 impl Regatta {
-    pub async fn query_active_regatta(pool: &TiberiusPool) -> Regatta {
+    pub async fn query_active_regatta(pool: &TiberiusPool) -> Result<Regatta, DbError> {
         let mut client = pool.get().await;
         let stream = Query::new("SELECT TOP 1 e.* FROM Event e ORDER BY e.Event_StartDate DESC, e.Event_ID DESC")
             .query(&mut client)
-            .await
-            .unwrap();
-        Regatta::from(&utils::get_row(stream).await)
+            .await?;
+        Ok(Regatta::from(&utils::get_row(stream).await?))
     }
 
-    pub async fn query_all(pool: &TiberiusPool) -> Vec<Regatta> {
+    pub async fn query_all(pool: &TiberiusPool) -> Result<Vec<Regatta>, DbError> {
         let mut client = pool.get().await;
-        let stream = Query::new("SELECT * FROM Event").query(&mut client).await.unwrap();
-        let regattas = utils::get_rows(stream).await;
-        regattas.into_iter().map(|row| Regatta::from(&row)).collect()
+        let stream = Query::new("SELECT * FROM Event").query(&mut client).await?;
+        let regattas = utils::get_rows(stream).await?;
+        Ok(regattas.into_iter().map(|row| Regatta::from(&row)).collect())
     }
 
-    pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Regatta {
+    pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Result<Regatta, DbError> {
         let mut query = Query::new("SELECT * FROM Event WHERE Event_ID = @P1");
         query.bind(regatta_id);
 
         let mut client = pool.get().await;
-        Regatta::from(&utils::get_row(query.query(&mut client).await.unwrap()).await)
+        Ok(Regatta::from(&utils::get_row(query.query(&mut client).await?).await?))
     }
 }

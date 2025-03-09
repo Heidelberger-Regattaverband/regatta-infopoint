@@ -1,7 +1,7 @@
 use crate::db::tiberius::TiberiusPool;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::Serialize;
-use tiberius::Query;
+use tiberius::{Query, error::Error as DbError};
 
 /// A block of races.
 #[derive(Debug, Serialize, Clone)]
@@ -20,7 +20,7 @@ impl Block {
     /// Query all race blocks of a regatta. The blocks are ordered by their begin date and time.
     /// # Arguments
     /// * `regatta_id` - The unique identifier of the regatta.
-    pub async fn query_blocks(regatta_id: i32, pool: &TiberiusPool) -> Vec<Block> {
+    pub async fn query_blocks(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let mut query = Query::new(
             "SELECT c.Comp_DateTime FROM Comp c
               WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_DateTime IS NOT NULL
@@ -29,8 +29,8 @@ impl Block {
         query.bind(regatta_id);
 
         let mut client = pool.get().await;
-        let stream = query.query(&mut client).await.unwrap();
-        let rows = stream.into_first_result().await.unwrap();
+        let stream = query.query(&mut client).await?;
+        let rows = stream.into_first_result().await?;
 
         let mut start: NaiveDateTime = rows[0].get(0).unwrap();
         let mut end: NaiveDateTime = rows[0].get(0).unwrap();
@@ -61,6 +61,6 @@ impl Block {
                 heats,
             });
         }
-        blocks
+        Ok(blocks)
     }
 }
