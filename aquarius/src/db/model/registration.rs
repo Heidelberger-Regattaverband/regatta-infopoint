@@ -86,7 +86,7 @@ impl Registration {
         regatta_id: i32,
         club_id: i32,
         pool: &TiberiusPool,
-    ) -> Result<Vec<Registration>, DbError> {
+    ) -> Result<Vec<Self>, DbError> {
         let round = 64;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, {2}, l.Label_Short
@@ -118,7 +118,7 @@ impl Registration {
     /// * `pool` - The connection pool to the database
     /// # Returns
     /// A vector of registrations for the given race
-    pub async fn query_registrations_for_race(race_id: i32, pool: &TiberiusPool) -> Result<Vec<Registration>, DbError> {
+    pub async fn query_registrations_for_race(race_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let round = 64;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, l.Label_Short
