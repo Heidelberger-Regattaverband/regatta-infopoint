@@ -63,7 +63,7 @@ impl Heat {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of heats
-    pub async fn query_heats_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
+    pub async fn query_heats_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2}, o.* FROM Comp c
             JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
@@ -80,8 +80,8 @@ impl Heat {
         query.bind(regatta_id);
 
         let mut client = pool.get().await;
-        let heats = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-        heats.into_iter().map(|row| Heat::from(&row)).collect()
+        let heats = utils::get_rows(query.query(&mut client).await?).await;
+        Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
 
     /// Query all heats of a race. The heats are ordered by their number.
@@ -91,7 +91,7 @@ impl Heat {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of heats
-    pub async fn query_heats_of_race(race_id: i32, pool: &TiberiusPool) -> Result<Vec<Heat>, DbError> {
+    pub async fn query_heats_of_race(race_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0} FROM Comp c
             WHERE c.Comp_Race_ID_FK = @P1 AND c.Comp_DateTime IS NOT NULL
@@ -112,7 +112,7 @@ impl Heat {
     /// * `pool` - The database connection pool
     /// # Returns
     /// The heat with the given identifier
-    pub async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Heat {
+    pub async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2}, o.* FROM Comp c
             JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
@@ -128,7 +128,7 @@ impl Heat {
         query.bind(heat_id);
 
         let mut client = pool.get().await;
-        let mut heat = Heat::from(&utils::get_row(query.query(&mut client).await.unwrap()).await);
+        let mut heat = Heat::from(&utils::get_row(query.query(&mut client).await?).await);
 
         let results = join(
             Referee::query_referees_for_heat(heat.id, pool),
@@ -137,7 +137,7 @@ impl Heat {
         .await;
         heat.referees = results.0;
         heat.registrations = Some(results.1);
-        heat
+        Ok(heat)
     }
 }
 

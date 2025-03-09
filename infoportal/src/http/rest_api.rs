@@ -13,10 +13,7 @@ use actix_web::{
     get, post,
     web::{Data, Json, Path, ServiceConfig},
 };
-use aquarius::db::{
-    model::{Club, Heat, Schedule},
-    tiberius::TiberiusPool,
-};
+use aquarius::db::tiberius::TiberiusPool;
 use prometheus::Registry;
 
 /// Path to REST API
@@ -101,9 +98,17 @@ async fn get_race(
 }
 
 #[get("/regattas/{id}/heats")]
-async fn get_heats(path: Path<i32>, aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Json<Vec<Heat>> {
+async fn get_heats(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
-    Json(aquarius.get_heats(regatta_id, opt_user).await)
+    let heats = aquarius
+        .get_heats(regatta_id, opt_user)
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(heats))
 }
 
 #[get("/regattas/{id}/filters")]
@@ -121,9 +126,17 @@ async fn get_filters(
 }
 
 #[get("/heats/{id}")]
-async fn get_heat(path: Path<i32>, aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Json<Heat> {
+async fn get_heat(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
     let heat_id = path.into_inner();
-    Json(aquarius.get_heat(heat_id, opt_user).await)
+    let heat = aquarius
+        .get_heat(heat_id, opt_user)
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(heat))
 }
 
 #[get("/regattas/{id}/participating_clubs")]
@@ -133,11 +146,11 @@ async fn get_participating_clubs(
     opt_user: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
-    let participating_clubs = aquarius
+    let clubs = aquarius
         .get_participating_clubs(regatta_id, opt_user)
         .await
         .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
-    Ok(Json(participating_clubs))
+    Ok(Json(clubs))
 }
 
 #[get("/regattas/{regatta_id}/clubs/{club_id}/registrations")]
@@ -147,11 +160,11 @@ async fn get_club_registrations(
     opt_user: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let ids = ids.into_inner();
-    let club_registrations = aquarius
+    let registrations = aquarius
         .get_club_registrations(ids.0, ids.1, opt_user)
         .await
         .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
-    Ok(Json(club_registrations))
+    Ok(Json(registrations))
 }
 
 #[get("/clubs/{id}")]
@@ -165,9 +178,13 @@ async fn get_club(path: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Resp
 }
 
 #[get("/regattas/{regatta_id}/clubs/{club_id}")]
-async fn get_regatta_club(ids: Path<(i32, i32)>, aquarius: Data<Aquarius>) -> Json<Club> {
+async fn get_regatta_club(ids: Path<(i32, i32)>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
     let ids = ids.into_inner();
-    Json(aquarius.get_regatta_club(ids.0, ids.1).await)
+    let club = aquarius
+        .get_regatta_club(ids.0, ids.1)
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(club))
 }
 
 #[get("/regattas/{id}/statistics")]
@@ -178,7 +195,11 @@ async fn get_statistics(
 ) -> Result<impl Responder, Error> {
     if opt_user.is_some() {
         let regatta_id = path.into_inner();
-        Ok(Json(aquarius.query_statistics(regatta_id).await))
+        let stats = aquarius
+            .query_statistics(regatta_id)
+            .await
+            .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+        Ok(Json(stats))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
     }
@@ -217,9 +238,13 @@ async fn calculate_scoring(
 }
 
 #[get("/regattas/{id}/schedule")]
-async fn get_schedule(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Schedule> {
+async fn get_schedule(path: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
-    Json(aquarius.query_schedule(regatta_id).await)
+    let schedule = aquarius
+        .query_schedule(regatta_id)
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(schedule))
 }
 
 /// Authenticate the user. This will attach the user identity to the current session.

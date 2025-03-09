@@ -4,7 +4,7 @@ use crate::db::{
 };
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::Serialize;
-use tiberius::{Query, Row};
+use tiberius::{Query, Row, error::Error as DbError};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -62,7 +62,7 @@ impl From<&Row> for ScheduleEntry {
 }
 
 impl Schedule {
-    pub async fn query_schedule_for_regatta(regatta_id: i32, pool: &TiberiusPool) -> Self {
+    pub async fn query_schedule_for_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let sql = "SELECT o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_Distance,
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Boats,
             (SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0 
@@ -81,16 +81,16 @@ impl Schedule {
         query.bind(regatta_id);
 
         let mut client = pool.get().await;
-        let stream = query.query(&mut client).await.unwrap();
+        let stream = query.query(&mut client).await?;
         let entries: Vec<ScheduleEntry> = utils::get_rows(stream)
             .await
             .into_iter()
             .map(|row| ScheduleEntry::from(&row))
             .filter(|entry| entry.final_heats > 0 || entry.forerun_heats > 0)
             .collect();
-        Schedule {
+        Ok(Schedule {
             generated: Utc::now(),
             entries,
-        }
+        })
     }
 }

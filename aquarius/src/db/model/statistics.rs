@@ -4,7 +4,7 @@ use crate::db::{
 };
 use futures::join;
 use serde::Serialize;
-use tiberius::{Query, Row};
+use tiberius::{Query, Row, error::Error as DbError};
 
 #[derive(Debug, Serialize, Clone)]
 struct RacesStatistics {
@@ -95,7 +95,7 @@ struct Athletes {
 }
 
 impl Statistics {
-    pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Statistics {
+    pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let mut query = Query::new(
         "SELECT
           (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1) AS races_all,
@@ -155,13 +155,13 @@ impl Statistics {
             Statistics::query_oldest(regatta_id, "M", pool)
         );
 
-        let mut stats = Statistics::from(&utils::get_row(result.0.unwrap()).await);
+        let mut stats = Statistics::from(&utils::get_row(result.0?).await);
         stats.athletes = Some(Athletes {
             oldest_woman: result.1,
             oldest_man: result.2,
         });
 
-        stats
+        Ok(stats)
     }
 
     async fn query_oldest(regatta_id: i32, gender: &str, pool: &TiberiusPool) -> Option<Athlete> {

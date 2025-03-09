@@ -131,7 +131,7 @@ impl Club {
         Ok(club)
     }
 
-    pub async fn query_regatta_club_by_id(regatta_id: i32, club_id: i32, pool: &TiberiusPool) -> Club {
+    pub async fn query_regatta_club_by_id(regatta_id: i32, club_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let mut query = Query::new(format!(
             "SELECT {0},
                 (SELECT COUNT(*) FROM (
@@ -172,7 +172,7 @@ impl Club {
         query.bind(club_id);
 
         let mut client = pool.get().await;
-        Club::from(&utils::get_row(query.query(&mut client).await.unwrap()).await)
+        Ok(Club::from(&utils::get_row(query.query(&mut client).await?).await))
     }
 
     pub fn select_columns(alias: &str) -> String {

@@ -117,26 +117,26 @@ impl Aquarius {
         }
     }
 
-    pub(crate) async fn get_regatta_club(&self, regatta_id: i32, club_id: i32) -> Club {
+    pub(crate) async fn get_regatta_club(&self, regatta_id: i32, club_id: i32) -> Result<Club, DbError> {
         Club::query_regatta_club_by_id(regatta_id, club_id, TiberiusPool::instance()).await
     }
 
-    pub(crate) async fn get_heats(&self, regatta_id: i32, opt_user: Option<Identity>) -> Vec<Heat> {
+    pub(crate) async fn get_heats(&self, regatta_id: i32, opt_user: Option<Identity>) -> Result<Vec<Heat>, DbError> {
         if opt_user.is_some() {
             self._query_heats(regatta_id).await
         } else if let Some(heats) = self.caches.heats.get(&regatta_id).await {
-            heats
+            Ok(heats)
         } else {
             self._query_heats(regatta_id).await
         }
     }
 
     /// Returns heat details for the given identifier.
-    pub(crate) async fn get_heat(&self, heat_id: i32, opt_user: Option<Identity>) -> Heat {
+    pub(crate) async fn get_heat(&self, heat_id: i32, opt_user: Option<Identity>) -> Result<Heat, DbError> {
         if opt_user.is_some() {
             self._query_heat(heat_id).await
         } else if let Some(heat) = self.caches.heat.get(&heat_id).await {
-            heat
+            Ok(heat)
         } else {
             self._query_heat(heat_id).await
         }
@@ -182,7 +182,7 @@ impl Aquarius {
         scores
     }
 
-    pub(crate) async fn query_statistics(&self, regatta_id: i32) -> Statistics {
+    pub(crate) async fn query_statistics(&self, regatta_id: i32) -> Result<Statistics, DbError> {
         let start = Instant::now();
         let stats = Statistics::query(regatta_id, TiberiusPool::instance()).await;
         debug!(
@@ -193,7 +193,7 @@ impl Aquarius {
         stats
     }
 
-    pub(crate) async fn query_schedule(&self, regatta_id: i32) -> Schedule {
+    pub(crate) async fn query_schedule(&self, regatta_id: i32) -> Result<Schedule, DbError> {
         let start = Instant::now();
         let schedule = Schedule::query_schedule_for_regatta(regatta_id, TiberiusPool::instance()).await;
         debug!(
@@ -273,24 +273,24 @@ impl Aquarius {
         Ok(races)
     }
 
-    async fn _query_heats(&self, regatta_id: i32) -> Vec<Heat> {
+    async fn _query_heats(&self, regatta_id: i32) -> Result<Vec<Heat>, DbError> {
         let start = Instant::now();
-        let heats: Vec<Heat> = Heat::query_heats_of_regatta(regatta_id, TiberiusPool::instance()).await;
+        let heats: Vec<Heat> = Heat::query_heats_of_regatta(regatta_id, TiberiusPool::instance()).await?;
         self.caches.heats.set(&regatta_id, &heats).await;
         debug!("Query heats of regatta {} from DB: {:?}", regatta_id, start.elapsed());
-        heats
+        Ok(heats)
     }
 
-    async fn _query_heat(&self, heat_id: i32) -> Heat {
+    async fn _query_heat(&self, heat_id: i32) -> Result<Heat, DbError> {
         let start = Instant::now();
-        let heat = Heat::query_single(heat_id, TiberiusPool::instance()).await;
+        let heat = Heat::query_single(heat_id, TiberiusPool::instance()).await?;
         self.caches.heat.set(&heat_id, &heat).await;
         debug!(
             "Query heat {} with registrations from DB: {:?}",
             heat_id,
             start.elapsed()
         );
-        heat
+        Ok(heat)
     }
 
     async fn _query_participating_clubs(&self, regatta_id: i32) -> Result<Vec<Club>, DbError> {
