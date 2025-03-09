@@ -55,7 +55,7 @@ mod tests {
         )
         .await;
 
-        let app_data = create_app_data().await;
+        let app_data = create_app_data().await.unwrap();
 
         let app = test::init_service(
             App::new().service(
@@ -81,7 +81,7 @@ mod tests {
         )
         .await;
 
-        let app_data = create_app_data().await;
+        let app_data = create_app_data().await.unwrap();
 
         let app = test::init_service(
             App::new().service(
