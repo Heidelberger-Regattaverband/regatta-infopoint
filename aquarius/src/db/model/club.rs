@@ -107,7 +107,7 @@ impl Club {
         query.bind(regatta_id);
 
         let mut client = pool.get().await;
-        let clubs = utils::get_rows(query.query(&mut client).await?).await;
+        let clubs = utils::get_rows(query.query(&mut client).await?).await?;
         Ok(clubs.into_iter().map(|row| Club::from(&row)).collect())
     }
 

@@ -3,7 +3,7 @@ use crate::db::{
     tiberius::{RowColumn, TiberiusPool},
 };
 use serde::Serialize;
-use tiberius::{Query, Row};
+use tiberius::{Query, Row, error::Error as DbError};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -41,7 +41,11 @@ impl Crew {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of crew members of the registration
-    pub async fn query_crew_of_registration(registration_id: i32, round: i16, pool: &TiberiusPool) -> Vec<Crew> {
+    pub async fn query_crew_of_registration(
+        registration_id: i32,
+        round: i16,
+        pool: &TiberiusPool,
+    ) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Crew cr
             JOIN Athlet a  ON cr.Crew_Athlete_ID_FK = a.Athlet_ID
@@ -57,8 +61,8 @@ impl Crew {
         query.bind(round);
 
         let mut client = pool.get().await;
-        let crew = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-        crew.into_iter().map(|row| Crew::from(&row)).collect()
+        let crew = utils::get_rows(query.query(&mut client).await?).await?;
+        Ok(crew.into_iter().map(|row| Crew::from(&row)).collect())
     }
 }
 

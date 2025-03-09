@@ -132,7 +132,7 @@ impl Race {
 
         let mut client = pool.get().await;
         let stream = query.query(&mut client).await?;
-        let races = utils::get_rows(stream).await;
+        let races = utils::get_rows(stream).await?;
         Ok(races.into_iter().map(|row| Race::from(&row)).collect())
     }
 

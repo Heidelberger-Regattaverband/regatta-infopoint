@@ -142,9 +142,9 @@ async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Res
     let mut client = pool.get().await;
     let stream = query.query(&mut client).await?;
 
-    let mut crew_futures: Vec<BoxFuture<Vec<Crew>>> = Vec::new();
+    let mut crew_futures: Vec<BoxFuture<Result<Vec<Crew>, DbError>>> = Vec::new();
     let mut registrations: Vec<Registration> = utils::get_rows(stream)
-        .await
+        .await?
         .into_iter()
         .map(|row| {
             let registration = Registration::from(&row);
@@ -157,7 +157,7 @@ async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Res
 
     for (pos, registration) in registrations.iter_mut().enumerate() {
         let crew = crews.get(pos).unwrap();
-        registration.crew = Some(crew.to_vec());
+        registration.crew = Some(crew.as_deref().unwrap().to_vec());
     }
     Ok(registrations)
 }

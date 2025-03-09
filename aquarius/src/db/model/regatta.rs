@@ -47,7 +47,7 @@ impl Regatta {
     pub async fn query_all(pool: &TiberiusPool) -> Result<Vec<Regatta>, DbError> {
         let mut client = pool.get().await;
         let stream = Query::new("SELECT * FROM Event").query(&mut client).await?;
-        let regattas = utils::get_rows(stream).await;
+        let regattas = utils::get_rows(stream).await?;
         Ok(regattas.into_iter().map(|row| Regatta::from(&row)).collect())
     }
 

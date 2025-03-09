@@ -204,11 +204,11 @@ impl Aquarius {
         schedule
     }
 
-    pub(crate) async fn query_kiosk(&self, regatta_id: i32) -> Kiosk {
+    pub(crate) async fn query_kiosk(&self, regatta_id: i32) -> Result<Kiosk, DbError> {
         let start = Instant::now();
 
-        let finished = Kiosk::query_finished(regatta_id, TiberiusPool::instance()).await;
-        let next = Kiosk::query_next(regatta_id, TiberiusPool::instance()).await;
+        let finished = Kiosk::query_finished(regatta_id, TiberiusPool::instance()).await?;
+        let next = Kiosk::query_next(regatta_id, TiberiusPool::instance()).await?;
 
         let kiosk = Kiosk {
             finished,
@@ -216,7 +216,7 @@ impl Aquarius {
             running: Vec::with_capacity(0),
         };
         debug!("Query kiosk of regatta {} from DB: {:?}", regatta_id, start.elapsed());
-        kiosk
+        Ok(kiosk)
     }
 
     async fn _query_filters(&self, regatta_id: i32) -> Result<Filters, DbError> {

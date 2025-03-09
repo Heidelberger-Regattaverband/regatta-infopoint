@@ -100,7 +100,7 @@ async fn query_boat_classes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<
     query.bind(regatta_id);
 
     let mut client = pool.get().await;
-    let rows = utils::get_rows(query.query(&mut client).await?).await;
+    let rows = utils::get_rows(query.query(&mut client).await?).await?;
     Ok(rows.into_iter().map(|row| BoatClass::from(&row)).collect())
 }
 
@@ -115,7 +115,7 @@ async fn query_age_classes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<A
     query.bind(regatta_id);
 
     let mut client = pool.get().await;
-    let rows = utils::get_rows(query.query(&mut client).await?).await;
+    let rows = utils::get_rows(query.query(&mut client).await?).await?;
     Ok(rows.into_iter().map(|row| AgeClass::from(&row)).collect())
 }
 
@@ -128,7 +128,7 @@ async fn query_dates(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<NaiveDa
     query.bind(regatta_id);
 
     let mut client = pool.get().await;
-    let rows = utils::get_rows(query.query(&mut client).await?).await;
+    let rows = utils::get_rows(query.query(&mut client).await?).await?;
     Ok(rows.into_iter().map(|row| row.get_column("Comp_Date")).collect())
 }
 
@@ -137,7 +137,7 @@ async fn query_distances(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<i16
     query.bind(regatta_id);
 
     let mut client = pool.get().await;
-    let rows = utils::get_rows(query.query(&mut client).await?).await;
+    let rows = utils::get_rows(query.query(&mut client).await?).await?;
     Ok(rows.into_iter().map(|row| row.get_column("Offer_Distance")).collect())
 }
 
@@ -146,7 +146,7 @@ async fn query_lightweight(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<b
     query.bind(regatta_id);
 
     let mut client = pool.get().await;
-    let rows = utils::get_rows(query.query(&mut client).await?).await;
+    let rows = utils::get_rows(query.query(&mut client).await?).await?;
     Ok(rows
         .into_iter()
         .map(|row| row.get_column("Offer_IsLightweight"))
@@ -163,7 +163,7 @@ async fn query_rounds(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Round>
     query.bind(regatta_id);
 
     let mut client = pool.get().await;
-    let rows = utils::get_rows(query.query(&mut client).await?).await;
+    let rows = utils::get_rows(query.query(&mut client).await?).await?;
     Ok(rows
         .into_iter()
         .map(|row| Round {

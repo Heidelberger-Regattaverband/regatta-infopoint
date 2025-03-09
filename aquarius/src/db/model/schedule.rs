@@ -83,7 +83,7 @@ impl Schedule {
         let mut client = pool.get().await;
         let stream = query.query(&mut client).await?;
         let entries: Vec<ScheduleEntry> = utils::get_rows(stream)
-            .await
+            .await?
             .into_iter()
             .map(|row| ScheduleEntry::from(&row))
             .filter(|entry| entry.final_heats > 0 || entry.forerun_heats > 0)

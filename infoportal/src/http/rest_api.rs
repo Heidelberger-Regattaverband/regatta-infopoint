@@ -213,7 +213,11 @@ async fn get_kiosk(
 ) -> Result<impl Responder, Error> {
     if opt_user.is_some() {
         let regatta_id = path.into_inner();
-        Ok(Json(aquarius.query_kiosk(regatta_id).await))
+        let kiosk = aquarius
+            .query_kiosk(regatta_id)
+            .await
+            .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+        Ok(Json(kiosk))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
     }
