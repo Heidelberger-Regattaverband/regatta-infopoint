@@ -62,7 +62,7 @@ impl Club {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of clubs that are participating in the regatta
-    pub async fn query_clubs_participating_regatta(regatta_id: i32, pool: &TiberiusPool) -> Vec<Club> {
+    pub async fn query_clubs_participating_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Club>, DbError> {
         let sql = format!(
             "SELECT DISTINCT {0},
                 (SELECT COUNT(*) FROM (
@@ -107,8 +107,8 @@ impl Club {
         query.bind(regatta_id);
 
         let mut client = pool.get().await;
-        let clubs = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-        clubs.into_iter().map(|row| Club::from(&row)).collect()
+        let clubs = utils::get_rows(query.query(&mut client).await?).await;
+        Ok(clubs.into_iter().map(|row| Club::from(&row)).collect())
     }
 
     /// Query a single club by its identifier

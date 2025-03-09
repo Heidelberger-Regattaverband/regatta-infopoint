@@ -142,11 +142,15 @@ impl Aquarius {
         }
     }
 
-    pub(crate) async fn get_participating_clubs(&self, regatta_id: i32, opt_user: Option<Identity>) -> Vec<Club> {
+    pub(crate) async fn get_participating_clubs(
+        &self,
+        regatta_id: i32,
+        opt_user: Option<Identity>,
+    ) -> Result<Vec<Club>, DbError> {
         if opt_user.is_some() {
             self._query_participating_clubs(regatta_id).await
         } else if let Some(clubs) = self.caches.participating_clubs.get(&regatta_id).await {
-            clubs
+            Ok(clubs)
         } else {
             self._query_participating_clubs(regatta_id).await
         }
@@ -167,7 +171,7 @@ impl Aquarius {
         }
     }
 
-    pub(crate) async fn calculate_scoring(&self, regatta_id: i32) -> Vec<Score> {
+    pub(crate) async fn calculate_scoring(&self, regatta_id: i32) -> Result<Vec<Score>, DbError> {
         let start = Instant::now();
         let scores = Score::calculate(regatta_id, TiberiusPool::instance()).await;
         debug!(
@@ -289,16 +293,16 @@ impl Aquarius {
         heat
     }
 
-    async fn _query_participating_clubs(&self, regatta_id: i32) -> Vec<Club> {
+    async fn _query_participating_clubs(&self, regatta_id: i32) -> Result<Vec<Club>, DbError> {
         let start = Instant::now();
-        let clubs = Club::query_clubs_participating_regatta(regatta_id, TiberiusPool::instance()).await;
+        let clubs = Club::query_clubs_participating_regatta(regatta_id, TiberiusPool::instance()).await?;
         self.caches.participating_clubs.set(&regatta_id, &clubs).await;
         debug!(
             "Query participating clubs of regatta {} from DB: {:?}",
             regatta_id,
             start.elapsed()
         );
-        clubs
+        Ok(clubs)
     }
 
     async fn _query_club_registrations(&self, regatta_id: i32, club_id: i32) -> Result<Vec<Registration>, DbError> {

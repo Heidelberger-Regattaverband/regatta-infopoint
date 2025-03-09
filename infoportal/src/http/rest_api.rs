@@ -131,9 +131,13 @@ async fn get_participating_clubs(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
     opt_user: Option<Identity>,
-) -> impl Responder {
+) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
-    Json(aquarius.get_participating_clubs(regatta_id, opt_user).await)
+    let participating_clubs = aquarius
+        .get_participating_clubs(regatta_id, opt_user)
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(participating_clubs))
 }
 
 #[get("/regattas/{regatta_id}/clubs/{club_id}/registrations")]
@@ -202,7 +206,11 @@ async fn calculate_scoring(
 ) -> Result<impl Responder, Error> {
     if opt_user.is_some() {
         let regatta_id = path.into_inner();
-        Ok(Json(aquarius.calculate_scoring(regatta_id).await))
+        let scoring = aquarius
+            .calculate_scoring(regatta_id)
+            .await
+            .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+        Ok(Json(scoring))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
     }
