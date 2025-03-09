@@ -51,40 +51,24 @@ impl Filters {
     /// # Returns
     /// A struct containing all available filters
     pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
-        // get all available distances
-        let distances = query_distances(regatta_id, pool);
-
-        // get all available dates
-        let dates = query_dates(regatta_id, pool);
-
-        // get all used age classes
-        let age_classes = query_age_classes(regatta_id, pool);
-
-        // get all used boat classes
-        let boat_classes = query_boat_classes(regatta_id, pool);
-
-        let rounds = query_rounds(regatta_id, pool);
-
-        let lightweight = query_lightweight(regatta_id, pool);
-
-        let result = join!(
-            distances,
-            dates,
-            age_classes,
-            boat_classes,
-            rounds,
-            lightweight,
+        let queries = join!(
+            query_distances(regatta_id, pool),
+            query_dates(regatta_id, pool),
+            query_age_classes(regatta_id, pool),
+            query_boat_classes(regatta_id, pool),
+            query_rounds(regatta_id, pool),
+            query_lightweight(regatta_id, pool),
             Block::query_blocks(regatta_id, pool)
         );
 
         Ok(Filters {
-            distances: result.0?,
-            dates: result.1?,
-            age_classes: result.2?,
-            boat_classes: result.3?,
-            rounds: result.4?,
-            lightweight: result.5?,
-            blocks: result.6?,
+            distances: queries.0?,
+            dates: queries.1?,
+            age_classes: queries.2?,
+            boat_classes: queries.3?,
+            rounds: queries.4?,
+            lightweight: queries.5?,
+            blocks: queries.6?,
         })
     }
 }
