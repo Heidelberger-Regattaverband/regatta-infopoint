@@ -5,7 +5,7 @@ use crate::db::{
 use chrono::{DateTime, Utc};
 use futures::future::join;
 use serde::Serialize;
-use tiberius::{Query, Row};
+use tiberius::{Query, Row, error::Error as DbError};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -91,7 +91,7 @@ impl Heat {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of heats
-    pub async fn query_heats_of_race(race_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
+    pub async fn query_heats_of_race(race_id: i32, pool: &TiberiusPool) -> Result<Vec<Heat>, DbError> {
         let sql = format!(
             "SELECT {0} FROM Comp c
             WHERE c.Comp_Race_ID_FK = @P1 AND c.Comp_DateTime IS NOT NULL
@@ -102,8 +102,8 @@ impl Heat {
         query.bind(race_id);
 
         let mut client = pool.get().await;
-        let heats = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-        heats.into_iter().map(|row| Heat::from(&row)).collect()
+        let heats = utils::get_rows(query.query(&mut client).await?).await;
+        Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
 
     /// Query a single heat.

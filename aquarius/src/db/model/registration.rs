@@ -4,7 +4,7 @@ use crate::db::{
 };
 use futures::future::{BoxFuture, join_all};
 use serde::Serialize;
-use tiberius::{Query, Row};
+use tiberius::{Query, Row, error::Error as DbError};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -82,7 +82,11 @@ impl Registration {
     /// * `pool` - The connection pool to the database.
     /// # Returns
     /// A vector of registrations for the given club and regatta.
-    pub async fn query_registrations_of_club(regatta_id: i32, club_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
+    pub async fn query_registrations_of_club(
+        regatta_id: i32,
+        club_id: i32,
+        pool: &TiberiusPool,
+    ) -> Result<Vec<Registration>, DbError> {
         let round = 64;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, {2}, l.Label_Short
@@ -114,7 +118,7 @@ impl Registration {
     /// * `pool` - The connection pool to the database
     /// # Returns
     /// A vector of registrations for the given race
-    pub async fn query_registrations_for_race(race_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
+    pub async fn query_registrations_for_race(race_id: i32, pool: &TiberiusPool) -> Result<Vec<Registration>, DbError> {
         let round = 64;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, l.Label_Short
@@ -134,9 +138,9 @@ impl Registration {
     }
 }
 
-async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Vec<Registration> {
+async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Result<Vec<Registration>, DbError> {
     let mut client = pool.get().await;
-    let stream = query.query(&mut client).await.unwrap();
+    let stream = query.query(&mut client).await?;
 
     let mut crew_futures: Vec<BoxFuture<Vec<Crew>>> = Vec::new();
     let mut registrations: Vec<Registration> = utils::get_rows(stream)
@@ -155,5 +159,5 @@ async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Vec
         let crew = crews.get(pos).unwrap();
         registration.crew = Some(crew.to_vec());
     }
-    registrations
+    Ok(registrations)
 }

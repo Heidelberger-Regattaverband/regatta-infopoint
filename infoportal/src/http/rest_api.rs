@@ -14,7 +14,7 @@ use actix_web::{
     web::{Data, Json, Path, ServiceConfig},
 };
 use aquarius::db::{
-    model::{Club, Heat, Race, Regatta, Schedule},
+    model::{Club, Heat, Schedule},
     tiberius::TiberiusPool,
 };
 use prometheus::Registry;
@@ -59,21 +59,45 @@ async fn get_active_regatta(aquarius: Data<Aquarius>, opt_user: Option<Identity>
 }
 
 #[get("/regattas/{id}")]
-async fn get_regatta(path: Path<i32>, aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Json<Regatta> {
+async fn get_regatta(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
-    Json(aquarius.get_regatta(regatta_id, opt_user).await.unwrap())
+    let regatta = aquarius
+        .get_regatta(regatta_id, opt_user)
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(regatta))
 }
 
 #[get("/regattas/{id}/races")]
-async fn get_races(path: Path<i32>, aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Json<Vec<Race>> {
+async fn get_races(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
-    Json(aquarius.get_races(regatta_id, opt_user).await)
+    let races = aquarius
+        .get_races(regatta_id, opt_user)
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(races))
 }
 
 #[get("/races/{id}")]
-async fn get_race(path: Path<i32>, aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Json<Race> {
+async fn get_race(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
     let race_id = path.into_inner();
-    Json(aquarius.get_race_heats_registrations(race_id, opt_user).await)
+    let race = aquarius
+        .get_race_heats_registrations(race_id, opt_user)
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(race))
 }
 
 #[get("/regattas/{id}/heats")]
@@ -117,15 +141,23 @@ async fn get_club_registrations(
     ids: Path<(i32, i32)>,
     aquarius: Data<Aquarius>,
     opt_user: Option<Identity>,
-) -> impl Responder {
+) -> Result<impl Responder, Error> {
     let ids = ids.into_inner();
-    Json(aquarius.get_club_registrations(ids.0, ids.1, opt_user).await)
+    let club_registrations = aquarius
+        .get_club_registrations(ids.0, ids.1, opt_user)
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(club_registrations))
 }
 
 #[get("/clubs/{id}")]
-async fn get_club(path: Path<i32>, aquarius: Data<Aquarius>) -> Json<Club> {
+async fn get_club(path: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
     let club_id = path.into_inner();
-    Json(aquarius.get_club(club_id).await)
+    let club = aquarius
+        .get_club(club_id)
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(club))
 }
 
 #[get("/regattas/{regatta_id}/clubs/{club_id}")]
