@@ -1,11 +1,11 @@
 use crate::db::{
-    model::{utils, AgeClass, BoatClass, HeatRegistration, Race, Referee, TryToEntity},
+    model::{AgeClass, BoatClass, HeatRegistration, Race, Referee, TryToEntity, utils},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use chrono::{DateTime, Utc};
 use futures::future::join;
 use serde::Serialize;
-use tiberius::{Query, Row};
+use tiberius::{Query, Row, error::Error as DbError};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -63,7 +63,7 @@ impl Heat {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of heats
-    pub async fn query_heats_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
+    pub async fn query_heats_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2}, o.* FROM Comp c
             JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
@@ -80,8 +80,8 @@ impl Heat {
         query.bind(regatta_id);
 
         let mut client = pool.get().await;
-        let heats = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-        heats.into_iter().map(|row| Heat::from(&row)).collect()
+        let heats = utils::get_rows(query.query(&mut client).await?).await?;
+        Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
 
     /// Query all heats of a race. The heats are ordered by their number.
@@ -91,7 +91,7 @@ impl Heat {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of heats
-    pub async fn query_heats_of_race(race_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
+    pub async fn query_heats_of_race(race_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0} FROM Comp c
             WHERE c.Comp_Race_ID_FK = @P1 AND c.Comp_DateTime IS NOT NULL
@@ -102,8 +102,8 @@ impl Heat {
         query.bind(race_id);
 
         let mut client = pool.get().await;
-        let heats = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-        heats.into_iter().map(|row| Heat::from(&row)).collect()
+        let heats = utils::get_rows(query.query(&mut client).await?).await?;
+        Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
 
     /// Query a single heat.
@@ -112,7 +112,7 @@ impl Heat {
     /// * `pool` - The database connection pool
     /// # Returns
     /// The heat with the given identifier
-    pub async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Heat {
+    pub async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2}, o.* FROM Comp c
             JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
@@ -128,16 +128,16 @@ impl Heat {
         query.bind(heat_id);
 
         let mut client = pool.get().await;
-        let mut heat = Heat::from(&utils::get_row(query.query(&mut client).await.unwrap()).await);
+        let mut heat = Heat::from(&utils::get_row(query.query(&mut client).await?).await?);
 
         let results = join(
             Referee::query_referees_for_heat(heat.id, pool),
             HeatRegistration::query_registrations_of_heat(&heat, pool),
         )
         .await;
-        heat.referees = results.0;
-        heat.registrations = Some(results.1);
-        heat
+        heat.referees = results.0?;
+        heat.registrations = Some(results.1?);
+        Ok(heat)
     }
 }
 
@@ -173,7 +173,7 @@ pub struct Kiosk {
     pub next: Vec<Heat>,
 }
 impl Kiosk {
-    pub async fn query_finished(regatta_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
+    pub async fn query_finished(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Heat>, DbError> {
         let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, o.Offer_GroupMode,
             o.Offer_HRV_Seeded, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
             FROM Comp AS c
@@ -182,12 +182,12 @@ impl Kiosk {
             WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 4 ORDER BY c.Comp_DateTime DESC");
         query.bind(regatta_id);
         let mut client = pool.get().await;
-        let stream = query.query(&mut client).await.unwrap();
-        let heats = utils::get_rows(stream).await;
-        heats.into_iter().map(|row| Heat::from(&row)).collect()
+        let stream = query.query(&mut client).await?;
+        let heats = utils::get_rows(stream).await?;
+        Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
 
-    pub async fn query_next(regatta_id: i32, pool: &TiberiusPool) -> Vec<Heat> {
+    pub async fn query_next(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Heat>, DbError> {
         let mut query = Query::new("SELECT DISTINCT TOP 5 c.*, ac.*, o.Offer_GroupMode,
             o.Offer_HRV_Seeded, o.Offer_RaceNumber, o.Offer_ID, o.Offer_ShortLabel, o.Offer_LongLabel, o.Offer_Comment, o.Offer_Distance, o.Offer_IsLightweight, o.Offer_Cancelled
             FROM Comp AS c
@@ -196,8 +196,8 @@ impl Kiosk {
             WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_State = 1 AND c.Comp_Cancelled = 0 ORDER BY c.Comp_DateTime ASC");
         query.bind(regatta_id);
         let mut client = pool.get().await;
-        let stream = query.query(&mut client).await.unwrap();
-        let heats = utils::get_rows(stream).await;
-        heats.into_iter().map(|row| Heat::from(&row)).collect()
+        let stream = query.query(&mut client).await?;
+        let heats = utils::get_rows(stream).await?;
+        Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
 }

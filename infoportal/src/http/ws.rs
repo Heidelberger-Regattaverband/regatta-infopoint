@@ -2,12 +2,12 @@ use crate::http::monitoring::Monitoring;
 use actix::{Actor, ActorContext, AsyncContext, StreamHandler};
 use actix_identity::Identity;
 use actix_web::{
+    Error, HttpRequest, HttpResponse,
     error::ErrorUnauthorized,
     get,
     web::{Data, Payload},
-    Error, HttpRequest, HttpResponse,
 };
-use actix_web_actors::ws::{start, Message, ProtocolError, WebsocketContext};
+use actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
 use aquarius::db::tiberius::TiberiusPool;
 use log::{debug, warn};
 use prometheus::Registry;

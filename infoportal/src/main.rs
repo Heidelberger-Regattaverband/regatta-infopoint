@@ -1,11 +1,16 @@
 mod config;
 mod db;
 mod http;
+mod peak_alloc;
 
 use aquarius::db::tiberius::TiberiusPool;
 use config::Config;
 use http::server::Server;
+use peak_alloc::PeakAlloc;
 use std::io::Result;
+
+#[global_allocator]
+static PEAK_ALLOC: PeakAlloc = PeakAlloc;
 
 pub mod built_info {
     include!(concat!(env!("OUT_DIR"), "/built.rs"));
@@ -33,10 +38,9 @@ mod tests {
     };
     use actix_identity::IdentityMiddleware;
     use actix_web::{
-        test,
+        App, test,
         test::TestRequest,
-        web::{scope, Data},
-        App,
+        web::{Data, scope},
     };
     use aquarius::db::tiberius::TiberiusPool;
     use dotenv::dotenv;
@@ -51,7 +55,7 @@ mod tests {
         )
         .await;
 
-        let app_data = create_app_data().await;
+        let app_data = create_app_data().await.unwrap();
 
         let app = test::init_service(
             App::new().service(
@@ -77,7 +81,7 @@ mod tests {
         )
         .await;
 
-        let app_data = create_app_data().await;
+        let app_data = create_app_data().await.unwrap();
 
         let app = test::init_service(
             App::new().service(

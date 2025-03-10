@@ -1,0 +1,20 @@
+[package]
+name = "timekeeper"
+description = "A simple time tracking tool for Aquarius"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+repository.workspace = true
+build = "build.rs"
+
+[dependencies]
+clap.workspace = true
+log.workspace = true
+env_logger.workspace = true
+colored.workspace = true
+encoding_rs = { version = "0" }
+
+[build-dependencies]
+built = "0"

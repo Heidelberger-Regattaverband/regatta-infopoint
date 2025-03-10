@@ -1,10 +1,10 @@
 use crate::db::{
-    model::{utils, Club, Crew, Heat, Race, TryToEntity},
+    model::{Club, Crew, Heat, Race, TryToEntity, utils},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
-use futures::future::{join_all, BoxFuture};
+use futures::future::{BoxFuture, join_all};
 use serde::Serialize;
-use tiberius::{Query, Row};
+use tiberius::{Query, Row, error::Error as DbError};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -13,6 +13,7 @@ pub struct Registration {
     pub id: i32,
 
     /** The race for which the registration was made. */
+    #[serde(skip_serializing_if = "Option::is_none")]
     race: Option<Race>,
 
     /** The club that made the registration and has to pay an entry fee for it. */
@@ -68,7 +69,10 @@ impl From<&Row> for Registration {
 
 impl Registration {
     pub(crate) fn select_columns(alias: &str) -> String {
-        format!(" {0}.Entry_ID, {0}.Entry_Bib, {0}.Entry_Comment, {0}.Entry_BoatNumber, {0}.Entry_GroupValue, {0}.Entry_CancelValue ", alias)
+        format!(
+            " {0}.Entry_ID, {0}.Entry_Bib, {0}.Entry_Comment, {0}.Entry_BoatNumber, {0}.Entry_GroupValue, {0}.Entry_CancelValue ",
+            alias
+        )
     }
 
     /// Queries all registrations for a given club and regatta.
@@ -78,7 +82,11 @@ impl Registration {
     /// * `pool` - The connection pool to the database.
     /// # Returns
     /// A vector of registrations for the given club and regatta.
-    pub async fn query_registrations_of_club(regatta_id: i32, club_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
+    pub async fn query_registrations_of_club(
+        regatta_id: i32,
+        club_id: i32,
+        pool: &TiberiusPool,
+    ) -> Result<Vec<Self>, DbError> {
         let round = 64;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, {2}, l.Label_Short
@@ -110,7 +118,7 @@ impl Registration {
     /// * `pool` - The connection pool to the database
     /// # Returns
     /// A vector of registrations for the given race
-    pub async fn query_registrations_for_race(race_id: i32, pool: &TiberiusPool) -> Vec<Registration> {
+    pub async fn query_registrations_for_race(race_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let round = 64;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, l.Label_Short
@@ -130,13 +138,13 @@ impl Registration {
     }
 }
 
-async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Vec<Registration> {
+async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Result<Vec<Registration>, DbError> {
     let mut client = pool.get().await;
-    let stream = query.query(&mut client).await.unwrap();
+    let stream = query.query(&mut client).await?;
 
-    let mut crew_futures: Vec<BoxFuture<Vec<Crew>>> = Vec::new();
+    let mut crew_futures: Vec<BoxFuture<Result<Vec<Crew>, DbError>>> = Vec::new();
     let mut registrations: Vec<Registration> = utils::get_rows(stream)
-        .await
+        .await?
         .into_iter()
         .map(|row| {
             let registration = Registration::from(&row);
@@ -149,7 +157,7 @@ async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Vec
 
     for (pos, registration) in registrations.iter_mut().enumerate() {
         let crew = crews.get(pos).unwrap();
-        registration.crew = Some(crew.to_vec());
+        registration.crew = Some(crew.as_deref().unwrap().to_vec());
     }
-    registrations
+    Ok(registrations)
 }

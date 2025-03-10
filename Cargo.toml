@@ -1,12 +1,12 @@
 [workspace]
-resolver = "2"
-members = ["aquarius", "infoportal"]
+resolver = "3"
+members = ["aquarius", "infoportal", "timekeeper"]
 
 [workspace.package]
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 license = "Apache-2.0"
-rust-version = "1.81.0"
+rust-version = "1.85.0"
 authors = ["Markus Ofterdinger <markus@ofterdinger.de>"]
 repository = "https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git"
 
@@ -36,6 +36,9 @@ env_logger = { version = "0" }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1" }
 scraper = { version = "0" }
+clap = { version = "4", features = ["derive"] }
+colored = { version = "3" }
+uptime_lib = { version = "0" }
 
 [profile.release]
 # https://nnethercote.github.io/perf-book/build-configuration.html#codegen-units

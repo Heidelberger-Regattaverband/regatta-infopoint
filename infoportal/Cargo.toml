@@ -42,8 +42,8 @@ rustls-pki-types = "1"
 rustls-pemfile = "2"
 
 # OpenAPI
-utoipa = { version = "4", features = ["actix_extras"] }
-utoipa-swagger-ui = { version = "7", features = ["actix-web"] }
+utoipa = { version = "5", features = ["actix_extras", "time"] }
+utoipa-swagger-ui = { version = "9", features = ["actix-web"] }
 
 # Database + Pool
 tiberius.workspace = true
@@ -54,8 +54,9 @@ stretto.workspace = true
 # Utils
 serde.workspace = true
 serde_json.workspace = true
-colored = "2"
+colored.workspace = true
 sysinfo = "0"
+uptime_lib = "0"
 
 [dev-dependencies]
 tokio-shared-rt = "0"

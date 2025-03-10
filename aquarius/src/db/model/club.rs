@@ -4,7 +4,7 @@ use crate::db::{
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{numeric::Decimal, Query, Row};
+use tiberius::{Query, Row, error::Error as DbError, numeric::Decimal};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -62,7 +62,7 @@ impl Club {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of clubs that are participating in the regatta
-    pub async fn query_clubs_participating_regatta(regatta_id: i32, pool: &TiberiusPool) -> Vec<Club> {
+    pub async fn query_clubs_participating_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT DISTINCT {0},
                 (SELECT COUNT(*) FROM (
@@ -107,8 +107,8 @@ impl Club {
         query.bind(regatta_id);
 
         let mut client = pool.get().await;
-        let clubs = utils::get_rows(query.query(&mut client).await.unwrap()).await;
-        clubs.into_iter().map(|row| Club::from(&row)).collect()
+        let clubs = utils::get_rows(query.query(&mut client).await?).await?;
+        Ok(clubs.into_iter().map(|row| Club::from(&row)).collect())
     }
 
     /// Query a single club by its identifier
@@ -117,7 +117,7 @@ impl Club {
     /// * `pool` - The database connection pool
     /// # Returns
     /// The club with the given ID
-    pub async fn query_club_by_id(club_id: i32, pool: &TiberiusPool) -> Club {
+    pub async fn query_club_by_id(club_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let mut query = Query::new(format!(
             "SELECT {0} FROM Club c
             WHERE c.Club_ID = @P1
@@ -127,10 +127,11 @@ impl Club {
         query.bind(club_id);
 
         let mut client = pool.get().await;
-        Club::from(&utils::get_row(query.query(&mut client).await.unwrap()).await)
+        let club = Club::from(&utils::get_row(query.query(&mut client).await?).await?);
+        Ok(club)
     }
 
-    pub async fn query_regatta_club_by_id(regatta_id: i32, club_id: i32, pool: &TiberiusPool) -> Club {
+    pub async fn query_regatta_club_by_id(regatta_id: i32, club_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let mut query = Query::new(format!(
             "SELECT {0},
                 (SELECT COUNT(*) FROM (
@@ -171,7 +172,7 @@ impl Club {
         query.bind(club_id);
 
         let mut client = pool.get().await;
-        Club::from(&utils::get_row(query.query(&mut client).await.unwrap()).await)
+        Ok(Club::from(&utils::get_row(query.query(&mut client).await?).await?))
     }
 
     pub fn select_columns(alias: &str) -> String {

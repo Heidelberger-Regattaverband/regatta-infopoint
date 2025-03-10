@@ -1,5 +1,4 @@
 static/dist
 static/node_modules
-static/package-lock.json
 
 target

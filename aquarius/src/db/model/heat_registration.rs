@@ -1,11 +1,11 @@
 use crate::db::{
-    model::{utils, Club, Crew, Heat, HeatResult, Race, Registration, TryToEntity},
+    model::{Club, Crew, Heat, HeatResult, Race, Registration, TryToEntity, utils},
     tiberius::{RowColumn, TiberiusPool},
 };
-use futures::future::{join_all, BoxFuture};
+use futures::future::{BoxFuture, join_all};
 use serde::Serialize;
 use std::{cmp::Ordering, time::Duration};
-use tiberius::{Query, Row};
+use tiberius::{Query, Row, error::Error as DbError};
 
 /// A registration of a boat in a heat.
 #[derive(Debug, Serialize, Clone)]
@@ -43,7 +43,7 @@ impl HeatRegistration {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of registrations of the heat
-    pub(crate) async fn query_registrations_of_heat(heat: &Heat, pool: &TiberiusPool) -> Vec<HeatRegistration> {
+    pub(crate) async fn query_registrations_of_heat(heat: &Heat, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!("SELECT DISTINCT ce.CE_ID, ce.CE_Lane, {0}, Label_Short, BoatClass_NumRowers, {1}, {2}, {3}
             FROM CompEntries ce
             JOIN Comp                  ON CE_Comp_ID_FK     = Comp_ID
@@ -61,7 +61,7 @@ impl HeatRegistration {
         query.bind(heat.id);
 
         let mut client = pool.get().await;
-        let rows = utils::get_rows(query.query(&mut client).await.unwrap()).await;
+        let rows = utils::get_rows(query.query(&mut client).await?).await?;
 
         // convert rows into HeatRegistrations
         let mut heat_registrations: Vec<HeatRegistration> = rows
@@ -91,7 +91,7 @@ impl HeatRegistration {
 
         let mut first_net_time: i32 = 0;
 
-        let mut crew_futures: Vec<BoxFuture<Vec<Crew>>> = Vec::new();
+        let mut crew_futures: Vec<BoxFuture<Result<Vec<Crew>, DbError>>> = Vec::new();
         for (pos, heat_registration) in heat_registrations.iter_mut().enumerate() {
             crew_futures.push(Box::pin(Crew::query_crew_of_registration(
                 heat_registration.registration.id,
@@ -116,9 +116,9 @@ impl HeatRegistration {
 
         for (pos, heat_registration) in heat_registrations.iter_mut().enumerate() {
             let crew = crews.get(pos).unwrap();
-            heat_registration.registration.crew = Some(crew.to_vec());
+            heat_registration.registration.crew = Some(crew.as_deref().unwrap().to_vec());
         }
 
-        heat_registrations
+        Ok(heat_registrations)
     }
 }

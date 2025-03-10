@@ -1,5 +1,5 @@
 use chrono::{DateTime, NaiveDate, Utc};
-use tiberius::{numeric::Decimal, time::chrono::NaiveDateTime, Row};
+use tiberius::{Row, numeric::Decimal, time::chrono::NaiveDateTime};
 
 pub trait RowColumn<T>
 where
