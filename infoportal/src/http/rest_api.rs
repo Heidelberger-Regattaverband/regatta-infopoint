@@ -153,6 +153,16 @@ async fn get_participating_clubs(
     Ok(Json(clubs))
 }
 
+#[get("/regattas/{id}/participating_athletes")]
+async fn get_participating_athletes(path: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
+    let regatta_id = path.into_inner();
+    let clubs = aquarius
+        .get_participating_athletes(regatta_id)
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(clubs))
+}
+
 #[get("/regattas/{regatta_id}/clubs/{club_id}/registrations")]
 async fn get_club_registrations(
     ids: Path<(i32, i32)>,
@@ -315,6 +325,7 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(get_regatta_club)
             .service(get_club_registrations)
             .service(get_participating_clubs)
+            .service(get_participating_athletes)
             .service(get_active_regatta)
             .service(get_regatta)
             .service(get_race)
