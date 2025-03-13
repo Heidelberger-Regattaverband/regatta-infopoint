@@ -153,7 +153,7 @@ async fn get_participating_clubs(
     Ok(Json(clubs))
 }
 
-#[get("/regattas/{id}/participating_athletes")]
+#[get("/regattas/{id}/athletes")]
 async fn get_participating_athletes(path: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let clubs = aquarius
