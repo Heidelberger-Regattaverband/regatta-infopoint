@@ -36,8 +36,8 @@ impl Athlete {
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1} FROM Athlet a
                 JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.Club_ID
-                JOIN Crew   c ON a.Athlet_ID = c.Crew_Athlete_ID_FK
-                JOIN Entry  e ON c.Crew_Entry_ID_FK = e.Entry_ID
+                JOIN Crew   c ON a.Athlet_ID         = c.Crew_Athlete_ID_FK
+                JOIN Entry  e ON c.Crew_Entry_ID_FK  = e.Entry_ID
                 WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue = 0",
             Athlete::select_columns("a"),
             Club::select_columns("cl")
