@@ -29,10 +29,7 @@ pub struct Athlete {
 }
 
 impl Athlete {
-    pub async fn query_participating_athletes(
-        regatta_id: i32,
-        pool: &TiberiusPool,
-    ) -> Result<Vec<Athlete>, DbError> {
+    pub async fn query_participating_athletes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Athlete>, DbError> {
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1} FROM Athlet a
                 JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.Club_ID
