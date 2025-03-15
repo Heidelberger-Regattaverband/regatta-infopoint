@@ -1,6 +1,6 @@
 import BaseController from "./Base.controller";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
-import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds, icon, layerGroup, Marker, TileLayer, LayerGroup, control, latLngBounds, FitBoundsOptions, Control, circle, Circle } from "leaflet";
+import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds, icon, layerGroup, Marker, TileLayer, LayerGroup, control, latLngBounds, FitBoundsOptions, circle, Circle } from "leaflet";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { Button$PressEvent } from "sap/m/Button";
 
@@ -12,7 +12,8 @@ export default class MapController extends BaseController {
   private readonly participatingClubsModel: JSONModel = new JSONModel();
   private readonly boundsOpts: FitBoundsOptions = { paddingTopLeft: [0, 0], paddingBottomRight: [0, 0] };
   private map: Map | undefined;
-  private bounds: LatLngBounds | undefined;
+  private clubBounds: LatLngBounds | undefined;
+  private regattaBounds: LatLngBounds | undefined;
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
@@ -26,8 +27,16 @@ export default class MapController extends BaseController {
   }
 
   onCenterButtonPress(_event: Button$PressEvent): void {
-    if (this.map && this.bounds) {
-      this.map.fitBounds(this.bounds, this.boundsOpts);
+    this.centerMap();
+  }
+
+  private centerMap(): void {
+    if (this.map) {
+      if (this.clubBounds?.isValid()) {
+        this.map.fitBounds(this.clubBounds, this.boundsOpts);
+      } else if (this.regattaBounds?.isValid()) {
+        this.map.fitBounds(this.regattaBounds, this.boundsOpts);
+      }
     }
   }
 
@@ -47,29 +56,29 @@ export default class MapController extends BaseController {
         attribution: '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team hosted by OpenStreetMap France'
       });
 
-      const layerRegatta: LayerGroup = this.getRegattaLayerGroup()[0];
-      const clubs = this.getClubsLayerGroup();
-      const layerClubs: LayerGroup = clubs[0];
+      const regattaLayer: [LayerGroup, LatLngBounds] = this.getRegattaLayerGroup();
+      this.regattaBounds = regattaLayer[1];
+      const clubsLayer: [LayerGroup, LatLngBounds] = this.getClubsLayerGroup();
+      this.clubBounds = clubsLayer[1];
 
       const baseMaps = {
         "OpenStreetMap": layerOsm,
         "OpenStreetMap.HOT": layerOsmHOT
       };
       const overlayMaps = {
-        "Regatta Orte": layerRegatta,
-        "Vereine": layerClubs,
+        "Regatta Orte": regattaLayer[0],
+        "Vereine": clubsLayer[0],
         "Entfernung 250km": this.getCircleLayerGroup()
       };
-
       const options: MapOptions = {
         doubleClickZoom: true,
-        layers: [layerOsm, layerRegatta, layerClubs]
+        layers: [layerOsm, regattaLayer[0], clubsLayer[0]],
       };
       this.map = map("map", options);
       control.layers(baseMaps, overlayMaps).addTo(this.map);
       control.scale({ imperial: false, metric: true }).addTo(this.map);
-      this.bounds = clubs[1];
-      this.map.fitBounds(this.bounds, this.boundsOpts);
+
+      this.centerMap();
     }
   }
 
