@@ -139,7 +139,7 @@ async fn get_heat(
     Ok(Json(heat))
 }
 
-#[get("/regattas/{id}/participating_clubs")]
+#[get("/regattas/{id}/clubs")]
 async fn get_participating_clubs(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
