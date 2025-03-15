@@ -29,7 +29,7 @@ pub struct Athlete {
 }
 
 impl Athlete {
-    pub async fn query_athletes_participating_in_regatta(
+    pub async fn query_participating_athletes(
         regatta_id: i32,
         pool: &TiberiusPool,
     ) -> Result<Vec<Athlete>, DbError> {

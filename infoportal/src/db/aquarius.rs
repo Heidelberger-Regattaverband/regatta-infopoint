@@ -173,7 +173,7 @@ impl Aquarius {
 
     pub(crate) async fn get_participating_athletes(&self, regatta_id: i32) -> Result<Vec<Athlete>, DbError> {
         let start = Instant::now();
-        let athletes = Athlete::query_athletes_participating_in_regatta(regatta_id, TiberiusPool::instance()).await;
+        let athletes = Athlete::query_participating_athletes(regatta_id, TiberiusPool::instance()).await;
         debug!(
             "Query athletes of regatta {} from DB: {:?}",
             regatta_id,
