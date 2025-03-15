@@ -80,6 +80,6 @@ export default class ParticipatingClubsTable extends BaseTableController {
 
   private async loadModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
-    return await super.updateJSONModel(this.participatingClubsModel, `/api/regattas/${regatta.id}/participating_clubs`, this.table)
+    return await super.updateJSONModel(this.participatingClubsModel, `/api/regattas/${regatta.id}/clubs`, this.table)
   }
 }
