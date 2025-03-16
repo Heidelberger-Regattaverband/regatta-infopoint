@@ -35,7 +35,7 @@ export default class RaceDetailsController extends BaseController {
 
   onNavBack(): void {
     const data = (super.getComponentModel("race") as JSONModel).getData();
-    if (data._nav && data._nav.back) {
+    if (data._nav?.back) {
       super.navBack(data._nav.back);
     } else {
       super.navBack("races");
