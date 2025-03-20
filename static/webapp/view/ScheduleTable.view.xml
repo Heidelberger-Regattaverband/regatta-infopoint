@@ -2,7 +2,7 @@
   xmlns:layout="sap.ui.layout">
   <mvc:content>
 
-    <Page title="{i18n>launchpad.scheduleTile.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
+    <Page title="{i18n>launchpad.scheduleTile.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
       <content>
 
         <Table id="scheduleTable" autoPopinMode="true" items="{schedule>/entries}" growing="true" growingScrollToLoad="true"
@@ -12,10 +12,10 @@
           <headerToolbar>
             <OverflowToolbar>
               <content>
-                <SearchField width="12rem" liveChange="onSearchFieldLiveChange" showSearchButton="false" />
+                <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
                 <ToolbarSpacer />
                 <OverflowToolbarButton text="{i18n>common.refresh}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
-                  press="onRefreshButtonPress" />
+                  press=".onRefreshButtonPress" />
               </content>
             </OverflowToolbar>
           </headerToolbar>

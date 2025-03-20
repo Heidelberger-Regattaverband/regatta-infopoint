@@ -1,21 +1,21 @@
 <mvc:View controllerName="de.regatta_hd.infoportal.controller.ParticipatingClubsTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
-    <Page title="{i18n>statistics.participatingClubs}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
+    <Page title="{i18n>statistics.participatingClubs}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
       <content>
 
         <Table id="clubsTable" autoPopinMode="true" items="{clubs>/}" growing="true" growingScrollToLoad="true" growingThreshold="50"
-          sticky="HeaderToolbar,ColumnHeaders" class="sapUiNoContentPadding" itemPress="onItemPress">
+          sticky="HeaderToolbar,ColumnHeaders" class="sapUiNoContentPadding" itemPress=".onItemPress">
           <!-- The HeaderToolbar shows a title and the filter button -->
           <headerToolbar>
             <OverflowToolbar>
               <content>
-                <SearchField width="12rem" liveChange="onSearchFieldLiveChange" showSearchButton="false" />
+                <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
                 <OverflowToolbarButton text="{i18n>common.sorting}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
-                  press="onSortButtonPress" />
+                  press=".onSortButtonPress" />
                 <ToolbarSpacer />
                 <OverflowToolbarButton text="{i18n>common.refresh}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
-                  press="onRefreshButtonPress" />
+                  press=".onRefreshButtonPress" />
               </content>
             </OverflowToolbar>
           </headerToolbar>

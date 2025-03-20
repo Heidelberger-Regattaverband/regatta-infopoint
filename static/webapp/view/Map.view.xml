@@ -2,9 +2,9 @@
   xmlns:core="sap.ui.core" height="100%">
   <mvc:content>
 
-    <Page title="{i18n>launchpad.map.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
+    <Page title="{i18n>launchpad.map.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
       <headerContent>
-        <Button tooltip="{i18n>common.center}" icon="sap-icon://map" press="onCenterButtonPress" />
+        <Button tooltip="{i18n>common.center}" icon="sap-icon://map" press=".onCenterButtonPress" />
       </headerContent>
 
       <content>

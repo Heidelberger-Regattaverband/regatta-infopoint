@@ -2,15 +2,15 @@
   xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
     <Page title="{= ${heatRegistrations>/state} >= 4 ? ${i18n>common.result} : ${i18n>common.assignment}}" class="sapUiNoContentPadding"
-      showNavButton="true" navButtonPress="onNavBack">
+      showNavButton="true" navButtonPress=".onNavBack">
       <headerContent>
-        <Button id="firstButton" type="Transparent" icon="sap-icon://close-command-field" press="onFirstPress" tooltip="First"
+        <Button id="firstButton" type="Transparent" icon="sap-icon://close-command-field" press=".onFirstPress" tooltip="First"
           enabled="{=!${heat>/_nav/isFirst}}" visible="{=!${heat>/_nav/disabled}}" />
-        <Button id="previousButton" type="Transparent" icon="sap-icon://navigation-left-arrow" press="onPreviousPress" tooltip="Previous"
+        <Button id="previousButton" type="Transparent" icon="sap-icon://navigation-left-arrow" press=".onPreviousPress" tooltip="Previous"
           enabled="{=!${heat>/_nav/isFirst}}" visible="{=!${heat>/_nav/disabled}}" />
-        <Button id="nextButton" type="Transparent" icon="sap-icon://navigation-right-arrow" press="onNextPress" tooltip="Next"
+        <Button id="nextButton" type="Transparent" icon="sap-icon://navigation-right-arrow" press=".onNextPress" tooltip="Next"
           enabled="{=!${heat>/_nav/isLast}}" visible="{=!${heat>/_nav/disabled}}" />
-        <Button id="lastButton" type="Transparent" icon="sap-icon://open-command-field" press="onLastPress" tooltip="Last"
+        <Button id="lastButton" type="Transparent" icon="sap-icon://open-command-field" press=".onLastPress" tooltip="Last"
           enabled="{=!${heat>/_nav/isLast}}" visible="{=!${heat>/_nav/disabled}}" />
       </headerContent>
 
@@ -27,7 +27,7 @@
                 <Label text="{heatRegistrations>/race/longLabel} {heatRegistrations>/race/comment}" />
               </f:expandedContent>
               <f:actions>
-                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" type="Transparent" />
+                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press=".onRefreshButtonPress" type="Transparent" />
               </f:actions>
               <f:navigationActions />
             </f:DynamicPageTitle>
