@@ -6,10 +6,10 @@
       class="sapUiNoContentPadding">
 
       <headerContent>
-        <Button icon="{=${identity>/authenticated}?'sap-icon://log':'sap-icon://person-placeholder'}" press="onShowLoginPress"
+        <Button icon="{=${identity>/authenticated}?'sap-icon://log':'sap-icon://person-placeholder'}" press=".onShowLoginPress"
           text="{=${identity>/authenticated}?${i18n>common.logoff}:${i18n>common.login}}" visible="{=!${device>/system/phone}}"
           enabled="{= ${parts: [], formatter: '.isSecureContext'} }" />
-        <Button icon="{=${identity>/authenticated}?'sap-icon://log':'sap-icon://person-placeholder'}" press="onShowLoginPress"
+        <Button icon="{=${identity>/authenticated}?'sap-icon://log':'sap-icon://person-placeholder'}" press=".onShowLoginPress"
           visible="{device>/system/phone}" enabled="{= ${parts: [], formatter: '.isSecureContext'} }" />
       </headerContent>
 

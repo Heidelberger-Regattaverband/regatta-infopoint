@@ -1,5 +1,5 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
-  <ViewSettingsDialog confirm="onHandleFilterDialogConfirm">
+  <ViewSettingsDialog confirm=".onHandleFilterDialogConfirm">
     <filterItems>
       <ViewSettingsFilterItem text="{i18n>common.gender}" key="gender" multiSelect="false">
         <items>

@@ -1,20 +1,20 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:layout="sap.ui.layout">
 
   <Table id="heatsTable" autoPopinMode="true" items="{heats>/}" growing="true" growingScrollToLoad="true" growingThreshold="30"
-    mode="SingleSelectMaster" itemPress="onSelectionChange" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
+    mode="SingleSelectMaster" itemPress=".onSelectionChange" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
 
     <!-- The HeaderToolbar shows a title and the filter button -->
     <headerToolbar>
       <OverflowToolbar>
         <content>
-          <SearchField width="10rem" liveChange="onSearchFieldLiveChange" showSearchButton="false" />
+          <SearchField width="10rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
           <OverflowToolbarButton text="{i18n>common.filter}" tooltip="{i18n>common.filter}" icon="sap-icon://filter"
-            press="onFilterButtonPress" />
+            press=".onFilterButtonPress" />
           <OverflowToolbarButton text="{i18n>common.sorting}}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
-            press="onSortButtonPress" />
+            press=".onSortButtonPress" />
           <ToolbarSpacer />
           <OverflowToolbarButton text="{i18n>common.refresh}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
-            press="onRefreshButtonPress" />
+            press=".onRefreshButtonPress" />
         </content>
       </OverflowToolbar>
     </headerToolbar>
@@ -25,7 +25,7 @@
         <content>
           <Text />
           <ToolbarSpacer />
-          <Button tooltip="{i18n>common.clearFilters}" icon="sap-icon://clear-filter" press="onClearFilterPress" type="Transparent" />
+          <Button tooltip="{i18n>common.clearFilters}" icon="sap-icon://clear-filter" press=".onClearFilterPress" type="Transparent" />
         </content>
       </OverflowToolbar>
     </infoToolbar>

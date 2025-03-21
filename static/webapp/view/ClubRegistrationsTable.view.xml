@@ -4,7 +4,7 @@
 
     <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
     https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
-    <Page title="{i18n>common.club}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
+    <Page title="{i18n>common.club}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
       <headerContent>
       </headerContent>
       <content>
@@ -41,14 +41,14 @@
           <f:content>
             <Table id="registrationsTable" autoPopinMode="true" items="{path:'registrations>/'}" growing="true" growingThreshold="50"
               growingScrollToLoad="true" sticky="ColumnHeaders,HeaderToolbar" class="sapUiNoContentPadding" mode="SingleSelectMaster"
-              itemPress="onSelectionChange">
+              itemPress=".onSelectionChange">
               <headerToolbar>
                 <OverflowToolbar>
                   <content>
-                    <SearchField width="12rem" liveChange="onSearchFieldLiveChange" showSearchButton="false" />
+                    <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
                     <ToolbarSpacer />
                     <OverflowToolbarButton tooltip="{i18n>common.refresh}" text="{i18n>common.refresh}" icon="sap-icon://refresh"
-                      press="onRefreshButtonPress" />
+                      press=".onRefreshButtonPress" />
                   </content>
                 </OverflowToolbar>
               </headerToolbar>

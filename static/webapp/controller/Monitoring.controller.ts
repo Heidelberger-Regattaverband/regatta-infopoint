@@ -8,7 +8,7 @@ import Button from "sap/m/Button";
  */
 export default class MonitoringController extends BaseController {
 
-  private readonly units = ['bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+  private readonly units = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
   private readonly monitoringModel: JSONModel = new JSONModel();
   private socket?: WebSocket;
   private statusButton: Button;
@@ -89,7 +89,11 @@ export default class MonitoringController extends BaseController {
   }
 
   private niceDuration(seconds: number): string {
-    const duration = new Date(seconds * 1000).toISOString().slice(11, 19);
+    const days: number = Math.floor(seconds / 60 / 60 / 24);
+    const hours: number = Math.floor(seconds / 60 / 60 % 24);
+    const minutes: number = Math.floor(seconds / 60 % 60);
+    const secs: number = Math.floor(seconds % 60);
+    const duration: string = (days > 0 ? days + 'd ' : '') + (hours > 0 ? hours + 'h ' : '') + (minutes > 0 ? minutes + 'm ' : '') + secs + 's';
     return duration;
   }
 

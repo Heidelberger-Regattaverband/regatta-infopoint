@@ -12,7 +12,6 @@ import ViewSettingsDialog from "sap/m/ViewSettingsDialog";
 import ListItemBase from "sap/m/ListItemBase";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
-import MessageToast from "sap/m/MessageToast";
 import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 
 /**
@@ -114,10 +113,8 @@ export default class RacesTableController extends BaseTableController {
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadRacesModel().then((updated: boolean) => {
-      if (updated) {
-        MessageToast.show(this.i18n("msg.dataUpdated"));
-      }
+    this.loadRacesModel().then((succeeded: boolean) => {
+      super.showDataUpdatedMessage(succeeded);
     }).finally(() => source.setEnabled(true));
   }
 

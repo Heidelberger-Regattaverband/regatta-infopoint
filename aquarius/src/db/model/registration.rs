@@ -1,5 +1,5 @@
 use crate::db::{
-    model::{Club, Crew, Heat, Race, TryToEntity, utils},
+    model::{Club, Crew, Race, TryToEntity, utils},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use futures::future::{BoxFuture, join_all};
@@ -41,10 +41,6 @@ pub struct Registration {
 
     /** Indicates whether or not the registration has been canceled. */
     pub cancelled: bool,
-
-    /** An optional heat this registration is assigned to. */
-    #[serde(skip_serializing_if = "Option::is_none")]
-    heat: Option<Heat>,
 }
 
 impl From<&Row> for Registration {
@@ -62,7 +58,6 @@ impl From<&Row> for Registration {
             club: Club::from(value),
             crew: None,
             race: value.try_to_entity(),
-            heat: value.try_to_entity(),
         }
     }
 }
