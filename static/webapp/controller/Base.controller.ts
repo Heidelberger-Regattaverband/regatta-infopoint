@@ -11,11 +11,27 @@ import UIComponent from "sap/ui/core/UIComponent";
 import MyComponent from "de/regatta_hd/infoportal/Component";
 import MessageBox from "sap/m/MessageBox";
 import { LatLng } from "leaflet";
+import MessageToast from "sap/m/MessageToast";
+import * as $ from "jquery";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class BaseController extends Controller {
+
+  /**
+   * Shows a message toast with the result of a data update operation.
+   * @param succeeded data update succeeded or failed
+   */
+  showDataUpdatedMessage(succeeded: boolean): void {
+    if (succeeded) { // NOSONAR
+      MessageToast.show(this.i18n("msg.dataUpdated"));
+      $(".sapMMessageToast").addClass("sapMMessageToastInfo");
+    } else {
+      MessageToast.show(this.i18n("msg.dataUpdateFailed"));
+      $(".sapMMessageToast").addClass("sapMMessageToastDanger");
+    }
+  }
 
   /**
    * Convenience method for getting the secure context of the application.
