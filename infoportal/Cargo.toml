@@ -44,7 +44,7 @@ rustls-pemfile = "2"
 # OpenAPI
 utoipa = { version = "5", features = ["actix_extras", "time"] }
 utoipa-swagger-ui = { version = "9", features = ["actix-web"] }
-zip = "=2.4.2" # Force the zip dependency to version 2.3.0 <- just add this to the toml
+zip = "=2.4.2" # Force the zip dependency to version 2.4.2 to avoid conflicts with utoipa-swagger-ui
 
 # Database + Pool
 tiberius.workspace = true
