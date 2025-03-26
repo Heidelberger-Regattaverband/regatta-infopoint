@@ -58,6 +58,8 @@ colored.workspace = true
 sysinfo = "0"
 uptime_lib = "0"
 
+zip = "=2.4.2" # Force the zip dependency to version 2.3.0 <- just add this to the toml
+
 [dev-dependencies]
 tokio-shared-rt = "0"
 
