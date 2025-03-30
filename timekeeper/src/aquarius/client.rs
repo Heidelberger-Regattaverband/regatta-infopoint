@@ -186,10 +186,10 @@ fn send_disconnected(sender: &Sender<AppEvent>) {
 }
 
 fn create_stream(addr: &SocketAddr, timeout: u16) -> IoResult<TcpStream> {
-    trace!("Connecting to {} with a timeout {}", addr.to_string(), timeout);
+    trace!("Connecting to {} with a timeout {}", addr, timeout);
     let stream = TcpStream::connect_timeout(addr, Duration::new(timeout as u64, 0))?;
     stream.set_nodelay(true)?;
-    info!("Connected to {}", addr.to_string());
+    info!("Connected to {}", addr);
     Ok(stream)
 }
 
@@ -236,22 +236,25 @@ mod tests {
     use std::{
         io::{BufRead, BufReader, Write},
         net::{SocketAddr, TcpListener},
-        sync::mpsc::{self, Receiver},
+        sync::mpsc::{self},
         thread,
     };
-    const MESSAGE: &str = "Hello World!";
+    const TEST_MESSAGE: &str = "Hello World!";
+    const EXIT_COMMAND: &str = "exit";
+    const MESSAGE_END: &str = "\r\n";
 
-    fn init() -> (Sender<AppEvent>, Receiver<AppEvent>) {
+    fn init_client() -> Client {
         let _ = env_logger::builder()
             .is_test(true)
             .filter_level(LevelFilter::Trace)
             .try_init();
-        mpsc::channel()
+        let (sender, _receiver) = mpsc::channel();
+        let addr = start_test_server();
+        let client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
+        client
     }
 
     fn start_test_server() -> SocketAddr {
-        init();
-
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let addr = listener.local_addr().unwrap();
 
@@ -261,64 +264,60 @@ mod tests {
                 let mut reader = BufReader::new(stream.try_clone().unwrap());
                 let mut buffer = String::new();
                 while reader.read_line(&mut buffer).unwrap() > 0 {
+                    if buffer.trim() == EXIT_COMMAND {
+                        break;
+                    }
                     stream.write_all(buffer.as_bytes()).unwrap();
                     buffer.clear();
                 }
             }
+            info!("Exiting test server.");
         });
         addr
     }
 
     #[test]
     fn test_client_connection() {
-        let (sender, _) = init();
-
-        let addr = start_test_server();
-        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
+        let mut client = init_client();
         let result = client.connect();
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_client_write() {
-        let (sender, _) = init();
-
-        let addr = start_test_server();
-        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
+        let mut client = init_client();
         client.connect().unwrap();
-        let result = client.comm_main.unwrap().write(MESSAGE);
+        let result = client.comm_main.unwrap().write(TEST_MESSAGE);
         assert!(result.is_ok());
-        assert_eq!(result.unwrap(), MESSAGE.len());
+        assert_eq!(result.unwrap(), TEST_MESSAGE.len());
     }
 
     #[test]
     fn test_client_receive_line() {
-        let (sender, _) = init();
-
-        let addr = start_test_server();
-        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
+        let mut client = init_client();
         client.connect().unwrap();
         let comm = client.comm_main.as_mut().unwrap();
-        comm.write(MESSAGE).unwrap();
-        comm.write("\r\n").unwrap();
+        comm.write(TEST_MESSAGE).unwrap();
+        comm.write(MESSAGE_END).unwrap();
         let response = comm.receive_line();
         assert!(response.is_ok());
-        assert_eq!(response.unwrap(), MESSAGE);
+        assert_eq!(response.unwrap(), TEST_MESSAGE);
+
+        comm.write(EXIT_COMMAND).unwrap();
     }
 
     #[test]
     fn test_client_receive_all() {
-        let (sender, _) = init();
-
-        let addr = start_test_server();
-        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
+        let mut client = init_client();
         client.connect().unwrap();
         let comm = client.comm_main.as_mut().unwrap();
         comm.write("Hello World!\n").unwrap();
         comm.write("This is a test.\n").unwrap();
-        comm.write("\r\n").unwrap();
+        comm.write(MESSAGE_END).unwrap();
         let response = comm.receive_all();
         assert!(response.is_ok());
         assert_eq!(response.unwrap(), "Hello World!\nThis is a test.");
+
+        comm.write(EXIT_COMMAND).unwrap();
     }
 }
