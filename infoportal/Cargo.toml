@@ -36,7 +36,7 @@ actix-identity = "0"
 actix-files = "0"
 actix-extensible-rate-limit = "0"
 actix-web-prom = { version = "0", features = ["process"] }
-prometheus = { version = "0", default-features = false }
+prometheus = { version = "0.13", default-features = false }
 rustls = "0.23"
 rustls-pki-types = "1"
 rustls-pemfile = "2"
@@ -44,6 +44,7 @@ rustls-pemfile = "2"
 # OpenAPI
 utoipa = { version = "5", features = ["actix_extras", "time"] }
 utoipa-swagger-ui = { version = "9", features = ["actix-web"] }
+zip = "=2.4.2" # Force the zip dependency to version 2.4.2 to avoid conflicts with utoipa-swagger-ui
 
 # Database + Pool
 tiberius.workspace = true

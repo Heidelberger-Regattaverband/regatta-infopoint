@@ -2,7 +2,7 @@ import BaseController from "./Base.controller";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds, icon, layerGroup, Marker, TileLayer, LayerGroup, control, latLngBounds, FitBoundsOptions, circle, Circle } from "leaflet";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import { Button$PressEvent } from "sap/m/Button";
+import Button, { Button$PressEvent } from "sap/m/Button";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -11,32 +11,38 @@ export default class MapController extends BaseController {
 
   private readonly participatingClubsModel: JSONModel = new JSONModel();
   private readonly boundsOpts: FitBoundsOptions = { paddingTopLeft: [0, 0], paddingBottomRight: [0, 0] };
-  private map: Map | undefined;
-  private clubBounds: LatLngBounds | undefined;
-  private regattaBounds: LatLngBounds | undefined;
+  private map?: Map;
+  private clubBounds?: LatLngBounds;
+  private regattaBounds?: LatLngBounds;
+  private centerClubsButton?: Button;
+  private centerRegattaButton?: Button;
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getRouter()?.getRoute("map")?.attachMatched((_: Route$MatchedEvent) => {
       this.loadModel().then(() => this.loadMap());
     }, this);
+    this.centerClubsButton = this.byId("centerClubsButton") as Button;
+    this.centerRegattaButton = this.byId("centerRegattaButton") as Button;
   }
 
   onNavBack(): void {
     super.navToStartPage();
   }
 
-  onCenterButtonPress(_event: Button$PressEvent): void {
-    this.centerMap();
+  onCenterButtonPress(event: Button$PressEvent): void {
+    if (event.getSource() === this.centerClubsButton) {
+      this.centerMap(true);
+    } else if (event.getSource() === this.centerRegattaButton) {
+      this.centerMap(false);
+    }
   }
 
-  private centerMap(): void {
-    if (this.map) {
-      if (this.clubBounds?.isValid()) {
-        this.map.fitBounds(this.clubBounds, this.boundsOpts);
-      } else if (this.regattaBounds?.isValid()) {
-        this.map.fitBounds(this.regattaBounds, this.boundsOpts);
-      }
+  private centerMap(clubs: boolean): void {
+    if (clubs && this.clubBounds?.isValid()) {
+      this.map?.fitBounds(this.clubBounds, this.boundsOpts);
+    } else if (this.regattaBounds?.isValid()) {
+      this.map?.fitBounds(this.regattaBounds, this.boundsOpts);
     }
   }
 
@@ -78,7 +84,7 @@ export default class MapController extends BaseController {
       control.layers(baseMaps, overlayMaps).addTo(this.map);
       control.scale({ imperial: false, metric: true }).addTo(this.map);
 
-      this.centerMap();
+      this.centerMap(true);
     }
   }
 
