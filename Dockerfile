@@ -1,7 +1,7 @@
 # build image: docker build -t infoportal .
 # run container: docker run -it --rm --name infoportal -p 8080:8080 -p 8443:8443 --env DB_HOST= --env DB_NAME= --env DB_USER= --env DB_PASSWORD= infoportal
 
-ARG RUST_VERSION=1.85.1
+ARG RUST_VERSION=1.86.0
 
 #################
 ## build stage ##
