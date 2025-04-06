@@ -1,3 +1,4 @@
+use crate::peak_alloc::PeakAlloc;
 use aquarius::db::tiberius::TiberiusPool;
 use prometheus::Registry;
 use serde::Serialize;
@@ -5,8 +6,6 @@ use serde_json::{Map, Number, Value};
 use std::time::Duration;
 use sysinfo::{CpuRefreshKind, Disks, MemoryRefreshKind, RefreshKind, System};
 use utoipa::ToSchema;
-
-use crate::peak_alloc::PeakAlloc;
 
 /// The monitoring struct contains the database state, system information and metrics.
 #[derive(Serialize, ToSchema)]
