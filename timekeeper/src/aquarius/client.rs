@@ -16,7 +16,11 @@ use std::{
     io::Result as IoResult,
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream},
     str::FromStr,
-    sync::mpsc::Sender,
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering::Relaxed},
+        mpsc::Sender,
+    },
     thread::{self, JoinHandle},
     time::{Duration, Instant},
 };
@@ -30,6 +34,8 @@ pub(crate) struct Client {
     timeout: u16,
 
     sender: Sender<AppEvent>,
+
+    stop_watch_dog: Arc<AtomicBool>,
 }
 
 impl Client {
@@ -48,6 +54,7 @@ impl Client {
             address,
             timeout,
             sender,
+            stop_watch_dog: Arc::new(AtomicBool::new(false)),
         };
         client.start_watch_dog();
         client
@@ -125,13 +132,14 @@ impl Client {
         let address = self.address;
         let timeout = self.timeout;
         let sender = self.sender.clone();
+        let stop_watch_dog = self.stop_watch_dog.clone();
 
         // Spawn a thread to watch the thread that receives events from Aquarius
         let watch_dog: JoinHandle<()> = thread::spawn(move || {
             // The interval to retry connecting to Aquarius in case of a failure
             let repeat_interval = Duration::from_secs(timeout as u64);
 
-            loop {
+            while !stop_watch_dog.load(Relaxed) {
                 let start = Instant::now();
                 // create a new stream to Aquarius
                 match create_stream(&address, timeout) {
@@ -159,10 +167,15 @@ impl Client {
                 if elapsed < repeat_interval {
                     thread::sleep(repeat_interval - elapsed);
                 }
-            } // end loop
+            } // end while
+            debug!("Stopped watch dog thread.");
         });
 
         watch_dog
+    }
+
+    fn stop_watch_dog(&mut self) {
+        self.stop_watch_dog.store(true, Relaxed);
     }
 
     fn read_start_list(comm: &mut Communication, heat: &mut Heat) -> Result<(), TimekeeperErr> {
@@ -254,7 +267,8 @@ mod tests {
             .try_init();
         let (sender, _receiver) = mpsc::channel();
         let addr = start_test_server();
-        let client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
+        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
+        client.stop_watch_dog();
         client
     }
 
@@ -291,7 +305,8 @@ mod tests {
     fn test_client_write() {
         let mut client = init_client();
         client.connect().unwrap();
-        let result = client.comm_main.unwrap().write(TEST_MESSAGE);
+        let comm = client.comm_main.as_mut().unwrap();
+        let result = comm.write(TEST_MESSAGE);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), TEST_MESSAGE.len());
     }
