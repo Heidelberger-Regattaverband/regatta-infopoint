@@ -54,7 +54,7 @@ dependencies = [
  "dashmap",
  "futures",
  "log",
- "thiserror",
+ "thiserror 1.0.69",
 ]
 
 [[package]]
@@ -328,7 +328,7 @@ dependencies = [
  "futures-core",
  "log",
  "pin-project-lite",
- "prometheus",
+ "prometheus 0.13.4",
  "regex",
  "strfmt",
 ]
@@ -2060,7 +2060,7 @@ dependencies = [
  "env_logger",
  "futures",
  "log",
- "prometheus",
+ "prometheus 0.14.0",
  "rustls 0.23.25",
  "rustls-pemfile 2.2.0",
  "rustls-pki-types",
@@ -2703,7 +2703,21 @@ dependencies = [
  "memchr",
  "parking_lot",
  "procfs",
- "thiserror",
+ "thiserror 1.0.69",
+]
+
+[[package]]
+name = "prometheus"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3ca5326d8d0b950a9acd87e6a3f94745394f62e4dae1b1ee22b2bc0c394af43a"
+dependencies = [
+ "cfg-if",
+ "fnv",
+ "lazy_static",
+ "memchr",
+ "parking_lot",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
@@ -3402,7 +3416,7 @@ dependencies = [
  "parking_lot",
  "rand 0.8.5",
  "seahash",
- "thiserror",
+ "thiserror 1.0.69",
  "tracing",
  "wg",
  "xxhash-rust",
@@ -3561,7 +3575,16 @@ version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b6aaf5339b578ea85b50e080feb250a3e8ae8cfcdff9a461c9ec2904bc923f52"
 dependencies = [
- "thiserror-impl",
+ "thiserror-impl 1.0.69",
+]
+
+[[package]]
+name = "thiserror"
+version = "2.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "567b8a2dae586314f7be2a752ec7474332959c6460e02bde30d702a66d488708"
+dependencies = [
+ "thiserror-impl 2.0.12",
 ]
 
 [[package]]
@@ -3569,6 +3592,17 @@ name = "thiserror-impl"
 version = "1.0.69"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4fee6c4efc90059e10f81e6d42c60a18f76588c3d74cb83a0b242a2b6c7504c1"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.100",
+]
+
+[[package]]
+name = "thiserror-impl"
+version = "2.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f7cf42b4507d8ea322120659672cf1b9dbb93f8f2d4ecfd6e51350ff5b17a1d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3597,7 +3631,7 @@ dependencies = [
  "rust_decimal",
  "rustls-native-certs",
  "rustls-pemfile 1.0.4",
- "thiserror",
+ "thiserror 1.0.69",
  "tokio-rustls 0.24.1",
  "tokio-util",
  "tracing",
@@ -3924,7 +3958,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9e64b558561f12a171bbea5325c3f24f129db371adee1d7ae93b6e310bd69192"
 dependencies = [
  "libc",
- "thiserror",
+ "thiserror 1.0.69",
  "windows",
 ]
 
