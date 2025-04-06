@@ -93,6 +93,10 @@ impl Client {
         }
     }
 
+    /// Sends a time stamp to Aquarius.
+    /// # Arguments
+    /// * `time_stamp` - The time stamp to send to Aquarius.
+    /// * `bib` - The bib number of the boat to send the time stamp to.
     pub(crate) fn send_time(&mut self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), TimekeeperErr> {
         if let Some(comm) = &mut self.comm_main {
             let request = RequestSetTime {
