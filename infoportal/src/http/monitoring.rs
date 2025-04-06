@@ -1,3 +1,4 @@
+use crate::peak_alloc::PeakAlloc;
 use aquarius::db::tiberius::TiberiusPool;
 use prometheus::Registry;
 use serde::Serialize;
@@ -5,8 +6,6 @@ use serde_json::{Map, Number, Value};
 use std::time::Duration;
 use sysinfo::{CpuRefreshKind, Disks, MemoryRefreshKind, RefreshKind, System};
 use utoipa::ToSchema;
-
-use crate::peak_alloc::PeakAlloc;
 
 /// The monitoring struct contains the database state, system information and metrics.
 #[derive(Serialize, ToSchema)]
@@ -84,7 +83,7 @@ fn get_metrics(registry: &Registry) -> Map<String, Value> {
         f.get_metric().iter().for_each(|m| {
             let mut labels: Map<String, Value> = Map::new();
             m.get_label().iter().for_each(|l| {
-                labels.insert(l.get_name().to_string(), Value::String(l.get_value().to_string()));
+                labels.insert(l.name().to_string(), Value::String(l.value().to_string()));
             });
             labels.insert(
                 "counter".to_string(),
@@ -96,7 +95,7 @@ fn get_metrics(registry: &Registry) -> Map<String, Value> {
             );
             family_entries.push(Value::Object(labels));
         });
-        all_metrics.insert(f.get_name().to_string(), Value::Array(family_entries));
+        all_metrics.insert(f.name().to_string(), Value::Array(family_entries));
     });
     all_metrics
 }
