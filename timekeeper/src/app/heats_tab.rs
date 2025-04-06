@@ -2,9 +2,9 @@ use crate::{
     app::utils::{HIGHLIGHT_SYMBOL, block},
     aquarius::messages::Heat,
 };
-use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     buffer::Buffer,
+    crossterm::event::{KeyCode, KeyEvent},
     layout::Rect,
     widgets::{HighlightSpacing, List, ListItem, ListState, StatefulWidget, Widget},
 };

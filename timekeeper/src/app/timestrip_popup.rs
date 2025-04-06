@@ -2,9 +2,9 @@ use crate::{
     aquarius::{client::Client, messages::Heat},
     timestrip::{TimeStamp, TimeStrip},
 };
-use crossterm::event::{KeyCode, KeyEvent};
 use ratatui::{
     buffer::Buffer,
+    crossterm::event::{KeyCode, KeyEvent},
     layout::{Constraint, Layout, Rect},
     style::{Color, Style},
     widgets::{Block, BorderType, Padding, Paragraph, Widget},

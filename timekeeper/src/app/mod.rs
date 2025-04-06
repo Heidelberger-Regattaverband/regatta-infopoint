@@ -16,12 +16,12 @@ use crate::{
     timestrip::TimeStrip,
 };
 use clap::Parser;
-use crossterm::event::{self, Event, KeyCode, KeyEventKind};
 use heats_tab::HeatsTab;
 use log::{debug, warn};
 use logs_tab::LogsTab;
 use ratatui::{
     DefaultTerminal,
+    crossterm::event::{self, Event, KeyCode, KeyEventKind},
     layout::{
         Constraint::{self, Length, Min},
         Flex, Layout, Rect,
