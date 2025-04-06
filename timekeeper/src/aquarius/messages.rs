@@ -1,15 +1,15 @@
-use crate::{error::MessageErr, utils};
+use chrono::{DateTime, Local};
+
+use crate::{error::TimekeeperErr, timestrip::TimeStampType, utils};
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
-/// A message to request the list of open heats.
-pub(crate) struct RequestListOpenHeats {}
+pub(super) type Bib = u8;
+type Lane = u8;
+pub(super) type HeatNr = u16;
 
-impl RequestListOpenHeats {
-    /// Create a new request to get the list of open heats.
-    pub(crate) fn new() -> Self {
-        RequestListOpenHeats {}
-    }
-}
+/// A message to request the list of open heats.
+#[derive(Default)]
+pub(crate) struct RequestListOpenHeats {}
 
 impl Display for RequestListOpenHeats {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
@@ -30,7 +30,7 @@ impl ResponseListOpenHeats {
     /// * `message` - The message to parse.
     /// # Returns
     /// The parsed response or an error if the message is invalid.
-    pub(crate) fn parse(message: &str) -> Result<Self, MessageErr> {
+    pub(crate) fn parse(message: &str) -> Result<Self, TimekeeperErr> {
         let mut instance = ResponseListOpenHeats { heats: Vec::new() };
         for line in message.lines() {
             let heat = Heat::parse(line)?;
@@ -75,13 +75,38 @@ impl ResponseStartList {
     /// * `message` - The message to parse.
     /// # Returns
     /// The parsed response or an error if the message is invalid.
-    pub(crate) fn parse(message: String) -> Result<Self, MessageErr> {
+    pub(crate) fn parse(message: String) -> Result<Self, TimekeeperErr> {
         let mut instance = ResponseStartList { boats: Vec::new() };
         for line in message.lines() {
             let boat = Boat::parse(line)?;
             instance.boats.push(boat);
         }
         Ok(instance)
+    }
+}
+
+pub(super) struct RequestSetTime {
+    pub(super) time: DateTime<Local>,
+    pub(super) stamp_type: TimeStampType,
+    pub(super) heat_nr: HeatNr,
+    pub(super) bib: Option<Bib>,
+}
+
+impl Display for RequestSetTime {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        let time = format!("{}", self.time.format("%H:%M:%S%.3f"));
+        let split = match self.stamp_type {
+            TimeStampType::Start => 0,
+            TimeStampType::Finish => 64,
+        };
+        match self.bib {
+            Some(bib) => writeln!(
+                f,
+                "TIME time={} comp={} split={} bib={}",
+                time, self.heat_nr, split, bib
+            ),
+            _ => writeln!(f, "TIME time={} comp={} split={}", time, self.heat_nr, split),
+        }
     }
 }
 
@@ -110,32 +135,32 @@ impl EventHeatChanged {
     /// * `event_str` - The string to parse.
     /// # Returns
     /// The parsed event or an error if the string is invalid.
-    pub(crate) fn parse(event_str: &str) -> Result<Self, MessageErr> {
+    pub(crate) fn parse(event_str: &str) -> Result<Self, TimekeeperErr> {
         let parts: Vec<&str> = event_str.split_whitespace().collect();
         if parts.len() != 4 {
-            return Err(MessageErr::InvalidMessage(event_str.to_owned()));
+            return Err(TimekeeperErr::InvalidMessage(event_str.to_owned()));
         }
 
         let action = parts[0];
-        let number = parts[1].parse().map_err(MessageErr::ParseError)?;
-        let id = parts[2].parse().map_err(MessageErr::ParseError)?;
-        let status = parts[3].parse().map_err(MessageErr::ParseError)?;
+        let number = parts[1].parse().map_err(TimekeeperErr::ParseError)?;
+        let id = parts[2].parse().map_err(TimekeeperErr::ParseError)?;
+        let status = parts[3].parse().map_err(TimekeeperErr::ParseError)?;
 
         match action {
             "!OPEN+" => Ok(EventHeatChanged::new(Heat::new(id, number, status), true)),
             "!OPEN-" => Ok(EventHeatChanged::new(Heat::new(id, number, status), false)),
-            _ => Err(MessageErr::InvalidMessage(event_str.to_owned())),
+            _ => Err(TimekeeperErr::InvalidMessage(event_str.to_owned())),
         }
     }
 }
 
 /// A heat in a competition.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Heat {
     // The heat identifier.
     pub(crate) id: u16,
     // The heat number.
-    pub(crate) number: u16,
+    pub(crate) number: HeatNr,
     // The heat status.
     status: u8,
     // The boats in the heat.
@@ -164,14 +189,14 @@ impl Heat {
     /// * `heat_str` - The string to parse.
     /// # Returns
     /// The parsed heat or an error if the string is invalid.
-    pub(crate) fn parse(heat_str: &str) -> Result<Self, MessageErr> {
+    pub(crate) fn parse(heat_str: &str) -> Result<Self, TimekeeperErr> {
         let parts: Vec<&str> = heat_str.split_whitespace().collect();
         if parts.len() != 3 {
-            return Err(MessageErr::InvalidMessage(heat_str.to_owned()));
+            return Err(TimekeeperErr::InvalidMessage(heat_str.to_owned()));
         }
-        let number = parts[0].parse().map_err(MessageErr::ParseError)?;
-        let id = parts[1].parse().map_err(MessageErr::ParseError)?;
-        let status = parts[2].parse().map_err(MessageErr::ParseError)?;
+        let number = parts[0].parse().map_err(TimekeeperErr::ParseError)?;
+        let id = parts[1].parse().map_err(TimekeeperErr::ParseError)?;
+        let status = parts[2].parse().map_err(TimekeeperErr::ParseError)?;
         Ok(Heat::new(id, number, status))
     }
 }
@@ -187,12 +212,12 @@ impl Display for Heat {
 }
 
 /// A boat in a heat.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub(crate) struct Boat {
     /// The lane number the boat is starting in.
-    pub(crate) lane: u8,
+    pub(crate) lane: Lane,
     /// The bib of the boat.
-    pub(crate) bib: u8,
+    pub(crate) bib: Bib,
     /// The club name of the boat.
     pub(crate) club: String,
 }
@@ -205,7 +230,7 @@ impl Boat {
     /// * `club` - The club name.
     /// # Returns
     /// A new boat.
-    fn new(lane: u8, bib: u8, club: String) -> Self {
+    fn new(lane: Lane, bib: Bib, club: String) -> Self {
         Boat {
             bib,
             lane,
@@ -219,15 +244,15 @@ impl Boat {
     /// * `boat_str` - The string to parse.
     /// # Returns
     /// The parsed boat or an error if the string is invalid.
-    pub(crate) fn parse(boat_str: &str) -> Result<Self, MessageErr> {
+    pub(crate) fn parse(boat_str: &str) -> Result<Self, TimekeeperErr> {
         let parts: Vec<&str> = boat_str.splitn(3, ' ').collect();
         if parts.len() == 3 {
-            let lane = parts[0].parse().map_err(MessageErr::ParseError)?;
-            let bib = parts[1].parse().map_err(MessageErr::ParseError)?;
+            let lane = parts[0].parse().map_err(TimekeeperErr::ParseError)?;
+            let bib: u8 = parts[1].parse().map_err(TimekeeperErr::ParseError)?;
             let club = parts[2].to_owned();
             Ok(Boat::new(lane, bib, club))
         } else {
-            Err(MessageErr::InvalidMessage(boat_str.to_owned()))
+            Err(TimekeeperErr::InvalidMessage(boat_str.to_owned()))
         }
     }
 }
@@ -252,7 +277,7 @@ mod tests {
 
     #[test]
     fn test_request_list_open_heats() {
-        let request = RequestListOpenHeats::new();
+        let request = RequestListOpenHeats::default();
         assert_eq!(request.to_string(), "?OPEN\n");
     }
 

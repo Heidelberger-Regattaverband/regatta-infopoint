@@ -1,39 +1,22 @@
+mod app;
+mod aquarius;
 mod args;
-mod client;
 mod error;
-mod messages;
+mod timestrip;
 mod utils;
 
-use args::Args;
-use clap::Parser;
-use client::{Client, HeatEventReceiver};
-use error::MessageErr;
-use log::{debug, info};
-use std::sync::{Arc, Mutex};
+use app::App;
+use error::TimekeeperErr;
+use log::LevelFilter;
+use tui_logger::{init_logger, set_default_level};
 
-struct EventReceiver {}
+fn main() -> Result<(), TimekeeperErr> {
+    init_logger(LevelFilter::Debug).unwrap();
+    set_default_level(LevelFilter::Trace);
 
-impl HeatEventReceiver for EventReceiver {
-    fn on_event(&mut self, event: &messages::EventHeatChanged) {
-        info!("Received event: {:?}", &event);
-    }
+    let mut terminal = ratatui::init();
+    let app_result = App::new().start(&mut terminal);
+    ratatui::restore();
+
+    app_result
 }
-
-fn main() -> Result<(), MessageErr> {
-    env_logger::builder().init();
-    let args = Args::parse();
-
-    let mut client = Client::connect(args.host, args.port, args.timeout).map_err(MessageErr::IoError)?;
-    let open_heats = client.read_open_heats()?;
-    debug!("Open heats: {:#?}", open_heats);
-
-    let receiver = Arc::new(Mutex::new(EventReceiver {}));
-
-    client
-        .start_receiving_events(receiver)
-        .map_err(MessageErr::IoError)?
-        .join()
-        .unwrap();
-
-    Ok(())
-} // the stream is closed here
