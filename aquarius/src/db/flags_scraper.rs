@@ -33,7 +33,7 @@ fn load_club_flags() -> HashMap<i32, ClubFlag> {
                 for img in a.select(&img_selector) {
                     if let Some(src) = img.value().attr("src") {
                         let club_extern_id: i32 =
-                            href.split('/').last().unwrap_or_default().parse().unwrap_or_default();
+                            href.split('/').next_back().unwrap_or_default().parse().unwrap_or_default();
                         let flag_url = BASE_URL.to_owned() + src;
                         club_flags.insert(
                             club_extern_id,
