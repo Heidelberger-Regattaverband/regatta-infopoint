@@ -11,7 +11,7 @@ pub mod built_info {
 #[command(about = built_info::PKG_DESCRIPTION, long_about = None)]
 pub(crate) struct Args {
     /// The host to connect to
-    #[arg(long, default_value = "localhost")]
+    #[arg(long, default_value = "127.0.0.1")]
     pub(crate) host: String,
 
     /// The port to connect to
@@ -30,7 +30,7 @@ mod tests {
     #[test]
     fn test_args() {
         let args = Args::parse();
-        assert_eq!(args.host, "localhost");
+        assert_eq!(args.host, "127.0.0.1");
         assert_eq!(args.port, 2048);
         assert_eq!(args.timeout, 1);
     }

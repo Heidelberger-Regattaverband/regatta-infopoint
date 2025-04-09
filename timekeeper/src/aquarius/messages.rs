@@ -220,6 +220,8 @@ pub(crate) struct Boat {
     pub(crate) bib: Bib,
     /// The club name of the boat.
     pub(crate) club: String,
+    /// The state of the boat.
+    pub(crate) state: u8,
 }
 
 impl Boat {
@@ -230,11 +232,12 @@ impl Boat {
     /// * `club` - The club name.
     /// # Returns
     /// A new boat.
-    fn new(lane: Lane, bib: Bib, club: String) -> Self {
+    fn new(lane: Lane, bib: Bib, club: String, state: u8) -> Self {
         Boat {
             bib,
             lane,
             club: utils::unquote(&club),
+            state,
         }
     }
 
@@ -245,12 +248,13 @@ impl Boat {
     /// # Returns
     /// The parsed boat or an error if the string is invalid.
     pub(crate) fn parse(boat_str: &str) -> Result<Self, TimekeeperErr> {
-        let parts: Vec<&str> = boat_str.splitn(3, ' ').collect();
-        if parts.len() == 3 {
+        let parts: Vec<&str> = boat_str.splitn(4, ' ').collect();
+        if parts.len() == 4 {
             let lane = parts[0].parse().map_err(TimekeeperErr::ParseError)?;
             let bib: u8 = parts[1].parse().map_err(TimekeeperErr::ParseError)?;
-            let club = parts[2].to_owned();
-            Ok(Boat::new(lane, bib, club))
+            let state: u8 = parts[2].parse().map_err(TimekeeperErr::ParseError)?;
+            let club = parts[3].to_owned();
+            Ok(Boat::new(lane, bib, club, state))
         } else {
             Err(TimekeeperErr::InvalidMessage(boat_str.to_owned()))
         }
@@ -335,7 +339,8 @@ mod tests {
     #[test]
     fn test_response_start_list() {
         let message =
-            "1 1 'RV Neptun Konstanz'\n2 2 'RG Heidelberg'\n3 3 'Heidelberger RK'\n4 4 'Marbacher RV'".to_owned();
+            "1 1 0 'RV Neptun Konstanz'\n2 2 0 'RG Heidelberg'\n3 3 0 'Heidelberger RK'\n4 4 0 'Marbacher RV'"
+                .to_owned();
         let response = ResponseStartList::parse(message);
         assert!(response.is_ok());
         let response = response.unwrap();
@@ -353,7 +358,7 @@ mod tests {
 
     #[test]
     fn test_boat_new() {
-        let boat = Boat::new(1, 12, "RV Neptun Konstanz".to_owned());
+        let boat = Boat::new(1, 12, "RV Neptun Konstanz".to_owned(), 0);
         assert_eq!(boat.lane, 1);
         assert_eq!(boat.bib, 12);
         assert_eq!(boat.club, "RV Neptun Konstanz");
@@ -361,19 +366,20 @@ mod tests {
 
     #[test]
     fn test_boat_parse() {
-        let boat = Boat::parse("1 12 'RV Neptun Konstanz'");
+        let boat = Boat::parse("1 12 0 'RV Neptun Konstanz'");
         assert!(boat.is_ok());
         let boat = boat.unwrap();
         assert_eq!(boat.lane, 1);
         assert_eq!(boat.bib, 12);
         assert_eq!(boat.club, "RV Neptun Konstanz");
+        assert_eq!(boat.state, 0);
 
         assert!(Boat::parse("1 12").is_err());
     }
 
     #[test]
     fn test_display_boat() {
-        let boat = Boat::new(1, 12, "RV Neptun Konstanz".to_owned());
+        let boat = Boat::new(1, 12, "RV Neptun Konstanz".to_owned(), 0);
         assert_eq!(boat.to_string(), "Boat: lane=1, bib=12, club=RV Neptun Konstanz\n");
     }
 
