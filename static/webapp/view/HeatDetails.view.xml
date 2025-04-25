@@ -1,5 +1,5 @@
-<mvc:View controllerName="de.regatta_hd.infoportal.controller.HeatDetails" xmlns="sap.m" xmlns:f="sap.f"
-  xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.HeatDetails" xmlns="sap.m" xmlns:f="sap.f" xmlns:layout="sap.ui.layout"
+  xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
     <Page title="{= ${heatRegistrations>/state} >= 4 ? ${i18n>common.result} : ${i18n>common.assignment}}" class="sapUiNoContentPadding"
       showNavButton="true" navButtonPress=".onNavBack">
@@ -48,8 +48,8 @@
                 <layout:VerticalLayout>
                   <ObjectStatus title="{i18n>common.state}" text="{path:'heatRegistrations>/',formatter:'.formatter.heatStateLabel'}"
                     state="{path:'heatRegistrations>/',formatter:'.formatter.heatStateHighlight'}" />
-                  <!-- <ObjectAttribute title="{i18n>common.seededLbl}" text="{= ${heatRegistrations>/race/seeded} ? ${i18n>common.yes} :
-                  ${i18n>common.no}}" /> -->
+                  <ObjectAttribute title="{i18n>common.seeded}"
+                    text="{= ${heatRegistrations>/race/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
                   <ObjectAttribute title="{i18n>common.refereeAbr}"
                     text="{heatRegistrations>/referees/0/lastName}, {heatRegistrations>/referees/0/firstName}"
                     visible="{= ${heatRegistrations>/referees} !== undefined }" />
@@ -99,8 +99,7 @@
               </columns>
 
               <items>
-                <ColumnListItem
-                  highlight="{path: 'heatRegistrations>', formatter: '.formatter.heatRegistrationHighlight'}" vAlign="Top">
+                <ColumnListItem highlight="{path: 'heatRegistrations>', formatter: '.formatter.heatRegistrationHighlight'}" vAlign="Top">
                   <cells>
                     <Text text="{heatRegistrations>result/rankLabel}" />
 
@@ -123,8 +122,7 @@
                     </layout:VerticalLayout>
 
                     <layout:VerticalLayout>
-                      <Text text="{heatRegistrations>lane}" visible="{=${heatRegistrations>registration/cancelled}}"
-                        class="cancelled" />
+                      <Text text="{heatRegistrations>lane}" visible="{=${heatRegistrations>registration/cancelled}}" class="cancelled" />
                       <Text text="{heatRegistrations>lane}" visible="{=!${heatRegistrations>registration/cancelled}}" />
                     </layout:VerticalLayout>
 

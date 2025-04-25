@@ -53,7 +53,7 @@
       </Column>
       <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
         <header>
-          <Text text="{i18n>common.seededLbl}" class="bold" />
+          <Text text="{i18n>common.seeded}" class="bold" />
         </header>
       </Column>
       <Column hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">

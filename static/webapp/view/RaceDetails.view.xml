@@ -46,7 +46,7 @@
               </layout:HorizontalLayout>
               <layout:VerticalLayout>
                 <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceRegistrations>/', formatter:'.formatter.distanceLabel'}" />
-                <ObjectAttribute title="{i18n>common.seededLbl}"
+                <ObjectAttribute title="{i18n>common.seeded}"
                   text="{=${raceRegistrations>/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
               </layout:VerticalLayout>
               <ObjectAttribute title="{i18n>common.heats}"
