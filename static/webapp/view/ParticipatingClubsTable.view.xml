@@ -54,7 +54,7 @@
                 <Text text="{clubs>city}" />
                 <HBox>
                   <Image src="{clubs>flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
-                  <Text text="{clubs>longName}" />
+                  <Text text="{clubs>longName}" class="bold" />
                 </HBox>
                 <Text text="{clubs>abbreviation}" />
                 <Text text="{clubs>participationsCount}" />
