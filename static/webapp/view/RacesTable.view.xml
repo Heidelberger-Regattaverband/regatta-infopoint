@@ -35,9 +35,9 @@
           </infoToolbar>
 
           <columns>
-            <Column id="number" hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
+            <Column id="raceNumber" hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
               <header>
-                <Text text="{i18n>common.number}" class="bold" />
+                <Text text="{i18n>common.numberAbbr}" class="bold" />
               </header>
             </Column>
             <Column id="race" hAlign="Begin" width="13rem" importance="High" popinDisplay="Inline">
@@ -45,23 +45,25 @@
                 <Text text="{i18n>common.race}" class="bold" />
               </header>
             </Column>
-            <Column id="distance" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
+            <Column id="raceDistance" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
+              visible="{=!${device>/system/phone}}">
               <header>
                 <Text text="{i18n>common.distance}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column id="registrationsCount" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
+            <Column id="raceRegistrations" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
               visible="{=!${device>/system/phone}}">
               <header>
                 <Text text="{i18n>common.registrations}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column id="seeded" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
+            <Column id="raceSeeded" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
+              visible="{=!${device>/system/phone}}">
               <header>
                 <Text text="{i18n>common.seeded}" class="bold" />
               </header>
             </Column>
-            <Column id="state" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+            <Column id="raceState" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.state}" class="bold" />
               </header>
