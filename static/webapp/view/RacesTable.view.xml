@@ -50,7 +50,7 @@
                 <Text text="{i18n>common.distance}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column id="registrations" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
+            <Column id="registrationsCount" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
               visible="{=!${device>/system/phone}}">
               <header>
                 <Text text="{i18n>common.registrations}" class="bold" wrapping="false" />
