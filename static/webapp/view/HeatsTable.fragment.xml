@@ -31,32 +31,32 @@
     </infoToolbar>
 
     <columns>
-      <Column id="dateTime" hAlign="Center" width="5rem" importance="High" popinDisplay="Inline">
+      <Column hAlign="Center" width="5rem" importance="High" popinDisplay="Inline">
         <header>
           <Text text="{i18n>common.time}" class="bold" wrapping="false" />
         </header>
       </Column>
-      <Column id="heat" width="10rem" importance="High" popinDisplay="Inline">
+      <Column width="12rem" importance="High" popinDisplay="Inline">
         <header>
           <Text text="{i18n>common.heat}" class="bold" wrapping="false" />
         </header>
       </Column>
-      <Column id="distance" hAlign="Center" width="4rem" importance="Medium" popinDisplay="Inline">
+      <Column hAlign="Center" width="4rem" importance="Medium" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
         <header>
           <Text text="{i18n>common.distance}" class="bold" wrapping="false" />
         </header>
       </Column>
-      <Column id="number" hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
+      <Column hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
         <header>
           <Text text="{i18n>common.heatNr}" class="bold" wrapping="false" />
         </header>
       </Column>
-      <!-- <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+      <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
         <header>
           <Text text="{i18n>common.seededLbl}" class="bold" />
         </header>
-      </Column> -->
-      <Column id="state" hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">
+      </Column>
+      <Column hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">
         <header>
           <Text text="{i18n>common.state}" class="bold" wrapping="false" />
         </header>
@@ -64,17 +64,17 @@
     </columns>
 
     <items>
-      <ColumnListItem type="Navigation" vAlign="Top" highlight="{path: 'heats>', formatter: '.formatter.heatStateHighlight'}">
+      <ColumnListItem type="Navigation" vAlign="Top" highlight="{path:'heats>',formatter:'.formatter.heatStateHighlight'}">
         <cells>
           <layout:VerticalLayout>
-            <Text text="{path: 'heats>dateTime', formatter: '.formatter.dayTimeIsoLabel'}" visible="{=${heats>cancelled}}" class="cancelled" />
-            <Text text="{path: 'heats>dateTime', formatter: '.formatter.dayTimeIsoLabel'}" visible="{=!${heats>cancelled}}" />
+            <Text text="{path:'heats>dateTime',formatter:'.formatter.dayTimeIsoLabel'}" visible="{=${heats>cancelled}}" class="cancelled" />
+            <Text text="{path:'heats>dateTime',formatter:'.formatter.dayTimeIsoLabel'}" visible="{=!${heats>cancelled}}" />
           </layout:VerticalLayout>
 
           <layout:VerticalLayout>
-            <Text text="{path: 'heats>race', formatter: '.formatter.nrRaceLabel'}, {path: 'heats>', formatter: '.formatter.heatLabel'}"
+            <Text text="{path:'heats>race',formatter:'.formatter.nrRaceLabel'},{path:'heats>',formatter:'.formatter.heatLabel'}"
               visible="{=${heats>cancelled}}" class="boldCancelled sapUiTinyMarginBottom" />
-            <Text text="{path: 'heats>race', formatter: '.formatter.nrRaceLabel'}, {path: 'heats>', formatter: '.formatter.heatLabel'}"
+            <Text text="{path:'heats>race',formatter:'.formatter.nrRaceLabel'},{path:'heats>',formatter:'.formatter.heatLabel'}"
               visible="{=!${heats>cancelled}}" class="bold sapUiTinyMarginBottom" />
 
             <Text text="{heats>race/longLabel}" visible="{=${heats>cancelled}}" class="cancelled" />
@@ -82,8 +82,8 @@
           </layout:VerticalLayout>
 
           <layout:VerticalLayout>
-            <Text text="{path: 'heats>race', formatter: '.formatter.distanceLabel'}" visible="{=${heats>cancelled}}" class="cancelled" />
-            <Text text="{path: 'heats>race', formatter: '.formatter.distanceLabel'}" visible="{=!${heats>cancelled}}" />
+            <Text text="{path:'heats>race',formatter:'.formatter.distanceLabel'}" visible="{=${heats>cancelled}}" class="cancelled" />
+            <Text text="{path:'heats>race',formatter:'.formatter.distanceLabel'}" visible="{=!${heats>cancelled}}" />
           </layout:VerticalLayout>
 
           <layout:VerticalLayout>
@@ -91,12 +91,12 @@
             <Text text="{heats>number}" visible="{=!${heats>cancelled}}" />
           </layout:VerticalLayout>
 
-          <!-- <layout:VerticalLayout>
+          <layout:VerticalLayout>
             <Text text="{= ${heats>race/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" visible="{=${heats>cancelled}}" class="cancelled" />
             <Text text="{= ${heats>race/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" visible="{=!${heats>cancelled}}" />
-          </layout:VerticalLayout> -->
-          <ObjectStatus text="{path:'heats>',formatter:'.formatter.heatStateLabel'}"
-            state="{path:'heats>',formatter:'.formatter.heatStateHighlight'}" class="bold" />
+          </layout:VerticalLayout>
+          <ObjectStatus text="{path:'heats>',formatter:'.formatter.heatStateLabel'}" class="bold"
+            state="{path:'heats>',formatter:'.formatter.heatStateHighlight'}" />
         </cells>
       </ColumnListItem>
     </items>

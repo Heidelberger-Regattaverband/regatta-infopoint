@@ -45,7 +45,7 @@
                 <Text text="{i18n>common.race}" class="bold" />
               </header>
             </Column>
-            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
               <header>
                 <Text text="{i18n>common.distance}" class="bold" wrapping="false" />
               </header>
@@ -68,7 +68,7 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation" vAlign="Top" highlight="{path: 'races>', formatter: '.formatter.raceStateHighlight'}">
+            <ColumnListItem type="Navigation" vAlign="Top" highlight="{path:'races>',formatter:'.formatter.raceStateHighlight'}">
               <cells>
                 <layout:VerticalLayout>
                   <Text text="{races>number}" visible="{=${races>cancelled}}" class="cancelled" />
@@ -76,9 +76,9 @@
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>
-                  <Text text="{path: 'races>', formatter: '.formatter.raceLabel'}" visible="{=${races>cancelled}}"
+                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=${races>cancelled}}"
                     class="boldCancelled sapUiTinyMarginBottom" />
-                  <Text text="{path: 'races>', formatter: '.formatter.raceLabel'}" visible="{=!${races>cancelled}}"
+                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=!${races>cancelled}}"
                     class="bold sapUiTinyMarginBottom" />
 
                   <Text text="{races>longLabel} {races>comment}" visible="{=${races>cancelled}}" class="cancelled" />
@@ -86,8 +86,8 @@
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>
-                  <Text text="{path: 'races>', formatter: '.formatter.distanceLabel'}" visible="{=${races>cancelled}}" class="cancelled" />
-                  <Text text="{path: 'races>', formatter: '.formatter.distanceLabel'}" visible="{=!${races>cancelled}}" />
+                  <Text text="{path:'races>',formatter:'.formatter.distanceLabel'}" visible="{=${races>cancelled}}" class="cancelled" />
+                  <Text text="{path:'races>',formatter:'.formatter.distanceLabel'}" visible="{=!${races>cancelled}}" />
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>
