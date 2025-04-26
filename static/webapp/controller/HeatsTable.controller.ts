@@ -126,10 +126,8 @@ export default class HeatsTableController extends BaseTableController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadHeatsModel().then((updated: boolean) => {
-      if (updated) {
-        MessageToast.show(this.i18n("msg.dataUpdated"));
-      }
+    this.loadHeatsModel().then((succeeded: boolean) => {
+      super.showDataUpdatedMessage(succeeded);
     }).finally(() => source.setEnabled(true));
   }
 
@@ -138,16 +136,16 @@ export default class HeatsTableController extends BaseTableController {
     super.getEventBus()?.publish("heat", "itemChanged", {});
   }
 
-  async onSortButtonPress(event: Button$PressEvent): Promise<void> {
-    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsSortDialog")).open();
+  onSortButtonPress(event: Button$PressEvent): void {
+    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsSortDialog").then(dialog => dialog.open());
   }
 
-  async onFilterButtonPress(event: Button$PressEvent): Promise<void> {
-    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsFilterDialog")).open();
+  onFilterButtonPress(event: Button$PressEvent): void {
+    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsFilterDialog").then(dialog => dialog.open());
   }
 
-  async onClearFilterPress(event: Button$PressEvent): Promise<void> {
-    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsFilterDialog")).clearFilters();
+  onClearFilterPress(event: Button$PressEvent): void {
+    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsFilterDialog").then(dialog => dialog.clearFilters());
     super.clearFilters();
     super.applyFilters();
   }

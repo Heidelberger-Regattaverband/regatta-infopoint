@@ -30,9 +30,9 @@ export default class Component extends UIComponent {
             this.regattaModelPromise = this.loadActiveRegatta();
             this.regattaModel = await this.regattaModelPromise;
             delete this.regattaModelPromise;
-            return this.regattaModel;
+        } else {
+            console.debug("Active regatta already loaded");
         }
-        console.debug("Active regatta already loaded");
         return Promise.resolve(this.regattaModel);
     }
 
@@ -44,9 +44,9 @@ export default class Component extends UIComponent {
             this.filtersModelPromise = this.loadFilters();
             this.filtersModel = await this.filtersModelPromise;
             delete this.filtersModelPromise;
-            return this.filtersModel;
+        } else {
+            console.debug("Filters already loaded");
         }
-        console.debug("Filters already loaded");
         return Promise.resolve(this.filtersModel);
     }
 
@@ -85,7 +85,7 @@ export default class Component extends UIComponent {
 
         const bundle: ResourceBundle | Promise<ResourceBundle> = (super.getModel("i18n") as ResourceModel).getResourceBundle();
         if (bundle instanceof ResourceBundle) {
-            this.resourceBundle = bundle as ResourceBundle;
+            this.resourceBundle = bundle;
         } else {
             (bundle as Promise<ResourceBundle>).then((bundle: ResourceBundle) => {
                 this.resourceBundle = bundle;
