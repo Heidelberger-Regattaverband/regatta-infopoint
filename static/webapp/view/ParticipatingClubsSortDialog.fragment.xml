@@ -2,10 +2,10 @@
   xmlns:cust="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
   <ViewSettingsDialog confirm=".onSortDialogConfirm">
     <sortItems>
-      <ViewSettingsItem text="{i18n>common.city}" key="city" cust:column="clubCity" />
+      <ViewSettingsItem text="{i18n>common.city}" key="city" cust:column="clubCity" selected="true" />
       <ViewSettingsItem text="{i18n>common.club}" key="longName" cust:column="clubName" />
       <ViewSettingsItem text="{i18n>common.abbreviation}" key="abbreviation" cust:column="clubAbbr" />
-      <ViewSettingsItem text="{i18n>common.registrations}" key="participationsCount" selected="true" cust:column="clubRegistrations" />
+      <ViewSettingsItem text="{i18n>common.registrations}" key="participationsCount" cust:column="clubRegistrations" />
       <ViewSettingsItem text="{i18n>statistics.athletes}" key="ahtletesCount" cust:column="clubAthletes" />
     </sortItems>
   </ViewSettingsDialog>
