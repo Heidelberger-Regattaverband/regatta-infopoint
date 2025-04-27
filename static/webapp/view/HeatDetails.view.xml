@@ -27,7 +27,8 @@
                 <Label text="{heatRegistrations>/race/longLabel} {heatRegistrations>/race/comment}" />
               </f:expandedContent>
               <f:actions>
-                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press=".onRefreshButtonPress" type="Transparent" />
+                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press=".onRefreshButtonPress" type="Transparent"
+                  text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" />
               </f:actions>
               <f:navigationActions />
             </f:DynamicPageTitle>
