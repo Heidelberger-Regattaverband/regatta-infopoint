@@ -13,7 +13,6 @@ import ListItemBase from "sap/m/ListItemBase";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
 import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
-import Dialog from "sap/m/Dialog";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller

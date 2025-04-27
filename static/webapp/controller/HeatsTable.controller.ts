@@ -13,7 +13,6 @@ import ListItemBase from "sap/m/ListItemBase";
 import ViewSettingsDialog from "sap/m/ViewSettingsDialog";
 import Context from "sap/ui/model/Context";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
-import MessageToast from "sap/m/MessageToast";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
