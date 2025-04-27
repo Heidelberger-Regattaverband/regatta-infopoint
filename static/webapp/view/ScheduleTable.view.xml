@@ -30,7 +30,7 @@
                 <Text text="{i18n>common.race}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">
+            <Column hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
               <header>
                 <Text text="{i18n>common.registrations}" class="bold" wrapping="false" />
               </header>
@@ -45,7 +45,7 @@
                 <Text text="{i18n>common.final}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
               <header>
                 <Text text="{i18n>common.distance}" class="bold" wrapping="false" />
               </header>
