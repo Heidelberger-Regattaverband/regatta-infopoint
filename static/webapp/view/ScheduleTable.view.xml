@@ -6,16 +6,15 @@
       <content>
 
         <Table id="scheduleTable" autoPopinMode="true" items="{schedule>/entries}" growing="true" growingScrollToLoad="true"
-          growingThreshold="50"
-          sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
+          growingThreshold="50" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
           <!-- The HeaderToolbar shows a title and the filter button -->
           <headerToolbar>
             <OverflowToolbar>
               <content>
                 <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
                 <ToolbarSpacer />
-                <OverflowToolbarButton text="{i18n>common.refresh}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
-                  press=".onRefreshButtonPress" />
+                <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}"
+                  icon="sap-icon://refresh" press=".onRefreshButtonPress" />
               </content>
             </OverflowToolbar>
           </headerToolbar>
