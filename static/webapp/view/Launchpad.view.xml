@@ -101,17 +101,6 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="Kiosk" visible="{identity>/authenticated}"
-              press=".onNavToKiosk">
-              <tileContent>
-                <TileContent>
-                  <content>
-                    <ImageContent src="sap-icon://synchronize" />
-                  </content>
-                </TileContent>
-              </tileContent>
-            </GenericTile>
-
           </layout:content>
         </layout:HorizontalLayout>
 

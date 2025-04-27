@@ -129,11 +129,6 @@
           "pattern": "monitoring",
           "name": "monitoring",
           "target": "monitoring"
-        },
-        {
-          "pattern": "kiosk",
-          "name": "kiosk",
-          "target": "kiosk"
         }
       ],
       "targets": {
@@ -206,12 +201,6 @@
         "monitoring": {
           "type": "View",
           "name": "Monitoring",
-          "level": 1,
-          "viewType": "XML"
-        },
-        "kiosk": {
-          "type": "View",
-          "name": "Kiosk",
           "level": 1,
           "viewType": "XML"
         }
