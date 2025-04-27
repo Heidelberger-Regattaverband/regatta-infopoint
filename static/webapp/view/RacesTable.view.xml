@@ -14,18 +14,18 @@
                 <SearchField width="10rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
                 <!-- Filter button -->
                 <OverflowToolbarButton text="{i18n>common.filter}" tooltip="{i18n>common.filter}" icon="sap-icon://filter"
-                  press=".onFilterButtonPress" visible="{=${device>/system/phone}}" />
+                  press=".onFilterButtonPress" visible="{device>/system/phone}" />
                 <Button text="{i18n>common.filter}" tooltip="{i18n>common.filter}" icon="sap-icon://filter" press=".onFilterButtonPress"
                   visible="{=!${device>/system/phone}}" />
                 <!-- Sorting button -->
                 <OverflowToolbarButton text="{i18n>common.sorting}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
-                  press=".onSortButtonPress" visible="{=${device>/system/phone}}" />
+                  press=".onSortButtonPress" visible="{device>/system/phone}" />
                 <Button text="{i18n>common.sorting}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort" press=".onSortButtonPress"
                   visible="{=!${device>/system/phone}}" />
                 <ToolbarSpacer />
                 <!-- Refresh button -->
                 <OverflowToolbarButton text="{i18n>common.refresh}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
-                  press=".onRefreshButtonPress" visible="{=${device>/system/phone}}" />
+                  press=".onRefreshButtonPress" visible="{device>/system/phone}" />
                 <Button text="{i18n>common.refresh}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press=".onRefreshButtonPress"
                   visible="{=!${device>/system/phone}}" />
               </content>

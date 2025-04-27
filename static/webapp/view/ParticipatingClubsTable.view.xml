@@ -13,13 +13,13 @@
                 <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
                 <!-- Sorting button -->
                 <OverflowToolbarButton text="{i18n>common.sorting}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
-                  press=".onSortButtonPress" visible="{=${device>/system/phone}}" />
+                  press=".onSortButtonPress" visible="{device>/system/phone}" />
                 <Button text="{i18n>common.sorting}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort" press=".onSortButtonPress"
                   visible="{=!${device>/system/phone}}" />
                 <ToolbarSpacer />
                 <!-- Refresh button -->
                 <OverflowToolbarButton text="{i18n>common.refresh}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
-                  press=".onRefreshButtonPress" visible="{=${device>/system/phone}}" />
+                  press=".onRefreshButtonPress" visible="{device>/system/phone}" />
                 <Button text="{i18n>common.refresh}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press=".onRefreshButtonPress"
                   visible="{=!${device>/system/phone}}" />
               </content>
