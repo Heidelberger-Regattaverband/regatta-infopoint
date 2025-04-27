@@ -18,7 +18,6 @@
 
       <content>
         <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
-          <!-- DynamicPage Title -->
           <f:title>
             <f:DynamicPageTitle>
               <f:heading>
@@ -35,23 +34,29 @@
             </f:DynamicPageTitle>
           </f:title>
 
-          <!-- DynamicPage Header -->
           <f:header>
             <f:DynamicPageHeader>
-              <layout:HorizontalLayout allowWrapping="true">
-                <layout:VerticalLayout class="sapUiMediumMarginEnd">
-                  <ObjectStatus title="{i18n>common.state}" text="{path:'raceRegistrations>/',formatter:'.formatter.raceStateLabel'}"
-                    state="{path:'raceRegistrations>/',formatter:'.formatter.raceStateHighlight'}" />
-                  <ObjectAttribute title="{i18n>common.registrations}" text="{raceRegistrations>/registrationsCount}" />
+              <f:content>
+                <layout:HorizontalLayout allowWrapping="true">
+                  <layout:VerticalLayout class="sapUiMediumMarginEnd">
+                    <ObjectStatus title="{i18n>common.state}" text="{path:'raceRegistrations>/',formatter:'.formatter.raceStateLabel'}"
+                      state="{path:'raceRegistrations>/',formatter:'.formatter.raceStateHighlight'}" />
+                    <ObjectAttribute title="{i18n>common.registrations}" text="{raceRegistrations>/registrationsCount}" />
+                  </layout:VerticalLayout>
+                </layout:HorizontalLayout>
+                <layout:VerticalLayout>
+                  <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceRegistrations>/',formatter:'.formatter.distanceLabel'}" />
+                  <ObjectAttribute title="{i18n>common.seeded}" text="{=${raceRegistrations>/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
                 </layout:VerticalLayout>
-              </layout:HorizontalLayout>
-              <layout:VerticalLayout>
-                <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceRegistrations>/', formatter:'.formatter.distanceLabel'}" />
-                <ObjectAttribute title="{i18n>common.seeded}"
-                  text="{=${raceRegistrations>/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
-              </layout:VerticalLayout>
-              <ObjectAttribute title="{i18n>common.heats}"
-                text="{parts:[{path:'raceRegistrations>/'},{path:'raceRegistrations>/heats'}],formatter:'.formatter.heatsLabel'}" />
+                <!-- <ObjectAttribute title="{i18n>common.heats}"
+                text="{parts:[{path:'raceRegistrations>/'},{path:'raceRegistrations>/heats'}],formatter:'.formatter.heatsLabel'}" /> -->
+                <VBox>
+                  <items>
+                    <Text text="{i18n>common.heats}:" />
+                  </items>
+                </VBox>
+                <VBox id="heatsBox" />
+              </f:content>
             </f:DynamicPageHeader>
           </f:header>
 
@@ -60,7 +65,7 @@
             <!-- <ScrollContainer height="100%" vertical="true"> -->
 
             <Table id="raceDetailsTable" autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
-              items="{path:'raceRegistrations>/registrations/', sorter:[{path:'result/rankSort', descending:false}, {path:'bib', descending:false}]}"
+              items="{path:'raceRegistrations>/registrations/',sorter:[{path:'result/rankSort',descending:false},{path:'bib', descending:false}]}"
               sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
               <columns>
                 <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">

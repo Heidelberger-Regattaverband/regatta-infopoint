@@ -106,19 +106,19 @@ export default class Formatter {
   // -----------------
   // heat formatters
   // -----------------
-  static heatsLabel(race: any, heats?: any[]): string {
-    if (heats) {
-      return heats.filter(heat => !heat.cancelled)
-        .map(heat => {
-          let label: string = Formatter.dayTimeIsoLabel(heat.dateTime) + " - " + Formatter.heatLabel(heat);
-          if (race.groupMode > 0) {
-            label += " " + Formatter.groupValueLabel(heat.groupValue);
-          }
-          return label;
-        }).join(", ");
-    }
-    return Formatter.i18n("sorting.none");
-  }
+  // static heatsLabel(race: any, heats?: any[]): string {
+  //   if (heats) {
+  //     return heats.filter(heat => !heat.cancelled)
+  //       .map(heat => {
+  //         let label: string = Formatter.dayTimeIsoLabel(heat.dateTime) + " - " + Formatter.heatLabel(heat);
+  //         if (race.groupMode > 0) {
+  //           label += " " + Formatter.groupValueLabel(heat.groupValue);
+  //         }
+  //         return label;
+  //       }).join(", ");
+  //   }
+  //   return Formatter.i18n("sorting.none");
+  // }
 
   static heatRegistrationHighlight(heatRegistration: any): IndicationColor {
     // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors

@@ -7,19 +7,15 @@
 
         <Table id="racesTable" autoPopinMode="true" items="{races>/}" itemPress=".onItemPress" growing="true" growingScrollToLoad="true"
           growingThreshold="30" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" mode="SingleSelectMaster" class="sapUiNoContentPadding">
-          <!-- The HeaderToolbar shows a title and the filter button -->
           <headerToolbar>
             <OverflowToolbar>
               <content>
                 <SearchField width="10rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
-                <!-- Filter button -->
                 <Button text="{=!${device>/system/phone}?${i18n>common.filter}:''}" tooltip="{i18n>common.filter}" icon="sap-icon://filter"
                   press=".onFilterButtonPress" />
-                <!-- Sorting button -->
                 <Button text="{=!${device>/system/phone}?${i18n>common.sorting}:''}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
                   press=".onSortButtonPress" />
                 <ToolbarSpacer />
-                <!-- Refresh button -->
                 <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}"
                   icon="sap-icon://refresh" press=".onRefreshButtonPress" />
               </content>
