@@ -1,10 +1,9 @@
 import Button, { Button$PressEvent } from "sap/m/Button";
-import Link from "sap/m/Link";
-import Text from "sap/m/Text";
-import VBox from "sap/m/VBox";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
+import ComboBox from "sap/m/ComboBox";
+import Item from "sap/ui/core/Item";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -15,7 +14,7 @@ export default class RaceDetailsController extends BaseController {
   // bind keyListener method to this context to have access to navigation methods
   private readonly keyListener: (event: KeyboardEvent) => void = this.onKeyDown.bind(this);
   private readonly raceModel: JSONModel = new JSONModel();
-  private heatsBox?: VBox;
+  private heatsBox?: ComboBox;
 
   onInit(): void {
     // first initialize the view
@@ -24,7 +23,7 @@ export default class RaceDetailsController extends BaseController {
     super.setViewModel(this.raceModel, "raceRegistrations");
 
     super.getEventBus()?.subscribe("race", "itemChanged", this.onItemChanged, this);
-    this.heatsBox = this.getView()?.byId("heatsBox") as VBox;
+    this.heatsBox = this.getView()?.byId("heatsCombo") as ComboBox;
   }
 
   private onBeforeShow(): void {
@@ -81,16 +80,18 @@ export default class RaceDetailsController extends BaseController {
     const heats: any[] | undefined = this.raceModel.getData().heats;
     const groupMode: number = this.raceModel.getData().groupMode;
     this.heatsBox?.removeAllItems();
-    if (heats) {
+    this.heatsBox?.setSelectedItem(null);
+    if (heats && heats?.length > 0) {
+      this.heatsBox?.setVisible(true);
       for (const heat of heats) {
         let label: string = Formatter.dayTimeIsoLabel(heat.dateTime) + " - " + Formatter.heatLabel(heat);
         if (groupMode > 0) {
           label += " " + Formatter.groupValueLabel(heat.groupValue);
         }
-        this.heatsBox?.addItem(new Link({ text: label }));
+        this.heatsBox?.addItem(new Item({ text: label }));
       }
     } else {
-      this.heatsBox?.addItem(new Text({ text: this.i18n("sorting.none") }));
+      this.heatsBox?.setVisible(false);
     }
   }
 

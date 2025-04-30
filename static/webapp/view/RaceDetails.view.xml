@@ -1,5 +1,5 @@
-<mvc:View controllerName="de.regatta_hd.infoportal.controller.RaceDetails" xmlns="sap.m" xmlns:f="sap.f" xmlns:layout="sap.ui.layout"
-  xmlns:mvc="sap.ui.core.mvc">
+<mvc:View xmlns:core="sap.ui.core" controllerName="de.regatta_hd.infoportal.controller.RaceDetails" xmlns="sap.m" xmlns:f="sap.f"
+  xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
     <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
@@ -27,6 +27,7 @@
                 <Label text="{raceRegistrations>/longLabel} {raceRegistrations>/comment}" />
               </f:expandedContent>
               <f:actions>
+                <ComboBox id="heatsCombo" placeholder="{i18n>common.heats}" width="8rem" />
                 <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press=".onRefreshButtonPress" type="Transparent"
                   text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" />
               </f:actions>
@@ -48,14 +49,6 @@
                   <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceRegistrations>/',formatter:'.formatter.distanceLabel'}" />
                   <ObjectAttribute title="{i18n>common.seeded}" text="{=${raceRegistrations>/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
                 </layout:VerticalLayout>
-                <!-- <ObjectAttribute title="{i18n>common.heats}"
-                text="{parts:[{path:'raceRegistrations>/'},{path:'raceRegistrations>/heats'}],formatter:'.formatter.heatsLabel'}" /> -->
-                <VBox>
-                  <items>
-                    <Text text="{i18n>common.heats}:" />
-                  </items>
-                </VBox>
-                <VBox id="heatsBox" />
               </f:content>
             </f:DynamicPageHeader>
           </f:header>
