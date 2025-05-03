@@ -27,7 +27,6 @@
                 <Label text="{raceRegistrations>/longLabel} {raceRegistrations>/comment}" />
               </f:expandedContent>
               <f:actions>
-                <ComboBox id="heatsCombo" placeholder="{i18n>common.heats}" width="8rem" />
                 <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press=".onRefreshButtonPress" type="Transparent"
                   text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" />
               </f:actions>
@@ -44,11 +43,13 @@
                       state="{path:'raceRegistrations>/',formatter:'.formatter.raceStateHighlight'}" />
                     <ObjectAttribute title="{i18n>common.registrations}" text="{raceRegistrations>/registrationsCount}" />
                   </layout:VerticalLayout>
+                  <layout:VerticalLayout class="sapUiMediumMarginEnd">
+                    <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceRegistrations>/',formatter:'.formatter.distanceLabel'}" />
+                    <ObjectAttribute title="{i18n>common.seeded}"
+                      text="{=${raceRegistrations>/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
+                  </layout:VerticalLayout>
+                  <ComboBox id="heatsCombo" placeholder="{i18n>common.heats}" width="12rem" />
                 </layout:HorizontalLayout>
-                <layout:VerticalLayout>
-                  <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceRegistrations>/',formatter:'.formatter.distanceLabel'}" />
-                  <ObjectAttribute title="{i18n>common.seeded}" text="{=${raceRegistrations>/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
-                </layout:VerticalLayout>
               </f:content>
             </f:DynamicPageHeader>
           </f:header>
