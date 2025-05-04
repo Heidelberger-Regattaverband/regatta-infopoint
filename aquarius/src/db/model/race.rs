@@ -62,9 +62,12 @@ pub struct Race {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub registrations: Option<Vec<Registration>>,
 
-    /// All heats of this race.
+    /// All heats for this race.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub heats: Option<Vec<Heat>>,
+
+    /// The number of heats for this race.
+    heats_count: i32,
 }
 
 impl From<&Row> for Race {
@@ -84,6 +87,7 @@ impl From<&Row> for Race {
             lightweight: row.get_column("Offer_IsLightweight"),
             cancelled: row.get_column("Offer_Cancelled"),
             registrations_count: row.try_get_column("Registrations_Count").unwrap_or_default(),
+            heats_count: row.try_get_column("Heats_Count").unwrap_or_default(),
             seeded: seeded.unwrap_or_default(),
             age_class: row.try_to_entity(),
             boat_class: row.try_to_entity(),
@@ -107,9 +111,10 @@ impl Race {
         format!(
             " {0}.Offer_ID, {0}.Offer_RaceNumber, {0}.Offer_Distance, {0}.Offer_IsLightweight, {0}.Offer_Cancelled, {0}.Offer_ShortLabel, \
             {0}.Offer_LongLabel, {0}.Offer_Comment, {0}.Offer_GroupMode, {0}.Offer_SortValue, {0}.Offer_HRV_Seeded, \
-            (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count, \
-            (SELECT AVG(Comp_State) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_State, \
-            (SELECT MIN(Comp_DateTime) FROM Comp WHERE Comp_Race_ID_FK = Offer_ID AND Comp_Cancelled = 0) as Race_DateTime \
+            (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = {0}.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count, \
+            (SELECT Count(*) FROM Comp  c WHERE c.Comp_Race_ID_FK = {0}.Offer_ID) as Heats_Count, \
+            (SELECT AVG(Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = {0}.Offer_ID AND c.Comp_Cancelled = 0) as Race_State, \
+            (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = {0}.Offer_ID AND c.Comp_Cancelled = 0) as Race_DateTime \
         ",
             alias
         )

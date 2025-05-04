@@ -5,6 +5,7 @@ use crate::db::{
 use futures::future::{BoxFuture, join_all};
 use serde::Serialize;
 use tiberius::{Query, Row, error::Error as DbError};
+
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Registration {
@@ -34,6 +35,7 @@ pub struct Registration {
     #[serde(skip_serializing_if = "Option::is_none")]
     comment: Option<String>,
 
+    /// A short label of the registration. Could be a club name or the name of a racing community.
     short_label: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -159,10 +161,14 @@ async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Res
     let heats = join_all(heats_futures).await;
 
     for (pos, registration) in registrations.iter_mut().enumerate() {
-        let crew = crews.get(pos).unwrap();
-        let heats = heats.get(pos).unwrap();
-        registration.crew = Some(crew.as_deref().unwrap().to_vec());
-        registration.heats = Some(heats.as_deref().unwrap().to_vec());
+        let crew = crews.get(pos).unwrap().as_deref().unwrap();
+        if !crew.is_empty() {
+            registration.crew = Some(crew.to_vec());
+        }
+        let heats = heats.get(pos).unwrap().as_deref().unwrap();
+        if !heats.is_empty() {
+            registration.heats = Some(heats.to_vec());
+        }
     }
     Ok(registrations)
 }

@@ -48,7 +48,10 @@
                     <ObjectAttribute title="{i18n>common.seeded}"
                       text="{=${raceRegistrations>/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
                   </layout:VerticalLayout>
-                  <ComboBox id="heatsCombo" placeholder="{i18n>common.heats}" width="12rem" />
+                  <layout:VerticalLayout>
+                    <ObjectAttribute title="{i18n>common.heats}" text="{raceRegistrations>/heatsCount}" />
+                    <ComboBox id="heatsCombo" placeholder="{i18n>common.heats}" width="12rem" />
+                  </layout:VerticalLayout>
                 </layout:HorizontalLayout>
               </f:content>
             </f:DynamicPageHeader>
