@@ -63,7 +63,7 @@
 
             <Table id="raceDetailsTable" autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
               items="{path:'raceRegistrations>/registrations/',sorter:[{path:'result/rankSort',descending:false},{path:'bib', descending:false}]}"
-              sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
+              sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding" itemPress=".onRegistrationsItemPress">
               <columns>
                 <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
                   <header>
@@ -83,7 +83,7 @@
               </columns>
 
               <items>
-                <ColumnListItem vAlign="Top"
+                <ColumnListItem vAlign="Top" type="{=${raceRegistrations>/heatsCount}>0?'Navigation':'Inactive'}"
                   highlight="{parts:[{path:'race>/'},{path:'raceRegistrations>'}],formatter:'.formatter.raceRegistrationHighlight'}">
                   <cells>
                     <layout:VerticalLayout>
