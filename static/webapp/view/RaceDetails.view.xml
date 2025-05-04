@@ -50,7 +50,8 @@
                   </layout:VerticalLayout>
                   <layout:VerticalLayout>
                     <ObjectAttribute title="{i18n>common.heats}" text="{raceRegistrations>/heatsCount}" />
-                    <ComboBox id="heatsCombo" placeholder="{i18n>common.heats}" width="12rem" />
+                    <ObjectAttribute title="{i18n>common.heats}"
+                      text="{parts:[{path:'raceRegistrations>/'},{path:'raceRegistrations>/heats'}],formatter:'.formatter.heatsLabel'}" />
                   </layout:VerticalLayout>
                 </layout:HorizontalLayout>
               </f:content>

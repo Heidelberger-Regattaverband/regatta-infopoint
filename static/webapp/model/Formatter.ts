@@ -106,19 +106,19 @@ export default class Formatter {
   // -----------------
   // heat formatters
   // -----------------
-  // static heatsLabel(race: any, heats?: any[]): string {
-  //   if (heats) {
-  //     return heats.filter(heat => !heat.cancelled)
-  //       .map(heat => {
-  //         let label: string = Formatter.dayTimeIsoLabel(heat.dateTime) + " - " + Formatter.heatLabel(heat);
-  //         if (race.groupMode > 0) {
-  //           label += " " + Formatter.groupValueLabel(heat.groupValue);
-  //         }
-  //         return label;
-  //       }).join(", ");
-  //   }
-  //   return Formatter.i18n("sorting.none");
-  // }
+  static heatsLabel(race: any, heats?: any[]): string {
+    if (heats) {
+      return heats.filter(heat => !heat.cancelled)
+        .map(heat => {
+          let label: string = Formatter.dayTimeIsoLabel(heat.dateTime) + " - " + Formatter.heatLabel(heat);
+          if (race.groupMode > 0) {
+            label += " " + Formatter.groupValueLabel(heat.groupValue);
+          }
+          return label;
+        }).join(", ");
+    }
+    return Formatter.i18n("sorting.none");
+  }
 
   static heatRegistrationHighlight(heatRegistration: any): IndicationColor {
     // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
@@ -275,15 +275,15 @@ export default class Formatter {
     }
   }
 
-  static heatStateHighlight(oHeat: any): IndicationColor | undefined {
-    if (!oHeat) {
+  static heatStateHighlight(heat?: any): IndicationColor | undefined {
+    if (!heat) {
       return undefined; //  -> no color
     }
     // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
-    if (oHeat.cancelled) {
+    if (heat.cancelled) {
       return IndicationColor.Indication02; // cancelled -> red
     } else {
-      switch (oHeat.state) {
+      switch (heat.state) {
         default:
         case 0:
           return undefined; // initial -> no color
@@ -307,7 +307,7 @@ export default class Formatter {
     }
 
     let groupValue: string = "";
-    if (heat.race && heat.race.ageClass && heat.race.ageClass.numSubClasses > 0) {
+    if (heat.race?.ageClass?.numSubClasses > 0) {
       groupValue = " - " + Formatter.groupValueLabel(heat.groupValue);
     }
     const heatLabel: string = heat.label || "";
