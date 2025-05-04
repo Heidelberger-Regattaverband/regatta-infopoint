@@ -168,7 +168,6 @@ export default abstract class BaseTableController extends BaseController {
     (this.table.getBinding("items") as ListBinding).sort(sorters);
   }
 
-
   private setCurrentItem(index: number): void {
     const items: ListItemBase[] = this.table.getItems();
     this.table.setSelectedItem(items[index]);
@@ -192,5 +191,4 @@ export default abstract class BaseTableController extends BaseController {
       (this.table.getBinding("items") as ListBinding).filter(allFilters);
     }
   }
-
 }
