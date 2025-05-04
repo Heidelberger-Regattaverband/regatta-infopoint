@@ -87,7 +87,7 @@ export default class Component extends UIComponent {
         if (bundle instanceof ResourceBundle) {
             this.resourceBundle = bundle;
         } else {
-            (bundle as Promise<ResourceBundle>).then((bundle: ResourceBundle) => {
+            bundle.then((bundle: ResourceBundle) => {
                 this.resourceBundle = bundle;
             });
         }

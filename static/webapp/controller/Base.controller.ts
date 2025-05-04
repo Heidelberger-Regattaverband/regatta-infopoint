@@ -68,16 +68,6 @@ export default class BaseController extends Controller {
   }
 
   /**
-   * Convenience method for setting the view model.
-   * @param {sap.ui.model.Model} model the model instance
-   * @param {string} name the model name
-   * @returns {sap.ui.mvc.View} the view instance
-   */
-  setComponentModel(model: Model, name: string): Component | undefined {
-    return super.getOwnerComponent()?.setModel(model, name);
-  }
-
-  /**
    * Convenience method for accessing the router.
    * @returns {sap.ui.core.routing.Router} the router for this component
    */
