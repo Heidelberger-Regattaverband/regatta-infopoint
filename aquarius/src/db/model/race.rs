@@ -30,6 +30,8 @@ pub struct Race {
 
     /// Indicates whether the race is a lightweight or not.
     lightweight: bool,
+
+    /// The state of the race, e.g. 0 = not started, 4 = finished
     state: i32,
 
     /// Indicates whether the race is canceled or not.
@@ -38,6 +40,7 @@ pub struct Race {
     /// The number of registrations for this race.
     registrations_count: i32,
 
+    /// Indicates whether the race is seeded or not.
     seeded: bool,
 
     /// The age class of this race.
@@ -47,6 +50,8 @@ pub struct Race {
     /// The boat class of this race.
     #[serde(skip_serializing_if = "Option::is_none")]
     boat_class: Option<BoatClass>,
+
+    /// The group mode of this race. Known values: 2 = Masters / Age Classes
     group_mode: u8,
 
     /// The date and time of the first heat of this race.
@@ -119,7 +124,7 @@ impl Race {
     pub async fn query_races_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
-            JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
+            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
             WHERE o.Offer_Event_ID_FK = @P1
             ORDER BY o.Offer_SortValue ASC",
@@ -139,7 +144,7 @@ impl Race {
     pub async fn query_race_by_id(race_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
-            JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
+            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
             WHERE o.Offer_ID = @P1",
             Race::select_columns("o"),
