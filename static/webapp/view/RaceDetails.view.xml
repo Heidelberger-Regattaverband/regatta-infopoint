@@ -49,7 +49,7 @@
                       text="{=${raceRegistrations>/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
                   </layout:VerticalLayout>
                   <ObjectAttribute title="{i18n>common.heats} ({raceRegistrations>/heatsCount})"
-                    text="{parts:[{path:'raceRegistrations>/'},{path:'raceRegistrations>/heats'}],formatter:'.formatter.heatsLabel'}" />
+                    text="{parts:[{path:'race>/'},{path:'raceRegistrations>/heats'}],formatter:'.formatter.heatsLabel'}" />
                 </layout:HorizontalLayout>
               </f:content>
             </f:DynamicPageHeader>
@@ -59,7 +59,7 @@
           <f:content>
             <!-- <ScrollContainer height="100%" vertical="true"> -->
 
-            <Table id="raceDetailsTable" autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
+            <Table headerText="" id="raceDetailsTable" autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
               items="{path:'raceRegistrations>/registrations/',sorter:[{path:'result/rankSort',descending:false},{path:'bib', descending:false}]}"
               sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding" itemPress=".onRegistrationsItemPress">
               <columns>
@@ -76,6 +76,11 @@
                 <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Block">
                   <header>
                     <Text text="{i18n>common.clubRegistration}" class="bold" />
+                  </header>
+                </Column>
+                <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Block" visible="{=${raceRegistrations>/heatsCount}>0}">
+                  <header>
+                    <Text text="{i18n>common.heat}" class="bold" />
                   </header>
                 </Column>
               </columns>
@@ -106,6 +111,7 @@
                       <Text text="{raceRegistrations>club/shortName}" visible="{=${raceRegistrations>cancelled}}" class="cancelled" />
                       <Text text="{raceRegistrations>club/shortName}" visible="{=!${raceRegistrations>cancelled}}" />
                     </HBox>
+                    <Text text="{parts:[{path:'race>/'},{path:'raceRegistrations>heats'}],formatter:'.formatter.heatsLabel'}" />
                   </cells>
                 </ColumnListItem>
               </items>
