@@ -52,8 +52,8 @@
           <items>
             <ColumnListItem type="Navigation">
               <cells>
-                <Text text="{athletes>lastName}" />
-                <Text text="{athletes>firstName}" />
+                <Text text="{athletes>lastName}" class="bold" />
+                <Text text="{athletes>firstName}" class="bold" />
                 <Text text="{athletes>gender}" />
                 <Text text="{athletes>year}" />
                 <Text text="{athletes>club/shortName}" />
