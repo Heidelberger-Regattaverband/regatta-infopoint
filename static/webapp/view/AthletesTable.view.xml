@@ -59,7 +59,7 @@
                 <Text text="{athletes>firstName}" />
                 <Text text="{athletes>gender}" />
                 <Text text="{athletes>year}" />
-                <Text text="{athletes>club}" />
+                <Text text="{athletes>club/shortName}" />
               </cells>
             </ColumnListItem>
           </items>
