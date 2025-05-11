@@ -1,20 +1,20 @@
-import Table from "sap/m/Table";
-import JSONModel from "sap/ui/model/json/JSONModel";
-import Filter from "sap/ui/model/Filter";
-import FilterOperator from "sap/ui/model/FilterOperator";
-import ListBinding from "sap/ui/model/ListBinding";
 import Button, { Button$PressEvent } from "sap/m/Button";
-import Context from "sap/ui/model/Context";
-import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
+import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
+import Table from "sap/m/Table";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import Context from "sap/ui/model/Context";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import ListBinding from "sap/ui/model/ListBinding";
 import BaseTableController from "./BaseTable.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class ParticipatingClubsTable extends BaseTableController {
+export default class AthletesTable extends BaseTableController {
 
   private readonly athletesModel: JSONModel = new JSONModel();
 
