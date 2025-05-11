@@ -1,17 +1,16 @@
-import Controller from "sap/ui/core/mvc/Controller";
-import History from "sap/ui/core/routing/History";
-import JSONModel from "sap/ui/model/json/JSONModel";
-import EventBus from "sap/ui/core/EventBus";
-import Model, { Model$RequestFailedEventParameters } from "sap/ui/model/Model";
-import View from "sap/ui/core/mvc/View";
-import Router from "sap/ui/core/routing/Router";
-import Control from "sap/ui/core/Control";
-import UIComponent from "sap/ui/core/UIComponent";
 import MyComponent from "de/regatta_hd/infoportal/Component";
-import MessageBox from "sap/m/MessageBox";
-import { LatLng } from "leaflet";
-import MessageToast from "sap/m/MessageToast";
 import * as $ from "jquery";
+import { LatLng } from "leaflet";
+import MessageBox from "sap/m/MessageBox";
+import MessageToast from "sap/m/MessageToast";
+import Control from "sap/ui/core/Control";
+import EventBus from "sap/ui/core/EventBus";
+import Controller from "sap/ui/core/mvc/Controller";
+import View from "sap/ui/core/mvc/View";
+import History from "sap/ui/core/routing/History";
+import Router from "sap/ui/core/routing/Router";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import Model, { Model$RequestFailedEventParameters } from "sap/ui/model/Model";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -71,7 +70,7 @@ export default class BaseController extends Controller {
    * @returns {sap.ui.core.routing.Router} the router for this component
    */
   getRouter(): Router {
-    return (super.getOwnerComponent() as UIComponent).getRouter();
+    return this.getComponent().getRouter();
   }
 
   /**
