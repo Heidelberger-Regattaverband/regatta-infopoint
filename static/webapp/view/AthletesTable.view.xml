@@ -11,11 +11,9 @@
             <OverflowToolbar>
               <content>
                 <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
-                <!-- Sorting button -->
                 <Button text="{=!${device>/system/phone}?${i18n>common.sorting}:''}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
                   press=".onSortButtonPress" />
                 <ToolbarSpacer />
-                <!-- Refresh button -->
                 <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}"
                   icon="sap-icon://refresh" press=".onRefreshButtonPress" />
               </content>
@@ -38,7 +36,7 @@
                 <Text text="{i18n>common.gender}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column id="athleteYearCol" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
+            <Column id="athleteYearOfBirthCol" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
               visible="{=!${device>/system/phone}}">
               <header>
                 <Text text="{i18n>common.yearOfBirth}" class="bold" wrapping="false" />
