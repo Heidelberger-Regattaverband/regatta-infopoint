@@ -6,16 +6,15 @@
       <content>
 
         <Table id="scheduleTable" autoPopinMode="true" items="{schedule>/entries}" growing="true" growingScrollToLoad="true"
-          growingThreshold="50"
-          sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
+          growingThreshold="50" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
           <!-- The HeaderToolbar shows a title and the filter button -->
           <headerToolbar>
             <OverflowToolbar>
               <content>
                 <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
                 <ToolbarSpacer />
-                <OverflowToolbarButton text="{i18n>common.refresh}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
-                  press=".onRefreshButtonPress" />
+                <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}"
+                  icon="sap-icon://refresh" press=".onRefreshButtonPress" />
               </content>
             </OverflowToolbar>
           </headerToolbar>
@@ -23,7 +22,7 @@
           <columns>
             <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
               <header>
-                <Text text="{i18n>common.number}" class="bold" wrapping="false" />
+                <Text text="{i18n>common.numberAbbr}" class="bold" wrapping="false" />
               </header>
             </Column>
             <Column hAlign="Begin" width="6rem" importance="High" popinDisplay="Inline">
@@ -31,7 +30,7 @@
                 <Text text="{i18n>common.race}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">
+            <Column hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
               <header>
                 <Text text="{i18n>common.registrations}" class="bold" wrapping="false" />
               </header>
@@ -46,7 +45,7 @@
                 <Text text="{i18n>common.final}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+            <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
               <header>
                 <Text text="{i18n>common.distance}" class="bold" wrapping="false" />
               </header>

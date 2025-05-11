@@ -29,17 +29,22 @@ pub struct Heat {
 
     group_value: i16,
 
+    /// The state of the heat. Known values are:
+    /// 0 - scheduled, 1 - seeded, 2 - started, 3 - ???, 4 - official, 5 - finished, 6 - photo finish
     state: u8,
 
     /// Indicates whether or not the heat has been canceled.
     cancelled: bool,
 
+    /// The umpires of this heat.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     referees: Vec<Referee>,
 
+    /// The date and time of the heat.
     #[serde(skip_serializing_if = "Option::is_none")]
     date_time: Option<DateTime<Utc>>,
 
+    /// The registrations assigned to this heat.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) registrations: Option<Vec<HeatRegistration>>,
 
@@ -101,6 +106,29 @@ impl Heat {
         let mut query = Query::new(sql);
         query.bind(race_id);
 
+        let mut client = pool.get().await;
+        let heats = utils::get_rows(query.query(&mut client).await?).await?;
+        Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
+    }
+
+    /// Query all heats of a registration.
+    ///
+    /// # Arguments
+    /// * `registration_id` - The registration identifier
+    /// * `pool` - The database connection pool
+    /// # Returns
+    /// A list of heats
+    pub async fn query_heats_of_registration(registration_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
+        let sql = format!(
+            "SELECT {0} FROM Comp c
+            JOIN CompEntries ce ON c.Comp_ID  = ce.CE_Comp_ID_FK
+            JOIN Entry        e ON e.Entry_ID = ce.CE_Entry_ID_FK
+            WHERE e.Entry_ID = @P1
+            ORDER BY c.Comp_Round ASC",
+            Heat::select_columns("c")
+        );
+        let mut query = Query::new(sql);
+        query.bind(registration_id);
         let mut client = pool.get().await;
         let heats = utils::get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())

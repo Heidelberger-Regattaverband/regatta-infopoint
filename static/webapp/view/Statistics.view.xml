@@ -3,7 +3,8 @@
 
     <Page title="{i18n>launchpad.statistics.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
       <headerContent>
-        <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press=".onRefreshButtonPress" />
+        <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
+          press=".onRefreshButtonPress" />
       </headerContent>
 
       <content>

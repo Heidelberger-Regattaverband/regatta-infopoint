@@ -1,5 +1,5 @@
 {
-  "_version": "1.65.0",
+  "_version": "1.72.0",
   "start_url": "index.html",
   "sap.app": {
     "id": "de.regatta_hd.infoportal",
@@ -34,7 +34,7 @@
       "cozy": true
     },
     "dependencies": {
-      "minUI5Version": "1.130.0",
+      "minUI5Version": "1.135.0",
       "libs": {
         "sap.ui.core": {},
         "sap.f": {},
@@ -129,11 +129,6 @@
           "pattern": "monitoring",
           "name": "monitoring",
           "target": "monitoring"
-        },
-        {
-          "pattern": "kiosk",
-          "name": "kiosk",
-          "target": "kiosk"
         }
       ],
       "targets": {
@@ -206,12 +201,6 @@
         "monitoring": {
           "type": "View",
           "name": "Monitoring",
-          "level": 1,
-          "viewType": "XML"
-        },
-        "kiosk": {
-          "type": "View",
-          "name": "Kiosk",
           "level": 1,
           "viewType": "XML"
         }

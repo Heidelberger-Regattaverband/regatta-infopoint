@@ -12,6 +12,11 @@ pub struct TiberiusConnectionManager {
 
 impl TiberiusConnectionManager {
     /// Creates a new `TiberiusConnectionManager`.
+    ///
+    /// # Arguments
+    /// * `config` - The configuration for the Tiberius connection manager.
+    /// # Returns
+    /// A new instance of `TiberiusConnectionManager`.
     pub fn new(config: TiberiusConfig) -> TiberiusConnectionManager {
         TiberiusConnectionManager { config }
     }

@@ -11,37 +11,41 @@
             <OverflowToolbar>
               <content>
                 <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
-                <OverflowToolbarButton text="{i18n>common.sorting}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
+                <!-- Sorting button -->
+                <Button text="{=!${device>/system/phone}?${i18n>common.sorting}:''}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
                   press=".onSortButtonPress" />
                 <ToolbarSpacer />
-                <OverflowToolbarButton text="{i18n>common.refresh}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
-                  press=".onRefreshButtonPress" />
+                <!-- Refresh button -->
+                <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}"
+                  icon="sap-icon://refresh" press=".onRefreshButtonPress" />
               </content>
             </OverflowToolbar>
           </headerToolbar>
 
           <columns>
-            <Column id="city" hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline">
+            <Column id="clubCity" hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.city}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column id="club" hAlign="Begin" width="20rem" importance="High" popinDisplay="Inline">
+            <Column id="clubName" hAlign="Begin" width="20rem" importance="High" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.club}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column id="abbreviation" hAlign="Begin" width="4rem" importance="Low" popinDisplay="Inline">
+            <Column id="clubAbbr" hAlign="Begin" width="4rem" importance="Low" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.abbreviation}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column id="registrations" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+            <Column id="clubRegistrations" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
+              visible="{=!${device>/system/phone}}">
               <header>
                 <Text text="{i18n>common.registrations}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column id="athletes" hAlign="Begin" width="4rem" importance="Low" popinDisplay="Inline">
+            <Column id="clubAthletes" hAlign="Begin" width="4rem" importance="Low" popinDisplay="Inline"
+              visible="{=!${device>/system/phone}}">
               <header>
                 <Text text="{i18n>statistics.athletes} (w/m)" class="bold" wrapping="false" />
               </header>
@@ -54,7 +58,7 @@
                 <Text text="{clubs>city}" />
                 <HBox>
                   <Image src="{clubs>flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
-                  <Text text="{clubs>longName}" />
+                  <Text text="{clubs>longName}" class="bold" />
                 </HBox>
                 <Text text="{clubs>abbreviation}" />
                 <Text text="{clubs>participationsCount}" />

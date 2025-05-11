@@ -4,7 +4,6 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import EventBus from "sap/ui/core/EventBus";
 import Model, { Model$RequestFailedEventParameters } from "sap/ui/model/Model";
 import View from "sap/ui/core/mvc/View";
-import Component from "sap/ui/core/Component";
 import Router from "sap/ui/core/routing/Router";
 import Control from "sap/ui/core/Control";
 import UIComponent from "sap/ui/core/UIComponent";
@@ -65,16 +64,6 @@ export default class BaseController extends Controller {
    */
   getComponentModel(name: string): Model | undefined {
     return super.getOwnerComponent()?.getModel(name);
-  }
-
-  /**
-   * Convenience method for setting the view model.
-   * @param {sap.ui.model.Model} model the model instance
-   * @param {string} name the model name
-   * @returns {sap.ui.mvc.View} the view instance
-   */
-  setComponentModel(model: Model, name: string): Component | undefined {
-    return super.getOwnerComponent()?.setModel(model, name);
   }
 
   /**

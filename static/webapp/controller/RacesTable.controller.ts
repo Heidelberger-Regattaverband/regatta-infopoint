@@ -96,21 +96,21 @@ export default class RacesTableController extends BaseTableController {
     super.applyFilters();
   }
 
-  async onFilterButtonPress(event: Button$PressEvent): Promise<void> {
-    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog")).open();
+  onFilterButtonPress(event: Button$PressEvent): void {
+    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog").then(dialog => dialog.open());
   }
 
-  async onClearFilterPress(event: Button$PressEvent): Promise<void> {
-    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog")).clearFilters();
+  onClearFilterPress(event: Button$PressEvent): void {
+    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog").then(dialog => dialog.clearFilters());
     super.clearFilters();
     super.applyFilters();
   }
 
-  async onSortButtonPress(event: Button$PressEvent): Promise<void> {
-    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesSortDialog")).open();
+  onSortButtonPress(event: Button$PressEvent): void {
+    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesSortDialog").then(dialog => dialog.open());
   }
 
-  async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
+  onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
     this.loadRacesModel().then((succeeded: boolean) => {

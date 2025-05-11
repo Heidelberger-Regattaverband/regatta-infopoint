@@ -1,5 +1,5 @@
 use crate::db::{
-    model::{Club, Crew, Race, TryToEntity, utils},
+    model::{Club, Crew, Heat, Race, TryToEntity, utils},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use futures::future::{BoxFuture, join_all};
@@ -35,12 +35,18 @@ pub struct Registration {
     #[serde(skip_serializing_if = "Option::is_none")]
     comment: Option<String>,
 
+    /// A short label of the registration. Could be a club name or the name of a racing community.
     short_label: String,
+
     #[serde(skip_serializing_if = "Option::is_none")]
     group_value: Option<i16>,
 
     /** Indicates whether or not the registration has been canceled. */
     pub cancelled: bool,
+
+    /// The heats of the registration.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    heats: Option<Vec<Heat>>,
 }
 
 impl From<&Row> for Registration {
@@ -58,6 +64,7 @@ impl From<&Row> for Registration {
             club: Club::from(value),
             crew: None,
             race: value.try_to_entity(),
+            heats: None,
         }
     }
 }
@@ -138,21 +145,30 @@ async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Res
     let stream = query.query(&mut client).await?;
 
     let mut crew_futures: Vec<BoxFuture<Result<Vec<Crew>, DbError>>> = Vec::new();
+    let mut heats_futures: Vec<BoxFuture<Result<Vec<Heat>, DbError>>> = Vec::new();
     let mut registrations: Vec<Registration> = utils::get_rows(stream)
         .await?
         .into_iter()
         .map(|row| {
             let registration = Registration::from(&row);
             crew_futures.push(Box::pin(Crew::query_crew_of_registration(registration.id, round, pool)));
+            heats_futures.push(Box::pin(Heat::query_heats_of_registration(registration.id, pool)));
             registration
         })
         .collect();
 
     let crews = join_all(crew_futures).await;
+    let heats = join_all(heats_futures).await;
 
     for (pos, registration) in registrations.iter_mut().enumerate() {
-        let crew = crews.get(pos).unwrap();
-        registration.crew = Some(crew.as_deref().unwrap().to_vec());
+        let crew = crews.get(pos).unwrap().as_deref().unwrap();
+        if !crew.is_empty() {
+            registration.crew = Some(crew.to_vec());
+        }
+        let heats = heats.get(pos).unwrap().as_deref().unwrap();
+        if !heats.is_empty() {
+            registration.heats = Some(heats.to_vec());
+        }
     }
     Ok(registrations)
 }

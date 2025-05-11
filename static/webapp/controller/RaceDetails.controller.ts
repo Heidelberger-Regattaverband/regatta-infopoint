@@ -1,8 +1,10 @@
+import Button, { Button$PressEvent } from "sap/m/Button";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
-import Button, { Button$PressEvent } from "sap/m/Button";
-import MessageToast from "sap/m/MessageToast";
+import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
+import ListItemBase from "sap/m/ListItemBase";
+import Context from "sap/ui/model/Context";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -61,16 +63,31 @@ export default class RaceDetailsController extends BaseController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadRaceModel().then((updated: boolean) => {
-      if (updated) {
-        MessageToast.show(this.i18n("msg.dataUpdated"));
-      }
+    this.loadRaceModel().then((succeeded: boolean) => {
+      super.showDataUpdatedMessage(succeeded);
     }).finally(() => source.setEnabled(true));
+  }
+
+  onRegistrationsItemPress(event: ListBase$SelectionChangeEvent): void {
+    const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
+    if (selectedItem) {
+      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("raceRegistrations");
+      const registration: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
+
+      if (registration?.heats?.length > 0) {
+        const heat: any = registration.heats[0];
+        heat._nav = { disabled: true, back: "raceDetails" };
+
+        (super.getComponentModel("heat") as JSONModel).setData(heat);
+        super.navToHeatDetails(heat.id);
+      }
+    }
   }
 
   private async loadRaceModel(): Promise<boolean> {
     const race: any = (super.getComponentModel("race") as JSONModel).getData();
-    return await super.updateJSONModel(this.raceModel, `/api/races/${race.id}`, super.getView());
+    const succeeded: boolean = await super.updateJSONModel(this.raceModel, `/api/races/${race.id}`, super.getView());
+    return succeeded;
   }
 
   private async onItemChanged(channelId: string, eventId: string, parametersMap: any): Promise<void> {
@@ -98,5 +115,4 @@ export default class RaceDetailsController extends BaseController {
         break;
     }
   }
-
 }

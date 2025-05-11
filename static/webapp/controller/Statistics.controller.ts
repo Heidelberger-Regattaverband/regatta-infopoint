@@ -1,4 +1,3 @@
-import MessageToast from "sap/m/MessageToast";
 import BaseController from "./Base.controller";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
@@ -35,22 +34,20 @@ export default class StatisticsController extends BaseController {
     super.navToStartPage();
   }
 
-  async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
-    await this.loadStatistics();
+  onRefreshButtonPress(event: Button$PressEvent): void {
+    this.setBusy(true);
+    this.loadStatistics().then((succeeded: boolean) => {
+      super.showDataUpdatedMessage(succeeded);
+    }).finally(() => {
+      this.setBusy(false);
+    });
   }
 
-  private async loadStatistics(): Promise<void> {
-    this.setBusy(true);
-    let statistics: any;
-
-    // load statistic data from backend
+  private async loadStatistics(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
-    if (await super.updateJSONModel(this.dataLoader, `/api/regattas/${regatta.id}/statistics`)) {
-      statistics = this.dataLoader.getData();
-      MessageToast.show(super.i18n("msg.dataUpdated"));
-    } else {
-      statistics = {};
-    }
+    // load statistic data from backend
+    const succeeded: boolean = await super.updateJSONModel(this.dataLoader, `/api/regattas/${regatta.id}/statistics`)
+    let statistics: any = succeeded ? this.dataLoader.getData() : {};
 
     // transform statistic data into human readable format
     const registrations = [];
@@ -99,7 +96,7 @@ export default class StatisticsController extends BaseController {
     this.statisticsModel.setProperty("/heats", heats);
     this.statisticsModel.setProperty("/athletes", athletes);
 
-    this.setBusy(false);
+    return succeeded;
   }
 
   private setBusy(busy: boolean): void {

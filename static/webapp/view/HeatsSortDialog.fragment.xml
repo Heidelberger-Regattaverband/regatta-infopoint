@@ -2,10 +2,10 @@
   xmlns:cust="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
   <ViewSettingsDialog confirm=".onSortDialogConfirm">
     <sortItems>
-      <ViewSettingsItem text="{i18n>common.day} / {i18n>common.time}" key="dateTime" selected="true" cust:column="dateTime" />
-      <ViewSettingsItem text="{i18n>common.distance}" key="race/distance" cust:column="distance" />
-      <ViewSettingsItem text="{i18n>common.heatNr}" key="number" cust:column="number" />
-      <ViewSettingsItem text="{i18n>common.state}" key="state" cust:column="state" />
+      <ViewSettingsItem text="{i18n>common.day} / {i18n>common.time}" key="dateTime" selected="true" cust:column="heatDateTime" />
+      <ViewSettingsItem text="{i18n>common.distance}" key="race/distance" cust:column="heatDistance" />
+      <ViewSettingsItem text="{i18n>common.heatNr}" key="number" cust:column="heatNr" />
+      <ViewSettingsItem text="{i18n>common.state}" key="state" cust:column="heatState" />
     </sortItems>
   </ViewSettingsDialog>
 </core:FragmentDefinition>

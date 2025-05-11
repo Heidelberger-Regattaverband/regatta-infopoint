@@ -9,7 +9,6 @@ import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
-import MessageToast from "sap/m/MessageToast";
 import BaseTableController from "./BaseTable.controller";
 
 /**
@@ -39,17 +38,15 @@ export default class ParticipatingClubsTable extends BaseTableController {
     binding.filter(searchFilters);
   }
 
-  async onSortButtonPress(event: Button$PressEvent): Promise<void> {
-    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.ParticipatingClubsSortDialog")).open();
+  onSortButtonPress(event: Button$PressEvent): void {
+    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.ParticipatingClubsSortDialog").then(dialog => dialog.open());
   }
 
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadModel().then((updated: boolean) => {
-      if (updated) {
-        MessageToast.show(this.i18n("msg.dataUpdated"));
-      }
+    this.loadModel().then((succeeded: boolean) => {
+      super.showDataUpdatedMessage(succeeded);
     }).finally(() => source.setEnabled(true));
   }
 
