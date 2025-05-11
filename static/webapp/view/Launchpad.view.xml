@@ -41,7 +41,7 @@
               <tileContent>
                 <TileContent>
                   <content>
-                    <ImageContent src="sap-icon://account" />
+                    <ImageContent src="sap-icon://group" />
                   </content>
                 </TileContent>
               </tileContent>
@@ -51,7 +51,7 @@
               <tileContent>
                 <TileContent>
                   <content>
-                    <ImageContent src="sap-icon://account" />
+                    <ImageContent src="sap-icon://person-placeholder" />
                   </content>
                 </TileContent>
               </tileContent>
