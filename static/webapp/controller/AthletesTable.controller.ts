@@ -16,14 +16,14 @@ import BaseTableController from "./BaseTable.controller";
  */
 export default class ParticipatingClubsTable extends BaseTableController {
 
-  private readonly participatingClubsModel: JSONModel = new JSONModel();
+  private readonly athletesModel: JSONModel = new JSONModel();
 
   onInit(): void {
-    super.init(super.getView()?.byId("clubsTable") as Table);
+    super.init(super.getView()?.byId("athletesTable") as Table);
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
-    super.setViewModel(this.participatingClubsModel, "clubs");
-    super.getRouter()?.getRoute("participatingClubs")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadModel(), this);
+    super.setViewModel(this.athletesModel, "athletes");
+    super.getRouter()?.getRoute("athletes")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadModel(), this);
   }
 
   onNavBack(): void {
@@ -39,7 +39,7 @@ export default class ParticipatingClubsTable extends BaseTableController {
   }
 
   onSortButtonPress(event: Button$PressEvent): void {
-    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.ParticipatingClubsSortDialog").then(dialog => dialog.open());
+    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.AthletesSortDialog").then(dialog => dialog.open());
   }
 
   onRefreshButtonPress(event: Button$PressEvent): void {
@@ -54,8 +54,8 @@ export default class ParticipatingClubsTable extends BaseTableController {
     const selectedItem: ListItemBase | undefined = event.getParameters().listItem;
     if (selectedItem) {
       const bindingCtx: Context | undefined | null = selectedItem.getBindingContext("clubs");
-      const club: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
-      super.getRouter().navTo("clubRegistrations", { clubId: club.id }, false /* history*/);
+      const athlete: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
+      super.getRouter().navTo("athleteRegistrations", { athleteId: athlete.id }, false /* history*/);
     }
   }
 
@@ -66,10 +66,10 @@ export default class ParticipatingClubsTable extends BaseTableController {
   private createSearchFilters(query: string): Filter[] {
     return [new Filter({
       filters: [
-        new Filter("shortName", FilterOperator.Contains, query),
-        new Filter("longName", FilterOperator.Contains, query),
-        new Filter("abbreviation", FilterOperator.Contains, query),
-        new Filter("city", FilterOperator.Contains, query)
+        new Filter("lastName", FilterOperator.Contains, query),
+        new Filter("firstName", FilterOperator.Contains, query),
+        new Filter("year", FilterOperator.Contains, query),
+        new Filter("club", FilterOperator.Contains, query)
       ],
       and: false
     })]
@@ -77,6 +77,6 @@ export default class ParticipatingClubsTable extends BaseTableController {
 
   private async loadModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
-    return await super.updateJSONModel(this.participatingClubsModel, `/api/regattas/${regatta.id}/clubs`, this.table)
+    return await super.updateJSONModel(this.athletesModel, `/api/regattas/${regatta.id}/athletes`, this.table)
   }
 }

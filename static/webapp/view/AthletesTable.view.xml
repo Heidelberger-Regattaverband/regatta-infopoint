@@ -1,0 +1,72 @@
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.AthletesTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
+  <mvc:content>
+
+    <Page title="{i18n>common.athletes}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
+      <content>
+
+        <Table id="athletesTable" autoPopinMode="true" items="{athletes>/}" growing="true" growingScrollToLoad="true" growingThreshold="50"
+          sticky="HeaderToolbar,ColumnHeaders" class="sapUiNoContentPadding" itemPress=".onItemPress">
+          <!-- The HeaderToolbar shows a title and the filter button -->
+          <headerToolbar>
+            <OverflowToolbar>
+              <content>
+                <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
+                <!-- Sorting button -->
+                <Button text="{=!${device>/system/phone}?${i18n>common.sorting}:''}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
+                  press=".onSortButtonPress" />
+                <ToolbarSpacer />
+                <!-- Refresh button -->
+                <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}"
+                  icon="sap-icon://refresh" press=".onRefreshButtonPress" />
+              </content>
+            </OverflowToolbar>
+          </headerToolbar>
+
+          <columns>
+            <Column id="athleteLastNameCol" hAlign="Begin" width="10rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.lastName}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column id="athleteFirstNameCol" hAlign="Begin" width="10rem" importance="High" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.firstName}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column id="athleteGenderCol" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.gender}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column id="athleteYearCol" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
+              visible="{=!${device>/system/phone}}">
+              <header>
+                <Text text="{i18n>common.yearOfBirth}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+            <Column id="athleteClubCol" hAlign="Begin" width="10rem" importance="Low" popinDisplay="Inline"
+              visible="{=!${device>/system/phone}}">
+              <header>
+                <Text text="{i18n>common.club}" class="bold" wrapping="false" />
+              </header>
+            </Column>
+          </columns>
+
+          <items>
+            <ColumnListItem type="Navigation" vAlign="Top">
+              <cells>
+                <Text text="{athletes>lastName}" />
+                <Text text="{athletes>firstName}" />
+                <Text text="{athletes>gender}" />
+                <Text text="{athletes>year}" />
+                <Text text="{athletes>club}" />
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table>
+
+      </content>
+    </Page>
+
+  </mvc:content>
+</mvc:View>

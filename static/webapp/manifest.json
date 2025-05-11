@@ -106,6 +106,11 @@
           "target": "clubRegistrations"
         },
         {
+          "pattern": "athletes",
+          "name": "athletes",
+          "target": "athletes"
+        },
+        {
           "pattern": "map",
           "name": "map",
           "target": "map"
@@ -172,6 +177,12 @@
           "type": "View",
           "name": "ClubRegistrationsTable",
           "level": 2,
+          "viewType": "XML"
+        },
+        "athletes": {
+          "type": "View",
+          "name": "AthletesTable",
+          "level": 1,
           "viewType": "XML"
         },
         "schedule": {

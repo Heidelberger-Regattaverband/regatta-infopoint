@@ -25,7 +25,7 @@ export default abstract class BaseTableController extends BaseController {
   private bindingModel: string;
   private viewSettingsDialogs: Map<string, ViewSettingsDialog>;
 
-  init(table: Table, channelId: string): void {
+  init(table: Table, channelId?: string): void {
     // Keeps reference to any of the created sap.m.ViewSettingsDialog-s in this sample
     this.viewSettingsDialogs = new Map<string, ViewSettingsDialog>();
 
@@ -36,10 +36,12 @@ export default abstract class BaseTableController extends BaseController {
     // return the path of the model that is bound to the items, e.g. races or heats
     this.bindingModel = this.table.getBindingInfo("items").model ?? "";
 
-    super.getEventBus()?.subscribe(channelId, "first", this.onFirstItemEvent, this);
-    super.getEventBus()?.subscribe(channelId, "previous", this.onPreviousItemEvent, this);
-    super.getEventBus()?.subscribe(channelId, "next", this.onNextItemEvent, this);
-    super.getEventBus()?.subscribe(channelId, "last", this.onLastItemEvent, this);
+    if (channelId) {
+      super.getEventBus()?.subscribe(channelId, "first", this.onFirstItemEvent, this);
+      super.getEventBus()?.subscribe(channelId, "previous", this.onPreviousItemEvent, this);
+      super.getEventBus()?.subscribe(channelId, "next", this.onNextItemEvent, this);
+      super.getEventBus()?.subscribe(channelId, "last", this.onLastItemEvent, this);
+    }
   }
 
   private onFirstItemEvent(channelId: string, eventId: string, parametersMap: any): void {

@@ -150,6 +150,10 @@ export default class BaseController extends Controller {
     this.getRouter().navTo("participatingClubs");
   }
 
+  navToAthletes(): void {
+    this.getRouter().navTo("athletes");
+  }
+
   navToMap(location?: LatLng): void {
     let params: any = {};
     if (location) {
