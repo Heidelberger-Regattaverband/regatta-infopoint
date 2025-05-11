@@ -1,0 +1,12 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core"
+  xmlns:cust="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
+  <ViewSettingsDialog confirm=".onSortDialogConfirm">
+    <sortItems>
+      <ViewSettingsItem text="{i18n>common.lastName}" key="lastName" cust:column="athleteLastNameCol" selected="true" />
+      <ViewSettingsItem text="{i18n>common.firstName}" key="firstName" cust:column="athleteFirstNameCol" />
+      <ViewSettingsItem text="{i18n>common.gender}" key="gender" cust:column="athleteGenderCol" />
+      <ViewSettingsItem text="{i18n>common.yearOfBirth}" key="year" cust:column="athleteYearOfBirthCol" />
+      <ViewSettingsItem text="{i18n>common.club}" key="club/shortName" cust:column="athleteClubCol" />
+    </sortItems>
+  </ViewSettingsDialog>
+</core:FragmentDefinition>

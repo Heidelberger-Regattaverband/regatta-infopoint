@@ -41,7 +41,17 @@
               <tileContent>
                 <TileContent>
                   <content>
-                    <ImageContent src="sap-icon://account" />
+                    <ImageContent src="sap-icon://group" />
+                  </content>
+                </TileContent>
+              </tileContent>
+            </GenericTile>
+
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>common.athletes}" press=".navToAthletes">
+              <tileContent>
+                <TileContent>
+                  <content>
+                    <ImageContent src="sap-icon://person-placeholder" />
                   </content>
                 </TileContent>
               </tileContent>
