@@ -68,8 +68,11 @@ export default class AthletesTable extends BaseTableController {
       filters: [
         new Filter("lastName", FilterOperator.Contains, query),
         new Filter("firstName", FilterOperator.Contains, query),
-        new Filter("year", FilterOperator.Contains, query),
-        new Filter("club", FilterOperator.Contains, query)
+        new Filter("year", FilterOperator.EQ, query),
+        new Filter("club/shortName", FilterOperator.Contains, query),
+        new Filter("club/longName", FilterOperator.Contains, query),
+        new Filter("club/abbreviation", FilterOperator.Contains, query),
+        new Filter("club/city", FilterOperator.Contains, query)
       ],
       and: false
     })]
