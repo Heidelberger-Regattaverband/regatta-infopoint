@@ -83,7 +83,7 @@ fn get_metrics(registry: &Registry) -> Map<String, Value> {
         f.get_metric().iter().for_each(|m| {
             let mut labels: Map<String, Value> = Map::new();
             m.get_label().iter().for_each(|l| {
-                labels.insert(l.get_name().to_string(), Value::String(l.get_value().to_string()));
+                labels.insert(l.name().to_string(), Value::String(l.value().to_string()));
             });
             labels.insert(
                 "counter".to_string(),
@@ -95,7 +95,7 @@ fn get_metrics(registry: &Registry) -> Map<String, Value> {
             );
             family_entries.push(Value::Object(labels));
         });
-        all_metrics.insert(f.get_name().to_string(), Value::Array(family_entries));
+        all_metrics.insert(f.name().to_string(), Value::Array(family_entries));
     });
     all_metrics
 }
