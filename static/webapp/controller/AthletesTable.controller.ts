@@ -24,6 +24,8 @@ export default class AthletesTable extends BaseTableController {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.athletesModel, "athletes");
     super.getRouter()?.getRoute("athletes")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadModel(), this);
+
+    super.sortTable("athleteLastNameCol", false, "lastName");
   }
 
   onNavBack(): void {
