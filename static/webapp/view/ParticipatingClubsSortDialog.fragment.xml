@@ -2,11 +2,11 @@
   xmlns:cust="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
   <ViewSettingsDialog confirm=".onSortDialogConfirm">
     <sortItems>
-      <ViewSettingsItem text="{i18n>common.city}" key="city" cust:column="clubCity" selected="true" />
-      <ViewSettingsItem text="{i18n>common.club}" key="longName" cust:column="clubName" />
-      <ViewSettingsItem text="{i18n>common.abbreviation}" key="abbreviation" cust:column="clubAbbr" />
-      <ViewSettingsItem text="{i18n>common.registrations}" key="participationsCount" cust:column="clubRegistrations" />
-      <ViewSettingsItem text="{i18n>statistics.athletes}" key="ahtletesCount" cust:column="clubAthletes" />
+      <ViewSettingsItem text="{i18n>common.city}" key="city" cust:column="clubCityCol" selected="true" />
+      <ViewSettingsItem text="{i18n>common.club}" key="longName" cust:column="clubNameCol" />
+      <ViewSettingsItem text="{i18n>common.abbreviation}" key="abbreviation" cust:column="clubAbbrCol" />
+      <ViewSettingsItem text="{i18n>common.registrations}" key="participationsCount" cust:column="clubRegistrationsCol" />
+      <ViewSettingsItem text="{i18n>statistics.athletes}" key="ahtletesCount" cust:column="clubAthletesCol" />
     </sortItems>
   </ViewSettingsDialog>
 </core:FragmentDefinition>

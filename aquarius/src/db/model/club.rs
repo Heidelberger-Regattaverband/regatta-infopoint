@@ -120,8 +120,7 @@ impl Club {
     pub async fn query_club_by_id(club_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let mut query = Query::new(format!(
             "SELECT {0} FROM Club c
-            WHERE c.Club_ID = @P1
-            ORDER BY c.Club_City ASC",
+            WHERE {0}.Club_ID = @P1",
             Club::select_columns("c")
         ));
         query.bind(club_id);

@@ -1,14 +1,14 @@
-import Table from "sap/m/Table";
-import JSONModel from "sap/ui/model/json/JSONModel";
-import Filter from "sap/ui/model/Filter";
-import FilterOperator from "sap/ui/model/FilterOperator";
-import ListBinding from "sap/ui/model/ListBinding";
 import Button, { Button$PressEvent } from "sap/m/Button";
-import Context from "sap/ui/model/Context";
-import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
+import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
+import Table from "sap/m/Table";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import Context from "sap/ui/model/Context";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import ListBinding from "sap/ui/model/ListBinding";
 import BaseTableController from "./BaseTable.controller";
 
 /**
@@ -24,6 +24,8 @@ export default class ParticipatingClubsTable extends BaseTableController {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.participatingClubsModel, "clubs");
     super.getRouter()?.getRoute("participatingClubs")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadModel(), this);
+
+    super.sortTable("clubCityCol", false, "city");
   }
 
   onNavBack(): void {
