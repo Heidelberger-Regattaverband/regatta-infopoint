@@ -20,8 +20,8 @@ import BaseController from "./Base.controller";
 export default abstract class BaseTableController extends BaseController {
 
   protected table: Table;
-  private filters: Filter[];
-  private searchFilters: Filter[];
+  private filters: Filter[] = [];
+  private searchFilters: Filter[] = [];
   private bindingModel: string;
   private viewSettingsDialogs: Map<string, ViewSettingsDialog>;
 
@@ -30,8 +30,6 @@ export default abstract class BaseTableController extends BaseController {
     this.viewSettingsDialogs = new Map<string, ViewSettingsDialog>();
 
     this.table = table;
-    this.filters = [];
-    this.searchFilters = [];
 
     // return the path of the model that is bound to the items, e.g. races or heats
     this.bindingModel = this.table.getBindingInfo("items").model ?? "";
