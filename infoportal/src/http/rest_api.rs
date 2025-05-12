@@ -154,10 +154,14 @@ async fn get_participating_clubs(
 }
 
 #[get("/regattas/{id}/athletes")]
-async fn get_participating_athletes(path: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
+async fn get_participating_athletes(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let clubs = aquarius
-        .get_participating_athletes(regatta_id)
+        .get_participating_athletes(regatta_id, opt_user)
         .await
         .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
     Ok(Json(clubs))
