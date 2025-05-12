@@ -21,7 +21,7 @@
             <f:DynamicPageTitle>
               <f:heading>
                 <Title wrapping="true"
-                  text="{path:'heatRegistrations>/race',formatter:'.formatter.nrRaceLabel'},{path:'heatRegistrations>/',formatter:'.formatter.heatLabel'}" />
+                  text="{path:'heatRegistrations>/race',formatter:'.formatter.nrRaceLabel'}, {path:'heatRegistrations>/',formatter:'.formatter.heatLabel'}" />
               </f:heading>
               <f:expandedContent>
                 <Label text="{heatRegistrations>/race/longLabel} {heatRegistrations>/race/comment}" />
