@@ -200,10 +200,10 @@ impl Config {
             db_pool_min_idle.to_string().bold(),
         );
 
-        let mut active_regatta_id: Option<i32> = None;
-        if let Ok(id) = env::var("ACTIVE_REGATTA_ID") {
-            active_regatta_id = Some(id.parse().unwrap());
-        }
+        let active_regatta_id: Option<i32> = match env::var("ACTIVE_REGATTA_ID") {
+            Ok(id) => id.parse().ok(),
+            Err(_) => None,
+        };
         let cache_ttl: u64 = env::var("CACHE_TTL")
             .unwrap_or_else(|_| "40".to_string())
             .parse()
