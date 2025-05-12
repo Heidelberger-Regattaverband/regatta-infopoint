@@ -25,7 +25,6 @@ pub use club::Club;
 pub use crew::Crew;
 pub use filters::Filters;
 pub use heat::Heat;
-pub use heat::Kiosk;
 pub use heat_registration::HeatRegistration;
 pub use heat_result::HeatResult;
 pub use race::Race;

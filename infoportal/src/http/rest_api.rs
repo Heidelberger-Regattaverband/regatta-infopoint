@@ -219,24 +219,6 @@ async fn get_statistics(
     }
 }
 
-#[get("/regattas/{id}/kiosk")]
-async fn get_kiosk(
-    path: Path<i32>,
-    aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
-) -> Result<impl Responder, Error> {
-    if opt_user.is_some() {
-        let regatta_id = path.into_inner();
-        let kiosk = aquarius
-            .query_kiosk(regatta_id)
-            .await
-            .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
-        Ok(Json(kiosk))
-    } else {
-        Err(ErrorUnauthorized("Unauthorized"))
-    }
-}
-
 #[get("/regattas/{id}/calculateScoring")]
 async fn calculate_scoring(
     path: Path<i32>,
@@ -337,7 +319,6 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(get_heats)
             .service(get_filters)
             .service(get_heat)
-            .service(get_kiosk)
             .service(calculate_scoring)
             .service(get_statistics)
             .service(get_schedule)

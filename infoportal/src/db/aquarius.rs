@@ -4,7 +4,7 @@ use crate::{
 };
 use actix_identity::Identity;
 use aquarius::db::{
-    model::{Athlete, Club, Filters, Heat, Kiosk, Race, Regatta, Registration, Schedule, Score, Statistics},
+    model::{Athlete, Club, Filters, Heat, Race, Regatta, Registration, Schedule, Score, Statistics},
     tiberius::TiberiusPool,
 };
 use futures::future::join3;
@@ -216,21 +216,6 @@ impl Aquarius {
             start.elapsed()
         );
         schedule
-    }
-
-    pub(crate) async fn query_kiosk(&self, regatta_id: i32) -> Result<Kiosk, DbError> {
-        let start = Instant::now();
-
-        let finished = Kiosk::query_finished(regatta_id, TiberiusPool::instance()).await?;
-        let next = Kiosk::query_next(regatta_id, TiberiusPool::instance()).await?;
-
-        let kiosk = Kiosk {
-            finished,
-            next,
-            running: Vec::with_capacity(0),
-        };
-        debug!("Query kiosk of regatta {} from DB: {:?}", regatta_id, start.elapsed());
-        Ok(kiosk)
     }
 
     async fn _query_filters(&self, regatta_id: i32) -> Result<Filters, DbError> {
