@@ -15,7 +15,7 @@ import BaseController from "./Base.controller";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class ClubRegistrationsTableController extends BaseController {
+export default class ClubDetailsController extends BaseController {
 
   formatter: Formatter = Formatter;
   private table: Table;
@@ -31,12 +31,12 @@ export default class ClubRegistrationsTableController extends BaseController {
     super.setViewModel(this.registrationsModel, "registrations");
     super.setViewModel(this.clubModel, "club");
 
-    super.getRouter()?.getRoute("clubRegistrations")?.attachPatternMatched(
+    super.getRouter()?.getRoute("clubDetails")?.attachPatternMatched(
       async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
   }
 
   onNavBack(): void {
-    super.navBack("participatingClubs");
+    super.navBack("clubs");
     delete this.clubId;
   }
 
@@ -46,7 +46,7 @@ export default class ClubRegistrationsTableController extends BaseController {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("registrations");
       const registration: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
 
-      registration.race._nav = { disabled: true, back: "clubRegistrations" };
+      registration.race._nav = { disabled: true, back: "clubDetails" };
 
       (super.getComponentModel("race") as JSONModel).setData(registration.race);
       super.navToRaceDetails(registration.race.id);

@@ -149,6 +149,10 @@ export default class BaseController extends Controller {
     this.getRouter().navTo("clubs");
   }
 
+  navToClubDetails(clubId: number): void {
+    this.getRouter().navTo("clubDetails", { clubId: clubId }, false /* history*/);
+  }
+
   navToAthletes(): void {
     this.getRouter().navTo("athletes");
   }

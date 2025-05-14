@@ -1,5 +1,5 @@
-<mvc:View controllerName="de.regatta_hd.infoportal.controller.ClubRegistrationsTable" xmlns="sap.m" xmlns:f="sap.f"
-  xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.ClubDetails" xmlns="sap.m" xmlns:f="sap.f" xmlns:layout="sap.ui.layout"
+  xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
     <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
