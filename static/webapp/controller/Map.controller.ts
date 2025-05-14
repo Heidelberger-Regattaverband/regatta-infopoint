@@ -114,7 +114,7 @@ export default class MapController extends BaseController {
     this.participatingClubsModel.getData().forEach((club: any) => {
       if (club.latitude && club.longitude) {
         const pos: LatLng = latLng(club.latitude, club.longitude);
-        const content: string = `<a href="#/clubRegistrations/${club.id}">${club.longName}<br>${club.city}</a>`;
+        const content: string = `<a href="#/clubDetails/${club.id}">${club.longName}<br>${club.city}</a>`;
         const mark: Marker = marker(pos).bindPopup(popup().setContent(content));
         if (club.flagUrl) {
           const iconClub = icon({
