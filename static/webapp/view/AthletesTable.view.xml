@@ -50,7 +50,7 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Inactive">
+            <ColumnListItem type="Navigation">
               <cells>
                 <Text text="{athletes>lastName}" class="bold" />
                 <Text text="{athletes>firstName}" class="bold" />

@@ -1,0 +1,125 @@
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.AthleteDetails" xmlns="sap.m" xmlns:f="sap.f"
+  xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
+  <mvc:content>
+
+    <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
+    https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
+    <Page title="{i18n>common.athlete}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
+      <headerContent>
+      </headerContent>
+      <content>
+        <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
+          <!-- DynamicPage Title -->
+          <f:title>
+            <f:DynamicPageTitle>
+              <f:heading>
+                <layout:HorizontalLayout allowWrapping="false">
+                  <Title text="{athlete>/lastName}" wrapping="true" />
+                  <Title text="{athlete>/firstName}" wrapping="true" />
+                </layout:HorizontalLayout>
+              </f:heading>
+            </f:DynamicPageTitle>
+          </f:title>
+
+          <!-- DynamicPage Header -->
+          <f:header>
+            <f:DynamicPageHeader>
+              <layout:HorizontalLayout allowWrapping="true">
+                <layout:VerticalLayout class="sapUiTinyMarginEnd">
+                  <ObjectAttribute title="{i18n>common.city}" text="{club>/city}" />
+                  <ObjectAttribute title="{i18n>common.abbreviation}" text="{club>/abbreviation}" />
+                </layout:VerticalLayout>
+                <layout:VerticalLayout>
+                  <ObjectAttribute title="{i18n>common.participations}" text="{club>/participationsCount}" />
+                  <ObjectAttribute title="{i18n>statistics.athletes} (w/m)"
+                    text="{club>/ahtletesCount} ({club>/ahtletesFemaleCount}/{club>/ahtletesMaleCount})" />
+                </layout:VerticalLayout>
+              </layout:HorizontalLayout>
+            </f:DynamicPageHeader>
+          </f:header>
+
+          <f:content>
+            <Table id="athleteRegistrationsTable" autoPopinMode="true" items="{path:'registrations>/'}" growing="true" growingThreshold="50"
+              growingScrollToLoad="true" sticky="ColumnHeaders,HeaderToolbar" class="sapUiNoContentPadding" mode="SingleSelectMaster"
+              itemPress=".onSelectionChange">
+              <headerToolbar>
+                <OverflowToolbar>
+                  <content>
+                    <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
+                    <ToolbarSpacer />
+                    <Button tooltip="{i18n>common.refresh}" text="{=!${device>/system/phone}?${i18n>common.refresh}:''}"
+                      icon="sap-icon://refresh" press=".onRefreshButtonPress" />
+                  </content>
+                </OverflowToolbar>
+              </headerToolbar>
+
+              <columns>
+                <Column hAlign="Begin" width="6rem" importance="High" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>common.race}" class="bold" />
+                  </header>
+                </Column>
+                <Column hAlign="Begin" width="14rem" importance="High" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>common.boat}" class="bold" />
+                  </header>
+                </Column>
+                <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline">
+                  <header>
+                    <Text text="{i18n>common.clubRegistration}" class="bold" />
+                  </header>
+                </Column>
+              </columns>
+
+              <items>
+                <ColumnListItem vAlign="Top" type="Navigation"
+                  highlight="{parts:[{path:'registrations>race'},{path:'registrations>'}],formatter:'.formatter.raceRegistrationHighlight'}">
+                  <cells>
+                    <layout:VerticalLayout>
+                      <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
+                        visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
+                        class="boldCancelled sapUiTinyMarginBottom" />
+                      <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
+                        visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}"
+                        class="bold sapUiTinyMarginBottom" />
+
+                      <Text text="{registrations>race/longLabel}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
+                        class="cancelled" />
+                      <Text text="{registrations>race/longLabel}"
+                        visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                    </layout:VerticalLayout>
+
+                    <layout:VerticalLayout>
+                      <Text text="{path:'registrations>',formatter:'.formatter.boatLabel'}" class="boldCancelled sapUiTinyMarginBottom"
+                        visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
+                      <Text text="{path:'registrations>',formatter:'.formatter.boatLabel'}" class="bold sapUiTinyMarginBottom"
+                        visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+
+                      <Text text="{path:'registrations>crew',formatter:'.formatter.crewLabel'}" class="cancelled"
+                        visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
+                      <Text text="{path:'registrations>crew',formatter:'.formatter.crewLabel'}"
+                        visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                    </layout:VerticalLayout>
+
+                    <layout:VerticalLayout>
+                      <HBox>
+                        <Image src="{registrations>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
+                        <Text text="{registrations>club/shortName}"
+                          visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="cancelled" />
+                        <Text text="{registrations>club/shortName}"
+                          visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                      </HBox>
+                    </layout:VerticalLayout>
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
+
+          </f:content>
+        </f:DynamicPage>
+
+      </content>
+    </Page>
+
+  </mvc:content>
+</mvc:View>
