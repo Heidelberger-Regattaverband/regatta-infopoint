@@ -1,16 +1,16 @@
-import Table from "sap/m/Table";
-import Formatter from "../model/Formatter";
-import BaseController from "./Base.controller";
-import JSONModel from "sap/ui/model/json/JSONModel";
+import Button, { Button$PressEvent } from "sap/m/Button";
 import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
-import Button, { Button$PressEvent } from "sap/m/Button";
-import Filter from "sap/ui/model/Filter";
-import FilterOperator from "sap/ui/model/FilterOperator";
 import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
-import ListBinding from "sap/ui/model/ListBinding";
+import Table from "sap/m/Table";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import ListBinding from "sap/ui/model/ListBinding";
+import Formatter from "../model/Formatter";
+import BaseController from "./Base.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller

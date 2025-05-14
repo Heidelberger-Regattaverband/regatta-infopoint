@@ -96,9 +96,9 @@
           "target": "heatDetails"
         },
         {
-          "pattern": "participatingClubs",
-          "name": "participatingClubs",
-          "target": "participatingClubs"
+          "pattern": "clubs",
+          "name": "clubs",
+          "target": "clubs"
         },
         {
           "pattern": "clubRegistrations/{clubId}",
@@ -167,9 +167,9 @@
           "level": 2,
           "viewType": "XML"
         },
-        "participatingClubs": {
+        "clubs": {
           "type": "View",
-          "name": "ParticipatingClubsTable",
+          "name": "ClubsTable",
           "level": 1,
           "viewType": "XML"
         },
