@@ -93,10 +93,10 @@ export default class AthleteDetailsController extends BaseController {
 
   private async onPatternMatched(event: Route$PatternMatchedEvent): Promise<void> {
     this.athleteId = (event.getParameter("arguments") as any).athleteId;
-    await Promise.all([this.loadRegistrationsModel(), this.loadClubModel()]);
+    await Promise.all([this.loadRegistrationsModel(), this.loadAthleteModel()]);
   }
 
-  private async loadClubModel(): Promise<boolean> {
+  private async loadAthleteModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
     return await super.updateJSONModel(this.athleteModel, `/api/regattas/${regatta.id}/clubs/${this.athleteId}`);
   }
