@@ -1,21 +1,21 @@
-import Table from "sap/m/Table";
-import Formatter from "../model/Formatter";
-import BaseController from "./Base.controller";
-import JSONModel from "sap/ui/model/json/JSONModel";
+import Button, { Button$PressEvent } from "sap/m/Button";
 import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
-import Button, { Button$PressEvent } from "sap/m/Button";
-import Filter from "sap/ui/model/Filter";
-import FilterOperator from "sap/ui/model/FilterOperator";
 import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
-import ListBinding from "sap/ui/model/ListBinding";
+import Table from "sap/m/Table";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import ListBinding from "sap/ui/model/ListBinding";
+import Formatter from "../model/Formatter";
+import BaseController from "./Base.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class ClubRegistrationsTableController extends BaseController {
+export default class ClubDetailsController extends BaseController {
 
   formatter: Formatter = Formatter;
   private table: Table;
@@ -31,12 +31,12 @@ export default class ClubRegistrationsTableController extends BaseController {
     super.setViewModel(this.registrationsModel, "registrations");
     super.setViewModel(this.clubModel, "club");
 
-    super.getRouter()?.getRoute("clubRegistrations")?.attachPatternMatched(
+    super.getRouter()?.getRoute("clubDetails")?.attachPatternMatched(
       async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
   }
 
   onNavBack(): void {
-    super.navBack("participatingClubs");
+    super.navBack("clubs");
     delete this.clubId;
   }
 
@@ -46,7 +46,7 @@ export default class ClubRegistrationsTableController extends BaseController {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("registrations");
       const registration: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
 
-      registration.race._nav = { disabled: true, back: "clubRegistrations" };
+      registration.race._nav = { disabled: true, back: "clubDetails" };
 
       (super.getComponentModel("race") as JSONModel).setData(registration.race);
       super.navToRaceDetails(registration.race.id);

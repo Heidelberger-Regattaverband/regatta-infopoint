@@ -31,7 +31,8 @@
                 <Text text="{i18n>common.firstName}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column id="athleteGenderCol" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+            <Column id="athleteGenderCol" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
+              visible="{=!${device>/system/phone}}">
               <header>
                 <Text text="{i18n>common.gender}" class="bold" wrapping="false" />
               </header>

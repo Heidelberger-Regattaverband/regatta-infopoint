@@ -14,16 +14,16 @@ import BaseTableController from "./BaseTable.controller";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class ParticipatingClubsTable extends BaseTableController {
+export default class ClubsTableController extends BaseTableController {
 
-  private readonly participatingClubsModel: JSONModel = new JSONModel();
+  private readonly clubsModel: JSONModel = new JSONModel();
 
   onInit(): void {
     super.init(super.getView()?.byId("clubsTable") as Table);
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
-    super.setViewModel(this.participatingClubsModel, "clubs");
-    super.getRouter()?.getRoute("participatingClubs")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadModel(), this);
+    super.setViewModel(this.clubsModel, "clubs");
+    super.getRouter()?.getRoute("clubs")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadModel(), this);
 
     super.sortTable("clubCityCol", false, "city");
   }
@@ -41,7 +41,7 @@ export default class ParticipatingClubsTable extends BaseTableController {
   }
 
   onSortButtonPress(event: Button$PressEvent): void {
-    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.ParticipatingClubsSortDialog").then(dialog => dialog.open());
+    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.ClubsTableSortDialog").then(dialog => dialog.open());
   }
 
   onRefreshButtonPress(event: Button$PressEvent): void {
@@ -57,7 +57,7 @@ export default class ParticipatingClubsTable extends BaseTableController {
     if (selectedItem) {
       const bindingCtx: Context | undefined | null = selectedItem.getBindingContext("clubs");
       const club: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
-      super.getRouter().navTo("clubRegistrations", { clubId: club.id }, false /* history*/);
+      super.navToClubDetails(club.id);
     }
   }
 
@@ -79,6 +79,6 @@ export default class ParticipatingClubsTable extends BaseTableController {
 
   private async loadModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
-    return await super.updateJSONModel(this.participatingClubsModel, `/api/regattas/${regatta.id}/clubs`, this.table)
+    return await super.updateJSONModel(this.clubsModel, `/api/regattas/${regatta.id}/clubs`, this.table)
   }
 }

@@ -96,14 +96,14 @@
           "target": "heatDetails"
         },
         {
-          "pattern": "participatingClubs",
-          "name": "participatingClubs",
-          "target": "participatingClubs"
+          "pattern": "clubs",
+          "name": "clubs",
+          "target": "clubs"
         },
         {
-          "pattern": "clubRegistrations/{clubId}",
-          "name": "clubRegistrations",
-          "target": "clubRegistrations"
+          "pattern": "clubDetails/{clubId}",
+          "name": "clubDetails",
+          "target": "clubDetails"
         },
         {
           "pattern": "athletes",
@@ -172,15 +172,15 @@
           "level": 2,
           "viewType": "XML"
         },
-        "participatingClubs": {
+        "clubs": {
           "type": "View",
-          "name": "ParticipatingClubsTable",
+          "name": "ClubsTable",
           "level": 1,
           "viewType": "XML"
         },
-        "clubRegistrations": {
+        "clubDetails": {
           "type": "View",
-          "name": "ClubRegistrationsTable",
+          "name": "ClubDetails",
           "level": 2,
           "viewType": "XML"
         },
