@@ -134,7 +134,7 @@ export default class BaseController extends Controller {
   }
 
   navToRaceDetails(raceId: number): void {
-    this.getRouter().navTo("raceDetails", { "raceId": raceId });
+    this.getRouter().navTo("raceDetails", { raceId: raceId });
   }
 
   navToHeats(): void {
@@ -142,7 +142,7 @@ export default class BaseController extends Controller {
   }
 
   navToHeatDetails(heatId: number): void {
-    this.getRouter().navTo("heatDetails", { "heatId": heatId });
+    this.getRouter().navTo("heatDetails", { heatId: heatId });
   }
 
   navToClubs(): void {
@@ -155,6 +155,10 @@ export default class BaseController extends Controller {
 
   navToAthletes(): void {
     this.getRouter().navTo("athletes");
+  }
+
+  navToAthleteDetails(athleteId: number): void {
+    this.getRouter().navTo("athleteDetails", { athleteId: athleteId }, false /* history*/);
   }
 
   navToMap(location?: LatLng): void {
