@@ -57,7 +57,7 @@ export default class AthletesTable extends BaseTableController {
     if (selectedItem) {
       const bindingCtx: Context | undefined | null = selectedItem.getBindingContext("athletes");
       const athlete: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
-      super.getRouter().navTo("athleteDetails", { athleteId: athlete.id }, false /* history*/);
+      super.navToAthleteDetails(athlete.id);
     }
   }
 
