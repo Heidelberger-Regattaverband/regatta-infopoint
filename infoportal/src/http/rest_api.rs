@@ -181,7 +181,7 @@ async fn get_club_registrations(
     Ok(Json(registrations))
 }
 
-#[get("/clubs/{id}")]
+#[get("/clubs/{club_id}")]
 async fn get_club(path: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
     let club_id = path.into_inner();
     let club = aquarius
@@ -189,6 +189,34 @@ async fn get_club(path: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Resp
         .await
         .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
     Ok(Json(club))
+}
+
+#[get("/athlete/{athlete_id}")]
+async fn get_athlete(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
+    let athlete_id = path.into_inner();
+    let clubs = aquarius
+        .get_athlete(athlete_id, opt_user)
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(clubs))
+}
+
+#[get("/regattas/{regatta_id}/athletes/{athlete_id}/registrations")]
+async fn get_athlete_registrations(
+    ids: Path<(i32, i32)>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
+    let ids = ids.into_inner();
+    let registrations = aquarius
+        .get_athlete_registrations(ids.0, ids.1, opt_user)
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(registrations))
 }
 
 #[get("/regattas/{regatta_id}/clubs/{club_id}")]
@@ -307,9 +335,11 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
     cfg.service(
         ActixScope::new(PATH)
             .service(get_club)
+            .service(get_athlete)
             .service(get_regattas)
             .service(get_regatta_club)
             .service(get_club_registrations)
+            .service(get_athlete_registrations)
             .service(get_participating_clubs)
             .service(get_participating_athletes)
             .service(get_active_regatta)

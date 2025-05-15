@@ -114,6 +114,36 @@ impl Registration {
         execute_query(pool, query, round).await
     }
 
+    pub async fn query_registrations_of_athlete(
+        regatta_id: i32,
+        athlete_id: i32,
+        pool: &TiberiusPool,
+    ) -> Result<Vec<Self>, DbError> {
+        let round = 64;
+        let mut query = Query::new(format!(
+            "SELECT DISTINCT {0}, {1}, {2}, l.Label_Short
+            FROM Club AS ac
+            JOIN Athlet      a ON ac.Club_ID  = a.Athlet_Club_ID_FK
+            JOIN Crew       cr ON a.Athlet_ID = cr.Crew_Athlete_ID_FK
+            JOIN Entry       e ON e.Entry_ID  = cr.Crew_Entry_ID_FK 
+            JOIN Club       oc ON oc.Club_ID  = e.Entry_OwnerClub_ID_FK
+            JOIN EntryLabel el ON e.Entry_ID  = el.EL_Entry_ID_FK
+            JOIN Label       l ON l.Label_ID  = el.EL_Label_ID_FK
+            JOIN Offer       o ON o.Offer_ID  = e.Entry_Race_ID_FK
+            WHERE e.Entry_Event_ID_FK = @P1 AND a.Athlet_ID = @P2
+                AND el.EL_RoundFrom <= @P3 AND @P3 <= el.EL_RoundTo AND cr.Crew_RoundTo = @P3
+            ORDER BY o.Offer_ID ASC",
+            Registration::select_columns("e"),
+            Club::select_columns("oc"),
+            Race::select_columns("o")
+        ));
+        query.bind(regatta_id);
+        query.bind(athlete_id);
+        query.bind(round);
+
+        execute_query(pool, query, round).await
+    }
+
     /// Queries all registrations for a race.
     /// # Arguments
     /// * `race_id` - The unique race identifier

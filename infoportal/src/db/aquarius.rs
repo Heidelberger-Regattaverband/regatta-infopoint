@@ -185,6 +185,31 @@ impl Aquarius {
         }
     }
 
+    pub(crate) async fn get_athlete_registrations(
+        &self,
+        regatta_id: i32,
+        athlete_id: i32,
+        opt_user: Option<Identity>,
+    ) -> Result<Vec<Registration>, DbError> {
+        if opt_user.is_some() {
+            self._query_athlete_registrations(regatta_id, athlete_id).await
+        } else if let Some(registrations) = self.caches.athlete_registrations.get(&(regatta_id, athlete_id)).await {
+            Ok(registrations)
+        } else {
+            self._query_athlete_registrations(regatta_id, athlete_id).await
+        }
+    }
+
+    pub(crate) async fn get_athlete(&self, athlete_id: i32, opt_user: Option<Identity>) -> Result<Athlete, DbError> {
+        if opt_user.is_some() {
+            self._query_athlete(athlete_id).await
+        } else if let Some(athlete) = self.caches.athlete.get(&athlete_id).await {
+            Ok(athlete)
+        } else {
+            self._query_athlete(athlete_id).await
+        }
+    }
+
     pub(crate) async fn calculate_scoring(&self, regatta_id: i32) -> Result<Vec<Score>, DbError> {
         let start = Instant::now();
         let scores = Score::calculate(regatta_id, TiberiusPool::instance()).await;
@@ -339,5 +364,34 @@ impl Aquarius {
             start.elapsed()
         );
         Ok(athletes)
+    }
+
+    async fn _query_athlete_registrations(
+        &self,
+        regatta_id: i32,
+        athlete_id: i32,
+    ) -> Result<Vec<Registration>, DbError> {
+        let start = Instant::now();
+        let registrations =
+            Registration::query_registrations_of_club(regatta_id, athlete_id, TiberiusPool::instance()).await?;
+        self.caches
+            .athlete_registrations
+            .set(&(regatta_id, athlete_id), &registrations)
+            .await;
+        debug!(
+            "Query registrations of athlete {} for regatta {} from DB: {:?}",
+            athlete_id,
+            regatta_id,
+            start.elapsed()
+        );
+        Ok(registrations)
+    }
+
+    async fn _query_athlete(&self, athlete_id: i32) -> Result<Athlete, DbError> {
+        let start = Instant::now();
+        let athlete = Athlete::query_athlete(athlete_id, TiberiusPool::instance()).await?;
+        self.caches.athlete.set(&athlete_id, &athlete).await;
+        debug!("Query athlete {} from DB: {:?}", athlete_id, start.elapsed());
+        Ok(athlete)
     }
 }

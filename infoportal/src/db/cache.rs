@@ -93,6 +93,8 @@ pub(super) struct Caches {
     pub race_heats_registrations: Cache<i32, Race>,
     pub club: Cache<i32, Club>,
     pub club_registrations: Cache<(i32, i32), Vec<Registration>>,
+    pub athlete: Cache<i32, Athlete>,
+    pub athlete_registrations: Cache<(i32, i32), Vec<Registration>>,
 
     // caches with entries per heat
     pub heat: Cache<i32, Heat>,
@@ -118,6 +120,8 @@ impl Caches {
             race_heats_registrations: Cache::new(MAX_RACES_COUNT, ttl),
             club: Cache::new(MAX_RACES_COUNT, ttl),
             club_registrations: Cache::new(MAX_RACES_COUNT, ttl),
+            athlete: Cache::new(MAX_RACES_COUNT, ttl),
+            athlete_registrations: Cache::new(MAX_RACES_COUNT, ttl),
 
             // caches with entries per heat
             heat: Cache::new(MAX_HEATS_COUNT, ttl),

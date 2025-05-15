@@ -47,6 +47,22 @@ impl Athlete {
         Ok(athletes.into_iter().map(|row| Athlete::from(&row)).collect())
     }
 
+    pub async fn query_athlete(athlete_id: i32, pool: &TiberiusPool) -> Result<Athlete, DbError> {
+        let mut query = Query::new(format!(
+            "SELECT DISTINCT {0}, {1} FROM Athlet a
+                JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.Club_ID
+                WHERE a.Athlet_ID = @P1",
+            Athlete::select_columns("a"),
+            Club::select_columns("cl")
+        ));
+        query.bind(athlete_id);
+
+        let mut client = pool.get().await;
+        let stream = query.query(&mut client).await?;
+        let row = utils::get_row(stream).await?;
+        Ok(Athlete::from(&row))
+    }
+
     pub fn select_columns(alias: &str) -> String {
         format!(
             " {0}.Athlet_ID, {0}.Athlet_FirstName, {0}.Athlet_LastName, {0}.Athlet_Gender, {0}.Athlet_DOB ",
