@@ -9,7 +9,6 @@
       </headerContent>
       <content>
         <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
-          <!-- DynamicPage Title -->
           <f:title>
             <f:DynamicPageTitle>
               <f:heading>
@@ -18,15 +17,10 @@
             </f:DynamicPageTitle>
           </f:title>
 
-          <!-- DynamicPage Header -->
           <f:header>
             <f:DynamicPageHeader>
-              <layout:HorizontalLayout allowWrapping="true">
-                <layout:VerticalLayout class="sapUiTinyMarginEnd">
-                  <ObjectAttribute title="{i18n>common.club}" text="{athlete>/club/shortName}" />
-                  <ObjectAttribute title="{i18n>common.participations}" text="{athlete>/participationsCount}" />
-                </layout:VerticalLayout>
-              </layout:HorizontalLayout>
+              <ObjectAttribute title="{i18n>common.club}" text="{athlete>/club/longName}" />
+              <ObjectAttribute title="{i18n>common.gender}" text="{athlete>/gender}" />
             </f:DynamicPageHeader>
           </f:header>
 
