@@ -176,6 +176,8 @@ async fn get_regatta_club(ids: Path<(i32, i32)>, aquarius: Data<Aquarius>) -> Re
     Ok(Json(club))
 }
 
+// Athletes Endpoints
+
 #[get("/regattas/{regatta_id}/athletes")]
 async fn get_participating_athletes(
     path: Path<i32>,
@@ -217,6 +219,8 @@ async fn get_athlete_registrations(
         .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
     Ok(Json(registrations))
 }
+
+// Misc Endpoints
 
 #[get("/regattas/{regatta_id}/statistics")]
 async fn get_statistics(
