@@ -71,8 +71,8 @@ impl Heat {
     pub async fn query_heats_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2}, o.* FROM Comp c
-            JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
-            JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
+            JOIN Offer     o ON o.Offer_ID              = c.Comp_Race_ID_FK
+            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
             WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_DateTime IS NOT NULL
             ORDER BY c.Comp_DateTime ASC",

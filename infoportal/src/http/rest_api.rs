@@ -206,7 +206,7 @@ async fn get_athlete_registrations(
     let registrations = aquarius
         .get_athlete_registrations(ids.0, ids.1, opt_user)
         .await
-        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+        .map_err(ErrorInternalServerError)?;
     Ok(Json(registrations))
 }
 

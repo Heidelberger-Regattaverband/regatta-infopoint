@@ -122,11 +122,10 @@ impl Registration {
         let round = 64;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, {2}, l.Label_Short
-            FROM Club AS ac
-            JOIN Athlet      a ON ac.Club_ID  = a.Athlet_Club_ID_FK
+            FROM Athlet      a
+            JOIN Club       cl ON a.Athlet_Club_ID_FK  = cl.Club_ID
             JOIN Crew       cr ON a.Athlet_ID = cr.Crew_Athlete_ID_FK
             JOIN Entry       e ON e.Entry_ID  = cr.Crew_Entry_ID_FK 
-            JOIN Club       oc ON oc.Club_ID  = e.Entry_OwnerClub_ID_FK
             JOIN EntryLabel el ON e.Entry_ID  = el.EL_Entry_ID_FK
             JOIN Label       l ON l.Label_ID  = el.EL_Label_ID_FK
             JOIN Offer       o ON o.Offer_ID  = e.Entry_Race_ID_FK
@@ -134,7 +133,7 @@ impl Registration {
                 AND el.EL_RoundFrom <= @P3 AND @P3 <= el.EL_RoundTo AND cr.Crew_RoundTo = @P3
             ORDER BY o.Offer_ID ASC",
             Registration::select_columns("e"),
-            Club::select_columns("oc"),
+            Club::select_columns("cl"),
             Race::select_columns("o")
         ));
         query.bind(regatta_id);

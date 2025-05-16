@@ -357,7 +357,7 @@ impl Aquarius {
     ) -> Result<Vec<Registration>, DbError> {
         let start = Instant::now();
         let registrations =
-            Registration::query_registrations_of_club(regatta_id, athlete_id, TiberiusPool::instance()).await?;
+            Registration::query_registrations_of_athlete(regatta_id, athlete_id, TiberiusPool::instance()).await?;
         self.caches
             .athlete_registrations
             .set(&(regatta_id, athlete_id), &registrations)
