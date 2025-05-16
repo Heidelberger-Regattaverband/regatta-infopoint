@@ -2,7 +2,6 @@ use crate::{
     db::aquarius::Aquarius,
     http::{
         auth::{Credentials, Scope as UserScope, User},
-        monitoring::Monitoring,
         ws,
     },
 };
@@ -13,29 +12,27 @@ use actix_web::{
     get, post,
     web::{Data, Json, Path, ServiceConfig},
 };
-use aquarius::db::tiberius::TiberiusPool;
-use prometheus::Registry;
 
 /// Path to REST API
 pub(crate) const PATH: &str = "/api";
 
-/// Provides the monitoring information.
-#[utoipa::path(
-    context_path = PATH,
-    responses(
-        (status = 200, description = "Monitoring", body = Monitoring),
-        (status = 401, description = "Unauthorized")
-    )
-)]
-#[get("/monitoring2")]
-async fn monitoring(registry: Data<Registry>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
-    if opt_user.is_some() {
-        let monitoring = Monitoring::new(TiberiusPool::instance(), &registry);
-        Ok(Json(monitoring))
-    } else {
-        Err(ErrorUnauthorized("Unauthorized"))
-    }
+// Filters Endpoints
+
+#[get("/regattas/{id}/filters")]
+async fn get_filters(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
+    let regatta_id = path.into_inner();
+    let filters = aquarius
+        .get_filters(regatta_id, opt_user)
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(filters))
 }
+
+// Regatta Endpoints
 
 #[get("/regattas")]
 async fn get_regattas(aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
@@ -55,7 +52,7 @@ async fn get_active_regatta(aquarius: Data<Aquarius>, opt_user: Option<Identity>
     Ok(Json(regatta))
 }
 
-#[get("/regattas/{id}")]
+#[get("/regattas/{regatta_id}")]
 async fn get_regatta(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
@@ -69,7 +66,9 @@ async fn get_regatta(
     Ok(Json(regatta))
 }
 
-#[get("/regattas/{id}/races")]
+// Races Endpoints
+
+#[get("/regattas/{regatta_id}/races")]
 async fn get_races(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
@@ -83,7 +82,7 @@ async fn get_races(
     Ok(Json(races))
 }
 
-#[get("/races/{id}")]
+#[get("/races/{race_id}")]
 async fn get_race(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
@@ -97,7 +96,9 @@ async fn get_race(
     Ok(Json(race))
 }
 
-#[get("/regattas/{id}/heats")]
+// Heats Endpoints
+
+#[get("/regattas/{regatta_id}/heats")]
 async fn get_heats(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
@@ -109,20 +110,6 @@ async fn get_heats(
         .await
         .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
     Ok(Json(heats))
-}
-
-#[get("/regattas/{id}/filters")]
-async fn get_filters(
-    path: Path<i32>,
-    aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
-) -> Result<impl Responder, Error> {
-    let regatta_id = path.into_inner();
-    let filters = aquarius
-        .get_filters(regatta_id, opt_user)
-        .await
-        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
-    Ok(Json(filters))
 }
 
 #[get("/heats/{id}")]
@@ -139,7 +126,9 @@ async fn get_heat(
     Ok(Json(heat))
 }
 
-#[get("/regattas/{id}/clubs")]
+// Clubs Endpoints
+
+#[get("/regattas/{regatta_id}/clubs")]
 async fn get_participating_clubs(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
@@ -153,18 +142,14 @@ async fn get_participating_clubs(
     Ok(Json(clubs))
 }
 
-#[get("/regattas/{id}/athletes")]
-async fn get_participating_athletes(
-    path: Path<i32>,
-    aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
-) -> Result<impl Responder, Error> {
-    let regatta_id = path.into_inner();
-    let clubs = aquarius
-        .get_participating_athletes(regatta_id, opt_user)
+#[get("/clubs/{club_id}")]
+async fn get_club(path: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
+    let club_id = path.into_inner();
+    let club = aquarius
+        .get_club(club_id)
         .await
         .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
-    Ok(Json(clubs))
+    Ok(Json(club))
 }
 
 #[get("/regattas/{regatta_id}/clubs/{club_id}/registrations")]
@@ -181,17 +166,33 @@ async fn get_club_registrations(
     Ok(Json(registrations))
 }
 
-#[get("/clubs/{club_id}")]
-async fn get_club(path: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
-    let club_id = path.into_inner();
+#[get("/regattas/{regatta_id}/clubs/{club_id}")]
+async fn get_regatta_club(ids: Path<(i32, i32)>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
+    let ids = ids.into_inner();
     let club = aquarius
-        .get_club(club_id)
+        .get_regatta_club(ids.0, ids.1)
         .await
         .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
     Ok(Json(club))
 }
 
-#[get("/athlete/{athlete_id}")]
+// Athletes Endpoints
+
+#[get("/regattas/{regatta_id}/athletes")]
+async fn get_participating_athletes(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
+    let regatta_id = path.into_inner();
+    let clubs = aquarius
+        .get_participating_athletes(regatta_id, opt_user)
+        .await
+        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+    Ok(Json(clubs))
+}
+
+#[get("/athletes/{athlete_id}")]
 async fn get_athlete(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
@@ -219,17 +220,9 @@ async fn get_athlete_registrations(
     Ok(Json(registrations))
 }
 
-#[get("/regattas/{regatta_id}/clubs/{club_id}")]
-async fn get_regatta_club(ids: Path<(i32, i32)>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
-    let ids = ids.into_inner();
-    let club = aquarius
-        .get_regatta_club(ids.0, ids.1)
-        .await
-        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
-    Ok(Json(club))
-}
+// Misc Endpoints
 
-#[get("/regattas/{id}/statistics")]
+#[get("/regattas/{regatta_id}/statistics")]
 async fn get_statistics(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
@@ -247,7 +240,7 @@ async fn get_statistics(
     }
 }
 
-#[get("/regattas/{id}/calculateScoring")]
+#[get("/regattas/{regatta_id}/calculateScoring")]
 async fn calculate_scoring(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
@@ -265,7 +258,7 @@ async fn calculate_scoring(
     }
 }
 
-#[get("/regattas/{id}/schedule")]
+#[get("/regattas/{regatta_id}/schedule")]
 async fn get_schedule(path: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let schedule = aquarius
@@ -355,7 +348,6 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(login)
             .service(identity)
             .service(logout)
-            .service(monitoring)
             .service(ws::index),
     );
 }

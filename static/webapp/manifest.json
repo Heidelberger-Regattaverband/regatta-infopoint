@@ -111,6 +111,11 @@
           "target": "athletes"
         },
         {
+          "pattern": "athleteDetails/{athleteId}",
+          "name": "athleteDetails",
+          "target": "athleteDetails"
+        },
+        {
           "pattern": "map",
           "name": "map",
           "target": "map"
@@ -183,6 +188,12 @@
           "type": "View",
           "name": "AthletesTable",
           "level": 1,
+          "viewType": "XML"
+        },
+        "athleteDetails": {
+          "type": "View",
+          "name": "AthleteDetails",
+          "level": 2,
           "viewType": "XML"
         },
         "schedule": {
