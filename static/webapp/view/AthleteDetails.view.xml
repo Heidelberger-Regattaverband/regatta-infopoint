@@ -20,7 +20,7 @@
           <f:header>
             <f:DynamicPageHeader>
               <ObjectAttribute title="{i18n>common.club}" text="{athlete>/club/longName}" />
-              <ObjectAttribute title="{i18n>common.gender}" text="{athlete>/gender}" />
+              <ObjectAttribute title="{i18n>common.gender}" text="{=${athlete>/gender}==='M'?${i18n>common.male}:${i18n>common.female}}" />
             </f:DynamicPageHeader>
           </f:header>
 
