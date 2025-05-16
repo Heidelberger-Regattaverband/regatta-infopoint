@@ -98,7 +98,7 @@ export default class AthleteDetailsController extends BaseController {
 
   private async loadAthleteModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
-    return await super.updateJSONModel(this.athleteModel, `/api/athlete/${this.athleteId}`);
+    return await super.updateJSONModel(this.athleteModel, `/api/athletes/${this.athleteId}`);
   }
 
   private async loadRegistrationsModel(): Promise<boolean> {
