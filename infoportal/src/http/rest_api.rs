@@ -142,16 +142,6 @@ async fn get_participating_clubs(
     Ok(Json(clubs))
 }
 
-#[get("/clubs/{club_id}")]
-async fn get_club(path: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
-    let club_id = path.into_inner();
-    let club = aquarius
-        .get_club(club_id)
-        .await
-        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
-    Ok(Json(club))
-}
-
 #[get("/regattas/{regatta_id}/clubs/{club_id}/registrations")]
 async fn get_club_registrations(
     ids: Path<(i32, i32)>,
@@ -327,7 +317,6 @@ async fn identity(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
 pub(crate) fn config(cfg: &mut ServiceConfig) {
     cfg.service(
         ActixScope::new(PATH)
-            .service(get_club)
             .service(get_athlete)
             .service(get_regattas)
             .service(get_regatta_club)

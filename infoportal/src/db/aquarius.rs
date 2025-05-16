@@ -109,16 +109,8 @@ impl Aquarius {
         }
     }
 
-    pub(crate) async fn get_club(&self, club_id: i32) -> Result<Club, DbError> {
-        if let Some(club) = self.caches.club.get(&club_id).await {
-            Ok(club)
-        } else {
-            self._query_club(club_id).await
-        }
-    }
-
     pub(crate) async fn get_regatta_club(&self, regatta_id: i32, club_id: i32) -> Result<Club, DbError> {
-        Club::query_regatta_club_by_id(regatta_id, club_id, TiberiusPool::instance()).await
+        Club::query_club_with_aggregations(regatta_id, club_id, TiberiusPool::instance()).await
     }
 
     pub(crate) async fn get_heats(&self, regatta_id: i32, opt_user: Option<Identity>) -> Result<Vec<Heat>, DbError> {
@@ -344,14 +336,6 @@ impl Aquarius {
             start.elapsed()
         );
         Ok(registrations)
-    }
-
-    async fn _query_club(&self, club_id: i32) -> Result<Club, DbError> {
-        let start = Instant::now();
-        let club = Club::query_club_by_id(club_id, TiberiusPool::instance()).await?;
-        self.caches.club.set(&club.id, &club).await;
-        debug!("Query club {} from DB: {:?}", club_id, start.elapsed());
-        Ok(club)
     }
 
     async fn _query_athletes(&self, regatta_id: i32) -> Result<Vec<Athlete>, DbError> {

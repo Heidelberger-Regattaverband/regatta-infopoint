@@ -33,8 +33,8 @@ impl Athlete {
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1} FROM Athlet a
                 JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.Club_ID
-                JOIN Crew   c ON a.Athlet_ID         = c.Crew_Athlete_ID_FK
-                JOIN Entry  e ON c.Crew_Entry_ID_FK  = e.Entry_ID
+                JOIN Crew  cr ON a.Athlet_ID         = cr.Crew_Athlete_ID_FK
+                JOIN Entry  e ON cr.Crew_Entry_ID_FK = e.Entry_ID
                 WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue = 0",
             Athlete::select_columns("a"),
             Club::select_columns("cl")
@@ -49,11 +49,11 @@ impl Athlete {
 
     pub async fn query_athlete(athlete_id: i32, pool: &TiberiusPool) -> Result<Athlete, DbError> {
         let mut query = Query::new(format!(
-            "SELECT DISTINCT {0}, {1} FROM Athlet a
-                JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.Club_ID
+            "SELECT {0}, {1} FROM Athlet a
+                JOIN Club c ON a.Athlet_Club_ID_FK = c.Club_ID
                 WHERE a.Athlet_ID = @P1",
             Athlete::select_columns("a"),
-            Club::select_columns("cl")
+            Club::select_columns("c")
         ));
         query.bind(athlete_id);
 

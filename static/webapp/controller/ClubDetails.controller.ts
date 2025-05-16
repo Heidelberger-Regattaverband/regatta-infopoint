@@ -56,8 +56,8 @@ export default class ClubDetailsController extends BaseController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadRegistrationsModel().then((succeeded: boolean) => {
-      super.showDataUpdatedMessage(succeeded);
+    Promise.all([this.loadRegistrationsModel(), this.loadClubModel()]).then((succeeded: [boolean, boolean]) => {
+      super.showDataUpdatedMessage(succeeded[0] && succeeded[1]);
     }).finally(() => source.setEnabled(true));
   }
 
@@ -75,7 +75,7 @@ export default class ClubDetailsController extends BaseController {
         new Filter({
           path: "crew/",
           test: function (crews: any[]) {
-            for (let crew of crews) {
+            for (const crew of crews) {
               const found = crew.athlete.firstName.toLowerCase().includes(query.toLowerCase())
                 || crew.athlete.lastName.toLowerCase().includes(query.toLowerCase());
               if (found) {

@@ -111,26 +111,18 @@ impl Club {
         Ok(clubs.into_iter().map(|row| Club::from(&row)).collect())
     }
 
-    /// Query a single club by its identifier
+    /// Query a single club by its identifier with additional aggregations such as the number of participations and athletes
     /// # Arguments
+    /// * `regatta_id` - The regatta identifier
     /// * `club_id` - The club identifier
     /// * `pool` - The database connection pool
     /// # Returns
-    /// The club with the given ID
-    pub async fn query_club_by_id(club_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
-        let mut query = Query::new(format!(
-            "SELECT {0} FROM Club c
-            WHERE {0}.Club_ID = @P1",
-            Club::select_columns("c")
-        ));
-        query.bind(club_id);
-
-        let mut client = pool.get().await;
-        let club = Club::from(&utils::get_row(query.query(&mut client).await?).await?);
-        Ok(club)
-    }
-
-    pub async fn query_regatta_club_by_id(regatta_id: i32, club_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
+    /// The club with the given ID and additional aggregations such as the number of participations and athletes
+    pub async fn query_club_with_aggregations(
+        regatta_id: i32,
+        club_id: i32,
+        pool: &TiberiusPool,
+    ) -> Result<Self, DbError> {
         let mut query = Query::new(format!(
             "SELECT {0},
                 (SELECT COUNT(*) FROM (
@@ -143,8 +135,7 @@ impl Club {
                         AND Crew_RoundTo = 64
                 ) AS Participations_Count) AS Participations_Count,
                 (SELECT COUNT(*) FROM (
-                    SELECT DISTINCT Athlet_ID
-                    FROM Club
+                    SELECT DISTINCT Athlet_ID FROM Club
                     JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
                     JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
                     JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
@@ -153,8 +144,7 @@ impl Club {
                         AND Crew_RoundTo = 64 AND Athlet_Gender = 'W'
                 ) AS Athletes_Female_Count) AS Athletes_Female_Count,
                 (SELECT COUNT(*) FROM (
-                    SELECT DISTINCT Athlet_ID
-                    FROM Club
+                    SELECT DISTINCT Athlet_ID FROM Club
                     JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
                     JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
                     JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
@@ -163,8 +153,7 @@ impl Club {
                         AND Crew_RoundTo = 64 AND Athlet_Gender = 'M'
                 ) AS Athletes_Male_Count) AS Athletes_Male_Count
             FROM Club c
-            WHERE c.Club_ID = @P2
-            ORDER BY c.Club_City ASC",
+            WHERE c.Club_ID = @P2",
             Club::select_columns("c")
         ));
         query.bind(regatta_id);

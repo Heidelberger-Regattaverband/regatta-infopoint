@@ -48,7 +48,7 @@ impl Crew {
     ) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Crew cr
-            JOIN Athlet a  ON cr.Crew_Athlete_ID_FK = a.Athlet_ID
+            JOIN Athlet  a ON cr.Crew_Athlete_ID_FK = a.Athlet_ID
             JOIN Club   cl ON a.Athlet_Club_ID_FK   = cl.Club_ID
             WHERE Crew_Entry_ID_FK = @P1 AND cr.Crew_RoundFrom <= @P2 AND @P2 <= cr.Crew_RoundTo
             ORDER BY cr.Crew_pos ASC",
