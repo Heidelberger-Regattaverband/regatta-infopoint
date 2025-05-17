@@ -9,7 +9,11 @@
           <f:heading>
             <Title text="{athlete>/lastName}, {athlete>/firstName}" wrapping="true" />
           </f:heading>
+          <f:actions>
+          </f:actions>
           <f:navigationActions>
+            <Button tooltip="{i18n>common.refresh}" text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" icon="sap-icon://refresh"
+              press=".onRefreshButtonPress" type="Transparent" />
             <Button tooltip="" icon="sap-icon://decline" press=".onNavBack" type="Transparent" />
           </f:navigationActions>
         </f:DynamicPageTitle>
@@ -25,19 +29,8 @@
 
       <f:content>
         <Table id="athleteRegistrationsTable" autoPopinMode="true" items="{path:'registrations>/'}" growing="true" growingThreshold="50"
-          growingScrollToLoad="true" sticky="ColumnHeaders,HeaderToolbar" class="sapUiNoContentPadding" mode="SingleSelectMaster"
+          growingScrollToLoad="true" sticky="ColumnHeaders" class="sapUiNoContentPadding" mode="SingleSelectMaster"
           itemPress=".onSelectionChange">
-          <headerToolbar>
-            <OverflowToolbar>
-              <content>
-                <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
-                <ToolbarSpacer />
-                <Button tooltip="{i18n>common.refresh}" text="{=!${device>/system/phone}?${i18n>common.refresh}:''}"
-                  icon="sap-icon://refresh" press=".onRefreshButtonPress" />
-              </content>
-            </OverflowToolbar>
-          </headerToolbar>
-
           <columns>
             <Column hAlign="Begin" width="6rem" importance="High" popinDisplay="Inline">
               <header>

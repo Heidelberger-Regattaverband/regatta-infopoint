@@ -1,23 +1,19 @@
-import Table from "sap/m/Table";
-import Formatter from "../model/Formatter";
-import BaseController from "./Base.controller";
-import JSONModel from "sap/ui/model/json/JSONModel";
+import Button, { Button$PressEvent } from "sap/m/Button";
 import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
-import Button, { Button$PressEvent } from "sap/m/Button";
-import Filter from "sap/ui/model/Filter";
-import FilterOperator from "sap/ui/model/FilterOperator";
-import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
-import ListBinding from "sap/ui/model/ListBinding";
+import Table from "sap/m/Table";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import Formatter from "../model/Formatter";
+import BaseController from "./Base.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class AthleteDetailsController extends BaseController {
 
-  formatter: Formatter = Formatter;
+  readonly formatter: Formatter = Formatter;
   private table: Table;
   private athleteId?: number;
   private readonly registrationsModel: JSONModel = new JSONModel();
@@ -59,36 +55,6 @@ export default class AthleteDetailsController extends BaseController {
     this.loadRegistrationsModel().then((succeeded: boolean) => {
       super.showDataUpdatedMessage(succeeded);
     }).finally(() => source.setEnabled(true));
-  }
-
-  onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
-    const query: string | undefined = event.getParameters().newValue?.trim();
-    const searchFilters: Filter[] = query ? this.createSearchFilters(query) : [];
-
-    const binding: ListBinding = this.table.getBinding("items") as ListBinding;
-    binding.filter(searchFilters);
-  }
-
-  private createSearchFilters(query: string): Filter[] {
-    return [new Filter({
-      filters: [
-        new Filter({
-          path: "crew/",
-          test: function (crews: any[]) {
-            for (let crew of crews) {
-              const found = crew.athlete.firstName.toLowerCase().includes(query.toLowerCase())
-                || crew.athlete.lastName.toLowerCase().includes(query.toLowerCase());
-              if (found) {
-                return true;
-              }
-            }
-            return false;
-          }
-        }),
-        new Filter("race/number", FilterOperator.Contains, query),
-      ],
-      and: false
-    })]
   }
 
   private async onPatternMatched(event: Route$PatternMatchedEvent): Promise<void> {
