@@ -1,13 +1,8 @@
-<mvc:View controllerName="de.regatta_hd.infoportal.controller.AthleteDetails" xmlns="sap.m" xmlns:f="sap.f" xmlns:layout="sap.ui.layout"
-  xmlns:mvc="sap.ui.core.mvc">
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.AthleteDetails" xmlns="sap.m" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
     <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
     https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
-    <!-- <Page title="{i18n>common.athlete}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
-      <headerContent>
-      </headerContent>
-      <content> -->
     <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
       <f:title>
         <f:DynamicPageTitle>
@@ -65,7 +60,7 @@
             <ColumnListItem type="Navigation"
               highlight="{parts:[{path:'registrations>race'},{path:'registrations>'}],formatter:'.formatter.raceRegistrationHighlight'}">
               <cells>
-                <layout:VerticalLayout>
+                <VBox>
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
                     visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="cancelled sapUiTinyMarginBottom" />
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
@@ -75,24 +70,22 @@
                     visible="{=(${registrations>cancelled} || ${registrations>race/cancelled}) &amp;&amp; !${device>/system/phone}}" />
                   <Text text="{registrations>race/longLabel}"
                     visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled} &amp;&amp; !${device>/system/phone}}" />
-                </layout:VerticalLayout>
+                </VBox>
 
-                <layout:VerticalLayout>
+                <HBox alignItems="Center">
                   <Text text="{path:'registrations>',formatter:'.formatter.bibBoatLabel'}" class="cancelled sapUiTinyMarginBottom"
                     visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
                   <Text text="{path:'registrations>',formatter:'.formatter.bibBoatLabel'}" class="sapUiTinyMarginBottom"
                     visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
-                </layout:VerticalLayout>
+                </HBox>
 
-                <layout:VerticalLayout>
-                  <HBox>
-                    <Image src="{registrations>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
-                    <Text text="{registrations>club/shortName}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
-                      class="cancelled" />
-                    <Text text="{registrations>club/shortName}"
-                      visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
-                  </HBox>
-                </layout:VerticalLayout>
+                <HBox alignItems="Center">
+                  <Image src="{registrations>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
+                  <Text text="{registrations>club/shortName}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
+                    class="cancelled" />
+                  <Text text="{registrations>club/shortName}"
+                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                </HBox>
               </cells>
             </ColumnListItem>
           </items>
@@ -101,7 +94,5 @@
       </f:content>
     </f:DynamicPage>
 
-    <!-- </content>
-    </Page> -->
   </mvc:content>
 </mvc:View>

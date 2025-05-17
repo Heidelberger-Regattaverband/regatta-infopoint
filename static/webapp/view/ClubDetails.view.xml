@@ -4,10 +4,6 @@
 
     <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
     https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
-    <!-- <Page title="{i18n>common.club}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
-      <headerContent>
-      </headerContent>
-      <content> -->
     <f:DynamicPage toggleHeaderOnTitleClick="false" class="sapUiNoContentPadding">
       <f:title>
         <f:DynamicPageTitle>
@@ -76,7 +72,7 @@
             <ColumnListItem type="Navigation"
               highlight="{parts:[{path:'registrations>race'},{path:'registrations>'}],formatter:'.formatter.raceRegistrationHighlight'}">
               <cells>
-                <layout:VerticalLayout>
+                <VBox>
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
                     visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="cancelled sapUiTinyMarginBottom" />
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
@@ -86,9 +82,9 @@
                     visible="{=(${registrations>cancelled} || ${registrations>race/cancelled}) &amp;&amp; !${device>/system/phone}}" />
                   <Text text="{registrations>race/longLabel}"
                     visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled} &amp;&amp; !${device>/system/phone}}" />
-                </layout:VerticalLayout>
+                </VBox>
 
-                <layout:VerticalLayout>
+                <VBox>
                   <Text text="{path:'registrations>',formatter:'.formatter.bibBoatLabel'}" class="boldCancelled sapUiTinyMarginBottom"
                     visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
                   <Text text="{path:'registrations>',formatter:'.formatter.bibBoatLabel'}" class="bold sapUiTinyMarginBottom"
@@ -98,17 +94,17 @@
                     visible="{=(${registrations>cancelled} || ${registrations>race/cancelled}) &amp;&amp; !${device>/system/phone}}" />
                   <Text text="{path:'registrations>crew',formatter:'.formatter.crewLabel'}"
                     visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled} &amp;&amp; !${device>/system/phone}}" />
-                </layout:VerticalLayout>
+                </VBox>
 
-                <layout:VerticalLayout>
-                  <HBox>
+                <HBox alignItems="Center">
+                  <items>
                     <Image src="{registrations>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
                     <Text text="{registrations>club/shortName}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
                       class="cancelled" />
                     <Text text="{registrations>club/shortName}"
                       visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
-                  </HBox>
-                </layout:VerticalLayout>
+                  </items>
+                </HBox>
               </cells>
             </ColumnListItem>
           </items>
@@ -117,7 +113,5 @@
       </f:content>
     </f:DynamicPage>
 
-    <!-- </content>
-    </Page> -->
   </mvc:content>
 </mvc:View>
