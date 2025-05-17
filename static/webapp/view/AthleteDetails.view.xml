@@ -22,7 +22,8 @@
 
       <f:header>
         <f:DynamicPageHeader>
-          <ObjectAttribute title="{i18n>common.club}" text="{athlete>/club/longName}" />
+          <ObjectAttribute title="{i18n>common.club}"
+            text="{=!${device>/system/phone}?${athlete>/club/longName}:${athlete>/club/shortName}}" />
           <ObjectAttribute title="{i18n>common.gender}" text="{=${athlete>/gender}==='M'?${i18n>common.male}:${i18n>common.female}}" />
         </f:DynamicPageHeader>
       </f:header>
@@ -66,7 +67,7 @@
               <cells>
                 <layout:VerticalLayout>
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
-                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="sapUiTinyMarginBottom" />
+                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="cancelled sapUiTinyMarginBottom" />
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
                     visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" class="sapUiTinyMarginBottom" />
 
@@ -77,15 +78,10 @@
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>
-                  <Text text="{path:'registrations>',formatter:'.formatter.boatLabelWithBib'}" class="sapUiTinyMarginBottom"
+                  <Text text="{path:'registrations>',formatter:'.formatter.bibBoatLabel'}" class="cancelled sapUiTinyMarginBottom"
                     visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
-                  <Text text="{path:'registrations>',formatter:'.formatter.boatLabelWithBib'}" class="sapUiTinyMarginBottom"
+                  <Text text="{path:'registrations>',formatter:'.formatter.bibBoatLabel'}" class="sapUiTinyMarginBottom"
                     visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
-
-                  <!-- <Text text="{path:'registrations>crew',formatter:'.formatter.crewLabel'}" class="cancelled"
-                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
-                  <Text text="{path:'registrations>crew',formatter:'.formatter.crewLabel'}"
-                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" /> -->
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>

@@ -23,7 +23,8 @@
           </headerToolbar>
 
           <columns>
-            <Column id="clubCityCol" hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline">
+            <Column id="clubCityCol" hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline"
+              visible="{=!${device>/system/phone}}">
               <header>
                 <Text text="{i18n>common.city}" class="bold" wrapping="false" />
               </header>
@@ -54,7 +55,7 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation" vAlign="Top">
+            <ColumnListItem type="Navigation">
               <cells>
                 <Text text="{clubs>city}" />
                 <HBox>

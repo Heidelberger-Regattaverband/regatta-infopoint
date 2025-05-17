@@ -62,7 +62,7 @@
             </Column>
             <Column hAlign="Begin" width="14rem" importance="High" popinDisplay="Inline">
               <header>
-                <Text text="{i18n>common.boat}" class="bold" />
+                <Text text="{i18n>common.bib} / {i18n>common.boat}" class="bold" />
               </header>
             </Column>
             <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
@@ -78,7 +78,7 @@
               <cells>
                 <layout:VerticalLayout>
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
-                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="sapUiTinyMarginBottom" />
+                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="cancelled sapUiTinyMarginBottom" />
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
                     visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" class="sapUiTinyMarginBottom" />
 
@@ -89,9 +89,9 @@
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>
-                  <Text text="{path:'registrations>',formatter:'.formatter.boatLabelWithBib'}" class="boldCancelled sapUiTinyMarginBottom"
+                  <Text text="{path:'registrations>',formatter:'.formatter.bibBoatLabel'}" class="boldCancelled sapUiTinyMarginBottom"
                     visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
-                  <Text text="{path:'registrations>',formatter:'.formatter.boatLabelWithBib'}" class="bold sapUiTinyMarginBottom"
+                  <Text text="{path:'registrations>',formatter:'.formatter.bibBoatLabel'}" class="bold sapUiTinyMarginBottom"
                     visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
 
                   <Text text="{path:'registrations>crew',formatter:'.formatter.crewLabel'}" class="cancelled"
