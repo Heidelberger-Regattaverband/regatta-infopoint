@@ -18,7 +18,7 @@
             </layout:HorizontalLayout>
           </f:heading>
           <f:navigationActions>
-            <Button tooltip="" icon="sap-icon://decline" press=".onNavBack" />
+            <Button tooltip="" icon="sap-icon://decline" press=".onNavBack" type="Transparent" />
           </f:navigationActions>
         </f:DynamicPageTitle>
       </f:title>
