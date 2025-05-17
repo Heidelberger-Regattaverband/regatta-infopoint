@@ -77,9 +77,9 @@
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>
-                  <Text text="{path:'registrations>',formatter:'.formatter.boatLabelWithBib'}" class="boldCancelled sapUiTinyMarginBottom"
+                  <Text text="{path:'registrations>',formatter:'.formatter.boatLabelWithBib'}" class="sapUiTinyMarginBottom"
                     visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
-                  <Text text="{path:'registrations>',formatter:'.formatter.boatLabelWithBib'}" class="bold sapUiTinyMarginBottom"
+                  <Text text="{path:'registrations>',formatter:'.formatter.boatLabelWithBib'}" class="sapUiTinyMarginBottom"
                     visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
 
                   <!-- <Text text="{path:'registrations>crew',formatter:'.formatter.crewLabel'}" class="cancelled"
