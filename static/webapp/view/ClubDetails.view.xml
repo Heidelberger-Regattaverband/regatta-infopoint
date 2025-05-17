@@ -73,7 +73,7 @@
           </columns>
 
           <items>
-            <ColumnListItem vAlign="Top" type="Navigation"
+            <ColumnListItem type="Navigation"
               highlight="{parts:[{path:'registrations>race'},{path:'registrations>'}],formatter:'.formatter.raceRegistrationHighlight'}">
               <cells>
                 <layout:VerticalLayout>
