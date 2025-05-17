@@ -57,7 +57,10 @@
                 <Text text="{athletes>firstName}" class="bold" />
                 <Text text="{athletes>gender}" />
                 <Text text="{athletes>year}" />
-                <Text text="{athletes>club/shortName}" />
+                <HBox alignItems="Center">
+                  <Image src="{athletes>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
+                  <Text text="{=!${device>/system/phone}?${athletes>club/longName}:${athletes>club/shortName}}" />
+                </HBox>
               </cells>
             </ColumnListItem>
           </items>

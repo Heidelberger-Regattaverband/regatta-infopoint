@@ -58,7 +58,7 @@
             <ColumnListItem type="Navigation">
               <cells>
                 <Text text="{clubs>city}" />
-                <HBox>
+                <HBox alignItems="Center">
                   <Image src="{clubs>flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
                   <Text text="{=!${device>/system/phone}?${clubs>longName}:${clubs>shortName}}" class="bold" />
                 </HBox>
