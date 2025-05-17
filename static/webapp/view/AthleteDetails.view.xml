@@ -14,6 +14,9 @@
           <f:heading>
             <Title text="{athlete>/lastName}, {athlete>/firstName}" wrapping="true" />
           </f:heading>
+          <f:navigationActions>
+            <Button tooltip="" icon="sap-icon://decline" press=".onNavBack" />
+          </f:navigationActions>
         </f:DynamicPageTitle>
       </f:title>
 

@@ -17,6 +17,9 @@
               <Title text="{club>/longName}" wrapping="true" />
             </layout:HorizontalLayout>
           </f:heading>
+          <f:navigationActions>
+            <Button tooltip="" icon="sap-icon://decline" press=".onNavBack" />
+          </f:navigationActions>
         </f:DynamicPageTitle>
       </f:title>
 
