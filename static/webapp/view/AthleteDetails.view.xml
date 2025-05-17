@@ -66,26 +66,26 @@
               <cells>
                 <layout:VerticalLayout>
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
-                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="boldCancelled sapUiTinyMarginBottom" />
+                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="sapUiTinyMarginBottom" />
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
-                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" class="bold sapUiTinyMarginBottom" />
+                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" class="sapUiTinyMarginBottom" />
 
-                  <Text text="{registrations>race/longLabel}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
-                    class="cancelled" />
+                  <Text text="{registrations>race/longLabel}" class="cancelled"
+                    visible="{=(${registrations>cancelled} || ${registrations>race/cancelled}) &amp;&amp; !${device>/system/phone}}" />
                   <Text text="{registrations>race/longLabel}"
-                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled} &amp;&amp; !${device>/system/phone}}" />
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>
-                  <Text text="{path:'registrations>',formatter:'.formatter.boatLabel'}" class="boldCancelled sapUiTinyMarginBottom"
+                  <Text text="{path:'registrations>',formatter:'.formatter.boatLabelWithBib'}" class="boldCancelled sapUiTinyMarginBottom"
                     visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
-                  <Text text="{path:'registrations>',formatter:'.formatter.boatLabel'}" class="bold sapUiTinyMarginBottom"
+                  <Text text="{path:'registrations>',formatter:'.formatter.boatLabelWithBib'}" class="bold sapUiTinyMarginBottom"
                     visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
 
-                  <Text text="{path:'registrations>crew',formatter:'.formatter.crewLabel'}" class="cancelled"
+                  <!-- <Text text="{path:'registrations>crew',formatter:'.formatter.crewLabel'}" class="cancelled"
                     visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
                   <Text text="{path:'registrations>crew',formatter:'.formatter.crewLabel'}"
-                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" /> -->
                 </layout:VerticalLayout>
 
                 <layout:VerticalLayout>

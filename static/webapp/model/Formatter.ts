@@ -174,6 +174,14 @@ export default class Formatter {
     return label;
   }
 
+  static boatLabelWithBib(registration: any): string {
+    let label: string = Formatter.boatLabel(registration);
+    if (registration.bib) {
+      label = registration.bib + " - " + label;
+    }
+    return label;
+  }
+
   static groupValueLabel(groupValue: number): string | undefined {
     const PREFIX: string = "AK ";
     switch (groupValue) {
