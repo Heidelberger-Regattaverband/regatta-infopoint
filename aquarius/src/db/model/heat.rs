@@ -77,7 +77,7 @@ impl Heat {
             WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_DateTime IS NOT NULL
             ORDER BY c.Comp_DateTime ASC",
             Heat::select_columns("c"),
-            AgeClass::select_columns("a"),
+            AgeClass::select_minimal_columns("a"),
             BoatClass::select_columns("b")
         );
 
@@ -148,7 +148,7 @@ impl Heat {
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
             WHERE Comp_ID = @P1",
             Heat::select_columns("c"),
-            AgeClass::select_columns("a"),
+            AgeClass::select_minimal_columns("a"),
             BoatClass::select_columns("b")
         );
 

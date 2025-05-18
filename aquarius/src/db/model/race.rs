@@ -134,7 +134,7 @@ impl Race {
             WHERE o.Offer_Event_ID_FK = @P1
             ORDER BY o.Offer_SortValue ASC",
             Race::select_columns("o"),
-            AgeClass::select_columns("a"),
+            AgeClass::select_minimal_columns("a"),
             BoatClass::select_columns("b")
         );
         let mut query = Query::new(sql);
@@ -153,7 +153,7 @@ impl Race {
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
             WHERE o.Offer_ID = @P1",
             Race::select_columns("o"),
-            AgeClass::select_columns("a"),
+            AgeClass::select_minimal_columns("a"),
             BoatClass::select_columns("b")
         );
         let mut client = pool.get().await;

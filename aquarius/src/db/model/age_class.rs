@@ -27,17 +27,26 @@ pub struct AgeClass {
     num_sub_classes: u8,
 
     /// The minimum age in this class
-    min_age: u8,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    min_age: Option<u8>,
 
     /// The maximum age in this class
-    max_age: u8,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    max_age: Option<u8>,
 }
 
 impl AgeClass {
-    pub fn select_columns(alias: &str) -> String {
+    pub fn select_all_columns(alias: &str) -> String {
         format!(
             " {0}.AgeClass_ID, {0}.AgeClass_Caption, {0}.AgeClass_Abbr, {0}.AgeClass_Suffix, {0}.AgeClass_Gender, \
             {0}.AgeClass_NumSubClasses, {0}.AgeClass_MinAge, {0}.AgeClass_MaxAge ",
+            alias
+        )
+    }
+    pub fn select_minimal_columns(alias: &str) -> String {
+        format!(
+            " {0}.AgeClass_ID, {0}.AgeClass_Caption, {0}.AgeClass_Abbr, {0}.AgeClass_Suffix, {0}.AgeClass_Gender, \
+            {0}.AgeClass_NumSubClasses ",
             alias
         )
     }
@@ -52,8 +61,8 @@ impl From<&Row> for AgeClass {
             suffix: row.try_get_column("AgeClass_Suffix").unwrap_or_default(),
             gender: row.get_column("AgeClass_Gender"),
             num_sub_classes: row.get_column("AgeClass_NumSubClasses"),
-            min_age: row.get_column("AgeClass_MinAge"),
-            max_age: row.get_column("AgeClass_MaxAge"),
+            min_age: row.try_get_column("AgeClass_MinAge"),
+            max_age: row.try_get_column("AgeClass_MaxAge"),
         }
     }
 }

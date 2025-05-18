@@ -94,7 +94,7 @@ async fn query_age_classes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<A
         JOIN Offer o ON o.Offer_AgeClass_ID_FK = a.AgeClass_ID
         WHERE o.Offer_Event_ID_FK = @P1
         ORDER BY a.AgeClass_MinAge DESC, a.AgeClass_MaxAge DESC",
-        AgeClass::select_columns("a")
+        AgeClass::select_all_columns("a")
     ));
     query.bind(regatta_id);
 
