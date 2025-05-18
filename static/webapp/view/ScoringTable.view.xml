@@ -1,5 +1,4 @@
-<mvc:View controllerName="de.regatta_hd.infoportal.controller.ScoringTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc"
-  xmlns:layout="sap.ui.layout">
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.ScoringTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
     <Page title="{i18n>launchpad.scoringTile.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
@@ -43,11 +42,11 @@
           </columns>
 
           <items>
-            <ColumnListItem vAlign="Top">
+            <ColumnListItem vAlign="Middle">
               <cells>
                 <Text text="{scoring>rank}" />
                 <Text text="{path: 'scoring>points', type: 'sap.ui.model.type.Float', formatOptions: {minFractionDigits: 3} }" />
-                <HBox>
+                <HBox alignItems="Center">
                   <Image src="{scoring>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
                   <Text text="{scoring>club/longName}" />
                 </HBox>

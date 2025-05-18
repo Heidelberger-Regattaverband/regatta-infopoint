@@ -50,29 +50,24 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation"
+            <ColumnListItem type="Navigation" vAlign="Middle"
               highlight="{parts:[{path:'registrations>race'},{path:'registrations>'}],formatter:'.formatter.raceRegistrationHighlight'}">
               <cells>
-                <VBox>
+                <HBox>
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
                     visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="cancelled sapUiTinyMarginBottom" />
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
                     visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" class="sapUiTinyMarginBottom" />
+                </HBox>
 
-                  <Text text="{registrations>race/longLabel}" class="cancelled"
-                    visible="{=(${registrations>cancelled} || ${registrations>race/cancelled}) &amp;&amp; !${device>/system/phone}}" />
-                  <Text text="{registrations>race/longLabel}"
-                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled} &amp;&amp; !${device>/system/phone}}" />
-                </VBox>
-
-                <HBox alignItems="Center">
+                <HBox>
                   <Text text="{path:'registrations>',formatter:'.formatter.bibBoatLabel'}" class="cancelled sapUiTinyMarginBottom"
                     visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
                   <Text text="{path:'registrations>',formatter:'.formatter.bibBoatLabel'}" class="sapUiTinyMarginBottom"
                     visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
                 </HBox>
 
-                <HBox alignItems="Center">
+                <HBox>
                   <Image src="{registrations>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
                   <Text text="{registrations>club/shortName}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
                     class="cancelled" />

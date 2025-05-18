@@ -71,17 +71,12 @@
             <ColumnListItem type="Navigation"
               highlight="{parts:[{path:'registrations>race'},{path:'registrations>'}],formatter:'.formatter.raceRegistrationHighlight'}">
               <cells>
-                <VBox>
+                <HBox alignItems="Center" alignContent="Center">
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
                     visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="cancelled sapUiTinyMarginBottom" />
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
                     visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" class="sapUiTinyMarginBottom" />
-
-                  <Text text="{registrations>race/longLabel}" class="cancelled"
-                    visible="{=(${registrations>cancelled} || ${registrations>race/cancelled}) &amp;&amp; !${device>/system/phone}}" />
-                  <Text text="{registrations>race/longLabel}"
-                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled} &amp;&amp; !${device>/system/phone}}" />
-                </VBox>
+                </HBox>
 
                 <VBox>
                   <Text text="{path:'registrations>',formatter:'.formatter.bibBoatLabel'}" class="boldCancelled sapUiTinyMarginBottom"

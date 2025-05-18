@@ -55,12 +55,12 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation">
+            <ColumnListItem type="Navigation" vAlign="Middle">
               <cells>
                 <Text text="{clubs>city}" />
                 <HBox alignItems="Center">
                   <Image src="{clubs>flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
-                  <Text text="{=!${device>/system/phone}?${clubs>longName}:${clubs>shortName}}" class="bold" />
+                  <Text text="{=!${device>/system/phone}?${clubs>longName}:${clubs>shortName}}" />
                 </HBox>
                 <Text text="{clubs>abbreviation}" />
                 <Text text="{clubs>participationsCount}" />
