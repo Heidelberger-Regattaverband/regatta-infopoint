@@ -1,14 +1,27 @@
-GET https://8e835d.online-server.cloud/api/active_regatta HTTP/1.1
+# @hostname=info.regatta-hd.de
+# @port=80
+# @protocol=https
+@hostname=localhost
+@port=8080
+@protocol=http
+@baseUrl={{protocol}}://{{hostname}}:{{port}}
+
+@activeRegatta=17
+
 ###
-GET https://8e835d.online-server.cloud/api/regattas HTTP/1.1
+GET {{baseUrl}}/api/active_regatta HTTP/1.1
 ###
-GET https://8e835d.online-server.cloud/api/regattas/12 HTTP/1.1
+GET {{baseUrl}}/api/regattas HTTP/1.1
 ###
-GET https://8e835d.online-server.cloud/api/regattas/12/heats HTTP/1.1
+GET {{baseUrl}}/api/regattas/{{activeRegatta}} HTTP/1.1
 ###
-GET https://8e835d.online-server.cloud/api/identity HTTP/1.1
+GET {{baseUrl}}/api/regattas/{{activeRegatta}}/races HTTP/1.1
 ###
-POST https://8e835d.online-server.cloud/api/login HTTP/1.1
+GET {{baseUrl}}/api/regattas/{{activeRegatta}}/heats HTTP/1.1
+###
+GET {{baseUrl}}/api/identity HTTP/1.1
+###
+POST {{baseUrl}}/api/login HTTP/1.1
 Content-Type: application/json
 
 {
@@ -16,33 +29,6 @@ Content-Type: application/json
   "password": ""
 }
 ###
-POST https://8e835d.online-server.cloud/api/logout HTTP/1.1
+POST {{baseUrl}}/api/logout HTTP/1.1
 ###
-GET https://8e835d.online-server.cloud/api/identity HTTP/1.1
-
-
-###
-GET http://localhost:8080/api/active_regatta HTTP/1.1
-###
-GET http://localhost:8080/api/regattas HTTP/1.1
-###
-GET http://localhost:8080/api/regattas/12 HTTP/1.1
-###
-GET http://localhost:8080/api/regattas/12/heats HTTP/1.1
-###
-GET http://localhost:8080/api/regattas/12/races HTTP/1.1
-###
-GET http://localhost:8080/api/identity HTTP/1.1
-###
-POST http://localhost:8080/api/login HTTP/1.1
-Content-Type: application/json
-
-{
-  "username": "",
-  "password": ""
-}
-###
-POST http://localhost:8080/api/logout HTTP/1.1
-###
-GET http://localhost:8080/api/identity HTTP/1.1
-
+GET {{baseUrl}}/api/identity HTTP/1.1
