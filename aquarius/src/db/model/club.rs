@@ -172,7 +172,7 @@ impl Club {
 
     pub fn select_min_columns(alias: &str) -> String {
         format!(
-            " {0}.Club_ID, {0}.Club_Abbr, {0}.Club_Name, {0}.Club_UltraAbbr, {0}.Club_City ",
+            " {0}.Club_ID, {0}.Club_Abbr, {0}.Club_UltraAbbr, {0}.Club_City, {0}.Club_ExternID ",
             alias
         )
     }

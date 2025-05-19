@@ -59,7 +59,7 @@
                 <Text text="{athletes>year}" />
                 <HBox alignItems="Center">
                   <Image src="{athletes>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
-                  <Text text="{=!${device>/system/phone}?${athletes>club/longName}:${athletes>club/shortName}}" />
+                  <Text text="{athletes>club/shortName}" />
                 </HBox>
               </cells>
             </ColumnListItem>
