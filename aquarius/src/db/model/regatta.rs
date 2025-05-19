@@ -50,11 +50,17 @@ impl Regatta {
         Ok(regattas.into_iter().map(|row| Regatta::from(&row)).collect())
     }
 
-    pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Result<Regatta, DbError> {
+    pub async fn query_by_id(regatta_id: i32, pool: &TiberiusPool) -> Result<Option<Regatta>, DbError> {
         let mut query = Query::new("SELECT * FROM Event WHERE Event_ID = @P1");
         query.bind(regatta_id);
 
         let mut client = pool.get().await;
-        Ok(Regatta::from(&utils::get_row(query.query(&mut client).await?).await?))
+
+        let row = utils::try_get_row(query.query(&mut client).await?).await?;
+        if let Some(row) = row {
+            Ok(Some(Regatta::from(&row)))
+        } else {
+            Ok(None)
+        }
     }
 }

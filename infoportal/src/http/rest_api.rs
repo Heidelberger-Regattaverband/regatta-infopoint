@@ -8,7 +8,7 @@ use crate::{
 use actix_identity::Identity;
 use actix_web::{
     Error, HttpMessage, HttpRequest, HttpResponse, Responder, Scope as ActixScope,
-    error::{ErrorInternalServerError, ErrorUnauthorized, InternalError},
+    error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized, InternalError},
     get, post,
     web::{Data, Json, Path, ServiceConfig},
 };
@@ -48,7 +48,10 @@ async fn get_active_regatta(aquarius: Data<Aquarius>, opt_user: Option<Identity>
     let regatta = aquarius
         .get_active_regatta(opt_user)
         .await
-        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+        .map_err(ErrorInternalServerError)?;
+    if regatta.is_none() {
+        return Err(ErrorNotFound("No active regatta found"));
+    }
     Ok(Json(regatta))
 }
 
@@ -62,7 +65,10 @@ async fn get_regatta(
     let regatta = aquarius
         .get_regatta(regatta_id, opt_user)
         .await
-        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
+        .map_err(ErrorInternalServerError)?;
+    if regatta.is_none() {
+        return Err(ErrorNotFound("Regatta not found"));
+    }
     Ok(Json(regatta))
 }
 

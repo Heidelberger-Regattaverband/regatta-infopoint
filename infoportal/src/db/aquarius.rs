@@ -46,7 +46,7 @@ impl Aquarius {
     /// The active regatta.
     /// # Errors
     /// Returns a `DbError` if the query fails.
-    pub(crate) async fn get_active_regatta(&self, opt_user: Option<Identity>) -> Result<Regatta, DbError> {
+    pub(crate) async fn get_active_regatta(&self, opt_user: Option<Identity>) -> Result<Option<Regatta>, DbError> {
         self.get_regatta(self.active_regatta_id, opt_user).await
     }
 
@@ -75,11 +75,15 @@ impl Aquarius {
         Ok(regattas)
     }
 
-    pub(crate) async fn get_regatta(&self, regatta_id: i32, opt_user: Option<Identity>) -> Result<Regatta, DbError> {
+    pub(crate) async fn get_regatta(
+        &self,
+        regatta_id: i32,
+        opt_user: Option<Identity>,
+    ) -> Result<Option<Regatta>, DbError> {
         if opt_user.is_some() {
             self._query_regatta(regatta_id).await
         } else if let Some(regatta) = self.caches.regatta.get(&regatta_id).await {
-            Ok(regatta)
+            Ok(Some(regatta))
         } else {
             self._query_regatta(regatta_id).await
         }
@@ -243,10 +247,12 @@ impl Aquarius {
         Ok(filters)
     }
 
-    async fn _query_regatta(&self, regatta_id: i32) -> Result<Regatta, DbError> {
+    async fn _query_regatta(&self, regatta_id: i32) -> Result<Option<Regatta>, DbError> {
         let start = Instant::now();
-        let regatta = Regatta::query(regatta_id, TiberiusPool::instance()).await?;
-        self.caches.regatta.set(&regatta.id, &regatta).await;
+        let regatta = Regatta::query_by_id(regatta_id, TiberiusPool::instance()).await?;
+        if let Some(regatta) = &regatta {
+            self.caches.regatta.set(&regatta_id, regatta).await;
+        }
         debug!("Query regatta {} from DB: {:?}", regatta_id, start.elapsed());
         Ok(regatta)
     }
