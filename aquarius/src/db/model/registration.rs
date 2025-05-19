@@ -104,7 +104,7 @@ impl Registration {
                 AND el.EL_RoundFrom <= @P3 AND @P3 <= el.EL_RoundTo AND cr.Crew_RoundTo = @P3
             ORDER BY o.Offer_ID ASC",
             Registration::select_columns("e"),
-            Club::select_columns("oc"),
+            Club::select_all_columns("oc"),
             Race::select_columns("o")
         ));
         query.bind(regatta_id);
@@ -133,7 +133,7 @@ impl Registration {
                 AND el.EL_RoundFrom <= @P3 AND @P3 <= el.EL_RoundTo AND cr.Crew_RoundTo = @P3
             ORDER BY o.Offer_ID ASC",
             Registration::select_columns("e"),
-            Club::select_columns("cl"),
+            Club::select_all_columns("cl"),
             Race::select_columns("o")
         ));
         query.bind(regatta_id);
@@ -160,7 +160,7 @@ impl Registration {
             WHERE e.Entry_Race_ID_FK = @P1 AND el.EL_RoundFrom <= @P2 AND @P2 <= el.EL_RoundTo
             ORDER BY e.Entry_Bib ASC",
             Registration::select_columns("e"),
-            Club::select_columns("c")
+            Club::select_all_columns("c")
         ));
         query.bind(race_id);
         query.bind(round);

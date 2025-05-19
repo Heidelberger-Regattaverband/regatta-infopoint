@@ -101,7 +101,7 @@ impl Club {
             JOIN Event AS e ON Entry_Event_ID_FK  = Event_ID
             WHERE Event_ID = @P1 AND Crew_RoundTo = 64
             ORDER BY Club_City ASC",
-            Club::select_columns("c")
+            Club::select_all_columns("c")
         );
         let mut query = Query::new(sql);
         query.bind(regatta_id);
@@ -154,7 +154,7 @@ impl Club {
                 ) AS Athletes_Male_Count) AS Athletes_Male_Count
             FROM Club c
             WHERE c.Club_ID = @P2",
-            Club::select_columns("c")
+            Club::select_all_columns("c")
         ));
         query.bind(regatta_id);
         query.bind(club_id);
@@ -163,9 +163,16 @@ impl Club {
         Ok(Club::from(&utils::get_row(query.query(&mut client).await?).await?))
     }
 
-    pub fn select_columns(alias: &str) -> String {
+    pub fn select_all_columns(alias: &str) -> String {
         format!(
             " {0}.Club_ID, {0}.Club_Abbr, {0}.Club_Name, {0}.Club_UltraAbbr, {0}.Club_City, {0}.Club_ExternID, {0}.Club_HRV_Latitude, {0}.Club_HRV_Longitude ",
+            alias
+        )
+    }
+
+    pub fn select_min_columns(alias: &str) -> String {
+        format!(
+            " {0}.Club_ID, {0}.Club_Abbr, {0}.Club_Name, {0}.Club_UltraAbbr, {0}.Club_City ",
             alias
         )
     }

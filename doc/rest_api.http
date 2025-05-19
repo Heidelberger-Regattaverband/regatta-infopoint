@@ -13,7 +13,7 @@ GET {{baseUrl}}/api/active_regatta HTTP/1.1
 ###
 GET {{baseUrl}}/api/regattas HTTP/1.1
 ###
-GET {{baseUrl}}/api/regattas/{{activeRegatta}} HTTP/1.1
+GET {{baseUrl}}/api/regattas/{{activeRegatta}}/athletes HTTP/1.1
 ###
 GET {{baseUrl}}/api/regattas/{{activeRegatta}}/races HTTP/1.1
 ###

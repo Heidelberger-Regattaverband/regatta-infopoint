@@ -37,7 +37,7 @@ impl Athlete {
                 JOIN Entry  e ON cr.Crew_Entry_ID_FK = e.Entry_ID
                 WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue = 0",
             Athlete::select_columns("a"),
-            Club::select_columns("cl")
+            Club::select_min_columns("cl")
         ));
         query.bind(regatta_id);
 
@@ -53,7 +53,7 @@ impl Athlete {
                 JOIN Club c ON a.Athlet_Club_ID_FK = c.Club_ID
                 WHERE a.Athlet_ID = @P1",
             Athlete::select_columns("a"),
-            Club::select_columns("c")
+            Club::select_min_columns("c")
         ));
         query.bind(athlete_id);
 

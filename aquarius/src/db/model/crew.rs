@@ -54,7 +54,7 @@ impl Crew {
             ORDER BY cr.Crew_pos ASC",
             Crew::select_columns("cr"),
             Athlete::select_columns("a"),
-            Club::select_columns("cl")
+            Club::select_all_columns("cl")
         );
         let mut query = Query::new(sql);
         query.bind(registration_id);
