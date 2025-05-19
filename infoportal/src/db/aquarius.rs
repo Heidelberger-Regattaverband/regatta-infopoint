@@ -75,11 +75,7 @@ impl Aquarius {
         Ok(regattas)
     }
 
-    pub(crate) async fn get_regatta(
-        &self,
-        regatta_id: i32,
-        opt_user: Option<Identity>,
-    ) -> Result<Option<Regatta>, DbError> {
+    async fn get_regatta(&self, regatta_id: i32, opt_user: Option<Identity>) -> Result<Option<Regatta>, DbError> {
         if opt_user.is_some() {
             self._query_regatta(regatta_id).await
         } else if let Some(regatta) = self.caches.regatta.get(&regatta_id).await {

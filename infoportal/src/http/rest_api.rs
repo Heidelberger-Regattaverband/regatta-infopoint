@@ -55,23 +55,6 @@ async fn get_active_regatta(aquarius: Data<Aquarius>, opt_user: Option<Identity>
     Ok(Json(regatta))
 }
 
-#[get("/regattas/{regatta_id}")]
-async fn get_regatta(
-    path: Path<i32>,
-    aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
-) -> Result<impl Responder, Error> {
-    let regatta_id = path.into_inner();
-    let regatta = aquarius
-        .get_regatta(regatta_id, opt_user)
-        .await
-        .map_err(ErrorInternalServerError)?;
-    if regatta.is_none() {
-        return Err(ErrorNotFound("Regatta not found"));
-    }
-    Ok(Json(regatta))
-}
-
 // Races Endpoints
 
 #[get("/regattas/{regatta_id}/races")]
@@ -331,7 +314,6 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(get_participating_clubs)
             .service(get_participating_athletes)
             .service(get_active_regatta)
-            .service(get_regatta)
             .service(get_race)
             .service(get_races)
             .service(get_heats)
