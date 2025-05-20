@@ -21,18 +21,18 @@ export default class RaceDetailsController extends BaseController {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getView()?.addEventDelegate({ onBeforeShow: this.onBeforeShow, onBeforeHide: this.onBeforeHide }, this);
     super.setViewModel(this.raceModel, "raceRegistrations");
-
-    super.getEventBus()?.subscribe("race", "itemChanged", this.onItemChanged, this);
   }
 
   private onBeforeShow(): void {
     this.loadRaceModel().then(() => {
+      super.getEventBus()?.subscribe("race", "itemChanged", this.onItemChanged, this);
       window.addEventListener("keydown", this.keyListener);
     })
   }
 
   private onBeforeHide(): void {
     window.removeEventListener("keydown", this.keyListener);
+    super.getEventBus()?.unsubscribe("race", "itemChanged", this.onItemChanged, this);
   }
 
   onNavBack(): void {

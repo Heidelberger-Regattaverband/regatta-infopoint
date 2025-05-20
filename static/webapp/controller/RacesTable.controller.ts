@@ -1,23 +1,26 @@
+import Button, { Button$PressEvent } from "sap/m/Button";
+import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
+import ListItemBase from "sap/m/ListItemBase";
+import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import Table from "sap/m/Table";
-import Formatter from "../model/Formatter";
-import BaseTableController from "./BaseTable.controller";
-import JSONModel from "sap/ui/model/json/JSONModel";
+import ViewSettingsDialog from "sap/m/ViewSettingsDialog";
 import ViewSettingsFilterItem from "sap/m/ViewSettingsFilterItem";
 import ViewSettingsItem from "sap/m/ViewSettingsItem";
-import Button, { Button$PressEvent } from "sap/m/Button";
-import FilterOperator from "sap/ui/model/FilterOperator";
-import Filter from "sap/ui/model/Filter";
-import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
-import ViewSettingsDialog from "sap/m/ViewSettingsDialog";
-import ListItemBase from "sap/m/ListItemBase";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
-import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import Formatter from "../model/Formatter";
+import BaseTableController from "./BaseTable.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class RacesTableController extends BaseTableController {
+
+  private static readonly FILTER_DIALOG: string = "de.regatta_hd.infoportal.view.RacesFilterDialog";
+  private static readonly SORT_DIALOG: string = "de.regatta_hd.infoportal.view.RacesSortDialog";
 
   formatter: Formatter = Formatter;
   private readonly racesModel: JSONModel = new JSONModel();
@@ -30,7 +33,7 @@ export default class RacesTableController extends BaseTableController {
     super.getRouter()?.getRoute("races")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadRacesModel(), this);
 
     super.getFilters().then((filters) => {
-      super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog").then((viewSettingsDialog: ViewSettingsDialog) => {
+      super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG).then((viewSettingsDialog: ViewSettingsDialog) => {
         if (filters.boatClasses && filters.boatClasses.length > 1) {
           const boatClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "boatClass", text: "{i18n>common.boatClass}" });
           filters.boatClasses.forEach((boatClass: any) => {
@@ -97,17 +100,17 @@ export default class RacesTableController extends BaseTableController {
   }
 
   onFilterButtonPress(event: Button$PressEvent): void {
-    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog").then(dialog => dialog.open());
+    super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG).then(dialog => dialog.open());
   }
 
   onClearFilterPress(event: Button$PressEvent): void {
-    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog").then(dialog => dialog.clearFilters());
+    super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG).then(dialog => dialog.clearFilters());
     super.clearFilters();
     super.applyFilters();
   }
 
   onSortButtonPress(event: Button$PressEvent): void {
-    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesSortDialog").then(dialog => dialog.open());
+    super.getViewSettingsDialog(RacesTableController.SORT_DIALOG).then(dialog => dialog.open());
   }
 
   onRefreshButtonPress(event: Button$PressEvent): void {

@@ -17,18 +17,18 @@ export default class HeatDetailsController extends BaseController {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getView()?.addEventDelegate({ onBeforeShow: this.onBeforeShow, onBeforeHide: this.onBeforeHide }, this);
     super.setViewModel(new JSONModel(), "heatRegistrations");
-
-    super.getEventBus()?.subscribe("heat", "itemChanged", this.onItemChanged, this);
   }
 
   private onBeforeShow(): void {
     this.loadHeatModel().then(() => {
+      super.getEventBus()?.subscribe("heat", "itemChanged", this.onItemChanged, this);
       window.addEventListener("keydown", this.keyListener);
     });
   }
 
   private onBeforeHide(): void {
     window.removeEventListener("keydown", this.keyListener);
+    super.getEventBus()?.unsubscribe("heat", "itemChanged", this.onItemChanged, this);
   }
 
   onNavBack(): void {
