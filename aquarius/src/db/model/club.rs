@@ -17,7 +17,8 @@ pub struct Club {
     extern_id: Option<i32>,
 
     /// The short name of the club.
-    short_name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    short_name: Option<String>,
 
     /// The long name of the club.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -195,7 +196,7 @@ impl From<&Row> for Club {
         Club {
             id: value.get_column("Club_ID"),
             extern_id: club_extern_id,
-            short_name: value.get_column("Club_Abbr"),
+            short_name: value.try_get_column("Club_Abbr"),
             long_name: value.try_get_column("Club_Name"),
             abbreviation: value.try_get_column("Club_UltraAbbr"),
             city: value.get_column("Club_City"),
