@@ -53,7 +53,7 @@ impl Athlete {
                 JOIN Club c ON a.Athlet_Club_ID_FK = c.Club_ID
                 WHERE a.Athlet_ID = @P1",
             Athlete::select_columns("a"),
-            Club::select_min_columns("c")
+            Club::select_all_columns("c")
         ));
         query.bind(athlete_id);
 
