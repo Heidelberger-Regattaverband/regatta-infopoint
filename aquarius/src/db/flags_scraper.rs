@@ -3,6 +3,7 @@ use scraper::{Html, Selector};
 use std::{collections::HashMap, sync::OnceLock, time::Instant};
 
 const BASE_URL: &str = "https://verwaltung.rudern.de";
+// donwloaded from https://verwaltung.rudern.de/flags
 const FLAGS_CONTENT: &str = include_str!("flags.html");
 
 static CLUB_FLAGS: OnceLock<HashMap<i32, ClubFlag>> = OnceLock::new();
