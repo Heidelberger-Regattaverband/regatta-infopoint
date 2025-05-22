@@ -30,8 +30,7 @@
 
       <f:content>
         <Table id="athleteRegistrationsTable" autoPopinMode="true" items="{path:'registrations>/'}" growing="true" growingThreshold="50"
-          growingScrollToLoad="true" sticky="ColumnHeaders" class="sapUiNoContentPadding" mode="SingleSelectMaster"
-          itemPress=".onSelectionChange">
+          growingScrollToLoad="true" sticky="ColumnHeaders" class="sapUiNoContentPadding" itemPress=".onSelectionChange">
           <columns>
             <Column hAlign="Begin" width="6rem" importance="High" popinDisplay="Inline">
               <header>
@@ -54,21 +53,21 @@
             <ColumnListItem type="Navigation" vAlign="Middle"
               highlight="{parts:[{path:'registrations>race'},{path:'registrations>'}],formatter:'.formatter.raceRegistrationHighlight'}">
               <cells>
-                <HBox>
+                <HBox alignItems="Center">
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
                     visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="cancelled sapUiTinyMarginBottom" />
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
                     visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" class="sapUiTinyMarginBottom" />
                 </HBox>
 
-                <HBox>
+                <HBox alignItems="Center">
                   <Text text="{path:'registrations>',formatter:'.formatter.bibBoatLabel'}" class="cancelled sapUiTinyMarginBottom"
                     visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
                   <Text text="{path:'registrations>',formatter:'.formatter.bibBoatLabel'}" class="sapUiTinyMarginBottom"
                     visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
                 </HBox>
 
-                <HBox>
+                <HBox alignItems="Center">
                   <Image src="{registrations>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
                   <Text text="{registrations>club/shortName}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
                     class="cancelled" />

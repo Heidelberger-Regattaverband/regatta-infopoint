@@ -52,23 +52,19 @@ export default class AthleteDetailsController extends BaseController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadRegistrationsModel().then((succeeded: boolean) => {
-      super.showDataUpdatedMessage(succeeded);
+    this.loadData().then((succeeded: [boolean, boolean]) => {
+      super.showDataUpdatedMessage(succeeded[0] && succeeded[1]);
     }).finally(() => source.setEnabled(true));
   }
 
   private async onPatternMatched(event: Route$PatternMatchedEvent): Promise<void> {
     this.athleteId = (event.getParameter("arguments") as any).athleteId;
-    await Promise.all([this.loadRegistrationsModel(), this.loadAthleteModel()]);
+    await this.loadData();
   }
 
-  private async loadAthleteModel(): Promise<boolean> {
+  private async loadData(): Promise<[boolean, boolean]> {
     const regatta: any = await super.getActiveRegatta();
-    return await super.updateJSONModel(this.athleteModel, `/api/athletes/${this.athleteId}`);
-  }
-
-  private async loadRegistrationsModel(): Promise<boolean> {
-    const regatta: any = await super.getActiveRegatta();
-    return await super.updateJSONModel(this.registrationsModel, `/api/regattas/${regatta.id}/athletes/${this.athleteId}/registrations`, this.table);
+    return await Promise.all([super.updateJSONModel(this.registrationsModel, `/api/regattas/${regatta.id}/athletes/${this.athleteId}/registrations`, this.table),
+    super.updateJSONModel(this.athleteModel, `/api/athletes/${this.athleteId}`)]);
   }
 }
