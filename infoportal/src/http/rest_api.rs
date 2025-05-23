@@ -79,7 +79,7 @@ async fn get_race(
 ) -> Result<impl Responder, Error> {
     let race_id = path.into_inner();
     let race = aquarius
-        .get_race_heats_registrations(race_id, opt_user)
+        .get_race_heats_entries(race_id, opt_user)
         .await
         .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
     Ok(Json(race))
@@ -132,17 +132,17 @@ async fn get_participating_clubs(
 }
 
 #[get("/regattas/{regatta_id}/clubs/{club_id}/registrations")]
-async fn get_club_registrations(
+async fn get_club_entries(
     ids: Path<(i32, i32)>,
     aquarius: Data<Aquarius>,
     opt_user: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let ids = ids.into_inner();
-    let registrations = aquarius
-        .get_club_registrations(ids.0, ids.1, opt_user)
+    let entries = aquarius
+        .get_club_entries(ids.0, ids.1, opt_user)
         .await
         .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
-    Ok(Json(registrations))
+    Ok(Json(entries))
 }
 
 #[get("/regattas/{regatta_id}/clubs/{club_id}")]
@@ -186,17 +186,17 @@ async fn get_athlete(
 }
 
 #[get("/regattas/{regatta_id}/athletes/{athlete_id}/registrations")]
-async fn get_athlete_registrations(
+async fn get_athlete_entries(
     ids: Path<(i32, i32)>,
     aquarius: Data<Aquarius>,
     opt_user: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let ids = ids.into_inner();
-    let registrations = aquarius
-        .get_athlete_registrations(ids.0, ids.1, opt_user)
+    let entries = aquarius
+        .get_athlete_entries(ids.0, ids.1, opt_user)
         .await
         .map_err(ErrorInternalServerError)?;
-    Ok(Json(registrations))
+    Ok(Json(entries))
 }
 
 // Misc Endpoints
@@ -309,8 +309,8 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(get_athlete)
             .service(get_regattas)
             .service(get_regatta_club)
-            .service(get_club_registrations)
-            .service(get_athlete_registrations)
+            .service(get_club_entries)
+            .service(get_athlete_entries)
             .service(get_participating_clubs)
             .service(get_participating_athletes)
             .service(get_active_regatta)

@@ -26,7 +26,7 @@ struct HeatsStatistics {
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-struct RegistrationsStatistics {
+struct EntriesStatistics {
     all: i32,
     cancelled: i32,
     registering_clubs: i32,
@@ -43,7 +43,7 @@ struct RegistrationsStatistics {
 pub struct Statistics {
     races: RacesStatistics,
     heats: HeatsStatistics,
-    registrations: RegistrationsStatistics,
+    registrations: EntriesStatistics,
     athletes: Option<Athletes>,
 }
 
@@ -64,7 +64,7 @@ impl From<&Row> for Statistics {
         };
         let athletes_female = value.get_column("registrations_athletes_female");
         let athletes_male = value.get_column("registrations_athletes_male");
-        let registrations = RegistrationsStatistics {
+        let registrations = EntriesStatistics {
             all: value.get_column("registrations_all"),
             cancelled: value.get_column("registrations_cancelled"),
             registering_clubs: value.get_column("registrations_owner_clubs"),
