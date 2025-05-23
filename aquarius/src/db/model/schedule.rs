@@ -75,7 +75,7 @@ impl Schedule {
                 AND c.Comp_RoundCode IN ('V')) as Forerun_Start
             FROM Offer o
             WHERE o.Offer_Event_ID_FK = @P1 AND o.Offer_Cancelled = 0 
-            ORDER BY o.Offer_SortValue";
+            ORDER BY Final_Start";
 
         let mut query: Query = Query::new(sql);
         query.bind(regatta_id);
