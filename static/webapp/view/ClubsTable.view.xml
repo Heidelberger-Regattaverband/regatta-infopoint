@@ -49,7 +49,7 @@
             <Column id="clubAthletesCol" hAlign="Begin" width="4rem" importance="Low" popinDisplay="Inline"
               visible="{=!${device>/system/phone}}">
               <header>
-                <Text text="{i18n>statistics.athletesCount}" class="bold" wrapping="false" />
+                <Text text="{i18n>common.athletesCount}" class="bold" wrapping="false" />
               </header>
             </Column>
           </columns>
