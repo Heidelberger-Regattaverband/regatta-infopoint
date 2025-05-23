@@ -41,7 +41,8 @@
           <headerToolbar>
             <OverflowToolbar>
               <content>
-                <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
+                <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false"
+                  placeholder="{i18n>search.athletes}" />
                 <ToolbarSpacer />
                 <Button tooltip="{i18n>common.refresh}" text="{=!${device>/system/phone}?${i18n>common.refresh}:''}"
                   icon="sap-icon://refresh" press=".onRefreshButtonPress" />

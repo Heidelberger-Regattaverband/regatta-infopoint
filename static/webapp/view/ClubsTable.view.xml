@@ -10,7 +10,7 @@
           <headerToolbar>
             <OverflowToolbar>
               <content>
-                <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
+                <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" placeholder="{i18n>search.clubs}" />
                 <!-- Sorting button -->
                 <Button text="{=!${device>/system/phone}?${i18n>common.sorting}:''}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
                   press=".onSortButtonPress" />
