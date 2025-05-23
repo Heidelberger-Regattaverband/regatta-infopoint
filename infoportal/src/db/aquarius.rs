@@ -4,7 +4,7 @@ use crate::{
 };
 use actix_identity::Identity;
 use aquarius::db::{
-    model::{Athlete, Club, Filters, Heat, Race, Regatta, Registration, Schedule, Score, Statistics},
+    model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule, Score, Statistics},
     tiberius::TiberiusPool,
 };
 use futures::future::join3;
@@ -153,7 +153,7 @@ impl Aquarius {
         regatta_id: i32,
         club_id: i32,
         opt_user: Option<Identity>,
-    ) -> Result<Vec<Registration>, DbError> {
+    ) -> Result<Vec<Entry>, DbError> {
         if opt_user.is_some() {
             self._query_club_registrations(regatta_id, club_id).await
         } else if let Some(registrations) = self.caches.club_registrations.get(&(regatta_id, club_id)).await {
@@ -182,7 +182,7 @@ impl Aquarius {
         regatta_id: i32,
         athlete_id: i32,
         opt_user: Option<Identity>,
-    ) -> Result<Vec<Registration>, DbError> {
+    ) -> Result<Vec<Entry>, DbError> {
         if opt_user.is_some() {
             self._query_athlete_registrations(regatta_id, athlete_id).await
         } else if let Some(registrations) = self.caches.athlete_registrations.get(&(regatta_id, athlete_id)).await {
@@ -258,7 +258,7 @@ impl Aquarius {
         let queries = join3(
             Race::query_race_by_id(race_id, TiberiusPool::instance()),
             Heat::query_heats_of_race(race_id, TiberiusPool::instance()),
-            Registration::query_registrations_for_race(race_id, TiberiusPool::instance()),
+            Entry::query_entries_for_race(race_id, TiberiusPool::instance()),
         )
         .await;
         let mut race = queries.0?;
@@ -323,10 +323,9 @@ impl Aquarius {
         Ok(clubs)
     }
 
-    async fn _query_club_registrations(&self, regatta_id: i32, club_id: i32) -> Result<Vec<Registration>, DbError> {
+    async fn _query_club_registrations(&self, regatta_id: i32, club_id: i32) -> Result<Vec<Entry>, DbError> {
         let start = Instant::now();
-        let registrations =
-            Registration::query_registrations_of_club(regatta_id, club_id, TiberiusPool::instance()).await?;
+        let registrations = Entry::query_entries_of_club(regatta_id, club_id, TiberiusPool::instance()).await?;
         self.caches
             .club_registrations
             .set(&(regatta_id, club_id), &registrations)
@@ -352,14 +351,9 @@ impl Aquarius {
         Ok(athletes)
     }
 
-    async fn _query_athlete_registrations(
-        &self,
-        regatta_id: i32,
-        athlete_id: i32,
-    ) -> Result<Vec<Registration>, DbError> {
+    async fn _query_athlete_registrations(&self, regatta_id: i32, athlete_id: i32) -> Result<Vec<Entry>, DbError> {
         let start = Instant::now();
-        let registrations =
-            Registration::query_registrations_of_athlete(regatta_id, athlete_id, TiberiusPool::instance()).await?;
+        let registrations = Entry::query_entries_of_athlete(regatta_id, athlete_id, TiberiusPool::instance()).await?;
         self.caches
             .athlete_registrations
             .set(&(regatta_id, athlete_id), &registrations)

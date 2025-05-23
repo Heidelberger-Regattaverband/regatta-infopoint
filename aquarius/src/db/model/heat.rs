@@ -1,5 +1,5 @@
 use crate::db::{
-    model::{AgeClass, BoatClass, HeatRegistration, Race, Referee, TryToEntity, utils},
+    model::{AgeClass, BoatClass, HeatEntry, Race, Referee, TryToEntity, utils},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use chrono::{DateTime, Utc};
@@ -46,7 +46,7 @@ pub struct Heat {
 
     /// The registrations assigned to this heat.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) registrations: Option<Vec<HeatRegistration>>,
+    pub(crate) registrations: Option<Vec<HeatEntry>>,
 
     /// The round of this heat: 64 - final, 4 - Vorlauf
     pub(crate) round: i16,
@@ -160,7 +160,7 @@ impl Heat {
 
         let results = join(
             Referee::query_referees_for_heat(heat.id, pool),
-            HeatRegistration::query_registrations_of_heat(&heat, pool),
+            HeatEntry::query_registrations_of_heat(&heat, pool),
         )
         .await;
         heat.referees = results.0?;

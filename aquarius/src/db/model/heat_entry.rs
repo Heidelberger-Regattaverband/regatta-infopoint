@@ -1,5 +1,5 @@
 use crate::db::{
-    model::{Club, Crew, Heat, HeatResult, Race, Registration, TryToEntity, utils},
+    model::{Club, Crew, Entry, Heat, HeatResult, Race, TryToEntity, utils},
     tiberius::{RowColumn, TiberiusPool},
 };
 use futures::future::{BoxFuture, join_all};
@@ -10,33 +10,33 @@ use tiberius::{Query, Row, error::Error as DbError};
 /// A registration of a boat in a heat.
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct HeatRegistration {
-    /// The unique id of the registration.
+pub struct HeatEntry {
+    /// The unique id of the entry.
     pub(crate) id: i32,
 
     /// The lane in which the boat is supposed to start.
     lane: i16,
 
-    /// The registration of the boat.
-    pub(crate) registration: Registration,
+    /// The entry of the boat.
+    pub(crate) registration: Entry,
 
     /// The result of the boat in the heat
     #[serde(skip_serializing_if = "Option::is_none")]
     result: Option<HeatResult>,
 }
 
-impl From<&Row> for HeatRegistration {
+impl From<&Row> for HeatEntry {
     fn from(value: &Row) -> Self {
-        HeatRegistration {
+        HeatEntry {
             id: value.get_column("CE_ID"),
             lane: value.get_column("CE_Lane"),
-            registration: Registration::from(value),
+            registration: Entry::from(value),
             result: value.try_to_entity(),
         }
     }
 }
 
-impl HeatRegistration {
+impl HeatEntry {
     /// Query all registrations of a heat.
     /// # Arguments
     /// * `heat` - The heat to query the registrations for
@@ -56,7 +56,7 @@ impl HeatRegistration {
             JOIN Club c                ON c.Club_ID = Entry_OwnerClub_ID_FK
             WHERE CE_Comp_ID_FK = @P1 AND ((Result_SplitNr = 64 AND Comp_State >=4) OR (Result_SplitNr = 0 AND Comp_State < 3) OR (Comp_State < 2 AND Result_SplitNr IS NULL))
             AND EL_RoundFrom <= Comp_Round AND Comp_Round <= EL_RoundTo", 
-            Registration::select_columns("e"), Club::select_all_columns("c"), Race::select_columns("o"), HeatResult::select_columns("r"));
+            Entry::select_columns("e"), Club::select_all_columns("c"), Race::select_columns("o"), HeatResult::select_columns("r"));
         let mut query = Query::new(sql);
         query.bind(heat.id);
 
@@ -64,10 +64,10 @@ impl HeatRegistration {
         let rows = utils::get_rows(query.query(&mut client).await?).await?;
 
         // convert rows into HeatRegistrations
-        let mut heat_registrations: Vec<HeatRegistration> = rows
+        let mut heat_registrations: Vec<HeatEntry> = rows
             .into_iter()
             .map(|row| {
-                let mut heat_registration = HeatRegistration::from(&row);
+                let mut heat_registration = HeatEntry::from(&row);
                 // if a result is available, the registration isn't cancelled yet
                 if heat_registration.result.is_some() {
                     heat_registration.registration.cancelled = false;

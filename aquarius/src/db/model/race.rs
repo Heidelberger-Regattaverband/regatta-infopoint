@@ -1,4 +1,4 @@
-use crate::db::model::{Heat, Registration, utils};
+use crate::db::model::{Entry, Heat, utils};
 use crate::db::{
     model::{AgeClass, BoatClass, TryToEntity},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
@@ -60,7 +60,7 @@ pub struct Race {
 
     /// All registrations for this race.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub registrations: Option<Vec<Registration>>,
+    pub registrations: Option<Vec<Entry>>,
 
     /// All heats for this race.
     #[serde(skip_serializing_if = "Option::is_none")]
