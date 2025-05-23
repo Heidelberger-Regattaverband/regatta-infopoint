@@ -186,6 +186,8 @@ impl From<&Row> for Club {
         if let Some(extern_id) = club_extern_id {
             if let Some(club_flag) = ClubFlag::get(&extern_id) {
                 flag_url = Some(club_flag.flag_url.clone());
+            } else {
+                flag_url = Some(format!("images/flags/{}.png", extern_id));
             }
         }
 
