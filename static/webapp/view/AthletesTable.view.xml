@@ -55,7 +55,7 @@
               <cells>
                 <Text text="{athletes>lastName}" class="bold" />
                 <Text text="{athletes>firstName}" class="bold" />
-                <Text text="{athletes>gender}" />
+                <Text text="{=${athletes>gender}==='M'?${i18n>common.male}:${i18n>common.female}}" />
                 <Text text="{athletes>year}" />
                 <HBox alignItems="Center">
                   <Image src="{athletes>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
