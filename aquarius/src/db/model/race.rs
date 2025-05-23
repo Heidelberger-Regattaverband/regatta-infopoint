@@ -37,7 +37,7 @@ pub struct Race {
     /// Indicates whether the race is canceled or not.
     cancelled: bool,
 
-    /// The number of registrations for this race.
+    /// The number of entries for this race.
     registrations_count: i32,
 
     /// Indicates whether the race is seeded or not.
@@ -58,7 +58,7 @@ pub struct Race {
     #[serde(skip_serializing_if = "Option::is_none")]
     date_time: Option<DateTime<Utc>>,
 
-    /// All registrations for this race.
+    /// All entries for this race.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub registrations: Option<Vec<Entry>>,
 

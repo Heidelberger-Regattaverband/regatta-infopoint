@@ -31,11 +31,11 @@ pub struct Entry {
     #[serde(skip_serializing_if = "Option::is_none")]
     boat_number: Option<i16>,
 
-    /** An optional comment to the registration with additional information. */
+    /** An optional comment to the entry with additional information. */
     #[serde(skip_serializing_if = "Option::is_none")]
     comment: Option<String>,
 
-    /// A short label of the registration. Could be a club name or the name of a racing community.
+    /// A short label of the entry. Could be a club name or the name of a racing community.
     short_label: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -83,7 +83,7 @@ impl Entry {
     /// * `club_id` - The unique identifier of the club.
     /// * `pool` - The connection pool to the database.
     /// # Returns
-    /// A vector of registrations for the given club and regatta.
+    /// A vector of entries for the given club and regatta.
     pub async fn query_entries_of_club(
         regatta_id: i32,
         club_id: i32,
@@ -148,7 +148,7 @@ impl Entry {
     /// * `race_id` - The unique race identifier
     /// * `pool` - The connection pool to the database
     /// # Returns
-    /// A vector of registrations for the given race
+    /// A vector of entries for the given race
     pub async fn query_entries_for_race(race_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let round = 64;
         let mut query = Query::new(format!(
@@ -175,29 +175,29 @@ async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Res
 
     let mut crew_futures: Vec<BoxFuture<Result<Vec<Crew>, DbError>>> = Vec::new();
     let mut heats_futures: Vec<BoxFuture<Result<Vec<Heat>, DbError>>> = Vec::new();
-    let mut registrations: Vec<Entry> = utils::get_rows(stream)
+    let mut entries: Vec<Entry> = utils::get_rows(stream)
         .await?
         .into_iter()
         .map(|row| {
-            let registration = Entry::from(&row);
-            crew_futures.push(Box::pin(Crew::query_crew_of_registration(registration.id, round, pool)));
-            heats_futures.push(Box::pin(Heat::query_heats_of_registration(registration.id, pool)));
-            registration
+            let entry = Entry::from(&row);
+            crew_futures.push(Box::pin(Crew::query_crew_of_entry(entry.id, round, pool)));
+            heats_futures.push(Box::pin(Heat::query_heats_of_entry(entry.id, pool)));
+            entry
         })
         .collect();
 
     let crews = join_all(crew_futures).await;
     let heats = join_all(heats_futures).await;
 
-    for (pos, registration) in registrations.iter_mut().enumerate() {
+    for (pos, entry) in entries.iter_mut().enumerate() {
         let crew = crews.get(pos).unwrap().as_deref().unwrap();
         if !crew.is_empty() {
-            registration.crew = Some(crew.to_vec());
+            entry.crew = Some(crew.to_vec());
         }
         let heats = heats.get(pos).unwrap().as_deref().unwrap();
         if !heats.is_empty() {
-            registration.heats = Some(heats.to_vec());
+            entry.heats = Some(heats.to_vec());
         }
     }
-    Ok(registrations)
+    Ok(entries)
 }

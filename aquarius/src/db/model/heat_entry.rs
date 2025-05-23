@@ -7,7 +7,7 @@ use serde::Serialize;
 use std::{cmp::Ordering, time::Duration};
 use tiberius::{Query, Row, error::Error as DbError};
 
-/// A registration of a boat in a heat.
+/// A entry of a boat in a heat.
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct HeatEntry {
@@ -18,7 +18,7 @@ pub struct HeatEntry {
     lane: i16,
 
     /// The entry of the boat.
-    pub(crate) registration: Entry,
+    pub(crate) entry: Entry,
 
     /// The result of the boat in the heat
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -30,20 +30,20 @@ impl From<&Row> for HeatEntry {
         HeatEntry {
             id: value.get_column("CE_ID"),
             lane: value.get_column("CE_Lane"),
-            registration: Entry::from(value),
+            entry: Entry::from(value),
             result: value.try_to_entity(),
         }
     }
 }
 
 impl HeatEntry {
-    /// Query all registrations of a heat.
+    /// Query all entries of a heat.
     /// # Arguments
-    /// * `heat` - The heat to query the registrations for
+    /// * `heat` - The heat to query the entries for
     /// * `pool` - The database connection pool
     /// # Returns
-    /// A list of registrations of the heat
-    pub(crate) async fn query_registrations_of_heat(heat: &Heat, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
+    /// A list of entries of the heat
+    pub(crate) async fn query_entries_of_heat(heat: &Heat, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!("SELECT DISTINCT ce.CE_ID, ce.CE_Lane, {0}, Label_Short, BoatClass_NumRowers, {1}, {2}, {3}
             FROM CompEntries ce
             JOIN Comp                  ON CE_Comp_ID_FK     = Comp_ID
@@ -63,21 +63,21 @@ impl HeatEntry {
         let mut client = pool.get().await;
         let rows = utils::get_rows(query.query(&mut client).await?).await?;
 
-        // convert rows into HeatRegistrations
-        let mut heat_registrations: Vec<HeatEntry> = rows
+        // convert rows into HeatEntry
+        let mut heat_entries: Vec<HeatEntry> = rows
             .into_iter()
             .map(|row| {
-                let mut heat_registration = HeatEntry::from(&row);
-                // if a result is available, the registration isn't cancelled yet
-                if heat_registration.result.is_some() {
-                    heat_registration.registration.cancelled = false;
+                let mut heat_entry = HeatEntry::from(&row);
+                // if a result is available, the entry isn't cancelled yet
+                if heat_entry.result.is_some() {
+                    heat_entry.entry.cancelled = false;
                 }
-                heat_registration
+                heat_entry
             })
             .collect();
 
-        // sort heat registrations by rank
-        heat_registrations.sort_by(|a, b| {
+        // sort heat entries by rank
+        heat_entries.sort_by(|a, b| {
             if let (Some(result_a), Some(result_b)) = (a.result.as_ref(), b.result.as_ref()) {
                 if result_a.rank_sort > result_b.rank_sort {
                     Ordering::Greater
@@ -92,14 +92,14 @@ impl HeatEntry {
         let mut first_net_time: i32 = 0;
 
         let mut crew_futures: Vec<BoxFuture<Result<Vec<Crew>, DbError>>> = Vec::new();
-        for (pos, heat_registration) in heat_registrations.iter_mut().enumerate() {
-            crew_futures.push(Box::pin(Crew::query_crew_of_registration(
-                heat_registration.registration.id,
+        for (pos, heat_entry) in heat_entries.iter_mut().enumerate() {
+            crew_futures.push(Box::pin(Crew::query_crew_of_entry(
+                heat_entry.entry.id,
                 heat.round,
                 pool,
             )));
 
-            if let Some(result) = &mut heat_registration.result {
+            if let Some(result) = &mut heat_entry.result {
                 if pos == 0 {
                     first_net_time = result.net_time;
                 } else if result.rank_sort > 1 && result.rank_sort < u8::MAX {
@@ -111,14 +111,14 @@ impl HeatEntry {
             }
         }
 
-        // query the crews of all registrations in parallel
+        // query the crews of all entries in parallel
         let crews = join_all(crew_futures).await;
 
-        for (pos, heat_registration) in heat_registrations.iter_mut().enumerate() {
+        for (pos, heat_entry) in heat_entries.iter_mut().enumerate() {
             let crew = crews.get(pos).unwrap();
-            heat_registration.registration.crew = Some(crew.as_deref().unwrap().to_vec());
+            heat_entry.entry.crew = Some(crew.as_deref().unwrap().to_vec());
         }
 
-        Ok(heat_registrations)
+        Ok(heat_entries)
     }
 }

@@ -34,18 +34,14 @@ impl Crew {
         )
     }
 
-    /// Query all crew members of a registration.
+    /// Query all crew members of a entry.
     /// # Arguments
-    /// * `registration_id` - The registration identifier
+    /// * `entry_id` - The entry identifier
     /// * `round` - The round of the heat this crew is participating in
     /// * `pool` - The database connection pool
     /// # Returns
-    /// A list of crew members of the registration
-    pub async fn query_crew_of_registration(
-        registration_id: i32,
-        round: i16,
-        pool: &TiberiusPool,
-    ) -> Result<Vec<Self>, DbError> {
+    /// A list of crew members of the entry
+    pub async fn query_crew_of_entry(entry_id: i32, round: i16, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Crew cr
             JOIN Athlet  a ON cr.Crew_Athlete_ID_FK = a.Athlet_ID
@@ -57,7 +53,7 @@ impl Crew {
             Club::select_all_columns("cl")
         );
         let mut query = Query::new(sql);
-        query.bind(registration_id);
+        query.bind(entry_id);
         query.bind(round);
 
         let mut client = pool.get().await;

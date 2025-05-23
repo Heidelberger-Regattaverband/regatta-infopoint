@@ -44,7 +44,7 @@ pub struct Heat {
     #[serde(skip_serializing_if = "Option::is_none")]
     date_time: Option<DateTime<Utc>>,
 
-    /// The registrations assigned to this heat.
+    /// The entries assigned to this heat.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) registrations: Option<Vec<HeatEntry>>,
 
@@ -111,14 +111,14 @@ impl Heat {
         Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
 
-    /// Query all heats of a registration.
+    /// Query all heats of an entry.
     ///
     /// # Arguments
-    /// * `registration_id` - The registration identifier
+    /// * `entry_id` - The entry identifier
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of heats
-    pub async fn query_heats_of_registration(registration_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
+    pub async fn query_heats_of_entry(entry_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0} FROM Comp c
             JOIN CompEntries ce ON c.Comp_ID  = ce.CE_Comp_ID_FK
@@ -128,7 +128,7 @@ impl Heat {
             Heat::select_columns("c")
         );
         let mut query = Query::new(sql);
-        query.bind(registration_id);
+        query.bind(entry_id);
         let mut client = pool.get().await;
         let heats = utils::get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
@@ -160,7 +160,7 @@ impl Heat {
 
         let results = join(
             Referee::query_referees_for_heat(heat.id, pool),
-            HeatEntry::query_registrations_of_heat(&heat, pool),
+            HeatEntry::query_entries_of_heat(&heat, pool),
         )
         .await;
         heat.referees = results.0?;
