@@ -95,10 +95,10 @@
                     </layout:VerticalLayout>
 
                     <layout:VerticalLayout>
-                      <Text text="{path: 'raceRegistrations>', formatter: '.formatter.boatLabel'}"
+                      <Text text="{parts:[{path:'race>/groupMode'},{path:'raceRegistrations>'}],formatter:'.formatter.boatLabel'}"
                         class="boldCancelled sapUiTinyMarginBottom" visible="{=${raceRegistrations>cancelled}}" />
-                      <Text text="{path: 'raceRegistrations>', formatter: '.formatter.boatLabel'}" class="bold sapUiTinyMarginBottom"
-                        visible="{=!${raceRegistrations>cancelled}}" />
+                      <Text text="{parts:[{path:'race>/groupMode'},{path:'raceRegistrations>'}],formatter:'.formatter.boatLabel'}"
+                        class="bold sapUiTinyMarginBottom" visible="{=!${raceRegistrations>cancelled}}" />
 
                       <Text text="{path: 'raceRegistrations>crew', formatter: '.formatter.crewLabel'}"
                         visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />

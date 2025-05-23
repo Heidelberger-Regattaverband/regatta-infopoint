@@ -159,23 +159,22 @@ export default class Formatter {
     return label;
   }
 
-  static boatLabel(registration: any): string {
+  static boatLabel(groupMode: number, registration: any): string {
     let label: string = "" + registration.shortLabel;
-    // if (registration.race && registration.race.groupMode == 2) {
-    if (registration.groupValue) {
+    if (groupMode == 2) {
       label += " - " + Formatter.groupValueLabel(registration.groupValue);
-    }
-    if (registration.boatNumber) {
-      label += " - Boot " + registration.boatNumber;
-    }
-    if (registration.comment) {
-      label += "  (" + registration.comment + ")";
+      if (registration.boatNumber) {
+        label += " - Boot " + registration.boatNumber;
+      }
+      if (registration.comment) {
+        label += "  (" + registration.comment + ")";
+      }
     }
     return label;
   }
 
-  static bibBoatLabel(registration: any): string {
-    let label: string = Formatter.boatLabel(registration);
+  static bibBoatLabel(groupMode: number, registration: any): string {
+    let label: string = Formatter.boatLabel(groupMode, registration);
     if (registration.bib) {
       label = registration.bib + " - " + label;
     }

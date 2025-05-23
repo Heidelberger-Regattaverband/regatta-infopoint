@@ -111,10 +111,10 @@
                     </layout:VerticalLayout>
 
                     <layout:VerticalLayout>
-                      <Text text="{path: 'heatRegistrations>registration', formatter: '.formatter.boatLabel'}"
-                        class="boldCancelled sapUiTinyMarginBottom" visible="{=${heatRegistrations>registration/cancelled}}" />
-                      <Text text="{path: 'heatRegistrations>registration', formatter: '.formatter.boatLabel'}"
-                        class="bold sapUiTinyMarginBottom" visible="{=!${heatRegistrations>registration/cancelled}}" />
+                      <Text class="boldCancelled sapUiTinyMarginBottom" visible="{=${heatRegistrations>registration/cancelled}}"
+                        text="{parts:[{path:'heat>/race/groupMode'},{path:'heatRegistrations>registration'}],formatter:'.formatter.boatLabel'}" />
+                      <Text class="bold sapUiTinyMarginBottom" visible="{=!${heatRegistrations>registration/cancelled}}"
+                        text="{parts:[{path:'heat>/race/groupMode'},{path:'heatRegistrations>registration'}],formatter:'.formatter.boatLabel'}" />
 
                       <Text text="{path: 'heatRegistrations>registration/crew', formatter: '.formatter.crewLabel'}"
                         visible="{= ${heatRegistrations>registration/cancelled}}" class="cancelled" />
