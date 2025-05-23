@@ -41,7 +41,8 @@
           <headerToolbar>
             <OverflowToolbar>
               <content>
-                <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
+                <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false"
+                  placeholder="{i18n>search.athletes}" />
                 <ToolbarSpacer />
                 <Button tooltip="{i18n>common.refresh}" text="{=!${device>/system/phone}?${i18n>common.refresh}:''}"
                   icon="sap-icon://refresh" press=".onRefreshButtonPress" />
@@ -79,10 +80,10 @@
                 </HBox>
 
                 <VBox>
-                  <Text text="{path:'registrations>',formatter:'.formatter.bibBoatLabel'}" class="boldCancelled sapUiTinyMarginBottom"
-                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
-                  <Text text="{path:'registrations>',formatter:'.formatter.bibBoatLabel'}" class="bold sapUiTinyMarginBottom"
-                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                  <Text text="{parts:[{path:'registrations>race/groupMode'},{path:'registrations>'}],formatter:'.formatter.bibBoatLabel'}"
+                    class="boldCancelled sapUiTinyMarginBottom" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
+                  <Text text="{parts:[{path:'registrations>race/groupMode'},{path:'registrations>'}],formatter:'.formatter.bibBoatLabel'}"
+                    class="bold sapUiTinyMarginBottom" visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
 
                   <Text text="{path:'registrations>crew',formatter:'.formatter.crewLabel'}" class="cancelled"
                     visible="{=(${registrations>cancelled} || ${registrations>race/cancelled}) &amp;&amp; !${device>/system/phone}}" />
