@@ -86,9 +86,9 @@
                     class="bold sapUiTinyMarginBottom" visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
 
                   <Text text="{path:'registrations>crew',formatter:'.formatter.crewLabel'}" class="cancelled"
-                    visible="{=(${registrations>cancelled} || ${registrations>race/cancelled}) &amp;&amp; !${device>/system/phone}}" />
+                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
                   <Text text="{path:'registrations>crew',formatter:'.formatter.crewLabel'}"
-                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled} &amp;&amp; !${device>/system/phone}}" />
+                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
                 </VBox>
 
                 <HBox alignItems="Center">
