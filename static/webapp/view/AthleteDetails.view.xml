@@ -61,10 +61,10 @@
                 </HBox>
 
                 <HBox alignItems="Center">
-                  <Text text="{path:'registrations>',formatter:'.formatter.bibBoatLabel'}" class="cancelled sapUiTinyMarginBottom"
-                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
-                  <Text text="{path:'registrations>',formatter:'.formatter.bibBoatLabel'}" class="sapUiTinyMarginBottom"
-                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                  <Text text="{parts:[{path:'registrations>race/groupMode'},{path:'registrations>'}],formatter:'.formatter.bibBoatLabel'}"
+                    class="cancelled sapUiTinyMarginBottom" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
+                  <Text text="{parts:[{path:'registrations>race/groupMode'},{path:'registrations>'}],formatter:'.formatter.bibBoatLabel'}"
+                    class="sapUiTinyMarginBottom" visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
                 </HBox>
 
                 <HBox alignItems="Center">

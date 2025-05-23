@@ -173,8 +173,8 @@ export default class Formatter {
     return label;
   }
 
-  static bibBoatLabel(registration: any): string {
-    let label: string = Formatter.boatLabel(0, registration);
+  static bibBoatLabel(groupMode: number, registration: any): string {
+    let label: string = Formatter.boatLabel(groupMode, registration);
     if (registration.bib) {
       label = registration.bib + " - " + label;
     }
