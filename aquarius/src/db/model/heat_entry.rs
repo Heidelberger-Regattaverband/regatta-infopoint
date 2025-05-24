@@ -18,7 +18,7 @@ pub struct HeatEntry {
     lane: i16,
 
     /// The entry of the boat.
-    pub(crate) entry: Entry,
+    pub(crate) registration: Entry,
 
     /// The result of the boat in the heat
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -30,7 +30,7 @@ impl From<&Row> for HeatEntry {
         HeatEntry {
             id: value.get_column("CE_ID"),
             lane: value.get_column("CE_Lane"),
-            entry: Entry::from(value),
+            registration: Entry::from(value),
             result: value.try_to_entity(),
         }
     }
@@ -70,7 +70,7 @@ impl HeatEntry {
                 let mut heat_entry = HeatEntry::from(&row);
                 // if a result is available, the entry isn't cancelled yet
                 if heat_entry.result.is_some() {
-                    heat_entry.entry.cancelled = false;
+                    heat_entry.registration.cancelled = false;
                 }
                 heat_entry
             })
@@ -94,7 +94,7 @@ impl HeatEntry {
         let mut crew_futures: Vec<BoxFuture<Result<Vec<Crew>, DbError>>> = Vec::new();
         for (pos, heat_entry) in heat_entries.iter_mut().enumerate() {
             crew_futures.push(Box::pin(Crew::query_crew_of_entry(
-                heat_entry.entry.id,
+                heat_entry.registration.id,
                 heat.round,
                 pool,
             )));
@@ -116,7 +116,7 @@ impl HeatEntry {
 
         for (pos, heat_entry) in heat_entries.iter_mut().enumerate() {
             let crew = crews.get(pos).unwrap();
-            heat_entry.entry.crew = Some(crew.as_deref().unwrap().to_vec());
+            heat_entry.registration.crew = Some(crew.as_deref().unwrap().to_vec());
         }
 
         Ok(heat_entries)
