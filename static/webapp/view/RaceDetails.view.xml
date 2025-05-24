@@ -86,7 +86,7 @@
               </columns>
 
               <items>
-                <ColumnListItem vAlign="Top" type="{=${raceRegistrations>/heatsCount}>0?'Navigation':'Inactive'}"
+                <ColumnListItem vAlign="Middle" type="{=${raceRegistrations>/heatsCount}>0?'Navigation':'Inactive'}"
                   highlight="{parts:[{path:'race>/'},{path:'raceRegistrations>'}],formatter:'.formatter.raceRegistrationHighlight'}">
                   <cells>
                     <layout:VerticalLayout>
@@ -96,9 +96,9 @@
 
                     <layout:VerticalLayout>
                       <Text text="{parts:[{path:'race>/groupMode'},{path:'raceRegistrations>'}],formatter:'.formatter.boatLabel'}"
-                        class="boldCancelled sapUiTinyMarginBottom" visible="{=${raceRegistrations>cancelled}}" />
+                        class="boldCancelled" visible="{=${raceRegistrations>cancelled}}" />
                       <Text text="{parts:[{path:'race>/groupMode'},{path:'raceRegistrations>'}],formatter:'.formatter.boatLabel'}"
-                        class="bold sapUiTinyMarginBottom" visible="{=!${raceRegistrations>cancelled}}" />
+                        class="bold" visible="{=!${raceRegistrations>cancelled}}" />
 
                       <Text text="{path: 'raceRegistrations>crew', formatter: '.formatter.crewLabel'}"
                         visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />

@@ -81,9 +81,9 @@
 
                 <VBox>
                   <Text text="{parts:[{path:'registrations>race/groupMode'},{path:'registrations>'}],formatter:'.formatter.bibBoatLabel'}"
-                    class="boldCancelled sapUiTinyMarginBottom" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
+                    class="boldCancelled" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
                   <Text text="{parts:[{path:'registrations>race/groupMode'},{path:'registrations>'}],formatter:'.formatter.bibBoatLabel'}"
-                    class="bold sapUiTinyMarginBottom" visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                    class="bold" visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
 
                   <Text text="{path:'registrations>crew',formatter:'.formatter.crewLabel'}" class="cancelled"
                     visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />

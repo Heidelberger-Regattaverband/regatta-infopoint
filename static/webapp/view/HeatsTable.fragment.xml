@@ -76,9 +76,9 @@
 
           <layout:VerticalLayout>
             <Text text="{path:'heats>race',formatter:'.formatter.nrRaceLabel'}, {path:'heats>',formatter:'.formatter.heatLabel'}"
-              visible="{=${heats>cancelled}}" class="boldCancelled sapUiTinyMarginBottom" />
+              visible="{=${heats>cancelled}}" class="boldCancelled" />
             <Text text="{path:'heats>race',formatter:'.formatter.nrRaceLabel'}, {path:'heats>',formatter:'.formatter.heatLabel'}"
-              visible="{=!${heats>cancelled}}" class="bold sapUiTinyMarginBottom" />
+              visible="{=!${heats>cancelled}}" class="bold" />
 
             <Text text="{heats>race/longLabel}" visible="{=${heats>cancelled}}" class="cancelled" />
             <Text text="{heats>race/longLabel}" visible="{=!${heats>cancelled}}" />

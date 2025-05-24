@@ -1,5 +1,4 @@
-<mvc:View xmlns:core="sap.ui.core" controllerName="de.regatta_hd.infoportal.controller.RacesTable" xmlns="sap.m"
-  xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View xmlns:core="sap.ui.core" controllerName="de.regatta_hd.infoportal.controller.RacesTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
     <Page title="{i18n>common.offer}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
@@ -70,43 +69,38 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation" vAlign="Top" highlight="{path:'races>',formatter:'.formatter.raceStateHighlight'}">
+            <ColumnListItem type="Navigation" highlight="{path:'races>',formatter:'.formatter.raceStateHighlight'}">
               <cells>
-                <layout:VerticalLayout>
+                <VBox alignItems="Center">
                   <Text text="{races>number}" visible="{=${races>cancelled}}" class="cancelled" />
                   <Text text="{races>number}" visible="{=!${races>cancelled}}" />
-                </layout:VerticalLayout>
+                </VBox>
 
-                <layout:VerticalLayout>
-                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=${races>cancelled}}"
-                    class="boldCancelled sapUiTinyMarginBottom" />
-                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=!${races>cancelled}}"
-                    class="bold sapUiTinyMarginBottom" />
+                <VBox>
+                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=${races>cancelled}}" class="boldCancelled" />
+                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=!${races>cancelled}}" class="bold " />
 
                   <Text text="{races>longLabel} {races>comment}" visible="{=${races>cancelled}}" class="cancelled" />
                   <Text text="{races>longLabel} {races>comment}" visible="{=!${races>cancelled}}" />
-                </layout:VerticalLayout>
+                </VBox>
 
-                <layout:VerticalLayout>
+                <VBox alignItems="Center">
                   <Text text="{path:'races>',formatter:'.formatter.distanceLabel'}" visible="{=${races>cancelled}}" class="cancelled" />
                   <Text text="{path:'races>',formatter:'.formatter.distanceLabel'}" visible="{=!${races>cancelled}}" />
-                </layout:VerticalLayout>
+                </VBox>
 
-                <layout:VerticalLayout>
+                <VBox alignItems="Center">
                   <Text text="{races>registrationsCount}" visible="{=${races>cancelled}}" class="cancelled" />
                   <Text text="{races>registrationsCount}" visible="{=!${races>cancelled}}" />
-                </layout:VerticalLayout>
+                </VBox>
 
-                <layout:VerticalLayout>
-                  <Text text="{= ${races>seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" visible="{=${races>cancelled}}"
-                    class="cancelled" />
-                  <Text text="{= ${races>seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" visible="{=!${races>cancelled}}" />
-                </layout:VerticalLayout>
+                <VBox alignItems="Center">
+                  <Text text="{=${races>seeded}?${i18n>common.yes}:${i18n>common.no}}" visible="{=${races>cancelled}}" class="cancelled" />
+                  <Text text="{=${races>seeded}?${i18n>common.yes}:${i18n>common.no}}" visible="{=!${races>cancelled}}" />
+                </VBox>
 
-                <layout:VerticalLayout>
-                  <ObjectStatus text="{path:'races>',formatter:'.formatter.raceStateLabel'}"
-                    state="{path:'races>',formatter:'.formatter.raceStateHighlight'}" class="bold" />
-                </layout:VerticalLayout>
+                <ObjectStatus text="{path:'races>',formatter:'.formatter.raceStateLabel'}"
+                  state="{path:'races>',formatter:'.formatter.raceStateHighlight'}" class="bold" />
               </cells>
             </ColumnListItem>
           </items>
