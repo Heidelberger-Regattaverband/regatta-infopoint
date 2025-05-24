@@ -40,7 +40,7 @@
                 <HBox>
                   <VBox class="sapUiMediumMarginEnd">
                     <ObjectStatus title="{i18n>common.state}" text="{path:'raceRegistrations>/',formatter:'.formatter.raceStateLabel'}"
-                      state="{path:'raceRegistrations>/',formatter:'.formatter.raceStateHighlight'}" />
+                      state="{path:'raceRegistrations>/',formatter:'.formatter.raceStateHighlight'}" class="bold" />
                     <ObjectAttribute title="{i18n>common.registrations}" text="{raceRegistrations>/registrationsCount}" />
                   </VBox>
                   <VBox class="sapUiMediumMarginEnd">
@@ -48,9 +48,9 @@
                     <ObjectAttribute title="{i18n>common.seeded}"
                       text="{=${raceRegistrations>/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
                   </VBox>
-                  <ObjectAttribute title="{i18n>common.heats} ({raceRegistrations>/heatsCount})"
-                    text="{parts:[{path:'race>/'},{path:'raceRegistrations>/heats'}],formatter:'.formatter.heatsLabel'}" />
                 </HBox>
+                <ObjectAttribute title="{i18n>common.heats} ({raceRegistrations>/heatsCount})"
+                  text="{parts:[{path:'race>/'},{path:'raceRegistrations>/heats'}],formatter:'.formatter.heatsLabel'}" />
               </f:content>
             </f:DynamicPageHeader>
           </f:header>
