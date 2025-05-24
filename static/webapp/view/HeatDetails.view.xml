@@ -1,5 +1,4 @@
-<mvc:View controllerName="de.regatta_hd.infoportal.controller.HeatDetails" xmlns="sap.m" xmlns:f="sap.f" xmlns:layout="sap.ui.layout"
-  xmlns:mvc="sap.ui.core.mvc">
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.HeatDetails" xmlns="sap.m" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
     <Page title="{= ${heatRegistrations>/state} >= 4 ? ${i18n>common.result} : ${i18n>common.assignment}}" class="sapUiNoContentPadding"
       showNavButton="true" navButtonPress=".onNavBack">
@@ -37,25 +36,25 @@
           <!-- DynamicPage Header -->
           <f:header>
             <f:DynamicPageHeader>
-              <layout:HorizontalLayout allowWrapping="true">
-                <layout:VerticalLayout class="sapUiMediumMarginEnd">
+              <HBox>
+                <VBox class="sapUiMediumMarginEnd">
                   <ObjectAttribute title="{i18n>common.time}"
                     text="{path: 'heatRegistrations>/dateTime', formatter: '.formatter.dayTimeIsoLabel'}" />
                   <ObjectAttribute title="{i18n>common.distance}"
                     text="{path: 'heatRegistrations>/race', formatter: '.formatter.distanceLabel'}" />
                   <ObjectAttribute title="{i18n>common.heatNr}" text="{heatRegistrations>/number}" />
-                </layout:VerticalLayout>
+                </VBox>
 
-                <layout:VerticalLayout>
+                <VBox>
                   <ObjectStatus title="{i18n>common.state}" text="{path:'heatRegistrations>/',formatter:'.formatter.heatStateLabel'}"
-                    state="{path:'heatRegistrations>/',formatter:'.formatter.heatStateHighlight'}" />
+                    state="{path:'heatRegistrations>/',formatter:'.formatter.heatStateHighlight'}" class="bold" />
                   <ObjectAttribute title="{i18n>common.seeded}"
-                    text="{= ${heatRegistrations>/race/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" />
+                    text="{= ${heatRegistrations>/race/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
                   <ObjectAttribute title="{i18n>common.refereeAbr}"
                     text="{heatRegistrations>/referees/0/lastName}, {heatRegistrations>/referees/0/firstName}"
                     visible="{= ${heatRegistrations>/referees} !== undefined }" />
-                </layout:VerticalLayout>
-              </layout:HorizontalLayout>
+                </VBox>
+              </HBox>
             </f:DynamicPageHeader>
           </f:header>
 
@@ -66,7 +65,7 @@
               items="{path:'heatRegistrations>/registrations/',sorter:[{path:'result/rankSort',descending:false},{path:'bib',descending:false}]}">
 
               <columns>
-                <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline" visible="{= ${heatRegistrations>/state} >= 4 }">
+                <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline" visible="{=${heatRegistrations>/state}>=4}">
                   <header>
                     <Text text="{i18n>common.rankAbr}" class="bold" wrapping="false" />
                   </header>
@@ -86,7 +85,7 @@
                     <Text text="{i18n>heatRegistrationTable.column.lane}" class="bold" wrapping="false" />
                   </header>
                 </Column>
-                <Column hAlign="End" width="5rem" importance="High" popinDisplay="Inline" visible="{= ${heatRegistrations>/state} >= 4 }">
+                <Column hAlign="End" width="5rem" importance="High" popinDisplay="Inline" visible="{=${heatRegistrations>/state}>=4}">
                   <header>
                     <Text text="{i18n>heatRegistrationTable.column.result}" class="bold sapUiTinyMarginEnd" wrapping="false" />
                   </header>
@@ -100,37 +99,37 @@
               </columns>
 
               <items>
-                <ColumnListItem highlight="{path: 'heatRegistrations>', formatter: '.formatter.heatRegistrationHighlight'}" vAlign="Top">
+                <ColumnListItem highlight="{path:'heatRegistrations>',formatter:'.formatter.heatRegistrationHighlight'}" vAlign="Middle">
                   <cells>
                     <Text text="{heatRegistrations>result/rankLabel}" />
 
-                    <layout:VerticalLayout>
+                    <VBox>
                       <Text text="{heatRegistrations>registration/bib}" visible="{=${heatRegistrations>registration/cancelled}}"
                         class="cancelled" />
                       <Text text="{heatRegistrations>registration/bib}" visible="{=!${heatRegistrations>registration/cancelled}}" />
-                    </layout:VerticalLayout>
+                    </VBox>
 
-                    <layout:VerticalLayout>
-                      <Text class="boldCancelled sapUiTinyMarginBottom" visible="{=${heatRegistrations>registration/cancelled}}"
+                    <VBox>
+                      <Text class="boldCancelled" visible="{=${heatRegistrations>registration/cancelled}}"
                         text="{parts:[{path:'heat>/race/groupMode'},{path:'heatRegistrations>registration'}],formatter:'.formatter.boatLabel'}" />
-                      <Text class="bold sapUiTinyMarginBottom" visible="{=!${heatRegistrations>registration/cancelled}}"
+                      <Text class="bold" visible="{=!${heatRegistrations>registration/cancelled}}"
                         text="{parts:[{path:'heat>/race/groupMode'},{path:'heatRegistrations>registration'}],formatter:'.formatter.boatLabel'}" />
 
-                      <Text text="{path: 'heatRegistrations>registration/crew', formatter: '.formatter.crewLabel'}"
+                      <Text text="{path:'heatRegistrations>registration/crew',formatter:'.formatter.crewLabel'}"
                         visible="{= ${heatRegistrations>registration/cancelled}}" class="cancelled" />
-                      <Text text="{path: 'heatRegistrations>registration/crew', formatter: '.formatter.crewLabel'}"
+                      <Text text="{path:'heatRegistrations>registration/crew',formatter:'.formatter.crewLabel'}"
                         visible="{= !${heatRegistrations>registration/cancelled}}" />
-                    </layout:VerticalLayout>
+                    </VBox>
 
-                    <layout:VerticalLayout>
+                    <VBox>
                       <Text text="{heatRegistrations>lane}" visible="{=${heatRegistrations>registration/cancelled}}" class="cancelled" />
                       <Text text="{heatRegistrations>lane}" visible="{=!${heatRegistrations>registration/cancelled}}" />
-                    </layout:VerticalLayout>
+                    </VBox>
 
-                    <layout:VerticalLayout>
+                    <VBox>
                       <Text text="{heatRegistrations>result/result}" class="bold sapUiTinyMarginEnd" />
                       <Text text="{=${heatRegistrations>result/delta}?${heatRegistrations>result/delta}:''}" class="bold sapUiTinyMarginEnd" />
-                    </layout:VerticalLayout>
+                    </VBox>
                     <!-- <Text text="{heatRegistrations>result/points}" /> -->
                   </cells>
                 </ColumnListItem>
