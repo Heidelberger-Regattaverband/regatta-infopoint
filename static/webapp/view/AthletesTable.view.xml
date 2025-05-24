@@ -54,8 +54,8 @@
           <items>
             <ColumnListItem type="Navigation" vAlign="Inherit">
               <cells>
-                <Text text="{athletes>lastName}" class="bold" />
-                <Text text="{athletes>firstName}" class="bold" />
+                <Text text="{athletes>lastName}" />
+                <Text text="{athletes>firstName}" />
                 <Text text="{=${athletes>gender}==='M'?${i18n>common.male}:${i18n>common.female}}" />
                 <Text text="{athletes>year}" />
                 <HBox alignItems="Center">
