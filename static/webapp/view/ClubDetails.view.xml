@@ -69,14 +69,14 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation"
+            <ColumnListItem type="Navigation" vAlign="Middle"
               highlight="{parts:[{path:'registrations>race'},{path:'registrations>'}],formatter:'.formatter.raceRegistrationHighlight'}">
               <cells>
-                <HBox alignItems="Center" alignContent="Center">
+                <HBox alignItems="Center">
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
-                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="cancelled sapUiTinyMarginBottom" />
+                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="cancelled" />
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
-                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" class="sapUiTinyMarginBottom" />
+                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
                 </HBox>
 
                 <VBox>

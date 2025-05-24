@@ -55,16 +55,16 @@
               <cells>
                 <HBox alignItems="Center">
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
-                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="cancelled sapUiTinyMarginBottom" />
+                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="cancelled" />
                   <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
-                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" class="sapUiTinyMarginBottom" />
+                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
                 </HBox>
 
                 <HBox alignItems="Center">
                   <Text text="{parts:[{path:'registrations>race/groupMode'},{path:'registrations>'}],formatter:'.formatter.bibBoatLabel'}"
-                    class="cancelled sapUiTinyMarginBottom" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
+                    class="cancelled" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
                   <Text text="{parts:[{path:'registrations>race/groupMode'},{path:'registrations>'}],formatter:'.formatter.bibBoatLabel'}"
-                    class="sapUiTinyMarginBottom" visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
                 </HBox>
 
                 <HBox alignItems="Center">
