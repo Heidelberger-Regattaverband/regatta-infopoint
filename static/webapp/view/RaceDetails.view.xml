@@ -1,5 +1,5 @@
 <mvc:View xmlns:core="sap.ui.core" controllerName="de.regatta_hd.infoportal.controller.RaceDetails" xmlns="sap.m" xmlns:f="sap.f"
-  xmlns:layout="sap.ui.layout" xmlns:mvc="sap.ui.core.mvc">
+  xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
     <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
@@ -37,28 +37,25 @@
           <f:header>
             <f:DynamicPageHeader>
               <f:content>
-                <layout:HorizontalLayout allowWrapping="true">
-                  <layout:VerticalLayout class="sapUiMediumMarginEnd">
+                <HBox>
+                  <VBox class="sapUiMediumMarginEnd">
                     <ObjectStatus title="{i18n>common.state}" text="{path:'raceRegistrations>/',formatter:'.formatter.raceStateLabel'}"
                       state="{path:'raceRegistrations>/',formatter:'.formatter.raceStateHighlight'}" />
                     <ObjectAttribute title="{i18n>common.registrations}" text="{raceRegistrations>/registrationsCount}" />
-                  </layout:VerticalLayout>
-                  <layout:VerticalLayout class="sapUiMediumMarginEnd">
+                  </VBox>
+                  <VBox class="sapUiMediumMarginEnd">
                     <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceRegistrations>/',formatter:'.formatter.distanceLabel'}" />
                     <ObjectAttribute title="{i18n>common.seeded}"
                       text="{=${raceRegistrations>/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
-                  </layout:VerticalLayout>
+                  </VBox>
                   <ObjectAttribute title="{i18n>common.heats} ({raceRegistrations>/heatsCount})"
                     text="{parts:[{path:'race>/'},{path:'raceRegistrations>/heats'}],formatter:'.formatter.heatsLabel'}" />
-                </layout:HorizontalLayout>
+                </HBox>
               </f:content>
             </f:DynamicPageHeader>
           </f:header>
 
-          <!-- DynamicPage Content -->
           <f:content>
-            <!-- <ScrollContainer height="100%" vertical="true"> -->
-
             <Table headerText="" id="raceDetailsTable" autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
               items="{path:'raceRegistrations>/registrations/',sorter:[{path:'result/rankSort',descending:false},{path:'bib', descending:false}]}"
               sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding" itemPress=".onRegistrationsItemPress">
@@ -89,24 +86,24 @@
                 <ColumnListItem vAlign="Middle" type="{=${raceRegistrations>/heatsCount}>0?'Navigation':'Inactive'}"
                   highlight="{parts:[{path:'race>/'},{path:'raceRegistrations>'}],formatter:'.formatter.raceRegistrationHighlight'}">
                   <cells>
-                    <layout:VerticalLayout>
+                    <VBox alignItems="Center">
                       <Text text="{raceRegistrations>bib}" visible="{=${raceRegistrations>cancelled}}" class="cancelled" />
                       <Text text="{raceRegistrations>bib}" visible="{=!${raceRegistrations>cancelled}}" />
-                    </layout:VerticalLayout>
+                    </VBox>
 
-                    <layout:VerticalLayout>
+                    <VBox>
                       <Text text="{parts:[{path:'race>/groupMode'},{path:'raceRegistrations>'}],formatter:'.formatter.boatLabel'}"
                         class="boldCancelled" visible="{=${raceRegistrations>cancelled}}" />
                       <Text text="{parts:[{path:'race>/groupMode'},{path:'raceRegistrations>'}],formatter:'.formatter.boatLabel'}"
                         class="bold" visible="{=!${raceRegistrations>cancelled}}" />
 
-                      <Text text="{path: 'raceRegistrations>crew', formatter: '.formatter.crewLabel'}"
+                      <Text text="{path:'raceRegistrations>crew',formatter: '.formatter.crewLabel'}"
                         visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />
-                      <Text text="{path: 'raceRegistrations>crew', formatter: '.formatter.crewLabel'}"
+                      <Text text="{path:'raceRegistrations>crew',formatter: '.formatter.crewLabel'}"
                         visible="{= !${raceRegistrations>cancelled}}" />
-                    </layout:VerticalLayout>
+                    </VBox>
 
-                    <HBox>
+                    <HBox alignItems="Center">
                       <Image src="{raceRegistrations>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
                       <Text text="{raceRegistrations>club/shortName}" visible="{=${raceRegistrations>cancelled}}" class="cancelled" />
                       <Text text="{raceRegistrations>club/shortName}" visible="{=!${raceRegistrations>cancelled}}" />
@@ -116,7 +113,6 @@
                 </ColumnListItem>
               </items>
             </Table>
-            <!-- </ScrollContainer> -->
 
           </f:content>
         </f:DynamicPage>
