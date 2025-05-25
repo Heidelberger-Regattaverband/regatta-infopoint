@@ -6,6 +6,7 @@
       <ViewSettingsItem text="{i18n>common.firstName}" key="firstName" cust:column="athleteFirstNameCol" />
       <ViewSettingsItem text="{i18n>common.gender}" key="gender" cust:column="athleteGenderCol" />
       <ViewSettingsItem text="{i18n>common.yearOfBirth}" key="year" cust:column="athleteYearOfBirthCol" />
+      <ViewSettingsItem text="{i18n>common.registrations}" key="entriesCount" cust:column="athleteEntriesCountCol" />
       <ViewSettingsItem text="{i18n>common.club}" key="club/shortName" cust:column="athleteClubCol" />
     </sortItems>
   </ViewSettingsDialog>

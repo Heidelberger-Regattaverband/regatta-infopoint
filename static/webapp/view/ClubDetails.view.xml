@@ -26,7 +26,7 @@
               <ObjectAttribute title="{i18n>common.abbreviation}" text="{club>/abbreviation}" />
             </VBox>
             <VBox>
-              <ObjectAttribute title="{i18n>common.participations}" text="{club>/participationsCount}" />
+              <ObjectAttribute title="{i18n>common.registrations}" text="{club>/participationsCount}" />
               <ObjectAttribute title="{i18n>statistics.athletes} (w/m)"
                 text="{club>/ahtletesCount} ({club>/ahtletesFemaleCount}/{club>/ahtletesMaleCount})" />
             </VBox>

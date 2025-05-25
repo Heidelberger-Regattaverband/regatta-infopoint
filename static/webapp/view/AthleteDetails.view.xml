@@ -25,6 +25,7 @@
             text="{=!${device>/system/phone}?${athlete>/club/longName}:${athlete>/club/shortName}}" />
           <ObjectAttribute title="{i18n>common.yearOfBirth}" text="{athlete>/year}" />
           <ObjectAttribute title="{i18n>common.gender}" text="{=${athlete>/gender}==='M'?${i18n>common.male}:${i18n>common.female}}" />
+          <ObjectAttribute title="{i18n>common.registrations}" text="{athlete>/entriesCount}" />
         </f:DynamicPageHeader>
       </f:header>
 

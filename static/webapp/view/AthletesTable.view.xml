@@ -44,6 +44,12 @@
                 <Text text="{i18n>common.yearOfBirth}" class="bold" wrapping="false" />
               </header>
             </Column>
+            <Column id="athleteEntriesCountCol" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
+              visible="{=!${device>/system/phone}}">
+              <header>
+                <Text text="{i18n>common.registrations}" class="bold" wrapping="false" />
+              </header>
+            </Column>
             <Column id="athleteClubCol" hAlign="Begin" width="10rem" importance="Low" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.club}" class="bold" wrapping="false" />
@@ -58,6 +64,7 @@
                 <Text text="{athletes>firstName}" />
                 <Text text="{=${athletes>gender}==='M'?${i18n>common.male}:${i18n>common.female}}" />
                 <Text text="{athletes>year}" />
+                <Text text="{athletes>entriesCount}" />
                 <HBox alignItems="Center">
                   <Image src="{athletes>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
                   <Text text="{athletes>club/shortName}" />
