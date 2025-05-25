@@ -21,10 +21,17 @@
 
       <f:header>
         <f:DynamicPageHeader>
-          <ObjectAttribute title="{i18n>common.club}"
-            text="{=!${device>/system/phone}?${athlete>/club/longName}:${athlete>/club/shortName}}" />
-          <ObjectAttribute title="{i18n>common.yearOfBirth}" text="{athlete>/year}" />
-          <ObjectAttribute title="{i18n>common.gender}" text="{=${athlete>/gender}==='M'?${i18n>common.male}:${i18n>common.female}}" />
+          <HBox>
+            <VBox class="sapUiTinyMarginEnd">
+              <ObjectAttribute title="{i18n>common.club}"
+                text="{=!${device>/system/phone}?${athlete>/club/longName}:${athlete>/club/shortName}}" />
+              <ObjectAttribute title="{i18n>common.gender}" text="{=${athlete>/gender}==='M'?${i18n>common.male}:${i18n>common.female}}" />
+            </VBox>
+            <VBox>
+              <ObjectAttribute title="{i18n>common.yearOfBirth}" text="{athlete>/year}" />
+              <ObjectAttribute title="{i18n>common.registrations}" text="{athlete>/entriesCount}" />
+            </VBox>
+          </HBox>
         </f:DynamicPageHeader>
       </f:header>
 

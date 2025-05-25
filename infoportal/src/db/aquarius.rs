@@ -68,13 +68,6 @@ impl Aquarius {
         }
     }
 
-    pub(crate) async fn query_regattas(&self) -> Result<Vec<Regatta>, DbError> {
-        let start = Instant::now();
-        let regattas = Regatta::query_all(TiberiusPool::instance()).await?;
-        debug!("Query all regattas from DB: {:?}", start.elapsed());
-        Ok(regattas)
-    }
-
     async fn get_regatta(&self, regatta_id: i32, opt_user: Option<Identity>) -> Result<Option<Regatta>, DbError> {
         if opt_user.is_some() {
             self._query_regatta(regatta_id).await

@@ -34,15 +34,6 @@ async fn get_filters(
 
 // Regatta Endpoints
 
-#[get("/regattas")]
-async fn get_regattas(aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
-    let regattas = aquarius
-        .query_regattas()
-        .await
-        .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
-    Ok(Json(regattas))
-}
-
 #[get("/active_regatta")]
 async fn get_active_regatta(aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     let regatta = aquarius
@@ -307,7 +298,6 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
     cfg.service(
         ActixScope::new(PATH)
             .service(get_athlete)
-            .service(get_regattas)
             .service(get_regatta_club)
             .service(get_club_entries)
             .service(get_athlete_entries)

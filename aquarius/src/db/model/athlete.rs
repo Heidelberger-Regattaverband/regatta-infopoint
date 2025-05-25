@@ -26,12 +26,23 @@ pub struct Athlete {
 
     /// The athlete's club.
     club: Club,
+
+    /// The number of entries the athlete has.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    entries_count: Option<i32>,
 }
 
 impl Athlete {
     pub async fn query_participating_athletes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Athlete>, DbError> {
         let mut query = Query::new(format!(
-            "SELECT DISTINCT {0}, {1} FROM Athlet a
+            "SELECT DISTINCT {0}, {1},
+                (SELECT COUNT(*) FROM (
+                    SELECT Athlet_ID FROM Athlet
+                    JOIN Crew  ON Crew_Athlete_ID_FK = Athlet_ID
+                    JOIN Entry ON Crew_Entry_ID_FK   = Entry_ID
+                    WHERE Athlet_ID = a.Athlet_ID
+                ) AS Athlet_Entries_Count ) AS Athlet_Entries_Count
+                FROM Athlet a
                 JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.Club_ID
                 JOIN Crew  cr ON a.Athlet_ID         = cr.Crew_Athlete_ID_FK
                 JOIN Entry  e ON cr.Crew_Entry_ID_FK = e.Entry_ID
@@ -49,8 +60,15 @@ impl Athlete {
 
     pub async fn query_athlete(athlete_id: i32, pool: &TiberiusPool) -> Result<Athlete, DbError> {
         let mut query = Query::new(format!(
-            "SELECT {0}, {1} FROM Athlet a
-                JOIN Club c ON a.Athlet_Club_ID_FK = c.Club_ID
+            "SELECT {0}, {1},
+                (SELECT COUNT(*) FROM (
+                    SELECT Athlet_ID FROM Athlet
+                    JOIN Crew  ON Crew_Athlete_ID_FK = Athlet_ID
+                    JOIN Entry ON Crew_Entry_ID_FK   = Entry_ID
+                    WHERE Athlet_ID = a.Athlet_ID
+                ) AS Athlet_Entries_Count ) AS Athlet_Entries_Count
+                FROM Athlet a
+                JOIN Club   c ON a.Athlet_Club_ID_FK = c.Club_ID
                 WHERE a.Athlet_ID = @P1",
             Athlete::select_columns("a"),
             Club::select_all_columns("c")
@@ -83,6 +101,7 @@ impl From<&Row> for Athlete {
                 .format("%Y")
                 .to_string(),
             club: Club::from(row),
+            entries_count: row.try_get_column("Athlet_Entries_Count"),
         }
     }
 }
