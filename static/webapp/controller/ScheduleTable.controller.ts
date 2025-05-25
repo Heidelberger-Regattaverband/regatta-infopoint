@@ -8,6 +8,9 @@ import ListBinding from "sap/ui/model/ListBinding";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Formatter from "../model/Formatter";
+import ListItemBase from "sap/m/ListItemBase";
+import Context from "sap/ui/model/Context";
+import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -43,6 +46,19 @@ export default class ScheduleTableController extends BaseController {
     this.loadScheduleModel().then((succeeded: boolean) => {
       super.showDataUpdatedMessage(succeeded);
     }).finally(() => source.setEnabled(true));
+  }
+
+  onItemPress(event: ListBase$SelectionChangeEvent): void {
+    const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
+    if (selectedItem) {
+      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("schedule");
+      const registration: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
+
+      registration.race._nav = { disabled: true, back: "schedule" };
+
+      (super.getComponentModel("race") as JSONModel).setData(registration.race);
+      super.navToRaceDetails(registration.race.id);
+    }
   }
 
   private createSearchFilters(query: string): Filter[] {
