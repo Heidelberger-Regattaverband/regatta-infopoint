@@ -43,13 +43,6 @@ impl Regatta {
         Ok(Regatta::from(&utils::get_row(stream).await?))
     }
 
-    pub async fn query_all(pool: &TiberiusPool) -> Result<Vec<Regatta>, DbError> {
-        let mut client = pool.get().await;
-        let stream = Query::new("SELECT * FROM Event").query(&mut client).await?;
-        let regattas = utils::get_rows(stream).await?;
-        Ok(regattas.into_iter().map(|row| Regatta::from(&row)).collect())
-    }
-
     pub async fn query_by_id(regatta_id: i32, pool: &TiberiusPool) -> Result<Option<Regatta>, DbError> {
         let mut query = Query::new("SELECT * FROM Event WHERE Event_ID = @P1");
         query.bind(regatta_id);

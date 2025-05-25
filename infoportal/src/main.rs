@@ -60,13 +60,14 @@ mod tests {
         let app = test::init_service(
             App::new().service(
                 scope(PATH)
-                    .service(rest_api::get_regattas)
+                    .service(rest_api::get_active_regatta)
+                    .wrap(IdentityMiddleware::default())
                     .app_data(Data::clone(&app_data)),
             ),
         )
         .await;
 
-        let request = TestRequest::get().uri("/api/regattas").to_request();
+        let request = TestRequest::get().uri("/api/active_regatta").to_request();
         let response = test::call_service(&app, request).await;
         assert!(response.status().is_success());
     }
