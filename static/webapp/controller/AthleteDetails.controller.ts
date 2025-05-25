@@ -36,8 +36,8 @@ export default class AthleteDetailsController extends BaseController {
     delete this.athleteId;
   }
 
-  onSelectionChange(oEvent: ListBase$SelectionChangeEvent): void {
-    const selectedItem: ListItemBase | undefined = oEvent.getParameter("listItem");
+  onSelectionChange(event: ListBase$SelectionChangeEvent): void {
+    const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("registrations");
       const registration: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
