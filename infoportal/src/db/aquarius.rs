@@ -217,16 +217,21 @@ impl Aquarius {
         stats
     }
 
-    pub(crate) async fn query_schedule(&self, regatta_id: i32) -> Result<Schedule, DbError> {
-        let start = Instant::now();
-        let schedule = Schedule::query_schedule_for_regatta(regatta_id, TiberiusPool::instance()).await;
-        debug!(
-            "Query schedule of regatta {} from DB: {:?}",
-            regatta_id,
-            start.elapsed()
-        );
-        schedule
+    pub(crate) async fn query_schedule(
+        &self,
+        regatta_id: i32,
+        opt_user: Option<Identity>,
+    ) -> Result<Schedule, DbError> {
+        if opt_user.is_some() {
+            self._query_schedule(regatta_id).await
+        } else if let Some(entries) = self.caches.schedule.get(&(regatta_id)).await {
+            Ok(entries)
+        } else {
+            self._query_schedule(regatta_id).await
+        }
     }
+
+    // private methods for querying the database
 
     async fn _query_filters(&self, regatta_id: i32) -> Result<Filters, DbError> {
         let start = Instant::now();
@@ -359,5 +364,17 @@ impl Aquarius {
         self.caches.athlete.set(&athlete_id, &athlete).await;
         debug!("Query athlete {} from DB: {:?}", athlete_id, start.elapsed());
         Ok(athlete)
+    }
+
+    async fn _query_schedule(&self, regatta_id: i32) -> Result<Schedule, DbError> {
+        let start = Instant::now();
+        let schedule = Schedule::query_schedule_for_regatta(regatta_id, TiberiusPool::instance()).await?;
+        self.caches.schedule.set(&regatta_id, &schedule).await;
+        debug!(
+            "Query schedule of regatta {} from DB: {:?}",
+            regatta_id,
+            start.elapsed()
+        );
+        Ok(schedule)
     }
 }

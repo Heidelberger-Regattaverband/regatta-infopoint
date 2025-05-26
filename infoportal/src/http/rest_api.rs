@@ -229,10 +229,14 @@ async fn calculate_scoring(
 }
 
 #[get("/regattas/{regatta_id}/schedule")]
-async fn get_schedule(path: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
+async fn get_schedule(
+    path: Path<i32>,
+    aquarius: Data<Aquarius>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let schedule = aquarius
-        .query_schedule(regatta_id)
+        .query_schedule(regatta_id, opt_user)
         .await
         .map_err(|_| ErrorInternalServerError("Internal Server Error"))?;
     Ok(Json(schedule))

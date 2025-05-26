@@ -1,4 +1,4 @@
-use aquarius::db::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta};
+use aquarius::db::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
 use std::{hash::Hash, time::Duration};
 use stretto::AsyncCache;
 use tokio::task;
@@ -88,6 +88,7 @@ pub(super) struct Caches {
     pub participating_clubs: Cache<i32, Vec<Club>>,
     pub athletes: Cache<i32, Vec<Athlete>>,
     pub filters: Cache<i32, Filters>,
+    pub schedule: Cache<i32, Schedule>,
 
     // caches with entries per race
     pub race_heats_entries: Cache<i32, Race>,
@@ -114,6 +115,7 @@ impl Caches {
             participating_clubs: Cache::new(MAX_REGATTAS_COUNT, ttl),
             athletes: Cache::new(MAX_REGATTAS_COUNT, ttl),
             filters: Cache::new(MAX_REGATTAS_COUNT, ttl),
+            schedule: Cache::new(MAX_REGATTAS_COUNT, ttl),
 
             // caches with entries per race
             race_heats_entries: Cache::new(MAX_RACES_COUNT, ttl),
