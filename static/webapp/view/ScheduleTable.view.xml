@@ -6,7 +6,7 @@
       <content>
 
         <Table id="scheduleTable" autoPopinMode="true" items="{schedule>/entries}" growing="true" growingScrollToLoad="true"
-          growingThreshold="50" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
+          growingThreshold="50" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" itemPress=".onItemPress" class="sapUiNoContentPadding">
           <!-- The HeaderToolbar shows a title and the filter button -->
           <headerToolbar>
             <OverflowToolbar>
@@ -53,7 +53,7 @@
           </columns>
 
           <items>
-            <ColumnListItem vAlign="Middle">
+            <ColumnListItem vAlign="Middle" type="Navigation">
               <cells>
                 <Text text="{schedule>raceNumber}" />
                 <Text text="{schedule>raceShortLabel}" />
