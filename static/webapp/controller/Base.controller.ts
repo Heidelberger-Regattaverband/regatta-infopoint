@@ -118,7 +118,7 @@ export default class BaseController extends Controller {
       return true;
     } catch (error: any) {
       const params: Model$RequestFailedEventParameters = error as Model$RequestFailedEventParameters;
-      MessageBox.error((params.statusCode ?? "") + ": " + params.statusText);
+      console.error((params.statusCode ?? "") + ": " + params.statusText);
       return false;
     } finally {
       control?.setBusy(false);
