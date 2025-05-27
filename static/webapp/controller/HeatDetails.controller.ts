@@ -81,7 +81,7 @@ export default class HeatDetailsController extends BaseController {
     if (heat?.id) {
       this.heatId = heat.id;
     };
-    const url = `/api/heats/${this.heatId}`;
+    const url: string = `/api/heats/${this.heatId}`;
     return await super.updateJSONModel(super.getViewModel(HeatDetailsController.ENTRIES_MODEL) as JSONModel, url, super.getView());
   }
 

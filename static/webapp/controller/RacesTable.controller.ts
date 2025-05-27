@@ -21,8 +21,9 @@ export default class RacesTableController extends BaseTableController {
 
   private static readonly FILTER_DIALOG: string = "de.regatta_hd.infoportal.view.RacesFilterDialog";
   private static readonly SORT_DIALOG: string = "de.regatta_hd.infoportal.view.RacesSortDialog";
+  static readonly RACE_MODEL: string = "race";
 
-  formatter: Formatter = Formatter;
+  readonly formatter: Formatter = Formatter;
   private readonly racesModel: JSONModel = new JSONModel();
 
   onInit(): void {
@@ -122,7 +123,7 @@ export default class RacesTableController extends BaseTableController {
   }
 
   onItemChanged(item: any): void {
-    (super.getComponentModel("race") as JSONModel).setData(item);
+    (super.getComponentModel(RacesTableController.RACE_MODEL) as JSONModel).setData(item);
     super.getEventBus()?.publish("race", "itemChanged", {});
   }
 

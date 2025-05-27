@@ -21,10 +21,10 @@
           <f:title>
             <f:DynamicPageTitle>
               <f:heading>
-                <Title text="{path:'raceRegistrations>/', formatter:'.formatter.nrRaceLabel'}" wrapping="true" />
+                <Title text="{path:'raceEntries>/', formatter:'.formatter.nrRaceLabel'}" wrapping="true" />
               </f:heading>
               <f:expandedContent>
-                <Label text="{raceRegistrations>/longLabel} {raceRegistrations>/comment}" />
+                <Label text="{raceEntries>/longLabel} {raceEntries>/comment}" />
               </f:expandedContent>
               <f:actions>
                 <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press=".onRefreshButtonPress" type="Transparent"
@@ -39,25 +39,25 @@
               <f:content>
                 <HBox>
                   <VBox class="sapUiMediumMarginEnd">
-                    <ObjectStatus title="{i18n>common.state}" text="{path:'raceRegistrations>/',formatter:'.formatter.raceStateLabel'}"
-                      state="{path:'raceRegistrations>/',formatter:'.formatter.raceStateHighlight'}" class="bold" />
-                    <ObjectAttribute title="{i18n>common.registrations}" text="{raceRegistrations>/registrationsCount}" />
+                    <ObjectStatus title="{i18n>common.state}" text="{path:'raceEntries>/',formatter:'.formatter.raceStateLabel'}"
+                      state="{path:'raceEntries>/',formatter:'.formatter.raceStateHighlight'}" class="bold" />
+                    <ObjectAttribute title="{i18n>common.registrations}" text="{raceEntries>/registrationsCount}" />
                   </VBox>
                   <VBox class="sapUiMediumMarginEnd">
-                    <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceRegistrations>/',formatter:'.formatter.distanceLabel'}" />
+                    <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceEntries>/',formatter:'.formatter.distanceLabel'}" />
                     <ObjectAttribute title="{i18n>common.seeded}"
-                      text="{=${raceRegistrations>/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
+                      text="{=${raceEntries>/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
                   </VBox>
                 </HBox>
-                <ObjectAttribute title="{i18n>common.heats} ({raceRegistrations>/heatsCount})"
-                  text="{parts:[{path:'race>/'},{path:'raceRegistrations>/heats'}],formatter:'.formatter.heatsLabel'}" />
+                <ObjectAttribute title="{i18n>common.heats} ({raceEntries>/heatsCount})"
+                  text="{parts:[{path:'race>/'},{path:'raceEntries>/heats'}],formatter:'.formatter.heatsLabel'}" />
               </f:content>
             </f:DynamicPageHeader>
           </f:header>
 
           <f:content>
             <Table headerText="" id="raceDetailsTable" autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
-              items="{path:'raceRegistrations>/registrations/',sorter:[{path:'result/rankSort',descending:false},{path:'bib', descending:false}]}"
+              items="{path:'raceEntries>/registrations/',sorter:[{path:'result/rankSort',descending:false},{path:'bib', descending:false}]}"
               sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding" itemPress=".onRegistrationsItemPress">
               <columns>
                 <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
@@ -75,7 +75,7 @@
                     <Text text="{i18n>common.clubRegistration}" class="bold" />
                   </header>
                 </Column>
-                <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline" visible="{=${raceRegistrations>/heatsCount}>0}">
+                <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline" visible="{=${raceEntries>/heatsCount}>0}">
                   <header>
                     <Text text="{i18n>common.heat}" class="bold" />
                   </header>
@@ -83,32 +83,32 @@
               </columns>
 
               <items>
-                <ColumnListItem vAlign="Middle" type="{=${raceRegistrations>/heatsCount}>0?'Navigation':'Inactive'}"
-                  highlight="{parts:[{path:'race>/'},{path:'raceRegistrations>'}],formatter:'.formatter.raceRegistrationHighlight'}">
+                <ColumnListItem vAlign="Middle" type="{=${raceEntries>/heatsCount}>0?'Navigation':'Inactive'}"
+                  highlight="{parts:[{path:'race>/'},{path:'raceEntries>'}],formatter:'.formatter.raceRegistrationHighlight'}">
                   <cells>
                     <VBox alignItems="Center">
-                      <Text text="{raceRegistrations>bib}" visible="{=${raceRegistrations>cancelled}}" class="cancelled" />
-                      <Text text="{raceRegistrations>bib}" visible="{=!${raceRegistrations>cancelled}}" />
+                      <Text text="{raceEntries>bib}" visible="{=${raceEntries>cancelled}}" class="cancelled" />
+                      <Text text="{raceEntries>bib}" visible="{=!${raceEntries>cancelled}}" />
                     </VBox>
 
                     <VBox>
-                      <Text text="{parts:[{path:'race>/groupMode'},{path:'raceRegistrations>'}],formatter:'.formatter.boatLabel'}"
-                        class="boldCancelled" visible="{=${raceRegistrations>cancelled}}" />
-                      <Text text="{parts:[{path:'race>/groupMode'},{path:'raceRegistrations>'}],formatter:'.formatter.boatLabel'}"
-                        class="bold" visible="{=!${raceRegistrations>cancelled}}" />
+                      <Text text="{parts:[{path:'race>/groupMode'},{path:'raceEntries>'}],formatter:'.formatter.boatLabel'}"
+                        class="boldCancelled" visible="{=${raceEntries>cancelled}}" />
+                      <Text text="{parts:[{path:'race>/groupMode'},{path:'raceEntries>'}],formatter:'.formatter.boatLabel'}"
+                        class="bold" visible="{=!${raceEntries>cancelled}}" />
 
-                      <Text text="{path:'raceRegistrations>crew',formatter: '.formatter.crewLabel'}"
-                        visible="{= ${raceRegistrations>cancelled}}" class="cancelled" />
-                      <Text text="{path:'raceRegistrations>crew',formatter: '.formatter.crewLabel'}"
-                        visible="{= !${raceRegistrations>cancelled}}" />
+                      <Text text="{path:'raceEntries>crew',formatter: '.formatter.crewLabel'}"
+                        visible="{= ${raceEntries>cancelled}}" class="cancelled" />
+                      <Text text="{path:'raceEntries>crew',formatter: '.formatter.crewLabel'}"
+                        visible="{= !${raceEntries>cancelled}}" />
                     </VBox>
 
                     <HBox alignItems="Center">
-                      <Image src="{raceRegistrations>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
-                      <Text text="{raceRegistrations>club/shortName}" visible="{=${raceRegistrations>cancelled}}" class="cancelled" />
-                      <Text text="{raceRegistrations>club/shortName}" visible="{=!${raceRegistrations>cancelled}}" />
+                      <Image src="{raceEntries>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
+                      <Text text="{raceEntries>club/shortName}" visible="{=${raceEntries>cancelled}}" class="cancelled" />
+                      <Text text="{raceEntries>club/shortName}" visible="{=!${raceEntries>cancelled}}" />
                     </HBox>
-                    <Text text="{parts:[{path:'race>/'},{path:'raceRegistrations>heats'}],formatter:'.formatter.heatsLabel'}" />
+                    <Text text="{parts:[{path:'race>/'},{path:'raceEntries>heats'}],formatter:'.formatter.heatsLabel'}" />
                   </cells>
                 </ColumnListItem>
               </items>
