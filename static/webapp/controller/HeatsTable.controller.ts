@@ -21,8 +21,9 @@ export default class HeatsTableController extends BaseTableController {
 
   private static readonly FILTER_DIALOG: string = "de.regatta_hd.infoportal.view.HeatsFilterDialog";
   private static readonly SORT_DIALOG: string = "de.regatta_hd.infoportal.view.HeatsSortDialog";
+  static readonly HEAT_MODEL: string = "heat";
 
-  formatter: Formatter = Formatter;
+  readonly formatter: Formatter = Formatter;
   private readonly heatsModel: JSONModel = new JSONModel();
 
   onInit(): void {
@@ -134,7 +135,7 @@ export default class HeatsTableController extends BaseTableController {
   }
 
   onItemChanged(item: any): void {
-    (super.getComponentModel("heat") as JSONModel).setData(item);
+    (super.getComponentModel(HeatsTableController.HEAT_MODEL) as JSONModel).setData(item);
     super.getEventBus()?.publish("heat", "itemChanged", {});
   }
 
