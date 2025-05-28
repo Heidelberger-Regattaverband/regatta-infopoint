@@ -49,6 +49,11 @@
                 <Text text="{i18n>common.bib} / {i18n>common.boat}" class="bold" />
               </header>
             </Column>
+            <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline">
+              <header>
+                <Text text="{i18n>common.heats}" class="bold" />
+              </header>
+            </Column>
             <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
               <header>
                 <Text text="{i18n>common.clubRegistration}" class="bold" />
@@ -58,7 +63,7 @@
 
           <items>
             <ColumnListItem type="Navigation" vAlign="Middle"
-              highlight="{parts:[{path:'entries>race'},{path:'entries>'}],formatter:'.formatter.raceRegistrationHighlight'}">
+              highlight="{parts:[{path:'entries>race'},{path:'entries>'}],formatter:'.formatter.raceEntryHighlight'}">
               <cells>
                 <HBox alignItems="Center">
                   <Text text="{path:'entries>race',formatter:'.formatter.nrRaceLabel'}"
@@ -74,12 +79,12 @@
                     visible="{=!${entries>cancelled} &amp;&amp; !${entries>race/cancelled}}" />
                 </HBox>
 
+                <Text text="{parts:[{path:'entries>race'},{path:'entries>heats'}],formatter:'.formatter.heatsLabel'}" />
+
                 <HBox alignItems="Center">
                   <Image src="{entries>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
-                  <Text text="{entries>club/shortName}" visible="{=${entries>cancelled} || ${entries>race/cancelled}}"
-                    class="cancelled" />
-                  <Text text="{entries>club/shortName}"
-                    visible="{=!${entries>cancelled} &amp;&amp; !${entries>race/cancelled}}" />
+                  <Text text="{entries>club/shortName}" visible="{=${entries>cancelled} || ${entries>race/cancelled}}" class="cancelled" />
+                  <Text text="{entries>club/shortName}" visible="{=!${entries>cancelled} &amp;&amp; !${entries>race/cancelled}}" />
                 </HBox>
               </cells>
             </ColumnListItem>

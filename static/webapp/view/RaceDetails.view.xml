@@ -84,7 +84,7 @@
 
               <items>
                 <ColumnListItem vAlign="Middle" type="{=${raceEntries>/heatsCount}>0?'Navigation':'Inactive'}"
-                  highlight="{parts:[{path:'race>/'},{path:'raceEntries>'}],formatter:'.formatter.raceRegistrationHighlight'}">
+                  highlight="{parts:[{path:'race>/'},{path:'raceEntries>'}],formatter:'.formatter.raceEntryHighlight'}">
                   <cells>
                     <VBox alignItems="Center">
                       <Text text="{raceEntries>bib}" visible="{=${raceEntries>cancelled}}" class="cancelled" />
