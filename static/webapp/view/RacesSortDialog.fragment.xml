@@ -4,7 +4,7 @@
     <sortItems>
       <ViewSettingsItem text="{i18n>common.number}" key="id" selected="true" cust:column="raceNumber" />
       <ViewSettingsItem text="{i18n>common.distance}" key="distance" cust:column="raceDistance" />
-      <ViewSettingsItem text="{i18n>common.registrations}" key="registrationsCount" cust:column="raceRegistrations" />
+      <ViewSettingsItem text="{i18n>common.registrations}" key="entriesCount" cust:column="raceEntries" />
       <ViewSettingsItem text="{i18n>common.seeded}" key="seeded" cust:column="raceSeeded" />
       <ViewSettingsItem text="{i18n>common.state}" key="state" cust:column="raceState" />
     </sortItems>

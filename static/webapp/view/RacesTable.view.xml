@@ -49,7 +49,7 @@
                 <Text text="{i18n>common.distance}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column id="raceRegistrations" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
+            <Column id="raceEntries" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
               visible="{=!${device>/system/phone}}">
               <header>
                 <Text text="{i18n>common.registrations}" class="bold" wrapping="false" />
@@ -90,8 +90,8 @@
                 </VBox>
 
                 <VBox alignItems="Center">
-                  <Text text="{races>registrationsCount}" visible="{=${races>cancelled}}" class="cancelled" />
-                  <Text text="{races>registrationsCount}" visible="{=!${races>cancelled}}" />
+                  <Text text="{races>entriesCount}" visible="{=${races>cancelled}}" class="cancelled" />
+                  <Text text="{races>entriesCount}" visible="{=!${races>cancelled}}" />
                 </VBox>
 
                 <VBox alignItems="Center">

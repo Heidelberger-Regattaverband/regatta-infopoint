@@ -41,7 +41,7 @@
                   <VBox class="sapUiMediumMarginEnd">
                     <ObjectStatus title="{i18n>common.state}" text="{path:'raceEntries>/',formatter:'.formatter.raceStateLabel'}"
                       state="{path:'raceEntries>/',formatter:'.formatter.raceStateHighlight'}" class="bold" />
-                    <ObjectAttribute title="{i18n>common.registrations}" text="{raceEntries>/registrationsCount}" />
+                    <ObjectAttribute title="{i18n>common.registrations}" text="{raceEntries>/entriesCount}" />
                   </VBox>
                   <VBox class="sapUiMediumMarginEnd">
                     <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceEntries>/',formatter:'.formatter.distanceLabel'}" />
@@ -57,7 +57,7 @@
 
           <f:content>
             <Table headerText="" id="raceDetailsTable" autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
-              items="{path:'raceEntries>/registrations/',sorter:[{path:'result/rankSort',descending:false},{path:'bib', descending:false}]}"
+              items="{path:'raceEntries>/entries/',sorter:[{path:'result/rankSort',descending:false},{path:'bib', descending:false}]}"
               sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding" itemPress=".onEntriesItemPress">
               <columns>
                 <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">

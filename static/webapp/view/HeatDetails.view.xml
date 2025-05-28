@@ -38,18 +38,15 @@
             <f:DynamicPageHeader>
               <HBox>
                 <VBox class="sapUiMediumMarginEnd">
-                  <ObjectAttribute title="{i18n>common.time}"
-                    text="{path: 'heatEntries>/dateTime', formatter: '.formatter.dayTimeIsoLabel'}" />
-                  <ObjectAttribute title="{i18n>common.distance}"
-                    text="{path: 'heatEntries>/race', formatter: '.formatter.distanceLabel'}" />
+                  <ObjectAttribute title="{i18n>common.time}" text="{path:'heatEntries>/dateTime',formatter:'.formatter.dayTimeIsoLabel'}" />
+                  <ObjectAttribute title="{i18n>common.distance}" text="{path:'heatEntries>/race',formatter:'.formatter.distanceLabel'}" />
                   <ObjectAttribute title="{i18n>common.heatNr}" text="{heatEntries>/number}" />
                 </VBox>
 
                 <VBox>
                   <ObjectStatus title="{i18n>common.state}" text="{path:'heatEntries>/',formatter:'.formatter.heatStateLabel'}"
                     state="{path:'heatEntries>/',formatter:'.formatter.heatStateHighlight'}" class="bold" />
-                  <ObjectAttribute title="{i18n>common.seeded}"
-                    text="{= ${heatEntries>/race/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
+                  <ObjectAttribute title="{i18n>common.seeded}" text="{=${heatEntries>/race/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
                   <ObjectAttribute title="{i18n>common.refereeAbr}"
                     text="{heatEntries>/referees/0/lastName}, {heatEntries>/referees/0/firstName}"
                     visible="{= ${heatEntries>/referees} !== undefined }" />
@@ -62,7 +59,7 @@
           <f:content>
             <Table autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
               sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding"
-              items="{path:'heatEntries>/registrations/',sorter:[{path:'result/rankSort',descending:false},{path:'bib',descending:false}]}">
+              items="{path:'heatEntries>/entries/',sorter:[{path:'result/rankSort',descending:false},{path:'bib',descending:false}]}">
 
               <columns>
                 <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline" visible="{=${heatEntries>/state}>=4}">
@@ -104,8 +101,7 @@
                     <Text text="{heatEntries>result/rankLabel}" />
 
                     <VBox>
-                      <Text text="{heatEntries>registration/bib}" visible="{=${heatEntries>registration/cancelled}}"
-                        class="cancelled" />
+                      <Text text="{heatEntries>registration/bib}" visible="{=${heatEntries>registration/cancelled}}" class="cancelled" />
                       <Text text="{heatEntries>registration/bib}" visible="{=!${heatEntries>registration/cancelled}}" />
                     </VBox>
 

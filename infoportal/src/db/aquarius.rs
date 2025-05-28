@@ -295,9 +295,9 @@ impl Aquarius {
         }
         let entries = queries.2?;
         if entries.is_empty() {
-            race.registrations = None;
+            race.entries = None;
         } else {
-            race.registrations = Some(entries);
+            race.entries = Some(entries);
         }
         self.caches.race_heats_entries.set(&race.id, &race).await;
         debug!(

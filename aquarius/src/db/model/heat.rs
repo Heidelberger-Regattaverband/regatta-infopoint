@@ -46,7 +46,7 @@ pub struct Heat {
 
     /// The entries assigned to this heat.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) registrations: Option<Vec<HeatEntry>>,
+    pub(crate) entries: Option<Vec<HeatEntry>>,
 
     /// The round of this heat: 64 - final, 4 - Vorlauf
     pub(crate) round: i16,
@@ -164,7 +164,7 @@ impl Heat {
         )
         .await;
         heat.referees = results.0?;
-        heat.registrations = Some(results.1?);
+        heat.entries = Some(results.1?);
         Ok(heat)
     }
 }
@@ -182,7 +182,7 @@ impl From<&Row> for Heat {
             cancelled: value.get_column("Comp_Cancelled"),
             date_time: value.try_get_column("Comp_DateTime"),
             referees: vec![],
-            registrations: None,
+            entries: None,
             round: value.get_column("Comp_Round"),
         }
     }
