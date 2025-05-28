@@ -1,9 +1,9 @@
-import BaseController from "./Base.controller";
+import { Button$PressEvent } from "sap/m/Button";
+import Control from "sap/ui/core/Control";
+import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
-import Control from "sap/ui/core/Control";
-import { Button$PressEvent } from "sap/m/Button";
-import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import BaseController from "./Base.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller

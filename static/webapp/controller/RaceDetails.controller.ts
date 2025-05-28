@@ -6,23 +6,33 @@ import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
 import Context from "sap/ui/model/Context";
 import RacesTableController from "./RacesTable.controller";
+import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
+import HeatsTableController from "./HeatsTable.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class RaceDetailsController extends BaseController {
 
-  private static readonly ENTRIES_MODEL: string = "raceEntries";
+  private static readonly RACE_ENTRIES_MODEL: string = "raceEntries";
 
   readonly formatter: Formatter = Formatter;
   // bind keyListener method to this context to have access to navigation methods
   private readonly keyListener: (event: KeyboardEvent) => void = this.onKeyDown.bind(this);
+  private raceId?: number;
 
   onInit(): void {
     // first initialize the view
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getView()?.addEventDelegate({ onBeforeShow: this.onBeforeShow, onBeforeHide: this.onBeforeHide }, this);
-    super.setViewModel(new JSONModel(), RaceDetailsController.ENTRIES_MODEL);
+    super.setViewModel(new JSONModel(), RaceDetailsController.RACE_ENTRIES_MODEL);
+
+    super.getRouter()?.getRoute("raceDetails")?.attachPatternMatched(
+      (event: Route$PatternMatchedEvent) => this.onPatternMatched(event), this);
+  }
+
+  private onPatternMatched(event: Route$PatternMatchedEvent): void {
+    this.raceId = (event.getParameter("arguments") as any)?.raceId;
   }
 
   private onBeforeShow(): void {
@@ -35,10 +45,11 @@ export default class RaceDetailsController extends BaseController {
   private onBeforeHide(): void {
     window.removeEventListener("keydown", this.keyListener);
     super.getEventBus()?.unsubscribe("race", "itemChanged", this.onItemChanged, this);
+    delete this.raceId;
   }
 
   onNavBack(): void {
-    const data = (super.getComponentModel("race") as JSONModel).getData();
+    const data = (super.getComponentModel(RacesTableController.RACE_MODEL) as JSONModel).getData();
     if (data._nav?.back) {
       super.navBack(data._nav.back);
     } else {
@@ -73,14 +84,14 @@ export default class RaceDetailsController extends BaseController {
   onRegistrationsItemPress(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
-      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(RaceDetailsController.ENTRIES_MODEL);
+      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(RaceDetailsController.RACE_ENTRIES_MODEL);
       const registration: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
 
       if (registration?.heats?.length > 0) {
         const heat: any = registration.heats[0];
         heat._nav = { disabled: true, back: "raceDetails" };
 
-        (super.getComponentModel("heat") as JSONModel).setData(heat);
+        (super.getComponentModel(HeatsTableController.HEAT_MODEL) as JSONModel).setData(heat);
         super.navToHeatDetails(heat.id);
       }
     }
@@ -88,8 +99,12 @@ export default class RaceDetailsController extends BaseController {
 
   private async loadRaceModel(): Promise<boolean> {
     const race: any = (super.getComponentModel(RacesTableController.RACE_MODEL) as JSONModel).getData();
-    const url: string = `/api/races/${race.id}`;
-    return await super.updateJSONModel(super.getViewModel(RaceDetailsController.ENTRIES_MODEL) as JSONModel, url, super.getView());
+    if (race?.id) {
+      this.raceId = race.id;
+    };
+    const url: string = `/api/races/${this.raceId}`;
+    const entriesModel = super.getViewModel(RaceDetailsController.RACE_ENTRIES_MODEL) as JSONModel;
+    return await super.updateJSONModel(entriesModel, url, super.getView());
   }
 
   private async onItemChanged(channelId: string, eventId: string, parametersMap: any): Promise<void> {

@@ -16,13 +16,13 @@ import BaseTableController from "./BaseTable.controller";
  */
 export default class AthletesTable extends BaseTableController {
 
-  private readonly athletesModel: JSONModel = new JSONModel();
+  private static readonly ATHLETES_MODEL: string = "athletes";
 
   onInit(): void {
     super.init(super.getView()?.byId("athletesTable") as Table);
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
-    super.setViewModel(this.athletesModel, "athletes");
+    super.setViewModel(new JSONModel(), AthletesTable.ATHLETES_MODEL);
     super.getRouter()?.getRoute("athletes")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadModel(), this);
 
     super.sortTable("athleteLastNameCol", false, "lastName");
@@ -82,6 +82,8 @@ export default class AthletesTable extends BaseTableController {
 
   private async loadModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
-    return await super.updateJSONModel(this.athletesModel, `/api/regattas/${regatta.id}/athletes`, this.table)
+    const url = `/api/regattas/${regatta.id}/athletes`;
+    const athletesModel: JSONModel = super.getViewModel(AthletesTable.ATHLETES_MODEL) as JSONModel;
+    return await super.updateJSONModel(athletesModel, url, this.table)
   }
 }

@@ -16,13 +16,13 @@ import BaseTableController from "./BaseTable.controller";
  */
 export default class ClubsTableController extends BaseTableController {
 
-  private readonly clubsModel: JSONModel = new JSONModel();
+  private static readonly CLUBS_MODEL: string = "clubs";
 
   onInit(): void {
     super.init(super.getView()?.byId("clubsTable") as Table);
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
-    super.setViewModel(this.clubsModel, "clubs");
+    super.setViewModel(new JSONModel(), ClubsTableController.CLUBS_MODEL);
     super.getRouter()?.getRoute("clubs")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadModel(), this);
 
     super.sortTable("clubCityCol", false, "city");
@@ -79,6 +79,8 @@ export default class ClubsTableController extends BaseTableController {
 
   private async loadModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
-    return await super.updateJSONModel(this.clubsModel, `/api/regattas/${regatta.id}/clubs`, this.table)
+    const url: string = `/api/regattas/${regatta.id}/clubs`;
+    const clubsModel: JSONModel = super.getViewModel(ClubsTableController.CLUBS_MODEL) as JSONModel;
+    return await super.updateJSONModel(clubsModel, url, this.table)
   }
 }

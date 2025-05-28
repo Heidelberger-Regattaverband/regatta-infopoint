@@ -13,7 +13,7 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
  */
 export default class ScoringTableController extends BaseController {
 
-  private table: Table;
+  private table?: Table;
   private readonly scoringModel: JSONModel = new JSONModel();
 
   onInit(): void {
@@ -31,7 +31,7 @@ export default class ScoringTableController extends BaseController {
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
     const query: string | undefined = event.getParameters().newValue?.trim();
     const searchFilters: Filter[] = (query) ? this.createSearchFilters(query) : [];
-    const binding: ListBinding = this.table.getBinding("items") as ListBinding;
+    const binding: ListBinding | undefined = this.table?.getBinding("items") as ListBinding;
     binding?.filter(searchFilters);
   }
 

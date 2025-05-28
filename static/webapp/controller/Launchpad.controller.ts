@@ -1,12 +1,12 @@
-import JSONModel from "sap/ui/model/json/JSONModel";
-import BaseController from "./Base.controller";
-import MessageToast from "sap/m/MessageToast";
-import ResponsivePopover from "sap/m/ResponsivePopover";
-import Fragment from "sap/ui/core/Fragment";
 import * as $ from "jquery";
-import Control from "sap/ui/core/Control";
 import { Button$PressEvent } from "sap/m/Button";
 import { Input$SubmitEvent } from "sap/m/Input";
+import MessageToast from "sap/m/MessageToast";
+import ResponsivePopover from "sap/m/ResponsivePopover";
+import Control from "sap/ui/core/Control";
+import Fragment from "sap/ui/core/Fragment";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import BaseController from "./Base.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller

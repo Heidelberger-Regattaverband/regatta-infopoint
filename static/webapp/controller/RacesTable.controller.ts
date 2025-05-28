@@ -22,15 +22,15 @@ export default class RacesTableController extends BaseTableController {
   private static readonly FILTER_DIALOG: string = "de.regatta_hd.infoportal.view.RacesFilterDialog";
   private static readonly SORT_DIALOG: string = "de.regatta_hd.infoportal.view.RacesSortDialog";
   static readonly RACE_MODEL: string = "race";
+  private static readonly RACES_MODEL: string = "races";
 
   readonly formatter: Formatter = Formatter;
-  private readonly racesModel: JSONModel = new JSONModel();
 
   onInit(): void {
     super.init(super.getView()?.byId("racesTable") as Table, "race" /* eventBus channel */);
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
-    super.setViewModel(this.racesModel, "races");
+    super.setViewModel(new JSONModel(), RacesTableController.RACES_MODEL);
     super.getRouter()?.getRoute("races")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadRacesModel(), this);
 
     super.getFilters().then((filters) => {
@@ -141,6 +141,8 @@ export default class RacesTableController extends BaseTableController {
 
   private async loadRacesModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
-    return await super.updateJSONModel(this.racesModel, `/api/regattas/${regatta.id}/races`, this.table);
+    const url: string = `/api/regattas/${regatta.id}/races`;
+    const racesModel: JSONModel = super.getViewModel(RacesTableController.RACES_MODEL) as JSONModel;
+    return await super.updateJSONModel(racesModel, url, this.table);
   }
 }

@@ -41,6 +41,7 @@ export default class HeatDetailsController extends BaseController {
   private onBeforeHide(): void {
     window.removeEventListener("keydown", this.keyListener);
     super.getEventBus()?.unsubscribe("heat", "itemChanged", this.onItemChanged, this);
+    delete this.heatId;
   }
 
   onNavBack(): void {
