@@ -17,19 +17,20 @@ import BaseController from "./Base.controller";
  */
 export default class ClubDetailsController extends BaseController {
 
-  formatter: Formatter = Formatter;
-  private table: Table;
+  private static readonly CLUB_MODEL: string = "club";
+  private static readonly ENTRIES_MODEL: string = "entries";
+
+  readonly formatter: Formatter = Formatter;
+  private table?: Table;
   private clubId?: number;
-  private readonly registrationsModel: JSONModel = new JSONModel();
-  private readonly clubModel: JSONModel = new JSONModel();
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
 
-    this.table = super.getView()?.byId("registrationsTable") as Table;
+    this.table = super.getView()?.byId("clubEntriesTable") as Table;
 
-    super.setViewModel(this.registrationsModel, "registrations");
-    super.setViewModel(this.clubModel, "club");
+    super.setViewModel(new JSONModel(), ClubDetailsController.ENTRIES_MODEL);
+    super.setViewModel(new JSONModel(), ClubDetailsController.CLUB_MODEL);
 
     super.getRouter()?.getRoute("clubDetails")?.attachPatternMatched(
       async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
@@ -43,7 +44,7 @@ export default class ClubDetailsController extends BaseController {
   onSelectionChange(oEvent: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = oEvent.getParameter("listItem");
     if (selectedItem) {
-      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("registrations");
+      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(ClubDetailsController.ENTRIES_MODEL);
       const registration: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
 
       registration.race._nav = { disabled: true, back: "clubDetails" };
@@ -56,7 +57,7 @@ export default class ClubDetailsController extends BaseController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    Promise.all([this.loadRegistrationsModel(), this.loadClubModel()]).then((succeeded: [boolean, boolean]) => {
+    this.loadData().then((succeeded: [boolean, boolean]) => {
       super.showDataUpdatedMessage(succeeded[0] && succeeded[1]);
     }).finally(() => source.setEnabled(true));
   }
@@ -65,8 +66,8 @@ export default class ClubDetailsController extends BaseController {
     const query: string | undefined = event.getParameters().newValue?.trim();
     const searchFilters: Filter[] = query ? this.createSearchFilters(query) : [];
 
-    const binding: ListBinding = this.table.getBinding("items") as ListBinding;
-    binding.filter(searchFilters);
+    const binding: ListBinding | undefined = this.table?.getBinding("items") as ListBinding;
+    binding?.filter(searchFilters);
   }
 
   private createSearchFilters(query: string): Filter[] {
@@ -93,16 +94,18 @@ export default class ClubDetailsController extends BaseController {
 
   private async onPatternMatched(event: Route$PatternMatchedEvent): Promise<void> {
     this.clubId = (event.getParameter("arguments") as any).clubId;
-    await Promise.all([this.loadRegistrationsModel(), this.loadClubModel()]);
+    await this.loadData();
   }
 
-  private async loadClubModel(): Promise<boolean> {
+  private async loadData(): Promise<[boolean, boolean]> {
     const regatta: any = await super.getActiveRegatta();
-    return await super.updateJSONModel(this.clubModel, `/api/regattas/${regatta.id}/clubs/${this.clubId}`);
-  }
 
-  private async loadRegistrationsModel(): Promise<boolean> {
-    const regatta: any = await super.getActiveRegatta();
-    return await super.updateJSONModel(this.registrationsModel, `/api/regattas/${regatta.id}/clubs/${this.clubId}/registrations`, this.table);
+    const clubUrl: string = `/api/regattas/${regatta.id}/clubs/${this.clubId}`;
+    const entriesUrl: string = `/api/regattas/${regatta.id}/clubs/${this.clubId}/registrations`;
+
+    const clubModel: JSONModel = super.getViewModel(ClubDetailsController.CLUB_MODEL) as JSONModel;
+    const entriesModel: JSONModel = super.getViewModel(ClubDetailsController.ENTRIES_MODEL) as JSONModel;
+
+    return await Promise.all([super.updateJSONModel(entriesModel, entriesUrl, this.table), super.updateJSONModel(clubModel, clubUrl)]);
   }
 }

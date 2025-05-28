@@ -13,19 +13,20 @@ import BaseController from "./Base.controller";
  */
 export default class AthleteDetailsController extends BaseController {
 
+  private static readonly ATHLETE_MODEL: string = "athlete";
+  private static readonly ENTRIES_MODEL: string = "entries";
+
   readonly formatter: Formatter = Formatter;
-  private table: Table;
+  private table?: Table;
   private athleteId?: number;
-  private readonly registrationsModel: JSONModel = new JSONModel();
-  private readonly athleteModel: JSONModel = new JSONModel();
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
 
-    this.table = super.getView()?.byId("athleteRegistrationsTable") as Table;
+    this.table = super.getView()?.byId("athleteEntriesTable") as Table;
 
-    super.setViewModel(this.registrationsModel, "registrations");
-    super.setViewModel(this.athleteModel, "athlete");
+    super.setViewModel(new JSONModel(), AthleteDetailsController.ENTRIES_MODEL);
+    super.setViewModel(new JSONModel(), AthleteDetailsController.ATHLETE_MODEL);
 
     super.getRouter()?.getRoute("athleteDetails")?.attachPatternMatched(
       async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
@@ -39,7 +40,7 @@ export default class AthleteDetailsController extends BaseController {
   onSelectionChange(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
-      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("registrations");
+      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(AthleteDetailsController.ENTRIES_MODEL);
       const registration: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
 
       registration.race._nav = { disabled: true, back: "athletes" };
@@ -64,7 +65,13 @@ export default class AthleteDetailsController extends BaseController {
 
   private async loadData(): Promise<[boolean, boolean]> {
     const regatta: any = await super.getActiveRegatta();
-    return await Promise.all([super.updateJSONModel(this.registrationsModel, `/api/regattas/${regatta.id}/athletes/${this.athleteId}/registrations`, this.table),
-    super.updateJSONModel(this.athleteModel, `/api/athletes/${this.athleteId}`)]);
+
+    const athleteUrl: string = `/api/athletes/${this.athleteId}`;
+    const entriesUrl: string = `/api/regattas/${regatta.id}/athletes/${this.athleteId}/registrations`;
+
+    const athleteModel: JSONModel = super.getViewModel(AthleteDetailsController.ATHLETE_MODEL) as JSONModel;
+    const entriesModel: JSONModel = super.getViewModel(AthleteDetailsController.ENTRIES_MODEL) as JSONModel;
+
+    return await Promise.all([super.updateJSONModel(entriesModel, entriesUrl, this.table), super.updateJSONModel(athleteModel, athleteUrl)]);
   }
 }

@@ -35,7 +35,7 @@
       </f:header>
 
       <f:content>
-        <Table id="registrationsTable" autoPopinMode="true" items="{path:'registrations>/'}" growing="true" growingThreshold="50"
+        <Table id="clubEntriesTable" autoPopinMode="true" items="{path:'entries>/'}" growing="true" growingThreshold="50"
           growingScrollToLoad="true" sticky="ColumnHeaders,HeaderToolbar" class="sapUiNoContentPadding" mode="SingleSelectMaster"
           itemPress=".onSelectionChange">
           <headerToolbar>
@@ -70,34 +70,32 @@
 
           <items>
             <ColumnListItem type="Navigation" vAlign="Middle"
-              highlight="{parts:[{path:'registrations>race'},{path:'registrations>'}],formatter:'.formatter.raceRegistrationHighlight'}">
+              highlight="{parts:[{path:'entries>race'},{path:'entries>'}],formatter:'.formatter.raceRegistrationHighlight'}">
               <cells>
                 <HBox alignItems="Center">
-                  <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
-                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" class="cancelled" />
-                  <Text text="{path:'registrations>race',formatter:'.formatter.nrRaceLabel'}"
-                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                  <Text text="{path:'entries>race',formatter:'.formatter.nrRaceLabel'}"
+                    visible="{=${entries>cancelled} || ${entries>race/cancelled}}" class="cancelled" />
+                  <Text text="{path:'entries>race',formatter:'.formatter.nrRaceLabel'}"
+                    visible="{=!${entries>cancelled} &amp;&amp; !${entries>race/cancelled}}" />
                 </HBox>
 
                 <VBox>
-                  <Text text="{parts:[{path:'registrations>race/groupMode'},{path:'registrations>'}],formatter:'.formatter.bibBoatLabel'}"
-                    class="boldCancelled" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
-                  <Text text="{parts:[{path:'registrations>race/groupMode'},{path:'registrations>'}],formatter:'.formatter.bibBoatLabel'}"
-                    class="bold" visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                  <Text text="{parts:[{path:'entries>race/groupMode'},{path:'entries>'}],formatter:'.formatter.bibBoatLabel'}"
+                    class="boldCancelled" visible="{=${entries>cancelled} || ${entries>race/cancelled}}" />
+                  <Text text="{parts:[{path:'entries>race/groupMode'},{path:'entries>'}],formatter:'.formatter.bibBoatLabel'}" class="bold"
+                    visible="{=!${entries>cancelled} &amp;&amp; !${entries>race/cancelled}}" />
 
-                  <Text text="{path:'registrations>crew',formatter:'.formatter.crewLabel'}" class="cancelled"
-                    visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}" />
-                  <Text text="{path:'registrations>crew',formatter:'.formatter.crewLabel'}"
-                    visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                  <Text text="{path:'entries>crew',formatter:'.formatter.crewLabel'}" class="cancelled"
+                    visible="{=${entries>cancelled} || ${entries>race/cancelled}}" />
+                  <Text text="{path:'entries>crew',formatter:'.formatter.crewLabel'}"
+                    visible="{=!${entries>cancelled} &amp;&amp; !${entries>race/cancelled}}" />
                 </VBox>
 
                 <HBox alignItems="Center">
                   <items>
-                    <Image src="{registrations>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
-                    <Text text="{registrations>club/shortName}" visible="{=${registrations>cancelled} || ${registrations>race/cancelled}}"
-                      class="cancelled" />
-                    <Text text="{registrations>club/shortName}"
-                      visible="{=!${registrations>cancelled} &amp;&amp; !${registrations>race/cancelled}}" />
+                    <Image src="{entries>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
+                    <Text text="{entries>club/shortName}" visible="{=${entries>cancelled} || ${entries>race/cancelled}}" class="cancelled" />
+                    <Text text="{entries>club/shortName}" visible="{=!${entries>cancelled} &amp;&amp; !${entries>race/cancelled}}" />
                   </items>
                 </HBox>
               </cells>
