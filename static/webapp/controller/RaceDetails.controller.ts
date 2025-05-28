@@ -85,10 +85,10 @@ export default class RaceDetailsController extends BaseController {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(RaceDetailsController.RACE_ENTRIES_MODEL);
-      const registration: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
+      const entry: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
 
-      if (registration?.heats?.length > 0) {
-        const heat: any = registration.heats[0];
+      if (entry?.heats?.length > 0) {
+        const heat: any = entry.heats[0];
         heat._nav = { disabled: true, back: "raceDetails" };
 
         (super.getComponentModel(HeatsTableController.HEAT_MODEL) as JSONModel).setData(heat);

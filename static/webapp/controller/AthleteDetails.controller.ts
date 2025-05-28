@@ -41,12 +41,12 @@ export default class AthleteDetailsController extends BaseController {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(AthleteDetailsController.ENTRIES_MODEL);
-      const registration: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
+      const entry: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
 
-      registration.race._nav = { disabled: true, back: "athletes" };
+      entry.race._nav = { disabled: true, back: "athletes" };
 
-      (super.getComponentModel("race") as JSONModel).setData(registration.race);
-      super.navToRaceDetails(registration.race.id);
+      (super.getComponentModel("race") as JSONModel).setData(entry.race);
+      super.navToRaceDetails(entry.race.id);
     }
   }
 

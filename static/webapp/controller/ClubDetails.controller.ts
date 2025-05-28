@@ -45,12 +45,12 @@ export default class ClubDetailsController extends BaseController {
     const selectedItem: ListItemBase | undefined = oEvent.getParameter("listItem");
     if (selectedItem) {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(ClubDetailsController.ENTRIES_MODEL);
-      const registration: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
+      const entry: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
 
-      registration.race._nav = { disabled: true, back: "clubDetails" };
+      entry.race._nav = { disabled: true, back: "clubDetails" };
 
-      (super.getComponentModel("race") as JSONModel).setData(registration.race);
-      super.navToRaceDetails(registration.race.id);
+      (super.getComponentModel("race") as JSONModel).setData(entry.race);
+      super.navToRaceDetails(entry.race.id);
     }
   }
 
