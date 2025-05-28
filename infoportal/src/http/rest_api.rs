@@ -129,7 +129,7 @@ async fn get_participating_clubs(
     Ok(Json(clubs))
 }
 
-#[get("/regattas/{regatta_id}/clubs/{club_id}/registrations")]
+#[get("/regattas/{regatta_id}/clubs/{club_id}/entries")]
 async fn get_club_entries(
     ids: Path<(i32, i32)>,
     aquarius: Data<Aquarius>,
@@ -190,7 +190,7 @@ async fn get_athlete(
     Ok(Json(clubs))
 }
 
-#[get("/regattas/{regatta_id}/athletes/{athlete_id}/registrations")]
+#[get("/regattas/{regatta_id}/athletes/{athlete_id}/entries")]
 async fn get_athlete_entries(
     ids: Path<(i32, i32)>,
     aquarius: Data<Aquarius>,

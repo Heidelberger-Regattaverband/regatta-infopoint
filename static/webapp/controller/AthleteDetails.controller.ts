@@ -67,7 +67,7 @@ export default class AthleteDetailsController extends BaseController {
     const regatta: any = await super.getActiveRegatta();
 
     const athleteUrl: string = `/api/athletes/${this.athleteId}`;
-    const entriesUrl: string = `/api/regattas/${regatta.id}/athletes/${this.athleteId}/registrations`;
+    const entriesUrl: string = `/api/regattas/${regatta.id}/athletes/${this.athleteId}/entries`;
 
     const athleteModel: JSONModel = super.getViewModel(AthleteDetailsController.ATHLETE_MODEL) as JSONModel;
     const entriesModel: JSONModel = super.getViewModel(AthleteDetailsController.ENTRIES_MODEL) as JSONModel;

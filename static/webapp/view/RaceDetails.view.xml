@@ -58,7 +58,7 @@
           <f:content>
             <Table headerText="" id="raceDetailsTable" autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
               items="{path:'raceEntries>/registrations/',sorter:[{path:'result/rankSort',descending:false},{path:'bib', descending:false}]}"
-              sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding" itemPress=".onRegistrationsItemPress">
+              sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding" itemPress=".onEntriesItemPress">
               <columns>
                 <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
                   <header>

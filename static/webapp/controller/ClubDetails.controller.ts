@@ -101,7 +101,7 @@ export default class ClubDetailsController extends BaseController {
     const regatta: any = await super.getActiveRegatta();
 
     const clubUrl: string = `/api/regattas/${regatta.id}/clubs/${this.clubId}`;
-    const entriesUrl: string = `/api/regattas/${regatta.id}/clubs/${this.clubId}/registrations`;
+    const entriesUrl: string = `/api/regattas/${regatta.id}/clubs/${this.clubId}/entries`;
 
     const clubModel: JSONModel = super.getViewModel(ClubDetailsController.CLUB_MODEL) as JSONModel;
     const entriesModel: JSONModel = super.getViewModel(ClubDetailsController.ENTRIES_MODEL) as JSONModel;

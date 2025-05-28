@@ -81,7 +81,7 @@ export default class RaceDetailsController extends BaseController {
     }).finally(() => source.setEnabled(true));
   }
 
-  onRegistrationsItemPress(event: ListBase$SelectionChangeEvent): void {
+  onEntriesItemPress(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(RaceDetailsController.RACE_ENTRIES_MODEL);
