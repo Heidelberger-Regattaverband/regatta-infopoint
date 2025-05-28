@@ -120,15 +120,15 @@ export default class Formatter {
     return Formatter.i18n("sorting.none");
   }
 
-  static heatRegistrationHighlight(heatRegistration: any): IndicationColor {
+  static heatEntryHighlight(heatEntry: any): IndicationColor {
     // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
-    if (heatRegistration.registration.cancelled) {
+    if (heatEntry.registration.cancelled) {
       return IndicationColor.Indication02; // cancelled -> red
     } else
-      if (!heatRegistration.result) {
+      if (!heatEntry.result) {
         return IndicationColor.Indication05; // no result yet -> blue
       } else
-        if (heatRegistration.result.rankSort > 0 && heatRegistration.result.rankSort <= 5) {
+        if (heatEntry.result.rankSort > 0 && heatEntry.result.rankSort <= 5) {
           return IndicationColor.Indication04; // official -> green
         } else {
           return IndicationColor.Indication02; // DNS, DNF, ... -> red

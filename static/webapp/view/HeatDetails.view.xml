@@ -96,7 +96,7 @@
               </columns>
 
               <items>
-                <ColumnListItem highlight="{path:'heatEntries>',formatter:'.formatter.heatRegistrationHighlight'}" vAlign="Middle">
+                <ColumnListItem highlight="{path:'heatEntries>',formatter:'.formatter.heatEntryHighlight'}" vAlign="Middle">
                   <cells>
                     <Text text="{heatEntries>result/rankLabel}" />
 
