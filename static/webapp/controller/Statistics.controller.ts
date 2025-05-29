@@ -54,7 +54,7 @@ export default class StatisticsController extends BaseController {
     if (statistics?.entries) {
       const seats = statistics.entries.seats + statistics.entries.seatsCox;
       entries.push({ name: this.i18n("common.overall"), value: statistics.entries.all });
-      entries.push({ name: this.i18n("statistics.registrations.cancelled"), value: statistics.entries.cancelled });
+      entries.push({ name: this.i18n("statistics.entries.cancelled"), value: statistics.entries.cancelled });
       entries.push({ name: this.i18n("statistics.reportingClubs"), value: statistics.entries.registeringClubs });
       entries.push({ name: this.i18n("statistics.participatingClubs"), value: statistics.entries.clubs });
       entries.push({ name: this.i18n("statistics.athletes.overall"), value: statistics.entries.athletes });
