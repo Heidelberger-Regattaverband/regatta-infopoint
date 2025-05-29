@@ -1,15 +1,16 @@
-import Controller from "sap/ui/core/mvc/Controller";
-import History from "sap/ui/core/routing/History";
-import JSONModel from "sap/ui/model/json/JSONModel";
-import EventBus from "sap/ui/core/EventBus";
-import Model, { Model$RequestFailedEventParameters } from "sap/ui/model/Model";
-import View from "sap/ui/core/mvc/View";
-import Component from "sap/ui/core/Component";
-import Router from "sap/ui/core/routing/Router";
-import Control from "sap/ui/core/Control";
-import UIComponent from "sap/ui/core/UIComponent";
 import MyComponent from "de/regatta_hd/infoportal/Component";
+import * as $ from "jquery";
+import { LatLng } from "leaflet";
 import MessageBox from "sap/m/MessageBox";
+import MessageToast from "sap/m/MessageToast";
+import Control from "sap/ui/core/Control";
+import EventBus from "sap/ui/core/EventBus";
+import Controller from "sap/ui/core/mvc/Controller";
+import View from "sap/ui/core/mvc/View";
+import History from "sap/ui/core/routing/History";
+import Router from "sap/ui/core/routing/Router";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import Model, { Model$RequestFailedEventParameters } from "sap/ui/model/Model";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -17,11 +18,34 @@ import MessageBox from "sap/m/MessageBox";
 export default class BaseController extends Controller {
 
   /**
+   * Shows a message toast with the result of a data update operation.
+   * @param succeeded data update succeeded or failed
+   */
+  showDataUpdatedMessage(succeeded: boolean): void {
+    if (succeeded) { // NOSONAR
+      MessageToast.show(this.i18n("msg.dataUpdated"));
+      $(".sapMMessageToast").addClass("sapMMessageToastInfo");
+    } else {
+      MessageToast.show(this.i18n("msg.dataUpdateFailed"));
+      $(".sapMMessageToast").addClass("sapMMessageToastDanger");
+    }
+  }
+
+  /**
+   * Convenience method for getting the secure context of the application.
+   * @returns {boolean} whether the application is running in a secure context
+   */
+  isSecureContext(): boolean {
+    console.debug(`isSecureContext: ${window.isSecureContext}`);
+    return window.isSecureContext;
+  }
+
+  /**
    * Convenience method for accessing the content density class defined in the component.
    * @returns {string} the content density class
    */
   getContentDensityClass(): string {
-    return (super.getOwnerComponent() as MyComponent | undefined)?.getContentDensityClass() ?? "sapUiSizeCozy";
+    return this.getComponent()?.getContentDensityClass() ?? "sapUiSizeCozy";
   }
 
   /**
@@ -42,21 +66,11 @@ export default class BaseController extends Controller {
   }
 
   /**
-   * Convenience method for setting the view model.
-   * @param {sap.ui.model.Model} model the model instance
-   * @param {string} name the model name
-   * @returns {sap.ui.mvc.View} the view instance
-   */
-  setComponentModel(model: Model, name: string): Component | undefined {
-    return super.getOwnerComponent()?.setModel(model, name);
-  }
-
-  /**
    * Convenience method for accessing the router.
    * @returns {sap.ui.core.routing.Router} the router for this component
    */
   getRouter(): Router {
-    return (super.getOwnerComponent() as UIComponent).getRouter();
+    return this.getComponent().getRouter();
   }
 
   /**
@@ -81,14 +95,10 @@ export default class BaseController extends Controller {
   navBack(target: string): void {
     const previousHash: string | undefined = History.getInstance().getPreviousHash();
     if (previousHash) {
-      window.history.go(-1);
+      window.history.back();
     } else {
-      this.getRouter().navTo(target, {}, undefined, true /* no history*/);
+      this.getRouter().navTo(target, {}, undefined, false /* history*/);
     }
-  }
-
-  displayTarget(target: string): void {
-    this.getRouter()?.getTargets()?.display(target);
   }
 
   /**
@@ -98,15 +108,7 @@ export default class BaseController extends Controller {
    * @returns {string} The translated text
    */
   i18n(key: string, args?: any[]): string {
-    return (super.getOwnerComponent() as MyComponent | undefined)?.getResourceBundle().getText(key, args) ?? "";
-  }
-
-  /**
-   * Returns the regatta ID. If the regatta ID is not available, -1 is returned.
-   * @returns {number} the regatta ID or -1
-   */
-  getRegattaId(): number {
-    return (super.getOwnerComponent() as MyComponent | undefined)?.getRegattaId() ?? -1;
+    return this.getComponent()?.getResourceBundle().getText(key, args) ?? "";
   }
 
   async updateJSONModel(model: JSONModel, url: string, control?: Control): Promise<boolean> {
@@ -116,11 +118,66 @@ export default class BaseController extends Controller {
       return true;
     } catch (error: any) {
       const params: Model$RequestFailedEventParameters = error as Model$RequestFailedEventParameters;
-      MessageBox.error((params.statusCode ?? "") + ": " + params.statusText);
+      console.error((params.statusCode ?? "") + ": " + params.statusText);
       return false;
     } finally {
       control?.setBusy(false);
     }
   }
 
+  navToStartPage(): void {
+    this.getRouter().navTo("startpage");
+  }
+
+  navToRaces(): void {
+    this.getRouter().navTo("races");
+  }
+
+  navToRaceDetails(raceId: number): void {
+    this.getRouter().navTo("raceDetails", { raceId: raceId });
+  }
+
+  navToHeats(): void {
+    this.getRouter().navTo("heats");
+  }
+
+  navToHeatDetails(heatId: number): void {
+    this.getRouter().navTo("heatDetails", { heatId: heatId });
+  }
+
+  navToClubs(): void {
+    this.getRouter().navTo("clubs");
+  }
+
+  navToClubDetails(clubId: number): void {
+    this.getRouter().navTo("clubDetails", { clubId: clubId }, false /* history*/);
+  }
+
+  navToAthletes(): void {
+    this.getRouter().navTo("athletes");
+  }
+
+  navToAthleteDetails(athleteId: number): void {
+    this.getRouter().navTo("athleteDetails", { athleteId: athleteId }, false /* history*/);
+  }
+
+  navToMap(location?: LatLng): void {
+    let params: any = {};
+    if (location) {
+      params = { "lat": location.lat, "lng": location.lng };
+    }
+    this.getRouter().navTo("map", params);
+  }
+
+  async getFilters(): Promise<any> {
+    return (await this.getComponent().getFilters()).getData();
+  }
+
+  async getActiveRegatta(): Promise<any> {
+    return (await this.getComponent().getActiveRegatta()).getData();
+  }
+
+  private getComponent(): MyComponent {
+    return super.getOwnerComponent() as MyComponent;
+  }
 }

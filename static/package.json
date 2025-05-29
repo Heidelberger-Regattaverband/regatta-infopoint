@@ -10,6 +10,9 @@
     "lint": "ui5lint",
     "watch": "watch 'npm run build' webapp"
   },
+  "dependencies": {
+    "leaflet": "^1.9.4"
+  },
   "devDependencies": {
     "@openui5/types": "^1.125.0",
     "@types/leaflet": "^1.9.12",

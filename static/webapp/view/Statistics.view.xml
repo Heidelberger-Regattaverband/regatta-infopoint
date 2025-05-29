@@ -1,14 +1,15 @@
 <mvc:View controllerName="de.regatta_hd.infoportal.controller.Statistics" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
-    <Page title="{i18n>launchpad.statistics.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress="onNavBack">
+    <Page title="{i18n>launchpad.statistics.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
       <headerContent>
-        <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press="onRefreshButtonPress" />
+        <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
+          press=".onRefreshButtonPress" />
       </headerContent>
 
       <content>
 
-        <List id="registrationsList" items="{statistics>/registrations}" headerText="{i18n>statistics.registrations}">
+        <List id="entriesList" items="{statistics>/entries}" headerText="{i18n>common.entries}">
           <ObjectListItem title="{statistics>name}" number="{statistics>value}" />
         </List>
 

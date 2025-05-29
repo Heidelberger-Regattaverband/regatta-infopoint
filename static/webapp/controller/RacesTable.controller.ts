@@ -1,66 +1,70 @@
+import Button, { Button$PressEvent } from "sap/m/Button";
+import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
+import ListItemBase from "sap/m/ListItemBase";
+import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import Table from "sap/m/Table";
-import Formatter from "../model/Formatter";
-import BaseTableController from "./BaseTable.controller";
-import JSONModel from "sap/ui/model/json/JSONModel";
+import ViewSettingsDialog from "sap/m/ViewSettingsDialog";
 import ViewSettingsFilterItem from "sap/m/ViewSettingsFilterItem";
 import ViewSettingsItem from "sap/m/ViewSettingsItem";
-import Button, { Button$PressEvent } from "sap/m/Button";
-import FilterOperator from "sap/ui/model/FilterOperator";
-import Filter from "sap/ui/model/Filter";
-import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
-import ViewSettingsDialog from "sap/m/ViewSettingsDialog";
-import ListItemBase from "sap/m/ListItemBase";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
-import MessageToast from "sap/m/MessageToast";
-import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import Formatter from "../model/Formatter";
+import BaseTableController from "./BaseTable.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class RacesTableController extends BaseTableController {
 
-  formatter: Formatter = Formatter;
-  private readonly racesModel: JSONModel = new JSONModel();
+  private static readonly FILTER_DIALOG: string = "de.regatta_hd.infoportal.view.RacesFilterDialog";
+  private static readonly SORT_DIALOG: string = "de.regatta_hd.infoportal.view.RacesSortDialog";
+  static readonly RACE_MODEL: string = "race";
+  private static readonly RACES_MODEL: string = "races";
+
+  readonly formatter: Formatter = Formatter;
 
   onInit(): void {
     super.init(super.getView()?.byId("racesTable") as Table, "race" /* eventBus channel */);
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
-    super.setViewModel(this.racesModel, "races");
+    super.setViewModel(new JSONModel(), RacesTableController.RACES_MODEL);
     super.getRouter()?.getRoute("races")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadRacesModel(), this);
 
-    const filters: any = (super.getComponentModel("filters") as JSONModel).getData();
-    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog").then((viewSettingsDialog: ViewSettingsDialog) => {
-      if (filters.boatClasses && filters.boatClasses.length > 1) {
-        const boatClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "boatClass", text: "{i18n>common.boatClass}" });
-        filters.boatClasses.forEach((boatClass: any) => {
-          boatClassFilter.addItem(new ViewSettingsItem({ text: `${boatClass.caption} (${boatClass.abbreviation})`, key: `boatClass/id___EQ___${boatClass.id}` }));
-        });
-        viewSettingsDialog.insertFilterItem(boatClassFilter, 0);
-      }
-      if (filters.ageClasses && filters.ageClasses.length > 1) {
-        const ageClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "ageClass", text: "{i18n>common.ageClass}" });
-        filters.ageClasses.forEach((ageClass: any) => {
-          ageClassFilter.addItem(new ViewSettingsItem({ text: `${ageClass.caption} ${ageClass.suffix}`, key: `ageClass/id___EQ___${ageClass.id}` }));
-        });
-        viewSettingsDialog.insertFilterItem(ageClassFilter, 1);
-      }
-      if (filters.distances && filters.distances.length > 1) {
-        const distancesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "distance", text: "{i18n>common.distance}" });
-        filters.distances.forEach((distance: any) => {
-          distancesFilter.addItem(new ViewSettingsItem({ text: distance + "m", key: `distance___EQ___${distance}` }));
-        });
-        viewSettingsDialog.insertFilterItem(distancesFilter, 2);
-      }
-      if (filters.lightweight && filters.lightweight.length > 1) {
-        const lightweightFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: false, key: "lightweight", text: "{i18n>common.lightweight}" });
-        filters.lightweight.forEach((lightweight: any) => {
-          const text: string = lightweight ? this.i18n("common.yes") : this.i18n("common.no");
-          lightweightFilter.addItem(new ViewSettingsItem({ text: text, key: `lightweight___EQ___${lightweight}` }));
-        });
-        viewSettingsDialog.insertFilterItem(lightweightFilter, 5);
-      }
+    super.getFilters().then((filters) => {
+      super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG).then((viewSettingsDialog: ViewSettingsDialog) => {
+        if (filters.boatClasses && filters.boatClasses.length > 1) {
+          const boatClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "boatClass", text: "{i18n>common.boatClass}" });
+          filters.boatClasses.forEach((boatClass: any) => {
+            boatClassFilter.addItem(new ViewSettingsItem({ text: `${boatClass.caption} (${boatClass.abbreviation})`, key: `boatClass/id___EQ___${boatClass.id}` }));
+          });
+          viewSettingsDialog.insertFilterItem(boatClassFilter, 0);
+        }
+        if (filters.ageClasses && filters.ageClasses.length > 1) {
+          const ageClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "ageClass", text: "{i18n>common.ageClass}" });
+          filters.ageClasses.forEach((ageClass: any) => {
+            ageClassFilter.addItem(new ViewSettingsItem({ text: `${ageClass.caption} ${ageClass.suffix}`, key: `ageClass/id___EQ___${ageClass.id}` }));
+          });
+          viewSettingsDialog.insertFilterItem(ageClassFilter, 1);
+        }
+        if (filters.distances && filters.distances.length > 1) {
+          const distancesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "distance", text: "{i18n>common.distance}" });
+          filters.distances.forEach((distance: any) => {
+            distancesFilter.addItem(new ViewSettingsItem({ text: distance + "m", key: `distance___EQ___${distance}` }));
+          });
+          viewSettingsDialog.insertFilterItem(distancesFilter, 2);
+        }
+        if (filters.lightweight && filters.lightweight.length > 1) {
+          const lightweightFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: false, key: "lightweight", text: "{i18n>common.lightweight}" });
+          filters.lightweight.forEach((lightweight: any) => {
+            const text: string = lightweight ? this.i18n("common.yes") : this.i18n("common.no");
+            lightweightFilter.addItem(new ViewSettingsItem({ text: text, key: `lightweight___EQ___${lightweight}` }));
+          });
+          viewSettingsDialog.insertFilterItem(lightweightFilter, 5);
+        }
+      });
     });
   }
 
@@ -76,12 +80,12 @@ export default class RacesTableController extends BaseTableController {
       race._nav = { isFirst: index == 0, isLast: index == count - 1 };
 
       this.onItemChanged(race);
-      super.displayTarget("raceRegistrations");
+      super.navToRaceDetails(race.id);
     }
   }
 
   onNavBack(): void {
-    super.navBack("startpage");
+    super.navToStartPage();
     // reduce table growing threshold to improve performance next time table is shown
     this.table.setGrowingThreshold(30);
   }
@@ -96,32 +100,30 @@ export default class RacesTableController extends BaseTableController {
     super.applyFilters();
   }
 
-  async onFilterButtonPress(event: Button$PressEvent): Promise<void> {
-    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog")).open();
+  onFilterButtonPress(event: Button$PressEvent): void {
+    super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG).then(dialog => dialog.open());
   }
 
-  async onClearFilterPress(event: Button$PressEvent): Promise<void> {
-    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesFilterDialog")).clearFilters();
+  onClearFilterPress(event: Button$PressEvent): void {
+    super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG).then(dialog => dialog.clearFilters());
     super.clearFilters();
     super.applyFilters();
   }
 
-  async onSortButtonPress(event: Button$PressEvent): Promise<void> {
-    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.RacesSortDialog")).open();
+  onSortButtonPress(event: Button$PressEvent): void {
+    super.getViewSettingsDialog(RacesTableController.SORT_DIALOG).then(dialog => dialog.open());
   }
 
-  async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
+  onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadRacesModel().then((updated: boolean) => {
-      if (updated) {
-        MessageToast.show(this.i18n("msg.dataUpdated"));
-      }
+    this.loadRacesModel().then((succeeded: boolean) => {
+      super.showDataUpdatedMessage(succeeded);
     }).finally(() => source.setEnabled(true));
   }
 
   onItemChanged(item: any): void {
-    (super.getComponentModel("race") as JSONModel).setData(item);
+    (super.getComponentModel(RacesTableController.RACE_MODEL) as JSONModel).setData(item);
     super.getEventBus()?.publish("race", "itemChanged", {});
   }
 
@@ -138,7 +140,9 @@ export default class RacesTableController extends BaseTableController {
   }
 
   private async loadRacesModel(): Promise<boolean> {
-    return await super.updateJSONModel(this.racesModel, `/api/regattas/${super.getRegattaId()}/races`, this.table);
+    const regatta: any = await super.getActiveRegatta();
+    const url: string = `/api/regattas/${regatta.id}/races`;
+    const racesModel: JSONModel = super.getViewModel(RacesTableController.RACES_MODEL) as JSONModel;
+    return await super.updateJSONModel(racesModel, url, this.table);
   }
-
 }

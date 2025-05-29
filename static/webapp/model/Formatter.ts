@@ -94,9 +94,9 @@ export default class Formatter {
     return "";
   }
 
-  static raceRegistrationHighlight(race: any, registration: any): IndicationColor {
+  static raceEntryHighlight(race: any, entry: any): IndicationColor {
     // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
-    if (registration.cancelled || race.cancelled) {
+    if (entry.cancelled || race.cancelled) {
       return IndicationColor.Indication02; // cancelled -> red
     } else {
       return IndicationColor.Indication04; // official -> green
@@ -120,15 +120,15 @@ export default class Formatter {
     return Formatter.i18n("sorting.none");
   }
 
-  static heatRegistrationHighlight(heatRegistration: any): IndicationColor {
+  static heatEntryHighlight(heatEntry: any): IndicationColor {
     // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
-    if (heatRegistration.registration.cancelled) {
+    if (heatEntry.registration.cancelled) {
       return IndicationColor.Indication02; // cancelled -> red
     } else
-      if (!heatRegistration.result) {
+      if (!heatEntry.result) {
         return IndicationColor.Indication05; // no result yet -> blue
       } else
-        if (heatRegistration.result.rankSort > 0 && heatRegistration.result.rankSort <= 5) {
+        if (heatEntry.result.rankSort > 0 && heatEntry.result.rankSort <= 5) {
           return IndicationColor.Indication04; // official -> green
         } else {
           return IndicationColor.Indication02; // DNS, DNF, ... -> red
@@ -137,10 +137,10 @@ export default class Formatter {
 
   static athleteLabel(athlete: any): string {
     let label: string = athlete.firstName + " " + athlete.lastName + " (" + athlete.year;
-    if (athlete.club.shortName) {
-      label += ", " + athlete.club.shortName
-    } else if (athlete.club.abbreviation) {
+    if (athlete.club.abbreviation) {
       label += ", " + athlete.club.abbreviation
+    } else if (athlete.club.shortName) {
+      label += ", " + athlete.club.shortName
     } else if (athlete.club.longName) {
       label += ", " + athlete.club.longName
     };
@@ -159,17 +159,24 @@ export default class Formatter {
     return label;
   }
 
-  static boatLabel(registration: any): string {
-    let label: string = "" + registration.shortLabel;
-    // if (registration.race && registration.race.groupMode == 2) {
-    if (registration.groupValue) {
-      label += " - " + Formatter.groupValueLabel(registration.groupValue);
+  static boatLabel(groupMode: number, entry: any): string {
+    let label: string = "" + entry.shortLabel;
+    if (groupMode == 2) {
+      label += " - " + Formatter.groupValueLabel(entry.groupValue);
+      if (entry.boatNumber) {
+        label += " - Boot " + entry.boatNumber;
+      }
+      if (entry.comment) {
+        label += "  (" + entry.comment + ")";
+      }
     }
-    if (registration.boatNumber) {
-      label += " - Boot " + registration.boatNumber;
-    }
-    if (registration.comment) {
-      label += "  (" + registration.comment + ")";
+    return label;
+  }
+
+  static bibBoatLabel(groupMode: number, entry: any): string {
+    let label: string = Formatter.boatLabel(groupMode, entry);
+    if (entry.bib) {
+      label = entry.bib + " - " + label;
     }
     return label;
   }
@@ -275,15 +282,15 @@ export default class Formatter {
     }
   }
 
-  static heatStateHighlight(oHeat: any): IndicationColor | undefined {
-    if (!oHeat) {
+  static heatStateHighlight(heat?: any): IndicationColor | undefined {
+    if (!heat) {
       return undefined; //  -> no color
     }
     // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
-    if (oHeat.cancelled) {
+    if (heat.cancelled) {
       return IndicationColor.Indication02; // cancelled -> red
     } else {
-      switch (oHeat.state) {
+      switch (heat.state) {
         default:
         case 0:
           return undefined; // initial -> no color
@@ -307,7 +314,7 @@ export default class Formatter {
     }
 
     let groupValue: string = "";
-    if (heat.race && heat.race.ageClass && heat.race.ageClass.numSubClasses > 0) {
+    if (heat.race?.ageClass?.numSubClasses > 0) {
       groupValue = " - " + Formatter.groupValueLabel(heat.groupValue);
     }
     const heatLabel: string = heat.label || "";
@@ -352,5 +359,4 @@ export default class Formatter {
   private static i18n(key: string, args?: any[]): string {
     return Formatter.bundle.getText(key, args) || key;
   }
-
 }

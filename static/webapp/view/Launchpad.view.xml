@@ -2,21 +2,21 @@
   xmlns:layout="sap.ui.layout" xmlns:core="sap.ui.core" core:require="{ formatMessage: 'sap/base/strings/formatMessage' }">
   <mvc:content>
 
-    <Page title="{parts: [{path:'i18n>launchpad.title'}, {path:'regatta>/title'}], formatter: 'formatMessage'}"
-      class="sapUiNoContentPadding">
+    <Page title="{parts:[{path:'i18n>launchpad.title'},{path:'regatta>/title'}],formatter:'formatMessage'}" class="sapUiNoContentPadding">
 
       <headerContent>
-        <Button icon="{=${identity>/authenticated}?'sap-icon://log':'sap-icon://person-placeholder'}" press="onShowLoginPress"
-          text="{=${identity>/authenticated}?${i18n>common.logoff}:${i18n>common.login}}" visible="{=!${device>/system/phone}}" />
-        <Button icon="{=${identity>/authenticated}?'sap-icon://log':'sap-icon://person-placeholder'}" press="onShowLoginPress"
-          visible="{device>/system/phone}" />
+        <Button icon="{=${identity>/authenticated}?'sap-icon://log':'sap-icon://person-placeholder'}" press=".onShowLoginPress"
+          text="{=${identity>/authenticated}?${i18n>common.logoff}:${i18n>common.login}}" visible="{=!${device>/system/phone}}"
+          enabled="{=${parts:[],formatter:'.isSecureContext'}}" />
+        <Button icon="{=${identity>/authenticated}?'sap-icon://log':'sap-icon://person-placeholder'}" press=".onShowLoginPress"
+          visible="{device>/system/phone}" enabled="{=${parts:[],formatter:'.isSecureContext'}}" />
       </headerContent>
 
       <content>
         <layout:HorizontalLayout allowWrapping="true">
           <layout:content>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>common.offerAndRegistrations}" press=".onNavToRaces">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>common.offerAndEntries}" press=".navToRaces">
               <tileContent>
                 <TileContent>
                   <content>
@@ -26,7 +26,7 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.heatsTile.header}" press=".onNavToHeats">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.heatsTile.header}" press=".navToHeats">
               <tileContent>
                 <TileContent>
                   <content>
@@ -36,19 +36,27 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>statistics.participatingClubs}"
-              press=".onNavToParticipatingClubs">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>statistics.participatingClubs}" press=".navToClubs">
               <tileContent>
                 <TileContent>
                   <content>
-                    <ImageContent src="sap-icon://account" />
+                    <ImageContent src="sap-icon://group" />
                   </content>
                 </TileContent>
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.map.header}"
-              press=".onNavToMap">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>common.athletes}" press=".navToAthletes">
+              <tileContent>
+                <TileContent>
+                  <content>
+                    <ImageContent src="sap-icon://person-placeholder" />
+                  </content>
+                </TileContent>
+              </tileContent>
+            </GenericTile>
+
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.map.header}" press=".navToMap">
               <tileContent>
                 <TileContent>
                   <content>
@@ -97,17 +105,6 @@
                 <TileContent>
                   <content>
                     <ImageContent src="sap-icon://sys-monitor" />
-                  </content>
-                </TileContent>
-              </tileContent>
-            </GenericTile>
-
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="Kiosk" visible="{identity>/authenticated}"
-              press=".onNavToKiosk">
-              <tileContent>
-                <TileContent>
-                  <content>
-                    <ImageContent src="sap-icon://synchronize" />
                   </content>
                 </TileContent>
               </tileContent>

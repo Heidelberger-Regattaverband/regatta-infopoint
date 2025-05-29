@@ -1,20 +1,23 @@
-<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:layout="sap.ui.layout">
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
 
   <Table id="heatsTable" autoPopinMode="true" items="{heats>/}" growing="true" growingScrollToLoad="true" growingThreshold="30"
-    mode="SingleSelectMaster" itemPress="onSelectionChange" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
+    mode="SingleSelectMaster" itemPress=".onSelectionChange" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
 
     <!-- The HeaderToolbar shows a title and the filter button -->
     <headerToolbar>
       <OverflowToolbar>
         <content>
-          <SearchField width="10rem" liveChange="onSearchFieldLiveChange" showSearchButton="false" />
-          <OverflowToolbarButton text="{i18n>common.filter}" tooltip="{i18n>common.filter}" icon="sap-icon://filter"
-            press="onFilterButtonPress" />
-          <OverflowToolbarButton text="{i18n>common.sorting}}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
-            press="onSortButtonPress" />
+          <SearchField width="10rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
+          <!-- Filter button -->
+          <Button text="{=!${device>/system/phone}?${i18n>common.filter}:''}" tooltip="{i18n>common.filter}" icon="sap-icon://filter"
+            press=".onFilterButtonPress" />
+          <!-- Sorting button -->
+          <Button text="{=!${device>/system/phone}?${i18n>common.sorting}:''}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
+            press=".onSortButtonPress" />
           <ToolbarSpacer />
-          <OverflowToolbarButton text="{i18n>common.refresh}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
-            press="onRefreshButtonPress" />
+          <!-- Refresh button -->
+          <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
+            press=".onRefreshButtonPress" />
         </content>
       </OverflowToolbar>
     </headerToolbar>
@@ -25,38 +28,38 @@
         <content>
           <Text />
           <ToolbarSpacer />
-          <Button tooltip="{i18n>common.clearFilters}" icon="sap-icon://clear-filter" press="onClearFilterPress" type="Transparent" />
+          <Button tooltip="{i18n>common.clearFilters}" icon="sap-icon://clear-filter" press=".onClearFilterPress" type="Transparent" />
         </content>
       </OverflowToolbar>
     </infoToolbar>
 
     <columns>
-      <Column id="dateTime" hAlign="Center" width="5rem" importance="High" popinDisplay="Inline">
+      <Column id="heatDateTime" hAlign="Center" width="5rem" importance="High" popinDisplay="Inline">
         <header>
           <Text text="{i18n>common.time}" class="bold" wrapping="false" />
         </header>
       </Column>
-      <Column id="heat" width="10rem" importance="High" popinDisplay="Inline">
+      <Column id="heat" width="12rem" importance="High" popinDisplay="Inline">
         <header>
           <Text text="{i18n>common.heat}" class="bold" wrapping="false" />
         </header>
       </Column>
-      <Column id="distance" hAlign="Center" width="4rem" importance="Medium" popinDisplay="Inline">
+      <Column id="heatDistance" hAlign="Center" width="4rem" importance="Medium" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
         <header>
           <Text text="{i18n>common.distance}" class="bold" wrapping="false" />
         </header>
       </Column>
-      <Column id="number" hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
+      <Column id="heatNr" hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
         <header>
           <Text text="{i18n>common.heatNr}" class="bold" wrapping="false" />
         </header>
       </Column>
-      <!-- <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+      <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
         <header>
-          <Text text="{i18n>common.seededLbl}" class="bold" />
+          <Text text="{i18n>common.seeded}" class="bold" />
         </header>
-      </Column> -->
-      <Column id="state" hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">
+      </Column>
+      <Column id="heatState" hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">
         <header>
           <Text text="{i18n>common.state}" class="bold" wrapping="false" />
         </header>
@@ -64,39 +67,40 @@
     </columns>
 
     <items>
-      <ColumnListItem type="Navigation" vAlign="Top" highlight="{path: 'heats>', formatter: '.formatter.heatStateHighlight'}">
+      <ColumnListItem type="Navigation" vAlign="Middle" highlight="{path:'heats>',formatter:'.formatter.heatStateHighlight'}">
         <cells>
-          <layout:VerticalLayout>
-            <Text text="{path: 'heats>dateTime', formatter: '.formatter.dayTimeIsoLabel'}" visible="{=${heats>cancelled}}" class="cancelled" />
-            <Text text="{path: 'heats>dateTime', formatter: '.formatter.dayTimeIsoLabel'}" visible="{=!${heats>cancelled}}" />
-          </layout:VerticalLayout>
+          <VBox>
+            <Text text="{path:'heats>dateTime',formatter:'.formatter.dayTimeIsoLabel'}" visible="{=${heats>cancelled}}" class="cancelled" />
+            <Text text="{path:'heats>dateTime',formatter:'.formatter.dayTimeIsoLabel'}" visible="{=!${heats>cancelled}}" />
+          </VBox>
 
-          <layout:VerticalLayout>
-            <Text text="{path: 'heats>race', formatter: '.formatter.nrRaceLabel'}, {path: 'heats>', formatter: '.formatter.heatLabel'}"
-              visible="{=${heats>cancelled}}" class="boldCancelled sapUiTinyMarginBottom" />
-            <Text text="{path: 'heats>race', formatter: '.formatter.nrRaceLabel'}, {path: 'heats>', formatter: '.formatter.heatLabel'}"
-              visible="{=!${heats>cancelled}}" class="bold sapUiTinyMarginBottom" />
+          <VBox>
+            <Text text="{path:'heats>race',formatter:'.formatter.nrRaceLabel'}, {path:'heats>',formatter:'.formatter.heatLabel'}"
+              visible="{=${heats>cancelled}}" class="boldCancelled" />
+            <Text text="{path:'heats>race',formatter:'.formatter.nrRaceLabel'}, {path:'heats>',formatter:'.formatter.heatLabel'}"
+              visible="{=!${heats>cancelled}}" class="bold" />
 
             <Text text="{heats>race/longLabel}" visible="{=${heats>cancelled}}" class="cancelled" />
             <Text text="{heats>race/longLabel}" visible="{=!${heats>cancelled}}" />
-          </layout:VerticalLayout>
+          </VBox>
 
-          <layout:VerticalLayout>
-            <Text text="{path: 'heats>race', formatter: '.formatter.distanceLabel'}" visible="{=${heats>cancelled}}" class="cancelled" />
-            <Text text="{path: 'heats>race', formatter: '.formatter.distanceLabel'}" visible="{=!${heats>cancelled}}" />
-          </layout:VerticalLayout>
+          <VBox>
+            <Text text="{path:'heats>race',formatter:'.formatter.distanceLabel'}" visible="{=${heats>cancelled}}" class="cancelled" />
+            <Text text="{path:'heats>race',formatter:'.formatter.distanceLabel'}" visible="{=!${heats>cancelled}}" />
+          </VBox>
 
-          <layout:VerticalLayout>
+          <VBox>
             <Text text="{heats>number}" visible="{=${heats>cancelled}}" class="cancelled" />
             <Text text="{heats>number}" visible="{=!${heats>cancelled}}" />
-          </layout:VerticalLayout>
+          </VBox>
 
-          <!-- <layout:VerticalLayout>
-            <Text text="{= ${heats>race/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" visible="{=${heats>cancelled}}" class="cancelled" />
-            <Text text="{= ${heats>race/seeded} ? ${i18n>common.yes} : ${i18n>common.no}}" visible="{=!${heats>cancelled}}" />
-          </layout:VerticalLayout> -->
+          <VBox>
+            <Text text="{=${heats>race/seeded}?${i18n>common.yes}:${i18n>common.no}}" visible="{=${heats>cancelled}}" class="cancelled" />
+            <Text text="{=${heats>race/seeded}?${i18n>common.yes}:${i18n>common.no}}" visible="{=!${heats>cancelled}}" />
+          </VBox>
 
-          <Text text="{path: 'heats>', formatter: '.formatter.heatStateLabel'}" />
+          <ObjectStatus text="{path:'heats>',formatter:'.formatter.heatStateLabel'}" class="bold"
+            state="{path:'heats>',formatter:'.formatter.heatStateHighlight'}" />
         </cells>
       </ColumnListItem>
     </items>

@@ -1,18 +1,18 @@
-import Table from "sap/m/Table";
-import BaseController from "./Base.controller";
-import Filter from "sap/ui/model/Filter";
-import ViewSettingsDialog, { ViewSettingsDialog$ConfirmEvent, ViewSettingsDialog$ConfirmEventParameters } from "sap/m/ViewSettingsDialog";
-import Fragment from "sap/ui/core/Fragment";
-import Text from "sap/m/Text";
-import ListBinding from "sap/ui/model/ListBinding";
-import ListItemBase from "sap/m/ListItemBase";
-import FilterOperator from "sap/ui/model/FilterOperator";
-import CustomData from "sap/ui/core/CustomData";
-import ViewSettingsItem from "sap/m/ViewSettingsItem";
-import Toolbar from "sap/m/Toolbar";
-import Sorter from "sap/ui/model/Sorter";
 import Column from "sap/m/Column";
+import ListItemBase from "sap/m/ListItemBase";
+import Table from "sap/m/Table";
+import Text from "sap/m/Text";
+import Toolbar from "sap/m/Toolbar";
+import ViewSettingsDialog, { ViewSettingsDialog$ConfirmEvent, ViewSettingsDialog$ConfirmEventParameters } from "sap/m/ViewSettingsDialog";
+import ViewSettingsItem from "sap/m/ViewSettingsItem";
+import CustomData from "sap/ui/core/CustomData";
+import Fragment from "sap/ui/core/Fragment";
 import { SortOrder } from "sap/ui/core/library";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import ListBinding from "sap/ui/model/ListBinding";
+import Sorter from "sap/ui/model/Sorter";
+import BaseController from "./Base.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -20,26 +20,26 @@ import { SortOrder } from "sap/ui/core/library";
 export default abstract class BaseTableController extends BaseController {
 
   protected table: Table;
-  private filters: Filter[];
-  private searchFilters: Filter[];
+  private filters: Filter[] = [];
+  private searchFilters: Filter[] = [];
   private bindingModel: string;
   private viewSettingsDialogs: Map<string, ViewSettingsDialog>;
 
-  init(table: Table, channelId: string): void {
+  init(table: Table, channelId?: string): void {
     // Keeps reference to any of the created sap.m.ViewSettingsDialog-s in this sample
     this.viewSettingsDialogs = new Map<string, ViewSettingsDialog>();
 
     this.table = table;
-    this.filters = [];
-    this.searchFilters = [];
 
     // return the path of the model that is bound to the items, e.g. races or heats
     this.bindingModel = this.table.getBindingInfo("items").model ?? "";
 
-    super.getEventBus()?.subscribe(channelId, "first", this.onFirstItemEvent, this);
-    super.getEventBus()?.subscribe(channelId, "previous", this.onPreviousItemEvent, this);
-    super.getEventBus()?.subscribe(channelId, "next", this.onNextItemEvent, this);
-    super.getEventBus()?.subscribe(channelId, "last", this.onLastItemEvent, this);
+    if (channelId) {
+      super.getEventBus()?.subscribe(channelId, "first", this.onFirstItemEvent, this);
+      super.getEventBus()?.subscribe(channelId, "previous", this.onPreviousItemEvent, this);
+      super.getEventBus()?.subscribe(channelId, "next", this.onNextItemEvent, this);
+      super.getEventBus()?.subscribe(channelId, "last", this.onLastItemEvent, this);
+    }
   }
 
   private onFirstItemEvent(channelId: string, eventId: string, parametersMap: any): void {
@@ -145,29 +145,32 @@ export default abstract class BaseTableController extends BaseController {
   }
 
   onSortDialogConfirm(event: ViewSettingsDialog$ConfirmEvent): void {
-    const sorters: Sorter[] = [];
     const params: ViewSettingsDialog$ConfirmEventParameters = event.getParameters()
     const path: string | undefined = params.sortItem?.getKey();
 
     const customData: CustomData | undefined = params.sortItem?.getCustomData()?.find((data: CustomData) => data.getKey() === "column");
-    const columnName: string = customData?.getValue();
+    const columnName: string | undefined = customData?.getValue();
     if (columnName) {
-      this.table.getColumns().forEach((col: Column) => {
-        if (col.getId().endsWith(columnName)) {
-          col.setSortIndicator(params.sortDescending ? SortOrder.Descending : SortOrder.Ascending);
-        } else {
-          col.setSortIndicator(SortOrder.None);
-        }
-      })
+      this.sortTable(columnName, params.sortDescending ?? false, path);
     }
-    if (path) {
-      sorters.push(new Sorter(path, params.sortDescending));
-    }
+  }
 
+  sortTable(columnName: string, sortDescending: boolean, path?: string) {
+    this.table.getColumns().forEach((col: Column) => {
+      if (col.getId().endsWith(columnName)) {
+        col.setSortIndicator(sortDescending ? SortOrder.Descending : SortOrder.Ascending);
+      } else {
+        col.setSortIndicator(SortOrder.None);
+      }
+    });
+
+    const sorters: Sorter[] = [];
+    if (path) {
+      sorters.push(new Sorter(path, sortDescending));
+    }
     // apply the selected sort and group settings
     (this.table.getBinding("items") as ListBinding).sort(sorters);
   }
-
 
   private setCurrentItem(index: number): void {
     const items: ListItemBase[] = this.table.getItems();
@@ -192,5 +195,4 @@ export default abstract class BaseTableController extends BaseController {
       (this.table.getBinding("items") as ListBinding).filter(allFilters);
     }
   }
-
 }

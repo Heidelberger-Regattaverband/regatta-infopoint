@@ -1,45 +1,17 @@
-[package]
-name = "infoportal"
+[workspace]
+resolver = "3"
+members = ["aquarius", "infoportal", "timekeeper"]
+
+[workspace.package]
 version = "0.1.0"
-edition = "2021"
-authors = ["Markus Ofterdinger <markus@ofterdinger.de>"]
-readme = "README.md"
-description = "Infoportal des Heidelberger Regatta-Verbands"
-repository = "https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git"
+edition = "2024"
 license = "Apache-2.0"
+rust-version = "1.87.0"
+authors = ["Markus Ofterdinger <markus@ofterdinger.de>"]
+repository = "https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-anyhow = "1"
-env_logger = "0"
-log = "0"
-dotenv = "0"
-chrono = { version = "0", features = ["serde"] }
-tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
-tokio-util = { version = "0", features = ["compat"] }
-
-# Actix + Middlewares
-actix = { version = "0" }
-actix-web = { version = "4", features = ["rustls-0_23"] }
-actix-web-actors = { version = "4" }
-actix-session = { version = "0", features = ["cookie-session"] }
-actix-identity = "0"
-actix-files = "0"
-actix-extensible-rate-limit = "0"
-actix-web-prom = { version = "0", features = ["process"] }
-prometheus = { version = "0", default-features = false }
-rustls = "0.23"
-rustls-pki-types = "1"
-rustls-pemfile = "2"
-
-# OpenAPI
-utoipa = { version = "4", features = ["actix_extras"] }
-utoipa-swagger-ui = { version = "7", features = ["actix-web"] }
-
+[workspace.dependencies]
 # Database + Pool
-bb8 = "0"
-async-trait = "0"
 # https://github.com/prisma/tiberius#feature-flags
 tiberius = { version = "0", features = [
   "chrono",
@@ -47,20 +19,26 @@ tiberius = { version = "0", features = [
   "tds73",
   "rust_decimal",
 ], default-features = false }
+bb8 = { version = "0" }
+chrono = { version = "0", features = ["serde"] }
 stretto = { version = "0", features = ["async"] }
 
+# Async stuff
+futures = { version = "0" }
+tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
+tokio-util = { version = "0", features = ["compat"] }
+
 # Utils
+anyhow = { version = "1" }
+dotenv = { version = "0" }
+log = { version = "0" }
+env_logger = { version = "0" }
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-colored = "2"
-futures = "0"
-sysinfo = "0"
-
-# html
-scraper = "0"
-
-[dev-dependencies]
-tokio-shared-rt = "0"
+serde_json = { version = "1" }
+scraper = { version = "0" }
+clap = { version = "4", features = ["derive"] }
+colored = { version = "3" }
+uptime_lib = { version = "0" }
 
 [profile.release]
 # https://nnethercote.github.io/perf-book/build-configuration.html#codegen-units

@@ -1,12 +1,12 @@
-import JSONModel from "sap/ui/model/json/JSONModel";
-import BaseController from "./Base.controller";
-import MessageToast from "sap/m/MessageToast";
-import ResponsivePopover from "sap/m/ResponsivePopover";
-import Fragment from "sap/ui/core/Fragment";
 import * as $ from "jquery";
-import Control from "sap/ui/core/Control";
 import { Button$PressEvent } from "sap/m/Button";
 import { Input$SubmitEvent } from "sap/m/Input";
+import MessageToast from "sap/m/MessageToast";
+import ResponsivePopover from "sap/m/ResponsivePopover";
+import Control from "sap/ui/core/Control";
+import Fragment from "sap/ui/core/Fragment";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import BaseController from "./Base.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -23,22 +23,6 @@ export default class LaunchpadController extends BaseController {
     this.getIdentity();
   }
 
-  onNavToRaces(): void {
-    super.getRouter().navTo("races", {}, false /* history */);
-  }
-
-  onNavToHeats(): void {
-    super.getRouter().navTo("heats", {}, false /* history */);
-  }
-
-  onNavToParticipatingClubs(): void {
-    super.getRouter().navTo("participatingClubs", {}, false /* history */);
-  }
-
-  onNavToMap(): void {
-    super.getRouter().navTo("map", {}, false /* history */);
-  }
-
   onNavToScoring(): void {
     super.getRouter().navTo("scoring", {}, false /* history */);
   }
@@ -53,10 +37,6 @@ export default class LaunchpadController extends BaseController {
 
   onNavToSchedule(): void {
     super.getRouter().navTo("schedule", {}, false /* history */);
-  }
-
-  onNavToKiosk(): void {
-    super.getRouter().navTo("kiosk", {}, false /* history */);
   }
 
   onUserSubmit(event: Input$SubmitEvent): void {
@@ -128,11 +108,11 @@ export default class LaunchpadController extends BaseController {
         this.updateIdentity(true, result.username);
         this.credentialsModel.setProperty("/username", result.username);
         MessageToast.show(super.i18n("msg.loginSucceeded"));
-        $(".sapMMessageToast").removeClass("sapMMessageToastDanger").addClass("sapMMessageToastSuccess");
+        $(".sapMMessageToast").addClass("sapMMessageToastSuccess");
       },
       error: (result: any) => {
         MessageToast.show(super.i18n("msg.loginFailed"));
-        $(".sapMMessageToast").removeClass("sapMMessageToastSuccess").addClass("sapMMessageToastDanger");
+        $(".sapMMessageToast").addClass("sapMMessageToastDanger");
       }
     });
 

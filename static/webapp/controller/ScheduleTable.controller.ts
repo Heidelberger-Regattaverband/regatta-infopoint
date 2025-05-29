@@ -7,7 +7,6 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import ListBinding from "sap/ui/model/ListBinding";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
-import MessageToast from "sap/m/MessageToast";
 import Formatter from "../model/Formatter";
 
 /**
@@ -28,7 +27,7 @@ export default class ScheduleTableController extends BaseController {
   }
 
   onNavBack(): void {
-    super.navBack("startpage");
+    super.navToStartPage();
   }
 
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
@@ -41,10 +40,8 @@ export default class ScheduleTableController extends BaseController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadScheduleModel().then((updated: boolean) => {
-      if (updated) {
-        MessageToast.show(this.i18n("msg.dataUpdated"));
-      }
+    this.loadScheduleModel().then((succeeded: boolean) => {
+      super.showDataUpdatedMessage(succeeded);
     }).finally(() => source.setEnabled(true));
   }
 
@@ -59,7 +56,7 @@ export default class ScheduleTableController extends BaseController {
   }
 
   private async loadScheduleModel(): Promise<boolean> {
-    return await super.updateJSONModel(this.scheduleModel, `/api/regattas/${super.getRegattaId()}/schedule`, this.table)
+    const regatta: any = await super.getActiveRegatta();
+    return await super.updateJSONModel(this.scheduleModel, `/api/regattas/${regatta.id}/schedule`, this.table)
   }
-
 }
