@@ -79,7 +79,7 @@
                     visible="{=!${entries>cancelled} &amp;&amp; !${entries>race/cancelled}}" />
                 </HBox>
 
-                <Text text="{parts:[{path:'entries>race'},{path:'entries>heats'}],formatter:'.formatter.heatsLabel'}" />
+                <Text text="{path:'entries>race/dateTime',formatter:'.formatter.dayTimeIsoLabel'} ({entries>race/heatsCount})" />
 
                 <HBox alignItems="Center">
                   <Image src="{entries>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />

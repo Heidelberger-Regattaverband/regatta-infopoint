@@ -96,7 +96,7 @@
                     visible="{=!${entries>cancelled} &amp;&amp; !${entries>race/cancelled}}" />
                 </VBox>
 
-                <Text text="{parts:[{path:'entries>race'},{path:'entries>heats'}],formatter:'.formatter.heatsLabel'}" />
+                <Text text="{path:'entries>race/dateTime',formatter:'.formatter.dayTimeIsoLabel'} ({entries>race/heatsCount})" />
 
                 <HBox alignItems="Center">
                   <items>
