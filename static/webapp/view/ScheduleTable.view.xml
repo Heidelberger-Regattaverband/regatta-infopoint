@@ -32,7 +32,7 @@
             </Column>
             <Column hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
               <header>
-                <Text text="{i18n>common.registrations}" class="bold" wrapping="false" />
+                <Text text="{i18n>common.entries}" class="bold" wrapping="false" />
               </header>
             </Column>
             <Column hAlign="Center" width="6rem" importance="High" popinDisplay="Inline">

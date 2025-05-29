@@ -43,7 +43,7 @@
             <Column id="clubRegistrationsCol" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
               visible="{=!${device>/system/phone}}">
               <header>
-                <Text text="{i18n>common.registrations}" class="bold" wrapping="false" />
+                <Text text="{i18n>common.entries}" class="bold" wrapping="false" />
               </header>
             </Column>
             <Column id="clubAthletesCol" hAlign="Begin" width="4rem" importance="Low" popinDisplay="Inline"

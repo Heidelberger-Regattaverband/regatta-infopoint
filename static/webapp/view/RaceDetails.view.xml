@@ -4,7 +4,7 @@
 
     <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
     https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
-    <Page title="{i18n>common.registrations}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
+    <Page title="{i18n>common.entries}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
       <headerContent>
         <Button type="Transparent" icon="sap-icon://close-command-field" press=".onFirstPress" tooltip="First"
           enabled="{=!${race>/_nav/isFirst}}" visible="{=!${race>/_nav/disabled}}" />
@@ -41,7 +41,7 @@
                   <VBox class="sapUiMediumMarginEnd">
                     <ObjectStatus title="{i18n>common.state}" text="{path:'raceEntries>/',formatter:'.formatter.raceStateLabel'}"
                       state="{path:'raceEntries>/',formatter:'.formatter.raceStateHighlight'}" class="bold" />
-                    <ObjectAttribute title="{i18n>common.registrations}" text="{raceEntries>/entriesCount}" />
+                    <ObjectAttribute title="{i18n>common.entries}" text="{raceEntries>/entriesCount}" />
                   </VBox>
                   <VBox class="sapUiMediumMarginEnd">
                     <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceEntries>/',formatter:'.formatter.distanceLabel'}" />

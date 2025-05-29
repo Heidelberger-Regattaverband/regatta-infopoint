@@ -29,7 +29,7 @@
             </VBox>
             <VBox>
               <ObjectAttribute title="{i18n>common.yearOfBirth}" text="{athlete>/year}" />
-              <ObjectAttribute title="{i18n>common.registrations}" text="{athlete>/entriesCount}" />
+              <ObjectAttribute title="{i18n>common.entries}" text="{athlete>/entriesCount}" />
             </VBox>
           </HBox>
         </f:DynamicPageHeader>
