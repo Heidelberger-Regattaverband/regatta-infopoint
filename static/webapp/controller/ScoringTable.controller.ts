@@ -57,6 +57,6 @@ export default class ScoringTableController extends BaseController {
 
   private async loadScoringModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
-    return await super.updateJSONModel(this.scoringModel, `/api/regattas/${regatta.id}/calculateScoring`, this.table)
+    return await super.updateJSONModel(this.scoringModel, `/api/regattas/${regatta.id}/calculateScoring`);
   }
 }

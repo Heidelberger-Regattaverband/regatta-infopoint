@@ -49,7 +49,7 @@ export default class ClubDetailsController extends BaseController {
 
       entry.race._nav = { disabled: true, back: "clubDetails" };
 
-      (super.getComponentModel("race") as JSONModel).setData(entry.race);
+      super.getComponentJSONModel("race").setData(entry.race);
       super.navToRaceDetails(entry.race.id);
     }
   }
@@ -103,9 +103,9 @@ export default class ClubDetailsController extends BaseController {
     const clubUrl: string = `/api/regattas/${regatta.id}/clubs/${this.clubId}`;
     const entriesUrl: string = `/api/regattas/${regatta.id}/clubs/${this.clubId}/entries`;
 
-    const clubModel: JSONModel = super.getViewModel(ClubDetailsController.CLUB_MODEL) as JSONModel;
-    const entriesModel: JSONModel = super.getViewModel(ClubDetailsController.ENTRIES_MODEL) as JSONModel;
+    const clubModel: JSONModel = super.getViewJSONModel(ClubDetailsController.CLUB_MODEL);
+    const entriesModel: JSONModel = super.getViewJSONModel(ClubDetailsController.ENTRIES_MODEL);
 
-    return await Promise.all([super.updateJSONModel(entriesModel, entriesUrl, this.table), super.updateJSONModel(clubModel, clubUrl)]);
+    return await Promise.all([super.updateJSONModel(entriesModel, entriesUrl), super.updateJSONModel(clubModel, clubUrl)]);
   }
 }

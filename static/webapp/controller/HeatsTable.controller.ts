@@ -135,7 +135,7 @@ export default class HeatsTableController extends BaseTableController {
   }
 
   onItemChanged(item: any): void {
-    (super.getComponentModel(HeatsTableController.HEAT_MODEL) as JSONModel).setData(item);
+    super.getComponentJSONModel(HeatsTableController.HEAT_MODEL).setData(item);
     super.getEventBus()?.publish("heat", "itemChanged", {});
   }
 
@@ -168,7 +168,7 @@ export default class HeatsTableController extends BaseTableController {
   private async loadHeatsModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
     const url: string = `/api/regattas/${regatta.id}/heats`;
-    const heatsModel: JSONModel = super.getViewModel(HeatsTableController.HEATS_MODEL) as JSONModel;
-    return await super.updateJSONModel(heatsModel, url, this.table);
+    const heatsModel: JSONModel = super.getViewJSONModel(HeatsTableController.HEATS_MODEL);
+    return await super.updateJSONModel(heatsModel, url);
   }
 }

@@ -123,7 +123,7 @@ export default class RacesTableController extends BaseTableController {
   }
 
   onItemChanged(item: any): void {
-    (super.getComponentModel(RacesTableController.RACE_MODEL) as JSONModel).setData(item);
+    super.getComponentJSONModel(RacesTableController.RACE_MODEL).setData(item);
     super.getEventBus()?.publish("race", "itemChanged", {});
   }
 
@@ -142,7 +142,7 @@ export default class RacesTableController extends BaseTableController {
   private async loadRacesModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
     const url: string = `/api/regattas/${regatta.id}/races`;
-    const racesModel: JSONModel = super.getViewModel(RacesTableController.RACES_MODEL) as JSONModel;
-    return await super.updateJSONModel(racesModel, url, this.table);
+    const racesModel: JSONModel = super.getViewJSONModel(RacesTableController.RACES_MODEL);
+    return await super.updateJSONModel(racesModel, url);
   }
 }

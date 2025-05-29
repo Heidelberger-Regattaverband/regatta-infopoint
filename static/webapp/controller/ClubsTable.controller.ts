@@ -80,7 +80,7 @@ export default class ClubsTableController extends BaseTableController {
   private async loadModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
     const url: string = `/api/regattas/${regatta.id}/clubs`;
-    const clubsModel: JSONModel = super.getViewModel(ClubsTableController.CLUBS_MODEL) as JSONModel;
-    return await super.updateJSONModel(clubsModel, url, this.table)
+    const clubsModel: JSONModel = super.getViewJSONModel(ClubsTableController.CLUBS_MODEL);
+    return await super.updateJSONModel(clubsModel, url);
   }
 }

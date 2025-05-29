@@ -146,13 +146,12 @@ export default class LaunchpadController extends BaseController {
   }
 
   private updateIdentity(authenticated: boolean, name: string): void {
-    const identityModel: JSONModel = super.getComponentModel("identity") as JSONModel;
+    const identityModel: JSONModel = super.getComponentJSONModel("identity");
     identityModel.setProperty("/authenticated", authenticated);
     identityModel.setProperty("/username", name);
   }
 
   private isAuthenticated(): boolean {
-    return this.getViewModel("identity")?.getProperty("/authenticated");
+    return this.getViewJSONModel("identity")?.getProperty("/authenticated");
   }
-
 }

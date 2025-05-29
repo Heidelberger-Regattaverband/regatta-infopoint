@@ -49,7 +49,7 @@ export default class RaceDetailsController extends BaseController {
   }
 
   onNavBack(): void {
-    const data = (super.getComponentModel(RacesTableController.RACE_MODEL) as JSONModel).getData();
+    const data = super.getComponentJSONModel(RacesTableController.RACE_MODEL).getData();
     if (data._nav?.back) {
       super.navBack(data._nav.back);
     } else {
@@ -91,20 +91,20 @@ export default class RaceDetailsController extends BaseController {
         const heat: any = entry.heats[0];
         heat._nav = { disabled: true, back: "raceDetails" };
 
-        (super.getComponentModel(HeatsTableController.HEAT_MODEL) as JSONModel).setData(heat);
+        super.getComponentJSONModel(HeatsTableController.HEAT_MODEL).setData(heat);
         super.navToHeatDetails(heat.id);
       }
     }
   }
 
   private async loadRaceModel(): Promise<boolean> {
-    const race: any = (super.getComponentModel(RacesTableController.RACE_MODEL) as JSONModel).getData();
+    const race: any = super.getComponentJSONModel(RacesTableController.RACE_MODEL).getData();
     if (race?.id) {
       this.raceId = race.id;
     };
     const url: string = `/api/races/${this.raceId}`;
-    const entriesModel = super.getViewModel(RaceDetailsController.RACE_ENTRIES_MODEL) as JSONModel;
-    return await super.updateJSONModel(entriesModel, url, super.getView());
+    const entriesModel = super.getViewJSONModel(RaceDetailsController.RACE_ENTRIES_MODEL);
+    return await super.updateJSONModel(entriesModel, url);
   }
 
   private async onItemChanged(channelId: string, eventId: string, parametersMap: any): Promise<void> {

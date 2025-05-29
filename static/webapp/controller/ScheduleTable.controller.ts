@@ -57,6 +57,6 @@ export default class ScheduleTableController extends BaseController {
 
   private async loadScheduleModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
-    return await super.updateJSONModel(this.scheduleModel, `/api/regattas/${regatta.id}/schedule`, this.table)
+    return await super.updateJSONModel(this.scheduleModel, `/api/regattas/${regatta.id}/schedule`);
   }
 }
