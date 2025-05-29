@@ -5,7 +5,7 @@
       <ViewSettingsItem text="{i18n>common.city}" key="city" cust:column="clubCityCol" selected="true" />
       <ViewSettingsItem text="{i18n>common.club}" key="longName" cust:column="clubNameCol" />
       <ViewSettingsItem text="{i18n>common.abbreviation}" key="abbreviation" cust:column="clubAbbrCol" />
-      <ViewSettingsItem text="{i18n>common.entries}" key="participationsCount" cust:column="clubRegistrationsCol" />
+      <ViewSettingsItem text="{i18n>common.entries}" key="participationsCount" cust:column="clubEntriesCol" />
       <ViewSettingsItem text="{i18n>statistics.athletes}" key="ahtletesCount" cust:column="clubAthletesCol" />
     </sortItems>
   </ViewSettingsDialog>
