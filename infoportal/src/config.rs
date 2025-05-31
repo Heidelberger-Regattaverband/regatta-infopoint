@@ -205,7 +205,7 @@ impl Config {
             Err(_) => None,
         };
         let cache_ttl: u64 = env::var("CACHE_TTL")
-            .unwrap_or_else(|_| "60".to_string())
+            .unwrap_or_else(|_| "30".to_string())
             .parse()
             .unwrap();
         info!(
