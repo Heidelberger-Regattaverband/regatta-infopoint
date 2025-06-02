@@ -112,7 +112,7 @@ impl Race {
             " {0}.Offer_ID, {0}.Offer_RaceNumber, {0}.Offer_Distance, {0}.Offer_IsLightweight, {0}.Offer_Cancelled, {0}.Offer_ShortLabel, \
             {0}.Offer_LongLabel, {0}.Offer_Comment, {0}.Offer_GroupMode, {0}.Offer_SortValue, {0}.Offer_HRV_Seeded, \
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = {0}.Offer_ID AND e.Entry_CancelValue = 0) as Entries_Count, \
-            (SELECT Count(*) FROM Comp  c WHERE c.Comp_Race_ID_FK = {0}.Offer_ID) as Heats_Count, \
+            (SELECT Count(*) FROM Comp  c WHERE c.Comp_Race_ID_FK = {0}.Offer_ID AND c.Comp_Cancelled = 0) as Heats_Count, \
             (SELECT AVG(Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = {0}.Offer_ID AND c.Comp_Cancelled = 0) as Race_State, \
             (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = {0}.Offer_ID AND c.Comp_Cancelled = 0) as Race_DateTime \
         ",
