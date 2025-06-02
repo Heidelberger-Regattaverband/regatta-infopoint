@@ -122,7 +122,7 @@ export default class Formatter {
 
   static heatEntryHighlight(heatEntry: any): IndicationColor {
     // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
-    if (heatEntry.registration.cancelled) {
+    if (heatEntry.entry.cancelled) {
       return IndicationColor.Indication02; // cancelled -> red
     } else
       if (!heatEntry.result) {
