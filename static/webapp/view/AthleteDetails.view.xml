@@ -62,7 +62,7 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation" vAlign="Top"
+            <ColumnListItem type="Navigation" vAlign="Middle"
               highlight="{parts:[{path:'entries>race'},{path:'entries>'}],formatter:'.formatter.raceEntryHighlight'}">
               <cells>
                 <HBox alignItems="Center">

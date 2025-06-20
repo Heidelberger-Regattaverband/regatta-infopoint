@@ -66,7 +66,7 @@ export default class AthleteDetailsController extends BaseController {
   private async loadData(): Promise<[boolean, boolean]> {
     const regatta: any = await super.getActiveRegatta();
 
-    const athleteUrl: string = `/api/athletes/${this.athleteId}`;
+    const athleteUrl: string = `/api/regattas/${regatta.id}/athletes/${this.athleteId}`;
     const entriesUrl: string = `/api/regattas/${regatta.id}/athletes/${this.athleteId}/entries`;
 
     const athleteModel: JSONModel = super.getViewJSONModel(AthleteDetailsController.ATHLETE_MODEL);

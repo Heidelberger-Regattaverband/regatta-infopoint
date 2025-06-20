@@ -212,13 +212,18 @@ impl Aquarius {
         }
     }
 
-    pub(crate) async fn get_athlete(&self, athlete_id: i32, opt_user: Option<Identity>) -> Result<Athlete, DbError> {
+    pub(crate) async fn get_athlete(
+        &self,
+        regatta_id: i32,
+        athlete_id: i32,
+        opt_user: Option<Identity>,
+    ) -> Result<Athlete, DbError> {
         if opt_user.is_some() {
-            self._query_athlete(athlete_id).await
+            self._query_athlete(regatta_id, athlete_id).await
         } else if let Some(athlete) = self.caches.athlete.get(&athlete_id).await {
             Ok(athlete)
         } else {
-            self._query_athlete(athlete_id).await
+            self._query_athlete(regatta_id, athlete_id).await
         }
     }
 
@@ -385,9 +390,9 @@ impl Aquarius {
         Ok(entries)
     }
 
-    async fn _query_athlete(&self, athlete_id: i32) -> Result<Athlete, DbError> {
+    async fn _query_athlete(&self, regatta_id: i32, athlete_id: i32) -> Result<Athlete, DbError> {
         let start = Instant::now();
-        let athlete = Athlete::query_athlete(athlete_id, TiberiusPool::instance()).await?;
+        let athlete = Athlete::query_athlete(regatta_id, athlete_id, TiberiusPool::instance()).await?;
         self.caches.athlete.set(&athlete_id, &athlete).await;
         debug!("Query athlete {} from DB: {:?}", athlete_id, start.elapsed());
         Ok(athlete)

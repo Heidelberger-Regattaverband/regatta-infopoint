@@ -176,17 +176,20 @@ async fn get_participating_athletes(
     Ok(Json(clubs))
 }
 
-#[get("/athletes/{athlete_id}")]
+#[get("/regattas/{regatta_id}/athletes/{athlete_id}")]
 async fn get_athlete(
-    path: Path<i32>,
+    path: Path<(i32, i32)>,
     aquarius: Data<Aquarius>,
     opt_user: Option<Identity>,
 ) -> Result<impl Responder, Error> {
-    let athlete_id = path.into_inner();
-    let clubs = aquarius.get_athlete(athlete_id, opt_user).await.map_err(|err| {
-        error!("{}", err);
-        ErrorInternalServerError("Internal Server Error")
-    })?;
+    let (regatta_id, athlete_id) = path.into_inner();
+    let clubs = aquarius
+        .get_athlete(regatta_id, athlete_id, opt_user)
+        .await
+        .map_err(|err| {
+            error!("{}", err);
+            ErrorInternalServerError("Internal Server Error")
+        })?;
     Ok(Json(clubs))
 }
 

@@ -114,6 +114,13 @@ impl Entry {
         execute_query(pool, query, round).await
     }
 
+    /// Queries all entries for a given athlete and regatta.
+    /// # Arguments
+    /// * `regatta_id` - The unique identifier of the regatta.
+    /// * `athlete_id` - The unique identifier of the athlete.
+    /// * `pool` - The connection pool to the database.
+    /// # Returns
+    /// A vector of entries for the given athlete and regatta.
     pub async fn query_entries_of_athlete(
         regatta_id: i32,
         athlete_id: i32,

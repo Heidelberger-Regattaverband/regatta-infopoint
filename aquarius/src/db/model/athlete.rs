@@ -34,23 +34,25 @@ pub struct Athlete {
 
 impl Athlete {
     pub async fn query_participating_athletes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Athlete>, DbError> {
+        let round = 64;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1},
                 (SELECT COUNT(*) FROM (
                     SELECT Athlet_ID FROM Athlet
                     JOIN Crew  ON Crew_Athlete_ID_FK = Athlet_ID
                     JOIN Entry ON Crew_Entry_ID_FK   = Entry_ID
-                    WHERE Athlet_ID = a.Athlet_ID
+                    WHERE Athlet_ID = a.Athlet_ID AND Crew_RoundTo = @P2
                 ) AS Athlet_Entries_Count ) AS Athlet_Entries_Count
                 FROM Athlet a
                 JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.Club_ID
                 JOIN Crew  cr ON a.Athlet_ID         = cr.Crew_Athlete_ID_FK
                 JOIN Entry  e ON cr.Crew_Entry_ID_FK = e.Entry_ID
-                WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue = 0",
+                WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue = 0 AND cr.Crew_RoundTo = @P2",
             Athlete::select_columns("a"),
             Club::select_min_columns("cl")
         ));
         query.bind(regatta_id);
+        query.bind(round);
 
         let mut client = pool.get().await;
         let stream = query.query(&mut client).await?;
@@ -58,22 +60,27 @@ impl Athlete {
         Ok(athletes.into_iter().map(|row| Athlete::from(&row)).collect())
     }
 
-    pub async fn query_athlete(athlete_id: i32, pool: &TiberiusPool) -> Result<Athlete, DbError> {
+    pub async fn query_athlete(regatta_id: i32, athlete_id: i32, pool: &TiberiusPool) -> Result<Athlete, DbError> {
+        let round = 64;
         let mut query = Query::new(format!(
             "SELECT {0}, {1},
                 (SELECT COUNT(*) FROM (
                     SELECT Athlet_ID FROM Athlet
                     JOIN Crew  ON Crew_Athlete_ID_FK = Athlet_ID
                     JOIN Entry ON Crew_Entry_ID_FK   = Entry_ID
-                    WHERE Athlet_ID = a.Athlet_ID
+                    WHERE e.Entry_Event_ID_FK = @P1 AND Athlet_ID = a.Athlet_ID AND Crew_RoundTo = @P3
                 ) AS Athlet_Entries_Count ) AS Athlet_Entries_Count
-                FROM Athlet a
-                JOIN Club   c ON a.Athlet_Club_ID_FK = c.Club_ID
-                WHERE a.Athlet_ID = @P1",
+                FROM Athlet  a
+                JOIN Club   cl ON a.Athlet_Club_ID_FK = cl.Club_ID
+                JOIN Crew   cr ON a.Athlet_ID         = cr.Crew_Athlete_ID_FK
+                JOIN Entry   e ON cr.Crew_Entry_ID_FK = e.Entry_ID
+                WHERE e.Entry_Event_ID_FK = @P1 AND a.Athlet_ID = @P2 AND cr.Crew_RoundTo = @P3",
             Athlete::select_columns("a"),
-            Club::select_all_columns("c")
+            Club::select_all_columns("cl")
         ));
+        query.bind(regatta_id);
         query.bind(athlete_id);
+        query.bind(round);
 
         let mut client = pool.get().await;
         let stream = query.query(&mut client).await?;
