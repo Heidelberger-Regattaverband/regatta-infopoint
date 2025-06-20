@@ -83,7 +83,7 @@
               </columns>
 
               <items>
-                <ColumnListItem vAlign="Middle" type="{=${raceEntries>/heatsCount}>0?'Navigation':'Inactive'}"
+                <ColumnListItem vAlign="Top" type="{=${raceEntries>/heatsCount}>0?'Navigation':'Inactive'}"
                   highlight="{parts:[{path:'race>/'},{path:'raceEntries>'}],formatter:'.formatter.raceEntryHighlight'}">
                   <cells>
                     <VBox alignItems="Center">

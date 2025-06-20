@@ -69,7 +69,7 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation" highlight="{path:'races>',formatter:'.formatter.raceStateHighlight'}">
+            <ColumnListItem type="Navigation" highlight="{path:'races>',formatter:'.formatter.raceStateHighlight'}" vAlign="Top">
               <cells>
                 <VBox alignItems="Center">
                   <Text text="{races>number}" visible="{=${races>cancelled}}" class="cancelled" />
