@@ -4,8 +4,9 @@ use crate::db::{
 };
 use serde::Serialize;
 use tiberius::{Query, Row, error::Error as DbError, time::chrono::NaiveDateTime};
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Regatta {
     pub id: i32,

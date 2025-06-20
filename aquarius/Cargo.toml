@@ -20,5 +20,8 @@ tiberius.workspace = true
 chrono.workspace = true
 bb8.workspace = true
 
+# OpenAPI
+utoipa.workspace = true
+
 [dev-dependencies]
 tokio-shared-rt = "0"

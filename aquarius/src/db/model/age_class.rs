@@ -4,8 +4,9 @@ use crate::db::{
 };
 use serde::Serialize;
 use tiberius::Row;
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct AgeClass {
     /// The internal ID of the age class.
