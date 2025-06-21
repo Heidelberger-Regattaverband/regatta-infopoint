@@ -3,7 +3,7 @@ mod db;
 mod http;
 mod peak_alloc;
 
-use db::tiberius::TiberiusPool;
+use ::db::tiberius::TiberiusPool;
 use config::Config;
 use http::server::Server;
 use peak_alloc::PeakAlloc;
