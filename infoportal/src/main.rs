@@ -1,11 +1,16 @@
 mod config;
 mod db;
 mod http;
+mod peak_alloc;
 
-use aquarius::db::tiberius::TiberiusPool;
+use ::db::tiberius::TiberiusPool;
 use config::Config;
 use http::server::Server;
+use peak_alloc::PeakAlloc;
 use std::io::Result;
+
+#[global_allocator]
+static PEAK_ALLOC: PeakAlloc = PeakAlloc;
 
 pub mod built_info {
     include!(concat!(env!("OUT_DIR"), "/built.rs"));
@@ -33,12 +38,11 @@ mod tests {
     };
     use actix_identity::IdentityMiddleware;
     use actix_web::{
-        test,
+        App, test,
         test::TestRequest,
-        web::{scope, Data},
-        App,
+        web::{Data, scope},
     };
-    use aquarius::db::tiberius::TiberiusPool;
+    use db::tiberius::TiberiusPool;
     use dotenv::dotenv;
 
     #[tokio_shared_rt::test(shared)]
@@ -51,18 +55,19 @@ mod tests {
         )
         .await;
 
-        let app_data = create_app_data().await;
+        let app_data = create_app_data().await.unwrap();
 
         let app = test::init_service(
             App::new().service(
                 scope(PATH)
-                    .service(rest_api::get_regattas)
+                    .service(rest_api::get_active_regatta)
+                    .wrap(IdentityMiddleware::default())
                     .app_data(Data::clone(&app_data)),
             ),
         )
         .await;
 
-        let request = TestRequest::get().uri("/api/regattas").to_request();
+        let request = TestRequest::get().uri("/api/active_regatta").to_request();
         let response = test::call_service(&app, request).await;
         assert!(response.status().is_success());
     }
@@ -77,7 +82,7 @@ mod tests {
         )
         .await;
 
-        let app_data = create_app_data().await;
+        let app_data = create_app_data().await.unwrap();
 
         let app = test::init_service(
             App::new().service(

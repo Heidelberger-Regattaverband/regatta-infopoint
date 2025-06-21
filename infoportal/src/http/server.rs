@@ -4,18 +4,18 @@ use crate::{
     http::{api_doc, rest_api},
 };
 use actix_extensible_rate_limit::{
-    backend::{memory::InMemoryBackend, SimpleInput, SimpleInputFunctionBuilder, SimpleOutput},
     RateLimiter,
+    backend::{SimpleInput, SimpleInputFunctionBuilder, SimpleOutput, memory::InMemoryBackend},
 };
 use actix_files::Files;
 use actix_identity::IdentityMiddleware;
-use actix_session::{config::PersistentSession, storage::CookieSessionStore, SessionMiddleware};
+use actix_session::{SessionMiddleware, config::PersistentSession, storage::CookieSessionStore};
 use actix_web::{
+    App, Error, HttpServer,
     body::{BoxBody, EitherBody},
-    cookie::{time::Duration, Key, SameSite},
+    cookie::{Key, SameSite, time::Duration},
     dev::{Service, ServiceFactory, ServiceRequest, ServiceResponse},
     web::{self, Data},
-    App, Error, HttpServer,
 };
 use actix_web_prom::{PrometheusMetrics, PrometheusMetricsBuilder};
 use colored::Colorize;
@@ -28,11 +28,12 @@ use rustls_pki_types::{PrivateKeyDer, PrivatePkcs8KeyDer};
 use std::{
     fs::File,
     future::Ready,
-    io::{self, BufReader},
+    io::{BufReader, Result as IoResult},
     path::Path,
     sync::{Arc, Mutex},
     time::{self, Instant},
 };
+use tiberius::error::Error as DbError;
 
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
@@ -55,11 +56,11 @@ impl Server {
     /// `io::Result<()>` - The result of the server start.
     /// # Panics
     /// If the server can't be started.
-    pub(crate) async fn start(&self) -> io::Result<()> {
+    pub(crate) async fn start(&self) -> IoResult<()> {
         let start = Instant::now();
 
         let config = Config::get();
-        let aquarius = create_app_data().await;
+        let aquarius = create_app_data().await.unwrap();
         let (rl_max_requests, rl_interval) = config.get_rate_limiter_config();
         let secret_key = Key::generate();
         let http_app_content_path = config.http_app_content_path.clone();
@@ -281,6 +282,6 @@ impl Server {
     }
 }
 
-pub async fn create_app_data() -> Data<Aquarius> {
-    Data::new(Aquarius::new().await)
+pub async fn create_app_data() -> Result<Data<Aquarius>, DbError> {
+    Ok(Data::new(Aquarius::new().await?))
 }

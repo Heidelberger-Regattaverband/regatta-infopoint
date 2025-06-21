@@ -1,10 +1,9 @@
-import MessageToast from "sap/m/MessageToast";
-import BaseController from "./Base.controller";
+import { Button$PressEvent } from "sap/m/Button";
+import List from "sap/m/List";
+import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
-import Control from "sap/ui/core/Control";
-import { Button$PressEvent } from "sap/m/Button";
-import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import BaseController from "./Base.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -13,10 +12,10 @@ export default class StatisticsController extends BaseController {
 
   private readonly dataLoader: JSONModel = new JSONModel();
   private readonly statisticsModel: JSONModel = new JSONModel();
-  private racesList?: Control;
-  private heatsList?: Control;
-  private registrationsList?: Control;
-  private athletesList?: Control;
+  private racesList?: List;
+  private heatsList?: List;
+  private entriesList?: List;
+  private athletesList?: List;
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
@@ -25,44 +24,43 @@ export default class StatisticsController extends BaseController {
 
     super.setViewModel(this.statisticsModel, "statistics");
 
-    this.registrationsList = this.getView()?.byId("registrationsList") as Control;
-    this.racesList = this.getView()?.byId("racesList") as Control;
-    this.heatsList = this.getView()?.byId("heatsList") as Control;
-    this.athletesList = this.getView()?.byId("athletesList") as Control;
+    this.entriesList = this.getView()?.byId("entriesList") as List;
+    this.racesList = this.getView()?.byId("racesList") as List;
+    this.heatsList = this.getView()?.byId("heatsList") as List;
+    this.athletesList = this.getView()?.byId("athletesList") as List;
   }
 
   onNavBack(): void {
-    super.navBack("startpage");
+    super.navToStartPage();
   }
 
-  async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
-    await this.loadStatistics();
-  }
-
-  private async loadStatistics(): Promise<void> {
+  onRefreshButtonPress(event: Button$PressEvent): void {
     this.setBusy(true);
-    let statistics: any;
+    this.loadStatistics().then((succeeded: boolean) => {
+      super.showDataUpdatedMessage(succeeded);
+    }).finally(() => {
+      this.setBusy(false);
+    });
+  }
 
+  private async loadStatistics(): Promise<boolean> {
+    const regatta: any = await super.getActiveRegatta();
     // load statistic data from backend
-    if (await super.updateJSONModel(this.dataLoader, `/api/regattas/${super.getRegattaId()}/statistics`)) {
-      statistics = this.dataLoader.getData();
-      MessageToast.show(super.i18n("msg.dataUpdated"));
-    } else {
-      statistics = {};
-    }
+    const succeeded: boolean = await super.updateJSONModel(this.dataLoader, `/api/regattas/${regatta.id}/statistics`);
+    let statistics: any = succeeded ? this.dataLoader.getData() : {};
 
     // transform statistic data into human readable format
-    const registrations = [];
-    if (statistics?.registrations) {
-      const seats = statistics.registrations.seats + statistics.registrations.seatsCox;
-      registrations.push({ name: this.i18n("common.overall"), value: statistics.registrations.all });
-      registrations.push({ name: this.i18n("statistics.registrations.cancelled"), value: statistics.registrations.cancelled });
-      registrations.push({ name: this.i18n("statistics.reportingClubs"), value: statistics.registrations.registeringClubs });
-      registrations.push({ name: this.i18n("statistics.participatingClubs"), value: statistics.registrations.clubs });
-      registrations.push({ name: this.i18n("statistics.athletes.overall"), value: statistics.registrations.athletes });
-      registrations.push({ name: this.i18n("statistics.athletes.female"), value: statistics.registrations.athletesFemale });
-      registrations.push({ name: this.i18n("statistics.athletes.male"), value: statistics.registrations.athletesMale });
-      registrations.push({ name: this.i18n("common.seats"), value: seats });
+    const entries = [];
+    if (statistics?.entries) {
+      const seats = statistics.entries.seats + statistics.entries.seatsCox;
+      entries.push({ name: this.i18n("common.overall"), value: statistics.entries.all });
+      entries.push({ name: this.i18n("statistics.entries.cancelled"), value: statistics.entries.cancelled });
+      entries.push({ name: this.i18n("statistics.reportingClubs"), value: statistics.entries.registeringClubs });
+      entries.push({ name: this.i18n("statistics.participatingClubs"), value: statistics.entries.clubs });
+      entries.push({ name: this.i18n("statistics.athletes.overall"), value: statistics.entries.athletes });
+      entries.push({ name: this.i18n("statistics.athletes.female"), value: statistics.entries.athletesFemale });
+      entries.push({ name: this.i18n("statistics.athletes.male"), value: statistics.entries.athletesMale });
+      entries.push({ name: this.i18n("common.seats"), value: seats });
     }
 
     const races = [];
@@ -93,19 +91,18 @@ export default class StatisticsController extends BaseController {
     }
 
     // update statistics model
-    this.statisticsModel.setProperty("/registrations", registrations);
+    this.statisticsModel.setProperty("/entries", entries);
     this.statisticsModel.setProperty("/races", races);
     this.statisticsModel.setProperty("/heats", heats);
     this.statisticsModel.setProperty("/athletes", athletes);
 
-    this.setBusy(false);
+    return succeeded;
   }
 
   private setBusy(busy: boolean): void {
-    this.registrationsList?.setBusy(busy);
+    this.entriesList?.setBusy(busy);
     this.racesList?.setBusy(busy);
     this.heatsList?.setBusy(busy);
     this.athletesList?.setBusy(busy);
   }
-
 }
