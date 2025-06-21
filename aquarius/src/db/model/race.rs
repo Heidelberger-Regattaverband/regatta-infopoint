@@ -1,6 +1,5 @@
-use crate::db::model::{Entry, Heat, utils};
-use crate::db::{
-    model::{AgeClass, BoatClass, TryToEntity},
+use crate::{
+    db::model::{AgeClass, BoatClass, Entry, Heat, TryToEntity, utils},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use chrono::{DateTime, Utc};

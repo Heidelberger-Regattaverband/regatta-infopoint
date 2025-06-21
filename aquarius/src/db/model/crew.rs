@@ -1,5 +1,5 @@
-use crate::db::{
-    model::{Athlete, Club, utils},
+use crate::{
+    db::model::{Athlete, Club, utils},
     tiberius::{RowColumn, TiberiusPool},
 };
 use serde::Serialize;

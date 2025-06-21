@@ -1,4 +1,4 @@
-use crate::db::tiberius::TiberiusPool;
+use crate::tiberius::TiberiusPool;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::Serialize;
 use tiberius::{Query, error::Error as DbError};

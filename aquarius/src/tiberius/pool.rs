@@ -1,4 +1,4 @@
-use crate::db::tiberius::TiberiusConnectionManager;
+use crate::tiberius::TiberiusConnectionManager;
 use bb8::{Pool, PooledConnection, State};
 use std::sync::OnceLock;
 use tiberius::Config as TiberiusConfig;
