@@ -58,7 +58,7 @@ fn load_club_flags() -> HashMap<i32, ClubFlag> {
 
 #[cfg(test)]
 mod tests {
-    use crate::db::flags_scraper::ClubFlag;
+    use crate::aquarius::flags_scraper::ClubFlag;
 
     #[tokio_shared_rt::test(shared)]
     async fn test_crawler() {

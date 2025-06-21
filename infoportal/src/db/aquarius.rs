@@ -3,8 +3,8 @@ use crate::{
     db::cache::{CacheTrait, Caches},
 };
 use actix_identity::Identity;
-use aquarius::db::{
-    model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule, Score, Statistics},
+use db::{
+    aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule, Score, Statistics},
     tiberius::TiberiusPool,
 };
 use futures::future::join3;

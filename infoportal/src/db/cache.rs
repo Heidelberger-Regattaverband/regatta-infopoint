@@ -1,4 +1,4 @@
-use aquarius::db::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
+use db::aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
 use std::{hash::Hash, time::Duration};
 use stretto::AsyncCache;
 use tokio::task;

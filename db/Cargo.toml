@@ -1,5 +1,5 @@
 [package]
-name = "aquarius"
+name = "db"
 description = "The Aquarius DB layer"
 version.workspace = true
 edition.workspace = true
