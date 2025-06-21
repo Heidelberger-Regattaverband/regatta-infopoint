@@ -5,8 +5,9 @@ use crate::db::{
 };
 use serde::Serialize;
 use tiberius::{Query, Row, error::Error as DbError, numeric::Decimal};
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Club {
     /// The internal ID of the club.

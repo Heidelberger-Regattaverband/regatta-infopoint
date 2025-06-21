@@ -5,8 +5,9 @@ use crate::db::{
 use futures::future::{BoxFuture, join_all};
 use serde::Serialize;
 use tiberius::{Query, Row, error::Error as DbError};
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Entry {
     /** The unique identifier of this entry. */

@@ -12,7 +12,7 @@ use actix_web::{
     get, post,
     web::{Data, Json, Path, ServiceConfig},
 };
-use aquarius::db::model::Regatta;
+use aquarius::db::model::{Race, Regatta};
 use log::error;
 
 /// Path to REST API
@@ -64,7 +64,14 @@ async fn get_active_regatta(aquarius: Data<Aquarius>, opt_user: Option<Identity>
 }
 
 // Races Endpoints
-
+#[utoipa::path(
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Active regatta found"),
+        (status = 404, description = "Race not found"),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
 #[get("/regattas/{regatta_id}/races")]
 async fn get_races(
     path: Path<i32>,
