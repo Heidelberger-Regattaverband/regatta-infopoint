@@ -1,5 +1,5 @@
 use crate::{
-    db::model::{Club, Crew, Entry, Heat, HeatResult, Race, TryToEntity, utils},
+    aquarius::model::{Club, Crew, Entry, Heat, HeatResult, Race, TryToEntity, utils},
     tiberius::{RowColumn, TiberiusPool},
 };
 use futures::future::{BoxFuture, join_all};

@@ -1,5 +1,5 @@
 use crate::{
-    db::{flags_scraper::ClubFlag, model::utils},
+    aquarius::{flags_scraper::ClubFlag, model::utils},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;

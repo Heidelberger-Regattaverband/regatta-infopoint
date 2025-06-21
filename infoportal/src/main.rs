@@ -3,7 +3,7 @@ mod db;
 mod http;
 mod peak_alloc;
 
-use aquarius::tiberius::TiberiusPool;
+use db::tiberius::TiberiusPool;
 use config::Config;
 use http::server::Server;
 use peak_alloc::PeakAlloc;
@@ -42,7 +42,7 @@ mod tests {
         test::TestRequest,
         web::{Data, scope},
     };
-    use aquarius::tiberius::TiberiusPool;
+    use db::tiberius::TiberiusPool;
     use dotenv::dotenv;
 
     #[tokio_shared_rt::test(shared)]

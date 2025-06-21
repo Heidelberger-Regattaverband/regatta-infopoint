@@ -1,2 +1,2 @@
-pub mod db;
+pub mod aquarius;
 pub mod tiberius;

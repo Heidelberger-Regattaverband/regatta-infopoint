@@ -1,5 +1,5 @@
 use crate::{
-    db::model::{AgeClass, BoatClass, Entry, Heat, TryToEntity, utils},
+    aquarius::model::{AgeClass, BoatClass, Entry, Heat, TryToEntity, utils},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use chrono::{DateTime, Utc};
