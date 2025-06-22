@@ -34,7 +34,7 @@ impl TimeStamp {
     /// * `stamp_type` - The type of the time stamp.
     /// # Returns
     /// A new time stamp with the current time.
-    pub fn now(stamp_type: TimeStampType) -> TimeStamp {
+    pub(crate) fn now(stamp_type: TimeStampType) -> TimeStamp {
         TimeStamp {
             index: next_index(),
             time: Local::now(),
