@@ -1,7 +1,8 @@
 use crate::{
     aquarius::{client::Client, messages::Heat},
-    timestrip::{TimeStamp, TimeStrip},
+    timestrip::TimeStrip,
 };
+use db::timekeeper::time_stamp::TimeStamp;
 use ratatui::{
     buffer::Buffer,
     crossterm::event::{KeyCode, KeyEvent},

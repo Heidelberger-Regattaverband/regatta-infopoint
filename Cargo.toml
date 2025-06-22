@@ -28,6 +28,10 @@ futures = { version = "0" }
 tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
 tokio-util = { version = "0", features = ["compat"] }
 
+# Enum and string utils: https://github.com/Peternator7/strum
+strum = { version = "0" }
+strum_macros = { version = "0" }
+
 # Utils
 anyhow = { version = "1" }
 dotenv = { version = "0" }

@@ -10,6 +10,8 @@ repository.workspace = true
 build = "build.rs"
 
 [dependencies]
+db = { path = "../db" }
+
 clap.workspace = true
 encoding_rs = { version = "0" }
 chrono.workspace = true
@@ -24,8 +26,8 @@ tui-logger = { version = "0" }
 tui-textarea = { version = "0" }
 
 # Enum and string utils: https://github.com/Peternator7/strum
-strum = { version = "0" }
-strum_macros = { version = "0" }
+strum.workspace = true
+strum_macros.workspace = true
 
 [dev-dependencies]
 env_logger.workspace = true
