@@ -1,11 +1,8 @@
-use crate::{
-    app::{
-        TimeStrip,
-        utils::{HIGHLIGHT_SYMBOL, block},
-    },
-    timestrip::MyTimeStamp,
+use crate::app::{
+    TimeStrip,
+    utils::{HIGHLIGHT_SYMBOL, block},
 };
-use db::timekeeper::time_stamp::{TimeStamp, TimeStampType};
+use db::timekeeper::{TimeStamp, TimeStampType};
 use ratatui::{
     buffer::Buffer,
     crossterm::event::{KeyCode, KeyEvent},
@@ -33,7 +30,7 @@ impl Widget for &mut TimeStripTab {
             .time_stamps
             .iter()
             .rev()
-            .map(ListItem::from)
+            .map(|ts| ListItem::from(&MyTimeStamp(ts.clone())))
             .collect();
 
         // Create a List from all list items and highlight the currently selected one
@@ -89,7 +86,7 @@ impl TimeStripTab {
             let time_strip_index = time_stamps.len().saturating_sub(index).saturating_sub(1);
             // get the time stamp from the time strip
             if let Some(time_stamp) = time_stamps.get(time_strip_index) {
-                *self.selected_time_stamp.borrow_mut() = Some(time_stamp.0.clone());
+                *self.selected_time_stamp.borrow_mut() = Some(time_stamp.clone());
             } else {
                 *self.selected_time_stamp.borrow_mut() = None;
             }
@@ -119,3 +116,5 @@ impl From<&MyTimeStamp> for ListItem<'_> {
         }
     }
 }
+
+struct MyTimeStamp(TimeStamp);

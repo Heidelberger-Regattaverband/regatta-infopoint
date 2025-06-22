@@ -10,7 +10,7 @@ use crate::{
     error::TimekeeperErr,
     utils,
 };
-use db::timekeeper::time_stamp::TimeStamp;
+use db::timekeeper::TimeStamp;
 use log::{debug, error, info, trace, warn};
 use std::{
     io::Result as IoResult,
