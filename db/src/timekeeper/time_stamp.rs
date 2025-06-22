@@ -8,7 +8,7 @@ fn next_index() -> u64 {
     TIME_STAMP_INDEX.fetch_add(1, Ordering::SeqCst)
 }
 
-/// A time stamp of an event.
+/// A time stamp of an event, such as a start or finish time stamp in a race.
 #[derive(Debug, Clone)]
 pub struct TimeStamp {
     /// The index of the time stamp.
@@ -23,7 +23,7 @@ pub struct TimeStamp {
     /// The heat number.
     pub heat_nr: Option<u16>,
 
-    /// The heat number.
+    /// The bib number.
     pub bib: Option<u32>,
 }
 
