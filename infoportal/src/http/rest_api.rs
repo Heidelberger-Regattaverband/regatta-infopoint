@@ -27,7 +27,7 @@ async fn get_filters(
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let filters = aquarius.get_filters(regatta_id, opt_user).await.map_err(|err| {
-        error!("{}", err);
+        error!("{err}");
         ErrorInternalServerError("Internal Server Error")
     })?;
     Ok(Json(filters))
@@ -38,7 +38,7 @@ async fn get_filters(
 #[get("/active_regatta")]
 async fn get_active_regatta(aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     let regatta = aquarius.get_active_regatta(opt_user).await.map_err(|err| {
-        error!("{}", err);
+        error!("{err}");
         ErrorInternalServerError("Internal Server Error")
     })?;
     if regatta.is_none() {
@@ -57,7 +57,7 @@ async fn get_races(
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let races = aquarius.get_races(regatta_id, opt_user).await.map_err(|err| {
-        error!("{}", err);
+        error!("{err}");
         ErrorInternalServerError("Internal Server Error")
     })?;
     Ok(Json(races))
@@ -74,7 +74,7 @@ async fn get_race(
         .get_race_heats_entries(race_id, opt_user)
         .await
         .map_err(|err| {
-            error!("{}", err);
+            error!("{err}");
             ErrorInternalServerError("Internal Server Error")
         })?;
     Ok(Json(race))
@@ -90,7 +90,7 @@ async fn get_heats(
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let heats = aquarius.get_heats(regatta_id, opt_user).await.map_err(|err| {
-        error!("{}", err);
+        error!("{err}");
         ErrorInternalServerError("Internal Server Error")
     })?;
     Ok(Json(heats))
@@ -104,7 +104,7 @@ async fn get_heat(
 ) -> Result<impl Responder, Error> {
     let heat_id = path.into_inner();
     let heat = aquarius.get_heat(heat_id, opt_user).await.map_err(|err| {
-        error!("{}", err);
+        error!("{err}");
         ErrorInternalServerError("Internal Server Error")
     })?;
     Ok(Json(heat))
@@ -123,7 +123,7 @@ async fn get_participating_clubs(
         .get_participating_clubs(regatta_id, opt_user)
         .await
         .map_err(|err| {
-            error!("{}", err);
+            error!("{err}");
             ErrorInternalServerError("Internal Server Error")
         })?;
     Ok(Json(clubs))
@@ -137,7 +137,7 @@ async fn get_club_entries(
 ) -> Result<impl Responder, Error> {
     let ids = ids.into_inner();
     let entries = aquarius.get_club_entries(ids.0, ids.1, opt_user).await.map_err(|err| {
-        error!("{}", err);
+        error!("{err}");
         ErrorInternalServerError("Internal Server Error")
     })?;
     Ok(Json(entries))
@@ -151,7 +151,7 @@ async fn get_regatta_club(
 ) -> Result<impl Responder, Error> {
     let ids = ids.into_inner();
     let club = aquarius.get_regatta_club(ids.0, ids.1, opt_user).await.map_err(|err| {
-        error!("{}", err);
+        error!("{err}");
         ErrorInternalServerError("Internal Server Error")
     })?;
     Ok(Json(club))
@@ -170,7 +170,7 @@ async fn get_participating_athletes(
         .get_participating_athletes(regatta_id, opt_user)
         .await
         .map_err(|err| {
-            error!("{}", err);
+            error!("{err}");
             ErrorInternalServerError("Internal Server Error")
         })?;
     Ok(Json(clubs))
@@ -187,7 +187,7 @@ async fn get_athlete(
         .get_athlete(regatta_id, athlete_id, opt_user)
         .await
         .map_err(|err| {
-            error!("{}", err);
+            error!("{err}");
             ErrorInternalServerError("Internal Server Error")
         })?;
     Ok(Json(clubs))
@@ -204,7 +204,7 @@ async fn get_athlete_entries(
         .get_athlete_entries(ids.0, ids.1, opt_user)
         .await
         .map_err(|err| {
-            error!("{}", err);
+            error!("{err}");
             ErrorInternalServerError("Internal Server Error")
         })?;
     Ok(Json(entries))
@@ -221,7 +221,7 @@ async fn get_statistics(
     if opt_user.is_some() {
         let regatta_id = path.into_inner();
         let stats = aquarius.query_statistics(regatta_id).await.map_err(|err| {
-            error!("{}", err);
+            error!("{err}");
             ErrorInternalServerError("Internal Server Error")
         })?;
         Ok(Json(stats))
@@ -239,7 +239,7 @@ async fn calculate_scoring(
     if opt_user.is_some() {
         let regatta_id = path.into_inner();
         let scoring = aquarius.calculate_scoring(regatta_id).await.map_err(|err| {
-            error!("{}", err);
+            error!("{err}");
             ErrorInternalServerError("Internal Server Error")
         })?;
         Ok(Json(scoring))
@@ -256,7 +256,7 @@ async fn get_schedule(
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let schedule = aquarius.query_schedule(regatta_id, opt_user).await.map_err(|err| {
-        error!("{}", err);
+        error!("{err}");
         ErrorInternalServerError("Internal Server Error")
     })?;
     Ok(Json(schedule))

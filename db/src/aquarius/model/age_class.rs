@@ -38,16 +38,14 @@ pub struct AgeClass {
 impl AgeClass {
     pub fn select_all_columns(alias: &str) -> String {
         format!(
-            " {0}.AgeClass_ID, {0}.AgeClass_Caption, {0}.AgeClass_Abbr, {0}.AgeClass_Suffix, {0}.AgeClass_Gender, \
-            {0}.AgeClass_NumSubClasses, {0}.AgeClass_MinAge, {0}.AgeClass_MaxAge ",
-            alias
+            " {alias}.AgeClass_ID, {alias}.AgeClass_Caption, {alias}.AgeClass_Abbr, {alias}.AgeClass_Suffix, {alias}.AgeClass_Gender, \
+            {alias}.AgeClass_NumSubClasses, {alias}.AgeClass_MinAge, {alias}.AgeClass_MaxAge "
         )
     }
     pub fn select_minimal_columns(alias: &str) -> String {
         format!(
-            " {0}.AgeClass_ID, {0}.AgeClass_Caption, {0}.AgeClass_Abbr, {0}.AgeClass_Suffix, {0}.AgeClass_Gender, \
-            {0}.AgeClass_NumSubClasses ",
-            alias
+            " {alias}.AgeClass_ID, {alias}.AgeClass_Caption, {alias}.AgeClass_Abbr, {alias}.AgeClass_Suffix, {alias}.AgeClass_Gender, \
+            {alias}.AgeClass_NumSubClasses "
         )
     }
 }

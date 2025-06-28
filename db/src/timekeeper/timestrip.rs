@@ -11,13 +11,13 @@ pub struct TimeStrip {
 impl TimeStrip {
     pub fn add_new_start(&mut self) {
         let time_stamp = TimeStamp::now(TimeStampType::Start);
-        info!("Start time stamp: {:?}", time_stamp);
+        info!("Start time stamp: {time_stamp:?}");
         self.time_stamps.push(time_stamp);
     }
 
     pub fn add_new_finish(&mut self) {
         let time_stamp = TimeStamp::now(TimeStampType::Finish);
-        info!("Finish time stamp: {:?}", time_stamp);
+        info!("Finish time stamp: {time_stamp:?}");
         self.time_stamps.push(time_stamp);
     }
 

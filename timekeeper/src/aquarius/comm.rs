@@ -38,7 +38,7 @@ impl Communication {
         info!("Writing command: \"{}\"", utils::print_whitespaces(cmd));
         let count = self.writer.write(cmd.as_bytes())?;
         self.writer.flush()?;
-        trace!("Written {} bytes", count);
+        trace!("Written {count} bytes");
         Ok(count)
     }
 

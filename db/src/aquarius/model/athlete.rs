@@ -90,8 +90,7 @@ impl Athlete {
 
     pub fn select_columns(alias: &str) -> String {
         format!(
-            " {0}.Athlet_ID, {0}.Athlet_FirstName, {0}.Athlet_LastName, {0}.Athlet_Gender, {0}.Athlet_DOB ",
-            alias
+            " {alias}.Athlet_ID, {alias}.Athlet_FirstName, {alias}.Athlet_LastName, {alias}.Athlet_Gender, {alias}.Athlet_DOB "
         )
     }
 }

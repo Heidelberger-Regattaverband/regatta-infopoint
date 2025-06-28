@@ -55,9 +55,8 @@ pub struct Heat {
 impl Heat {
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
-            " {0}.Comp_ID, {0}.Comp_Number, {0}.Comp_RoundCode, {0}.Comp_Label, {0}.Comp_GroupValue, \
-            {0}.Comp_State, {0}.Comp_Cancelled, {0}.Comp_DateTime, {0}.Comp_Round ",
-            alias
+            " {alias}.Comp_ID, {alias}.Comp_Number, {alias}.Comp_RoundCode, {alias}.Comp_Label, {alias}.Comp_GroupValue, \
+            {alias}.Comp_State, {alias}.Comp_Cancelled, {alias}.Comp_DateTime, {alias}.Comp_Round "
         )
     }
 

@@ -158,15 +158,13 @@ impl Club {
 
     pub fn select_all_columns(alias: &str) -> String {
         format!(
-            " {0}.Club_ID, {0}.Club_Abbr, {0}.Club_Name, {0}.Club_UltraAbbr, {0}.Club_City, {0}.Club_ExternID, {0}.Club_HRV_Latitude, {0}.Club_HRV_Longitude ",
-            alias
+            " {alias}.Club_ID, {alias}.Club_Abbr, {alias}.Club_Name, {alias}.Club_UltraAbbr, {alias}.Club_City, {alias}.Club_ExternID, {alias}.Club_HRV_Latitude, {alias}.Club_HRV_Longitude "
         )
     }
 
     pub fn select_min_columns(alias: &str) -> String {
         format!(
-            " {0}.Club_ID, {0}.Club_Abbr, {0}.Club_UltraAbbr, {0}.Club_City, {0}.Club_ExternID ",
-            alias
+            " {alias}.Club_ID, {alias}.Club_Abbr, {alias}.Club_UltraAbbr, {alias}.Club_City, {alias}.Club_ExternID "
         )
     }
 }
@@ -179,7 +177,7 @@ impl From<&Row> for Club {
             if let Some(club_flag) = ClubFlag::get(&extern_id) {
                 flag_url = Some(club_flag.flag_url.clone());
             } else {
-                flag_url = Some(format!("images/flags/{}.png", extern_id));
+                flag_url = Some(format!("images/flags/{extern_id}.png"));
             }
         }
 

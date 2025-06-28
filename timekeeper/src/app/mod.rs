@@ -188,7 +188,7 @@ impl App<'_> {
                 }
             }
             Event::Mouse(mouse) => {
-                debug!("Mouse event: {:?}", mouse);
+                debug!("Mouse event: {mouse:?}");
             }
             _ => {}
         }
@@ -221,7 +221,7 @@ impl App<'_> {
                 });
                 heats.sort_by(|a, b| a.number.cmp(&b.number));
             }
-            Err(err) => warn!("Error reading open heats: {}", err),
+            Err(err) => warn!("Error reading open heats: {err}"),
         };
     }
 }

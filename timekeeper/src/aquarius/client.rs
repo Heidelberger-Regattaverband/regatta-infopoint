@@ -154,13 +154,13 @@ impl Client {
                             }
                             Err(err) => {
                                 send_disconnected(&sender);
-                                warn!("Error spawning thread: {}", err);
+                                warn!("Error spawning thread: {err}");
                             }
                         }
                     }
                     Err(err) => {
                         send_disconnected(&sender);
-                        trace!("Error connecting to Aquarius: {}", err);
+                        trace!("Error connecting to Aquarius: {err}");
                     }
                 }
                 let elapsed = start.elapsed();
@@ -191,22 +191,22 @@ impl Client {
 fn send_connected(sender: &Sender<AppEvent>) {
     // Send a message to the application that the client is connected
     if let Err(err) = sender.send(AppEvent::Client(true)) {
-        error!("Error sending message to application: {}", err);
+        error!("Error sending message to application: {err}");
     }
 }
 
 fn send_disconnected(sender: &Sender<AppEvent>) {
     // Send a message to the application that the client is disconnected
     if let Err(err) = sender.send(AppEvent::Client(false)) {
-        error!("Error sending message to application: {}", err);
+        error!("Error sending message to application: {err}");
     }
 }
 
 fn create_stream(addr: &SocketAddr, timeout: u16) -> IoResult<TcpStream> {
-    trace!("Connecting to {} with a timeout {}", addr, timeout);
+    trace!("Connecting to {addr} with a timeout {timeout}");
     let stream = TcpStream::connect_timeout(addr, Duration::new(timeout as u64, 0))?;
     stream.set_nodelay(true)?;
-    info!("Connected to {}", addr);
+    info!("Connected to {addr}");
     Ok(stream)
 }
 
@@ -230,13 +230,13 @@ fn spawn_communication_thread(stream: &TcpStream, sender: Sender<AppEvent>) -> I
                                 }
                                 sender.send(AppEvent::Aquarius(event)).unwrap();
                             }
-                            Err(err) => warn!("{}", err),
+                            Err(err) => warn!("{err}"),
                         }
                     }
                 }
                 // an error occurred while receiving a line
                 Err(err) => {
-                    warn!("{}", err);
+                    warn!("{err}");
                     break;
                 }
             }

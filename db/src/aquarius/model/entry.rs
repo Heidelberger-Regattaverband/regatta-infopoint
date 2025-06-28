@@ -72,8 +72,7 @@ impl From<&Row> for Entry {
 impl Entry {
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
-            " {0}.Entry_ID, {0}.Entry_Bib, {0}.Entry_Comment, {0}.Entry_BoatNumber, {0}.Entry_GroupValue, {0}.Entry_CancelValue ",
-            alias
+            " {alias}.Entry_ID, {alias}.Entry_Bib, {alias}.Entry_Comment, {alias}.Entry_BoatNumber, {alias}.Entry_GroupValue, {alias}.Entry_CancelValue "
         )
     }
 
