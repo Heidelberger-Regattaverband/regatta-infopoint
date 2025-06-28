@@ -13,9 +13,9 @@ use crate::{
     },
     args::Args,
     error::TimekeeperErr,
-    timestrip::TimeStrip,
 };
 use clap::Parser;
+use db::timekeeper::TimeStrip;
 use heats_tab::HeatsTab;
 use log::{debug, warn};
 use logs_tab::LogsTab;

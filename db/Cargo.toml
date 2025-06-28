@@ -20,5 +20,9 @@ tiberius.workspace = true
 chrono.workspace = true
 bb8.workspace = true
 
+# Enum and string utils: https://github.com/Peternator7/strum
+strum.workspace = true
+strum_macros.workspace = true
+
 [dev-dependencies]
 tokio-shared-rt = "0"

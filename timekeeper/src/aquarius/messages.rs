@@ -1,6 +1,6 @@
+use crate::{error::TimekeeperErr, utils};
 use chrono::{DateTime, Local};
-
-use crate::{error::TimekeeperErr, timestrip::TimeStampType, utils};
+use db::timekeeper::TimeStampType;
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 pub(super) type Bib = u8;

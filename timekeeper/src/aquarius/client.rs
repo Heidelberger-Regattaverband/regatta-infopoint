@@ -8,9 +8,9 @@ use crate::{
         },
     },
     error::TimekeeperErr,
-    timestrip::TimeStamp,
     utils,
 };
+use db::timekeeper::TimeStamp;
 use log::{debug, error, info, trace, warn};
 use std::{
     io::Result as IoResult,
