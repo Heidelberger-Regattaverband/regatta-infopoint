@@ -14,8 +14,7 @@ use db::timekeeper::TimeStamp;
 use log::{debug, error, info, trace, warn};
 use std::{
     io::Result as IoResult,
-    net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream},
-    str::FromStr,
+    net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream, ToSocketAddrs},
     sync::{
         Arc,
         atomic::{AtomicBool, Ordering::Relaxed},
@@ -48,7 +47,10 @@ impl Client {
     /// # Returns
     /// A client to communicate with Aquarius.
     pub(crate) fn new(host: &str, port: u16, timeout: u16, sender: Sender<AppEvent>) -> Self {
-        let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::from_str(host).unwrap()), port);
+        let mut addrs_iter = format!("{host}:{port}").to_socket_addrs().unwrap();
+        let address = addrs_iter
+            .next()
+            .unwrap_or_else(|| SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port));
         let mut client = Client {
             comm_main: None,
             address,
