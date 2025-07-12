@@ -1,21 +1,36 @@
-import Controller from "sap/ui/core/mvc/Controller";
-import History from "sap/ui/core/routing/History";
-import JSONModel from "sap/ui/model/json/JSONModel";
-import EventBus from "sap/ui/core/EventBus";
-import Model, { Model$RequestFailedEventParameters } from "sap/ui/model/Model";
-import View from "sap/ui/core/mvc/View";
-import Component from "sap/ui/core/Component";
-import Router from "sap/ui/core/routing/Router";
-import Control from "sap/ui/core/Control";
-import UIComponent from "sap/ui/core/UIComponent";
 import MyComponent from "de/regatta_hd/infoportal/Component";
-import MessageBox from "sap/m/MessageBox";
+import * as $ from "jquery";
 import { LatLng } from "leaflet";
+import Button from "sap/m/Button";
+import MessageBox from "sap/m/MessageBox";
+import MessageToast from "sap/m/MessageToast";
+import Control from "sap/ui/core/Control";
+import EventBus from "sap/ui/core/EventBus";
+import Controller from "sap/ui/core/mvc/Controller";
+import View from "sap/ui/core/mvc/View";
+import History from "sap/ui/core/routing/History";
+import Router from "sap/ui/core/routing/Router";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import Model, { Model$RequestFailedEventParameters } from "sap/ui/model/Model";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class BaseController extends Controller {
+
+  /**
+   * Shows a message toast with the result of a data update operation.
+   * @param succeeded data update succeeded or failed
+   */
+  showDataUpdatedMessage(succeeded: boolean): void {
+    if (succeeded) { // NOSONAR
+      MessageToast.show(this.i18n("msg.dataUpdated"));
+      $(".sapMMessageToast").addClass("sapMMessageToastInfo");
+    } else {
+      MessageToast.show(this.i18n("msg.dataUpdateFailed"));
+      $(".sapMMessageToast").addClass("sapMMessageToastDanger");
+    }
+  }
 
   /**
    * Convenience method for getting the secure context of the application.
@@ -45,20 +60,10 @@ export default class BaseController extends Controller {
   /**
    * Convenience method for accessing a component model.
    * @param {string} [name] the model name
-   * @returns {sap.ui.model.Model} the model instance
+   * @returns {sap.ui.model.JSONModel} the model instance
    */
-  getComponentModel(name: string): Model | undefined {
-    return super.getOwnerComponent()?.getModel(name);
-  }
-
-  /**
-   * Convenience method for setting the view model.
-   * @param {sap.ui.model.Model} model the model instance
-   * @param {string} name the model name
-   * @returns {sap.ui.mvc.View} the view instance
-   */
-  setComponentModel(model: Model, name: string): Component | undefined {
-    return super.getOwnerComponent()?.setModel(model, name);
+  getComponentJSONModel(name: string): JSONModel {
+    return super.getOwnerComponent()?.getModel(name) as JSONModel ?? new JSONModel();
   }
 
   /**
@@ -66,25 +71,25 @@ export default class BaseController extends Controller {
    * @returns {sap.ui.core.routing.Router} the router for this component
    */
   getRouter(): Router {
-    return (super.getOwnerComponent() as UIComponent).getRouter();
+    return this.getComponent().getRouter();
   }
 
   /**
    * Convenience method for getting the view model by name.
    * @param {string} [name] the model name
-   * @returns {sap.ui.model.Model} the model instance
+   * @returns {sap.ui.model.JSONModel} the model instance
    */
-  getViewModel(name: string): Model | undefined {
-    return super.getView()?.getModel(name);
+  getViewJSONModel(name: string): JSONModel {
+    return super.getView()?.getModel(name) as JSONModel ?? new JSONModel();
   }
 
   /**
    * Convenience method for setting the view model.
-   * @param {sap.ui.model.Model} model the model instance
+   * @param {sap.ui.model.JSONModel} model the model instance
    * @param {string} name the model name
    * @returns {sap.ui.mvc.View} the view instance
    */
-  setViewModel(model: Model, name: string): View | undefined {
+  setViewModel(model: JSONModel, name: string): View | undefined {
     return super.getView()?.setModel(model, name);
   }
 
@@ -107,17 +112,17 @@ export default class BaseController extends Controller {
     return this.getComponent()?.getResourceBundle().getText(key, args) ?? "";
   }
 
-  async updateJSONModel(model: JSONModel, url: string, control?: Control): Promise<boolean> {
-    control?.setBusy(true);
+  async updateJSONModel(model: JSONModel, url: string, button?: Button): Promise<boolean> {
+    button?.setBusy(true);
     try {
       await model.loadData(url);
       return true;
     } catch (error: any) {
       const params: Model$RequestFailedEventParameters = error as Model$RequestFailedEventParameters;
-      MessageBox.error((params.statusCode ?? "") + ": " + params.statusText);
+      console.error((params.statusCode ?? "") + ": " + params.statusText);
       return false;
     } finally {
-      control?.setBusy(false);
+      button?.setBusy(false);
     }
   }
 
@@ -130,7 +135,7 @@ export default class BaseController extends Controller {
   }
 
   navToRaceDetails(raceId: number): void {
-    this.getRouter().navTo("raceDetails", { "raceId": raceId });
+    this.getRouter().navTo("raceDetails", { raceId: raceId });
   }
 
   navToHeats(): void {
@@ -138,11 +143,23 @@ export default class BaseController extends Controller {
   }
 
   navToHeatDetails(heatId: number): void {
-    this.getRouter().navTo("heatDetails", { "heatId": heatId });
+    this.getRouter().navTo("heatDetails", { heatId: heatId });
   }
 
-  navToParticipatingClubs(): void {
-    this.getRouter().navTo("participatingClubs");
+  navToClubs(): void {
+    this.getRouter().navTo("clubs");
+  }
+
+  navToClubDetails(clubId: number): void {
+    this.getRouter().navTo("clubDetails", { clubId: clubId }, false /* history*/);
+  }
+
+  navToAthletes(): void {
+    this.getRouter().navTo("athletes");
+  }
+
+  navToAthleteDetails(athleteId: number): void {
+    this.getRouter().navTo("athleteDetails", { athleteId: athleteId }, false /* history*/);
   }
 
   navToMap(location?: LatLng): void {

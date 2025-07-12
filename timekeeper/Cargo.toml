@@ -1,13 +1,36 @@
 [package]
 name = "timekeeper"
+description = "A simple time tracking tool for Aquarius"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 rust-version.workspace = true
 authors.workspace = true
 repository.workspace = true
+build = "build.rs"
 
 [dependencies]
+db = { path = "../db" }
+
 clap.workspace = true
+encoding_rs = { version = "0" }
+chrono.workspace = true
+
+# UI
+ratatui = { version = "0", features = ["crossterm"] }
+crossterm = { version = "0" }
+
+# logging
 log.workspace = true
+tui-logger = { version = "0" }
+tui-textarea = { version = "0" }
+
+# Enum and string utils: https://github.com/Peternator7/strum
+strum.workspace = true
+strum_macros.workspace = true
+
+[dev-dependencies]
 env_logger.workspace = true
+
+[build-dependencies]
+built = "0"

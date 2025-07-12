@@ -1,5 +1,5 @@
 {
-  "_version": "1.65.0",
+  "_version": "2.0.0",
   "start_url": "index.html",
   "sap.app": {
     "id": "de.regatta_hd.infoportal",
@@ -34,7 +34,7 @@
       "cozy": true
     },
     "dependencies": {
-      "minUI5Version": "1.130.0",
+      "minUI5Version": "1.135.0",
       "libs": {
         "sap.ui.core": {},
         "sap.f": {},
@@ -96,14 +96,24 @@
           "target": "heatDetails"
         },
         {
-          "pattern": "participatingClubs",
-          "name": "participatingClubs",
-          "target": "participatingClubs"
+          "pattern": "clubs",
+          "name": "clubs",
+          "target": "clubs"
         },
         {
-          "pattern": "clubRegistrations/{clubId}",
-          "name": "clubRegistrations",
-          "target": "clubRegistrations"
+          "pattern": "clubDetails/{clubId}",
+          "name": "clubDetails",
+          "target": "clubDetails"
+        },
+        {
+          "pattern": "athletes",
+          "name": "athletes",
+          "target": "athletes"
+        },
+        {
+          "pattern": "athleteDetails/{athleteId}",
+          "name": "athleteDetails",
+          "target": "athleteDetails"
         },
         {
           "pattern": "map",
@@ -129,11 +139,6 @@
           "pattern": "monitoring",
           "name": "monitoring",
           "target": "monitoring"
-        },
-        {
-          "pattern": "kiosk",
-          "name": "kiosk",
-          "target": "kiosk"
         }
       ],
       "targets": {
@@ -167,15 +172,27 @@
           "level": 2,
           "viewType": "XML"
         },
-        "participatingClubs": {
+        "clubs": {
           "type": "View",
-          "name": "ParticipatingClubsTable",
+          "name": "ClubsTable",
           "level": 1,
           "viewType": "XML"
         },
-        "clubRegistrations": {
+        "clubDetails": {
           "type": "View",
-          "name": "ClubRegistrationsTable",
+          "name": "ClubDetails",
+          "level": 2,
+          "viewType": "XML"
+        },
+        "athletes": {
+          "type": "View",
+          "name": "AthletesTable",
+          "level": 1,
+          "viewType": "XML"
+        },
+        "athleteDetails": {
+          "type": "View",
+          "name": "AthleteDetails",
           "level": 2,
           "viewType": "XML"
         },
@@ -206,12 +223,6 @@
         "monitoring": {
           "type": "View",
           "name": "Monitoring",
-          "level": 1,
-          "viewType": "XML"
-        },
-        "kiosk": {
-          "type": "View",
-          "name": "Kiosk",
           "level": 1,
           "viewType": "XML"
         }

@@ -1,37 +1,40 @@
+import Button, { Button$PressEvent } from "sap/m/Button";
+import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
+import ListItemBase from "sap/m/ListItemBase";
+import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import Table from "sap/m/Table";
-import Formatter from "../model/Formatter";
-import BaseTableController from "./BaseTable.controller";
-import JSONModel from "sap/ui/model/json/JSONModel";
+import ViewSettingsDialog from "sap/m/ViewSettingsDialog";
 import ViewSettingsFilterItem from "sap/m/ViewSettingsFilterItem";
 import ViewSettingsItem from "sap/m/ViewSettingsItem";
-import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
-import Button, { Button$PressEvent } from "sap/m/Button";
-import FilterOperator from "sap/ui/model/FilterOperator";
-import Filter from "sap/ui/model/Filter";
-import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
-import ListItemBase from "sap/m/ListItemBase";
-import ViewSettingsDialog from "sap/m/ViewSettingsDialog";
-import Context from "sap/ui/model/Context";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
-import MessageToast from "sap/m/MessageToast";
+import Context from "sap/ui/model/Context";
+import Filter from "sap/ui/model/Filter";
+import FilterOperator from "sap/ui/model/FilterOperator";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import Formatter from "../model/Formatter";
+import BaseTableController from "./BaseTable.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class HeatsTableController extends BaseTableController {
 
-  formatter: Formatter = Formatter;
-  private readonly heatsModel: JSONModel = new JSONModel();
+  private static readonly FILTER_DIALOG: string = "de.regatta_hd.infoportal.view.HeatsFilterDialog";
+  private static readonly SORT_DIALOG: string = "de.regatta_hd.infoportal.view.HeatsSortDialog";
+  static readonly HEAT_MODEL: string = "heat";
+  private static readonly HEATS_MODEL: string = "heats";
+
+  readonly formatter: Formatter = Formatter;
 
   onInit(): void {
     super.init(super.getView()?.byId("heatsTable") as Table, "heat" /* eventBus channel */);
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
-    super.setViewModel(this.heatsModel, "heats");
+    super.setViewModel(new JSONModel(), HeatsTableController.HEATS_MODEL);
     super.getRouter()?.getRoute("heats")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadHeatsModel(), this);
 
     super.getFilters().then((filters: any) => {
-      super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsFilterDialog").then((viewSettingsDialog: ViewSettingsDialog) => {
+      super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG).then((viewSettingsDialog: ViewSettingsDialog) => {
         if (filters.dates && filters.dates.length > 1) {
           const datesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "day", text: "{i18n>common.day}" });
           filters.dates.forEach((date: any) => {
@@ -126,28 +129,26 @@ export default class HeatsTableController extends BaseTableController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadHeatsModel().then((updated: boolean) => {
-      if (updated) {
-        MessageToast.show(this.i18n("msg.dataUpdated"));
-      }
+    this.loadHeatsModel().then((succeeded: boolean) => {
+      super.showDataUpdatedMessage(succeeded);
     }).finally(() => source.setEnabled(true));
   }
 
   onItemChanged(item: any): void {
-    (super.getComponentModel("heat") as JSONModel).setData(item);
+    super.getComponentJSONModel(HeatsTableController.HEAT_MODEL).setData(item);
     super.getEventBus()?.publish("heat", "itemChanged", {});
   }
 
-  async onSortButtonPress(event: Button$PressEvent): Promise<void> {
-    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsSortDialog")).open();
+  onSortButtonPress(event: Button$PressEvent): void {
+    super.getViewSettingsDialog(HeatsTableController.SORT_DIALOG).then(dialog => dialog.open());
   }
 
-  async onFilterButtonPress(event: Button$PressEvent): Promise<void> {
-    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsFilterDialog")).open();
+  onFilterButtonPress(event: Button$PressEvent): void {
+    super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG).then(dialog => dialog.open());
   }
 
-  async onClearFilterPress(event: Button$PressEvent): Promise<void> {
-    (await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.HeatsFilterDialog")).clearFilters();
+  onClearFilterPress(event: Button$PressEvent): void {
+    super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG).then(dialog => dialog.clearFilters());
     super.clearFilters();
     super.applyFilters();
   }
@@ -166,6 +167,8 @@ export default class HeatsTableController extends BaseTableController {
 
   private async loadHeatsModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
-    return await super.updateJSONModel(this.heatsModel, `/api/regattas/${regatta.id}/heats`, this.table);
+    const url: string = `/api/regattas/${regatta.id}/heats`;
+    const heatsModel: JSONModel = super.getViewJSONModel(HeatsTableController.HEATS_MODEL);
+    return await super.updateJSONModel(heatsModel, url);
   }
 }

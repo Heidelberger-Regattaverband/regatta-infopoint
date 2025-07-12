@@ -1,37 +1,21 @@
-mod client;
+mod app;
+mod aquarius;
+mod args;
+mod error;
+mod utils;
 
-use clap::{command, Parser};
-use client::Client;
-use log::{info, LevelFilter};
-use std::{io::Result, thread};
+use app::App;
+use error::TimekeeperErr;
+use log::LevelFilter;
+use tui_logger::{init_logger, set_default_level};
 
-#[derive(Parser)]
-#[command(name = "TimeKeeper")]
-#[command(version = "0.1.0")]
-#[command(about = "A Timekeeper for Aquarius", long_about = None)]
-struct Args {
-    #[arg(long)]
-    host: String,
-    #[arg(long)]
-    port: String,
+fn main() -> Result<(), TimekeeperErr> {
+    init_logger(LevelFilter::Debug).unwrap();
+    set_default_level(LevelFilter::Trace);
+
+    let mut terminal = ratatui::init();
+    let app_result = App::new().start(&mut terminal);
+    ratatui::restore();
+
+    app_result
 }
-
-fn main() -> Result<()> {
-    env_logger::builder().filter_level(LevelFilter::Info).init();
-    let args = Args::parse();
-
-    let mut client = Client::new(args.host, args.port)?;
-    client.write("?OPEN\n")?;
-
-    info!("Receiving ...");
-    thread::spawn(move || loop {
-        let received = client.receive().unwrap();
-        if !received.is_empty() {
-            info!("Received: \"{}\"", received);
-        }
-    })
-    .join()
-    .unwrap();
-
-    Ok(())
-} // the stream is closed here

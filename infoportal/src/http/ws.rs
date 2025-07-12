@@ -2,13 +2,13 @@ use crate::http::monitoring::Monitoring;
 use actix::{Actor, ActorContext, AsyncContext, StreamHandler};
 use actix_identity::Identity;
 use actix_web::{
+    Error, HttpRequest, HttpResponse,
     error::ErrorUnauthorized,
     get,
     web::{Data, Payload},
-    Error, HttpRequest, HttpResponse,
 };
-use actix_web_actors::ws::{start, Message, ProtocolError, WebsocketContext};
-use aquarius::db::tiberius::TiberiusPool;
+use actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
+use db::tiberius::TiberiusPool;
 use log::{debug, warn};
 use prometheus::Registry;
 use std::time::{Duration, Instant};
@@ -115,7 +115,7 @@ async fn index(
 ) -> Result<HttpResponse, Error> {
     if opt_user.is_some() {
         let response = start(WsMonitoring::new(registry), &request, stream);
-        debug!("{:?}", response);
+        debug!("{response:?}");
         response
     } else {
         Err(ErrorUnauthorized("Unauthorized"))

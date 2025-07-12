@@ -10,8 +10,8 @@ sudo -i
 
 Install required packages:
 ```bash
-apt update && apt upgrade
-apt install certbot git docker.io docker-compose htop deborphan sshpass
+apt-get update && apt-get upgrade
+apt-get install certbot git docker.io docker-compose-v2 htop deborphan sshpass
 ```
 
 Request letsencrypt certificates for all hostnames:
@@ -35,11 +35,11 @@ Set hostname:
 nano /etc/hostname
 ```
 
-## [Setting up Tailscale](https://tailscale.com/kb/1187/install-ubuntu-2204)
+## [Setting up Tailscale](https://tailscale.com/kb/1476/install-ubuntu-2404)
 Add Tailscale's package signing key and repository:
 ```bash
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.noarmor.gpg | tee /usr/share/keyrings/tailscale-archive-keyring.gpg > /dev/null
-curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/jammy.tailscale-keyring.list | tee /etc/apt/sources.list.d/tailscale.list
+curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
 ```
 Install Tailscale:
 ```bash
@@ -61,7 +61,7 @@ Configure the docker container settings and start MS-SQL Server:
 ```bash
 cd docker/mssql
 nano .env
-docker-compose up -d && docker logs mssql-aquarius -f
+docker compose up -d && docker logs mssql-aquarius -f
 ```
 
 Copy database backup files into restore directory:
@@ -75,7 +75,7 @@ Configure the docker container settings and start Infoportal:
 ```bash
 cd docker/infoportal
 nano .env
-docker-compose up -d && docker logs infoportal -f
+docker compose up -d && docker logs infoportal -f
 ```
 
 ## Setup Watchtower
@@ -83,7 +83,7 @@ docker-compose up -d && docker logs infoportal -f
 Start Watchtower:
 ```bash
 cd docker/watchtower
-docker-compose up -d && docker logs watchtower -f
+docker compose up -d && docker logs watchtower -f
 ```
 
 ## Add MS-SQL User

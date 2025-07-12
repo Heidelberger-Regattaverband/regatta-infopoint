@@ -1,12 +1,12 @@
 [workspace]
-resolver = "2"
-members = ["aquarius", "infoportal", "timekeeper"]
+resolver = "3"
+members = ["db", "infoportal", "timekeeper"]
 
 [workspace.package]
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 license = "Apache-2.0"
-rust-version = "1.81.0"
+rust-version = "1.88.0"
 authors = ["Markus Ofterdinger <markus@ofterdinger.de>"]
 repository = "https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git"
 
@@ -28,6 +28,10 @@ futures = { version = "0" }
 tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
 tokio-util = { version = "0", features = ["compat"] }
 
+# Enum and string utils: https://github.com/Peternator7/strum
+strum = { version = "0" }
+strum_macros = { version = "0" }
+
 # Utils
 anyhow = { version = "1" }
 dotenv = { version = "0" }
@@ -37,6 +41,8 @@ serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1" }
 scraper = { version = "0" }
 clap = { version = "4", features = ["derive"] }
+colored = { version = "3" }
+uptime_lib = { version = "0" }
 
 [profile.release]
 # https://nnethercote.github.io/perf-book/build-configuration.html#codegen-units

@@ -1,41 +1,56 @@
+import Button, { Button$PressEvent } from "sap/m/Button";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
-import Button, { Button$PressEvent } from "sap/m/Button";
-import MessageToast from "sap/m/MessageToast";
+import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
+import ListItemBase from "sap/m/ListItemBase";
+import Context from "sap/ui/model/Context";
+import RacesTableController from "./RacesTable.controller";
+import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
+import HeatsTableController from "./HeatsTable.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class RaceDetailsController extends BaseController {
 
-  formatter: Formatter = Formatter;
+  private static readonly RACE_ENTRIES_MODEL: string = "raceEntries";
+
+  readonly formatter: Formatter = Formatter;
   // bind keyListener method to this context to have access to navigation methods
   private readonly keyListener: (event: KeyboardEvent) => void = this.onKeyDown.bind(this);
-  private readonly raceModel: JSONModel = new JSONModel();
+  private raceId?: number;
 
   onInit(): void {
     // first initialize the view
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getView()?.addEventDelegate({ onBeforeShow: this.onBeforeShow, onBeforeHide: this.onBeforeHide }, this);
-    super.setViewModel(this.raceModel, "raceRegistrations");
+    super.setViewModel(new JSONModel(), RaceDetailsController.RACE_ENTRIES_MODEL);
 
-    super.getEventBus()?.subscribe("race", "itemChanged", this.onItemChanged, this);
+    super.getRouter()?.getRoute("raceDetails")?.attachPatternMatched(
+      (event: Route$PatternMatchedEvent) => this.onPatternMatched(event), this);
+  }
+
+  private onPatternMatched(event: Route$PatternMatchedEvent): void {
+    this.raceId = (event.getParameter("arguments") as any)?.raceId;
   }
 
   private onBeforeShow(): void {
     this.loadRaceModel().then(() => {
+      super.getEventBus()?.subscribe("race", "itemChanged", this.onItemChanged, this);
       window.addEventListener("keydown", this.keyListener);
     })
   }
 
   private onBeforeHide(): void {
     window.removeEventListener("keydown", this.keyListener);
+    super.getEventBus()?.unsubscribe("race", "itemChanged", this.onItemChanged, this);
+    delete this.raceId;
   }
 
   onNavBack(): void {
-    const data = (super.getComponentModel("race") as JSONModel).getData();
-    if (data._nav && data._nav.back) {
+    const data = super.getComponentJSONModel(RacesTableController.RACE_MODEL).getData();
+    if (data._nav?.back) {
       super.navBack(data._nav.back);
     } else {
       super.navBack("races");
@@ -61,16 +76,35 @@ export default class RaceDetailsController extends BaseController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadRaceModel().then((updated: boolean) => {
-      if (updated) {
-        MessageToast.show(this.i18n("msg.dataUpdated"));
-      }
+    this.loadRaceModel().then((succeeded: boolean) => {
+      super.showDataUpdatedMessage(succeeded);
     }).finally(() => source.setEnabled(true));
   }
 
+  onEntriesItemPress(event: ListBase$SelectionChangeEvent): void {
+    const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
+    if (selectedItem) {
+      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(RaceDetailsController.RACE_ENTRIES_MODEL);
+      const entry: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
+
+      if (entry?.heats?.length > 0) {
+        const heat: any = entry.heats[0];
+        heat._nav = { disabled: true, back: "raceDetails" };
+
+        super.getComponentJSONModel(HeatsTableController.HEAT_MODEL).setData(heat);
+        super.navToHeatDetails(heat.id);
+      }
+    }
+  }
+
   private async loadRaceModel(): Promise<boolean> {
-    const race: any = (super.getComponentModel("race") as JSONModel).getData();
-    return await super.updateJSONModel(this.raceModel, `/api/races/${race.id}`, super.getView());
+    const race: any = super.getComponentJSONModel(RacesTableController.RACE_MODEL).getData();
+    if (race?.id) {
+      this.raceId = race.id;
+    };
+    const url: string = `/api/races/${this.raceId}`;
+    const entriesModel = super.getViewJSONModel(RaceDetailsController.RACE_ENTRIES_MODEL);
+    return await super.updateJSONModel(entriesModel, url);
   }
 
   private async onItemChanged(channelId: string, eventId: string, parametersMap: any): Promise<void> {
@@ -98,5 +132,4 @@ export default class RaceDetailsController extends BaseController {
         break;
     }
   }
-
 }
