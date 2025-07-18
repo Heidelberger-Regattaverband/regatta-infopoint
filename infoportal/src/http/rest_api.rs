@@ -1,5 +1,5 @@
 use crate::{
-    db::aquarius::Aquarius,
+    db::{aquarius::Aquarius},
     http::{
         auth::{Credentials, Scope as UserScope, User},
         ws,
@@ -12,6 +12,7 @@ use actix_web::{
     get, post,
     web::{Data, Json, Path, ServiceConfig},
 };
+use db::timekeeper::TimeStrip;
 use log::error;
 
 /// Path to REST API
@@ -211,6 +212,14 @@ async fn get_athlete_entries(
 }
 
 // Misc Endpoints
+
+#[get("/regattas/{regatta_id}/timestrip")]
+async fn get_timestrip(    path: Path<i32>,
+    opt_user: Option<Identity>,
+) -> Result<impl Responder, Error> {
+    let timestrip = TimeStrip::new();
+    Ok(Json(timestrip))
+}
 
 #[get("/regattas/{regatta_id}/statistics")]
 async fn get_statistics(
