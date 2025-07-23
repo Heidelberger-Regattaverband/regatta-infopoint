@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter, Result as FmtResult};
 
 pub(super) type Bib = u8;
 type Lane = u8;
-pub(super) type HeatNr = u16;
+pub(super) type HeatNr = i16;
 
 /// A message to request the list of open heats.
 #[derive(Default)]
@@ -175,7 +175,7 @@ impl Heat {
     /// * `status` - The heat status.
     /// # Returns
     /// A new heat with the given id, number, and status.
-    fn new(id: u16, number: u16, status: u8) -> Self {
+    fn new(id: u16, number: i16, status: u8) -> Self {
         Heat {
             id,
             number,

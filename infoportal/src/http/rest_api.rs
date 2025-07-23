@@ -214,10 +214,10 @@ async fn get_athlete_entries(
 // Misc Endpoints
 
 #[get("/regattas/{regatta_id}/timestrip")]
-async fn get_timestrip(    path: Path<i32>,
+async fn get_timestrip(path: Path<i32>,
     opt_user: Option<Identity>,
 ) -> Result<impl Responder, Error> {
-    let timestrip = TimeStrip::new();
+    let timestrip = TimeStrip();
     Ok(Json(timestrip))
 }
 

@@ -77,7 +77,7 @@ impl TimeStripTabPopup<'_> {
             }
             KeyCode::Enter => {
                 if self.is_valid {
-                    let heat_nr = self.input.lines()[0].parse::<u16>().unwrap();
+                    let heat_nr = self.input.lines()[0].parse::<i16>().unwrap();
                     self.input.delete_line_by_head();
                     if let Some(time_stamp) = self.selected_time_stamp.borrow().as_ref() {
                         if let Some(time_stamp) = self.time_strip.borrow_mut().assign_heat_nr(time_stamp.index, heat_nr)
@@ -99,7 +99,7 @@ impl TimeStripTabPopup<'_> {
     }
 
     fn validate(&mut self) {
-        if let Ok(heat_nr) = self.input.lines()[0].parse::<u16>() {
+        if let Ok(heat_nr) = self.input.lines()[0].parse::<i16>() {
             self.is_valid = self.heats.borrow().iter().any(|heat| heat.number == heat_nr);
         } else {
             self.is_valid = false;
