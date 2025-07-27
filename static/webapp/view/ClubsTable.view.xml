@@ -34,7 +34,7 @@
                 <Text text="{i18n>common.club}" class="bold" wrapping="false" />
               </header>
             </Column>
-            <Column id="clubAbbrCol" hAlign="Begin" width="4rem" importance="Low" popinDisplay="Inline"
+            <Column id="clubAbbrCol" hAlign="Begin" width="5rem" importance="Low" popinDisplay="Inline"
               visible="{=!${device>/system/phone}}">
               <header>
                 <Text text="{i18n>common.abbreviation}" class="bold" wrapping="false" />
