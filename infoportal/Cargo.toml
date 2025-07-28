@@ -37,7 +37,7 @@ actix-files = "0"
 actix-extensible-rate-limit = "0"
 actix-web-prom = { version = "0", features = ["process"] }
 prometheus = { version = "0", default-features = false }
-rustls = "0.23"
+rustls = "0"
 rustls-pki-types = "1"
 rustls-pemfile = "2"
 
