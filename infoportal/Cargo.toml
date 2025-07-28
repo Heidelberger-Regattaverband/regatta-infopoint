@@ -37,9 +37,9 @@ actix-files = "0"
 actix-extensible-rate-limit = "0"
 actix-web-prom = { version = "0", features = ["process"] }
 prometheus = { version = "0", default-features = false }
-rustls = "0"
-rustls-pki-types = "1"
-rustls-pemfile = "2"
+rustls.workspace = true
+rustls-pki-types.workspace = true
+rustls-pemfile.workspace = true
 
 # OpenAPI
 utoipa = { version = "5", features = ["actix_extras", "time"] }
