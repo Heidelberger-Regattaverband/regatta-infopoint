@@ -10,7 +10,7 @@ use tiberius::{Query, Row, error::Error as DbError, time::chrono::NaiveDateTime}
 #[serde(rename_all = "camelCase")]
 pub struct Athlete {
     /// The internal ID of the athlete.
-    id: i32,
+    id: u32,
 
     /// First name of the athlete.
     first_name: String,

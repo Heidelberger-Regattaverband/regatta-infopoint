@@ -13,7 +13,7 @@ pub struct Block {
     end: DateTime<Utc>,
 
     /// Number of heats in the block
-    heats: i32,
+    heats: u8,
 }
 
 impl Block {
@@ -41,7 +41,7 @@ impl Block {
         if !rows.is_empty() {
             let mut start: NaiveDateTime = rows[0].get(0).unwrap();
             let mut end: NaiveDateTime = rows[0].get(0).unwrap();
-            let mut heats: i32 = 0;
+            let mut heats: u8 = 0;
 
             if rows.len() >= 2 {
                 for i in 0..rows.len() - 1 {

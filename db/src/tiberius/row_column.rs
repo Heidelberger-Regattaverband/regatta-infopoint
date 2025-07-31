@@ -27,9 +27,23 @@ impl RowColumn<u8> for Row {
     }
 }
 
+impl RowColumn<u16> for Row {
+    fn get_column(&self, col_name: &str) -> u16 {
+        let value = self.try_get::<i16, _>(col_name).unwrap().unwrap();
+        value as u16
+    }
+}
+
 impl RowColumn<i16> for Row {
     fn get_column(&self, col_name: &str) -> i16 {
         self.try_get::<i16, _>(col_name).unwrap().unwrap()
+    }
+}
+
+impl RowColumn<u32> for Row {
+    fn get_column(&self, col_name: &str) -> u32 {
+        let value = self.try_get::<i32, _>(col_name).unwrap().unwrap();
+        value as u32
     }
 }
 
@@ -84,9 +98,23 @@ impl TryRowColumn<String> for Row {
     }
 }
 
+impl TryRowColumn<u32> for Row {
+    fn try_get_column(&self, col_name: &str) -> Option<u32> {
+        let value = self.try_get::<i32, _>(col_name).unwrap_or_default();
+        value.map(|v| v as u32)
+    }
+}
+
 impl TryRowColumn<i32> for Row {
     fn try_get_column(&self, col_name: &str) -> Option<i32> {
         self.try_get::<i32, _>(col_name).unwrap_or_default()
+    }
+}
+
+impl TryRowColumn<u16> for Row {
+    fn try_get_column(&self, col_name: &str) -> Option<u16> {
+        let value = self.try_get::<i16, _>(col_name).unwrap_or_default();
+        value.map(|v| v as u16)
     }
 }
 

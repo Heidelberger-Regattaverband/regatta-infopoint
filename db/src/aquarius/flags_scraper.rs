@@ -6,21 +6,21 @@ const BASE_URL: &str = "https://verwaltung.rudern.de";
 // donwloaded from https://verwaltung.rudern.de/flags
 const FLAGS_CONTENT: &str = include_str!("flags.html");
 
-static CLUB_FLAGS: OnceLock<HashMap<i32, ClubFlag>> = OnceLock::new();
+static CLUB_FLAGS: OnceLock<HashMap<u32, ClubFlag>> = OnceLock::new();
 
 #[derive(Debug, PartialEq)]
 pub struct ClubFlag {
     pub flag_url: String,
-    pub club_extern_id: i32,
+    pub club_extern_id: u32,
 }
 
 impl ClubFlag {
-    pub fn get(id: &i32) -> Option<&ClubFlag> {
+    pub fn get(id: &u32) -> Option<&ClubFlag> {
         CLUB_FLAGS.get_or_init(load_club_flags).get(id)
     }
 }
 
-fn load_club_flags() -> HashMap<i32, ClubFlag> {
+fn load_club_flags() -> HashMap<u32, ClubFlag> {
     let start = Instant::now();
 
     let document = Html::parse_document(FLAGS_CONTENT);
@@ -33,7 +33,7 @@ fn load_club_flags() -> HashMap<i32, ClubFlag> {
             if href.starts_with("/clubs/") {
                 for img in a.select(&img_selector) {
                     if let Some(src) = img.value().attr("src") {
-                        let club_extern_id: i32 = href
+                        let club_extern_id: u32 = href
                             .split('/')
                             .next_back()
                             .unwrap_or_default()

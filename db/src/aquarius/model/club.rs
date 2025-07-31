@@ -9,11 +9,11 @@ use tiberius::{Query, Row, error::Error as DbError, numeric::Decimal};
 #[serde(rename_all = "camelCase")]
 pub struct Club {
     /// The internal ID of the club.
-    pub id: i32,
+    pub id: u32,
 
     /// This is the ID used by the external system to identify the club.
     #[serde(skip_serializing_if = "Option::is_none")]
-    extern_id: Option<i32>,
+    extern_id: Option<u32>,
 
     /// The short name of the club.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -32,17 +32,17 @@ pub struct Club {
 
     /// The number of times this club has been a participant.
     #[serde(skip_serializing_if = "Option::is_none")]
-    participations_count: Option<i32>,
+    participations_count: Option<u32>,
 
     /// The number of athletes in this club that are participating.
     #[serde(skip_serializing_if = "Option::is_none")]
-    ahtletes_count: Option<i32>,
+    ahtletes_count: Option<u32>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    ahtletes_female_count: Option<i32>,
+    ahtletes_female_count: Option<u32>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    ahtletes_male_count: Option<i32>,
+    ahtletes_male_count: Option<u32>,
 
     /// An optional URL showing the flag of the club.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -172,7 +172,7 @@ impl Club {
 impl From<&Row> for Club {
     fn from(value: &Row) -> Self {
         let mut flag_url = None;
-        let club_extern_id = value.try_get_column("Club_ExternID");
+        let club_extern_id = TryRowColumn::<u32>::try_get_column(value, "Club_ExternID");
         if let Some(extern_id) = club_extern_id {
             if let Some(club_flag) = ClubFlag::get(&extern_id) {
                 flag_url = Some(club_flag.flag_url.clone());

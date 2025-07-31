@@ -10,7 +10,7 @@ use tiberius::Row;
 #[serde(rename_all = "camelCase")]
 pub struct BoatClass {
     /// The internal ID of the boat class.
-    id: i32,
+    id: u32,
 
     /// The caption of the boat class
     caption: String,

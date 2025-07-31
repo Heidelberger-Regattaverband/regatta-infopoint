@@ -9,7 +9,7 @@ use tiberius::Row;
 #[serde(rename_all = "camelCase")]
 pub struct AgeClass {
     /// The internal ID of the age class.
-    id: i32,
+    id: u32,
 
     /// A long and human readable caption of this age class.
     caption: String,
