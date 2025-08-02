@@ -8,34 +8,34 @@ use tiberius::{Query, Row, error::Error as DbError};
 
 #[derive(Debug, Serialize, Clone)]
 struct RacesStatistics {
-    all: i32,
-    cancelled: i32,
+    all: u32,
+    cancelled: u32,
 }
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 struct HeatsStatistics {
-    all: i32,
-    cancelled: i32,
-    scheduled: i32,
-    seeded: i32,
-    started: i32,
-    finished: i32,
-    official: i32,
+    all: u32,
+    cancelled: u32,
+    scheduled: u32,
+    seeded: u32,
+    started: u32,
+    finished: u32,
+    official: u32,
 }
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 struct EntriesStatistics {
-    all: i32,
-    cancelled: i32,
-    registering_clubs: i32,
-    athletes: i32,
-    athletes_male: i32,
-    athletes_female: i32,
-    clubs: i32,
-    seats: i32,
-    seats_cox: i32,
+    all: u32,
+    cancelled: u32,
+    registering_clubs: u32,
+    athletes: u32,
+    athletes_male: u32,
+    athletes_female: u32,
+    clubs: u32,
+    seats: u32,
+    seats_cox: u32,
 }
 
 #[derive(Debug, Serialize, Clone)]
