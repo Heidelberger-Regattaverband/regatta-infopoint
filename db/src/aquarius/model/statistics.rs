@@ -29,13 +29,13 @@ struct HeatsStatistics {
 struct EntriesStatistics {
     all: u16,
     cancelled: u16,
-    registering_clubs: u32,
-    athletes: u32,
-    athletes_male: u32,
-    athletes_female: u32,
-    clubs: u32,
-    seats: u32,
-    seats_cox: u32,
+    registering_clubs: u16,
+    athletes: u16,
+    athletes_male: u16,
+    athletes_female: u16,
+    clubs: u16,
+    seats: u16,
+    seats_cox: u16,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -109,40 +109,40 @@ impl Statistics {
           CAST((SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 0 AND Comp_Cancelled = 0 ) as SMALLINT) AS heats_scheduled,
           CAST((SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1) as SMALLINT) AS entries_all,
           CAST((SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue > 0) as SMALLINT) AS entries_cancelled,
-          (SELECT COUNT(*) FROM (
+          CAST((SELECT COUNT(*) FROM (
             SELECT DISTINCT Club_ID
             FROM  Club
             JOIN  Entry ON Entry_OwnerClub_ID_FK = Club_ID
-            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) AS entries_owner_clubs,
-          (SELECT COUNT(*) FROM (
+            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) as SMALLINT) AS entries_owner_clubs,
+          CAST((SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Athlete_ID_FK
             FROM  Entry
             JOIN  Crew   ON Crew_Entry_ID_FK = Entry_ID
             JOIN  Athlet ON Athlet_ID        = Crew_Athlete_ID_FK
-            WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'M' AND Entry_CancelValue = 0) AS count) AS entries_athletes_male,
-          (SELECT COUNT(*) FROM (
+            WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'M' AND Entry_CancelValue = 0) AS count) as SMALLINT) AS entries_athletes_male,
+          CAST((SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Athlete_ID_FK
             FROM  Entry
             JOIN  Crew   ON Crew_Entry_ID_FK = Entry_ID
             JOIN  Athlet ON Athlet_ID        = Crew_Athlete_ID_FK
-            WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'W' AND Entry_CancelValue = 0) AS count) AS entries_athletes_female,
-          (SELECT COUNT(*) FROM (
+            WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'W' AND Entry_CancelValue = 0) AS count) as SMALLINT) AS entries_athletes_female,
+          CAST((SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Club_ID_FK
             FROM  Entry
             JOIN  Crew ON Crew_Entry_ID_FK = Entry_ID
-            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) AS entries_clubs,
-          (SELECT COALESCE(SUM(BoatClass_NumRowers), 0) FROM (
+            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) as SMALLINT) AS entries_clubs,
+          CAST((SELECT COALESCE(SUM(BoatClass_NumRowers), 0) FROM (
             SELECT BoatClass_NumRowers
             FROM  Entry
             JOIN  Offer     ON Offer_ID = Entry_Race_ID_FK
             JOIN  BoatClass ON BoatClass_ID = Offer_BoatClass_ID_FK
-            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) as seats) AS entries_seats,
-          (SELECT COALESCE(SUM(BoatClass_Coxed), 0) FROM (
+            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) as seats) as SMALLINT) AS entries_seats,
+          CAST((SELECT COALESCE(SUM(BoatClass_Coxed), 0) FROM (
             SELECT BoatClass_Coxed 
             FROM  Entry
             JOIN  Offer     ON Offer_ID = Entry_Race_ID_FK
             JOIN  BoatClass ON BoatClass_ID = Offer_BoatClass_ID_FK
-            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) as seats) AS entries_seats_cox
+            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) as seats) as SMALLINT) AS entries_seats_cox
           ",
         );
         query.bind(regatta_id);
