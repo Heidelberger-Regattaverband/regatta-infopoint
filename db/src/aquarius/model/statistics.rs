@@ -8,20 +8,20 @@ use tiberius::{Query, Row, error::Error as DbError};
 
 #[derive(Debug, Serialize, Clone)]
 struct RacesStatistics {
-    all: u32,
-    cancelled: u32,
+    all: u16,
+    cancelled: u16,
 }
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 struct HeatsStatistics {
-    all: u32,
-    cancelled: u32,
-    scheduled: u32,
-    seeded: u32,
-    started: u32,
-    finished: u32,
-    official: u32,
+    all: u16,
+    cancelled: u16,
+    scheduled: u16,
+    seeded: u16,
+    started: u16,
+    finished: u16,
+    official: u16,
 }
 
 #[derive(Debug, Serialize, Clone)]
@@ -98,15 +98,15 @@ impl Statistics {
     pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let mut query = Query::new(
         "SELECT
-          (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1) AS races_all,
-          (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1 AND Offer_Cancelled > 0) AS races_cancelled,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1) AS heats_all,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_Cancelled > 0 ) AS heats_cancelled,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 4 AND Comp_Cancelled = 0 ) AS heats_official,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 5 OR  Comp_State = 6 ) AS heats_finished,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 2 AND Comp_Cancelled = 0 ) AS heats_started,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 1 AND Comp_Cancelled = 0 ) AS heats_seeded,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 0 AND Comp_Cancelled = 0 ) AS heats_scheduled,
+          CAST((SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1) as SMALLINT) AS races_all,
+          CAST((SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1 AND Offer_Cancelled > 0) as SMALLINT) AS races_cancelled,
+          CAST((SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1) as SMALLINT) AS heats_all,
+          CAST((SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_Cancelled > 0 ) as SMALLINT) AS heats_cancelled,
+          CAST((SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 4 AND Comp_Cancelled = 0 ) as SMALLINT) AS heats_official,
+          CAST((SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 5 OR  Comp_State = 6 ) as SMALLINT) AS heats_finished,
+          CAST((SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 2 AND Comp_Cancelled = 0 ) as SMALLINT) AS heats_started,
+          CAST((SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 1 AND Comp_Cancelled = 0 ) as SMALLINT) AS heats_seeded,
+          CAST((SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 0 AND Comp_Cancelled = 0 ) as SMALLINT) AS heats_scheduled,
           (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1) AS entries_all,
           (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue > 0) AS entries_cancelled,
           (SELECT COUNT(*) FROM (
