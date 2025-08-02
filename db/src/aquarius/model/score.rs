@@ -8,7 +8,7 @@ use tiberius::{Query, Row, error::Error as DbError};
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Score {
-    rank: Option<i16>,
+    rank: Option<u16>,
     points: f64,
     club: Club,
 }
