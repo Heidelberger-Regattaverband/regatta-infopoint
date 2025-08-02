@@ -26,16 +26,16 @@ pub struct ScheduleEntry {
     race_short_label: String,
 
     /// The number of boats in the race
-    boats: i32,
+    boats: u16,
 
     /// distance in meters
     distance: i16,
 
     /// The number of heats in the finals
-    final_heats: i32,
+    final_heats: u16,
 
     /// The number of heats in the forerun
-    forerun_heats: i32,
+    forerun_heats: u16,
 
     /// The date and time when the finals start
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -64,11 +64,11 @@ impl From<&Row> for ScheduleEntry {
 impl Schedule {
     pub async fn query_schedule_for_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let sql = "SELECT o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_Distance,
-            (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Boats,
-            (SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0 
-                AND c.Comp_RoundCode IN ('R', 'A', 'F')) as Final_Heats,
-            (SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0 
-                AND c.Comp_RoundCode IN ('V')) as Forerun_Heats,
+            CAST((SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as SMALLINT) as Boats,
+            CAST((SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0 
+                AND c.Comp_RoundCode IN ('R', 'A', 'F')) as SMALLINT) as Final_Heats,
+            CAST((SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0 
+                AND c.Comp_RoundCode IN ('V')) as SMALLINT) as Forerun_Heats,
             (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0 
                 AND c.Comp_RoundCode IN ('R', 'A', 'F')) as Final_Start,
             (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0 
