@@ -27,8 +27,8 @@ struct HeatsStatistics {
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
 struct EntriesStatistics {
-    all: u32,
-    cancelled: u32,
+    all: u16,
+    cancelled: u16,
     registering_clubs: u32,
     athletes: u32,
     athletes_male: u32,
@@ -107,8 +107,8 @@ impl Statistics {
           CAST((SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 2 AND Comp_Cancelled = 0 ) as SMALLINT) AS heats_started,
           CAST((SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 1 AND Comp_Cancelled = 0 ) as SMALLINT) AS heats_seeded,
           CAST((SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 0 AND Comp_Cancelled = 0 ) as SMALLINT) AS heats_scheduled,
-          (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1) AS entries_all,
-          (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue > 0) AS entries_cancelled,
+          CAST((SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1) as SMALLINT) AS entries_all,
+          CAST((SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue > 0) as SMALLINT) AS entries_cancelled,
           (SELECT COUNT(*) FROM (
             SELECT DISTINCT Club_ID
             FROM  Club
