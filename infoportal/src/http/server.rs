@@ -37,7 +37,7 @@ use tiberius::error::Error as DbError;
 
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
-const INFOPORTAL_V2: &str = concat!("{INFOPORTAL}2");
+const INFOPORTAL_V2: &str = "{INFOPORTAL}2";
 
 /// The server struct contains the configuration of the server.
 pub struct Server {}
