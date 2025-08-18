@@ -67,7 +67,7 @@
     </columns>
 
     <items>
-      <ColumnListItem type="Navigation" vAlign="Middle" highlight="{path:'heats>',formatter:'.formatter.heatStateHighlight'}">
+      <ColumnListItem type="Navigation" vAlign="Top" highlight="{path:'heats>',formatter:'.formatter.heatStateHighlight'}">
         <cells>
           <VBox>
             <Text text="{path:'heats>dateTime',formatter:'.formatter.dayTimeIsoLabel'}" visible="{=${heats>cancelled}}" class="cancelled" />

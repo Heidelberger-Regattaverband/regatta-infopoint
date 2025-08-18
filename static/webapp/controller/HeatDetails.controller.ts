@@ -1,22 +1,34 @@
+import Button, { Button$PressEvent } from "sap/m/Button";
+import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
-import Button, { Button$PressEvent } from "sap/m/Button";
+import HeatsTableController from "./HeatsTable.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class HeatDetailsController extends BaseController {
 
-  formatter: Formatter = Formatter;
+  private static readonly ENTRIES_MODEL: string = "heatEntries";
+
+  readonly formatter: Formatter = Formatter;
   // bind keyListener method to this context to have access to navigation methods
   private readonly keyListener: (event: KeyboardEvent) => void = this.onKeyDown.bind(this);
+  private heatId?: number;
 
   onInit(): void {
     // first initialize the view
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getView()?.addEventDelegate({ onBeforeShow: this.onBeforeShow, onBeforeHide: this.onBeforeHide }, this);
-    super.setViewModel(new JSONModel(), "heatRegistrations");
+    super.setViewModel(new JSONModel(), HeatDetailsController.ENTRIES_MODEL);
+
+    super.getRouter()?.getRoute("heatDetails")?.attachPatternMatched(
+      (event: Route$PatternMatchedEvent) => this.onPatternMatched(event), this);
+  }
+
+  private onPatternMatched(event: Route$PatternMatchedEvent): void {
+    this.heatId = (event.getParameter("arguments") as any)?.heatId;
   }
 
   private onBeforeShow(): void {
@@ -29,12 +41,13 @@ export default class HeatDetailsController extends BaseController {
   private onBeforeHide(): void {
     window.removeEventListener("keydown", this.keyListener);
     super.getEventBus()?.unsubscribe("heat", "itemChanged", this.onItemChanged, this);
+    delete this.heatId;
   }
 
   onNavBack(): void {
-    const data = (super.getComponentModel("heat") as JSONModel).getData();
-    if (data._nav?.back) {
-      super.navBack(data._nav.back);
+    const heat: any = super.getComponentJSONModel(HeatsTableController.HEAT_MODEL).getData();
+    if (heat._nav?.back) {
+      super.navBack(heat._nav.back);
     } else {
       super.navBack("heats");
     }
@@ -65,8 +78,12 @@ export default class HeatDetailsController extends BaseController {
   }
 
   private async loadHeatModel(): Promise<boolean> {
-    const heat: any = (super.getComponentModel("heat") as JSONModel).getData();
-    return await super.updateJSONModel(super.getViewModel("heatRegistrations") as JSONModel, `/api/heats/${heat.id}`, super.getView());
+    const heat: any = super.getComponentJSONModel(HeatsTableController.HEAT_MODEL).getData();
+    if (heat?.id) {
+      this.heatId = heat.id;
+    };
+    const url: string = `/api/heats/${this.heatId}`;
+    return await super.updateJSONModel(super.getViewJSONModel(HeatDetailsController.ENTRIES_MODEL), url);
   }
 
   private async onItemChanged(channelId: string, eventId: string, parametersMap: any): Promise<void> {

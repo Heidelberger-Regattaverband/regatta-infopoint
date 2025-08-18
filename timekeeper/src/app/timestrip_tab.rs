@@ -1,16 +1,15 @@
-use std::{cell::RefCell, rc::Rc};
-
-use crate::{
-    app::TimeStrip,
-    app::utils::{HIGHLIGHT_SYMBOL, block},
-    timestrip::{TimeStamp, TimeStampType},
+use crate::app::{
+    TimeStrip,
+    utils::{HIGHLIGHT_SYMBOL, block},
 };
+use db::timekeeper::{TimeStamp, TimeStampType};
 use ratatui::{
     buffer::Buffer,
     crossterm::event::{KeyCode, KeyEvent},
     layout::Rect,
     widgets::{HighlightSpacing, List, ListItem, ListState, StatefulWidget, Widget},
 };
+use std::{cell::RefCell, rc::Rc};
 
 const DATE_FORMAT_STR: &str = "%H:%M:%S.%3f";
 
@@ -31,7 +30,7 @@ impl Widget for &mut TimeStripTab {
             .time_stamps
             .iter()
             .rev()
-            .map(ListItem::from)
+            .map(|ts| ListItem::from(&MyTimeStamp(ts.clone())))
             .collect();
 
         // Create a List from all list items and highlight the currently selected one
@@ -97,23 +96,25 @@ impl TimeStripTab {
     }
 }
 
-impl From<&TimeStamp> for ListItem<'_> {
-    fn from(value: &TimeStamp) -> Self {
-        match value.stamp_type {
+impl From<&MyTimeStamp> for ListItem<'_> {
+    fn from(value: &MyTimeStamp) -> Self {
+        match value.0.stamp_type {
             TimeStampType::Start => ListItem::new(format!(
                 "Start {:4}:  {}  {:3}  {:2}",
-                value.index,
-                value.time.format(DATE_FORMAT_STR),
-                value.heat_nr.unwrap_or(0),
-                value.bib.unwrap_or(0)
+                value.0.index,
+                value.0.time.format(DATE_FORMAT_STR),
+                value.0.heat_nr.unwrap_or(0),
+                value.0.bib.unwrap_or(0)
             )),
             TimeStampType::Finish => ListItem::new(format!(
                 " Ziel {:4}:  {}  {:3}  {:2}",
-                value.index,
-                value.time.format(DATE_FORMAT_STR),
-                value.heat_nr.unwrap_or(0),
-                value.bib.unwrap_or(0)
+                value.0.index,
+                value.0.time.format(DATE_FORMAT_STR),
+                value.0.heat_nr.unwrap_or(0),
+                value.0.bib.unwrap_or(0)
             )),
         }
     }
 }
+
+struct MyTimeStamp(TimeStamp);

@@ -1,5 +1,5 @@
 use crate::peak_alloc::PeakAlloc;
-use aquarius::db::tiberius::TiberiusPool;
+use db::tiberius::TiberiusPool;
 use prometheus::Registry;
 use serde::Serialize;
 use serde_json::{Map, Number, Value};

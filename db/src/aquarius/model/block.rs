@@ -1,15 +1,15 @@
-use crate::db::tiberius::TiberiusPool;
+use crate::tiberius::TiberiusPool;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::Serialize;
 use tiberius::{Query, error::Error as DbError};
 
-/// A block of races.
+/// A block of heats.
 #[derive(Debug, Serialize, Clone)]
 pub struct Block {
-    /// Begin of the race block
+    /// Begin of the heat block
     begin: DateTime<Utc>,
 
-    /// End of the race block
+    /// End of the heat block
     end: DateTime<Utc>,
 
     /// Number of heats in the block
@@ -17,14 +17,19 @@ pub struct Block {
 }
 
 impl Block {
-    /// Query all race blocks of a regatta. The blocks are ordered by their begin date and time.
+    /// Query all heat blocks of the regatta. The blocks are ordered by their begin date and time.
     /// # Arguments
     /// * `regatta_id` - The unique identifier of the regatta.
+    /// * `pool` - The database connection pool.
+    /// # Returns
+    /// A vector of `Block` structs representing the blocks
+    /// # Errors
+    /// Returns an error if the query fails or if there are issues with the database connection.
     pub async fn query_blocks(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let mut query = Query::new(
             "SELECT c.Comp_DateTime FROM Comp c
-              WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_DateTime IS NOT NULL
-              ORDER BY c.Comp_DateTime ASC;",
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_DateTime IS NOT NULL
+            ORDER BY c.Comp_DateTime ASC",
         );
         query.bind(regatta_id);
 
@@ -39,7 +44,7 @@ impl Block {
             let mut heats: i32 = 0;
 
             if rows.len() >= 2 {
-                for i in 0..rows.len() - 2 {
+                for i in 0..rows.len() - 1 {
                     let current: NaiveDateTime = rows[i].get(0).unwrap();
                     let next: NaiveDateTime = rows[i + 1].get(0).unwrap();
                     heats += 1;

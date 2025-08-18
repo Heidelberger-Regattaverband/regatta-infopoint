@@ -8,14 +8,13 @@ use crate::{
         },
     },
     error::TimekeeperErr,
-    timestrip::TimeStamp,
     utils,
 };
+use db::timekeeper::TimeStamp;
 use log::{debug, error, info, trace, warn};
 use std::{
     io::Result as IoResult,
-    net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream},
-    str::FromStr,
+    net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream, ToSocketAddrs},
     sync::{
         Arc,
         atomic::{AtomicBool, Ordering::Relaxed},
@@ -48,7 +47,10 @@ impl Client {
     /// # Returns
     /// A client to communicate with Aquarius.
     pub(crate) fn new(host: &str, port: u16, timeout: u16, sender: Sender<AppEvent>) -> Self {
-        let address = SocketAddr::new(IpAddr::V4(Ipv4Addr::from_str(host).unwrap()), port);
+        let mut addrs_iter = format!("{host}:{port}").to_socket_addrs().unwrap();
+        let address = addrs_iter
+            .next()
+            .unwrap_or_else(|| SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port));
         let mut client = Client {
             comm_main: None,
             address,
@@ -154,13 +156,13 @@ impl Client {
                             }
                             Err(err) => {
                                 send_disconnected(&sender);
-                                warn!("Error spawning thread: {}", err);
+                                warn!("Error spawning thread: {err}");
                             }
                         }
                     }
                     Err(err) => {
                         send_disconnected(&sender);
-                        trace!("Error connecting to Aquarius: {}", err);
+                        trace!("Error connecting to Aquarius: {err}");
                     }
                 }
                 let elapsed = start.elapsed();
@@ -191,22 +193,22 @@ impl Client {
 fn send_connected(sender: &Sender<AppEvent>) {
     // Send a message to the application that the client is connected
     if let Err(err) = sender.send(AppEvent::Client(true)) {
-        error!("Error sending message to application: {}", err);
+        error!("Error sending message to application: {err}");
     }
 }
 
 fn send_disconnected(sender: &Sender<AppEvent>) {
     // Send a message to the application that the client is disconnected
     if let Err(err) = sender.send(AppEvent::Client(false)) {
-        error!("Error sending message to application: {}", err);
+        error!("Error sending message to application: {err}");
     }
 }
 
 fn create_stream(addr: &SocketAddr, timeout: u16) -> IoResult<TcpStream> {
-    trace!("Connecting to {} with a timeout {}", addr, timeout);
+    trace!("Connecting to {addr} with a timeout {timeout}");
     let stream = TcpStream::connect_timeout(addr, Duration::new(timeout as u64, 0))?;
     stream.set_nodelay(true)?;
-    info!("Connected to {}", addr);
+    info!("Connected to {addr}");
     Ok(stream)
 }
 
@@ -230,13 +232,13 @@ fn spawn_communication_thread(stream: &TcpStream, sender: Sender<AppEvent>) -> I
                                 }
                                 sender.send(AppEvent::Aquarius(event)).unwrap();
                             }
-                            Err(err) => warn!("{}", err),
+                            Err(err) => warn!("{err}"),
                         }
                     }
                 }
                 // an error occurred while receiving a line
                 Err(err) => {
-                    warn!("{}", err);
+                    warn!("{err}");
                     break;
                 }
             }

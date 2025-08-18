@@ -9,7 +9,7 @@
 
       <content>
 
-        <List id="registrationsList" items="{statistics>/registrations}" headerText="{i18n>statistics.registrations}">
+        <List id="entriesList" items="{statistics>/entries}" headerText="{i18n>common.entries}">
           <ObjectListItem title="{statistics>name}" number="{statistics>value}" />
         </List>
 

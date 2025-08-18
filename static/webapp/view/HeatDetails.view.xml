@@ -1,6 +1,6 @@
 <mvc:View controllerName="de.regatta_hd.infoportal.controller.HeatDetails" xmlns="sap.m" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
-    <Page title="{= ${heatRegistrations>/state} >= 4 ? ${i18n>common.result} : ${i18n>common.assignment}}" class="sapUiNoContentPadding"
+    <Page title="{= ${heatEntries>/state} >= 4 ? ${i18n>common.result} : ${i18n>common.assignment}}" class="sapUiNoContentPadding"
       showNavButton="true" navButtonPress=".onNavBack">
       <headerContent>
         <Button id="firstButton" type="Transparent" icon="sap-icon://close-command-field" press=".onFirstPress" tooltip="First"
@@ -20,10 +20,10 @@
             <f:DynamicPageTitle>
               <f:heading>
                 <Title wrapping="true"
-                  text="{path:'heatRegistrations>/race',formatter:'.formatter.nrRaceLabel'}, {path:'heatRegistrations>/',formatter:'.formatter.heatLabel'}" />
+                  text="{path:'heatEntries>/race',formatter:'.formatter.nrRaceLabel'}, {path:'heatEntries>/',formatter:'.formatter.heatLabel'}" />
               </f:heading>
               <f:expandedContent>
-                <Label text="{heatRegistrations>/race/longLabel} {heatRegistrations>/race/comment}" />
+                <Label text="{heatEntries>/race/longLabel} {heatEntries>/race/comment}" />
               </f:expandedContent>
               <f:actions>
                 <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press=".onRefreshButtonPress" type="Transparent"
@@ -38,21 +38,18 @@
             <f:DynamicPageHeader>
               <HBox>
                 <VBox class="sapUiMediumMarginEnd">
-                  <ObjectAttribute title="{i18n>common.time}"
-                    text="{path: 'heatRegistrations>/dateTime', formatter: '.formatter.dayTimeIsoLabel'}" />
-                  <ObjectAttribute title="{i18n>common.distance}"
-                    text="{path: 'heatRegistrations>/race', formatter: '.formatter.distanceLabel'}" />
-                  <ObjectAttribute title="{i18n>common.heatNr}" text="{heatRegistrations>/number}" />
+                  <ObjectAttribute title="{i18n>common.time}" text="{path:'heatEntries>/dateTime',formatter:'.formatter.dayTimeIsoLabel'}" />
+                  <ObjectAttribute title="{i18n>common.distance}" text="{path:'heatEntries>/race',formatter:'.formatter.distanceLabel'}" />
+                  <ObjectAttribute title="{i18n>common.heatNr}" text="{heatEntries>/number}" />
                 </VBox>
 
                 <VBox>
-                  <ObjectStatus title="{i18n>common.state}" text="{path:'heatRegistrations>/',formatter:'.formatter.heatStateLabel'}"
-                    state="{path:'heatRegistrations>/',formatter:'.formatter.heatStateHighlight'}" class="bold" />
-                  <ObjectAttribute title="{i18n>common.seeded}"
-                    text="{= ${heatRegistrations>/race/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
+                  <ObjectStatus title="{i18n>common.state}" text="{path:'heatEntries>/',formatter:'.formatter.heatStateLabel'}"
+                    state="{path:'heatEntries>/',formatter:'.formatter.heatStateHighlight'}" class="bold" />
+                  <ObjectAttribute title="{i18n>common.seeded}" text="{=${heatEntries>/race/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
                   <ObjectAttribute title="{i18n>common.refereeAbr}"
-                    text="{heatRegistrations>/referees/0/lastName}, {heatRegistrations>/referees/0/firstName}"
-                    visible="{= ${heatRegistrations>/referees} !== undefined }" />
+                    text="{heatEntries>/referees/0/lastName}, {heatEntries>/referees/0/firstName}"
+                    visible="{= ${heatEntries>/referees} !== undefined }" />
                 </VBox>
               </HBox>
             </f:DynamicPageHeader>
@@ -62,10 +59,10 @@
           <f:content>
             <Table autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
               sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding"
-              items="{path:'heatRegistrations>/registrations/',sorter:[{path:'result/rankSort',descending:false},{path:'bib',descending:false}]}">
+              items="{path:'heatEntries>/entries/',sorter:[{path:'result/rankSort',descending:false},{path:'bib',descending:false}]}">
 
               <columns>
-                <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline" visible="{=${heatRegistrations>/state}>=4}">
+                <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline" visible="{=${heatEntries>/state}>=4}">
                   <header>
                     <Text text="{i18n>common.rankAbr}" class="bold" wrapping="false" />
                   </header>
@@ -82,16 +79,16 @@
                 </Column>
                 <Column hAlign="Center" width="3rem" importance="Low" popinDisplay="Inline">
                   <header>
-                    <Text text="{i18n>heatRegistrationTable.column.lane}" class="bold" wrapping="false" />
+                    <Text text="{i18n>common.lane}" class="bold" wrapping="false" />
                   </header>
                 </Column>
-                <Column hAlign="End" width="5rem" importance="High" popinDisplay="Inline" visible="{=${heatRegistrations>/state}>=4}">
+                <Column hAlign="End" width="5rem" importance="High" popinDisplay="Inline" visible="{=${heatEntries>/state}>=4}">
                   <header>
-                    <Text text="{i18n>heatRegistrationTable.column.result}" class="bold sapUiTinyMarginEnd" wrapping="false" />
+                    <Text text="{i18n>common.result}" class="bold sapUiTinyMarginEnd" wrapping="false" />
                   </header>
                 </Column>
                 <!-- <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
-                  visible="{=${heatheatRegistrations>/state}>=4 &amp;&amp; ${identity>/authenticated}}">
+                  visible="{=${heatheatEntries>/state}>=4 &amp;&amp; ${identity>/authenticated}}">
                   <header>
                     <Text text="{i18n>common.points}" class="bold" wrapping="false" />
                   </header>
@@ -99,38 +96,37 @@
               </columns>
 
               <items>
-                <ColumnListItem highlight="{path:'heatRegistrations>',formatter:'.formatter.heatRegistrationHighlight'}" vAlign="Middle">
+                <ColumnListItem highlight="{path:'heatEntries>',formatter:'.formatter.heatEntryHighlight'}" vAlign="Top">
                   <cells>
-                    <Text text="{heatRegistrations>result/rankLabel}" />
+                    <Text text="{heatEntries>result/rankLabel}" />
 
                     <VBox>
-                      <Text text="{heatRegistrations>registration/bib}" visible="{=${heatRegistrations>registration/cancelled}}"
-                        class="cancelled" />
-                      <Text text="{heatRegistrations>registration/bib}" visible="{=!${heatRegistrations>registration/cancelled}}" />
+                      <Text text="{heatEntries>entry/bib}" visible="{=${heatEntries>entry/cancelled}}" class="cancelled" />
+                      <Text text="{heatEntries>entry/bib}" visible="{=!${heatEntries>entry/cancelled}}" />
                     </VBox>
 
                     <VBox>
-                      <Text class="boldCancelled" visible="{=${heatRegistrations>registration/cancelled}}"
-                        text="{parts:[{path:'heat>/race/groupMode'},{path:'heatRegistrations>registration'}],formatter:'.formatter.boatLabel'}" />
-                      <Text class="bold" visible="{=!${heatRegistrations>registration/cancelled}}"
-                        text="{parts:[{path:'heat>/race/groupMode'},{path:'heatRegistrations>registration'}],formatter:'.formatter.boatLabel'}" />
+                      <Text class="boldCancelled" visible="{=${heatEntries>entry/cancelled}}"
+                        text="{parts:[{path:'heat>/race/groupMode'},{path:'heatEntries>entry'}],formatter:'.formatter.boatLabel'}" />
+                      <Text class="bold" visible="{=!${heatEntries>entry/cancelled}}"
+                        text="{parts:[{path:'heat>/race/groupMode'},{path:'heatEntries>entry'}],formatter:'.formatter.boatLabel'}" />
 
-                      <Text text="{path:'heatRegistrations>registration/crew',formatter:'.formatter.crewLabel'}"
-                        visible="{= ${heatRegistrations>registration/cancelled}}" class="cancelled" />
-                      <Text text="{path:'heatRegistrations>registration/crew',formatter:'.formatter.crewLabel'}"
-                        visible="{= !${heatRegistrations>registration/cancelled}}" />
+                      <Text text="{path:'heatEntries>entry/crew',formatter:'.formatter.crewLabel'}"
+                        visible="{= ${heatEntries>entry/cancelled}}" class="cancelled" />
+                      <Text text="{path:'heatEntries>entry/crew',formatter:'.formatter.crewLabel'}"
+                        visible="{= !${heatEntries>entry/cancelled}}" />
                     </VBox>
 
                     <VBox>
-                      <Text text="{heatRegistrations>lane}" visible="{=${heatRegistrations>registration/cancelled}}" class="cancelled" />
-                      <Text text="{heatRegistrations>lane}" visible="{=!${heatRegistrations>registration/cancelled}}" />
+                      <Text text="{heatEntries>lane}" visible="{=${heatEntries>entry/cancelled}}" class="cancelled" />
+                      <Text text="{heatEntries>lane}" visible="{=!${heatEntries>entry/cancelled}}" />
                     </VBox>
 
                     <VBox>
-                      <Text text="{heatRegistrations>result/result}" class="bold sapUiTinyMarginEnd" />
-                      <Text text="{=${heatRegistrations>result/delta}?${heatRegistrations>result/delta}:''}" class="bold sapUiTinyMarginEnd" />
+                      <Text text="{heatEntries>result/result}" class="bold sapUiTinyMarginEnd" />
+                      <Text text="{=${heatEntries>result/delta}?${heatEntries>result/delta}:''}" class="bold sapUiTinyMarginEnd" />
                     </VBox>
-                    <!-- <Text text="{heatRegistrations>result/points}" /> -->
+                    <!-- <Text text="{heatEntries>result/points}" /> -->
                   </cells>
                 </ColumnListItem>
               </items>

@@ -1,5 +1,5 @@
-use crate::db::{
-    model::TryToEntity,
+use crate::{
+    aquarius::model::TryToEntity,
     tiberius::{RowColumn, TryRowColumn},
 };
 use serde::Serialize;
@@ -27,10 +27,7 @@ pub struct HeatResult {
 
 impl HeatResult {
     pub fn select_columns(alias: &str) -> String {
-        format!(
-            " {0}.Result_Rank, {0}.Result_Delta, {0}.Result_DisplayValue, {0}.Result_NetTime ",
-            alias
-        )
+        format!(" {alias}.Result_Rank, {alias}.Result_Delta, {alias}.Result_DisplayValue, {alias}.Result_NetTime ")
     }
 }
 

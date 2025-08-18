@@ -1,5 +1,5 @@
-use crate::db::{
-    model::{Club, Crew, Heat, Race, TryToEntity, utils},
+use crate::{
+    aquarius::model::{Club, Crew, Heat, Race, TryToEntity, utils},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use futures::future::{BoxFuture, join_all};
@@ -72,8 +72,7 @@ impl From<&Row> for Entry {
 impl Entry {
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
-            " {0}.Entry_ID, {0}.Entry_Bib, {0}.Entry_Comment, {0}.Entry_BoatNumber, {0}.Entry_GroupValue, {0}.Entry_CancelValue ",
-            alias
+            " {alias}.Entry_ID, {alias}.Entry_Bib, {alias}.Entry_Comment, {alias}.Entry_BoatNumber, {alias}.Entry_GroupValue, {alias}.Entry_CancelValue "
         )
     }
 
@@ -114,6 +113,13 @@ impl Entry {
         execute_query(pool, query, round).await
     }
 
+    /// Queries all entries for a given athlete and regatta.
+    /// # Arguments
+    /// * `regatta_id` - The unique identifier of the regatta.
+    /// * `athlete_id` - The unique identifier of the athlete.
+    /// * `pool` - The connection pool to the database.
+    /// # Returns
+    /// A vector of entries for the given athlete and regatta.
     pub async fn query_entries_of_athlete(
         regatta_id: i32,
         athlete_id: i32,
@@ -123,9 +129,9 @@ impl Entry {
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, {2}, l.Label_Short
             FROM Athlet      a
-            JOIN Club       cl ON a.Athlet_Club_ID_FK  = cl.Club_ID
             JOIN Crew       cr ON a.Athlet_ID = cr.Crew_Athlete_ID_FK
             JOIN Entry       e ON e.Entry_ID  = cr.Crew_Entry_ID_FK 
+            JOIN Club       oc ON oc.Club_ID  = e.Entry_OwnerClub_ID_FK
             JOIN EntryLabel el ON e.Entry_ID  = el.EL_Entry_ID_FK
             JOIN Label       l ON l.Label_ID  = el.EL_Label_ID_FK
             JOIN Offer       o ON o.Offer_ID  = e.Entry_Race_ID_FK
@@ -133,7 +139,7 @@ impl Entry {
                 AND el.EL_RoundFrom <= @P3 AND @P3 <= el.EL_RoundTo AND cr.Crew_RoundTo = @P3
             ORDER BY o.Offer_ID ASC",
             Entry::select_columns("e"),
-            Club::select_all_columns("cl"),
+            Club::select_all_columns("oc"),
             Race::select_columns("o")
         ));
         query.bind(regatta_id);

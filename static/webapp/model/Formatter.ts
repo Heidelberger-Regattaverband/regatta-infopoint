@@ -94,9 +94,9 @@ export default class Formatter {
     return "";
   }
 
-  static raceRegistrationHighlight(race: any, registration: any): IndicationColor {
+  static raceEntryHighlight(race: any, entry: any): IndicationColor {
     // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
-    if (registration.cancelled || race.cancelled) {
+    if (entry.cancelled || race.cancelled) {
       return IndicationColor.Indication02; // cancelled -> red
     } else {
       return IndicationColor.Indication04; // official -> green
@@ -107,7 +107,7 @@ export default class Formatter {
   // heat formatters
   // -----------------
   static heatsLabel(race: any, heats?: any[]): string {
-    if (heats) {
+    if (race.heatsCount > 0 && heats) {
       return heats.filter(heat => !heat.cancelled)
         .map(heat => {
           let label: string = Formatter.dayTimeIsoLabel(heat.dateTime) + " - " + Formatter.heatLabel(heat);
@@ -120,15 +120,15 @@ export default class Formatter {
     return Formatter.i18n("sorting.none");
   }
 
-  static heatRegistrationHighlight(heatRegistration: any): IndicationColor {
+  static heatEntryHighlight(heatEntry: any): IndicationColor {
     // https://experience.sap.com/fiori-design-web/quartz-light-colors/#indication-colors
-    if (heatRegistration.registration.cancelled) {
+    if (heatEntry.entry.cancelled) {
       return IndicationColor.Indication02; // cancelled -> red
     } else
-      if (!heatRegistration.result) {
+      if (!heatEntry.result) {
         return IndicationColor.Indication05; // no result yet -> blue
       } else
-        if (heatRegistration.result.rankSort > 0 && heatRegistration.result.rankSort <= 5) {
+        if (heatEntry.result.rankSort > 0 && heatEntry.result.rankSort <= 5) {
           return IndicationColor.Indication04; // official -> green
         } else {
           return IndicationColor.Indication02; // DNS, DNF, ... -> red
@@ -159,24 +159,24 @@ export default class Formatter {
     return label;
   }
 
-  static boatLabel(groupMode: number, registration: any): string {
-    let label: string = "" + registration.shortLabel;
+  static boatLabel(groupMode: number, entry: any): string {
+    let label: string = "" + entry.shortLabel;
     if (groupMode == 2) {
-      label += " - " + Formatter.groupValueLabel(registration.groupValue);
-      if (registration.boatNumber) {
-        label += " - Boot " + registration.boatNumber;
+      label += " - " + Formatter.groupValueLabel(entry.groupValue);
+      if (entry.boatNumber) {
+        label += " - Boot " + entry.boatNumber;
       }
-      if (registration.comment) {
-        label += "  (" + registration.comment + ")";
+      if (entry.comment) {
+        label += "  (" + entry.comment + ")";
       }
     }
     return label;
   }
 
-  static bibBoatLabel(groupMode: number, registration: any): string {
-    let label: string = Formatter.boatLabel(groupMode, registration);
-    if (registration.bib) {
-      label = registration.bib + " - " + label;
+  static bibBoatLabel(groupMode: number, entry: any): string {
+    let label: string = Formatter.boatLabel(groupMode, entry);
+    if (entry.bib) {
+      label = entry.bib + " - " + label;
     }
     return label;
   }
@@ -359,5 +359,4 @@ export default class Formatter {
   private static i18n(key: string, args?: any[]): string {
     return Formatter.bundle.getText(key, args) || key;
   }
-
 }

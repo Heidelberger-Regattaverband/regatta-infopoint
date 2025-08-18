@@ -1,6 +1,5 @@
-use crate::db::model::{Entry, Heat, utils};
-use crate::db::{
-    model::{AgeClass, BoatClass, TryToEntity},
+use crate::{
+    aquarius::model::{AgeClass, BoatClass, Entry, Heat, TryToEntity, utils},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use chrono::{DateTime, Utc};
@@ -38,7 +37,7 @@ pub struct Race {
     cancelled: bool,
 
     /// The number of entries for this race.
-    registrations_count: i32,
+    entries_count: i32,
 
     /// Indicates whether the race is seeded or not.
     seeded: bool,
@@ -60,7 +59,7 @@ pub struct Race {
 
     /// All entries for this race.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub registrations: Option<Vec<Entry>>,
+    pub entries: Option<Vec<Entry>>,
 
     /// All heats for this race.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -86,7 +85,7 @@ impl From<&Row> for Race {
             distance: row.get_column("Offer_Distance"),
             lightweight: row.get_column("Offer_IsLightweight"),
             cancelled: row.get_column("Offer_Cancelled"),
-            registrations_count: row.try_get_column("Registrations_Count").unwrap_or_default(),
+            entries_count: row.try_get_column("Entries_Count").unwrap_or_default(),
             heats_count: row.try_get_column("Heats_Count").unwrap_or_default(),
             seeded: seeded.unwrap_or_default(),
             age_class: row.try_to_entity(),
@@ -94,7 +93,7 @@ impl From<&Row> for Race {
             state: row.try_get_column("Race_State").unwrap_or_default(),
             group_mode: row.get_column("Offer_GroupMode"),
             date_time: row.try_get_column("Race_DateTime"),
-            registrations: None,
+            entries: None,
             heats: None,
         }
     }
@@ -109,14 +108,13 @@ impl TryToEntity<Race> for Row {
 impl Race {
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
-            " {0}.Offer_ID, {0}.Offer_RaceNumber, {0}.Offer_Distance, {0}.Offer_IsLightweight, {0}.Offer_Cancelled, {0}.Offer_ShortLabel, \
-            {0}.Offer_LongLabel, {0}.Offer_Comment, {0}.Offer_GroupMode, {0}.Offer_SortValue, {0}.Offer_HRV_Seeded, \
-            (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = {0}.Offer_ID AND e.Entry_CancelValue = 0) as Registrations_Count, \
-            (SELECT Count(*) FROM Comp  c WHERE c.Comp_Race_ID_FK = {0}.Offer_ID) as Heats_Count, \
-            (SELECT AVG(Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = {0}.Offer_ID AND c.Comp_Cancelled = 0) as Race_State, \
-            (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = {0}.Offer_ID AND c.Comp_Cancelled = 0) as Race_DateTime \
-        ",
-            alias
+            " {alias}.Offer_ID, {alias}.Offer_RaceNumber, {alias}.Offer_Distance, {alias}.Offer_IsLightweight, {alias}.Offer_Cancelled, {alias}.Offer_ShortLabel, \
+            {alias}.Offer_LongLabel, {alias}.Offer_Comment, {alias}.Offer_GroupMode, {alias}.Offer_SortValue, {alias}.Offer_HRV_Seeded, \
+            (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = {alias}.Offer_ID AND e.Entry_CancelValue = 0) as Entries_Count, \
+            (SELECT Count(*) FROM Comp  c WHERE c.Comp_Race_ID_FK = {alias}.Offer_ID AND c.Comp_Cancelled = 0) as Heats_Count, \
+            (SELECT AVG(Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.Offer_ID AND c.Comp_Cancelled = 0) as Race_State, \
+            (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.Offer_ID AND c.Comp_Cancelled = 0) as Race_DateTime \
+        "
         )
     }
 

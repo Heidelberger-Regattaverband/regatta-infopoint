@@ -8,7 +8,7 @@ use actix_web::{
     web::{Data, Payload},
 };
 use actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
-use aquarius::db::tiberius::TiberiusPool;
+use db::tiberius::TiberiusPool;
 use log::{debug, warn};
 use prometheus::Registry;
 use std::time::{Duration, Instant};
@@ -115,7 +115,7 @@ async fn index(
 ) -> Result<HttpResponse, Error> {
     if opt_user.is_some() {
         let response = start(WsMonitoring::new(registry), &request, stream);
-        debug!("{:?}", response);
+        debug!("{response:?}");
         response
     } else {
         Err(ErrorUnauthorized("Unauthorized"))

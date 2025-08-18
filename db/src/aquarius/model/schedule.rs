@@ -1,5 +1,5 @@
-use crate::db::{
-    model::utils,
+use crate::{
+    aquarius::model::utils,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use chrono::{DateTime, NaiveDateTime, Utc};

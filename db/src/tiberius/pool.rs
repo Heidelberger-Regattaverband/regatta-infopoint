@@ -1,8 +1,9 @@
-use crate::db::tiberius::TiberiusConnectionManager;
+use crate::tiberius::TiberiusConnectionManager;
 use bb8::{Pool, PooledConnection, State};
 use std::sync::OnceLock;
 use tiberius::Config as TiberiusConfig;
 
+/// A global instance of the Tiberius connection pool.
 static POOL: OnceLock<TiberiusPool> = OnceLock::new();
 
 #[derive(Debug)]
@@ -14,6 +15,10 @@ pub struct TiberiusPool {
 
 impl TiberiusPool {
     /// Returns the current instance of the `TiberiusPool`.
+    /// # Returns
+    /// A reference to the `TiberiusPool`.
+    /// # Panics
+    /// Panics if the `TiberiusPool` has not been initialized.
     pub fn instance() -> &'static TiberiusPool {
         POOL.get().expect("TiberiusPool not set")
     }

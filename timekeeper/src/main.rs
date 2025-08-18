@@ -2,7 +2,6 @@ mod app;
 mod aquarius;
 mod args;
 mod error;
-mod timestrip;
 mod utils;
 
 use app::App;

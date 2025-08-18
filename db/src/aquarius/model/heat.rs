@@ -1,5 +1,5 @@
-use crate::db::{
-    model::{AgeClass, BoatClass, HeatEntry, Race, Referee, TryToEntity, utils},
+use crate::{
+    aquarius::model::{AgeClass, BoatClass, HeatEntry, Race, Referee, TryToEntity, utils},
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use chrono::{DateTime, Utc};
@@ -46,7 +46,7 @@ pub struct Heat {
 
     /// The entries assigned to this heat.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub(crate) registrations: Option<Vec<HeatEntry>>,
+    pub(crate) entries: Option<Vec<HeatEntry>>,
 
     /// The round of this heat: 64 - final, 4 - Vorlauf
     pub(crate) round: i16,
@@ -55,9 +55,8 @@ pub struct Heat {
 impl Heat {
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
-            " {0}.Comp_ID, {0}.Comp_Number, {0}.Comp_RoundCode, {0}.Comp_Label, {0}.Comp_GroupValue, \
-            {0}.Comp_State, {0}.Comp_Cancelled, {0}.Comp_DateTime, {0}.Comp_Round ",
-            alias
+            " {alias}.Comp_ID, {alias}.Comp_Number, {alias}.Comp_RoundCode, {alias}.Comp_Label, {alias}.Comp_GroupValue, \
+            {alias}.Comp_State, {alias}.Comp_Cancelled, {alias}.Comp_DateTime, {alias}.Comp_Round "
         )
     }
 
@@ -164,7 +163,7 @@ impl Heat {
         )
         .await;
         heat.referees = results.0?;
-        heat.registrations = Some(results.1?);
+        heat.entries = Some(results.1?);
         Ok(heat)
     }
 }
@@ -182,7 +181,7 @@ impl From<&Row> for Heat {
             cancelled: value.get_column("Comp_Cancelled"),
             date_time: value.try_get_column("Comp_DateTime"),
             referees: vec![],
-            registrations: None,
+            entries: None,
             round: value.get_column("Comp_Round"),
         }
     }

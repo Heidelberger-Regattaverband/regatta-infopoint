@@ -21,15 +21,16 @@ export default class HeatsTableController extends BaseTableController {
 
   private static readonly FILTER_DIALOG: string = "de.regatta_hd.infoportal.view.HeatsFilterDialog";
   private static readonly SORT_DIALOG: string = "de.regatta_hd.infoportal.view.HeatsSortDialog";
+  static readonly HEAT_MODEL: string = "heat";
+  private static readonly HEATS_MODEL: string = "heats";
 
-  formatter: Formatter = Formatter;
-  private readonly heatsModel: JSONModel = new JSONModel();
+  readonly formatter: Formatter = Formatter;
 
   onInit(): void {
     super.init(super.getView()?.byId("heatsTable") as Table, "heat" /* eventBus channel */);
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
-    super.setViewModel(this.heatsModel, "heats");
+    super.setViewModel(new JSONModel(), HeatsTableController.HEATS_MODEL);
     super.getRouter()?.getRoute("heats")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadHeatsModel(), this);
 
     super.getFilters().then((filters: any) => {
@@ -134,7 +135,7 @@ export default class HeatsTableController extends BaseTableController {
   }
 
   onItemChanged(item: any): void {
-    (super.getComponentModel("heat") as JSONModel).setData(item);
+    super.getComponentJSONModel(HeatsTableController.HEAT_MODEL).setData(item);
     super.getEventBus()?.publish("heat", "itemChanged", {});
   }
 
@@ -166,6 +167,8 @@ export default class HeatsTableController extends BaseTableController {
 
   private async loadHeatsModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
-    return await super.updateJSONModel(this.heatsModel, `/api/regattas/${regatta.id}/heats`, this.table);
+    const url: string = `/api/regattas/${regatta.id}/heats`;
+    const heatsModel: JSONModel = super.getViewJSONModel(HeatsTableController.HEATS_MODEL);
+    return await super.updateJSONModel(heatsModel, url);
   }
 }

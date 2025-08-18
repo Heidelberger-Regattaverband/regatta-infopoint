@@ -1,4 +1,4 @@
-use aquarius::db::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
+use db::aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
 use std::{hash::Hash, time::Duration};
 use stretto::AsyncCache;
 use tokio::task;
@@ -85,14 +85,16 @@ pub(super) struct Caches {
     pub regatta: Cache<i32, Regatta>,
     pub races: Cache<i32, Vec<Race>>,
     pub heats: Cache<i32, Vec<Heat>>,
-    pub participating_clubs: Cache<i32, Vec<Club>>,
+    pub clubs: Cache<i32, Vec<Club>>,
     pub athletes: Cache<i32, Vec<Athlete>>,
     pub filters: Cache<i32, Filters>,
     pub schedule: Cache<i32, Schedule>,
 
+    pub club_with_aggregations: Cache<(i32, i32), Club>,
+    pub club_entries: Cache<(i32, i32), Vec<Entry>>,
+
     // caches with entries per race
     pub race_heats_entries: Cache<i32, Race>,
-    pub club_entries: Cache<(i32, i32), Vec<Entry>>,
     pub athlete: Cache<i32, Athlete>,
     pub athlete_entries: Cache<(i32, i32), Vec<Entry>>,
 
@@ -112,14 +114,17 @@ impl Caches {
             regatta: Cache::new(MAX_REGATTAS_COUNT, ttl),
             races: Cache::new(MAX_REGATTAS_COUNT, ttl),
             heats: Cache::new(MAX_REGATTAS_COUNT, ttl),
-            participating_clubs: Cache::new(MAX_REGATTAS_COUNT, ttl),
+            clubs: Cache::new(MAX_REGATTAS_COUNT, ttl),
             athletes: Cache::new(MAX_REGATTAS_COUNT, ttl),
             filters: Cache::new(MAX_REGATTAS_COUNT, ttl),
             schedule: Cache::new(MAX_REGATTAS_COUNT, ttl),
 
+            // caches with entries per club
+            club_with_aggregations: Cache::new(100, ttl),
+            club_entries: Cache::new(100, ttl),
+
             // caches with entries per race
             race_heats_entries: Cache::new(MAX_RACES_COUNT, ttl),
-            club_entries: Cache::new(MAX_RACES_COUNT, ttl),
             athlete: Cache::new(MAX_RACES_COUNT, ttl),
             athlete_entries: Cache::new(MAX_RACES_COUNT, ttl),
 

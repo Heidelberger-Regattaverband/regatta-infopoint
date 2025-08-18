@@ -21,15 +21,16 @@ export default class RacesTableController extends BaseTableController {
 
   private static readonly FILTER_DIALOG: string = "de.regatta_hd.infoportal.view.RacesFilterDialog";
   private static readonly SORT_DIALOG: string = "de.regatta_hd.infoportal.view.RacesSortDialog";
+  static readonly RACE_MODEL: string = "race";
+  private static readonly RACES_MODEL: string = "races";
 
-  formatter: Formatter = Formatter;
-  private readonly racesModel: JSONModel = new JSONModel();
+  readonly formatter: Formatter = Formatter;
 
   onInit(): void {
     super.init(super.getView()?.byId("racesTable") as Table, "race" /* eventBus channel */);
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
-    super.setViewModel(this.racesModel, "races");
+    super.setViewModel(new JSONModel(), RacesTableController.RACES_MODEL);
     super.getRouter()?.getRoute("races")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadRacesModel(), this);
 
     super.getFilters().then((filters) => {
@@ -122,7 +123,7 @@ export default class RacesTableController extends BaseTableController {
   }
 
   onItemChanged(item: any): void {
-    (super.getComponentModel("race") as JSONModel).setData(item);
+    super.getComponentJSONModel(RacesTableController.RACE_MODEL).setData(item);
     super.getEventBus()?.publish("race", "itemChanged", {});
   }
 
@@ -140,6 +141,8 @@ export default class RacesTableController extends BaseTableController {
 
   private async loadRacesModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
-    return await super.updateJSONModel(this.racesModel, `/api/regattas/${regatta.id}/races`, this.table);
+    const url: string = `/api/regattas/${regatta.id}/races`;
+    const racesModel: JSONModel = super.getViewJSONModel(RacesTableController.RACES_MODEL);
+    return await super.updateJSONModel(racesModel, url);
   }
 }

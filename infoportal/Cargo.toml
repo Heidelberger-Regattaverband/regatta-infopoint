@@ -14,7 +14,7 @@ build = "build.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-aquarius = { path = "../aquarius" }
+db = { path = "../db" }
 
 # Utils
 anyhow.workspace = true
@@ -37,9 +37,9 @@ actix-files = "0"
 actix-extensible-rate-limit = "0"
 actix-web-prom = { version = "0", features = ["process"] }
 prometheus = { version = "0", default-features = false }
-rustls = "0.23"
-rustls-pki-types = "1"
-rustls-pemfile = "2"
+rustls.workspace = true
+rustls-pki-types.workspace = true
+rustls-pemfile.workspace = true
 
 # OpenAPI
 utoipa = { version = "5", features = ["actix_extras", "time"] }
@@ -56,7 +56,7 @@ serde.workspace = true
 serde_json.workspace = true
 colored.workspace = true
 sysinfo = "0"
-uptime_lib = "0"
+uptime_lib.workspace = true
 
 [dev-dependencies]
 tokio-shared-rt = "0"

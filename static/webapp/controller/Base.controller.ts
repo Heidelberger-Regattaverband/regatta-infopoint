@@ -1,6 +1,7 @@
 import MyComponent from "de/regatta_hd/infoportal/Component";
 import * as $ from "jquery";
 import { LatLng } from "leaflet";
+import Button from "sap/m/Button";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import Control from "sap/ui/core/Control";
@@ -59,10 +60,10 @@ export default class BaseController extends Controller {
   /**
    * Convenience method for accessing a component model.
    * @param {string} [name] the model name
-   * @returns {sap.ui.model.Model} the model instance
+   * @returns {sap.ui.model.JSONModel} the model instance
    */
-  getComponentModel(name: string): Model | undefined {
-    return super.getOwnerComponent()?.getModel(name);
+  getComponentJSONModel(name: string): JSONModel {
+    return super.getOwnerComponent()?.getModel(name) as JSONModel ?? new JSONModel();
   }
 
   /**
@@ -76,19 +77,19 @@ export default class BaseController extends Controller {
   /**
    * Convenience method for getting the view model by name.
    * @param {string} [name] the model name
-   * @returns {sap.ui.model.Model} the model instance
+   * @returns {sap.ui.model.JSONModel} the model instance
    */
-  getViewModel(name: string): Model | undefined {
-    return super.getView()?.getModel(name);
+  getViewJSONModel(name: string): JSONModel {
+    return super.getView()?.getModel(name) as JSONModel ?? new JSONModel();
   }
 
   /**
    * Convenience method for setting the view model.
-   * @param {sap.ui.model.Model} model the model instance
+   * @param {sap.ui.model.JSONModel} model the model instance
    * @param {string} name the model name
    * @returns {sap.ui.mvc.View} the view instance
    */
-  setViewModel(model: Model, name: string): View | undefined {
+  setViewModel(model: JSONModel, name: string): View | undefined {
     return super.getView()?.setModel(model, name);
   }
 
@@ -111,17 +112,17 @@ export default class BaseController extends Controller {
     return this.getComponent()?.getResourceBundle().getText(key, args) ?? "";
   }
 
-  async updateJSONModel(model: JSONModel, url: string, control?: Control): Promise<boolean> {
-    control?.setBusy(true);
+  async updateJSONModel(model: JSONModel, url: string, button?: Button): Promise<boolean> {
+    button?.setBusy(true);
     try {
       await model.loadData(url);
       return true;
     } catch (error: any) {
       const params: Model$RequestFailedEventParameters = error as Model$RequestFailedEventParameters;
-      MessageBox.error((params.statusCode ?? "") + ": " + params.statusText);
+      console.error((params.statusCode ?? "") + ": " + params.statusText);
       return false;
     } finally {
-      control?.setBusy(false);
+      button?.setBusy(false);
     }
   }
 
