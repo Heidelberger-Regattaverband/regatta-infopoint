@@ -1,6 +1,10 @@
+use crate::aquarius::model::utils;
+use crate::tiberius::{RowColumn, TiberiusPool, TryRowColumn};
+use chrono::Utc;
 use chrono::{DateTime, Local};
 use std::sync::atomic::{AtomicU64, Ordering};
 use strum_macros::Display;
+use tiberius::{Query, Row, error::Error as DbError};
 
 static TIME_STAMP_INDEX: AtomicU64 = AtomicU64::new(0);
 
@@ -15,16 +19,16 @@ pub struct TimeStamp {
     pub index: u64,
 
     /// The time of the event.
-    pub time: DateTime<Local>,
+    pub time: DateTime<Utc>,
 
     /// The type of the time stamp.
     pub stamp_type: TimeStampType,
 
     /// The heat number.
-    pub heat_nr: Option<u16>,
+    pub heat_nr: Option<i16>,
 
     /// The bib number.
-    pub bib: Option<u32>,
+    pub bib: Option<u8>,
 }
 
 impl TimeStamp {
@@ -37,10 +41,35 @@ impl TimeStamp {
     pub(crate) fn now(stamp_type: TimeStampType) -> TimeStamp {
         TimeStamp {
             index: next_index(),
-            time: Local::now(),
+            time: Local::now().to_utc(),
             stamp_type,
             heat_nr: None,
             bib: None,
+        }
+    }
+
+    pub async fn query_for_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<TimeStamp>, DbError> {
+        let mut query = Query::new(format!(
+            "SELECT timestamp, event_id, type, heat_nr, bib
+             FROM HRV_Timestrip WHERE event_id = @P1 ORDER BY timestamp DESC",
+        ));
+        query.bind(regatta_id);
+
+        let mut client = pool.get().await;
+        let stream = query.query(&mut client).await?;
+        let time_stamps = utils::get_rows(stream).await?;
+        Ok(time_stamps.into_iter().map(|row| TimeStamp::from(&row)).collect())
+    }
+}
+
+impl From<&Row> for TimeStamp {
+    fn from(row: &Row) -> Self {
+        TimeStamp {
+            index: next_index(),
+            time: row.get_column("timestamp"),
+            stamp_type: TimeStampType::Start,
+            heat_nr: row.try_get_column("heat_nr"),
+            bib: row.try_get_column("bib"),
         }
     }
 }

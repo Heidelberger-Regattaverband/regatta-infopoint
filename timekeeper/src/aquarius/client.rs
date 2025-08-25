@@ -109,7 +109,7 @@ impl Client {
     pub(crate) fn send_time(&mut self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), TimekeeperErr> {
         if let Some(comm) = &mut self.comm_main {
             let request = RequestSetTime {
-                time: time_stamp.time,
+                time: time_stamp.time.into(),
                 stamp_type: time_stamp.stamp_type,
                 heat_nr: time_stamp.heat_nr.unwrap_or_default(),
                 bib,

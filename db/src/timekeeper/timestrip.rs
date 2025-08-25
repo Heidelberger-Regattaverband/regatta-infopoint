@@ -21,7 +21,7 @@ impl TimeStrip {
         self.time_stamps.push(time_stamp);
     }
 
-    pub fn assign_heat_nr(&mut self, time_stamp_index: u64, heat_nr: u16) -> Option<TimeStamp> {
+    pub fn assign_heat_nr(&mut self, time_stamp_index: u64, heat_nr: i16) -> Option<TimeStamp> {
         if let Some(time_stamp) = self
             .time_stamps
             .iter_mut()
