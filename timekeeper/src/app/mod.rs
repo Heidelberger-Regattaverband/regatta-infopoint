@@ -37,7 +37,7 @@ use std::{
     thread,
 };
 use strum::IntoEnumIterator;
-use tiberius::{AuthMethod, Config as TiberiusConfig, EncryptionLevel};
+use tiberius::{AuthMethod, Config, EncryptionLevel};
 
 pub struct App<'a> {
     // application state
@@ -64,7 +64,7 @@ impl App<'_> {
     pub(crate) async fn new() -> Self {
         let args = Args::parse();
 
-        let mut config = TiberiusConfig::new();
+        let mut config = Config::new();
         config.host(&args.db_host);
         config.port(args.db_port);
         config.database(&args.db_name);
