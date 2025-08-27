@@ -10,6 +10,12 @@ pub struct TimeStrip {
 }
 
 impl TimeStrip {
+    pub fn load(regatta_id: i32) -> Self {
+        info!("Loading time strip for regatta ID: {regatta_id}");
+        // TODO load from DB
+        TimeStrip { time_stamps: vec![] }
+    }
+
     pub fn add_new_start(&mut self) {
         let time_stamp = TimeStamp::now(Split::Start);
         info!("Start time stamp: {time_stamp:?}");

@@ -215,8 +215,13 @@ async fn get_athlete_entries(
 
 #[get("/regattas/{regatta_id}/timestrip")]
 async fn get_timestrip(path: Path<i32>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
-    let timestrip = TimeStrip { time_stamps: vec![] }; // TODO load from DB
-    Ok(Json(timestrip))
+    if opt_user.is_some() {
+        let regatta_id = path.into_inner();
+        let timestrip = TimeStrip::load(regatta_id);
+        Ok(Json(timestrip))
+    } else {
+        Err(ErrorUnauthorized("Unauthorized"))
+    }
 }
 
 #[get("/regattas/{regatta_id}/statistics")]
