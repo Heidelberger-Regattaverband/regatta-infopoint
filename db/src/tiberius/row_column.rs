@@ -75,7 +75,7 @@ impl RowColumn<DateTime<Utc>> for Row {
             Ok(value) => value
                 .map(|date_time| DateTime::from_naive_utc_and_offset(date_time, Utc))
                 .unwrap(),
-            _ => DateTime::from_utc(NaiveDateTime::from_timestamp(0, 0), Utc),
+            _ => DateTime::from_timestamp(0, 0).unwrap(),
         }
     }
 }
