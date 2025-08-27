@@ -25,9 +25,11 @@ impl TimeStrip {
     }
 
     pub fn add_new_start(&mut self) {
-        let time_stamp = TimeStamp::now(Split::Start);
+        let mut time_stamp = TimeStamp::now(Split::Start);
         info!("Start time stamp: {time_stamp:?}");
-        self.time_stamps.push(time_stamp);
+        self.time_stamps.push(time_stamp.clone());
+        let regatta_id = self.regatta_id;
+        tokio::spawn(async move { time_stamp.persist(regatta_id, TiberiusPool::instance()).await });
     }
 
     pub fn add_new_finish(&mut self) {

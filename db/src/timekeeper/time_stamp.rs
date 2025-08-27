@@ -66,7 +66,7 @@ impl TimeStamp {
         Ok(time_stamps.into_iter().map(|row| TimeStamp::from(&row)).collect())
     }
 
-    pub async fn persist(&mut self, regatta_id: i32, pool: &TiberiusPool) -> Result<(), DbError> {
+    pub(crate) async fn persist(&mut self, regatta_id: i32, pool: &TiberiusPool) -> Result<(), DbError> {
         if self.persisted {
             return Ok(());
         }
