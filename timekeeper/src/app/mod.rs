@@ -15,7 +15,7 @@ use crate::{
     error::TimekeeperErr,
 };
 use clap::Parser;
-use db::timekeeper::TimeStrip;
+use db::{tiberius::TiberiusPool, timekeeper::TimeStrip};
 use heats_tab::HeatsTab;
 use log::{debug, warn};
 use logs_tab::LogsTab;
@@ -37,6 +37,7 @@ use std::{
     thread,
 };
 use strum::IntoEnumIterator;
+use tiberius::{AuthMethod, Config as TiberiusConfig, EncryptionLevel};
 
 pub struct App<'a> {
     // application state
@@ -60,11 +61,21 @@ pub struct App<'a> {
 }
 
 impl App<'_> {
-    pub(crate) fn new() -> Self {
+    pub(crate) async fn new() -> Self {
+        let args = Args::parse();
+
+        let mut config = TiberiusConfig::new();
+        config.host(&args.db_host);
+        config.port(args.db_port);
+        config.database(&args.db_name);
+        config.authentication(AuthMethod::sql_server(&args.db_user, &args.db_password));
+        config.encryption(EncryptionLevel::NotSupported);
+
+        TiberiusPool::init(config, 1, 1).await;
+
         // Use an mpsc::channel to combine stdin events with app events
         let (sender, receiver) = mpsc::channel();
 
-        let args = Args::parse();
         let client: Client = Client::new(&args.host, args.port, args.timeout, sender.clone());
         thread::spawn(move || input_thread(sender.clone()));
 

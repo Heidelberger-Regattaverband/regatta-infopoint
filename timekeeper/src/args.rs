@@ -21,6 +21,26 @@ pub(crate) struct Args {
     /// The connection timeout in seconds
     #[arg(long, default_value = "1")]
     pub(crate) timeout: u16,
+
+    /// The database host
+    #[arg(long, default_value = "data")]
+    pub(crate) db_host: String,
+
+    /// The database port
+    #[arg(long, default_value = "1433")]
+    pub(crate) db_port: u16,
+
+    /// The database name
+    #[arg(long, default_value = "")]
+    pub(crate) db_name: String,
+
+    /// The database user
+    #[arg(long, default_value = "info")]
+    pub(crate) db_user: String,
+
+    /// The database password
+    #[arg(long, default_value = "")]
+    pub(crate) db_password: String,
 }
 
 #[cfg(test)]
