@@ -2,6 +2,7 @@ use crate::aquarius::model::utils;
 use crate::tiberius::{RowColumn, TiberiusPool, TryRowColumn};
 use chrono::Utc;
 use chrono::{DateTime, Local};
+use serde::Serialize;
 use std::sync::atomic::{AtomicU64, Ordering};
 use strum_macros::Display;
 use tiberius::{Query, Row, error::Error as DbError};
@@ -13,7 +14,7 @@ fn next_index() -> u64 {
 }
 
 /// A time stamp of an event, such as a start or finish time stamp in a race.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct TimeStamp {
     /// The index of the time stamp.
     pub index: u64,
@@ -21,8 +22,8 @@ pub struct TimeStamp {
     /// The time of the event.
     pub time: DateTime<Utc>,
 
-    /// The type of the time stamp.
-    pub stamp_type: TimeStampType,
+    /// The split of the time stamp.
+    pub split: Split,
 
     /// The heat number.
     pub heat_nr: Option<i16>,
@@ -38,21 +39,22 @@ impl TimeStamp {
     /// * `stamp_type` - The type of the time stamp.
     /// # Returns
     /// A new time stamp with the current time.
-    pub(crate) fn now(stamp_type: TimeStampType) -> TimeStamp {
+    pub(crate) fn now(split: Split) -> TimeStamp {
         TimeStamp {
             index: next_index(),
             time: Local::now().to_utc(),
-            stamp_type,
+            split,
             heat_nr: None,
             bib: None,
         }
     }
 
     pub async fn query_for_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<TimeStamp>, DbError> {
-        let mut query = Query::new(format!(
-            "SELECT timestamp, event_id, type, heat_nr, bib
-             FROM HRV_Timestrip WHERE event_id = @P1 ORDER BY timestamp DESC",
-        ));
+        let mut query = Query::new(
+            "SELECT timestamp, event_id, split_nr, heat_nr, bib
+             FROM HRV_Timestrip WHERE event_id = @P1 ORDER BY timestamp DESC"
+                .to_string(),
+        );
         query.bind(regatta_id);
 
         let mut client = pool.get().await;
@@ -67,7 +69,7 @@ impl From<&Row> for TimeStamp {
         TimeStamp {
             index: next_index(),
             time: row.get_column("timestamp"),
-            stamp_type: TimeStampType::Start,
+            split: Split::Start,
             heat_nr: row.try_get_column("heat_nr"),
             bib: row.try_get_column("bib"),
         }
@@ -75,8 +77,8 @@ impl From<&Row> for TimeStamp {
 }
 
 /// The type of a time stamp.
-#[derive(Debug, Clone, Display, Copy)]
-pub enum TimeStampType {
+#[derive(Debug, Clone, Display, Copy, Serialize)]
+pub enum Split {
     /// A start time stamp.
     #[strum(to_string = "Start")]
     Start,

@@ -1,8 +1,9 @@
-use crate::timekeeper::time_stamp::{TimeStamp, TimeStampType};
+use crate::timekeeper::time_stamp::{Split, TimeStamp};
 use log::info;
+use serde::Serialize;
 
 /// A time strip is a collection of time stamps.
-#[derive(Default)]
+#[derive(Default, Serialize)]
 pub struct TimeStrip {
     // A vector of time stamps.
     pub time_stamps: Vec<TimeStamp>,
@@ -10,13 +11,13 @@ pub struct TimeStrip {
 
 impl TimeStrip {
     pub fn add_new_start(&mut self) {
-        let time_stamp = TimeStamp::now(TimeStampType::Start);
+        let time_stamp = TimeStamp::now(Split::Start);
         info!("Start time stamp: {time_stamp:?}");
         self.time_stamps.push(time_stamp);
     }
 
     pub fn add_new_finish(&mut self) {
-        let time_stamp = TimeStamp::now(TimeStampType::Finish);
+        let time_stamp = TimeStamp::now(Split::Finish);
         info!("Finish time stamp: {time_stamp:?}");
         self.time_stamps.push(time_stamp);
     }

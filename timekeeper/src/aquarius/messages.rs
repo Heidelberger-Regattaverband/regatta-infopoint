@@ -1,6 +1,6 @@
 use crate::{error::TimekeeperErr, utils};
 use chrono::{DateTime, Local};
-use db::timekeeper::TimeStampType;
+use db::timekeeper::Split;
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 pub(super) type Bib = u8;
@@ -87,7 +87,7 @@ impl ResponseStartList {
 
 pub(super) struct RequestSetTime {
     pub(super) time: DateTime<Local>,
-    pub(super) stamp_type: TimeStampType,
+    pub(super) stamp_type: Split,
     pub(super) heat_nr: HeatNr,
     pub(super) bib: Option<Bib>,
 }
@@ -96,8 +96,8 @@ impl Display for RequestSetTime {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         let time = format!("{}", self.time.format("%H:%M:%S%.3f"));
         let split = match self.stamp_type {
-            TimeStampType::Start => 0,
-            TimeStampType::Finish => 64,
+            Split::Start => 0,
+            Split::Finish => 64,
         };
         match self.bib {
             Some(bib) => writeln!(

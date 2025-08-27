@@ -29,7 +29,7 @@ impl Widget for &mut TimeStripTabPopup<'_> {
         let block = Block::bordered()
             .border_type(BorderType::Rounded)
             .padding(Padding::horizontal(1))
-            .title(format!(" {} #{} ", ts.stamp_type, ts.index));
+            .title(format!(" {} #{} ", ts.split, ts.index));
 
         // inner popup area
         let inner_area = block.inner(area);

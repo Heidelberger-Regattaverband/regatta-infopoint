@@ -72,7 +72,9 @@ impl RowColumn<NaiveDate> for Row {
 impl RowColumn<DateTime<Utc>> for Row {
     fn get_column(&self, col_name: &str) -> DateTime<Utc> {
         match self.try_get::<NaiveDateTime, _>(col_name) {
-            Ok(value) => value.map(|date_time| DateTime::from_naive_utc_and_offset(date_time, Utc)).unwrap(),
+            Ok(value) => value
+                .map(|date_time| DateTime::from_naive_utc_and_offset(date_time, Utc))
+                .unwrap(),
             _ => DateTime::from_utc(NaiveDateTime::from_timestamp(0, 0), Utc),
         }
     }

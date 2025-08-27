@@ -1,5 +1,5 @@
 use crate::{
-    db::{aquarius::Aquarius},
+    db::aquarius::Aquarius,
     http::{
         auth::{Credentials, Scope as UserScope, User},
         ws,
@@ -214,10 +214,8 @@ async fn get_athlete_entries(
 // Misc Endpoints
 
 #[get("/regattas/{regatta_id}/timestrip")]
-async fn get_timestrip(path: Path<i32>,
-    opt_user: Option<Identity>,
-) -> Result<impl Responder, Error> {
-    let timestrip = TimeStrip();
+async fn get_timestrip(path: Path<i32>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
+    let timestrip = TimeStrip { time_stamps: vec![] }; // TODO load from DB
     Ok(Json(timestrip))
 }
 
