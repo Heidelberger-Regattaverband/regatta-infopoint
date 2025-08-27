@@ -100,18 +100,26 @@ impl From<&MyTimeStamp> for ListItem<'_> {
     fn from(value: &MyTimeStamp) -> Self {
         match value.0.split {
             Split::Start => ListItem::new(format!(
-                "Start {:4}:  {}  {:3}  {:2}",
+                "Start {:4}:  {}  {:3}  {:2} {}",
                 value.0.index,
                 value.0.time.format(DATE_FORMAT_STR),
-                value.0.heat_nr.unwrap_or(0),
-                value.0.bib.unwrap_or(0)
+                value.0.heat_nr.unwrap_or_default(),
+                value.0.bib.unwrap_or_default(),
+                match value.0.persisted {
+                    true => "\u{1F31E}",
+                    false => "\u{1F329}",
+                }
             )),
             Split::Finish => ListItem::new(format!(
-                " Ziel {:4}:  {}  {:3}  {:2}",
+                " Ziel {:4}:  {}  {:3}  {:2} {}",
                 value.0.index,
                 value.0.time.format(DATE_FORMAT_STR),
-                value.0.heat_nr.unwrap_or(0),
-                value.0.bib.unwrap_or(0)
+                value.0.heat_nr.unwrap_or_default(),
+                value.0.bib.unwrap_or_default(),
+                match value.0.persisted {
+                    true => "\u{1F31E}",
+                    false => "\u{1F329}",
+                }
             )),
         }
     }
