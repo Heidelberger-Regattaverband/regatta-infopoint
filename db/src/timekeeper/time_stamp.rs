@@ -30,6 +30,9 @@ pub struct TimeStamp {
 
     /// The bib number.
     pub bib: Option<u8>,
+
+    /// Whether the time stamp is persisted in DB or not.
+    pub persisted: bool,
 }
 
 impl TimeStamp {
@@ -46,6 +49,7 @@ impl TimeStamp {
             split,
             heat_nr: None,
             bib: None,
+            persisted: false,
         }
     }
 
@@ -71,6 +75,7 @@ impl From<&Row> for TimeStamp {
             split: Split::Start,
             heat_nr: row.try_get_column("heat_nr"),
             bib: row.try_get_column("bib"),
+            persisted: true,
         }
     }
 }
