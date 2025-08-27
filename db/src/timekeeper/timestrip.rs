@@ -33,9 +33,11 @@ impl TimeStrip {
     }
 
     pub fn add_new_finish(&mut self) {
-        let time_stamp = TimeStamp::now(Split::Finish);
+        let mut time_stamp = TimeStamp::now(Split::Finish);
         info!("Finish time stamp: {time_stamp:?}");
-        self.time_stamps.push(time_stamp);
+        self.time_stamps.push(time_stamp.clone());
+        let regatta_id = self.regatta_id;
+        tokio::spawn(async move { time_stamp.persist(regatta_id, TiberiusPool::instance()).await });
     }
 
     pub fn assign_heat_nr(&mut self, time_stamp_index: u64, heat_nr: i16) -> Option<TimeStamp> {

@@ -35,7 +35,7 @@ pub(crate) struct Args {
     pub(crate) db_name: String,
 
     /// The database user
-    #[arg(long, default_value = "info")]
+    #[arg(long, default_value = "")]
     pub(crate) db_user: String,
 
     /// The database password

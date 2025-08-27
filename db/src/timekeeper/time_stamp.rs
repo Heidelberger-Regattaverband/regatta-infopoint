@@ -22,13 +22,13 @@ pub struct TimeStamp {
     /// The time of the event.
     pub time: DateTime<Utc>,
 
-    /// The split of the time stamp.
+    /// The split of the time stamp. Either start or finish.
     pub split: Split,
 
-    /// The heat number.
+    /// The optional heat number.
     pub heat_nr: Option<i16>,
 
-    /// The bib number.
+    /// The optional bib number.
     pub bib: Option<u8>,
 
     /// Whether the time stamp is persisted in DB or not.
@@ -53,9 +53,9 @@ impl TimeStamp {
         }
     }
 
-    pub async fn query_all_for_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<TimeStamp>, DbError> {
+    pub(crate) async fn query_all_for_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<TimeStamp>, DbError> {
         let mut query = Query::new(
-            "SELECT timestamp, event_id, split_nr, heat_nr, bib FROM HRV_Timestamp WHERE event_id = @P1 ORDER BY timestamp DESC"
+            "SELECT timestamp, event_id, split_nr, heat_nr, bib FROM HRV_Timestamp WHERE event_id = @P1 ORDER BY timestamp ASC"
                 .to_string(),
         );
         query.bind(regatta_id);
@@ -93,10 +93,15 @@ impl TimeStamp {
 
 impl From<&Row> for TimeStamp {
     fn from(row: &Row) -> Self {
+        let split_nr: u8 = row.get_column("split_nr");
         TimeStamp {
             index: next_index(),
             time: row.get_column("timestamp"),
-            split: Split::Start,
+            split: match split_nr {
+                0 => Split::Start,
+                64 => Split::Finish,
+                _ => Split::Start,
+            },
             heat_nr: row.try_get_column("heat_nr"),
             bib: row.try_get_column("bib"),
             persisted: true,
