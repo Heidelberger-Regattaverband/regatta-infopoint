@@ -65,6 +65,30 @@ impl TimeStamp {
         let time_stamps = utils::get_rows(stream).await?;
         Ok(time_stamps.into_iter().map(|row| TimeStamp::from(&row)).collect())
     }
+
+    pub async fn persist(&mut self, regatta_id: i32, pool: &TiberiusPool) -> Result<(), DbError> {
+        if self.persisted {
+            return Ok(());
+        }
+
+        let mut query = Query::new(
+            "INSERT INTO HRV_Timestamp (timestamp, event_id, split_nr, heat_nr, bib) VALUES (@P1, @P2, @P3, @P4, @P5)"
+                .to_string(),
+        );
+        query.bind(self.time);
+        query.bind(regatta_id);
+        query.bind(match self.split {
+            Split::Start => 0,
+            Split::Finish => 64,
+        });
+        query.bind(self.heat_nr);
+        query.bind(self.bib);
+
+        let mut client = pool.get().await;
+        query.execute(&mut client).await?;
+        self.persisted = true;
+        Ok(())
+    }
 }
 
 impl From<&Row> for TimeStamp {

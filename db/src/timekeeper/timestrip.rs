@@ -7,8 +7,9 @@ use serde::Serialize;
 use tiberius::error::Error as DbError;
 
 /// A time strip is a collection of time stamps.
-#[derive(Default, Serialize)]
+#[derive(Serialize)]
 pub struct TimeStrip {
+    regatta_id: i32,
     // A vector of time stamps.
     pub time_stamps: Vec<TimeStamp>,
 }
@@ -17,7 +18,10 @@ impl TimeStrip {
     pub async fn load(regatta_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         info!("Loading time strip for regatta ID: {regatta_id}");
         let time_stamps = TimeStamp::query_all_for_regatta(regatta_id, pool).await?;
-        Ok(TimeStrip { time_stamps })
+        Ok(TimeStrip {
+            regatta_id,
+            time_stamps,
+        })
     }
 
     pub fn add_new_start(&mut self) {

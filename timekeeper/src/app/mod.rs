@@ -72,6 +72,7 @@ impl App<'_> {
         config.encryption(EncryptionLevel::NotSupported);
 
         TiberiusPool::init(config, 1, 1).await;
+        let timestrip = TimeStrip::load(19, TiberiusPool::instance()).await.unwrap();
 
         // Use an mpsc::channel to combine stdin events with app events
         let (sender, receiver) = mpsc::channel();
@@ -82,7 +83,7 @@ impl App<'_> {
         // shared context
         let client_rc = Rc::new(RefCell::new(client));
         let heats = Rc::new(RefCell::new(Vec::new()));
-        let time_strip = Rc::new(RefCell::new(TimeStrip::default()));
+        let time_strip = Rc::new(RefCell::new(timestrip));
         let selected_time_stamp = Rc::new(RefCell::new(None));
         let show_time_strip_popup = Rc::new(RefCell::new(false));
 
