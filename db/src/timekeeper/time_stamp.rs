@@ -51,8 +51,7 @@ impl TimeStamp {
 
     pub async fn query_all_for_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<TimeStamp>, DbError> {
         let mut query = Query::new(
-            "SELECT timestamp, event_id, split_nr, heat_nr, bib
-             FROM HRV_Timestrip WHERE event_id = @P1 ORDER BY timestamp DESC"
+            "SELECT timestamp, event_id, split_nr, heat_nr, bib FROM HRV_Timestamp WHERE event_id = @P1 ORDER BY timestamp DESC"
                 .to_string(),
         );
         query.bind(regatta_id);
