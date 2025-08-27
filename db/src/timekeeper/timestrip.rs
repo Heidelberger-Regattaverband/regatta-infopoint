@@ -1,6 +1,10 @@
-use crate::timekeeper::time_stamp::{Split, TimeStamp};
+use crate::{
+    tiberius::TiberiusPool,
+    timekeeper::time_stamp::{Split, TimeStamp},
+};
 use log::info;
 use serde::Serialize;
+use tiberius::error::Error as DbError;
 
 /// A time strip is a collection of time stamps.
 #[derive(Default, Serialize)]
@@ -10,10 +14,10 @@ pub struct TimeStrip {
 }
 
 impl TimeStrip {
-    pub fn load(regatta_id: i32) -> Self {
+    pub async fn load(regatta_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         info!("Loading time strip for regatta ID: {regatta_id}");
-        // TODO load from DB
-        TimeStrip { time_stamps: vec![] }
+        let time_stamps = TimeStamp::query_all_for_regatta(regatta_id, pool).await?;
+        Ok(TimeStrip { time_stamps })
     }
 
     pub fn add_new_start(&mut self) {

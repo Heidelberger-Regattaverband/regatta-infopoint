@@ -12,7 +12,7 @@ use actix_web::{
     get, post,
     web::{Data, Json, Path, ServiceConfig},
 };
-use db::timekeeper::TimeStrip;
+use db::{tiberius::TiberiusPool, timekeeper::TimeStrip};
 use log::error;
 
 /// Path to REST API
@@ -217,7 +217,12 @@ async fn get_athlete_entries(
 async fn get_timestrip(path: Path<i32>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     if opt_user.is_some() {
         let regatta_id = path.into_inner();
-        let timestrip = TimeStrip::load(regatta_id);
+        let timestrip = TimeStrip::load(regatta_id, TiberiusPool::instance())
+            .await
+            .map_err(|err| {
+                error!("{err}");
+                ErrorInternalServerError("Internal Server Error")
+            })?;
         Ok(Json(timestrip))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
