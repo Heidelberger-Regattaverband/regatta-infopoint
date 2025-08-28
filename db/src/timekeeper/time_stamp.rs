@@ -39,7 +39,7 @@ impl TimeStamp {
     /// Create a new time stamp with the current time in UTC.
     ///
     /// # Arguments
-    /// * `stamp_type` - The type of the time stamp.
+    /// * `split` - The type of the time stamp.
     /// # Returns
     /// A new time stamp with the current time.
     pub(crate) fn now(split: Split) -> TimeStamp {
@@ -64,6 +64,15 @@ impl TimeStamp {
         let stream = query.query(&mut client).await?;
         let time_stamps = utils::get_rows(stream).await?;
         Ok(time_stamps.into_iter().map(|row| TimeStamp::from(&row)).collect())
+    }
+
+    pub(crate) async fn delete(&self, pool: &TiberiusPool) -> Result<(), DbError> {
+        let mut query = Query::new("DELETE FROM HRV_Timestamp WHERE timestamp = @P1".to_string());
+        query.bind(self.time);
+
+        let mut client = pool.get().await;
+        query.execute(&mut client).await?;
+        Ok(())
     }
 
     pub(crate) async fn persist(&mut self, regatta_id: i32, pool: &TiberiusPool) -> Result<(), DbError> {

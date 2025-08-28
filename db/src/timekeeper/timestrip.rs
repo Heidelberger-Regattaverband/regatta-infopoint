@@ -51,4 +51,11 @@ impl TimeStrip {
         }
         None
     }
+
+    pub fn delete_time_stamp(&mut self, time_stamp: TimeStamp) {
+        if let Some(pos) = self.time_stamps.iter().position(|ts| ts.index == time_stamp.index) {
+            let time_stamp = self.time_stamps.remove(pos);
+            tokio::spawn(async move { time_stamp.delete(TiberiusPool::instance()).await });
+        }
+    }
 }

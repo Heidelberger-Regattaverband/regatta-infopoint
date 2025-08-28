@@ -72,6 +72,12 @@ impl TimeStripTab {
                     *self.show_time_strip_popup.borrow_mut() = true;
                 }
             }
+            KeyCode::Delete => {
+                // delete the selected time stamp
+                if let Some(time_stamp) = self.selected_time_stamp.borrow_mut().take() {
+                    self.time_strip.borrow_mut().delete_time_stamp(time_stamp);
+                }
+            }
             _ => {}
         }
         self.update_selected_time_stamp();
@@ -106,7 +112,7 @@ impl From<&MyTimeStamp> for ListItem<'_> {
                 value.0.heat_nr.unwrap_or_default(),
                 value.0.bib.unwrap_or_default(),
                 match value.0.persisted {
-                    true => "\u{1F31E}",
+                    true => "\u{1F506}",
                     false => "\u{1F329}",
                 }
             )),
@@ -117,7 +123,7 @@ impl From<&MyTimeStamp> for ListItem<'_> {
                 value.0.heat_nr.unwrap_or_default(),
                 value.0.bib.unwrap_or_default(),
                 match value.0.persisted {
-                    true => "\u{1F31E}",
+                    true => "\u{1F506}",
                     false => "\u{1F329}",
                 }
             )),
