@@ -216,13 +216,11 @@ async fn get_athlete_entries(
 #[get("/regattas/{regatta_id}/timestrip")]
 async fn get_timestrip(path: Path<i32>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     if opt_user.is_some() {
-        let regatta_id = path.into_inner();
-        let timestrip = TimeStrip::load(regatta_id, TiberiusPool::instance())
-            .await
-            .map_err(|err| {
-                error!("{err}");
-                ErrorInternalServerError(err)
-            })?;
+        // let regatta_id = path.into_inner();
+        let timestrip = TimeStrip::load(TiberiusPool::instance()).await.map_err(|err| {
+            error!("{err}");
+            ErrorInternalServerError(err)
+        })?;
         Ok(Json(timestrip.time_stamps))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))

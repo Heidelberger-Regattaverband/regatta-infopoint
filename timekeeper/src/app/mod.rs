@@ -72,7 +72,7 @@ impl App<'_> {
         config.encryption(EncryptionLevel::NotSupported);
 
         TiberiusPool::init(config, 1, 1).await;
-        let timestrip = TimeStrip::load(19, TiberiusPool::instance()).await.unwrap();
+        let timestrip = TimeStrip::load(TiberiusPool::instance()).await.unwrap();
 
         // Use an mpsc::channel to combine stdin events with app events
         let (sender, receiver) = mpsc::channel();

@@ -1,4 +1,5 @@
 use crate::{
+    aquarius::model::Regatta,
     tiberius::TiberiusPool,
     timekeeper::time_stamp::{Split, TimeStamp},
 };
@@ -13,11 +14,12 @@ pub struct TimeStrip {
 }
 
 impl TimeStrip {
-    pub async fn load(regatta_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
-        info!("Loading time strip for regatta ID: {regatta_id}");
-        let time_stamps = TimeStamp::query_all_for_regatta(regatta_id, pool).await?;
+    pub async fn load(pool: &TiberiusPool) -> Result<Self, DbError> {
+        let regatta = Regatta::query_active_regatta(pool).await?;
+        info!("Loading time strip for regatta ID: {0}", regatta.id);
+        let time_stamps = TimeStamp::query_all_for_regatta(regatta.id, pool).await?;
         Ok(TimeStrip {
-            regatta_id,
+            regatta_id: regatta.id,
             time_stamps,
         })
     }
@@ -27,7 +29,10 @@ impl TimeStrip {
         info!("Start time stamp: {time_stamp:?}");
         self.time_stamps.push(time_stamp.clone());
         let regatta_id = self.regatta_id;
-        tokio::spawn(async move { time_stamp.persist(regatta_id, TiberiusPool::instance()).await });
+        tokio::spawn(async move {
+            time_stamp.persist(regatta_id, TiberiusPool::instance()).await.unwrap();
+            time_stamp.persisted = true;
+        });
     }
 
     pub fn add_new_finish(&mut self) {
@@ -35,7 +40,10 @@ impl TimeStrip {
         info!("Finish time stamp: {time_stamp:?}");
         self.time_stamps.push(time_stamp.clone());
         let regatta_id = self.regatta_id;
-        tokio::spawn(async move { time_stamp.persist(regatta_id, TiberiusPool::instance()).await });
+        tokio::spawn(async move {
+            time_stamp.persist(regatta_id, TiberiusPool::instance()).await.unwrap();
+            time_stamp.persisted = true;
+        });
     }
 
     pub fn assign_heat_nr(&mut self, time_stamp_index: u64, heat_nr: i16) -> Option<TimeStamp> {
