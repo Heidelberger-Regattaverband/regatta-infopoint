@@ -213,10 +213,9 @@ async fn get_athlete_entries(
 
 // Misc Endpoints
 
-#[get("/regattas/{regatta_id}/timestrip")]
-async fn get_timestrip(path: Path<i32>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
+#[get("/regattas/active/timestrip")]
+async fn get_timestrip(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     if opt_user.is_some() {
-        // let regatta_id = path.into_inner();
         let timestrip = TimeStrip::load(TiberiusPool::instance()).await.map_err(|err| {
             error!("{err}");
             ErrorInternalServerError(err)
