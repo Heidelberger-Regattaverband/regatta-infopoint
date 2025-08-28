@@ -223,7 +223,7 @@ async fn get_timestrip(path: Path<i32>, opt_user: Option<Identity>) -> Result<im
                 error!("{err}");
                 ErrorInternalServerError(err)
             })?;
-        Ok(Json(timestrip))
+        Ok(Json(timestrip.time_stamps))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
     }

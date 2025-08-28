@@ -3,11 +3,9 @@ use crate::{
     timekeeper::time_stamp::{Split, TimeStamp},
 };
 use log::info;
-use serde::Serialize;
 use tiberius::error::Error as DbError;
 
 /// A time strip is a collection of time stamps.
-#[derive(Serialize)]
 pub struct TimeStrip {
     regatta_id: i32,
     // A vector of time stamps.
@@ -52,10 +50,13 @@ impl TimeStrip {
         None
     }
 
-    pub fn delete_time_stamp(&mut self, time_stamp: TimeStamp) {
+    pub fn delete(&mut self, time_stamp: TimeStamp) {
         if let Some(pos) = self.time_stamps.iter().position(|ts| ts.index == time_stamp.index) {
-            let time_stamp = self.time_stamps.remove(pos);
-            tokio::spawn(async move { time_stamp.delete(TiberiusPool::instance()).await });
+            let mut time_stamp = self.time_stamps.remove(pos);
+            tokio::spawn(async move {
+                time_stamp.delete(TiberiusPool::instance()).await.unwrap();
+                time_stamp.persisted = false;
+            });
         }
     }
 }
