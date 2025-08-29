@@ -123,7 +123,7 @@ impl TimeStamp {
     pub(crate) async fn update(&mut self, regatta_id: i32, pool: &TiberiusPool) -> Result<(), DbError> {
         if !self.persisted {
             let mut query = Query::new(
-            "UPDATE HRV_Timestamp SET timestamp = @P1, event_id = @P2, split_nr = @P3, heat_nr = @P4, bib = @P5 WHERE timestamp = @P1"
+            "UPDATE HRV_Timestamp SET event_id = @P2, split_nr = @P3, heat_nr = @P4, bib = @P5 WHERE timestamp = @P1"
                 .to_string(),        );
             query.bind(self.time);
             query.bind(regatta_id);
