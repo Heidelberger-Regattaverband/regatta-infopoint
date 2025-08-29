@@ -104,14 +104,14 @@ impl TimeStripTab {
 
 impl From<&MyTimeStamp> for ListItem<'_> {
     fn from(value: &MyTimeStamp) -> Self {
-        let prefix: String = (&value.0.split).into();
+        let prefix: String = (value.0.split()).into();
         ListItem::new(format!(
             "{:5} {:4}:  {}  {:3}  {:2} {}",
             prefix,
             value.0.index,
             value.0.time.format(DATE_FORMAT_STR),
-            value.0.heat_nr.unwrap_or_default(),
-            value.0.bib.unwrap_or_default(),
+            value.0.heat_nr().unwrap_or_default(),
+            value.0.bib_opt().unwrap_or_default(),
             match value.0.is_persisted() {
                 true => "\u{1F506}",
                 false => "\u{1F329}",

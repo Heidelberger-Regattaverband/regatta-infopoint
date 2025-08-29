@@ -110,8 +110,8 @@ impl Client {
         if let Some(comm) = &mut self.comm_main {
             let request = RequestSetTime {
                 time: time_stamp.time.into(),
-                split: time_stamp.split.clone(),
-                heat_nr: time_stamp.heat_nr.unwrap_or_default(),
+                split: time_stamp.split().clone(),
+                heat_nr: time_stamp.heat_nr().unwrap_or_default(),
                 bib,
             };
             comm.write(&request.to_string()).map_err(TimekeeperErr::IoError)?;

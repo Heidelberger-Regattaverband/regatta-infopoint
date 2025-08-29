@@ -23,13 +23,13 @@ pub struct TimeStamp {
     pub time: DateTime<Utc>,
 
     /// The split of the time stamp. Either start or finish.
-    pub split: Split,
+    split: Split,
 
     /// The optional heat number.
-    pub heat_nr: Option<i16>,
+    heat_nr: Option<i16>,
 
     /// The optional bib number.
-    pub bib: Option<u8>,
+    bib: Option<u8>,
 
     /// Whether the time stamp is persisted in DB or not.
     persisted: bool,
@@ -53,6 +53,10 @@ impl TimeStamp {
         }
     }
 
+    pub fn split(&self) -> &Split {
+        &self.split
+    }
+
     pub fn is_persisted(&self) -> bool {
         self.persisted
     }
@@ -62,9 +66,17 @@ impl TimeStamp {
         self.persisted = false;
     }
 
+    pub fn heat_nr(&self) -> Option<i16> {
+        self.heat_nr
+    }
+
     pub fn set_bib(&mut self, bib: u8) {
         self.bib = Some(bib);
         self.persisted = false;
+    }
+
+    pub fn bib_opt(&self) -> Option<u8> {
+        self.bib
     }
 
     pub(crate) async fn query_all_for_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<TimeStamp>, DbError> {
