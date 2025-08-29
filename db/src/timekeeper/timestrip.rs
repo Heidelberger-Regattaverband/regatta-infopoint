@@ -50,9 +50,18 @@ impl TimeStrip {
         });
     }
 
-    pub fn assign_heat_nr(&mut self, time_stamp: &TimeStamp, heat_nr: i16) -> Option<TimeStamp> {
-        if let Some(time_stamp) = self.time_stamps.iter_mut().find(|ts| ts.index == time_stamp.index) {
-            time_stamp.heat_nr = Some(heat_nr);
+    pub fn set_heat_nr(&mut self, time_stamp: &TimeStamp, heat_nr: i16) -> Option<TimeStamp> {
+        if let Some(ts) = self.time_stamps.iter_mut().find(|ts| ts.time == time_stamp.time) {
+            ts.heat_nr = Some(heat_nr);
+            let result = Some(ts.clone());
+            return result;
+        }
+        None
+    }
+
+    pub fn set_bib(&mut self, time_stamp: &TimeStamp, bib: u8) -> Option<TimeStamp> {
+        if let Some(time_stamp) = self.time_stamps.iter_mut().find(|ts| ts.time == time_stamp.time) {
+            time_stamp.bib = Some(bib);
             return Some(time_stamp.clone());
         }
         None
