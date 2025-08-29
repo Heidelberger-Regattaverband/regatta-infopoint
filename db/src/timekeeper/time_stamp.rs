@@ -32,7 +32,7 @@ pub struct TimeStamp {
     pub bib: Option<u8>,
 
     /// Whether the time stamp is persisted in DB or not.
-    pub(crate) persisted: bool,
+    persisted: bool,
 }
 
 impl TimeStamp {

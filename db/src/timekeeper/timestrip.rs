@@ -34,7 +34,6 @@ impl TimeStrip {
         let pool = self.pool;
         tokio::spawn(async move {
             time_stamp.persist(regatta_id, pool).await.unwrap();
-            time_stamp.persisted = true;
         });
     }
 
@@ -46,7 +45,6 @@ impl TimeStrip {
         let pool = self.pool;
         tokio::spawn(async move {
             time_stamp.persist(regatta_id, pool).await.unwrap();
-            time_stamp.persisted = true;
         });
     }
 
