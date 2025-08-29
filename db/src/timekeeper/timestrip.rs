@@ -50,8 +50,7 @@ impl TimeStrip {
 
     pub fn set_heat_nr(&mut self, time_stamp: &TimeStamp, heat_nr: i16) -> Option<TimeStamp> {
         if let Some(time_stamp) = self.time_stamps.iter_mut().find(|ts| ts.time == time_stamp.time) {
-            time_stamp.heat_nr = Some(heat_nr);
-            time_stamp.persisted = false;
+            time_stamp.set_heat_nr(heat_nr);
             let mut ts_clone = time_stamp.clone();
             let regatta_id = self.regatta_id;
             let pool = self.pool;
@@ -65,8 +64,7 @@ impl TimeStrip {
 
     pub fn set_bib(&mut self, time_stamp: &TimeStamp, bib: u8) -> Option<TimeStamp> {
         if let Some(time_stamp) = self.time_stamps.iter_mut().find(|ts| ts.time == time_stamp.time) {
-            time_stamp.bib = Some(bib);
-            time_stamp.persisted = false;
+            time_stamp.set_bib(bib);
             let mut ts_clone = time_stamp.clone();
             let regatta_id = self.regatta_id;
             let pool = self.pool;
