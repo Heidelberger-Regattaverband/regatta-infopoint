@@ -24,13 +24,11 @@ pub(crate) struct TimeStripTab {
 
 impl Widget for &mut TimeStripTab {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let items: Vec<ListItem> = self
-            .time_strip
-            .borrow()
-            .time_stamps
+        let time_stamps = &self.time_strip.borrow().time_stamps;
+        let items: Vec<ListItem> = time_stamps
             .iter()
             .rev()
-            .map(|ts| ListItem::from(&MyTimeStamp(ts.clone())))
+            .map(|ts| ListItem::from(MyTimeStamp(ts)))
             .collect();
 
         // Create a List from all list items and highlight the currently selected one
@@ -102,8 +100,8 @@ impl TimeStripTab {
     }
 }
 
-impl From<&MyTimeStamp> for ListItem<'_> {
-    fn from(value: &MyTimeStamp) -> Self {
+impl<'a> From<MyTimeStamp<'a>> for ListItem<'a> {
+    fn from(value: MyTimeStamp<'a>) -> Self {
         let prefix: String = (value.0.split()).into();
         ListItem::new(format!(
             "{:5} {:4}:  {}  {:3}  {:2} {}",
@@ -120,4 +118,4 @@ impl From<&MyTimeStamp> for ListItem<'_> {
     }
 }
 
-struct MyTimeStamp(TimeStamp);
+struct MyTimeStamp<'a>(&'a TimeStamp);
