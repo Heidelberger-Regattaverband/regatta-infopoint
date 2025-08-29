@@ -32,7 +32,7 @@ pub struct TimeStamp {
     pub bib: Option<u8>,
 
     /// Whether the time stamp is persisted in DB or not.
-    persisted: bool,
+    pub(crate) persisted: bool,
 }
 
 impl TimeStamp {
@@ -80,23 +80,38 @@ impl TimeStamp {
     }
 
     pub(crate) async fn persist(&mut self, regatta_id: i32, pool: &TiberiusPool) -> Result<(), DbError> {
-        if self.persisted {
-            return Ok(());
-        }
-
-        let mut query = Query::new(
+        if !self.persisted {
+            let mut query = Query::new(
             "INSERT INTO HRV_Timestamp (timestamp, event_id, split_nr, heat_nr, bib) VALUES (@P1, @P2, @P3, @P4, @P5)"
                 .to_string(),
         );
-        query.bind(self.time);
-        query.bind(regatta_id);
-        query.bind(u8::from(&self.split));
-        query.bind(self.heat_nr);
-        query.bind(self.bib);
+            query.bind(self.time);
+            query.bind(regatta_id);
+            query.bind(u8::from(&self.split));
+            query.bind(self.heat_nr);
+            query.bind(self.bib);
 
-        let mut client = pool.get().await;
-        query.execute(&mut client).await?;
-        self.persisted = true;
+            let mut client = pool.get().await;
+            query.execute(&mut client).await?;
+            self.persisted = true;
+        }
+        Ok(())
+    }
+
+    pub(crate) async fn update(&mut self, regatta_id: i32, pool: &TiberiusPool) -> Result<(), DbError> {
+        if !self.persisted {
+            let mut query = Query::new(
+            "UPDATE HRV_Timestamp SET timestamp = @P1, event_id = @P2, split_nr = @P3, heat_nr = @P4, bib = @P5 WHERE timestamp = @P1"
+                .to_string(),        );
+            query.bind(self.time);
+            query.bind(regatta_id);
+            query.bind(u8::from(&self.split));
+            query.bind(self.heat_nr);
+            query.bind(self.bib);
+            let mut client = pool.get().await;
+            query.execute(&mut client).await?;
+            self.persisted = true;
+        }
         Ok(())
     }
 }
