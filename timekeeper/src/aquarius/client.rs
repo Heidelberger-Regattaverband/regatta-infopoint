@@ -110,7 +110,7 @@ impl Client {
         if let Some(comm) = &mut self.comm_main {
             let request = RequestSetTime {
                 time: time_stamp.time.into(),
-                stamp_type: time_stamp.split,
+                split: time_stamp.split.clone(),
                 heat_nr: time_stamp.heat_nr.unwrap_or_default(),
                 bib,
             };

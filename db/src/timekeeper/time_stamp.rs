@@ -90,10 +90,7 @@ impl TimeStamp {
         );
         query.bind(self.time);
         query.bind(regatta_id);
-        query.bind(match self.split {
-            Split::Start => 0,
-            Split::Finish => 64,
-        });
+        query.bind(self.split.value());
         query.bind(self.heat_nr);
         query.bind(self.bib);
 
@@ -110,11 +107,7 @@ impl From<&Row> for TimeStamp {
         TimeStamp {
             index: next_index(),
             time: row.get_column("timestamp"),
-            split: match split_nr {
-                0 => Split::Start,
-                64 => Split::Finish,
-                _ => Split::Start,
-            },
+            split: Split::from(split_nr),
             heat_nr: row.try_get_column("heat_nr"),
             bib: row.try_get_column("bib"),
             persisted: true,
@@ -123,7 +116,7 @@ impl From<&Row> for TimeStamp {
 }
 
 /// The type of a time stamp.
-#[derive(Debug, Clone, Display, Copy, Serialize)]
+#[derive(Debug, Clone, Display, Serialize)]
 pub enum Split {
     /// A start time stamp.
     #[strum(to_string = "Start")]
@@ -132,4 +125,23 @@ pub enum Split {
     /// A finish time stamp.
     #[strum(to_string = "Ziel")]
     Finish,
+}
+
+impl Split {
+    pub fn value(&self) -> u8 {
+        match self {
+            Split::Start => 0,
+            Split::Finish => 64,
+        }
+    }
+}
+
+impl From<u8> for Split {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => Split::Start,
+            64 => Split::Finish,
+            _ => Split::Start,
+        }
+    }
 }

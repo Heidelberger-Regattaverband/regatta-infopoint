@@ -87,7 +87,7 @@ impl ResponseStartList {
 
 pub(super) struct RequestSetTime {
     pub(super) time: DateTime<Local>,
-    pub(super) stamp_type: Split,
+    pub(super) split: Split,
     pub(super) heat_nr: HeatNr,
     pub(super) bib: Option<Bib>,
 }
@@ -95,16 +95,9 @@ pub(super) struct RequestSetTime {
 impl Display for RequestSetTime {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         let time = format!("{}", self.time.format("%H:%M:%S%.3f"));
-        let split = match self.stamp_type {
-            Split::Start => 0,
-            Split::Finish => 64,
-        };
+        let split = self.split.value();
         match self.bib {
-            Some(bib) => writeln!(
-                f,
-                "TIME time={} comp={} split={} bib={}",
-                time, self.heat_nr, split, bib
-            ),
+            Some(bib) => writeln!(f, "TIME time={time} comp={} split={split} bib={bib}", self.heat_nr),
             _ => writeln!(f, "TIME time={} comp={} split={}", time, self.heat_nr, split),
         }
     }
