@@ -95,10 +95,10 @@ pub(super) struct RequestSetTime {
 impl Display for RequestSetTime {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         let time = format!("{}", self.time.format("%H:%M:%S%.3f"));
-        let split = self.split.value();
+        let split = u8::from(&self.split);
         match self.bib {
             Some(bib) => writeln!(f, "TIME time={time} comp={} split={split} bib={bib}", self.heat_nr),
-            _ => writeln!(f, "TIME time={} comp={} split={}", time, self.heat_nr, split),
+            _ => writeln!(f, "TIME time={time} comp={} split={split}", self.heat_nr),
         }
     }
 }

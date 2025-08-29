@@ -90,7 +90,7 @@ impl TimeStamp {
         );
         query.bind(self.time);
         query.bind(regatta_id);
-        query.bind(self.split.value());
+        query.bind(u8::from(&self.split));
         query.bind(self.heat_nr);
         query.bind(self.bib);
 
@@ -127,21 +127,30 @@ pub enum Split {
     Finish,
 }
 
-impl Split {
-    pub fn value(&self) -> u8 {
-        match self {
-            Split::Start => 0,
-            Split::Finish => 64,
-        }
-    }
-}
-
 impl From<u8> for Split {
     fn from(value: u8) -> Self {
         match value {
             0 => Split::Start,
             64 => Split::Finish,
             _ => Split::Start,
+        }
+    }
+}
+
+impl From<&Split> for u8 {
+    fn from(split: &Split) -> Self {
+        match split {
+            Split::Start => 0,
+            Split::Finish => 64,
+        }
+    }
+}
+
+impl From<&Split> for String {
+    fn from(split: &Split) -> Self {
+        match split {
+            Split::Start => "Start".into(),
+            Split::Finish => "Ziel".into(),
         }
     }
 }
