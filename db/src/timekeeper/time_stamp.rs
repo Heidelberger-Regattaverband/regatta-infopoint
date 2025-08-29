@@ -32,7 +32,7 @@ pub struct TimeStamp {
     pub bib: Option<u8>,
 
     /// Whether the time stamp is persisted in DB or not.
-    pub persisted: bool,
+    pub(crate) persisted: bool,
 }
 
 impl TimeStamp {
@@ -51,6 +51,10 @@ impl TimeStamp {
             bib: None,
             persisted: false,
         }
+    }
+
+    pub fn is_persisted(&self) -> bool {
+        self.persisted
     }
 
     pub(crate) async fn query_all_for_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<TimeStamp>, DbError> {

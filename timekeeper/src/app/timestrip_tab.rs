@@ -111,7 +111,7 @@ impl From<&MyTimeStamp> for ListItem<'_> {
                 value.0.time.format(DATE_FORMAT_STR),
                 value.0.heat_nr.unwrap_or_default(),
                 value.0.bib.unwrap_or_default(),
-                match value.0.persisted {
+                match value.0.is_persisted() {
                     true => "\u{1F506}",
                     false => "\u{1F329}",
                 }
@@ -122,7 +122,7 @@ impl From<&MyTimeStamp> for ListItem<'_> {
                 value.0.time.format(DATE_FORMAT_STR),
                 value.0.heat_nr.unwrap_or_default(),
                 value.0.bib.unwrap_or_default(),
-                match value.0.persisted {
+                match value.0.is_persisted() {
                     true => "\u{1F506}",
                     false => "\u{1F329}",
                 }
