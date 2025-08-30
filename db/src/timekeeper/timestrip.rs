@@ -52,10 +52,9 @@ impl TimeStrip {
         if let Some(time_stamp) = self.time_stamps.iter_mut().find(|ts| ts.time == time_stamp.time) {
             time_stamp.set_heat_nr(heat_nr);
             let mut ts_clone = time_stamp.clone();
-            let regatta_id = self.regatta_id;
             let pool = self.pool;
             tokio::spawn(async move {
-                ts_clone.update(regatta_id, pool).await.unwrap();
+                ts_clone.update(pool).await.unwrap();
             });
             return Some(time_stamp.clone());
         }
@@ -66,10 +65,9 @@ impl TimeStrip {
         if let Some(time_stamp) = self.time_stamps.iter_mut().find(|ts| ts.time == time_stamp.time) {
             time_stamp.set_bib(bib);
             let mut ts_clone = time_stamp.clone();
-            let regatta_id = self.regatta_id;
             let pool = self.pool;
             tokio::spawn(async move {
-                ts_clone.update(regatta_id, pool).await.unwrap();
+                ts_clone.update(pool).await.unwrap();
             });
             return Some(time_stamp.clone());
         }
