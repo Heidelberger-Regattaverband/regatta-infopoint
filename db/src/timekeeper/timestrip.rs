@@ -64,14 +64,13 @@ impl TimeStrip {
         Ok(time_stamp.clone())
     }
 
-    pub fn delete(&mut self, time_stamp: &TimeStamp) {
+    pub async fn delete(&mut self, time_stamp: &TimeStamp) -> Result<(), DbError> {
         if let Some(pos) = self.get_index(time_stamp) {
             let time_stamp = self.time_stamps.remove(pos);
             let pool = self.pool;
-            tokio::spawn(async move {
-                time_stamp.delete(pool).await.unwrap();
-            });
+            time_stamp.delete(pool).await?;
         }
+        Ok(())
     }
 
     fn get_index(&self, time_stamp: &TimeStamp) -> Option<usize> {

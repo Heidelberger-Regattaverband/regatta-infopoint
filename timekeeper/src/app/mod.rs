@@ -195,7 +195,7 @@ impl App<'_> {
                                 if *self.show_time_strip_popup.borrow() {
                                     self.time_strip_popup.handle_key_event(key_event).await;
                                 } else {
-                                    self.time_strip_tab.handle_key_event(key_event);
+                                    self.time_strip_tab.handle_key_event(key_event).await;
                                 }
                             }
                             _ => {}
