@@ -170,9 +170,6 @@ impl From<&Split> for u8 {
 
 impl From<&Split> for String {
     fn from(split: &Split) -> Self {
-        match split {
-            Split::Start => "Start".into(),
-            Split::Finish => "Ziel".into(),
-        }
+        split.to_string()
     }
 }

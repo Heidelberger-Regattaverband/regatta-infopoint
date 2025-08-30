@@ -66,7 +66,7 @@ impl TimeStripTabPopup<'_> {
         }
     }
 
-    pub(crate) fn handle_key_event(&mut self, event: KeyEvent) {
+    pub(crate) async fn handle_key_event(&mut self, event: KeyEvent) {
         match event.code {
             KeyCode::Esc => {
                 if self.input.is_empty() {
@@ -80,7 +80,7 @@ impl TimeStripTabPopup<'_> {
                     let heat_nr = self.input.lines()[0].parse::<i16>().unwrap();
                     self.input.delete_line_by_head();
                     if let Some(time_stamp) = self.selected_time_stamp.borrow().as_ref()
-                        && let Some(time_stamp) = self.time_strip.borrow_mut().set_heat_nr(time_stamp, heat_nr)
+                        && let Ok(time_stamp) = self.time_strip.borrow_mut().set_heat_nr(time_stamp, heat_nr).await
                     {
                         *self.show_time_strip_popup.borrow_mut() = false;
                         self.client.borrow_mut().send_time(&time_stamp, None).unwrap();

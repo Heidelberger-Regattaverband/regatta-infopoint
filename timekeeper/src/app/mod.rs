@@ -114,12 +114,12 @@ impl App<'_> {
         }
     }
 
-    pub(crate) fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), TimekeeperErr> {
+    pub(crate) async fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), TimekeeperErr> {
         // main loop, runs until the user quits the application by pressing 'q'
         while self.state == AppState::Running {
             let event = self.receiver.recv().map_err(TimekeeperErr::ReceiveError)?;
             match event {
-                AppEvent::UI(event) => self.handle_ui_event(event),
+                AppEvent::UI(event) => self.handle_ui_event(event).await,
                 AppEvent::Aquarius(event) => self.handle_aquarius_event(event),
                 AppEvent::Client(connected) => self.handle_client_event(connected),
             }
@@ -174,7 +174,7 @@ impl App<'_> {
         }
     }
 
-    fn handle_ui_event(&mut self, event: Event) {
+    async fn handle_ui_event(&mut self, event: Event) {
         match event {
             Event::Key(key_event) => {
                 if key_event.kind == KeyEventKind::Press {
@@ -182,14 +182,18 @@ impl App<'_> {
                         KeyCode::Right => self.selected_tab = self.selected_tab.next(),
                         KeyCode::Left => self.selected_tab = self.selected_tab.previous(),
                         KeyCode::Char('q') => self.state = AppState::Quitting,
-                        KeyCode::Char('+') => self.time_strip.borrow_mut().add_new_start(),
-                        KeyCode::Char(' ') => self.time_strip.borrow_mut().add_new_finish(),
+                        KeyCode::Char('+') => {
+                            self.time_strip.borrow_mut().add_start().await.unwrap();
+                        }
+                        KeyCode::Char(' ') => {
+                            self.time_strip.borrow_mut().add_finish().await.unwrap();
+                        }
                         KeyCode::Char('r') => self.read_open_heats(),
                         _ => match self.selected_tab {
                             SelectedTab::Heats => self.heats_tab.handle_key_event(key_event),
                             SelectedTab::TimeStrip => {
                                 if *self.show_time_strip_popup.borrow() {
-                                    self.time_strip_popup.handle_key_event(key_event);
+                                    self.time_strip_popup.handle_key_event(key_event).await;
                                 } else {
                                     self.time_strip_tab.handle_key_event(key_event);
                                 }

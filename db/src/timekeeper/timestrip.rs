@@ -26,52 +26,38 @@ impl TimeStrip {
         })
     }
 
-    pub fn add_new_start(&mut self) {
+    pub async fn add_start(&mut self) -> Result<(), DbError> {
         let mut time_stamp = TimeStamp::now(Split::Start);
         info!("Start time stamp: {time_stamp:?}");
         self.time_stamps.push(time_stamp.clone());
-        let regatta_id = self.regatta_id;
-        let pool = self.pool;
-        tokio::spawn(async move {
-            time_stamp.persist(regatta_id, pool).await.unwrap();
-        });
+        time_stamp.persist(self.regatta_id, self.pool).await?;
+        Ok(())
     }
 
-    pub fn add_new_finish(&mut self) {
+    pub async fn add_finish(&mut self) -> Result<(), DbError> {
         let mut time_stamp = TimeStamp::now(Split::Finish);
         info!("Finish time stamp: {time_stamp:?}");
         self.time_stamps.push(time_stamp.clone());
-        let regatta_id = self.regatta_id;
-        let pool = self.pool;
-        tokio::spawn(async move {
-            time_stamp.persist(regatta_id, pool).await.unwrap();
-        });
+        time_stamp.persist(self.regatta_id, self.pool).await?;
+        Ok(())
     }
 
-    pub fn set_heat_nr(&mut self, time_stamp: &TimeStamp, heat_nr: i16) -> Option<TimeStamp> {
+    pub async fn set_heat_nr(&mut self, time_stamp: &TimeStamp, heat_nr: i16) -> Result<TimeStamp, DbError> {
         if let Some(time_stamp) = self.time_stamps.iter_mut().find(|ts| ts.time == time_stamp.time) {
             time_stamp.set_heat_nr(heat_nr);
-            let mut ts_clone = time_stamp.clone();
-            let pool = self.pool;
-            tokio::spawn(async move {
-                ts_clone.update(pool).await.unwrap();
-            });
-            return Some(time_stamp.clone());
+            time_stamp.update(self.pool).await?;
+            return Ok(time_stamp.clone());
         }
-        None
+        Ok(time_stamp.clone())
     }
 
-    pub fn set_bib(&mut self, time_stamp: &TimeStamp, bib: u8) -> Option<TimeStamp> {
+    pub async fn set_bib(&mut self, time_stamp: &TimeStamp, bib: u8) -> Result<TimeStamp, DbError> {
         if let Some(time_stamp) = self.time_stamps.iter_mut().find(|ts| ts.time == time_stamp.time) {
             time_stamp.set_bib(bib);
-            let mut ts_clone = time_stamp.clone();
-            let pool = self.pool;
-            tokio::spawn(async move {
-                ts_clone.update(pool).await.unwrap();
-            });
-            return Some(time_stamp.clone());
+            time_stamp.update(self.pool).await?;
+            return Ok(time_stamp.clone());
         }
-        None
+        Ok(time_stamp.clone())
     }
 
     pub fn delete(&mut self, time_stamp: &TimeStamp) {
