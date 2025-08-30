@@ -27,18 +27,22 @@ impl TimeStrip {
     }
 
     pub async fn add_start(&mut self) -> Result<(), DbError> {
-        let mut time_stamp = TimeStamp::now(Split::Start);
+        let time_stamp = TimeStamp::now(Split::Start);
         info!("Start time stamp: {time_stamp:?}");
-        self.time_stamps.push(time_stamp.clone());
-        time_stamp.persist(self.regatta_id, self.pool).await?;
+        self.time_stamps.push(time_stamp);
+        if let Some(ts) = self.time_stamps.last_mut() {
+            ts.persist(self.regatta_id, self.pool).await?;
+        }
         Ok(())
     }
 
     pub async fn add_finish(&mut self) -> Result<(), DbError> {
-        let mut time_stamp = TimeStamp::now(Split::Finish);
+        let time_stamp = TimeStamp::now(Split::Finish);
         info!("Finish time stamp: {time_stamp:?}");
-        self.time_stamps.push(time_stamp.clone());
-        time_stamp.persist(self.regatta_id, self.pool).await?;
+        self.time_stamps.push(time_stamp);
+        if let Some(ts) = self.time_stamps.last_mut() {
+            ts.persist(self.regatta_id, self.pool).await?;
+        }
         Ok(())
     }
 
