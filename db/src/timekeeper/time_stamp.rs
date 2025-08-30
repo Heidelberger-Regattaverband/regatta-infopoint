@@ -3,22 +3,12 @@ use crate::tiberius::{RowColumn, TiberiusPool, TryRowColumn};
 use chrono::Utc;
 use chrono::{DateTime, Local};
 use serde::Serialize;
-use std::sync::atomic::{AtomicU64, Ordering};
 use strum_macros::Display;
 use tiberius::{Query, Row, error::Error as DbError};
-
-static TIME_STAMP_INDEX: AtomicU64 = AtomicU64::new(0);
-
-fn next_index() -> u64 {
-    TIME_STAMP_INDEX.fetch_add(1, Ordering::SeqCst)
-}
 
 /// A time stamp of an event, such as a start or finish time stamp in a race.
 #[derive(Debug, Clone, Serialize)]
 pub struct TimeStamp {
-    /// The index of the time stamp.
-    pub index: u64,
-
     /// The time of the event.
     pub time: DateTime<Utc>,
 
@@ -44,7 +34,6 @@ impl TimeStamp {
     /// A new time stamp with the current time.
     pub(crate) fn now(split: Split) -> TimeStamp {
         TimeStamp {
-            index: next_index(),
             time: Local::now().to_utc(),
             split,
             heat_nr: None,
@@ -142,7 +131,6 @@ impl From<&Row> for TimeStamp {
     fn from(row: &Row) -> Self {
         let split_nr: u8 = row.get_column("split_nr");
         TimeStamp {
-            index: next_index(),
             time: row.get_column("timestamp"),
             split: Split::from(split_nr),
             heat_nr: row.try_get_column("heat_nr"),

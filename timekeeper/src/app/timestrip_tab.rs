@@ -104,9 +104,8 @@ impl<'a> From<MyTimeStamp<'a>> for ListItem<'a> {
     fn from(value: MyTimeStamp<'a>) -> Self {
         let prefix: String = (value.0.split()).into();
         ListItem::new(format!(
-            "{:5} {:4}:  {}  {:3}  {:2} {}",
+            "{:5}  {}  {:3}  {:2}  {}",
             prefix,
-            value.0.index,
             value.0.time.format(DATE_FORMAT_STR),
             value.0.heat_nr().unwrap_or_default(),
             value.0.bib_opt().unwrap_or_default(),
