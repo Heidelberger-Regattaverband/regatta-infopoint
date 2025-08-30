@@ -29,6 +29,12 @@ tui-textarea = { version = "0" }
 strum.workspace = true
 strum_macros.workspace = true
 
+# Async stuff
+tokio.workspace = true
+
+# DB
+tiberius.workspace = true
+
 [dev-dependencies]
 env_logger.workspace = true
 
