@@ -26,5 +26,5 @@ pub(crate) fn config(cfg: &mut web::ServiceConfig) {
     // Make instance variable of ApiDoc so all worker threads gets the same instance.
     let openapi = ApiDoc::openapi();
 
-    cfg.service(SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", openapi.clone()));
+    cfg.service(SwaggerUi::new("/swagger-ui/{_:.*}").url("/api-docs/openapi.json", openapi));
 }
