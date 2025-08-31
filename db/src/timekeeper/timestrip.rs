@@ -8,8 +8,12 @@ use tiberius::error::Error as DbError;
 
 /// A time strip is a collection of time stamps.
 pub struct TimeStrip {
+    // The ID of the regatta this time strip belongs to.
     regatta_id: i32,
+
+    // A reference to the Tiberius connection pool.
     pool: &'static TiberiusPool,
+
     // A vector of time stamps.
     pub time_stamps: Vec<TimeStamp>,
 }
