@@ -174,6 +174,7 @@ impl App<'_> {
         }
     }
 
+    #[allow(clippy::await_holding_refcell_ref)]
     async fn handle_ui_event(&mut self, event: Event) {
         match event {
             Event::Key(key_event) => {

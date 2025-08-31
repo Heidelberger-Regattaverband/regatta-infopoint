@@ -57,6 +57,7 @@ impl TimeStripTab {
         }
     }
 
+    #[allow(clippy::await_holding_refcell_ref)]
     pub(crate) async fn handle_key_event(&mut self, event: KeyEvent) {
         match event.code {
             KeyCode::Up => self.state.select_previous(),
