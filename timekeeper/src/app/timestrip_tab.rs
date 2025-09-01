@@ -2,7 +2,7 @@ use crate::app::{
     TimeStrip,
     utils::{HIGHLIGHT_SYMBOL, block},
 };
-use db::timekeeper::{TimeStamp, TimeStampType};
+use db::timekeeper::TimeStamp;
 use ratatui::{
     buffer::Buffer,
     crossterm::event::{KeyCode, KeyEvent},
@@ -24,13 +24,11 @@ pub(crate) struct TimeStripTab {
 
 impl Widget for &mut TimeStripTab {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let items: Vec<ListItem> = self
-            .time_strip
-            .borrow()
-            .time_stamps
+        let time_stamps = &self.time_strip.borrow().time_stamps;
+        let items: Vec<ListItem> = time_stamps
             .iter()
             .rev()
-            .map(|ts| ListItem::from(&MyTimeStamp(ts.clone())))
+            .map(|ts| ListItem::from(MyTimeStamp(ts)))
             .collect();
 
         // Create a List from all list items and highlight the currently selected one
@@ -59,7 +57,8 @@ impl TimeStripTab {
         }
     }
 
-    pub(crate) fn handle_key_event(&mut self, event: KeyEvent) {
+    #[allow(clippy::await_holding_refcell_ref)]
+    pub(crate) async fn handle_key_event(&mut self, event: KeyEvent) {
         match event.code {
             KeyCode::Up => self.state.select_previous(),
             KeyCode::Down => self.state.select_next(),
@@ -70,6 +69,12 @@ impl TimeStripTab {
                 // open popup if a time stamp is selected
                 if self.state.selected().is_some() {
                     *self.show_time_strip_popup.borrow_mut() = true;
+                }
+            }
+            KeyCode::Delete => {
+                // delete the selected time stamp
+                if let Some(time_stamp) = self.selected_time_stamp.borrow_mut().take() {
+                    self.time_strip.borrow_mut().delete(&time_stamp).await.unwrap();
                 }
             }
             _ => {}
@@ -96,25 +101,21 @@ impl TimeStripTab {
     }
 }
 
-impl From<&MyTimeStamp> for ListItem<'_> {
-    fn from(value: &MyTimeStamp) -> Self {
-        match value.0.stamp_type {
-            TimeStampType::Start => ListItem::new(format!(
-                "Start {:4}:  {}  {:3}  {:2}",
-                value.0.index,
-                value.0.time.format(DATE_FORMAT_STR),
-                value.0.heat_nr.unwrap_or(0),
-                value.0.bib.unwrap_or(0)
-            )),
-            TimeStampType::Finish => ListItem::new(format!(
-                " Ziel {:4}:  {}  {:3}  {:2}",
-                value.0.index,
-                value.0.time.format(DATE_FORMAT_STR),
-                value.0.heat_nr.unwrap_or(0),
-                value.0.bib.unwrap_or(0)
-            )),
-        }
+impl<'a> From<MyTimeStamp<'a>> for ListItem<'a> {
+    fn from(value: MyTimeStamp<'a>) -> Self {
+        let prefix: String = (value.0.split()).into();
+        ListItem::new(format!(
+            "{:5}  {}  {:3}  {:2}  {}",
+            prefix,
+            value.0.time.format(DATE_FORMAT_STR),
+            value.0.heat_nr().unwrap_or_default(),
+            value.0.bib_opt().unwrap_or_default(),
+            match value.0.is_persisted() {
+                true => "\u{1F506}",
+                false => "\u{1F329}",
+            }
+        ))
     }
 }
 
-struct MyTimeStamp(TimeStamp);
+struct MyTimeStamp<'a>(&'a TimeStamp);

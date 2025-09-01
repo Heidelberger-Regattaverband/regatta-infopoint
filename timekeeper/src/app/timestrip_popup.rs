@@ -29,7 +29,7 @@ impl Widget for &mut TimeStripTabPopup<'_> {
         let block = Block::bordered()
             .border_type(BorderType::Rounded)
             .padding(Padding::horizontal(1))
-            .title(format!(" {} #{} ", ts.stamp_type, ts.index));
+            .title(format!(" {} ", ts.split()));
 
         // inner popup area
         let inner_area = block.inner(area);
@@ -66,7 +66,8 @@ impl TimeStripTabPopup<'_> {
         }
     }
 
-    pub(crate) fn handle_key_event(&mut self, event: KeyEvent) {
+    #[allow(clippy::await_holding_refcell_ref)]
+    pub(crate) async fn handle_key_event(&mut self, event: KeyEvent) {
         match event.code {
             KeyCode::Esc => {
                 if self.input.is_empty() {
@@ -77,10 +78,10 @@ impl TimeStripTabPopup<'_> {
             }
             KeyCode::Enter => {
                 if self.is_valid {
-                    let heat_nr = self.input.lines()[0].parse::<u16>().unwrap();
+                    let heat_nr = self.input.lines()[0].parse::<i16>().unwrap();
                     self.input.delete_line_by_head();
                     if let Some(time_stamp) = self.selected_time_stamp.borrow().as_ref()
-                        && let Some(time_stamp) = self.time_strip.borrow_mut().assign_heat_nr(time_stamp.index, heat_nr)
+                        && let Ok(time_stamp) = self.time_strip.borrow_mut().set_heat_nr(time_stamp, heat_nr).await
                     {
                         *self.show_time_strip_popup.borrow_mut() = false;
                         self.client.borrow_mut().send_time(&time_stamp, None).unwrap();
@@ -98,7 +99,7 @@ impl TimeStripTabPopup<'_> {
     }
 
     fn validate(&mut self) {
-        if let Ok(heat_nr) = self.input.lines()[0].parse::<u16>() {
+        if let Ok(heat_nr) = self.input.lines()[0].parse::<i16>() {
             self.is_valid = self.heats.borrow().iter().any(|heat| heat.number == heat_nr);
         } else {
             self.is_valid = false;

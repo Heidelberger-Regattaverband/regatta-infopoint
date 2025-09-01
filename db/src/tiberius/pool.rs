@@ -1,7 +1,7 @@
 use crate::tiberius::TiberiusConnectionManager;
 use bb8::{Pool, PooledConnection, State};
 use std::sync::OnceLock;
-use tiberius::Config as TiberiusConfig;
+use tiberius::Config;
 
 /// A global instance of the Tiberius connection pool.
 static POOL: OnceLock<TiberiusPool> = OnceLock::new();
@@ -29,7 +29,7 @@ impl TiberiusPool {
     /// * `config` - The configuration for the Tiberius connection manager.
     /// * `max_size` - The maximum size of the pool.
     /// * `min_idle` - The minimum number of idle connections in the pool.
-    pub async fn init(config: TiberiusConfig, max_size: u32, min_idle: u32) {
+    pub async fn init(config: Config, max_size: u32, min_idle: u32) {
         let manager = TiberiusConnectionManager::new(config);
 
         let inner = Pool::builder()

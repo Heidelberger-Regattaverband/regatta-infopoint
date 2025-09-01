@@ -3633,6 +3633,8 @@ dependencies = [
  "ratatui",
  "strum 0.27.2",
  "strum_macros 0.27.2",
+ "tiberius",
+ "tokio",
  "tui-logger",
  "tui-textarea",
 ]
