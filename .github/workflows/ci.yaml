@@ -19,7 +19,7 @@ jobs:
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          version: 1.86.2
+          version: latest
           tags: tag:ci
 
       - name: Checkout
