@@ -13,6 +13,7 @@ concurrency:
 
 jobs:
   coverage:
+    name: Generate and upload code coverage
     runs-on: ubuntu-latest
     steps:
       - name: Tailscale
