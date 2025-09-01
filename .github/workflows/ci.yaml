@@ -38,6 +38,9 @@ jobs:
       - name: Enforce formatting
         run: cargo fmt --check
 
+      - name: Linting
+        run: cargo clippy -- -D warnings
+
       - name: Build and run tests
         uses: actions-rs/cargo@v1
         env:
