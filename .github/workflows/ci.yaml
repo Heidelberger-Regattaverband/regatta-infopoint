@@ -35,6 +35,9 @@ jobs:
       - name: Restore build & cargo cache
         uses: Swatinem/rust-cache@v2
 
+      - name: Enforce formatting
+        run: cargo fmt --check
+
       - name: Build and run tests
         uses: actions-rs/cargo@v1
         env:
