@@ -248,6 +248,12 @@ fn spawn_communication_thread(stream: &TcpStream, sender: Sender<AppEvent>) -> I
     Ok(handle)
 }
 
+impl Drop for Client {
+    fn drop(&mut self) {
+        self.stop_watch_dog();
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

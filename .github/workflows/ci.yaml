@@ -11,7 +11,7 @@ on:
 
 jobs:
   build_and_test:
-    name: Rust project
+    name: Build and test rust project
     runs-on: ubuntu-latest
     steps:
       - name: Tailscale
@@ -19,13 +19,12 @@ jobs:
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          version: 1.86.2
+          version: latest
           tags: tag:ci
+          use-cache: 'true'
 
       - name: Checkout
         uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
 
       - name: Setup toolchain
         id: toolchain
@@ -35,6 +34,12 @@ jobs:
 
       - name: Restore build & cargo cache
         uses: Swatinem/rust-cache@v2
+
+      - name: Enforce formatting
+        run: cargo fmt --check
+
+      - name: Linting
+        run: cargo clippy -- -D warnings
 
       - name: Build and run tests
         uses: actions-rs/cargo@v1
