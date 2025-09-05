@@ -166,10 +166,8 @@ impl App<'_> {
 
     fn handle_client_event(&mut self, connected: bool) {
         if !connected {
-            self.client.borrow_mut().disconnect();
             self.heats.borrow_mut().clear();
         } else {
-            let _ = self.client.borrow_mut().connect();
             self.read_open_heats();
         }
     }
