@@ -16,7 +16,7 @@ use std::{
     io::Result as IoResult,
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream, ToSocketAddrs},
     sync::{
-        Arc,
+        Arc, Mutex,
         atomic::{AtomicBool, Ordering::Relaxed},
         mpsc::Sender,
     },
@@ -26,7 +26,7 @@ use std::{
 
 /// A client to connect to the Aquarius server.
 pub(crate) struct Client {
-    comm_main: Option<Communication>,
+    comm_main: Arc<Mutex<Option<Communication>>>,
 
     address: SocketAddr,
 
@@ -52,7 +52,7 @@ impl Client {
             .next()
             .unwrap_or_else(|| SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port));
         let mut client = Client {
-            comm_main: None,
+            comm_main: Arc::new(Mutex::new(None)),
             address,
             timeout,
             sender,
@@ -69,14 +69,16 @@ impl Client {
     /// A result with a unit if the client could connect to Aquarius. Otherwise, an error is returned.
     pub(crate) fn connect(&mut self) -> IoResult<()> {
         let stream = create_stream(&self.address, self.timeout)?;
-        self.comm_main = Some(Communication::new(&stream)?);
+        let mut comm_main = self.comm_main.lock().unwrap();
+        *comm_main = Some(Communication::new(&stream)?);
         info!("Connection established.");
         Ok(())
     }
 
     /// Disconnects the client from Aquarius application.
     pub(crate) fn disconnect(&mut self) {
-        self.comm_main = None;
+        let mut comm_main = self.comm_main.lock().unwrap();
+        *comm_main = None;
         warn!("Connection lost, reconnecting...");
     }
 
@@ -86,7 +88,7 @@ impl Client {
     /// # Errors
     /// If the open heats could not be read from Aquarius.
     pub(crate) fn read_open_heats(&mut self) -> Result<Vec<Heat>, TimekeeperErr> {
-        if let Some(comm) = &mut self.comm_main {
+        if let Some(comm) = &mut self.comm_main.lock().unwrap().as_mut() {
             comm.write(&RequestListOpenHeats::default().to_string())
                 .map_err(TimekeeperErr::IoError)?;
             let response = comm.receive_all().map_err(TimekeeperErr::IoError)?;
@@ -107,7 +109,7 @@ impl Client {
     /// * `time_stamp` - The time stamp to send to Aquarius.
     /// * `bib` - The bib number of the boat to send the time stamp to.
     pub(crate) fn send_time(&mut self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), TimekeeperErr> {
-        if let Some(comm) = &mut self.comm_main {
+        if let Some(comm) = &mut self.comm_main.lock().unwrap().as_mut() {
             let request = RequestSetTime {
                 time: time_stamp.time.into(),
                 split: time_stamp.split().clone(),
@@ -313,7 +315,8 @@ mod tests {
     fn test_client_write() {
         let mut client = init_client();
         client.connect().unwrap();
-        let comm = client.comm_main.as_mut().unwrap();
+        let mut binding = client.comm_main.lock().unwrap();
+        let comm = binding.as_mut().unwrap();
         let result = comm.write(TEST_MESSAGE);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), TEST_MESSAGE.len());
@@ -323,7 +326,8 @@ mod tests {
     fn test_client_receive_line() {
         let mut client = init_client();
         client.connect().unwrap();
-        let comm = client.comm_main.as_mut().unwrap();
+        let mut binding = client.comm_main.lock().unwrap();
+        let comm = binding.as_mut().unwrap();
         comm.write(TEST_MESSAGE).unwrap();
         comm.write(MESSAGE_END).unwrap();
         let response = comm.receive_line();
@@ -337,7 +341,8 @@ mod tests {
     fn test_client_receive_all() {
         let mut client = init_client();
         client.connect().unwrap();
-        let comm = client.comm_main.as_mut().unwrap();
+        let mut binding = client.comm_main.lock().unwrap();
+        let comm = binding.as_mut().unwrap();
         comm.write("Hello World!\n").unwrap();
         comm.write("This is a test.\n").unwrap();
         comm.write(MESSAGE_END).unwrap();
