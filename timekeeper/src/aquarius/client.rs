@@ -247,22 +247,22 @@ mod tests {
     use std::{
         io::{BufRead, BufReader, Write},
         net::{SocketAddr, TcpListener},
-        sync::mpsc::{self},
+        sync::mpsc::{self, Receiver},
         thread,
     };
     const TEST_MESSAGE: &str = "Hello World!";
     const EXIT_COMMAND: &str = "exit";
     const MESSAGE_END: &str = "\r\n";
 
-    fn init_client() -> Client {
+    fn init_client() -> (Client, Receiver<AppEvent>) {
         let _ = env_logger::builder()
             .is_test(true)
             .filter_level(LevelFilter::Trace)
             .try_init();
-        let (sender, _receiver) = mpsc::channel();
+        let (sender, receiver) = mpsc::channel();
         let addr = start_test_server();
         let client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
-        client
+        (client, receiver)
     }
 
     fn start_test_server() -> SocketAddr {
@@ -296,8 +296,8 @@ mod tests {
 
     #[test]
     fn test_client_write() {
-        let client = init_client();
-        // client.connect().unwrap();
+        let (client, receiver) = init_client();
+        receiver.recv().unwrap(); // wait until connected
         let mut binding = client.communication.lock().unwrap();
         let comm = binding.as_mut().unwrap();
         let result = comm.write(TEST_MESSAGE);
@@ -307,8 +307,8 @@ mod tests {
 
     #[test]
     fn test_client_receive_line() {
-        let client = init_client();
-        // client.connect().unwrap();
+        let (client, receiver) = init_client();
+        receiver.recv().unwrap(); // wait until connected
         let mut binding = client.communication.lock().unwrap();
         let comm = binding.as_mut().unwrap();
         comm.write(TEST_MESSAGE).unwrap();
@@ -322,8 +322,8 @@ mod tests {
 
     #[test]
     fn test_client_receive_all() {
-        let client = init_client();
-        // client.connect().unwrap();
+        let (client, receiver) = init_client();
+        receiver.recv().unwrap(); // wait until connected
         let mut binding = client.communication.lock().unwrap();
         let comm = binding.as_mut().unwrap();
         comm.write("Hello World!\n").unwrap();
