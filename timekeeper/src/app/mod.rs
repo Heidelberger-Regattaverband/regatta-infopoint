@@ -197,7 +197,7 @@ impl App<'_> {
                                     self.time_strip_tab.handle_key_event(key_event).await;
                                 }
                             }
-                            _ => {}
+                            SelectedTab::Logs => self.logs_tab.handle_key_event(key_event),
                         },
                     }
                 }
