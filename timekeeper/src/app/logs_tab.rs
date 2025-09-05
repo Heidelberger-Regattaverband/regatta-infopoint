@@ -1,11 +1,11 @@
-use crate::app::utils::block;
 use ratatui::{
     buffer::Buffer,
     crossterm::event::{KeyCode, KeyEvent},
     layout::Rect,
+    style::{Color, Style},
     widgets::Widget,
 };
-use tui_logger::{TuiLoggerLevelOutput, TuiLoggerWidget, TuiWidgetEvent, TuiWidgetState};
+use tui_logger::{TuiLoggerSmartWidget, TuiWidgetEvent, TuiWidgetState};
 
 #[derive(Default)]
 pub(crate) struct LogsTab {
@@ -35,14 +35,13 @@ impl LogsTab {
 
 impl Widget for &mut LogsTab {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        TuiLoggerWidget::default()
-            .block(block())
-            .output_separator('|')
-            .output_timestamp(Some("%F %H:%M:%S%.3f".to_string()))
-            .output_level(Some(TuiLoggerLevelOutput::Long))
-            .output_target(true)
-            .output_file(false)
-            .output_line(false)
+        TuiLoggerSmartWidget::default()
+            .border_style(Style::default().fg(Color::Black))
+            .style_error(Style::default().fg(Color::Red))
+            .style_debug(Style::default().fg(Color::Green))
+            .style_warn(Style::default().fg(Color::Yellow))
+            .style_trace(Style::default().fg(Color::Magenta))
+            .style_info(Style::default().fg(Color::Cyan))
             .state(&self.state)
             .render(area, buf);
     }
