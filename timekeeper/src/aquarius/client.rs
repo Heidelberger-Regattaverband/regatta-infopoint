@@ -28,12 +28,6 @@ use std::{
 pub(crate) struct Client {
     communication: Arc<Mutex<Option<Communication>>>,
 
-    address: SocketAddr,
-
-    timeout: u16,
-
-    sender: Sender<AppEvent>,
-
     stop_watch_dog: Arc<AtomicBool>,
 }
 
@@ -53,12 +47,9 @@ impl Client {
             .unwrap_or_else(|| SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port));
         let mut client = Client {
             communication: Arc::new(Mutex::new(None)),
-            address,
-            timeout,
-            sender,
             stop_watch_dog: Arc::new(AtomicBool::new(false)),
         };
-        client.start_watch_dog();
+        client.start_watch_dog(address, timeout, sender);
         client
     }
 
@@ -112,11 +103,8 @@ impl Client {
     /// If the thread could not be started.
     /// # Panics
     /// If the sender could not send a message to the application.
-    fn start_watch_dog(&mut self) -> JoinHandle<()> {
+    fn start_watch_dog(&mut self, address: SocketAddr, timeout: u16, sender: Sender<AppEvent>) -> JoinHandle<()> {
         let comm_clone = self.communication.clone();
-        let address = self.address;
-        let timeout = self.timeout;
-        let sender = self.sender.clone();
         let stop_watch_dog = self.stop_watch_dog.clone();
 
         // Spawn a thread to watch the thread that receives events from Aquarius
