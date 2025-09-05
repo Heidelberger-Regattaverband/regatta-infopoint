@@ -88,7 +88,7 @@ impl Client {
     /// # Errors
     /// If the open heats could not be read from Aquarius.
     pub(crate) fn read_open_heats(&mut self) -> Result<Vec<Heat>, TimekeeperErr> {
-        if let Some(comm) = &mut self.comm_main.lock().unwrap().as_mut() {
+        if let Some(comm) = self.comm_main.lock().unwrap().as_mut() {
             comm.write(&RequestListOpenHeats::default().to_string())
                 .map_err(TimekeeperErr::IoError)?;
             let response = comm.receive_all().map_err(TimekeeperErr::IoError)?;
@@ -109,7 +109,7 @@ impl Client {
     /// * `time_stamp` - The time stamp to send to Aquarius.
     /// * `bib` - The bib number of the boat to send the time stamp to.
     pub(crate) fn send_time(&mut self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), TimekeeperErr> {
-        if let Some(comm) = &mut self.comm_main.lock().unwrap().as_mut() {
+        if let Some(comm) = self.comm_main.lock().unwrap().as_mut() {
             let request = RequestSetTime {
                 time: time_stamp.time.into(),
                 split: time_stamp.split().clone(),
