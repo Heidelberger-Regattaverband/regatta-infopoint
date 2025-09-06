@@ -178,6 +178,7 @@ impl App<'_> {
             Event::Key(key_event) => {
                 if key_event.kind == KeyEventKind::Press {
                     match key_event.code {
+                        KeyCode::Tab => self.selected_tab = self.selected_tab.next(),
                         KeyCode::Right => self.selected_tab = self.selected_tab.next(),
                         KeyCode::Left => self.selected_tab = self.selected_tab.previous(),
                         KeyCode::Char('q') => self.state = AppState::Quitting,
