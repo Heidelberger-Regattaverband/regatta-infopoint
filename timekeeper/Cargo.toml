@@ -19,7 +19,6 @@ chrono.workspace = true
 # UI
 ratatui = { version = "0", features = ["crossterm"] }
 crossterm = { version = "0" }
-tui-textarea = { version = "0" }
 tui-input = { version = "0" , features = ["crossterm"] }
 
 # logging
