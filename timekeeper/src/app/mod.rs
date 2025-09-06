@@ -153,7 +153,10 @@ impl App<'_> {
                 };
 
                 // render footer
-                frame.render_widget(Line::raw("◄ ► to change tab | Press q to quit").centered(), footer_area);
+                frame.render_widget(
+                    Line::raw("◄ ► / tab to change tab | Press q to quit").centered(),
+                    footer_area,
+                );
             })
             .map_err(TimekeeperErr::IoError)?;
         Ok(())
