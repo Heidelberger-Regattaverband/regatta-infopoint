@@ -26,6 +26,7 @@ impl LogsTab {
             KeyCode::Char('+') => TuiWidgetEvent::PlusKey,
             KeyCode::Char('-') => TuiWidgetEvent::MinusKey,
             KeyCode::Char('h') => TuiWidgetEvent::HideKey,
+            KeyCode::Char('f') => TuiWidgetEvent::FocusKey,
             _ => return,
         };
 
