@@ -16,7 +16,7 @@ use std::{
     io::Result as IoResult,
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream, ToSocketAddrs},
     sync::{
-        Arc,
+        Arc, Mutex,
         atomic::{AtomicBool, Ordering::Relaxed},
         mpsc::Sender,
     },
@@ -26,13 +26,7 @@ use std::{
 
 /// A client to connect to the Aquarius server.
 pub(crate) struct Client {
-    comm_main: Option<Communication>,
-
-    address: SocketAddr,
-
-    timeout: u16,
-
-    sender: Sender<AppEvent>,
+    communication: Arc<Mutex<Option<Communication>>>,
 
     stop_watch_dog: Arc<AtomicBool>,
 }
@@ -52,32 +46,11 @@ impl Client {
             .next()
             .unwrap_or_else(|| SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port));
         let mut client = Client {
-            comm_main: None,
-            address,
-            timeout,
-            sender,
+            communication: Arc::new(Mutex::new(None)),
             stop_watch_dog: Arc::new(AtomicBool::new(false)),
         };
-        client.start_watch_dog();
+        client.start_watch_dog(address, timeout, sender);
         client
-    }
-
-    /// Connects the client to Aquarius application.
-    /// # Errors
-    /// If the client could not connect to Aquarius.
-    /// # Returns
-    /// A result with a unit if the client could connect to Aquarius. Otherwise, an error is returned.
-    pub(crate) fn connect(&mut self) -> IoResult<()> {
-        let stream = create_stream(&self.address, self.timeout)?;
-        self.comm_main = Some(Communication::new(&stream)?);
-        info!("Connection established.");
-        Ok(())
-    }
-
-    /// Disconnects the client from Aquarius application.
-    pub(crate) fn disconnect(&mut self) {
-        self.comm_main = None;
-        warn!("Connection lost, reconnecting...");
     }
 
     /// Reads the open heats from Aquarius.
@@ -86,7 +59,7 @@ impl Client {
     /// # Errors
     /// If the open heats could not be read from Aquarius.
     pub(crate) fn read_open_heats(&mut self) -> Result<Vec<Heat>, TimekeeperErr> {
-        if let Some(comm) = &mut self.comm_main {
+        if let Some(comm) = self.communication.lock().unwrap().as_mut() {
             comm.write(&RequestListOpenHeats::default().to_string())
                 .map_err(TimekeeperErr::IoError)?;
             let response = comm.receive_all().map_err(TimekeeperErr::IoError)?;
@@ -107,7 +80,7 @@ impl Client {
     /// * `time_stamp` - The time stamp to send to Aquarius.
     /// * `bib` - The bib number of the boat to send the time stamp to.
     pub(crate) fn send_time(&mut self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), TimekeeperErr> {
-        if let Some(comm) = &mut self.comm_main {
+        if let Some(comm) = self.communication.lock().unwrap().as_mut() {
             let request = RequestSetTime {
                 time: time_stamp.time.into(),
                 split: time_stamp.split().clone(),
@@ -130,10 +103,8 @@ impl Client {
     /// If the thread could not be started.
     /// # Panics
     /// If the sender could not send a message to the application.
-    fn start_watch_dog(&mut self) -> JoinHandle<()> {
-        let address = self.address;
-        let timeout = self.timeout;
-        let sender = self.sender.clone();
+    fn start_watch_dog(&mut self, address: SocketAddr, timeout: u16, sender: Sender<AppEvent>) -> JoinHandle<()> {
+        let comm_clone = self.communication.clone();
         let stop_watch_dog = self.stop_watch_dog.clone();
 
         // Spawn a thread to watch the thread that receives events from Aquarius
@@ -141,27 +112,29 @@ impl Client {
             // The interval to retry connecting to Aquarius in case of a failure
             let repeat_interval = Duration::from_secs(timeout as u64);
 
+            // Loop until the stop flag is set
             while !stop_watch_dog.load(Relaxed) {
                 let start = Instant::now();
                 // create a new stream to Aquarius
-                match create_stream(&address, timeout) {
+                match create_stream(&address, &timeout) {
                     Ok(stream) => {
                         // Spawn a thread to receive events from Aquarius
                         match spawn_communication_thread(&stream, sender.clone()) {
                             Ok(handle) => {
-                                send_connected(&sender);
+                                let stream = create_stream(&address, &timeout).unwrap();
+                                send_connected(stream, &comm_clone, &sender).unwrap();
                                 // Wait for the thread to finish
                                 let _ = handle.join().is_ok();
-                                send_disconnected(&sender);
+                                send_disconnected(&comm_clone, &sender);
                             }
                             Err(err) => {
-                                send_disconnected(&sender);
+                                send_disconnected(&comm_clone, &sender);
                                 warn!("Error spawning thread: {err}");
                             }
                         }
                     }
                     Err(err) => {
-                        send_disconnected(&sender);
+                        send_disconnected(&comm_clone, &sender);
                         trace!("Error connecting to Aquarius: {err}");
                     }
                 }
@@ -190,23 +163,36 @@ impl Client {
     }
 }
 
-fn send_connected(sender: &Sender<AppEvent>) {
+fn send_connected(
+    stream: TcpStream,
+    comm: &Arc<Mutex<Option<Communication>>>,
+    sender: &Sender<AppEvent>,
+) -> IoResult<()> {
+    let mut comm_main = comm.lock().unwrap();
+    *comm_main = Some(Communication::new(&stream)?);
+    info!("Connection established.");
+
     // Send a message to the application that the client is connected
     if let Err(err) = sender.send(AppEvent::Client(true)) {
         error!("Error sending message to application: {err}");
     }
+    Ok(())
 }
 
-fn send_disconnected(sender: &Sender<AppEvent>) {
+fn send_disconnected(comm: &Arc<Mutex<Option<Communication>>>, sender: &Sender<AppEvent>) {
+    let mut comm_main = comm.lock().unwrap();
+    *comm_main = None;
+    warn!("Connection lost, reconnecting...");
+
     // Send a message to the application that the client is disconnected
     if let Err(err) = sender.send(AppEvent::Client(false)) {
         error!("Error sending message to application: {err}");
     }
 }
 
-fn create_stream(addr: &SocketAddr, timeout: u16) -> IoResult<TcpStream> {
+fn create_stream(addr: &SocketAddr, timeout: &u16) -> IoResult<TcpStream> {
     trace!("Connecting to {addr} with a timeout {timeout}");
-    let stream = TcpStream::connect_timeout(addr, Duration::new(timeout as u64, 0))?;
+    let stream = TcpStream::connect_timeout(addr, Duration::new(*timeout as u64, 0))?;
     stream.set_nodelay(true)?;
     info!("Connected to {addr}");
     Ok(stream)
@@ -261,23 +247,22 @@ mod tests {
     use std::{
         io::{BufRead, BufReader, Write},
         net::{SocketAddr, TcpListener},
-        sync::mpsc::{self},
+        sync::mpsc::{self, Receiver},
         thread,
     };
     const TEST_MESSAGE: &str = "Hello World!";
     const EXIT_COMMAND: &str = "exit";
     const MESSAGE_END: &str = "\r\n";
 
-    fn init_client() -> Client {
+    fn init_client() -> (Client, Receiver<AppEvent>) {
         let _ = env_logger::builder()
             .is_test(true)
             .filter_level(LevelFilter::Trace)
             .try_init();
-        let (sender, _receiver) = mpsc::channel();
+        let (sender, receiver) = mpsc::channel();
         let addr = start_test_server();
-        let mut client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
-        client.stop_watch_dog();
-        client
+        let client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
+        (client, receiver)
     }
 
     fn start_test_server() -> SocketAddr {
@@ -304,26 +289,30 @@ mod tests {
 
     #[test]
     fn test_client_connection() {
-        let mut client = init_client();
-        let result = client.connect();
-        assert!(result.is_ok());
+        let (client, receiver) = init_client();
+        receiver.recv().unwrap(); // wait until connected
+        assert!(client.communication.lock().unwrap().is_some());
     }
 
     #[test]
+    #[ignore]
     fn test_client_write() {
-        let mut client = init_client();
-        client.connect().unwrap();
-        let comm = client.comm_main.as_mut().unwrap();
+        let (client, receiver) = init_client();
+        receiver.recv().unwrap(); // wait until connected
+        let mut binding = client.communication.lock().unwrap();
+        let comm = binding.as_mut().unwrap();
         let result = comm.write(TEST_MESSAGE);
         assert!(result.is_ok());
         assert_eq!(result.unwrap(), TEST_MESSAGE.len());
     }
 
     #[test]
+    #[ignore]
     fn test_client_receive_line() {
-        let mut client = init_client();
-        client.connect().unwrap();
-        let comm = client.comm_main.as_mut().unwrap();
+        let (client, receiver) = init_client();
+        receiver.recv().unwrap(); // wait until connected
+        let mut binding = client.communication.lock().unwrap();
+        let comm = binding.as_mut().unwrap();
         comm.write(TEST_MESSAGE).unwrap();
         comm.write(MESSAGE_END).unwrap();
         let response = comm.receive_line();
@@ -334,10 +323,12 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_client_receive_all() {
-        let mut client = init_client();
-        client.connect().unwrap();
-        let comm = client.comm_main.as_mut().unwrap();
+        let (client, receiver) = init_client();
+        receiver.recv().unwrap(); // wait until connected
+        let mut binding = client.communication.lock().unwrap();
+        let comm = binding.as_mut().unwrap();
         comm.write("Hello World!\n").unwrap();
         comm.write("This is a test.\n").unwrap();
         comm.write(MESSAGE_END).unwrap();

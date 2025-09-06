@@ -64,14 +64,9 @@ impl App<'_> {
     pub(crate) async fn new() -> Self {
         let args = Args::parse();
 
-        let mut config = Config::new();
-        config.host(&args.db_host);
-        config.port(args.db_port);
-        config.database(&args.db_name);
-        config.authentication(AuthMethod::sql_server(&args.db_user, &args.db_password));
-        config.encryption(EncryptionLevel::NotSupported);
+        let db_config = Self::get_db_config(&args);
 
-        TiberiusPool::init(config, 1, 1).await;
+        TiberiusPool::init(db_config, 1, 1).await;
         let timestrip = TimeStrip::load(TiberiusPool::instance()).await.unwrap();
 
         // Use an mpsc::channel to combine stdin events with app events
@@ -158,7 +153,10 @@ impl App<'_> {
                 };
 
                 // render footer
-                frame.render_widget(Line::raw("◄ ► to change tab | Press q to quit").centered(), footer_area);
+                frame.render_widget(
+                    Line::raw("◄ ► / tab to change tab | + to start | space to finish | q to quit").centered(),
+                    footer_area,
+                );
             })
             .map_err(TimekeeperErr::IoError)?;
         Ok(())
@@ -166,10 +164,8 @@ impl App<'_> {
 
     fn handle_client_event(&mut self, connected: bool) {
         if !connected {
-            self.client.borrow_mut().disconnect();
             self.heats.borrow_mut().clear();
         } else {
-            let _ = self.client.borrow_mut().connect();
             self.read_open_heats();
         }
     }
@@ -180,6 +176,7 @@ impl App<'_> {
             Event::Key(key_event) => {
                 if key_event.kind == KeyEventKind::Press {
                     match key_event.code {
+                        KeyCode::Tab => self.selected_tab = self.selected_tab.next(),
                         KeyCode::Right => self.selected_tab = self.selected_tab.next(),
                         KeyCode::Left => self.selected_tab = self.selected_tab.previous(),
                         KeyCode::Char('q') => self.state = AppState::Quitting,
@@ -199,7 +196,7 @@ impl App<'_> {
                                     self.time_strip_tab.handle_key_event(key_event).await;
                                 }
                             }
-                            _ => {}
+                            SelectedTab::Logs => self.logs_tab.handle_key_event(key_event),
                         },
                     }
                 }
@@ -240,6 +237,17 @@ impl App<'_> {
             }
             Err(err) => warn!("Error reading open heats: {err}"),
         };
+    }
+
+    /// Create a Tiberius Config from the command line arguments
+    fn get_db_config(args: &Args) -> Config {
+        let mut config = Config::new();
+        config.host(&args.db_host);
+        config.port(args.db_port);
+        config.database(&args.db_name);
+        config.authentication(AuthMethod::sql_server(&args.db_user, &args.db_password));
+        config.encryption(EncryptionLevel::NotSupported);
+        config
     }
 }
 
