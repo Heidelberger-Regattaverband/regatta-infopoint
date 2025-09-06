@@ -25,11 +25,11 @@ pub(crate) struct TimeStripTabPopup<'a> {
 impl Widget for &mut TimeStripTabPopup<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         let binding = self.selected_time_stamp.borrow_mut();
-        let ts = binding.as_ref().unwrap();
+        let ts_split = binding.as_ref().unwrap().split();
         let block = Block::bordered()
             .border_type(BorderType::Rounded)
             .padding(Padding::horizontal(1))
-            .title(format!(" {} ", ts.split()));
+            .title(format!(" {ts_split} "));
 
         // inner popup area
         let inner_area = block.inner(area);

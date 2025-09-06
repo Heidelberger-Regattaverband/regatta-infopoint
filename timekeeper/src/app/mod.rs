@@ -154,7 +154,7 @@ impl App<'_> {
 
                 // render footer
                 frame.render_widget(
-                    Line::raw("◄ ► / tab to change tab | Press q to quit").centered(),
+                    Line::raw("◄ ► / tab to change tab | + to start | space to finish | q to quit").centered(),
                     footer_area,
                 );
             })
