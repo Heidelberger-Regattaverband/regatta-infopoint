@@ -39,7 +39,7 @@ use std::{
 use strum::IntoEnumIterator;
 use tiberius::{AuthMethod, Config, EncryptionLevel};
 
-pub struct App<'a> {
+pub struct App {
     // application state
     state: AppState,
     selected_tab: SelectedTab,
@@ -50,7 +50,7 @@ pub struct App<'a> {
     // UI components
     heats_tab: HeatsTab,
     time_strip_tab: TimeStripTab,
-    time_strip_popup: TimeStripTabPopup<'a>,
+    time_strip_popup: TimeStripTabPopup,
     logs_tab: LogsTab,
 
     // shared context
@@ -60,7 +60,7 @@ pub struct App<'a> {
     show_time_strip_popup: Rc<RefCell<bool>>,
 }
 
-impl App<'_> {
+impl App {
     pub(crate) async fn new() -> Self {
         let args = Args::parse();
 
