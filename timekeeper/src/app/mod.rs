@@ -64,14 +64,9 @@ impl App<'_> {
     pub(crate) async fn new() -> Self {
         let args = Args::parse();
 
-        let mut config = Config::new();
-        config.host(&args.db_host);
-        config.port(args.db_port);
-        config.database(&args.db_name);
-        config.authentication(AuthMethod::sql_server(&args.db_user, &args.db_password));
-        config.encryption(EncryptionLevel::NotSupported);
+        let db_config = Self::get_db_config(&args);
 
-        TiberiusPool::init(config, 1, 1).await;
+        TiberiusPool::init(db_config, 1, 1).await;
         let timestrip = TimeStrip::load(TiberiusPool::instance()).await.unwrap();
 
         // Use an mpsc::channel to combine stdin events with app events
@@ -239,6 +234,17 @@ impl App<'_> {
             }
             Err(err) => warn!("Error reading open heats: {err}"),
         };
+    }
+
+    /// Create a Tiberius Config from the command line arguments
+    fn get_db_config(args: &Args) -> Config {
+        let mut config = Config::new();
+        config.host(&args.db_host);
+        config.port(args.db_port);
+        config.database(&args.db_name);
+        config.authentication(AuthMethod::sql_server(&args.db_user, &args.db_password));
+        config.encryption(EncryptionLevel::NotSupported);
+        config
     }
 }
 
