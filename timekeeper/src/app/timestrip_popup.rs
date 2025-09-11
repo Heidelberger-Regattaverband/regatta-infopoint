@@ -8,10 +8,12 @@ use ratatui::{
     widgets::{Block, BorderType, Padding, Paragraph, Widget},
 };
 use std::{cell::RefCell, rc::Rc};
+use tui_prompts::prelude::*;
 use tui_textarea::{Input, TextArea};
 
 pub(crate) struct TimeStripTabPopup<'a> {
-    input: TextArea<'a>,
+    heat_tate: TextState<'a>,
+    bib_state: TextState<'a>,
     is_valid: bool,
 
     // shared context
@@ -43,7 +45,13 @@ impl Widget for &mut TimeStripTabPopup<'_> {
         ])
         .areas(inner_area);
         Paragraph::new(label_txt).render(label_area, buf);
-        self.input.render(input_area, buf);
+        TextPrompt::from("Lauf #")
+            .with_block(
+                Block::bordered()
+                    .border_type(BorderType::Rounded)
+                    .padding(Padding::horizontal(1)),
+            )
+            .draw(input_area, buf);
     }
 }
 
@@ -56,7 +64,8 @@ impl TimeStripTabPopup<'_> {
         show_time_strip_popup: Rc<RefCell<bool>>,
     ) -> Self {
         Self {
-            input: TextArea::default(),
+            heat_tate: TextState::default(),
+            bib_state: TextState::default(),
             is_valid: false,
             client,
             heats,
