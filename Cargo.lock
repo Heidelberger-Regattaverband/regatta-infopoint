@@ -3875,7 +3875,7 @@ version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "eb6e0d8a972545cc209b933a1c06dab8932674b54ae19947834ec854fec2364f"
 dependencies = [
- "itertools 0.13.0",
+ "itertools",
  "ratatui",
  "ratatui-macros",
  "rstest",

@@ -12,7 +12,7 @@ use tui_prompts::prelude::*;
 use tui_textarea::{Input, TextArea};
 
 pub(crate) struct TimeStripTabPopup<'a> {
-    heat_tate: TextState<'a>,
+    heat_state: TextState<'a>,
     bib_state: TextState<'a>,
     is_valid: bool,
 
@@ -64,7 +64,7 @@ impl TimeStripTabPopup<'_> {
         show_time_strip_popup: Rc<RefCell<bool>>,
     ) -> Self {
         Self {
-            heat_tate: TextState::default(),
+            heat_state: TextState::default(),
             bib_state: TextState::default(),
             is_valid: false,
             client,
@@ -79,16 +79,16 @@ impl TimeStripTabPopup<'_> {
     pub(crate) async fn handle_key_event(&mut self, event: KeyEvent) {
         match event.code {
             KeyCode::Esc => {
-                if self.input.is_empty() {
+                if self.heat_state.is_empty() {
                     *self.show_time_strip_popup.borrow_mut() = false;
                 } else {
-                    self.input.delete_line_by_head();
+                    self.heat_state.delete();
                 }
             }
             KeyCode::Enter => {
                 if self.is_valid {
-                    let heat_nr = self.input.lines()[0].parse::<i16>().unwrap();
-                    self.input.delete_line_by_head();
+                    let heat_nr = self.heat_state.value().parse::<i16>().unwrap();
+                    self.heat_state.delete();
                     if let Some(time_stamp) = self.selected_time_stamp.borrow().as_ref()
                         && let Ok(time_stamp) = self.time_strip.borrow_mut().set_heat_nr(time_stamp, heat_nr).await
                     {
@@ -99,24 +99,24 @@ impl TimeStripTabPopup<'_> {
                 }
             }
             _ => {
-                let input: Input = event.into();
-                if self.input.input(input) {
-                    self.validate();
-                }
+                // let input: Input = event.into();
+                // if self.heat_state.input(input) {
+                //     self.validate();
+                // }
             }
         }
     }
 
     fn validate(&mut self) {
-        if let Ok(heat_nr) = self.input.lines()[0].parse::<i16>() {
+        if let Ok(heat_nr) = self.heat_state.value().parse::<i16>() {
             self.is_valid = self.heats.borrow().iter().any(|heat| heat.number == heat_nr);
         } else {
             self.is_valid = false;
         }
-        if self.is_valid {
-            self.input.set_style(Style::default().fg(Color::LightGreen));
-        } else {
-            self.input.set_style(Style::default().fg(Color::LightRed));
-        }
+        // if self.is_valid {
+        //     self.heat_state.set_style(Style::default().fg(Color::LightGreen));
+        // } else {
+        //     self.heat_state.set_style(Style::default().fg(Color::LightRed));
+        // }
     }
 }
