@@ -1,5 +1,6 @@
 use crate::aquarius::{client::Client, messages::Heat};
-use db::timekeeper::{TimeStamp, TimeStrip};
+use db::timekeeper::{Split, TimeStamp, TimeStrip};
+use ratatui::layout::{Constraint, Layout};
 use ratatui::prelude::StatefulWidget;
 use ratatui::{
     buffer::Buffer,
@@ -36,13 +37,11 @@ impl Widget for &mut TimeStripTabPopup<'_> {
         let inner_area = block.inner(area);
         block.render(area, buffer);
 
-        TextPrompt::from("Lauf #")
-            .with_block(
-                Block::bordered()
-                    .border_type(BorderType::Rounded)
-                    .padding(Padding::horizontal(1)),
-            )
-            .render(inner_area, buffer, &mut self.heat_state);
+        let [heat_area, bib_area] = Layout::vertical([Constraint::Length(1), Constraint::Length(1)]).areas(inner_area);
+        TextPrompt::from("Lauf").render(heat_area, buffer, &mut self.heat_state);
+        if matches!(ts_split, Split::Finish) {
+            TextPrompt::from("Startnr.").render(bib_area, buffer, &mut self.bib_state);
+        }
     }
 }
 
