@@ -1,10 +1,11 @@
 use crate::aquarius::{client::Client, messages::Heat};
 use db::timekeeper::{TimeStamp, TimeStrip};
+use ratatui::prelude::StatefulWidget;
 use ratatui::{
     buffer::Buffer,
     crossterm::event::{KeyCode, KeyEvent},
-    layout::{Constraint, Layout, Rect},
-    widgets::{Block, BorderType, Padding, Paragraph, Widget},
+    layout::Rect,
+    widgets::{Block, BorderType, Padding, Widget},
 };
 use std::{cell::RefCell, rc::Rc};
 use tui_prompts::prelude::*;
@@ -23,7 +24,7 @@ pub(crate) struct TimeStripTabPopup<'a> {
 }
 
 impl Widget for &mut TimeStripTabPopup<'_> {
-    fn render(self, area: Rect, buf: &mut Buffer) {
+    fn render(self, area: Rect, buffer: &mut Buffer) {
         let binding = self.selected_time_stamp.borrow_mut();
         let ts_split = binding.as_ref().unwrap().split();
         let block = Block::bordered()
@@ -33,23 +34,15 @@ impl Widget for &mut TimeStripTabPopup<'_> {
 
         // inner popup area
         let inner_area = block.inner(area);
-        block.render(area, buf);
+        block.render(area, buffer);
 
-        let label_txt = "Lauf #:";
-        // horizontal header layout: tabs, title
-        let [label_area, input_area] = Layout::horizontal([
-            Constraint::Length((label_txt.len() + 2).try_into().unwrap()),
-            Constraint::Fill(1),
-        ])
-        .areas(inner_area);
-        Paragraph::new(label_txt).render(label_area, buf);
         TextPrompt::from("Lauf #")
             .with_block(
                 Block::bordered()
                     .border_type(BorderType::Rounded)
                     .padding(Padding::horizontal(1)),
             )
-            .draw(input_area, buf);
+            .render(inner_area, buffer, &mut self.heat_state);
     }
 }
 
@@ -74,8 +67,8 @@ impl TimeStripTabPopup<'_> {
     }
 
     #[allow(clippy::await_holding_refcell_ref)]
-    pub(crate) async fn handle_key_event(&mut self, event: KeyEvent) {
-        match event.code {
+    pub(crate) async fn handle_key_event(&mut self, key_event: KeyEvent) {
+        match key_event.code {
             KeyCode::Esc => {
                 if self.heat_state.is_empty() {
                     *self.show_time_strip_popup.borrow_mut() = false;
@@ -97,10 +90,8 @@ impl TimeStripTabPopup<'_> {
                 }
             }
             _ => {
-                // let input: Input = event.into();
-                // if self.heat_state.input(input) {
-                //     self.validate();
-                // }
+                self.heat_state.handle_key_event(key_event);
+                self.validate();
             }
         }
     }
