@@ -4,12 +4,10 @@ use ratatui::{
     buffer::Buffer,
     crossterm::event::{KeyCode, KeyEvent},
     layout::{Constraint, Layout, Rect},
-    style::{Color, Style},
     widgets::{Block, BorderType, Padding, Paragraph, Widget},
 };
 use std::{cell::RefCell, rc::Rc};
 use tui_prompts::prelude::*;
-use tui_textarea::{Input, TextArea};
 
 pub(crate) struct TimeStripTabPopup<'a> {
     heat_state: TextState<'a>,
