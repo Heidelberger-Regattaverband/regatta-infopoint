@@ -131,14 +131,7 @@ impl App<'_> {
                 frame.render_widget(Tabs::new(titles).select(self.selected_tab as usize), tabs_area);
                 match self.selected_tab {
                     SelectedTab::Heats => frame.render_widget(&mut self.heats_tab, inner_area),
-                    SelectedTab::TimeStrip => {
-                        frame.render_widget(&mut self.time_strip_tab, inner_area);
-                        // if *self.show_time_strip_popup.borrow() {
-                        //     let popup_area = popup_area(inner_area, 50, 20);
-                        //     frame.render_widget(Clear, popup_area); // this clears out the background
-                        //     frame.render_widget(&mut self.time_strip_popup, popup_area);
-                        // }
-                    }
+                    SelectedTab::TimeStrip => frame.render_widget(&mut self.time_strip_tab, inner_area),
                     SelectedTab::Logs => frame.render_widget(&mut self.logs_tab, inner_area),
                 };
 
