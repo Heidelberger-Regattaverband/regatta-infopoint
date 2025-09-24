@@ -67,7 +67,7 @@
     </columns>
 
     <items>
-      <ColumnListItem type="Navigation" vAlign="Top" highlight="{path:'heats>',formatter:'.formatter.heatStateHighlight'}">
+      <ColumnListItem type="Navigation" highlight="{path:'heats>',formatter:'.formatter.heatStateHighlight'}">
         <cells>
           <VBox>
             <Text text="{path:'heats>dateTime',formatter:'.formatter.dayTimeIsoLabel'}" visible="{=${heats>cancelled}}" class="cancelled" />
@@ -80,8 +80,9 @@
             <Text text="{path:'heats>race',formatter:'.formatter.nrRaceLabel'}, {path:'heats>',formatter:'.formatter.heatLabel'}"
               visible="{=!${heats>cancelled}}" class="bold" />
 
-            <Text text="{heats>race/longLabel}" visible="{=${heats>cancelled}}" class="cancelled" />
-            <Text text="{heats>race/longLabel}" visible="{=!${heats>cancelled}}" />
+            <Text text="{heats>race/longLabel} {heats>race/comment}" visible="{=${heats>cancelled} &amp;&amp; !${device>/system/phone}}"
+              class="cancelled" />
+            <Text text="{heats>race/longLabel} {heats>race/comment}" visible="{=!${heats>cancelled} &amp;&amp; !${device>/system/phone}}" />
           </VBox>
 
           <VBox>
