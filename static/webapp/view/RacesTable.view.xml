@@ -69,32 +69,33 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation" highlight="{path:'races>',formatter:'.formatter.raceStateHighlight'}" vAlign="Top">
+            <ColumnListItem type="Navigation" highlight="{path:'races>',formatter:'.formatter.raceStateHighlight'}">
               <cells>
-                <VBox alignItems="Center">
+                <VBox>
                   <Text text="{races>number}" visible="{=${races>cancelled}}" class="cancelled" />
                   <Text text="{races>number}" visible="{=!${races>cancelled}}" />
                 </VBox>
 
                 <VBox>
                   <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=${races>cancelled}}" class="boldCancelled" />
-                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=!${races>cancelled}}" class="bold " />
+                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=!${races>cancelled}}" class="bold" />
 
-                  <Text text="{races>longLabel} {races>comment}" visible="{=${races>cancelled}}" class="cancelled" />
-                  <Text text="{races>longLabel} {races>comment}" visible="{=!${races>cancelled}}" />
+                  <Text text="{races>longLabel} {races>comment}" visible="{=${races>cancelled} &amp;&amp; !${device>/system/phone}}"
+                    class="cancelled" />
+                  <Text text="{races>longLabel} {races>comment}" visible="{=!${races>cancelled} &amp;&amp; !${device>/system/phone}}" />
                 </VBox>
 
-                <VBox alignItems="Center">
+                <VBox>
                   <Text text="{path:'races>',formatter:'.formatter.distanceLabel'}" visible="{=${races>cancelled}}" class="cancelled" />
                   <Text text="{path:'races>',formatter:'.formatter.distanceLabel'}" visible="{=!${races>cancelled}}" />
                 </VBox>
 
-                <VBox alignItems="Center">
+                <VBox>
                   <Text text="{races>entriesCount}" visible="{=${races>cancelled}}" class="cancelled" />
                   <Text text="{races>entriesCount}" visible="{=!${races>cancelled}}" />
                 </VBox>
 
-                <VBox alignItems="Center">
+                <VBox>
                   <Text text="{=${races>seeded}?${i18n>common.yes}:${i18n>common.no}}" visible="{=${races>cancelled}}" class="cancelled" />
                   <Text text="{=${races>seeded}?${i18n>common.yes}:${i18n>common.no}}" visible="{=!${races>cancelled}}" />
                 </VBox>
