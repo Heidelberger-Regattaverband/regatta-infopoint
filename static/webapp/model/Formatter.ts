@@ -319,40 +319,27 @@ export default class Formatter {
     }
     const heatLabel: string = heat.label || "";
 
-    switch (heat.roundCode) {
-      case "A":
-        return Formatter.i18n("heat.label.division", [heatLabel, groupValue]);
-      case "H":
-        return Formatter.i18n("heat.label.repechage", [heatLabel]);
-      case "R":
-        return Formatter.i18n("heat.label.mainRace", [heatLabel, groupValue]);
-      case "V":
-        return Formatter.i18n("heat.label.forerun", [heatLabel, groupValue]);
-      case "S":
-        return Formatter.i18n("heat.label.semifinal", [heatLabel, groupValue]);
-      case "F":
-        return Formatter.i18n("heat.label.final", [heatLabel, groupValue]);
-      default:
-        return "";
-    }
+    const roundLabel: string | undefined = Formatter.roundLabel(heat.roundCode);
+
+    return groupValue + (roundLabel ? roundLabel + " " + heatLabel : heatLabel);
   }
 
-  static roundLabel(roundCode: string): string {
+  static roundLabel(roundCode: string): string | undefined {
     switch (roundCode) {
       case "A":
-        return "Abteilung";
+        return Formatter.i18n("heat.label.division");
       case "H":
-        return "Hoffnungslauf";
+        return Formatter.i18n("heat.label.repechage");
       case "R":
-        return "Hauptrennen";
+        return Formatter.i18n("heat.label.mainRace");
       case "V":
-        return "Vorlauf";
+        return Formatter.i18n("heat.label.forerun");
       case "S":
-        return "Halbfinale";
+        return Formatter.i18n("heat.label.semifinal");
       case "F":
-        return "Finale";
+        return Formatter.i18n("heat.label.final");
       default:
-        return roundCode;
+        return undefined;
     }
   }
 
