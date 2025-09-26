@@ -326,7 +326,7 @@ export default class Formatter {
     // e.g. "Final", "Semifinal", ...
     const roundLabel: string | undefined = Formatter.roundLabel(heat.roundCode);
 
-    return groupValue + (roundLabel ? (" - " + roundLabel + " " + heatLabel) : heatLabel);
+    return (groupValue ? groupValue + " " : "") + (roundLabel ? roundLabel + " " + heatLabel : heatLabel);
   }
 
   static roundLabel(roundCode: string): string | undefined {
