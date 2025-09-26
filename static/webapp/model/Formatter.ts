@@ -110,7 +110,7 @@ export default class Formatter {
     if (race.heatsCount > 0 && heats) {
       return heats.filter(heat => !heat.cancelled)
         .map(heat => {
-          let label: string = Formatter.dayTimeIsoLabel(heat.dateTime) + " - " + Formatter.heatLabel(heat);
+          let label: string = Formatter.dayTimeIsoLabel(heat.dateTime) + Formatter.heatLabel(heat);
           if (race.groupMode > 0) {
             label += " " + Formatter.groupValueLabel(heat.groupValue);
           }
