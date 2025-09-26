@@ -181,7 +181,7 @@ export default class Formatter {
     return label;
   }
 
-  static groupValueLabel(groupValue: number): string | undefined {
+  static groupValueLabel(groupValue: number): string {
     const PREFIX: string = "AK ";
     switch (groupValue) {
       case 0:
@@ -205,6 +205,7 @@ export default class Formatter {
       case 36:
         return PREFIX + "J";
     }
+    return "";
   }
 
   private static weekdayLabel(weekday: number): string {
@@ -315,13 +316,17 @@ export default class Formatter {
 
     let groupValue: string = "";
     if (heat.race?.ageClass?.numSubClasses > 0) {
-      groupValue = " - " + Formatter.groupValueLabel(heat.groupValue);
+      // e.g. AK A, AK B, ...
+      groupValue = Formatter.groupValueLabel(heat.groupValue);
     }
+
+    // 1, 2, 3, ...
     const heatLabel: string = heat.label || "";
 
+    // e.g. "Final", "Semifinal", ...
     const roundLabel: string | undefined = Formatter.roundLabel(heat.roundCode);
 
-    return groupValue + (roundLabel ? roundLabel + " " + heatLabel : heatLabel);
+    return groupValue + (roundLabel ? (" - " + roundLabel + " " + heatLabel) : heatLabel);
   }
 
   static roundLabel(roundCode: string): string | undefined {
