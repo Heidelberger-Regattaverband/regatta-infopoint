@@ -110,7 +110,7 @@ export default class Formatter {
     if (race.heatsCount > 0 && heats) {
       return heats.filter(heat => !heat.cancelled)
         .map(heat => {
-          let label: string = Formatter.dayTimeIsoLabel(heat.dateTime) + " - " + Formatter.heatLabel(heat);
+          let label: string = Formatter.dayTimeIsoLabel(heat.dateTime) + Formatter.heatLabel(heat);
           if (race.groupMode > 0) {
             label += " " + Formatter.groupValueLabel(heat.groupValue);
           }
@@ -181,7 +181,7 @@ export default class Formatter {
     return label;
   }
 
-  static groupValueLabel(groupValue: number): string | undefined {
+  static groupValueLabel(groupValue: number): string {
     const PREFIX: string = "AK ";
     switch (groupValue) {
       case 0:
@@ -205,6 +205,7 @@ export default class Formatter {
       case 36:
         return PREFIX + "J";
     }
+    return "";
   }
 
   private static weekdayLabel(weekday: number): string {
@@ -315,44 +316,35 @@ export default class Formatter {
 
     let groupValue: string = "";
     if (heat.race?.ageClass?.numSubClasses > 0) {
-      groupValue = " - " + Formatter.groupValueLabel(heat.groupValue);
+      // e.g. AK A, AK B, ...
+      groupValue = Formatter.groupValueLabel(heat.groupValue);
     }
+
+    // 1, 2, 3, ...
     const heatLabel: string = heat.label || "";
 
-    switch (heat.roundCode) {
-      case "A":
-        return Formatter.i18n("heat.label.division", [heatLabel, groupValue]);
-      case "H":
-        return Formatter.i18n("heat.label.repechage", [heatLabel]);
-      case "R":
-        return Formatter.i18n("heat.label.mainRace", [heatLabel, groupValue]);
-      case "V":
-        return Formatter.i18n("heat.label.forerun", [heatLabel, groupValue]);
-      case "S":
-        return Formatter.i18n("heat.label.semifinal", [heatLabel, groupValue]);
-      case "F":
-        return Formatter.i18n("heat.label.final", [heatLabel, groupValue]);
-      default:
-        return "";
-    }
+    // e.g. "Final", "Semifinal", ...
+    const roundLabel: string | undefined = Formatter.roundLabel(heat.roundCode);
+
+    return groupValue + (roundLabel ? (" - " + roundLabel + " " + heatLabel) : heatLabel);
   }
 
-  static roundLabel(roundCode: string): string {
+  static roundLabel(roundCode: string): string | undefined {
     switch (roundCode) {
       case "A":
-        return "Abteilung";
+        return Formatter.i18n("heat.label.division");
       case "H":
-        return "Hoffnungslauf";
+        return Formatter.i18n("heat.label.repechage");
       case "R":
-        return "Hauptrennen";
+        return Formatter.i18n("heat.label.mainRace");
       case "V":
-        return "Vorlauf";
+        return Formatter.i18n("heat.label.forerun");
       case "S":
-        return "Halbfinale";
+        return Formatter.i18n("heat.label.semifinal");
       case "F":
-        return "Finale";
+        return Formatter.i18n("heat.label.final");
       default:
-        return roundCode;
+        return undefined;
     }
   }
 
