@@ -75,7 +75,14 @@ impl User {
         let db_cfg = Config::get().get_db_config_for_user(&username, &credentials.password);
 
         // then try to open a connection to the MS-SQL server ...
-        let tcp = TcpStream::connect(db_cfg.get_addr()).await.unwrap();
+        let tcp = match TcpStream::connect(db_cfg.get_addr()).await {
+            Ok(stream) => stream,
+            Err(e) => {
+                log::warn!("Failed to connect to database: {}", e);
+                return Err(HttpResponse::Unauthorized().json(User::new_guest()));
+            }
+        };
+
         // ... and connect with credentials
         if let Ok(client) = Client::connect(db_cfg, tcp.compat_write()).await {
             let _ = client.close().await;
