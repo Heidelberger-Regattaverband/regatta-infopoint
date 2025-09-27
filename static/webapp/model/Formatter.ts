@@ -181,51 +181,10 @@ export default class Formatter {
     return label;
   }
 
-  static groupValueLabel(groupValue: number): string {
-    const PREFIX: string = "AK ";
-    switch (groupValue) {
-      case 0:
-        return PREFIX + "A";
-      case 4:
-        return PREFIX + "B";
-      case 8:
-        return PREFIX + "C";
-      case 12:
-        return PREFIX + "D";
-      case 16:
-        return PREFIX + "E";
-      case 20:
-        return PREFIX + "F";
-      case 24:
-        return PREFIX + "G";
-      case 28:
-        return PREFIX + "H";
-      case 32:
-        return PREFIX + "I";
-      case 36:
-        return PREFIX + "J";
-    }
-    return "";
-  }
-
-  private static weekdayLabel(weekday: number): string {
-    switch (weekday) {
-      case 0: return "So";
-      case 1: return "Mo";
-      case 2: return "Di";
-      case 3: return "Mi";
-      case 4: return "Do";
-      case 5: return "Fr";
-      case 6: return "Sa";
-      case 7: return "So";
-      default: return "";
-    }
-  }
-
   static weekDayDateLabel(date?: string): string {
     if (date) {
       const weekday: string = Formatter.weekdayLabel(new Date(date).getDay());
-      const dateLabel: string | undefined = Formatter.dateLabel(date);
+      const dateLabel: string = Formatter.dateLabel(date);
       return `${weekday}, ${dateLabel}`;
     }
     return "";
@@ -246,14 +205,6 @@ export default class Formatter {
     if (time) {
       const timeSplit: string[] = time.split(":");
       return timeSplit[0] + ":" + timeSplit[1];
-    }
-    return "";
-  }
-
-  private static dateLabel(date?: string): string {
-    if (date) {
-      const dateSplit: string[] = date.split("-");
-      return dateSplit[2] + "." + dateSplit[1] + "." + dateSplit[0];
     }
     return "";
   }
@@ -345,6 +296,51 @@ export default class Formatter {
         return Formatter.i18n("heat.label.final");
       default:
         return undefined;
+    }
+  }
+
+  // private helpers
+  private static groupValueLabel(groupValue: number): string {
+    const PREFIX: string = "AK ";
+    switch (groupValue) {
+      case 0: return PREFIX + "A";
+      case 4: return PREFIX + "B";
+      case 8: return PREFIX + "C";
+      case 12: return PREFIX + "D";
+      case 16: return PREFIX + "E";
+      case 20: return PREFIX + "F";
+      case 24: return PREFIX + "G";
+      case 28: return PREFIX + "H";
+      case 32: return PREFIX + "I";
+      case 36: return PREFIX + "J";
+    }
+    return "";
+  }
+
+  private static dateLabel(date?: string): string {
+    if (date) {
+      const dateSplit: string[] = date.split("-");
+      return dateSplit[2] + "." + dateSplit[1] + "." + dateSplit[0];
+    }
+    return "";
+  }
+
+  /**
+   * Returns a short label for the weekday.
+   * @param weekday the weekday number: 0 = Sunday, 1 = Monday, ..., 6 = Saturday, 7 = Sunday
+   * @returns The short label for the weekday.
+   */
+  private static weekdayLabel(weekday: number): string {
+    switch (weekday) {
+      case 0: return "So";
+      case 1: return "Mo";
+      case 2: return "Di";
+      case 3: return "Mi";
+      case 4: return "Do";
+      case 5: return "Fr";
+      case 6: return "Sa";
+      case 7: return "So";
+      default: return "";
     }
   }
 
