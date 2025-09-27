@@ -6,6 +6,7 @@ use std::{
     env,
     error::Error,
     fmt::{self, Display},
+    str::FromStr,
     sync::OnceLock,
 };
 use tiberius::{AuthMethod, Config as TiberiusConfig, EncryptionLevel};
@@ -68,7 +69,7 @@ pub struct Config {
     /// The path can be set by setting the environment variable `HTTPS_CERT_PATH`.
     pub https_cert_path: String,
     /// The path to the HTTPS key. Defaults to `./ssl/key.pem`.
-    /// The path can be set by setting the environment variable `HTTPS_KEY_Path`.
+    /// The path can be set by setting the environment variable `HTTPS_KEY_PATH`.
     pub https_key_path: String,
     /// The maximum number of requests per interval.
     /// The maximum number of requests can be set by setting the environment variable `HTTP_RL_MAX_REQUESTS`.
@@ -106,6 +107,8 @@ pub struct Config {
 }
 
 impl Config {
+    const DB_POOL_MAX_SIZE: &str = "DB_POOL_MAX_SIZE";
+
     /// Returns the configuration of the server.
     /// The configuration is read from the environment.
     ///
@@ -218,6 +221,9 @@ impl Config {
         let db_pool_max_size: u32 = Self::parse_env_var("DB_POOL_MAX_SIZE", "100")?;
         let db_pool_min_idle: u32 = Self::parse_env_var("DB_POOL_MIN_IDLE", "30")?;
 
+        // Validate database configuration values
+        Self::validate_db_config(&db_host, db_port, db_pool_max_size, db_pool_min_idle)?;
+
         info!(
             "Database configuration: host={}, port={}, encryption={}, name={}, user={}, pool_max_size={}, pool_min_idle={}",
             db_host.bold(),
@@ -234,6 +240,9 @@ impl Config {
 
         // handle cache TTL with proper error handling
         let cache_ttl: u64 = Self::parse_env_var("CACHE_TTL", "30")?;
+
+        // Validate cache TTL
+        Self::validate_cache_ttl(cache_ttl)?;
 
         info!(
             "Aquarius: active_regatta_id={}, cache_ttl={}s",
@@ -267,11 +276,72 @@ impl Config {
 
     // Private helper methods
 
+    /// Validates database configuration values
+    fn validate_db_config(host: &str, port: u16, pool_max_size: u32, pool_min_idle: u32) -> Result<(), ConfigError> {
+        // Validate host is not empty
+        if host.trim().is_empty() {
+            return Err(ConfigError::InvalidValue {
+                var_name: "DB_HOST".to_string(),
+                reason: "Database host cannot be empty".to_string(),
+            });
+        }
+
+        // Validate port range
+        if port == 0 {
+            return Err(ConfigError::InvalidValue {
+                var_name: "DB_PORT".to_string(),
+                reason: "Database port cannot be 0".to_string(),
+            });
+        }
+
+        // Validate pool configuration
+        if pool_max_size == 0 {
+            return Err(ConfigError::InvalidValue {
+                var_name: Self::DB_POOL_MAX_SIZE.to_string(),
+                reason: "Database pool max size must be greater than 0".to_string(),
+            });
+        }
+
+        if pool_min_idle > pool_max_size {
+            return Err(ConfigError::InvalidValue {
+                var_name: "DB_POOL_MIN_IDLE".to_string(),
+                reason: format!(
+                    "Database pool min idle ({}) cannot be greater than max size ({})",
+                    pool_min_idle, pool_max_size
+                ),
+            });
+        }
+
+        Ok(())
+    }
+
+    /// Validates cache TTL value
+    fn validate_cache_ttl(ttl: u64) -> Result<(), ConfigError> {
+        if ttl == 0 {
+            return Err(ConfigError::InvalidValue {
+                var_name: "CACHE_TTL".to_string(),
+                reason: "Cache TTL must be greater than 0 seconds".to_string(),
+            });
+        }
+
+        if ttl > 3600 {
+            return Err(ConfigError::InvalidValue {
+                var_name: "CACHE_TTL".to_string(),
+                reason: format!(
+                    "Cache TTL ({} seconds) is very high, maximum recommended is 3600 seconds (1 hour)",
+                    ttl
+                ),
+            });
+        }
+
+        Ok(())
+    }
+
     /// Helper function to parse environment variable with proper error handling
     fn parse_env_var<T>(var_name: &str, default: &str) -> Result<T, ConfigError>
     where
-        T: std::str::FromStr,
-        T::Err: std::fmt::Display,
+        T: FromStr,
+        T::Err: Display,
     {
         let value = env::var(var_name).unwrap_or_else(|_| default.to_string());
         value.parse().map_err(|e: T::Err| ConfigError::ParseError {
@@ -289,8 +359,8 @@ impl Config {
     /// Helper function to parse optional environment variable with better error handling
     fn parse_optional_env_var<T>(var_name: &str) -> Result<Option<T>, ConfigError>
     where
-        T: std::str::FromStr,
-        T::Err: std::fmt::Display,
+        T: FromStr,
+        T::Err: Display,
     {
         match env::var(var_name) {
             Ok(value) => {
