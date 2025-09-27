@@ -162,7 +162,7 @@ impl Config {
     }
 
     /// Returns the database configuration required by the tiberius client.
-    pub fn get_db_config_for_user(&self, user: &String, password: &String) -> TiberiusConfig {
+    pub fn get_db_config_for_user(&self, user: &str, password: &str) -> TiberiusConfig {
         let mut config = TiberiusConfig::new();
         config.host(&self.db_host);
         config.port(self.db_port);
