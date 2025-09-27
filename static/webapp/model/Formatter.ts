@@ -21,6 +21,11 @@ export default class Formatter {
   // -----------------
   // race formatters
   // -----------------
+  /**
+   * Returns a formatted label for the race combining shortLabel and comment.
+   * @param race the race object with shortLabel and optional comment properties, can be undefined
+   * @returns The formatted race label, or empty string if race is undefined.
+   */
   static raceLabel(race?: any): string {
     if (race) {
       let label: string = race.shortLabel;
@@ -58,8 +63,7 @@ export default class Formatter {
         case 5: // finished
         case 6: // photo finish
           return IndicationColor.Indication03; // started -> orange
-        case 4:
-          return IndicationColor.Indication04; // official -> green
+        case 4: return IndicationColor.Indication04; // official -> green
       }
     }
   }
@@ -74,15 +78,12 @@ export default class Formatter {
       switch (race.state) {
         default:
         case 0:
-        case 1:
-          return Formatter.i18n("common.scheduled");
+        case 1: return Formatter.i18n("common.scheduled");
         case 2:
         case 3:
         case 5:
-        case 6:
-          return Formatter.i18n("heat.state.started");
-        case 4:
-          return Formatter.i18n("common.finished");
+        case 6: return Formatter.i18n("heat.state.started");
+        case 4: return Formatter.i18n("common.finished");
       }
     }
   }
@@ -218,18 +219,12 @@ export default class Formatter {
     } else {
       switch (heat.state) {
         default:
-        case 0:
-          return Formatter.i18n("common.scheduled");
-        case 1:
-          return Formatter.i18n("common.seeded");
-        case 2:
-          return Formatter.i18n("heat.state.started");
-        case 4:
-          return Formatter.i18n("heat.state.official");
-        case 5:
-          return Formatter.i18n("heat.state.finished");
-        case 6:
-          return Formatter.i18n("heat.state.photoFinish");
+        case 0: return Formatter.i18n("common.scheduled");
+        case 1: return Formatter.i18n("common.seeded");
+        case 2: return Formatter.i18n("heat.state.started");
+        case 4: return Formatter.i18n("heat.state.official");
+        case 5: return Formatter.i18n("heat.state.finished");
+        case 6: return Formatter.i18n("heat.state.photoFinish");
       }
     }
   }
@@ -244,18 +239,12 @@ export default class Formatter {
     } else {
       switch (heat.state) {
         default:
-        case 0:
-          return undefined; // initial -> no color
-        case 1:
-          return IndicationColor.Indication05; // scheduled -> blue
-        case 2:
-          return IndicationColor.Indication03; // started -> orange
-        case 4:
-          return IndicationColor.Indication04; // official -> green
-        case 5:
-          return IndicationColor.Indication06; // finished -> dark green
-        case 6:
-          return IndicationColor.Indication07; // photo finish -> ???
+        case 0: return undefined; // initial -> no color
+        case 1: return IndicationColor.Indication05; // scheduled -> blue
+        case 2: return IndicationColor.Indication03; // started -> orange
+        case 4: return IndicationColor.Indication04; // official -> green
+        case 5: return IndicationColor.Indication06; // finished -> dark green
+        case 6: return IndicationColor.Indication07; // photo finish -> ???
       }
     }
   }
@@ -280,22 +269,15 @@ export default class Formatter {
     return (groupValue ? groupValue + " " : "") + (roundLabel ? roundLabel + " " + heatLabel : heatLabel);
   }
 
-  static roundLabel(roundCode: string): string | undefined {
+  static roundLabel(roundCode?: string): string | undefined {
     switch (roundCode) {
-      case "A":
-        return Formatter.i18n("heat.label.division");
-      case "H":
-        return Formatter.i18n("heat.label.repechage");
-      case "R":
-        return Formatter.i18n("heat.label.mainRace");
-      case "V":
-        return Formatter.i18n("heat.label.forerun");
-      case "S":
-        return Formatter.i18n("heat.label.semifinal");
-      case "F":
-        return Formatter.i18n("heat.label.final");
-      default:
-        return undefined;
+      case "A": return Formatter.i18n("heat.label.division");
+      case "H": return Formatter.i18n("heat.label.repechage");
+      case "R": return Formatter.i18n("heat.label.mainRace");
+      case "V": return Formatter.i18n("heat.label.forerun");
+      case "S": return Formatter.i18n("heat.label.semifinal");
+      case "F": return Formatter.i18n("heat.label.final");
+      default: return undefined;
     }
   }
 
@@ -317,10 +299,26 @@ export default class Formatter {
     return "";
   }
 
+  /**
+   * Formats a date string from ISO format (YYYY-MM-DD) to German date format (DD.MM.YYYY).
+   * 
+   * @param date The date string in ISO format (YYYY-MM-DD), can be undefined
+   * @returns The formatted date string in German format (DD.MM.YYYY), or empty string if input is invalid
+   * 
+   * @example
+   * ```typescript
+   * dateLabel("2024-03-15") // returns "15.03.2024"
+   * dateLabel("2023-12-31") // returns "31.12.2023"
+   * dateLabel(undefined)    // returns ""
+   * dateLabel("invalid")    // returns ""
+   * ```
+   */
   private static dateLabel(date?: string): string {
     if (date) {
       const dateSplit: string[] = date.split("-");
-      return dateSplit[2] + "." + dateSplit[1] + "." + dateSplit[0];
+      if (dateSplit.length >= 3) {
+        return dateSplit[2] + "." + dateSplit[1] + "." + dateSplit[0];
+      }
     }
     return "";
   }
