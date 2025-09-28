@@ -1,21 +1,21 @@
-use tiberius::{QueryStream, Row, error::Error as DbError};
+use tiberius::{QueryStream, Row, error::Error as TiberiusError};
 
 /// Extract a single row from a query stream, returning an error if no row is found.
 ///
 /// # Errors
 /// Returns an error if the query fails or if no row is returned.
-pub async fn get_row(stream: QueryStream<'_>) -> Result<Row, DbError> {
+pub async fn get_row(stream: QueryStream<'_>) -> Result<Row, TiberiusError> {
     stream
         .into_row()
         .await?
-        .ok_or_else(|| DbError::Conversion("No row returned from query".into()))
+        .ok_or_else(|| TiberiusError::Conversion("No row returned from query".into()))
 }
 
 /// Extract an optional row from a query stream.
 ///
 /// # Errors
 /// Returns an error if the query fails, but returns `Ok(None)` if no row is found.
-pub async fn try_get_row(stream: QueryStream<'_>) -> Result<Option<Row>, DbError> {
+pub async fn try_get_row(stream: QueryStream<'_>) -> Result<Option<Row>, TiberiusError> {
     stream.into_row().await
 }
 
@@ -23,6 +23,6 @@ pub async fn try_get_row(stream: QueryStream<'_>) -> Result<Option<Row>, DbError
 ///
 /// # Errors
 /// Returns an error if the query fails.
-pub async fn get_rows(stream: QueryStream<'_>) -> Result<Vec<Row>, DbError> {
+pub async fn get_rows(stream: QueryStream<'_>) -> Result<Vec<Row>, TiberiusError> {
     stream.into_first_result().await
 }
