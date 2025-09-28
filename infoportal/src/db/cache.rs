@@ -1,4 +1,5 @@
 use db::aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
+use log::{error, warn};
 use std::{hash::Hash, time::Duration};
 use stretto::AsyncCache;
 use tokio::task;
@@ -49,12 +50,15 @@ where
     /// # Returns
     /// A new `Cache`.
     /// # Panics
-    /// If the creation of the cache fails.
+    /// If the creation of the cache fails. This is acceptable as the application
+    /// cannot function without caching.
     pub fn new(size: usize, ttl: Duration) -> Self {
-        Cache {
-            cache: AsyncCache::new(size, MAX_COST, task::spawn).unwrap(),
-            ttl,
-        }
+        let cache = AsyncCache::new(size, MAX_COST, task::spawn).unwrap_or_else(|e| {
+            error!("Failed to create cache with size {}: {}", size, e);
+            panic!("Critical error: Cannot create cache - application cannot continue");
+        });
+
+        Cache { cache, ttl }
     }
 }
 
@@ -76,7 +80,10 @@ where
 
     async fn set(&self, key: &K, value: &V) {
         self.cache.insert_with_ttl(*key, value.clone(), 1, self.ttl).await;
-        self.cache.wait().await.unwrap();
+        if let Err(e) = self.cache.wait().await {
+            warn!("Cache wait operation failed: {}", e);
+            // Continue execution as this is not critical for application functionality
+        }
     }
 }
 

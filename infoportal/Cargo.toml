@@ -17,7 +17,6 @@ build = "build.rs"
 db = { path = "../db" }
 
 # Utils
-anyhow.workspace = true
 dotenv.workspace = true
 env_logger.workspace = true
 log.workspace = true

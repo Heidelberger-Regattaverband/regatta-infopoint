@@ -1,10 +1,12 @@
-use crate::aquarius::model::utils;
-use crate::tiberius::{RowColumn, TiberiusPool, TryRowColumn};
-use chrono::Utc;
-use chrono::{DateTime, Local};
+use crate::{
+    aquarius::model::utils,
+    error::DbError,
+    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
+};
+use chrono::{DateTime, Local, Utc};
 use serde::Serialize;
 use strum_macros::Display;
-use tiberius::{Query, Row, error::Error as DbError};
+use tiberius::{Query, Row, error::Error as TiberiusError};
 
 /// A time stamp of an event, such as a start or finish time stamp in a race.
 #[derive(Debug, Clone, Serialize)]
@@ -81,7 +83,7 @@ impl TimeStamp {
         Ok(time_stamps.into_iter().map(|row| TimeStamp::from(&row)).collect())
     }
 
-    pub(crate) async fn delete(&self, pool: &TiberiusPool) -> Result<(), DbError> {
+    pub(crate) async fn delete(&self, pool: &TiberiusPool) -> Result<(), TiberiusError> {
         let mut query = Query::new("DELETE FROM HRV_Timestamp WHERE timestamp = @P1".to_string());
         query.bind(self.time);
 
@@ -90,7 +92,7 @@ impl TimeStamp {
         Ok(())
     }
 
-    pub(crate) async fn persist(&mut self, regatta_id: i32, pool: &TiberiusPool) -> Result<(), DbError> {
+    pub(crate) async fn persist(&mut self, regatta_id: i32, pool: &TiberiusPool) -> Result<(), TiberiusError> {
         if !self.persisted {
             let mut query = Query::new(
             "INSERT INTO HRV_Timestamp (timestamp, event_id, split_nr, heat_nr, bib) VALUES (@P1, @P2, @P3, @P4, @P5)"
@@ -109,7 +111,7 @@ impl TimeStamp {
         Ok(())
     }
 
-    pub(crate) async fn update(&mut self, pool: &TiberiusPool) -> Result<(), DbError> {
+    pub(crate) async fn update(&mut self, pool: &TiberiusPool) -> Result<(), TiberiusError> {
         if !self.persisted {
             let mut query =
                 Query::new("UPDATE HRV_Timestamp SET heat_nr = @P2, bib = @P3 WHERE timestamp = @P1".to_string());

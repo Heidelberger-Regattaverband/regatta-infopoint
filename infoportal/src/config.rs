@@ -1,8 +1,14 @@
 use crate::built_info;
 use colored::Colorize;
 use dotenv::dotenv;
-use log::info;
-use std::{env, sync::OnceLock};
+use log::{error, info};
+use std::{
+    env,
+    error::Error,
+    fmt::{self, Display},
+    str::FromStr,
+    sync::OnceLock,
+};
 use tiberius::{AuthMethod, Config as TiberiusConfig, EncryptionLevel};
 
 static CONFIG: OnceLock<Config> = OnceLock::new();
@@ -66,8 +72,17 @@ pub struct Config {
 impl Config {
     /// Returns the configuration of the server.
     /// The configuration is read from the environment.
+    ///
+    /// # Panics
+    /// This function will panic if there are configuration errors during initialization.
+    /// This is intentional as the application cannot start without valid configuration.
     pub fn get() -> &'static Config {
-        CONFIG.get_or_init(Self::init)
+        CONFIG.get_or_init(|| {
+            Self::init().unwrap_or_else(|e| {
+                error!("Configuration initialization failed: {}", e);
+                panic!("Failed to initialize configuration: {}", e);
+            })
+        })
     }
 
     /// Returns the HTTP binding configuration of the server.
@@ -108,7 +123,7 @@ impl Config {
     }
 
     /// Returns the database configuration required by the tiberius client.
-    pub fn get_db_config_for_user(&self, user: &String, password: &String) -> TiberiusConfig {
+    pub fn get_db_config_for_user(&self, user: &str, password: &str) -> TiberiusConfig {
         let mut config = TiberiusConfig::new();
         config.host(&self.db_host);
         config.port(self.db_port);
@@ -124,7 +139,7 @@ impl Config {
     }
 
     /// Initializes the configuration by reading variables from the environment.
-    fn init() -> Self {
+    fn init() -> Result<Self, ConfigError> {
         dotenv().ok();
         env_logger::init();
 
@@ -135,60 +150,45 @@ impl Config {
             built_info::GIT_HEAD_REF.unwrap_or_default().bold()
         );
 
-        // read http config
-        let http_bind = env::var("HTTP_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
-        let http_port: u16 = env::var("HTTP_PORT")
-            .unwrap_or_else(|_| "8080".to_string())
-            .parse()
-            .unwrap();
-        let http_app_content_path = env::var("HTTP_APP_CONTENT_PATH").unwrap_or_else(|_| "./static/dist".to_owned());
+        // read http config with improved error handling - using constants
+        let http_bind = env::var(r#const::HTTP_BIND).unwrap_or_else(|_| r#const::DEFAULT_BIND_ADDRESS.to_string());
+        let http_port: u16 = Self::parse_env_var(r#const::HTTP_PORT, r#const::DEFAULT_HTTP_PORT)?;
+        let http_app_content_path = env::var(r#const::HTTP_APP_CONTENT_PATH)
+            .unwrap_or_else(|_| r#const::DEFAULT_STATIC_CONTENT_PATH.to_owned());
+        info!(
+            "Serving static application content from path: {}",
+            http_app_content_path.bold()
+        );
 
-        // read https config
-        let https_bind = env::var("HTTPS_BIND").unwrap_or_else(|_| "0.0.0.0".to_string());
-        let https_port: u16 = env::var("HTTPS_PORT")
-            .unwrap_or_else(|_| "8443".to_string())
-            .parse()
-            .unwrap();
-        let https_cert_path = env::var("HTTPS_CERT_PATH").unwrap_or_else(|_| "./ssl/cert.pem".to_string());
-        let https_key_path = env::var("HTTPS_KEY_PATH").unwrap_or_else(|_| "./ssl/key.pem".to_string());
+        // read https config with improved error handling
+        let https_bind = env::var(r#const::HTTPS_BIND).unwrap_or_else(|_| r#const::DEFAULT_BIND_ADDRESS.to_string());
+        let https_port: u16 = Self::parse_env_var(r#const::HTTPS_PORT, r#const::DEFAULT_HTTPS_PORT)?;
+        let https_cert_path =
+            env::var(r#const::HTTPS_CERT_PATH).unwrap_or_else(|_| r#const::DEFAULT_SSL_CERT_PATH.to_string());
+        let https_key_path =
+            env::var(r#const::HTTPS_KEY_PATH).unwrap_or_else(|_| r#const::DEFAULT_SSL_KEY_PATH.to_string());
 
-        // read ratelimiter config
-        let http_rl_max_requests: u64 = env::var("HTTP_RL_MAX_REQUESTS")
-            .unwrap_or_else(|_| "500".to_string())
-            .parse()
-            .unwrap();
-        let http_rl_interval: u64 = env::var("HTTP_RL_INTERVAL")
-            .unwrap_or_else(|_| "600".to_string())
-            .parse()
-            .unwrap();
+        // read ratelimiter config with improved error handling
+        let http_rl_max_requests: u64 =
+            Self::parse_env_var(r#const::HTTP_RL_MAX_REQUESTS, r#const::DEFAULT_HTTP_RL_MAX_REQUESTS)?;
+        let http_rl_interval: u64 = Self::parse_env_var(r#const::HTTP_RL_INTERVAL, r#const::DEFAULT_HTTP_RL_INTERVAL)?;
 
-        let http_workers: Option<usize> = match env::var("HTTP_WORKERS") {
-            // parses the value and panics if it's not a number
-            Ok(workers) => Some(workers.parse().unwrap()),
-            Err(_error) => Option::None,
-        };
+        // handle HTTP_WORKERS with proper error handling
+        let http_workers: Option<usize> = Self::parse_optional_env_var(r#const::HTTP_WORKERS)?;
 
-        // read db config
-        let db_host = env::var("DB_HOST").expect("env variable `DB_HOST` should be set");
-        let db_port: u16 = env::var("DB_PORT")
-            .unwrap_or_else(|_| "1433".to_string())
-            .parse()
-            .unwrap();
-        let db_name = env::var("DB_NAME").expect("env variable `DB_NAME` should be set");
-        let db_user = env::var("DB_USER").expect("env variable `DB_USER` should be set");
-        let db_password = env::var("DB_PASSWORD").expect("env variable `DB_PASSWORD` should be set");
-        let db_encryption: bool = env::var("DB_ENCRYPTION")
-            .unwrap_or_else(|_| "false".to_string())
-            .parse()
-            .unwrap();
-        let db_pool_max_size: u32 = env::var("DB_POOL_MAX_SIZE")
-            .unwrap_or_else(|_| "100".to_string())
-            .parse()
-            .unwrap();
-        let db_pool_min_idle: u32 = env::var("DB_POOL_MIN_IDLE")
-            .unwrap_or_else(|_| "30".to_string())
-            .parse()
-            .unwrap();
+        // read db config - these are required with improved error handling
+        let db_host = Self::get_required_env_var(r#const::DB_HOST)?;
+        let db_port: u16 = Self::parse_env_var(r#const::DB_PORT, r#const::DEFAULT_DB_PORT)?;
+        let db_name = Self::get_required_env_var(r#const::DB_NAME)?;
+        let db_user = Self::get_required_env_var(r#const::DB_USER)?;
+        let db_password = Self::get_required_env_var(r#const::DB_PASSWORD)?;
+        let db_encryption: bool = Self::parse_env_var(r#const::DB_ENCRYPTION, r#const::DEFAULT_DB_ENCRYPTION)?;
+        let db_pool_max_size: u32 = Self::parse_env_var(r#const::DB_POOL_MAX_SIZE, r#const::DEFAULT_DB_POOL_MAX_SIZE)?;
+        let db_pool_min_idle: u32 = Self::parse_env_var(r#const::DB_POOL_MIN_IDLE, r#const::DEFAULT_DB_POOL_MIN_IDLE)?;
+
+        // Validate database configuration values
+        Self::validate_db_config(&db_host, db_port, db_pool_max_size, db_pool_min_idle)?;
+
         info!(
             "Database configuration: host={}, port={}, encryption={}, name={}, user={}, pool_max_size={}, pool_min_idle={}",
             db_host.bold(),
@@ -200,21 +200,22 @@ impl Config {
             db_pool_min_idle.to_string().bold(),
         );
 
-        let active_regatta_id: Option<i32> = match env::var("ACTIVE_REGATTA_ID") {
-            Ok(id) => id.parse().ok(),
-            Err(_) => None,
-        };
-        let cache_ttl: u64 = env::var("CACHE_TTL")
-            .unwrap_or_else(|_| "30".to_string())
-            .parse()
-            .unwrap();
+        // handle ACTIVE_REGATTA_ID with proper error handling - using constants
+        let active_regatta_id: Option<i32> = Self::parse_optional_env_var(r#const::ACTIVE_REGATTA_ID)?;
+
+        // handle cache TTL with proper error handling - using constants
+        let cache_ttl: u64 = Self::parse_env_var(r#const::CACHE_TTL, r#const::DEFAULT_CACHE_TTL)?;
+
+        // Validate cache TTL
+        Self::validate_cache_ttl(cache_ttl)?;
+
         info!(
             "Aquarius: active_regatta_id={}, cache_ttl={}s",
             active_regatta_id.unwrap_or_default().to_string().bold(),
             cache_ttl.to_string().bold()
         );
 
-        Config {
+        Ok(Config {
             http_bind,
             http_port,
             https_bind,
@@ -235,6 +236,188 @@ impl Config {
             active_regatta_id,
             cache_ttl,
             http_app_content_path,
+        })
+    }
+
+    // Private helper methods
+
+    /// Validates database configuration values - using constants
+    fn validate_db_config(host: &str, port: u16, pool_max_size: u32, pool_min_idle: u32) -> Result<(), ConfigError> {
+        // Validate host is not empty
+        if host.trim().is_empty() {
+            return Err(ConfigError::InvalidValue {
+                var_name: r#const::DB_HOST.to_string(),
+                reason: "Database host cannot be empty".to_string(),
+            });
+        }
+
+        // Validate port range
+        if port == 0 {
+            return Err(ConfigError::InvalidValue {
+                var_name: r#const::DB_PORT.to_string(),
+                reason: "Database port cannot be 0".to_string(),
+            });
+        }
+
+        // Validate pool configuration
+        if pool_max_size == 0 {
+            return Err(ConfigError::InvalidValue {
+                var_name: r#const::DB_POOL_MAX_SIZE.to_string(),
+                reason: "Database pool max size must be greater than 0".to_string(),
+            });
+        }
+
+        if pool_min_idle > pool_max_size {
+            return Err(ConfigError::InvalidValue {
+                var_name: r#const::DB_POOL_MIN_IDLE.to_string(),
+                reason: format!(
+                    "Database pool min idle ({}) cannot be greater than max size ({})",
+                    pool_min_idle, pool_max_size
+                ),
+            });
+        }
+
+        Ok(())
+    }
+
+    /// Validates cache TTL value - using constants
+    fn validate_cache_ttl(ttl: u64) -> Result<(), ConfigError> {
+        if ttl == 0 {
+            return Err(ConfigError::InvalidValue {
+                var_name: r#const::CACHE_TTL.to_string(),
+                reason: "Cache TTL must be greater than 0 seconds".to_string(),
+            });
+        }
+
+        if ttl > r#const::CACHE_TTL_MAX_RECOMMENDED {
+            return Err(ConfigError::InvalidValue {
+                var_name: r#const::CACHE_TTL.to_string(),
+                reason: format!(
+                    "Cache TTL ({} seconds) is very high, maximum recommended is {} seconds (1 hour)",
+                    ttl,
+                    r#const::CACHE_TTL_MAX_RECOMMENDED
+                ),
+            });
+        }
+
+        Ok(())
+    }
+
+    /// Helper function to parse environment variable with proper error handling
+    fn parse_env_var<T>(var_name: &str, default: &str) -> Result<T, ConfigError>
+    where
+        T: FromStr,
+        T::Err: Display,
+    {
+        let value = env::var(var_name).unwrap_or_else(|_| default.to_string());
+        value.parse().map_err(|e: T::Err| ConfigError::ParseError {
+            var_name: var_name.to_string(),
+            value: value.clone(),
+            error: e.to_string(),
+        })
+    }
+
+    /// Helper function to get required environment variable
+    fn get_required_env_var(var_name: &str) -> Result<String, ConfigError> {
+        env::var(var_name).map_err(|_| ConfigError::MissingRequired(var_name.to_string()))
+    }
+
+    /// Helper function to parse optional environment variable with better error handling
+    fn parse_optional_env_var<T>(var_name: &str) -> Result<Option<T>, ConfigError>
+    where
+        T: FromStr,
+        T::Err: Display,
+    {
+        match env::var(var_name) {
+            Ok(value) => {
+                let parsed = value.parse().map_err(|e: T::Err| ConfigError::ParseError {
+                    var_name: var_name.to_string(),
+                    value: value.clone(),
+                    error: e.to_string(),
+                })?;
+                Ok(Some(parsed))
+            }
+            Err(_) => Ok(None),
         }
     }
+}
+
+/// Configuration error type for better error handling
+#[derive(Debug)]
+enum ConfigError {
+    /// Environment variable parsing error
+    ParseError {
+        var_name: String,
+        value: String,
+        error: String,
+    },
+    /// Missing required environment variable
+    MissingRequired(String),
+    /// Invalid configuration value
+    InvalidValue { var_name: String, reason: String },
+}
+
+impl Display for ConfigError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ConfigError::ParseError { var_name, value, error } => {
+                write!(
+                    f,
+                    "Failed to parse environment variable '{}' with value '{}': {}",
+                    var_name, value, error
+                )
+            }
+            ConfigError::MissingRequired(var_name) => {
+                write!(f, "Required environment variable '{}' is not set", var_name)
+            }
+            ConfigError::InvalidValue { var_name, reason } => {
+                write!(f, "Invalid value for environment variable '{}': {}", var_name, reason)
+            }
+        }
+    }
+}
+
+impl Error for ConfigError {}
+
+/// Constants module for better organization and maintainability
+mod r#const {
+    // Environment variable names - ALL repeated env vars now have constants
+    pub(super) const HTTP_BIND: &str = "HTTP_BIND";
+    pub(super) const HTTP_PORT: &str = "HTTP_PORT";
+    pub(super) const HTTP_APP_CONTENT_PATH: &str = "HTTP_APP_CONTENT_PATH";
+    pub(super) const HTTP_WORKERS: &str = "HTTP_WORKERS";
+    pub(super) const HTTPS_BIND: &str = "HTTPS_BIND";
+    pub(super) const HTTPS_PORT: &str = "HTTPS_PORT";
+    pub(super) const HTTPS_CERT_PATH: &str = "HTTPS_CERT_PATH";
+    pub(super) const HTTPS_KEY_PATH: &str = "HTTPS_KEY_PATH";
+    pub(super) const HTTP_RL_MAX_REQUESTS: &str = "HTTP_RL_MAX_REQUESTS";
+    pub(super) const HTTP_RL_INTERVAL: &str = "HTTP_RL_INTERVAL";
+    pub(super) const DB_HOST: &str = "DB_HOST";
+    pub(super) const DB_PORT: &str = "DB_PORT";
+    pub(super) const DB_NAME: &str = "DB_NAME";
+    pub(super) const DB_USER: &str = "DB_USER";
+    pub(super) const DB_PASSWORD: &str = "DB_PASSWORD";
+    pub(super) const DB_ENCRYPTION: &str = "DB_ENCRYPTION";
+    pub(super) const DB_POOL_MAX_SIZE: &str = "DB_POOL_MAX_SIZE";
+    pub(super) const DB_POOL_MIN_IDLE: &str = "DB_POOL_MIN_IDLE";
+    pub(super) const ACTIVE_REGATTA_ID: &str = "ACTIVE_REGATTA_ID";
+    pub(super) const CACHE_TTL: &str = "CACHE_TTL";
+
+    // Default values - corresponding to all environment variables
+    pub(super) const DEFAULT_BIND_ADDRESS: &str = "0.0.0.0";
+    pub(super) const DEFAULT_HTTP_PORT: &str = "8080";
+    pub(super) const DEFAULT_HTTPS_PORT: &str = "8443";
+    pub(super) const DEFAULT_SSL_CERT_PATH: &str = "./ssl/cert.pem";
+    pub(super) const DEFAULT_SSL_KEY_PATH: &str = "./ssl/key.pem";
+    pub(super) const DEFAULT_STATIC_CONTENT_PATH: &str = "./static/dist";
+    pub(super) const DEFAULT_HTTP_RL_MAX_REQUESTS: &str = "500";
+    pub(super) const DEFAULT_HTTP_RL_INTERVAL: &str = "600";
+    pub(super) const DEFAULT_DB_PORT: &str = "1433";
+    pub(super) const DEFAULT_DB_ENCRYPTION: &str = "false";
+    pub(super) const DEFAULT_DB_POOL_MAX_SIZE: &str = "100";
+    pub(super) const DEFAULT_DB_POOL_MIN_IDLE: &str = "30";
+    pub(super) const DEFAULT_CACHE_TTL: &str = "30";
+
+    // Validation limits
+    pub(super) const CACHE_TTL_MAX_RECOMMENDED: u64 = 3600;
 }

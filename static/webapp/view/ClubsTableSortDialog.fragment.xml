@@ -6,7 +6,7 @@
       <ViewSettingsItem text="{i18n>common.club}" key="longName" cust:column="clubNameCol" />
       <ViewSettingsItem text="{i18n>common.abbreviation}" key="abbreviation" cust:column="clubAbbrCol" />
       <ViewSettingsItem text="{i18n>common.entries}" key="participationsCount" cust:column="clubEntriesCol" />
-      <ViewSettingsItem text="{i18n>statistics.athletes}" key="ahtletesCount" cust:column="clubAthletesCol" />
+      <ViewSettingsItem text="{i18n>statistics.athletes}" key="athletesCount" cust:column="clubAthletesCol" />
     </sortItems>
   </ViewSettingsDialog>
 </core:FragmentDefinition>

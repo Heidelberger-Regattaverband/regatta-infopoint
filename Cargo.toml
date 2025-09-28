@@ -38,7 +38,6 @@ strum = { version = "0" }
 strum_macros = { version = "0" }
 
 # Utils
-anyhow = { version = "1" }
 dotenv = { version = "0" }
 log = { version = "0" }
 env_logger = { version = "0" }

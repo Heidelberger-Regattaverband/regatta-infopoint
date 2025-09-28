@@ -1,9 +1,10 @@
 use crate::{
     aquarius::model::utils,
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError, time::chrono::NaiveDateTime};
+use tiberius::{Query, Row, time::chrono::NaiveDateTime};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]

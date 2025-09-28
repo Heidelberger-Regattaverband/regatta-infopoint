@@ -1,9 +1,10 @@
 use crate::{
     aquarius::model::{Club, TryToEntity, utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError, time::chrono::NaiveDateTime};
+use tiberius::{Query, Row, time::chrono::NaiveDateTime};
 
 /// An athlete is a person who participates in a regatta.
 #[derive(Debug, Serialize, Clone)]

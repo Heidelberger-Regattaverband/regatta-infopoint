@@ -1,11 +1,12 @@
 use crate::{
     aquarius::model::{AgeClass, Block, BoatClass, utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool},
 };
 use chrono::NaiveDate;
 use futures::join;
 use serde::Serialize;
-use tiberius::{Query, error::Error as DbError};
+use tiberius::Query;
 
 /// A struct containing all available filter values for a regatta.
 #[derive(Debug, Serialize, Clone)]

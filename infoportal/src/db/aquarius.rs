@@ -5,12 +5,12 @@ use crate::{
 use actix_identity::Identity;
 use db::{
     aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule, Score, Statistics},
+    error::DbError,
     tiberius::TiberiusPool,
 };
 use futures::future::join3;
 use log::debug;
 use std::time::{Duration, Instant};
-use tiberius::error::Error as DbError;
 
 /// The `Aquarius` struct is the main interface to the database. It is used to query data from the database.
 pub(crate) struct Aquarius {

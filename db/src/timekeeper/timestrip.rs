@@ -1,10 +1,10 @@
 use crate::{
     aquarius::model::Regatta,
+    error::DbError,
     tiberius::TiberiusPool,
     timekeeper::time_stamp::{Split, TimeStamp},
 };
 use log::info;
-use tiberius::error::Error as DbError;
 
 /// A time strip is a collection of time stamps.
 pub struct TimeStrip {

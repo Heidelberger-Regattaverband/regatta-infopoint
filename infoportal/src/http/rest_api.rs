@@ -291,7 +291,10 @@ async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<i
         // authentication succeeded
         Ok(user) => {
             // attach valid user identity to current session
-            Identity::login(&request.extensions(), user.username.clone()).unwrap();
+            if let Err(e) = Identity::login(&request.extensions(), user.username.clone()) {
+                log::error!("Failed to attach user identity to session: {}", e);
+                return Err(ErrorInternalServerError("Failed to create session"));
+            }
             // return user information: username and scope
             Ok(Json(user))
         }
@@ -325,7 +328,13 @@ async fn logout(user: Identity) -> impl Responder {
 #[get("/identity")]
 async fn identity(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     if let Some(user) = opt_user {
-        Ok(Json(User::new(user.id().unwrap(), UserScope::User)))
+        match user.id() {
+            Ok(id) => Ok(Json(User::new(id, UserScope::User))),
+            Err(e) => {
+                log::error!("Failed to get user ID from identity: {}", e);
+                Err(ErrorInternalServerError("Failed to get user identity"))
+            }
+        }
     } else {
         Err(InternalError::from_response("", HttpResponse::Unauthorized().json(User::new_guest())).into())
     }
