@@ -5,11 +5,11 @@ use tiberius::{QueryStream, Row, error::Error as TiberiusError};
 ///
 /// # Errors
 /// Returns an error if the query fails or if no row is returned.
-pub async fn get_row(stream: QueryStream<'_>) -> Result<Row, TiberiusError> {
+pub async fn get_row(stream: QueryStream<'_>) -> Result<Row, DbError> {
     stream
         .into_row()
         .await?
-        .ok_or_else(|| TiberiusError::Conversion("No row returned from query".into()))
+        .ok_or_else(|| DbError::from(TiberiusError::Conversion("No row returned from query".into())))
 }
 
 /// Extract an optional row from a query stream.

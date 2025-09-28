@@ -4,7 +4,7 @@ use crate::{
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as TiberiusError, time::chrono::NaiveDateTime};
+use tiberius::{Query, Row, time::chrono::NaiveDateTime};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -36,7 +36,7 @@ impl From<&Row> for Regatta {
 }
 
 impl Regatta {
-    pub async fn query_active_regatta(pool: &TiberiusPool) -> Result<Regatta, TiberiusError> {
+    pub async fn query_active_regatta(pool: &TiberiusPool) -> Result<Regatta, DbError> {
         let mut client = pool.get().await;
         let stream = Query::new("SELECT TOP 1 e.* FROM Event e ORDER BY e.Event_StartDate DESC, e.Event_ID DESC")
             .query(&mut client)

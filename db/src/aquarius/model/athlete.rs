@@ -1,9 +1,10 @@
 use crate::{
     aquarius::model::{Club, TryToEntity, utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError, time::chrono::NaiveDateTime};
+use tiberius::{Query, Row, error::Error as TiberiusError, time::chrono::NaiveDateTime};
 
 /// An athlete is a person who participates in a regatta.
 #[derive(Debug, Serialize, Clone)]
@@ -33,7 +34,10 @@ pub struct Athlete {
 }
 
 impl Athlete {
-    pub async fn query_participating_athletes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Athlete>, DbError> {
+    pub async fn query_participating_athletes(
+        regatta_id: i32,
+        pool: &TiberiusPool,
+    ) -> Result<Vec<Athlete>, TiberiusError> {
         let round = 64;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1},

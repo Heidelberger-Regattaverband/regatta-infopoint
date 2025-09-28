@@ -1,9 +1,10 @@
 use crate::{
     aquarius::{flags_scraper::ClubFlag, model::utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError, numeric::Decimal};
+use tiberius::{Query, Row, error::Error as TiberiusError, numeric::Decimal};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -62,7 +63,10 @@ impl Club {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of clubs that are participating in the regatta
-    pub async fn query_clubs_participating_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
+    pub async fn query_clubs_participating_regatta(
+        regatta_id: i32,
+        pool: &TiberiusPool,
+    ) -> Result<Vec<Self>, TiberiusError> {
         let sql = format!(
             "SELECT DISTINCT {0},
                 (SELECT COUNT(*) FROM (
