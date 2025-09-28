@@ -1,10 +1,11 @@
 use crate::{
     aquarius::model::{Athlete, TryToEntity, utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool},
 };
 use futures::join;
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError};
+use tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
 struct RacesStatistics {

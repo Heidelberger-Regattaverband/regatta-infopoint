@@ -1,3 +1,4 @@
+use crate::error::DbError;
 use tiberius::{QueryStream, Row, error::Error as TiberiusError};
 
 /// Extract a single row from a query stream, returning an error if no row is found.
@@ -15,8 +16,8 @@ pub async fn get_row(stream: QueryStream<'_>) -> Result<Row, TiberiusError> {
 ///
 /// # Errors
 /// Returns an error if the query fails, but returns `Ok(None)` if no row is found.
-pub async fn try_get_row(stream: QueryStream<'_>) -> Result<Option<Row>, TiberiusError> {
-    stream.into_row().await
+pub async fn try_get_row(stream: QueryStream<'_>) -> Result<Option<Row>, DbError> {
+    stream.into_row().await.map_err(DbError::from)
 }
 
 /// Extract all rows from a query stream.

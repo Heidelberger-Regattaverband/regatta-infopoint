@@ -9,7 +9,7 @@ pub mod tiberius;
 pub mod timekeeper;
 
 /// Common error types for the database layer.
-mod error {
+pub mod error {
     use bb8::RunError;
     use std::{
         error::Error,
