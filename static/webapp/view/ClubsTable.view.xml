@@ -64,7 +64,7 @@
                 </HBox>
                 <Text text="{clubs>abbreviation}" />
                 <Text text="{clubs>participationsCount}" />
-                <Text text="{clubs>ahtletesCount} ({clubs>ahtletesFemaleCount}/{clubs>ahtletesMaleCount})" />
+                <Text text="{clubs>athletesCount} ({clubs>athletesFemaleCount}/{clubs>athletesMaleCount})" />
               </cells>
             </ColumnListItem>
           </items>
