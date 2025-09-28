@@ -174,7 +174,7 @@ impl Config {
         let http_rl_interval: u64 = Self::parse_env_var(r#const::HTTP_RL_INTERVAL, r#const::DEFAULT_HTTP_RL_INTERVAL)?;
 
         // handle HTTP_WORKERS with proper error handling
-        let http_workers: Option<usize> = Self::parse_optional_env_var(r#const::HTTP_WORKERS)?;
+        let http_workers: Option<usize> = Self::parse_optional_env_var(r#const::HTTP_WORKERS);
 
         // read db config - these are required with improved error handling
         let db_host = Self::get_required_env_var(r#const::DB_HOST)?;
@@ -201,7 +201,7 @@ impl Config {
         );
 
         // handle ACTIVE_REGATTA_ID with proper error handling - using constants
-        let active_regatta_id: Option<i32> = Self::parse_optional_env_var(r#const::ACTIVE_REGATTA_ID)?;
+        let active_regatta_id: Option<i32> = Self::parse_optional_env_var(r#const::ACTIVE_REGATTA_ID);
 
         // handle cache TTL with proper error handling - using constants
         let cache_ttl: u64 = Self::parse_env_var(r#const::CACHE_TTL, r#const::DEFAULT_CACHE_TTL)?;
@@ -323,21 +323,17 @@ impl Config {
     }
 
     /// Helper function to parse optional environment variable with better error handling
-    fn parse_optional_env_var<T>(var_name: &str) -> Result<Option<T>, ConfigError>
+    fn parse_optional_env_var<T>(var_name: &str) -> Option<T>
     where
         T: FromStr,
         T::Err: Display,
     {
         match env::var(var_name) {
             Ok(value) => {
-                let parsed = value.parse().map_err(|e: T::Err| ConfigError::ParseError {
-                    var_name: var_name.to_string(),
-                    value: value.clone(),
-                    error: e.to_string(),
-                })?;
-                Ok(Some(parsed))
+                let parsed: Result<T, _> = value.parse();
+                if parsed.is_ok() { parsed.ok() } else { None }
             }
-            Err(_) => Ok(None),
+            Err(_) => None,
         }
     }
 }
