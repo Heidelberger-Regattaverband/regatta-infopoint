@@ -1,11 +1,12 @@
 use crate::{
     aquarius::model::{Club, Crew, Entry, Heat, HeatResult, Race, TryToEntity, utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool},
 };
 use futures::future::{BoxFuture, join_all};
 use serde::Serialize;
 use std::{cmp::Ordering, time::Duration};
-use tiberius::{Query, Row, error::Error as DbError};
+use tiberius::{Query, Row};
 
 /// A entry of a boat in a heat.
 #[derive(Debug, Serialize, Clone)]

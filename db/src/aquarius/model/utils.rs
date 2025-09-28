@@ -24,6 +24,6 @@ pub async fn try_get_row(stream: QueryStream<'_>) -> Result<Option<Row>, DbError
 ///
 /// # Errors
 /// Returns an error if the query fails.
-pub async fn get_rows(stream: QueryStream<'_>) -> Result<Vec<Row>, TiberiusError> {
-    stream.into_first_result().await
+pub async fn get_rows(stream: QueryStream<'_>) -> Result<Vec<Row>, DbError> {
+    stream.into_first_result().await.map_err(DbError::from)
 }

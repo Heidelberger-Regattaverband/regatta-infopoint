@@ -5,7 +5,7 @@ use crate::{
 };
 use chrono::{DateTime, Utc};
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as TiberiusError};
+use tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -125,7 +125,7 @@ impl Race {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list with races of the regatta
-    pub async fn query_races_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, TiberiusError> {
+    pub async fn query_races_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
             JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
