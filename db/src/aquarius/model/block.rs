@@ -1,7 +1,7 @@
-use crate::tiberius::TiberiusPool;
+use crate::{error::DbError, tiberius::TiberiusPool};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::Serialize;
-use tiberius::{Query, error::Error as DbError};
+use tiberius::Query;
 
 /// A block of heats.
 #[derive(Debug, Serialize, Clone)]
@@ -33,7 +33,7 @@ impl Block {
         );
         query.bind(regatta_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let stream = query.query(&mut client).await?;
         let rows = stream.into_first_result().await?;
 

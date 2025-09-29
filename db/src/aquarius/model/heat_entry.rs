@@ -61,7 +61,7 @@ impl HeatEntry {
         let mut query = Query::new(sql);
         query.bind(heat.id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let rows = utils::get_rows(query.query(&mut client).await?).await?;
 
         // convert rows into HeatEntry

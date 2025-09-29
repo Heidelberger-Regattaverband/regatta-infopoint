@@ -1,4 +1,4 @@
-use crate::tiberius::TiberiusConnectionManager;
+use crate::{error::DbError, tiberius::TiberiusConnectionManager};
 use bb8::{Pool, PooledConnection, State};
 use std::sync::OnceLock;
 use tiberius::Config;
@@ -48,8 +48,8 @@ impl TiberiusPool {
     ///
     /// # Returns
     /// A `PooledConnection` to the Tiberius database.
-    pub async fn get(&self) -> PooledConnection<'_, TiberiusConnectionManager> {
-        self.inner.get().await.unwrap()
+    pub async fn get(&self) -> Result<PooledConnection<'_, TiberiusConnectionManager>, DbError> {
+        self.inner.get().await.map_err(DbError::from)
     }
 
     /// Returns the current state of the pool.

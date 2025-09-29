@@ -81,7 +81,7 @@ impl Schedule {
         let mut query: Query = Query::new(sql);
         query.bind(regatta_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let stream = query.query(&mut client).await?;
         let entries: Vec<ScheduleEntry> = utils::get_rows(stream)
             .await?

@@ -53,7 +53,7 @@ impl Score {
         );
         query.bind(regatta_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let scores = utils::get_rows(query.query(&mut client).await?).await?;
         let mut index = 0;
         Ok(scores

@@ -84,7 +84,7 @@ impl Heat {
         let mut query = Query::new(sql);
         query.bind(regatta_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let heats = utils::get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
@@ -106,7 +106,7 @@ impl Heat {
         let mut query = Query::new(sql);
         query.bind(race_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let heats = utils::get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
@@ -129,7 +129,7 @@ impl Heat {
         );
         let mut query = Query::new(sql);
         query.bind(entry_id);
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let heats = utils::get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
@@ -155,7 +155,7 @@ impl Heat {
         let mut query = Query::new(sql);
         query.bind(heat_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let mut heat = Heat::from(&utils::get_row(query.query(&mut client).await?).await?);
 
         let results = join(

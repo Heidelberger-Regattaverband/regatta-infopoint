@@ -177,7 +177,7 @@ impl Entry {
 }
 
 async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Result<Vec<Entry>, DbError> {
-    let mut client = pool.get().await;
+    let mut client = pool.get().await?;
     let stream = query.query(&mut client).await?;
 
     let mut crew_futures: Vec<BoxFuture<Result<Vec<Crew>, DbError>>> = Vec::new();
