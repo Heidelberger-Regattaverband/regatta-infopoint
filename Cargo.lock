@@ -3799,13 +3799,12 @@ dependencies = [
 
 [[package]]
 name = "tui-logger"
-version = "0.17.3"
+version = "0.17.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57ea457a31a3fff1073f83e5c9e1c61a7805c435b2476b1df3a78f934adebabe"
+checksum = "382b7ea88082dbe2236ed1e942552b1bfc59e98fdc5d0599f11a627aae9ee2be"
 dependencies = [
  "chrono",
  "env_filter",
- "fxhash",
  "lazy_static",
  "log",
  "parking_lot",
