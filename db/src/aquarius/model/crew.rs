@@ -54,7 +54,7 @@ impl Crew {
         query.bind(entry_id);
         query.bind(round);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let crew = utils::get_rows(query.query(&mut client).await?).await?;
         Ok(crew.into_iter().map(|row| Crew::from(&row)).collect())
     }

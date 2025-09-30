@@ -55,7 +55,7 @@ impl Athlete {
         query.bind(regatta_id);
         query.bind(round);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let stream = query.query(&mut client).await?;
         let athletes = utils::get_rows(stream).await?;
         Ok(athletes.into_iter().map(|row| Athlete::from(&row)).collect())
@@ -83,7 +83,7 @@ impl Athlete {
         query.bind(athlete_id);
         query.bind(round);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let stream = query.query(&mut client).await?;
         let row = utils::get_row(stream).await?;
         Ok(Athlete::from(&row))

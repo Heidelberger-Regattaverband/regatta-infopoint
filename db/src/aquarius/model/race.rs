@@ -139,7 +139,7 @@ impl Race {
         let mut query = Query::new(sql);
         query.bind(regatta_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let stream = query.query(&mut client).await?;
         let races = utils::get_rows(stream).await?;
         Ok(races.into_iter().map(|row| Race::from(&row)).collect())
@@ -155,9 +155,9 @@ impl Race {
             AgeClass::select_minimal_columns("a"),
             BoatClass::select_columns("b")
         );
-        let mut client = pool.get().await;
         let mut query = Query::new(sql);
         query.bind(race_id);
+        let mut client = pool.get().await?;
         let stream = query.query(&mut client).await?;
         Ok(Race::from(&utils::get_row(stream).await?))
     }

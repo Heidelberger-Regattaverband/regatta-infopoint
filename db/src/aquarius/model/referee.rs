@@ -36,7 +36,7 @@ impl Referee {
         );
         query.bind(heat_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let heats = utils::get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Referee::from(&row)).collect())
     }
