@@ -1,9 +1,10 @@
 use crate::{
     aquarius::model::{Club, TryToEntity, utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError, time::chrono::NaiveDateTime};
+use tiberius::{Query, Row, time::chrono::NaiveDateTime};
 use utoipa::ToSchema;
 
 /// An athlete is a person who participates in a regatta.
@@ -55,7 +56,7 @@ impl Athlete {
         query.bind(regatta_id);
         query.bind(round);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let stream = query.query(&mut client).await?;
         let athletes = utils::get_rows(stream).await?;
         Ok(athletes.into_iter().map(|row| Athlete::from(&row)).collect())
@@ -83,7 +84,7 @@ impl Athlete {
         query.bind(athlete_id);
         query.bind(round);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let stream = query.query(&mut client).await?;
         let row = utils::get_row(stream).await?;
         Ok(Athlete::from(&row))
@@ -91,8 +92,7 @@ impl Athlete {
 
     pub fn select_columns(alias: &str) -> String {
         format!(
-            " {0}.Athlet_ID, {0}.Athlet_FirstName, {0}.Athlet_LastName, {0}.Athlet_Gender, {0}.Athlet_DOB ",
-            alias
+            " {alias}.Athlet_ID, {alias}.Athlet_FirstName, {alias}.Athlet_LastName, {alias}.Athlet_Gender, {alias}.Athlet_DOB "
         )
     }
 }

@@ -1,10 +1,11 @@
 use crate::{
     aquarius::model::{AgeClass, BoatClass, Entry, Heat, TryToEntity, utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use chrono::{DateTime, Utc};
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError};
+use tiberius::{Query, Row};
 use utoipa::ToSchema;
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
@@ -109,14 +110,13 @@ impl TryToEntity<Race> for Row {
 impl Race {
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
-            " {0}.Offer_ID, {0}.Offer_RaceNumber, {0}.Offer_Distance, {0}.Offer_IsLightweight, {0}.Offer_Cancelled, {0}.Offer_ShortLabel, \
-            {0}.Offer_LongLabel, {0}.Offer_Comment, {0}.Offer_GroupMode, {0}.Offer_SortValue, {0}.Offer_HRV_Seeded, \
-            (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = {0}.Offer_ID AND e.Entry_CancelValue = 0) as Entries_Count, \
-            (SELECT Count(*) FROM Comp  c WHERE c.Comp_Race_ID_FK = {0}.Offer_ID AND c.Comp_Cancelled = 0) as Heats_Count, \
-            (SELECT AVG(Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = {0}.Offer_ID AND c.Comp_Cancelled = 0) as Race_State, \
-            (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = {0}.Offer_ID AND c.Comp_Cancelled = 0) as Race_DateTime \
-        ",
-            alias
+            " {alias}.Offer_ID, {alias}.Offer_RaceNumber, {alias}.Offer_Distance, {alias}.Offer_IsLightweight, {alias}.Offer_Cancelled, {alias}.Offer_ShortLabel, \
+            {alias}.Offer_LongLabel, {alias}.Offer_Comment, {alias}.Offer_GroupMode, {alias}.Offer_SortValue, {alias}.Offer_HRV_Seeded, \
+            (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = {alias}.Offer_ID AND e.Entry_CancelValue = 0) as Entries_Count, \
+            (SELECT Count(*) FROM Comp  c WHERE c.Comp_Race_ID_FK = {alias}.Offer_ID AND c.Comp_Cancelled = 0) as Heats_Count, \
+            (SELECT AVG(Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.Offer_ID AND c.Comp_Cancelled = 0) as Race_State, \
+            (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.Offer_ID AND c.Comp_Cancelled = 0) as Race_DateTime \
+        "
         )
     }
 
@@ -140,7 +140,7 @@ impl Race {
         let mut query = Query::new(sql);
         query.bind(regatta_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let stream = query.query(&mut client).await?;
         let races = utils::get_rows(stream).await?;
         Ok(races.into_iter().map(|row| Race::from(&row)).collect())
@@ -156,9 +156,9 @@ impl Race {
             AgeClass::select_minimal_columns("a"),
             BoatClass::select_columns("b")
         );
-        let mut client = pool.get().await;
         let mut query = Query::new(sql);
         query.bind(race_id);
+        let mut client = pool.get().await?;
         let stream = query.query(&mut client).await?;
         Ok(Race::from(&utils::get_row(stream).await?))
     }

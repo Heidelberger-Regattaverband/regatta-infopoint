@@ -1,9 +1,10 @@
 use crate::{
     aquarius::model::{Club, utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError};
+use tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -52,7 +53,7 @@ impl Score {
         );
         query.bind(regatta_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let scores = utils::get_rows(query.query(&mut client).await?).await?;
         let mut index = 0;
         Ok(scores

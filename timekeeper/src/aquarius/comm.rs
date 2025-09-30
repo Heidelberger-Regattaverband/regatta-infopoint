@@ -38,7 +38,7 @@ impl Communication {
         info!("Writing command: \"{}\"", utils::print_whitespaces(cmd));
         let count = self.writer.write(cmd.as_bytes())?;
         self.writer.flush()?;
-        trace!("Written {} bytes", count);
+        trace!("Written {count} bytes");
         Ok(count)
     }
 
@@ -83,7 +83,7 @@ impl Communication {
                     } else {
                         // Decode the buffer to a string. Aquarius uses Windows-1252 encoding.
                         let line = WINDOWS_1252.decode(&buf).0;
-                        trace!("Received line (len={}:) \"{}\"", count, utils::print_whitespaces(&line));
+                        trace!("Received line (len={count}:) \"{}\"", utils::print_whitespaces(&line));
                         // If the line is empty, break the loop. Aquarius sends \r\n at the end of the message.
                         if count <= 2 {
                             break;

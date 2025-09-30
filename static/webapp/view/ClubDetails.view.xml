@@ -28,7 +28,7 @@
             <VBox>
               <ObjectAttribute title="{i18n>common.entries}" text="{club>/participationsCount}" />
               <ObjectAttribute title="{i18n>statistics.athletes} (w/m)"
-                text="{club>/ahtletesCount} ({club>/ahtletesFemaleCount}/{club>/ahtletesMaleCount})" />
+                text="{club>/athletesCount} ({club>/athletesFemaleCount}/{club>/athletesMaleCount})" />
             </VBox>
           </HBox>
         </f:DynamicPageHeader>

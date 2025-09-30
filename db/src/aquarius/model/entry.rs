@@ -1,10 +1,11 @@
 use crate::{
     aquarius::model::{Club, Crew, Heat, Race, TryToEntity, utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use futures::future::{BoxFuture, join_all};
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError};
+use tiberius::{Query, Row};
 use utoipa::ToSchema;
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
@@ -73,8 +74,7 @@ impl From<&Row> for Entry {
 impl Entry {
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
-            " {0}.Entry_ID, {0}.Entry_Bib, {0}.Entry_Comment, {0}.Entry_BoatNumber, {0}.Entry_GroupValue, {0}.Entry_CancelValue ",
-            alias
+            " {alias}.Entry_ID, {alias}.Entry_Bib, {alias}.Entry_Comment, {alias}.Entry_BoatNumber, {alias}.Entry_GroupValue, {alias}.Entry_CancelValue "
         )
     }
 
@@ -178,7 +178,7 @@ impl Entry {
 }
 
 async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Result<Vec<Entry>, DbError> {
-    let mut client = pool.get().await;
+    let mut client = pool.get().await?;
     let stream = query.query(&mut client).await?;
 
     let mut crew_futures: Vec<BoxFuture<Result<Vec<Crew>, DbError>>> = Vec::new();

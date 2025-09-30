@@ -1,11 +1,12 @@
 use crate::{
     aquarius::model::{Club, Crew, Entry, Heat, HeatResult, Race, TryToEntity, utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool},
 };
 use futures::future::{BoxFuture, join_all};
 use serde::Serialize;
 use std::{cmp::Ordering, time::Duration};
-use tiberius::{Query, Row, error::Error as DbError};
+use tiberius::{Query, Row};
 use utoipa::ToSchema;
 
 /// A entry of a boat in a heat.
@@ -61,7 +62,7 @@ impl HeatEntry {
         let mut query = Query::new(sql);
         query.bind(heat.id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let rows = utils::get_rows(query.query(&mut client).await?).await?;
 
         // convert rows into HeatEntry

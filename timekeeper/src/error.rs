@@ -28,11 +28,11 @@ pub(crate) enum TimekeeperErr {
 impl Display for TimekeeperErr {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         match self {
-            TimekeeperErr::ParseError(err) => write!(f, "Parse error: {}", err),
-            TimekeeperErr::IoError(err) => write!(f, "I/O error: {}", err),
-            TimekeeperErr::InvalidMessage(msg) => write!(f, "Invalid message: {}", msg),
-            TimekeeperErr::SendError(err) => write!(f, "Send error: {}", err),
-            TimekeeperErr::ReceiveError(err) => write!(f, "Receive error: {}", err),
+            TimekeeperErr::ParseError(err) => write!(f, "Parse error: {err}"),
+            TimekeeperErr::IoError(err) => write!(f, "I/O error: {err}"),
+            TimekeeperErr::InvalidMessage(msg) => write!(f, "Invalid message: {msg}"),
+            TimekeeperErr::SendError(err) => write!(f, "Send error: {err}"),
+            TimekeeperErr::ReceiveError(err) => write!(f, "Receive error: {err}"),
         }
     }
 }

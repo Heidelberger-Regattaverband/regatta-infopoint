@@ -69,6 +69,17 @@ impl RowColumn<NaiveDate> for Row {
     }
 }
 
+impl RowColumn<DateTime<Utc>> for Row {
+    fn get_column(&self, col_name: &str) -> DateTime<Utc> {
+        match self.try_get::<NaiveDateTime, _>(col_name) {
+            Ok(value) => value
+                .map(|date_time| DateTime::from_naive_utc_and_offset(date_time, Utc))
+                .unwrap(),
+            _ => DateTime::from_timestamp(0, 0).unwrap(),
+        }
+    }
+}
+
 impl TryRowColumn<String> for Row {
     fn try_get_column(&self, col_name: &str) -> Option<String> {
         match self.try_get::<&str, _>(col_name) {

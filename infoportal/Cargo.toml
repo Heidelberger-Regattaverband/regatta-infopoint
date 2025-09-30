@@ -17,7 +17,6 @@ build = "build.rs"
 db = { path = "../db" }
 
 # Utils
-anyhow.workspace = true
 dotenv.workspace = true
 env_logger.workspace = true
 log.workspace = true
@@ -37,9 +36,9 @@ actix-files = "0"
 actix-extensible-rate-limit = "0"
 actix-web-prom = { version = "0", features = ["process"] }
 prometheus = { version = "0", default-features = false }
-rustls = "0.23"
-rustls-pki-types = "1"
-rustls-pemfile = "2"
+rustls.workspace = true
+rustls-pki-types.workspace = true
+rustls-pemfile.workspace = true
 
 # OpenAPI
 utoipa.workspace = true
@@ -56,7 +55,7 @@ serde.workspace = true
 serde_json.workspace = true
 colored.workspace = true
 sysinfo = "0"
-uptime_lib = "0"
+uptime_lib.workspace = true
 
 [dev-dependencies]
 tokio-shared-rt = "0"

@@ -29,25 +29,25 @@ fn load_club_flags() -> HashMap<i32, ClubFlag> {
     let mut club_flags = HashMap::new();
 
     for a in document.select(&a_selector) {
-        if let Some(href) = a.value().attr("href") {
-            if href.starts_with("/clubs/") {
-                for img in a.select(&img_selector) {
-                    if let Some(src) = img.value().attr("src") {
-                        let club_extern_id: i32 = href
-                            .split('/')
-                            .next_back()
-                            .unwrap_or_default()
-                            .parse()
-                            .unwrap_or_default();
-                        let flag_url = BASE_URL.to_owned() + src;
-                        club_flags.insert(
+        if let Some(href) = a.value().attr("href")
+            && href.starts_with("/clubs/")
+        {
+            for img in a.select(&img_selector) {
+                if let Some(src) = img.value().attr("src") {
+                    let club_extern_id: i32 = href
+                        .split('/')
+                        .next_back()
+                        .unwrap_or_default()
+                        .parse()
+                        .unwrap_or_default();
+                    let flag_url = BASE_URL.to_owned() + src;
+                    club_flags.insert(
+                        club_extern_id,
+                        ClubFlag {
+                            flag_url,
                             club_extern_id,
-                            ClubFlag {
-                                flag_url,
-                                club_extern_id,
-                            },
-                        );
-                    }
+                        },
+                    );
                 }
             }
         }

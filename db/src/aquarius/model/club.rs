@@ -1,9 +1,10 @@
 use crate::{
     aquarius::{flags_scraper::ClubFlag, model::utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError, numeric::Decimal};
+use tiberius::{Query, Row, numeric::Decimal};
 use utoipa::ToSchema;
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
@@ -37,13 +38,13 @@ pub struct Club {
 
     /// The number of athletes in this club that are participating.
     #[serde(skip_serializing_if = "Option::is_none")]
-    ahtletes_count: Option<i32>,
+    athletes_count: Option<i32>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    ahtletes_female_count: Option<i32>,
+    athletes_female_count: Option<i32>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    ahtletes_male_count: Option<i32>,
+    athletes_male_count: Option<i32>,
 
     /// An optional URL showing the flag of the club.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -103,7 +104,7 @@ impl Club {
         let mut query = Query::new(sql);
         query.bind(regatta_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let clubs = utils::get_rows(query.query(&mut client).await?).await?;
         Ok(clubs.into_iter().map(|row| Club::from(&row)).collect())
     }
@@ -153,21 +154,19 @@ impl Club {
         query.bind(regatta_id);
         query.bind(club_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         Ok(Club::from(&utils::get_row(query.query(&mut client).await?).await?))
     }
 
     pub fn select_all_columns(alias: &str) -> String {
         format!(
-            " {0}.Club_ID, {0}.Club_Abbr, {0}.Club_Name, {0}.Club_UltraAbbr, {0}.Club_City, {0}.Club_ExternID, {0}.Club_HRV_Latitude, {0}.Club_HRV_Longitude ",
-            alias
+            " {alias}.Club_ID, {alias}.Club_Abbr, {alias}.Club_Name, {alias}.Club_UltraAbbr, {alias}.Club_City, {alias}.Club_ExternID, {alias}.Club_HRV_Latitude, {alias}.Club_HRV_Longitude "
         )
     }
 
     pub fn select_min_columns(alias: &str) -> String {
         format!(
-            " {0}.Club_ID, {0}.Club_Abbr, {0}.Club_UltraAbbr, {0}.Club_City, {0}.Club_ExternID ",
-            alias
+            " {alias}.Club_ID, {alias}.Club_Abbr, {alias}.Club_UltraAbbr, {alias}.Club_City, {alias}.Club_ExternID "
         )
     }
 }
@@ -180,13 +179,13 @@ impl From<&Row> for Club {
             if let Some(club_flag) = ClubFlag::get(&extern_id) {
                 flag_url = Some(club_flag.flag_url.clone());
             } else {
-                flag_url = Some(format!("images/flags/{}.png", extern_id));
+                flag_url = Some(format!("images/flags/{extern_id}.png"));
             }
         }
 
-        let ahtletes_female_count = value.try_get_column("Athletes_Female_Count");
-        let ahtletes_male_count = value.try_get_column("Athletes_Male_Count");
-        let ahtletes_count = ahtletes_female_count.zip(ahtletes_male_count).map(|(x, y)| x + y);
+        let athletes_female_count = value.try_get_column("Athletes_Female_Count");
+        let athletes_male_count = value.try_get_column("Athletes_Male_Count");
+        let athletes_count = athletes_female_count.zip(athletes_male_count).map(|(x, y)| x + y);
 
         Club {
             id: value.get_column("Club_ID"),
@@ -196,9 +195,9 @@ impl From<&Row> for Club {
             abbreviation: value.try_get_column("Club_UltraAbbr"),
             city: value.get_column("Club_City"),
             participations_count: value.try_get_column("Participations_Count"),
-            ahtletes_count,
-            ahtletes_female_count,
-            ahtletes_male_count,
+            athletes_count,
+            athletes_female_count,
+            athletes_male_count,
             flag_url,
             latitude: value.try_get_column("Club_HRV_Latitude"),
             longitude: value.try_get_column("Club_HRV_Longitude"),

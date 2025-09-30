@@ -13,9 +13,9 @@ use crate::{
     },
     args::Args,
     error::TimekeeperErr,
-    timestrip::TimeStrip,
 };
 use clap::Parser;
+use db::{tiberius::TiberiusPool, timekeeper::TimeStrip};
 use heats_tab::HeatsTab;
 use log::{debug, warn};
 use logs_tab::LogsTab;
@@ -37,6 +37,7 @@ use std::{
     thread,
 };
 use strum::IntoEnumIterator;
+use tiberius::{AuthMethod, Config, EncryptionLevel};
 
 pub struct App<'a> {
     // application state
@@ -60,18 +61,24 @@ pub struct App<'a> {
 }
 
 impl App<'_> {
-    pub(crate) fn new() -> Self {
+    pub(crate) async fn new() -> Self {
+        let args = Args::parse();
+
+        let db_config = Self::get_db_config(&args);
+
+        TiberiusPool::init(db_config, 1, 1).await;
+        let timestrip = TimeStrip::load(TiberiusPool::instance()).await.unwrap();
+
         // Use an mpsc::channel to combine stdin events with app events
         let (sender, receiver) = mpsc::channel();
 
-        let args = Args::parse();
         let client: Client = Client::new(&args.host, args.port, args.timeout, sender.clone());
         thread::spawn(move || input_thread(sender.clone()));
 
         // shared context
         let client_rc = Rc::new(RefCell::new(client));
         let heats = Rc::new(RefCell::new(Vec::new()));
-        let time_strip = Rc::new(RefCell::new(TimeStrip::default()));
+        let time_strip = Rc::new(RefCell::new(timestrip));
         let selected_time_stamp = Rc::new(RefCell::new(None));
         let show_time_strip_popup = Rc::new(RefCell::new(false));
 
@@ -102,12 +109,12 @@ impl App<'_> {
         }
     }
 
-    pub(crate) fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), TimekeeperErr> {
+    pub(crate) async fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), TimekeeperErr> {
         // main loop, runs until the user quits the application by pressing 'q'
         while self.state == AppState::Running {
             let event = self.receiver.recv().map_err(TimekeeperErr::ReceiveError)?;
             match event {
-                AppEvent::UI(event) => self.handle_ui_event(event),
+                AppEvent::UI(event) => self.handle_ui_event(event).await,
                 AppEvent::Aquarius(event) => self.handle_aquarius_event(event),
                 AppEvent::Client(connected) => self.handle_client_event(connected),
             }
@@ -146,7 +153,10 @@ impl App<'_> {
                 };
 
                 // render footer
-                frame.render_widget(Line::raw("◄ ► to change tab | Press q to quit").centered(), footer_area);
+                frame.render_widget(
+                    Line::raw("◄ ► / tab to change tab | + to start | space to finish | q to quit").centered(),
+                    footer_area,
+                );
             })
             .map_err(TimekeeperErr::IoError)?;
         Ok(())
@@ -154,41 +164,45 @@ impl App<'_> {
 
     fn handle_client_event(&mut self, connected: bool) {
         if !connected {
-            self.client.borrow_mut().disconnect();
             self.heats.borrow_mut().clear();
         } else {
-            let _ = self.client.borrow_mut().connect();
             self.read_open_heats();
         }
     }
 
-    fn handle_ui_event(&mut self, event: Event) {
+    #[allow(clippy::await_holding_refcell_ref)]
+    async fn handle_ui_event(&mut self, event: Event) {
         match event {
             Event::Key(key_event) => {
                 if key_event.kind == KeyEventKind::Press {
                     match key_event.code {
+                        KeyCode::Tab => self.selected_tab = self.selected_tab.next(),
                         KeyCode::Right => self.selected_tab = self.selected_tab.next(),
                         KeyCode::Left => self.selected_tab = self.selected_tab.previous(),
                         KeyCode::Char('q') => self.state = AppState::Quitting,
-                        KeyCode::Char('+') => self.time_strip.borrow_mut().add_new_start(),
-                        KeyCode::Char(' ') => self.time_strip.borrow_mut().add_new_finish(),
+                        KeyCode::Char('+') => {
+                            self.time_strip.borrow_mut().add_start().await.unwrap();
+                        }
+                        KeyCode::Char(' ') => {
+                            self.time_strip.borrow_mut().add_finish().await.unwrap();
+                        }
                         KeyCode::Char('r') => self.read_open_heats(),
                         _ => match self.selected_tab {
                             SelectedTab::Heats => self.heats_tab.handle_key_event(key_event),
                             SelectedTab::TimeStrip => {
                                 if *self.show_time_strip_popup.borrow() {
-                                    self.time_strip_popup.handle_key_event(key_event);
+                                    self.time_strip_popup.handle_key_event(key_event).await;
                                 } else {
-                                    self.time_strip_tab.handle_key_event(key_event);
+                                    self.time_strip_tab.handle_key_event(key_event).await;
                                 }
                             }
-                            _ => {}
+                            SelectedTab::Logs => self.logs_tab.handle_key_event(key_event),
                         },
                     }
                 }
             }
             Event::Mouse(mouse) => {
-                debug!("Mouse event: {:?}", mouse);
+                debug!("Mouse event: {mouse:?}");
             }
             _ => {}
         }
@@ -221,8 +235,19 @@ impl App<'_> {
                 });
                 heats.sort_by(|a, b| a.number.cmp(&b.number));
             }
-            Err(err) => warn!("Error reading open heats: {}", err),
+            Err(err) => warn!("Error reading open heats: {err}"),
         };
+    }
+
+    /// Create a Tiberius Config from the command line arguments
+    fn get_db_config(args: &Args) -> Config {
+        let mut config = Config::new();
+        config.host(&args.db_host);
+        config.port(args.db_port);
+        config.database(&args.db_name);
+        config.authentication(AuthMethod::sql_server(&args.db_user, &args.db_password));
+        config.encryption(EncryptionLevel::NotSupported);
+        config
     }
 }
 

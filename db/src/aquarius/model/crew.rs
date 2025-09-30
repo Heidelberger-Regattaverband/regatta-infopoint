@@ -1,9 +1,10 @@
 use crate::{
     aquarius::model::{Athlete, Club, utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool},
 };
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError};
+use tiberius::{Query, Row};
 use utoipa::ToSchema;
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
@@ -29,10 +30,7 @@ pub struct Crew {
 
 impl Crew {
     pub(crate) fn select_columns(alias: &str) -> String {
-        format!(
-            " {0}.Crew_ID, {0}.Crew_Pos, {0}.Crew_IsCox, {0}.Crew_RoundFrom, {0}.Crew_RoundTo ",
-            alias
-        )
+        format!(" {alias}.Crew_ID, {alias}.Crew_Pos, {alias}.Crew_IsCox, {alias}.Crew_RoundFrom, {alias}.Crew_RoundTo ")
     }
 
     /// Query all crew members of a entry.
@@ -57,7 +55,7 @@ impl Crew {
         query.bind(entry_id);
         query.bind(round);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let crew = utils::get_rows(query.query(&mut client).await?).await?;
         Ok(crew.into_iter().map(|row| Crew::from(&row)).collect())
     }

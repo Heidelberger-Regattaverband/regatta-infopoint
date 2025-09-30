@@ -12,7 +12,7 @@ use actix_web::{
     get, post,
     web::{Data, Json, Path, ServiceConfig},
 };
-use aquarius::db::model::{Race, Regatta};
+use db::{tiberius::TiberiusPool, timekeeper::TimeStrip};
 use log::error;
 
 /// Path to REST API
@@ -36,8 +36,8 @@ async fn get_filters(
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let filters = aquarius.get_filters(regatta_id, opt_user).await.map_err(|err| {
-        error!("{}", err);
-        ErrorInternalServerError(INTERNAL_SERVER_ERROR)
+        error!("{err}");
+        ErrorInternalServerError(err)
     })?;
     Ok(Json(filters))
 }
@@ -54,8 +54,8 @@ async fn get_filters(
 #[get("/active_regatta")]
 async fn get_active_regatta(aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     let regatta = aquarius.get_active_regatta(opt_user).await.map_err(|err| {
-        error!("{}", err);
-        ErrorInternalServerError(INTERNAL_SERVER_ERROR)
+        error!("{err}");
+        ErrorInternalServerError(err)
     })?;
     if regatta.is_none() {
         return Err(ErrorNotFound("No active regatta found"));
@@ -80,8 +80,8 @@ async fn get_races(
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let races = aquarius.get_races(regatta_id, opt_user).await.map_err(|err| {
-        error!("{}", err);
-        ErrorInternalServerError(INTERNAL_SERVER_ERROR)
+        error!("{err}");
+        ErrorInternalServerError(err)
     })?;
     Ok(Json(races))
 }
@@ -97,8 +97,8 @@ async fn get_race(
         .get_race_heats_entries(race_id, opt_user)
         .await
         .map_err(|err| {
-            error!("{}", err);
-            ErrorInternalServerError(INTERNAL_SERVER_ERROR)
+            error!("{err}");
+            ErrorInternalServerError(err)
         })?;
     Ok(Json(race))
 }
@@ -113,8 +113,8 @@ async fn get_heats(
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let heats = aquarius.get_heats(regatta_id, opt_user).await.map_err(|err| {
-        error!("{}", err);
-        ErrorInternalServerError(INTERNAL_SERVER_ERROR)
+        error!("{err}");
+        ErrorInternalServerError(err)
     })?;
     Ok(Json(heats))
 }
@@ -127,8 +127,8 @@ async fn get_heat(
 ) -> Result<impl Responder, Error> {
     let heat_id = path.into_inner();
     let heat = aquarius.get_heat(heat_id, opt_user).await.map_err(|err| {
-        error!("{}", err);
-        ErrorInternalServerError(INTERNAL_SERVER_ERROR)
+        error!("{err}");
+        ErrorInternalServerError(err)
     })?;
     Ok(Json(heat))
 }
@@ -146,8 +146,8 @@ async fn get_participating_clubs(
         .get_participating_clubs(regatta_id, opt_user)
         .await
         .map_err(|err| {
-            error!("{}", err);
-            ErrorInternalServerError(INTERNAL_SERVER_ERROR)
+            error!("{err}");
+            ErrorInternalServerError(err)
         })?;
     Ok(Json(clubs))
 }
@@ -160,8 +160,8 @@ async fn get_club_entries(
 ) -> Result<impl Responder, Error> {
     let ids = ids.into_inner();
     let entries = aquarius.get_club_entries(ids.0, ids.1, opt_user).await.map_err(|err| {
-        error!("{}", err);
-        ErrorInternalServerError(INTERNAL_SERVER_ERROR)
+        error!("{err}");
+        ErrorInternalServerError(err)
     })?;
     Ok(Json(entries))
 }
@@ -174,8 +174,8 @@ async fn get_regatta_club(
 ) -> Result<impl Responder, Error> {
     let ids = ids.into_inner();
     let club = aquarius.get_regatta_club(ids.0, ids.1, opt_user).await.map_err(|err| {
-        error!("{}", err);
-        ErrorInternalServerError(INTERNAL_SERVER_ERROR)
+        error!("{err}");
+        ErrorInternalServerError(err)
     })?;
     Ok(Json(club))
 }
@@ -193,8 +193,8 @@ async fn get_participating_athletes(
         .get_participating_athletes(regatta_id, opt_user)
         .await
         .map_err(|err| {
-            error!("{}", err);
-            ErrorInternalServerError(INTERNAL_SERVER_ERROR)
+            error!("{err}");
+            ErrorInternalServerError(err)
         })?;
     Ok(Json(clubs))
 }
@@ -210,8 +210,8 @@ async fn get_athlete(
         .get_athlete(regatta_id, athlete_id, opt_user)
         .await
         .map_err(|err| {
-            error!("{}", err);
-            ErrorInternalServerError(INTERNAL_SERVER_ERROR)
+            error!("{err}");
+            ErrorInternalServerError(err)
         })?;
     Ok(Json(clubs))
 }
@@ -227,13 +227,26 @@ async fn get_athlete_entries(
         .get_athlete_entries(ids.0, ids.1, opt_user)
         .await
         .map_err(|err| {
-            error!("{}", err);
-            ErrorInternalServerError(INTERNAL_SERVER_ERROR)
+            error!("{err}");
+            ErrorInternalServerError(err)
         })?;
     Ok(Json(entries))
 }
 
 // Misc Endpoints
+
+#[get("/regattas/active/timestrip")]
+async fn get_timestrip(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
+    if opt_user.is_some() {
+        let timestrip = TimeStrip::load(TiberiusPool::instance()).await.map_err(|err| {
+            error!("{err}");
+            ErrorInternalServerError(err)
+        })?;
+        Ok(Json(timestrip.time_stamps))
+    } else {
+        Err(ErrorUnauthorized("Unauthorized"))
+    }
+}
 
 #[get("/regattas/{regatta_id}/statistics")]
 async fn get_statistics(
@@ -244,8 +257,8 @@ async fn get_statistics(
     if opt_user.is_some() {
         let regatta_id = path.into_inner();
         let stats = aquarius.query_statistics(regatta_id).await.map_err(|err| {
-            error!("{}", err);
-            ErrorInternalServerError(INTERNAL_SERVER_ERROR)
+            error!("{err}");
+            ErrorInternalServerError(err)
         })?;
         Ok(Json(stats))
     } else {
@@ -262,8 +275,8 @@ async fn calculate_scoring(
     if opt_user.is_some() {
         let regatta_id = path.into_inner();
         let scoring = aquarius.calculate_scoring(regatta_id).await.map_err(|err| {
-            error!("{}", err);
-            ErrorInternalServerError(INTERNAL_SERVER_ERROR)
+            error!("{err}");
+            ErrorInternalServerError(err)
         })?;
         Ok(Json(scoring))
     } else {
@@ -279,8 +292,8 @@ async fn get_schedule(
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let schedule = aquarius.query_schedule(regatta_id, opt_user).await.map_err(|err| {
-        error!("{}", err);
-        ErrorInternalServerError(INTERNAL_SERVER_ERROR)
+        error!("{err}");
+        ErrorInternalServerError(err)
     })?;
     Ok(Json(schedule))
 }
@@ -300,7 +313,10 @@ async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<i
         // authentication succeeded
         Ok(user) => {
             // attach valid user identity to current session
-            Identity::login(&request.extensions(), user.username.clone()).unwrap();
+            if let Err(e) = Identity::login(&request.extensions(), user.username.clone()) {
+                log::error!("Failed to attach user identity to session: {}", e);
+                return Err(ErrorInternalServerError("Failed to create session"));
+            }
             // return user information: username and scope
             Ok(Json(user))
         }
@@ -334,7 +350,13 @@ async fn logout(user: Identity) -> impl Responder {
 #[get("/identity")]
 async fn identity(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     if let Some(user) = opt_user {
-        Ok(Json(User::new(user.id().unwrap(), UserScope::User)))
+        match user.id() {
+            Ok(id) => Ok(Json(User::new(id, UserScope::User))),
+            Err(e) => {
+                log::error!("Failed to get user ID from identity: {}", e);
+                Err(ErrorInternalServerError("Failed to get user identity"))
+            }
+        }
     } else {
         Err(InternalError::from_response("", HttpResponse::Unauthorized().json(User::new_guest())).into())
     }
@@ -359,6 +381,7 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(calculate_scoring)
             .service(get_statistics)
             .service(get_schedule)
+            .service(get_timestrip)
             .service(login)
             .service(identity)
             .service(logout)

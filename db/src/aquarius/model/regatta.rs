@@ -1,9 +1,10 @@
 use crate::{
     aquarius::model::utils,
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError, time::chrono::NaiveDateTime};
+use tiberius::{Query, Row, time::chrono::NaiveDateTime};
 use utoipa::ToSchema;
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
@@ -37,7 +38,7 @@ impl From<&Row> for Regatta {
 
 impl Regatta {
     pub async fn query_active_regatta(pool: &TiberiusPool) -> Result<Regatta, DbError> {
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let stream = Query::new("SELECT TOP 1 e.* FROM Event e ORDER BY e.Event_StartDate DESC, e.Event_ID DESC")
             .query(&mut client)
             .await?;
@@ -48,7 +49,7 @@ impl Regatta {
         let mut query = Query::new("SELECT * FROM Event WHERE Event_ID = @P1");
         query.bind(regatta_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
 
         let row = utils::try_get_row(query.query(&mut client).await?).await?;
         if let Some(row) = row {

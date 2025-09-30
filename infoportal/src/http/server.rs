@@ -19,6 +19,7 @@ use actix_web::{
 };
 use actix_web_prom::{PrometheusMetrics, PrometheusMetricsBuilder};
 use colored::Colorize;
+use db::error::DbError;
 use futures::FutureExt;
 use log::{debug, info, warn};
 use prometheus::Registry;
@@ -33,11 +34,10 @@ use std::{
     sync::{Arc, Mutex},
     time::{self, Instant},
 };
-use tiberius::error::Error as DbError;
 
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
-const INFOPORTAL_V2: &str = concat!("{INFOPORTAL}2");
+const INFOPORTAL_V2: &str = "{INFOPORTAL}2";
 
 /// The server struct contains the configuration of the server.
 pub struct Server {}

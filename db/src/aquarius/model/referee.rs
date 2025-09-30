@@ -1,9 +1,10 @@
 use crate::{
     aquarius::model::{TryToEntity, utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError};
+use tiberius::{Query, Row};
 use utoipa::ToSchema;
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
@@ -36,7 +37,7 @@ impl Referee {
         );
         query.bind(heat_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let heats = utils::get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Referee::from(&row)).collect())
     }

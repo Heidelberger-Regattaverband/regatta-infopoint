@@ -1,11 +1,12 @@
 use crate::{
     aquarius::model::{AgeClass, BoatClass, HeatEntry, Race, Referee, TryToEntity, utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use chrono::{DateTime, Utc};
 use futures::future::join;
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError};
+use tiberius::{Query, Row};
 use utoipa::ToSchema;
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
@@ -56,9 +57,8 @@ pub struct Heat {
 impl Heat {
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
-            " {0}.Comp_ID, {0}.Comp_Number, {0}.Comp_RoundCode, {0}.Comp_Label, {0}.Comp_GroupValue, \
-            {0}.Comp_State, {0}.Comp_Cancelled, {0}.Comp_DateTime, {0}.Comp_Round ",
-            alias
+            " {alias}.Comp_ID, {alias}.Comp_Number, {alias}.Comp_RoundCode, {alias}.Comp_Label, {alias}.Comp_GroupValue, \
+            {alias}.Comp_State, {alias}.Comp_Cancelled, {alias}.Comp_DateTime, {alias}.Comp_Round "
         )
     }
 
@@ -85,7 +85,7 @@ impl Heat {
         let mut query = Query::new(sql);
         query.bind(regatta_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let heats = utils::get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
@@ -107,7 +107,7 @@ impl Heat {
         let mut query = Query::new(sql);
         query.bind(race_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let heats = utils::get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
@@ -130,7 +130,7 @@ impl Heat {
         );
         let mut query = Query::new(sql);
         query.bind(entry_id);
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let heats = utils::get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
@@ -156,7 +156,7 @@ impl Heat {
         let mut query = Query::new(sql);
         query.bind(heat_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let mut heat = Heat::from(&utils::get_row(query.query(&mut client).await?).await?);
 
         let results = join(
