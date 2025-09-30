@@ -12,7 +12,7 @@ use actix_web::{
     get, post,
     web::{Data, Json, Path, ServiceConfig},
 };
-use db::{tiberius::TiberiusPool, timekeeper::TimeStrip};
+use db::{aquarius::model::Regatta, tiberius::TiberiusPool, timekeeper::TimeStrip};
 use log::error;
 
 /// Path to REST API

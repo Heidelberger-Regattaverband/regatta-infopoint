@@ -4,7 +4,7 @@ use crate::http::{
     rest_api,
 };
 use actix_web::web;
-use aquarius::db::model::{AgeClass, BoatClass, Filters, Regatta};
+use db::aquarius::model::{AgeClass, BoatClass, Filters, Regatta};
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
