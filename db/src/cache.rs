@@ -17,27 +17,6 @@ pub enum CacheError {
     OperationFailed(String),
 }
 
-/// Cache configuration to make cache behavior more configurable
-#[derive(Debug, Clone)]
-pub struct CacheConfig {
-    /// Maximum number of entries in the cache
-    pub max_entries: usize,
-    /// Time-to-live for cache entries
-    pub ttl: Duration,
-    /// Maximum cost for the cache (memory limit)
-    pub max_cost: i64,
-}
-
-impl Default for CacheConfig {
-    fn default() -> Self {
-        Self {
-            max_entries: 1000,
-            ttl: Duration::from_secs(300), // 5 minutes
-            max_cost: 1_000_000,
-        }
-    }
-}
-
 /// Trait for a cache with improved error handling and additional methods
 pub trait CacheTrait<K, V> {
     /// Retrieves a value from the cache
@@ -155,53 +134,6 @@ where
     }
 }
 
-/// Configuration for all caches in the system
-#[derive(Debug, Clone)]
-pub(crate) struct CachesConfig {
-    pub(crate) regatta_cache: CacheConfig,
-    pub(crate) race_cache: CacheConfig,
-    pub(crate) heat_cache: CacheConfig,
-    pub(crate) club_cache: CacheConfig,
-    pub(crate) athlete_cache: CacheConfig,
-}
-
-impl CachesConfig {
-    pub(crate) fn new(base_ttl: Duration) -> Self {
-        const MAX_REGATTAS_COUNT: usize = 3;
-        const MAX_RACES_COUNT: usize = 200;
-        const MAX_HEATS_COUNT: usize = 350;
-        const MAX_CLUBS_COUNT: usize = 100;
-
-        Self {
-            regatta_cache: CacheConfig {
-                max_entries: MAX_REGATTAS_COUNT,
-                ttl: base_ttl,
-                max_cost: 100_000, // Smaller cost for regatta data
-            },
-            race_cache: CacheConfig {
-                max_entries: MAX_RACES_COUNT,
-                ttl: base_ttl,
-                max_cost: 500_000, // Medium cost for race data
-            },
-            heat_cache: CacheConfig {
-                max_entries: MAX_HEATS_COUNT,
-                ttl: base_ttl,
-                max_cost: 750_000, // Higher cost for heat data
-            },
-            club_cache: CacheConfig {
-                max_entries: MAX_CLUBS_COUNT,
-                ttl: base_ttl,
-                max_cost: 200_000, // Medium cost for club data
-            },
-            athlete_cache: CacheConfig {
-                max_entries: MAX_RACES_COUNT, // Reuse race count for athletes
-                ttl: base_ttl,
-                max_cost: 300_000, // Medium cost for athlete data
-            },
-        }
-    }
-}
-
 /// Container for all caches with improved organization and error handling
 pub struct Caches {
     // Caches with entries per regatta
@@ -232,23 +164,23 @@ impl Caches {
 
         Ok(Caches {
             // Caches with entries per regatta
-            regattas: Cache::try_new(config.regatta_cache.clone())?,
-            races: Cache::try_new(config.regatta_cache.clone())?,
-            heats: Cache::try_new(config.regatta_cache.clone())?,
-            clubs: Cache::try_new(config.regatta_cache.clone())?,
-            athletes: Cache::try_new(config.regatta_cache.clone())?,
-            filters: Cache::try_new(config.regatta_cache.clone())?,
-            schedule: Cache::try_new(config.regatta_cache)?,
+            regattas: Cache::try_new(config.regattas.clone())?,
+            races: Cache::try_new(config.regattas.clone())?,
+            heats: Cache::try_new(config.regattas.clone())?,
+            clubs: Cache::try_new(config.regattas.clone())?,
+            athletes: Cache::try_new(config.regattas.clone())?,
+            filters: Cache::try_new(config.regattas.clone())?,
+            schedule: Cache::try_new(config.regattas)?,
 
             // Caches with composite keys
-            club_with_aggregations: Cache::try_new(config.club_cache.clone())?,
-            club_entries: Cache::try_new(config.club_cache)?,
-            athlete_entries: Cache::try_new(config.athlete_cache.clone())?,
+            club_with_aggregations: Cache::try_new(config.clubs.clone())?,
+            club_entries: Cache::try_new(config.clubs)?,
+            athlete_entries: Cache::try_new(config.athletes.clone())?,
 
             // Caches with entries per race/heat/athlete
-            race_heats_entries: Cache::try_new(config.race_cache)?,
-            athlete: Cache::try_new(config.athlete_cache)?,
-            heat: Cache::try_new(config.heat_cache)?,
+            race_heats_entries: Cache::try_new(config.races)?,
+            athlete: Cache::try_new(config.athletes)?,
+            heat: Cache::try_new(config.heats)?,
         })
     }
 
@@ -308,6 +240,64 @@ impl Caches {
     }
 }
 
+/// Configuration for all caches in the system
+#[derive(Debug, Clone)]
+pub(crate) struct CachesConfig {
+    pub(crate) regattas: CacheConfig,
+    pub(crate) races: CacheConfig,
+    pub(crate) heats: CacheConfig,
+    pub(crate) clubs: CacheConfig,
+    pub(crate) athletes: CacheConfig,
+}
+
+impl CachesConfig {
+    pub(crate) fn new(base_ttl: Duration) -> Self {
+        const MAX_REGATTAS_COUNT: usize = 3;
+        const MAX_RACES_COUNT: usize = 200;
+        const MAX_HEATS_COUNT: usize = 350;
+        const MAX_CLUBS_COUNT: usize = 100;
+
+        Self {
+            regattas: CacheConfig {
+                max_entries: MAX_REGATTAS_COUNT,
+                ttl: base_ttl,
+                max_cost: 100_000, // Smaller cost for regatta data
+            },
+            races: CacheConfig {
+                max_entries: MAX_RACES_COUNT,
+                ttl: base_ttl,
+                max_cost: 500_000, // Medium cost for race data
+            },
+            heats: CacheConfig {
+                max_entries: MAX_HEATS_COUNT,
+                ttl: base_ttl,
+                max_cost: 750_000, // Higher cost for heat data
+            },
+            clubs: CacheConfig {
+                max_entries: MAX_CLUBS_COUNT,
+                ttl: base_ttl,
+                max_cost: 200_000, // Medium cost for club data
+            },
+            athletes: CacheConfig {
+                max_entries: MAX_RACES_COUNT, // Reuse race count for athletes
+                ttl: base_ttl,
+                max_cost: 300_000, // Medium cost for athlete data
+            },
+        }
+    }
+}
+
+/// Cache configuration to make cache behavior more configurable
+#[derive(Debug, Clone)]
+pub struct CacheConfig {
+    /// Maximum number of entries in the cache
+    pub(crate) max_entries: usize,
+    /// Time-to-live for cache entries
+    pub(crate) ttl: Duration,
+    /// Maximum cost for the cache (memory limit)
+    pub(crate) max_cost: i64,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -343,7 +333,11 @@ mod tests {
 
     #[tokio::test]
     async fn test_cache_stats() {
-        let config = CacheConfig::default();
+        let config = CacheConfig {
+            max_entries: 10,
+            ttl: Duration::from_secs(60),
+            max_cost: 1000,
+        };
         let cache = Cache::<i32, String>::try_new(config).unwrap();
 
         // Initially empty cache
