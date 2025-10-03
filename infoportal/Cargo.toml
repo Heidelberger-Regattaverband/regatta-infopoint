@@ -56,6 +56,7 @@ serde_json.workspace = true
 colored.workspace = true
 sysinfo = "0"
 uptime_lib.workspace = true
+thiserror.workspace = true
 
 [dev-dependencies]
 tokio-shared-rt = "0"
