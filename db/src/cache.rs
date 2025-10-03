@@ -1,4 +1,5 @@
-use db::aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
+use crate::aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
+use futures::future::join_all;
 use log::{error, warn};
 use std::{hash::Hash, time::Duration};
 use stretto::AsyncCache;
@@ -46,7 +47,7 @@ pub trait CacheTrait<K, V> {
     async fn set(&self, key: &K, value: &V) -> Result<(), CacheError>;
 
     /// Removes a value from the cache
-    async fn remove(&self, key: &K) -> Result<bool, CacheError>;
+    async fn remove(&self, key: &K) -> Result<(), CacheError>;
 
     /// Clears all entries from the cache
     async fn clear(&self) -> Result<(), CacheError>;
@@ -155,11 +156,9 @@ where
         Ok(())
     }
 
-    async fn remove(&self, key: &K) -> Result<bool, CacheError> {
+    async fn remove(&self, key: &K) -> Result<(), CacheError> {
         self.cache.remove(key).await;
-        // stretto's remove doesn't return whether the key existed,
-        // so we always return true to indicate the operation completed
-        Ok(true)
+        Ok(())
     }
 
     async fn clear(&self) -> Result<(), CacheError> {
@@ -229,7 +228,7 @@ impl CachesConfig {
 }
 
 /// Container for all caches with improved organization and error handling
-pub(super) struct Caches {
+pub struct Caches {
     // Caches with entries per regatta
     pub regatta: Cache<i32, Regatta>,
     pub races: Cache<i32, Vec<Race>>,
@@ -281,27 +280,28 @@ impl Caches {
     /// Clears all caches
     pub async fn clear_all(&self) -> Result<(), CacheError> {
         // Clear all caches in parallel for better performance
-        let results = tokio::join!(
-            self.regatta.clear(),
-            self.races.clear(),
-            self.heats.clear(),
-            self.clubs.clear(),
-            self.athletes.clear(),
-            self.filters.clear(),
-            self.schedule.clear(),
-            self.club_with_aggregations.clear(),
-            self.club_entries.clear(),
-            self.athlete_entries.clear(),
-            self.race_heats_entries.clear(),
-            self.athlete.clear(),
-            self.heat.clear()
-        );
+        // Use boxed futures to ensure all futures have the same type
+        use futures::future::FutureExt;
+
+        let results = join_all(vec![
+            self.regatta.clear().boxed(),
+            self.races.clear().boxed(),
+            self.heats.clear().boxed(),
+            self.clubs.clear().boxed(),
+            self.athletes.clear().boxed(),
+            self.filters.clear().boxed(),
+            self.schedule.clear().boxed(),
+            self.club_with_aggregations.clear().boxed(),
+            self.club_entries.clear().boxed(),
+            self.athlete_entries.clear().boxed(),
+            self.race_heats_entries.clear().boxed(),
+            self.athlete.clear().boxed(),
+            self.heat.clear().boxed(),
+        ])
+        .await;
 
         // Check if any operation failed
-        for result in [
-            results.0, results.1, results.2, results.3, results.4, results.5, results.6, results.7, results.8,
-            results.9, results.10, results.11, results.12,
-        ] {
+        for result in results {
             result?;
         }
 
@@ -354,8 +354,7 @@ mod tests {
         assert_eq!(result, Some("value1".to_string()));
 
         // Test remove
-        let removed = cache.remove(&1).await.unwrap();
-        assert!(removed);
+        let _ = cache.remove(&1).await.unwrap();
 
         let result = cache.get(&1).await.unwrap();
         assert_eq!(result, None);
