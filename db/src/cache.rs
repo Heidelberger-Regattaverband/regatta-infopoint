@@ -4,7 +4,6 @@ use crate::{
 };
 use futures::future::Future;
 use log::{debug, warn};
-use serde::Serialize;
 use std::{
     collections::HashMap,
     fmt::Display,
@@ -19,7 +18,7 @@ use stretto::AsyncCache;
 use tokio::task;
 
 /// Cache statistics for monitoring and debugging with actual tracking capabilities
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone)]
 pub struct CacheStats {
     pub hits: u64,
     pub misses: u64,
