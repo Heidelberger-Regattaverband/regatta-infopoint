@@ -17,24 +17,6 @@ pub enum CacheError {
     OperationFailed(String),
 }
 
-/// Trait for a cache with improved error handling and additional methods
-pub trait CacheTrait<K, V> {
-    /// Retrieves a value from the cache
-    fn get(&self, key: &K) -> impl Future<Output = Result<Option<V>, CacheError>> + Send;
-
-    /// Sets a value in the cache
-    fn set(&self, key: &K, value: &V) -> impl Future<Output = Result<(), CacheError>> + Send;
-
-    /// Removes a value from the cache
-    fn remove(&self, key: &K) -> impl Future<Output = Result<(), CacheError>> + Send;
-
-    /// Clears all entries from the cache
-    fn clear(&self) -> impl Future<Output = Result<(), CacheError>> + Send;
-
-    /// Returns cache statistics (hit rate, entry count, etc.)
-    fn stats(&self) -> impl Future<Output = CacheStats> + Send;
-}
-
 /// Cache statistics for monitoring and debugging
 #[derive(Debug, Clone)]
 pub struct CacheStats {
@@ -75,12 +57,12 @@ where
     }
 }
 
-impl<K, V> CacheTrait<K, V> for Cache<K, V>
+impl<K, V> Cache<K, V>
 where
     K: Hash + Eq + Send + Sync + Copy,
     V: Send + Sync + Clone + 'static,
 {
-    async fn get(&self, key: &K) -> Result<Option<V>, CacheError> {
+    pub async fn get(&self, key: &K) -> Result<Option<V>, CacheError> {
         match self.cache.get(key).await {
             Some(value_ref) => {
                 let value = value_ref.value().clone();
@@ -91,7 +73,7 @@ where
         }
     }
 
-    fn set(&self, key: &K, value: &V) -> impl std::future::Future<Output = Result<(), CacheError>> + Send {
+    pub fn set(&self, key: &K, value: &V) -> impl std::future::Future<Output = Result<(), CacheError>> + Send {
         let key = *key;
         let value = value.clone();
         let ttl = self.config.ttl;
@@ -110,17 +92,17 @@ where
         }
     }
 
-    async fn remove(&self, key: &K) -> Result<(), CacheError> {
+    pub async fn remove(&self, key: &K) -> Result<(), CacheError> {
         self.cache.remove(key).await;
         Ok(())
     }
 
-    async fn clear(&self) -> Result<(), CacheError> {
+    pub async fn clear(&self) -> Result<(), CacheError> {
         let _ = self.cache.clear().await;
         Ok(())
     }
 
-    async fn stats(&self) -> CacheStats {
+    pub async fn stats(&self) -> CacheStats {
         // Since stretto's AsyncCache doesn't expose metrics directly,
         // we'll return basic stats. In a real implementation, you might
         // want to track these metrics manually or use a different cache library

@@ -2,7 +2,7 @@ use crate::config::Config;
 use actix_identity::Identity;
 use db::{
     aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule, Score, Statistics},
-    cache::{CacheTrait, Caches},
+    cache::Caches,
     error::DbError,
     tiberius::TiberiusPool,
 };
