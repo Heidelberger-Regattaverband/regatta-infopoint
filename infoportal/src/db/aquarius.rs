@@ -88,9 +88,7 @@ impl Aquarius {
     ) -> Result<Race, DbError> {
         self.caches
             .race_heats_entries
-            .compute_if_missing(&race_id, opt_user.is_some(), || {
-                self._query_race_heats_entries_for_cache(race_id)
-            })
+            .compute_if_missing(&race_id, opt_user.is_some(), || self._query_race_heats_entries(race_id))
             .await
             .map_err(DbError::Cache)
     }
@@ -260,7 +258,7 @@ impl Aquarius {
         Ok(races)
     }
 
-    async fn _query_race_heats_entries_for_cache(&self, race_id: i32) -> Result<Race, DbError> {
+    async fn _query_race_heats_entries(&self, race_id: i32) -> Result<Race, DbError> {
         let start = Instant::now();
         let queries = join3(
             Race::query_race_by_id(race_id, TiberiusPool::instance()),
@@ -294,36 +292,6 @@ impl Aquarius {
         let regatta = Regatta::query_by_id(regatta_id, TiberiusPool::instance()).await?;
         debug!("Query regatta {} from DB: {:?}", regatta_id, start.elapsed());
         Ok(regatta)
-    }
-
-    async fn _query_race_heats_entries(&self, race_id: i32) -> Result<Race, DbError> {
-        let start = Instant::now();
-        let queries = join3(
-            Race::query_race_by_id(race_id, TiberiusPool::instance()),
-            Heat::query_heats_of_race(race_id, TiberiusPool::instance()),
-            Entry::query_entries_for_race(race_id, TiberiusPool::instance()),
-        )
-        .await;
-        let mut race = queries.0?;
-        let heats = queries.1?;
-        if heats.is_empty() {
-            race.heats = None;
-        } else {
-            race.heats = Some(heats);
-        }
-        let entries = queries.2?;
-        if entries.is_empty() {
-            race.entries = None;
-        } else {
-            race.entries = Some(entries);
-        }
-        self.caches.race_heats_entries.set(&race.id, &race).await?;
-        debug!(
-            "Query race {} with heats and entries from DB: {:?}",
-            race_id,
-            start.elapsed()
-        );
-        Ok(race)
     }
 
     async fn _query_heats(&self, regatta_id: i32) -> Result<Vec<Heat>, DbError> {

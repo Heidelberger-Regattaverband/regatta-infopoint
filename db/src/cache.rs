@@ -73,7 +73,7 @@ where
         }
     }
 
-    pub async fn set(&self, key: &K, value: &V) -> Result<(), CacheError> {
+    async fn set(&self, key: &K, value: &V) -> Result<(), CacheError> {
         // Insert with TTL and cost of 1
         self.cache
             .insert_with_ttl(*key, value.clone(), 1, self.config.ttl)
