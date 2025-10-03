@@ -2,7 +2,7 @@ use crate::config::Config;
 use actix_identity::Identity;
 use db::{
     aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule, Score, Statistics},
-    cache::Caches,
+    cache::{CacheStats, Caches},
     error::DbError,
     tiberius::TiberiusPool,
 };
@@ -36,6 +36,10 @@ impl Aquarius {
                 .map_err(|_| DbError::Custom("Failed to create caches".to_string()))?,
             active_regatta_id,
         })
+    }
+
+    pub(crate) fn get_cache_stats(&self) -> CacheStats {
+        self.caches.get_summary_stats()
     }
 
     /// Returns the active regatta.

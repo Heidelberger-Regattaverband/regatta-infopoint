@@ -1,5 +1,5 @@
 use crate::peak_alloc::PeakAlloc;
-use db::tiberius::TiberiusPool;
+use db::{cache::CacheStats, tiberius::TiberiusPool};
 use prometheus::Registry;
 use serde::Serialize;
 use serde_json::{Map, Number, Value};
@@ -27,7 +27,7 @@ impl Monitoring {
     /// * `registry` - The prometheus registry.
     /// # Returns
     /// `Monitoring` - The monitoring struct.
-    pub(crate) fn new(pool: &TiberiusPool, registry: &Registry) -> Self {
+    pub(crate) fn new(pool: &TiberiusPool, registry: &Registry, caches: &CacheStats) -> Self {
         let sys = get_system();
         let metrics = get_metrics(registry);
         let state = pool.state();
@@ -43,6 +43,7 @@ impl Monitoring {
                     closed_max_lifetime: stats.connections_closed_max_lifetime,
                     closed_error: stats.connections_closed_broken + stats.connections_closed_invalid,
                 },
+                caches: Caches::from(caches.clone()),
             },
             sys: SysInfo {
                 cpus: sys.cpus().iter().map(Cpu::from).collect(),
@@ -208,6 +209,28 @@ impl From<&sysinfo::Disk> for Disk {
 pub(crate) struct Db {
     /// The connections of the database.
     connections: Connections,
+    /// The cache statistics.
+    caches: Caches,
+}
+
+#[derive(Serialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct Caches {
+    pub hits: u64,
+    pub misses: u64,
+    pub entries: usize,
+    pub hit_rate: f64,
+}
+
+impl From<CacheStats> for Caches {
+    fn from(stats: CacheStats) -> Self {
+        Caches {
+            hits: stats.hits,
+            misses: stats.misses,
+            entries: stats.entries,
+            hit_rate: stats.hit_rate,
+        }
+    }
 }
 
 /// The connections struct contains the current, idle and created connections.
