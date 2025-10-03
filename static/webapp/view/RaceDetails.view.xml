@@ -82,8 +82,8 @@
               </columns>
 
               <items>
-                <ColumnListItem type="{=${raceEntries>/heatsCount}>0?'Navigation':'Inactive'}"
-                  highlight="{parts:[{path:'race>/'},{path:'raceEntries>'}],formatter:'.formatter.raceEntryHighlight'}">
+                <ColumnListItem highlight="{parts:[{path:'race>/'},{path:'raceEntries>'}],formatter:'.formatter.raceEntryHighlight'}"
+                  vAlign="{=${device>/system/phone}?'Top':'Inherit'}" type="{=${raceEntries>/heatsCount}>0?'Navigation':'Inactive'}">
                   <cells>
                     <VBox alignItems="Center">
                       <Text text="{raceEntries>bib}" visible="{=${raceEntries>cancelled}}" class="cancelled" />
