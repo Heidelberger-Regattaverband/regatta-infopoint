@@ -1,7 +1,7 @@
 use crate::aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
 use futures::future::join_all;
 use log::{error, warn};
-use std::{collections::HashMap, hash::Hash, time::Duration};
+use std::{collections::HashMap, fmt::Display, hash::Hash, time::Duration};
 use stretto::AsyncCache;
 use thiserror::Error;
 use tokio::task;
@@ -73,23 +73,20 @@ where
         }
     }
 
-    pub fn set(&self, key: &K, value: &V) -> impl std::future::Future<Output = Result<(), CacheError>> + Send {
-        let key = *key;
-        let value = value.clone();
-        let ttl = self.config.ttl;
-        async move {
-            // Insert with TTL and cost of 1
-            self.cache.insert_with_ttl(key, value, 1, ttl).await;
+    pub async fn set(&self, key: &K, value: &V) -> Result<(), CacheError> {
+        // Insert with TTL and cost of 1
+        self.cache
+            .insert_with_ttl(*key, value.clone(), 1, self.config.ttl)
+            .await;
 
-            // Handle the wait operation more gracefully
-            if let Err(e) = self.cache.wait().await {
-                warn!("Cache wait operation failed: {}", e);
-                // Return error instead of just logging for better error propagation
-                return Err(CacheError::OperationFailed(format!("Wait failed: {}", e)));
-            }
-
-            Ok(())
+        // Handle the wait operation more gracefully
+        if let Err(e) = self.cache.wait().await {
+            warn!("Cache wait operation failed: {}", e);
+            // Return error instead of just logging for better error propagation
+            return Err(CacheError::OperationFailed(format!("Wait failed: {}", e)));
         }
+
+        Ok(())
     }
 
     pub async fn remove(&self, key: &K) -> Result<(), CacheError> {
@@ -153,6 +150,41 @@ where
 
                     // Store in cache for future use
                     self.set(key, &value).await?;
+                    Ok(value)
+                }
+            }
+        }
+    }
+    pub async fn compute_if_missing_opt<F, Fut, E>(&self, key: &K, force: bool, f: F) -> Result<Option<V>, CacheError>
+    where
+        F: FnOnce() -> Fut,
+        Fut: Future<Output = Result<Option<V>, E>>,
+        E: Display,
+    {
+        if force {
+            // If force is true, skip cache and compute directly
+            let value = f()
+                .await
+                .map_err(|e| CacheError::OperationFailed(format!("Computation failed: {}", e)))?;
+            // Store in cache for future use
+            if let Some(v) = value.clone() {
+                self.set(key, &v).await?;
+            }
+            Ok(value)
+        } else {
+            // First, try to get from cache
+            match self.get(key).await? {
+                Some(value) => Ok(Some(value)),
+                None => {
+                    // Cache miss - compute the value
+                    let value = f()
+                        .await
+                        .map_err(|e| CacheError::OperationFailed(format!("Computation failed: {}", e)))?;
+
+                    // Store in cache for future use
+                    if let Some(v) = value.clone() {
+                        self.set(key, &v).await?;
+                    }
                     Ok(value)
                 }
             }
