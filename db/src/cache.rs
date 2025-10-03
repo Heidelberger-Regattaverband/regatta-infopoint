@@ -94,34 +94,6 @@ where
 
         Ok(Cache { cache, config })
     }
-
-    /// Creates a new `Cache` with default configuration that panics on failure
-    /// Kept for backward compatibility but logs the error before panicking
-    pub fn new(size: usize, ttl: Duration) -> Self {
-        let config = CacheConfig {
-            max_entries: size,
-            ttl,
-            max_cost: 1_000_000,
-        };
-
-        Self::try_new(config).unwrap_or_else(|e| {
-            error!("Failed to create cache: {}", e);
-            panic!(
-                "Critical error: Cannot create cache - application cannot continue: {}",
-                e
-            );
-        })
-    }
-
-    /// Creates a new `Cache` with custom configuration
-    pub fn with_config(config: CacheConfig) -> Result<Self, CacheError> {
-        Self::try_new(config)
-    }
-
-    /// Returns the cache configuration
-    pub fn config(&self) -> &CacheConfig {
-        &self.config
-    }
 }
 
 impl<K, V> CacheTrait<K, V> for Cache<K, V>
