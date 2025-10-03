@@ -27,7 +27,7 @@ impl Monitoring {
     /// * `registry` - The prometheus registry.
     /// # Returns
     /// `Monitoring` - The monitoring struct.
-    pub(crate) fn new(pool: &TiberiusPool, registry: &Registry, cache: &CacheStats) -> Self {
+    pub(crate) fn new(pool: &TiberiusPool, registry: &Registry, caches: &CacheStats) -> Self {
         let sys = get_system();
         let metrics = get_metrics(registry);
         let state = pool.state();
@@ -43,7 +43,7 @@ impl Monitoring {
                     closed_max_lifetime: stats.connections_closed_max_lifetime,
                     closed_error: stats.connections_closed_broken + stats.connections_closed_invalid,
                 },
-                cache: Cache::from(cache.clone()),
+                caches: Caches::from(caches.clone()),
             },
             sys: SysInfo {
                 cpus: sys.cpus().iter().map(Cpu::from).collect(),
@@ -210,20 +210,21 @@ pub(crate) struct Db {
     /// The connections of the database.
     connections: Connections,
     /// The cache statistics.
-    cache: Cache,
+    caches: Caches,
 }
 
 #[derive(Serialize, ToSchema)]
-pub(crate) struct Cache {
+#[serde(rename_all = "camelCase")]
+pub(crate) struct Caches {
     pub hits: u64,
     pub misses: u64,
     pub entries: usize,
     pub hit_rate: f64,
 }
 
-impl From<CacheStats> for Cache {
+impl From<CacheStats> for Caches {
     fn from(stats: CacheStats) -> Self {
-        Cache {
+        Caches {
             hits: stats.hits,
             misses: stats.misses,
             entries: stats.entries,

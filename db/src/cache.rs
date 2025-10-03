@@ -5,7 +5,6 @@ use crate::{
 use futures::future::Future;
 use log::{debug, warn};
 use std::{
-    collections::HashMap,
     fmt::Display,
     hash::Hash,
     sync::atomic::{AtomicU64, Ordering},
@@ -13,15 +12,6 @@ use std::{
 };
 use stretto::AsyncCache;
 use tokio::task;
-
-/// Cache statistics for monitoring and debugging with actual tracking capabilities
-#[derive(Debug, Clone)]
-pub struct CacheStats {
-    pub hits: u64,
-    pub misses: u64,
-    pub entries: usize,
-    pub hit_rate: f64,
-}
 
 /// A high-performance cache that uses `stretto` as the underlying cache with comprehensive features
 ///
@@ -41,7 +31,9 @@ where
     cache: AsyncCache<K, V>,
     /// Cache configuration
     config: CacheConfig,
+    /// Atomic counter for cache hits
     hits: AtomicU64,
+    /// Atomic counter for cache misses
     misses: AtomicU64,
 }
 
@@ -150,7 +142,6 @@ where
             let value = f()
                 .await
                 .map_err(|e| DbError::Cache(format!("Computation failed: {}", e)))?;
-
             // Only cache non-None values
             if let Some(ref v) = value {
                 self.set(key, v).await?;
@@ -163,7 +154,6 @@ where
                     let value = f()
                         .await
                         .map_err(|e| DbError::Cache(format!("Computation failed: {}", e)))?;
-
                     // Only cache non-None values
                     if let Some(ref v) = value {
                         self.set(key, v).await?;
@@ -203,19 +193,6 @@ pub struct Caches {
 }
 
 impl Caches {
-    /// Creates a new `Caches` instance with the given TTL for all caches
-    ///
-    /// # Arguments
-    /// * `ttl` - Base time-to-live for all cache entries
-    ///
-    /// # Returns
-    /// * `Ok(Caches)` - Successfully created cache container
-    /// * `Err(DbError)` - Failed to create one or more caches
-    ///
-    /// # Example
-    /// ```rust
-    /// let caches = Caches::try_new(Duration::from_secs(300))?;
-    /// ```
     pub fn try_new(ttl: Duration) -> Result<Self, DbError> {
         let config = CachesConfig::new(ttl);
 
@@ -241,52 +218,37 @@ impl Caches {
         })
     }
 
-    /// Gets comprehensive statistics for all caches for monitoring and debugging
-    ///
-    /// # Returns
-    /// HashMap containing statistics for each named cache
-    fn get_all_stats(&self) -> HashMap<String, CacheStats> {
-        let mut stats = HashMap::new();
-
-        // Collect stats from all caches
-        stats.insert("regattas".to_string(), self.regattas.stats());
-        stats.insert("races".to_string(), self.races.stats());
-        stats.insert("heats".to_string(), self.heats.stats());
-        stats.insert("clubs".to_string(), self.clubs.stats());
-        stats.insert("athletes".to_string(), self.athletes.stats());
-        stats.insert("filters".to_string(), self.filters.stats());
-        stats.insert("schedule".to_string(), self.schedule.stats());
-        stats.insert(
-            "club_with_aggregations".to_string(),
-            self.club_with_aggregations.stats(),
-        );
-        stats.insert("club_entries".to_string(), self.club_entries.stats());
-        stats.insert("athlete_entries".to_string(), self.athlete_entries.stats());
-        stats.insert("race_heats_entries".to_string(), self.race_heats_entries.stats());
-        stats.insert("athlete".to_string(), self.athlete.stats());
-        stats.insert("heat".to_string(), self.heat.stats());
-
-        stats
-    }
-
-    /// Get overall cache performance summary
-    ///
-    /// # Returns
-    /// Aggregated statistics across all caches
     pub fn get_summary_stats(&self) -> CacheStats {
-        let all_stats = self.get_all_stats();
+        let all_stats = {
+            let this = &self;
+            vec![
+                this.regattas.stats(),
+                this.races.stats(),
+                this.heats.stats(),
+                this.clubs.stats(),
+                this.athletes.stats(),
+                this.filters.stats(),
+                this.schedule.stats(),
+                this.club_with_aggregations.stats(),
+                this.club_entries.stats(),
+                this.athlete_entries.stats(),
+                this.race_heats_entries.stats(),
+                this.athlete.stats(),
+                this.heat.stats(),
+            ]
+        };
 
         let mut total_hits = 0;
         let mut total_misses = 0;
         let mut total_entries = 0;
 
-        for stat in all_stats.values() {
+        for stat in all_stats {
             total_hits += stat.hits;
             total_misses += stat.misses;
             total_entries += stat.entries;
         }
 
-        CacheStats {
+        let stats = CacheStats {
             hits: total_hits,
             misses: total_misses,
             entries: total_entries,
@@ -295,7 +257,9 @@ impl Caches {
             } else {
                 0.0
             },
-        }
+        };
+        debug!("Cache statistics: {:?}", stats);
+        stats
     }
 }
 
@@ -363,4 +327,13 @@ pub struct CacheConfig {
     pub(crate) ttl: Duration,
     /// Maximum cost for the cache (memory limit)
     pub(crate) max_cost: i64,
+}
+
+/// Cache statistics for monitoring and debugging with actual tracking capabilities
+#[derive(Debug, Clone)]
+pub struct CacheStats {
+    pub hits: u64,
+    pub misses: u64,
+    pub entries: usize,
+    pub hit_rate: f64,
 }

@@ -47,6 +47,14 @@ export default class MonitoringController extends BaseController {
       dbConnections.push({ name: this.i18n("monitoring.dbConnections.closedError"), value: monitoring.db.connections.closedError });
     }
 
+    const dbCaches = [];
+    if (monitoring?.db?.caches) {
+      dbCaches.push({ name: this.i18n("monitoring.caches.hits"), value: monitoring.db.caches.hits });
+      dbCaches.push({ name: this.i18n("monitoring.caches.misses"), value: monitoring.db.caches.misses });
+      dbCaches.push({ name: this.i18n("monitoring.caches.entries"), value: monitoring.db.caches.entries });
+      dbCaches.push({ name: this.i18n("monitoring.caches.hitRate"), value: monitoring.db.caches.hitRate });
+    }
+
     const mem: any[] = [];
     if (monitoring?.sys?.mem) {
       mem.push({ name: this.i18n("monitoring.mem.total"), value: this.niceBytes(monitoring.sys.mem.total) });
@@ -74,6 +82,7 @@ export default class MonitoringController extends BaseController {
     }
 
     this.monitoringModel.setProperty("/db", dbConnections);
+    this.monitoringModel.setProperty("/caches", dbCaches);
     this.monitoringModel.setProperty("/mem", mem);
     this.monitoringModel.setProperty("/cpus", cpus);
     this.monitoringModel.setProperty("/sys", sys);
