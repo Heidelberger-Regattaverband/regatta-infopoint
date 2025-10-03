@@ -114,6 +114,50 @@ where
             hit_rate: 0.0, // Would need to be calculated from tracked metrics
         }
     }
+
+    /// Gets a value from the cache, or computes it using the provided function if not present.
+    /// This implements the cache-aside pattern: check cache first, if miss then compute and store.
+    ///
+    /// # Arguments
+    /// * `key` - The key to look up in the cache
+    /// * `f` - An async function to compute the value if not found in cache
+    ///
+    /// # Returns
+    /// The cached value or the newly computed value
+    ///
+    /// # Errors
+    /// Returns `CacheError` if cache operations fail or if the computation function fails
+    pub async fn compute_if_missing<F, Fut, E>(&self, key: &K, force: bool, f: F) -> Result<V, CacheError>
+    where
+        F: FnOnce() -> Fut,
+        Fut: std::future::Future<Output = Result<V, E>>,
+        E: std::fmt::Display,
+    {
+        if force {
+            // If force is true, skip cache and compute directly
+            let value = f()
+                .await
+                .map_err(|e| CacheError::OperationFailed(format!("Computation failed: {}", e)))?;
+            // Store in cache for future use
+            self.set(key, &value).await?;
+            Ok(value)
+        } else {
+            // First, try to get from cache
+            match self.get(key).await? {
+                Some(value) => Ok(value),
+                None => {
+                    // Cache miss - compute the value
+                    let value = f()
+                        .await
+                        .map_err(|e| CacheError::OperationFailed(format!("Computation failed: {}", e)))?;
+
+                    // Store in cache for future use
+                    self.set(key, &value).await?;
+                    Ok(value)
+                }
+            }
+        }
+    }
 }
 
 /// Container for all caches with improved organization and error handling
@@ -332,5 +376,37 @@ mod tests {
         // Check that entry count increased
         let stats = cache.stats().await;
         assert_eq!(stats.entries, 1);
+    }
+
+    #[tokio::test]
+    async fn test_get_or_insert_with() {
+        let config = CacheConfig {
+            max_entries: 10,
+            ttl: Duration::from_secs(60),
+            max_cost: 1000,
+        };
+        let cache = Cache::<i32, String>::try_new(config).unwrap();
+
+        // Test cache miss - should compute and store the value
+        let result = cache
+            .compute_if_missing(&1, false, || async {
+                Ok::<String, &'static str>("computed_value".to_string())
+            })
+            .await
+            .unwrap();
+        assert_eq!(result, "computed_value");
+
+        // Test cache hit - should return cached value without calling function
+        let result = cache
+            .compute_if_missing(&1, false, || async {
+                Ok::<String, &'static str>("should_not_be_called".to_string())
+            })
+            .await
+            .unwrap();
+        assert_eq!(result, "computed_value"); // Should still be the original cached value
+
+        // Verify the value is actually in cache
+        let cached_value = cache.get(&1).await.unwrap();
+        assert_eq!(cached_value, Some("computed_value".to_string()));
     }
 }
