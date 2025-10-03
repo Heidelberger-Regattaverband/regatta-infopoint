@@ -16,4 +16,6 @@ pub enum DbError {
     /// Custom error with message.
     #[error("Database error: {0}")]
     Custom(String),
+    #[error("Cache error: {0}")]
+    Cache(String),
 }

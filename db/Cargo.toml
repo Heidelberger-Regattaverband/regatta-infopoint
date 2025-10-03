@@ -20,6 +20,7 @@ thiserror.workspace = true
 tiberius.workspace = true
 chrono.workspace = true
 bb8.workspace = true
+stretto.workspace = true
 
 # Enum and string utils: https://github.com/Peternator7/strum
 strum.workspace = true
