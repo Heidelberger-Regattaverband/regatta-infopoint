@@ -8,10 +8,7 @@ use std::{
     collections::HashMap,
     fmt::Display,
     hash::Hash,
-    sync::{
-        Arc,
-        atomic::{AtomicU64, Ordering},
-    },
+    sync::atomic::{AtomicU64, Ordering},
     time::Duration,
 };
 use stretto::AsyncCache;
@@ -24,39 +21,6 @@ pub struct CacheStats {
     pub misses: u64,
     pub entries: usize,
     pub hit_rate: f64,
-}
-
-/// Internal metrics tracking for cache operations
-#[derive(Debug, Default)]
-struct CacheMetrics {
-    hits: AtomicU64,
-    misses: AtomicU64,
-}
-
-impl CacheMetrics {
-    fn record_hit(&self) {
-        self.hits.fetch_add(1, Ordering::Relaxed);
-    }
-
-    fn record_miss(&self) {
-        self.misses.fetch_add(1, Ordering::Relaxed);
-    }
-
-    fn get_stats(&self, entries: usize) -> CacheStats {
-        let hits = self.hits.load(Ordering::Relaxed);
-        let misses = self.misses.load(Ordering::Relaxed);
-
-        CacheStats {
-            hits,
-            misses,
-            entries,
-            hit_rate: if hits + misses > 0 {
-                (hits as f64 / (hits + misses) as f64) * 100.0
-            } else {
-                0.0
-            },
-        }
-    }
 }
 
 /// A high-performance cache that uses `stretto` as the underlying cache with comprehensive features
@@ -77,8 +41,8 @@ where
     cache: AsyncCache<K, V>,
     /// Cache configuration
     config: CacheConfig,
-    /// Internal metrics for monitoring
-    metrics: Arc<CacheMetrics>,
+    hits: AtomicU64,
+    misses: AtomicU64,
 }
 
 impl<K, V> Cache<K, V>
@@ -96,8 +60,25 @@ where
         Ok(Cache {
             cache,
             config,
-            metrics: Arc::new(CacheMetrics::default()),
+            hits: AtomicU64::new(0),
+            misses: AtomicU64::new(0),
         })
+    }
+
+    fn stats(&self) -> CacheStats {
+        let hits = self.hits.load(Ordering::Relaxed);
+        let misses = self.misses.load(Ordering::Relaxed);
+
+        CacheStats {
+            hits,
+            misses,
+            entries: self.cache.len(),
+            hit_rate: if hits + misses > 0 {
+                (hits as f64 / (hits + misses) as f64) * 100.0
+            } else {
+                0.0
+            },
+        }
     }
 
     async fn get(&self, key: &K) -> Result<Option<V>, DbError> {
@@ -105,11 +86,11 @@ where
             Some(value_ref) => {
                 let value = value_ref.value().clone();
                 value_ref.release();
-                self.metrics.record_hit();
+                self.hits.fetch_add(1, Ordering::Relaxed);
                 Ok(Some(value))
             }
             None => {
-                self.metrics.record_miss();
+                self.misses.fetch_add(1, Ordering::Relaxed);
                 Ok(None)
             }
         }
@@ -131,11 +112,6 @@ where
             return Err(DbError::Cache(format!("Cache wait failed: {}", e)));
         }
         Ok(())
-    }
-
-    pub fn stats(&self) -> CacheStats {
-        let entries = self.cache.len();
-        self.metrics.get_stats(entries)
     }
 
     pub async fn compute_if_missing<F, Fut, E>(&self, key: &K, force: bool, f: F) -> Result<V, DbError>
