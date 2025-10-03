@@ -205,7 +205,7 @@ impl CachesConfig {
 /// Container for all caches with improved organization and error handling
 pub struct Caches {
     // Caches with entries per regatta
-    pub regatta: Cache<i32, Regatta>,
+    pub regattas: Cache<i32, Regatta>,
     pub races: Cache<i32, Vec<Race>>,
     pub heats: Cache<i32, Vec<Heat>>,
     pub clubs: Cache<i32, Vec<Club>>,
@@ -232,7 +232,7 @@ impl Caches {
 
         Ok(Caches {
             // Caches with entries per regatta
-            regatta: Cache::try_new(config.regatta_cache.clone())?,
+            regattas: Cache::try_new(config.regatta_cache.clone())?,
             races: Cache::try_new(config.regatta_cache.clone())?,
             heats: Cache::try_new(config.regatta_cache.clone())?,
             clubs: Cache::try_new(config.regatta_cache.clone())?,
@@ -259,7 +259,7 @@ impl Caches {
         use futures::future::FutureExt;
 
         let results = join_all(vec![
-            self.regatta.clear().boxed(),
+            self.regattas.clear().boxed(),
             self.races.clear().boxed(),
             self.heats.clear().boxed(),
             self.clubs.clear().boxed(),
@@ -287,7 +287,7 @@ impl Caches {
     pub async fn get_all_stats(&self) -> HashMap<String, CacheStats> {
         let mut stats = HashMap::new();
 
-        stats.insert("regatta".to_string(), self.regatta.stats().await);
+        stats.insert("regatta".to_string(), self.regattas.stats().await);
         stats.insert("races".to_string(), self.races.stats().await);
         stats.insert("heats".to_string(), self.heats.stats().await);
         stats.insert("clubs".to_string(), self.clubs.stats().await);

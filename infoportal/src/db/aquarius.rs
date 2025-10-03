@@ -70,7 +70,7 @@ impl Aquarius {
     async fn get_regatta(&self, regatta_id: i32, opt_user: Option<Identity>) -> Result<Option<Regatta>, DbError> {
         if opt_user.is_some() {
             self._query_regatta(regatta_id).await
-        } else if let Ok(Some(regatta)) = self.caches.regatta.get(&regatta_id).await {
+        } else if let Ok(Some(regatta)) = self.caches.regattas.get(&regatta_id).await {
             Ok(Some(regatta))
         } else {
             self._query_regatta(regatta_id).await
@@ -276,7 +276,7 @@ impl Aquarius {
         let start = Instant::now();
         let regatta = Regatta::query_by_id(regatta_id, TiberiusPool::instance()).await?;
         if let Some(regatta) = &regatta {
-            self.caches.regatta.set(&regatta_id, regatta).await?;
+            self.caches.regattas.set(&regatta_id, regatta).await?;
         }
         debug!("Query regatta {} from DB: {:?}", regatta_id, start.elapsed());
         Ok(regatta)
