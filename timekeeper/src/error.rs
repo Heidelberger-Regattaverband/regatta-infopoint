@@ -40,12 +40,11 @@ impl Display for TimekeeperErr {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::ErrorKind;
 
     #[test]
     fn test_message_err() {
         let parse_error = TimekeeperErr::ParseError("error".parse::<i32>().unwrap_err());
-        let io_error = TimekeeperErr::IoError(IoError::new(ErrorKind::Other, "error"));
+        let io_error = TimekeeperErr::IoError(IoError::other("error"));
         let invalid_message = TimekeeperErr::InvalidMessage("error".to_string());
 
         assert!(matches!(parse_error, TimekeeperErr::ParseError(_)));
