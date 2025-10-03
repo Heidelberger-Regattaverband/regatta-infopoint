@@ -60,7 +60,12 @@ impl Aquarius {
     pub(crate) async fn get_filters(&self, regatta_id: i32, opt_user: Option<Identity>) -> Result<Filters, DbError> {
         self.caches
             .filters
-            .compute_if_missing(&regatta_id, opt_user.is_some(), || self._query_filters(regatta_id))
+            .compute_if_missing(&regatta_id, opt_user.is_some(), || async move {
+                let start = Instant::now();
+                let filters = Filters::query(regatta_id, TiberiusPool::instance()).await?;
+                debug!("Query filters from DB: {:?}", start.elapsed());
+                Ok::<Filters, DbError>(filters)
+            })
             .await
             .map_err(DbError::Cache)
     }
@@ -68,7 +73,12 @@ impl Aquarius {
     async fn get_regatta(&self, regatta_id: i32, opt_user: Option<Identity>) -> Result<Option<Regatta>, DbError> {
         self.caches
             .regattas
-            .compute_if_missing_opt(&regatta_id, opt_user.is_some(), || self._query_regatta(regatta_id))
+            .compute_if_missing_opt(&regatta_id, opt_user.is_some(), || async move {
+                let start = Instant::now();
+                let regatta = Regatta::query_by_id(regatta_id, TiberiusPool::instance()).await?;
+                debug!("Query regatta {} from DB: {:?}", regatta_id, start.elapsed());
+                Ok::<Option<Regatta>, DbError>(regatta)
+            })
             .await
             .map_err(DbError::Cache)
     }
@@ -173,7 +183,16 @@ impl Aquarius {
     ) -> Result<Vec<Athlete>, DbError> {
         self.caches
             .athletes
-            .compute_if_missing(&regatta_id, opt_user.is_some(), || self._query_athletes(regatta_id))
+            .compute_if_missing(&regatta_id, opt_user.is_some(), || async move {
+                let start = Instant::now();
+                let athletes = Athlete::query_participating_athletes(regatta_id, TiberiusPool::instance()).await?;
+                debug!(
+                    "Query athletes of regatta {} from DB: {:?}",
+                    regatta_id,
+                    start.elapsed()
+                );
+                Ok::<Vec<Athlete>, DbError>(athletes)
+            })
             .await
             .map_err(DbError::Cache)
     }
@@ -186,8 +205,16 @@ impl Aquarius {
     ) -> Result<Vec<Entry>, DbError> {
         self.caches
             .athlete_entries
-            .compute_if_missing(&(regatta_id, athlete_id), opt_user.is_some(), || {
-                self._query_athlete_entries(regatta_id, athlete_id)
+            .compute_if_missing(&(regatta_id, athlete_id), opt_user.is_some(), || async move {
+                let start = Instant::now();
+                let entries = Entry::query_entries_of_athlete(regatta_id, athlete_id, TiberiusPool::instance()).await?;
+                debug!(
+                    "Query entries of athlete {} for regatta {} from DB: {:?}",
+                    athlete_id,
+                    regatta_id,
+                    start.elapsed()
+                );
+                Ok::<Vec<Entry>, DbError>(entries)
             })
             .await
             .map_err(DbError::Cache)
@@ -201,8 +228,11 @@ impl Aquarius {
     ) -> Result<Athlete, DbError> {
         self.caches
             .athlete
-            .compute_if_missing(&athlete_id, opt_user.is_some(), || {
-                self._query_athlete(regatta_id, athlete_id)
+            .compute_if_missing(&athlete_id, opt_user.is_some(), || async move {
+                let start = Instant::now();
+                let athlete = Athlete::query_athlete(regatta_id, athlete_id, TiberiusPool::instance()).await?;
+                debug!("Query athlete {} from DB: {:?}", athlete_id, start.elapsed());
+                Ok::<Athlete, DbError>(athlete)
             })
             .await
             .map_err(DbError::Cache)
@@ -237,19 +267,21 @@ impl Aquarius {
     ) -> Result<Schedule, DbError> {
         self.caches
             .schedule
-            .compute_if_missing(&regatta_id, opt_user.is_some(), || self._query_schedule(regatta_id))
+            .compute_if_missing(&regatta_id, opt_user.is_some(), || async move {
+                let start = Instant::now();
+                let schedule = Schedule::query_schedule_for_regatta(regatta_id, TiberiusPool::instance()).await?;
+                debug!(
+                    "Query schedule of regatta {} from DB: {:?}",
+                    regatta_id,
+                    start.elapsed()
+                );
+                Ok::<Schedule, DbError>(schedule)
+            })
             .await
             .map_err(DbError::Cache)
     }
 
     // private methods for querying the database
-
-    async fn _query_filters(&self, regatta_id: i32) -> Result<Filters, DbError> {
-        let start = Instant::now();
-        let filters = Filters::query(regatta_id, TiberiusPool::instance()).await?;
-        debug!("Query filters from DB: {:?}", start.elapsed());
-        Ok(filters)
-    }
 
     async fn _query_races(&self, regatta_id: i32) -> Result<Vec<Race>, DbError> {
         let start = Instant::now();
@@ -287,13 +319,6 @@ impl Aquarius {
         Ok(race)
     }
 
-    async fn _query_regatta(&self, regatta_id: i32) -> Result<Option<Regatta>, DbError> {
-        let start = Instant::now();
-        let regatta = Regatta::query_by_id(regatta_id, TiberiusPool::instance()).await?;
-        debug!("Query regatta {} from DB: {:?}", regatta_id, start.elapsed());
-        Ok(regatta)
-    }
-
     async fn _query_heats(&self, regatta_id: i32) -> Result<Vec<Heat>, DbError> {
         let start = Instant::now();
         let heats: Vec<Heat> = Heat::query_heats_of_regatta(regatta_id, TiberiusPool::instance()).await?;
@@ -329,46 +354,5 @@ impl Aquarius {
             start.elapsed()
         );
         Ok(entries)
-    }
-
-    async fn _query_athletes(&self, regatta_id: i32) -> Result<Vec<Athlete>, DbError> {
-        let start = Instant::now();
-        let athletes = Athlete::query_participating_athletes(regatta_id, TiberiusPool::instance()).await?;
-        debug!(
-            "Query athletes of regatta {} from DB: {:?}",
-            regatta_id,
-            start.elapsed()
-        );
-        Ok(athletes)
-    }
-
-    async fn _query_athlete_entries(&self, regatta_id: i32, athlete_id: i32) -> Result<Vec<Entry>, DbError> {
-        let start = Instant::now();
-        let entries = Entry::query_entries_of_athlete(regatta_id, athlete_id, TiberiusPool::instance()).await?;
-        debug!(
-            "Query entries of athlete {} for regatta {} from DB: {:?}",
-            athlete_id,
-            regatta_id,
-            start.elapsed()
-        );
-        Ok(entries)
-    }
-
-    async fn _query_athlete(&self, regatta_id: i32, athlete_id: i32) -> Result<Athlete, DbError> {
-        let start = Instant::now();
-        let athlete = Athlete::query_athlete(regatta_id, athlete_id, TiberiusPool::instance()).await?;
-        debug!("Query athlete {} from DB: {:?}", athlete_id, start.elapsed());
-        Ok(athlete)
-    }
-
-    async fn _query_schedule(&self, regatta_id: i32) -> Result<Schedule, DbError> {
-        let start = Instant::now();
-        let schedule = Schedule::query_schedule_for_regatta(regatta_id, TiberiusPool::instance()).await?;
-        debug!(
-            "Query schedule of regatta {} from DB: {:?}",
-            regatta_id,
-            start.elapsed()
-        );
-        Ok(schedule)
     }
 }
