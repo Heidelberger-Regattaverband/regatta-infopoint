@@ -45,8 +45,7 @@
                   </VBox>
                   <VBox class="sapUiMediumMarginEnd">
                     <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceEntries>/',formatter:'.formatter.distanceLabel'}" />
-                    <ObjectAttribute title="{i18n>common.seeded}"
-                      text="{=${raceEntries>/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
+                    <ObjectAttribute title="{i18n>common.seeded}" text="{=${raceEntries>/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
                   </VBox>
                 </HBox>
                 <ObjectAttribute title="{i18n>common.heats} ({raceEntries>/heatsCount})"
@@ -57,7 +56,7 @@
 
           <f:content>
             <Table headerText="" id="raceDetailsTable" autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
-              items="{path:'raceEntries>/entries/',sorter:[{path:'result/rankSort',descending:false},{path:'bib', descending:false}]}"
+              items="{path:'raceEntries>/entries/',sorter:[{path:'result/rankSort',descending:false},{path:'bib',descending:false}]}"
               sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding" itemPress=".onEntriesItemPress">
               <columns>
                 <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
@@ -83,7 +82,7 @@
               </columns>
 
               <items>
-                <ColumnListItem vAlign="Top" type="{=${raceEntries>/heatsCount}>0?'Navigation':'Inactive'}"
+                <ColumnListItem type="{=${raceEntries>/heatsCount}>0?'Navigation':'Inactive'}"
                   highlight="{parts:[{path:'race>/'},{path:'raceEntries>'}],formatter:'.formatter.raceEntryHighlight'}">
                   <cells>
                     <VBox alignItems="Center">
@@ -94,13 +93,12 @@
                     <VBox>
                       <Text text="{parts:[{path:'race>/groupMode'},{path:'raceEntries>'}],formatter:'.formatter.boatLabel'}"
                         class="boldCancelled" visible="{=${raceEntries>cancelled}}" />
-                      <Text text="{parts:[{path:'race>/groupMode'},{path:'raceEntries>'}],formatter:'.formatter.boatLabel'}"
-                        class="bold" visible="{=!${raceEntries>cancelled}}" />
+                      <Text text="{parts:[{path:'race>/groupMode'},{path:'raceEntries>'}],formatter:'.formatter.boatLabel'}" class="bold"
+                        visible="{=!${raceEntries>cancelled}}" />
 
-                      <Text text="{path:'raceEntries>crew',formatter: '.formatter.crewLabel'}"
-                        visible="{= ${raceEntries>cancelled}}" class="cancelled" />
-                      <Text text="{path:'raceEntries>crew',formatter: '.formatter.crewLabel'}"
-                        visible="{= !${raceEntries>cancelled}}" />
+                      <Text text="{path:'raceEntries>crew',formatter: '.formatter.crewLabel'}" visible="{= ${raceEntries>cancelled}}"
+                        class="cancelled" />
+                      <Text text="{path:'raceEntries>crew',formatter: '.formatter.crewLabel'}" visible="{= !${raceEntries>cancelled}}" />
                     </VBox>
 
                     <HBox alignItems="Center">
