@@ -17,5 +17,5 @@ pub enum DbError {
     #[error("Database error: {0}")]
     Custom(String),
     #[error("Cache error: {0}")]
-    Cache(#[from] crate::cache::CacheError),
+    Cache(String),
 }

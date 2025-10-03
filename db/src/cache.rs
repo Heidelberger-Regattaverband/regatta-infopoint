@@ -1,21 +1,12 @@
-use crate::aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
+use crate::{
+    aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule},
+    error::DbError,
+};
 use futures::future::join_all;
-use log::{error, warn};
+use log::warn;
 use std::{collections::HashMap, fmt::Display, hash::Hash, time::Duration};
 use stretto::AsyncCache;
-use thiserror::Error;
 use tokio::task;
-
-/// Cache-specific error types for better error handling
-#[derive(Error, Debug)]
-pub enum CacheError {
-    #[error("Failed to create cache with size {size}: {source}")]
-    CreationFailed { size: usize, source: stretto::CacheError },
-    #[error("Cache operation timed out")]
-    Timeout,
-    #[error("Cache operation failed: {0}")]
-    OperationFailed(String),
-}
 
 /// Cache statistics for monitoring and debugging
 #[derive(Debug, Clone)]
@@ -45,13 +36,9 @@ where
 {
     /// Creates a new `Cache` with the given configuration
     /// Returns a Result instead of panicking
-    pub fn try_new(config: CacheConfig) -> Result<Self, CacheError> {
-        let cache = AsyncCache::new(config.max_entries, config.max_cost, task::spawn).map_err(|e| {
-            CacheError::CreationFailed {
-                size: config.max_entries,
-                source: e,
-            }
-        })?;
+    pub fn try_new(config: CacheConfig) -> Result<Self, DbError> {
+        let cache = AsyncCache::new(config.max_entries, config.max_cost, task::spawn)
+            .map_err(|e| DbError::Cache(format!("Failed to create cache: {}", e)))?;
 
         Ok(Cache { cache, config })
     }
@@ -62,7 +49,7 @@ where
     K: Hash + Eq + Send + Sync + Copy,
     V: Send + Sync + Clone + 'static,
 {
-    pub async fn get(&self, key: &K) -> Result<Option<V>, CacheError> {
+    pub async fn get(&self, key: &K) -> Result<Option<V>, DbError> {
         match self.cache.get(key).await {
             Some(value_ref) => {
                 let value = value_ref.value().clone();
@@ -73,7 +60,7 @@ where
         }
     }
 
-    async fn set(&self, key: &K, value: &V) -> Result<(), CacheError> {
+    async fn set(&self, key: &K, value: &V) -> Result<(), DbError> {
         // Insert with TTL and cost of 1
         self.cache
             .insert_with_ttl(*key, value.clone(), 1, self.config.ttl)
@@ -83,18 +70,18 @@ where
         if let Err(e) = self.cache.wait().await {
             warn!("Cache wait operation failed: {}", e);
             // Return error instead of just logging for better error propagation
-            return Err(CacheError::OperationFailed(format!("Wait failed: {}", e)));
+            return Err(DbError::Cache(format!("Wait failed: {}", e)));
         }
 
         Ok(())
     }
 
-    pub async fn remove(&self, key: &K) -> Result<(), CacheError> {
+    pub async fn remove(&self, key: &K) -> Result<(), DbError> {
         self.cache.remove(key).await;
         Ok(())
     }
 
-    pub async fn clear(&self) -> Result<(), CacheError> {
+    pub async fn clear(&self) -> Result<(), DbError> {
         let _ = self.cache.clear().await;
         Ok(())
     }
@@ -124,7 +111,7 @@ where
     ///
     /// # Errors
     /// Returns `CacheError` if cache operations fail or if the computation function fails
-    pub async fn compute_if_missing<F, Fut, E>(&self, key: &K, force: bool, f: F) -> Result<V, CacheError>
+    pub async fn compute_if_missing<F, Fut, E>(&self, key: &K, force: bool, f: F) -> Result<V, DbError>
     where
         F: FnOnce() -> Fut,
         Fut: std::future::Future<Output = Result<V, E>>,
@@ -134,7 +121,7 @@ where
             // If force is true, skip cache and compute directly
             let value = f()
                 .await
-                .map_err(|e| CacheError::OperationFailed(format!("Computation failed: {}", e)))?;
+                .map_err(|e| DbError::Cache(format!("Computation failed: {}", e)))?;
             // Store in cache for future use
             self.set(key, &value).await?;
             Ok(value)
@@ -146,7 +133,7 @@ where
                     // Cache miss - compute the value
                     let value = f()
                         .await
-                        .map_err(|e| CacheError::OperationFailed(format!("Computation failed: {}", e)))?;
+                        .map_err(|e| DbError::Cache(format!("Computation failed: {}", e)))?;
 
                     // Store in cache for future use
                     self.set(key, &value).await?;
@@ -155,7 +142,7 @@ where
             }
         }
     }
-    pub async fn compute_if_missing_opt<F, Fut, E>(&self, key: &K, force: bool, f: F) -> Result<Option<V>, CacheError>
+    pub async fn compute_if_missing_opt<F, Fut, E>(&self, key: &K, force: bool, f: F) -> Result<Option<V>, DbError>
     where
         F: FnOnce() -> Fut,
         Fut: Future<Output = Result<Option<V>, E>>,
@@ -165,7 +152,7 @@ where
             // If force is true, skip cache and compute directly
             let value = f()
                 .await
-                .map_err(|e| CacheError::OperationFailed(format!("Computation failed: {}", e)))?;
+                .map_err(|e| DbError::Cache(format!("Computation failed: {}", e)))?;
             // Store in cache for future use
             if let Some(v) = value.clone() {
                 self.set(key, &v).await?;
@@ -179,7 +166,7 @@ where
                     // Cache miss - compute the value
                     let value = f()
                         .await
-                        .map_err(|e| CacheError::OperationFailed(format!("Computation failed: {}", e)))?;
+                        .map_err(|e| DbError::Cache(format!("Computation failed: {}", e)))?;
 
                     // Store in cache for future use
                     if let Some(v) = value.clone() {
@@ -217,7 +204,7 @@ pub struct Caches {
 impl Caches {
     /// Creates a new `Caches` instance with the given TTL
     /// Now returns a Result for better error handling
-    pub fn try_new(ttl: Duration) -> Result<Self, CacheError> {
+    pub fn try_new(ttl: Duration) -> Result<Self, DbError> {
         let config = CachesConfig::new(ttl);
 
         Ok(Caches {
@@ -243,7 +230,7 @@ impl Caches {
     }
 
     /// Clears all caches
-    pub async fn clear_all(&self) -> Result<(), CacheError> {
+    pub async fn clear_all(&self) -> Result<(), DbError> {
         // Clear all caches in parallel for better performance
         // Use boxed futures to ensure all futures have the same type
         use futures::future::FutureExt;

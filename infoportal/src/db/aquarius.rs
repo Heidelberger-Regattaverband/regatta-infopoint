@@ -67,7 +67,6 @@ impl Aquarius {
                 Ok::<Filters, DbError>(filters)
             })
             .await
-            .map_err(DbError::Cache)
     }
 
     async fn get_regatta(&self, regatta_id: i32, opt_user: Option<Identity>) -> Result<Option<Regatta>, DbError> {
@@ -80,7 +79,6 @@ impl Aquarius {
                 Ok::<Option<Regatta>, DbError>(regatta)
             })
             .await
-            .map_err(DbError::Cache)
     }
 
     pub(crate) async fn get_races(&self, regatta_id: i32, opt_user: Option<Identity>) -> Result<Vec<Race>, DbError> {
@@ -93,7 +91,6 @@ impl Aquarius {
                 Ok::<Vec<Race>, DbError>(races)
             })
             .await
-            .map_err(DbError::Cache)
     }
 
     pub(crate) async fn get_race_heats_entries(
@@ -105,7 +102,6 @@ impl Aquarius {
             .race_heats_entries
             .compute_if_missing(&race_id, opt_user.is_some(), || self.query_race_heats_entries(race_id))
             .await
-            .map_err(DbError::Cache)
     }
 
     pub(crate) async fn get_regatta_club(
@@ -128,7 +124,6 @@ impl Aquarius {
                 Ok::<Club, DbError>(club)
             })
             .await
-            .map_err(DbError::Cache)
     }
 
     pub(crate) async fn get_heats(&self, regatta_id: i32, opt_user: Option<Identity>) -> Result<Vec<Heat>, DbError> {
@@ -141,7 +136,6 @@ impl Aquarius {
                 Ok::<Vec<Heat>, DbError>(heats)
             })
             .await
-            .map_err(DbError::Cache)
     }
 
     /// Returns heat details for the given identifier.
@@ -155,7 +149,6 @@ impl Aquarius {
                 Ok::<Heat, DbError>(heat)
             })
             .await
-            .map_err(DbError::Cache)
     }
 
     pub(crate) async fn get_participating_clubs(
@@ -176,7 +169,6 @@ impl Aquarius {
                 Ok::<Vec<Club>, DbError>(clubs)
             })
             .await
-            .map_err(DbError::Cache)
     }
 
     pub(crate) async fn get_club_entries(
@@ -199,7 +191,6 @@ impl Aquarius {
                 Ok::<Vec<Entry>, DbError>(entries)
             })
             .await
-            .map_err(DbError::Cache)
     }
 
     pub(crate) async fn get_participating_athletes(
@@ -220,7 +211,6 @@ impl Aquarius {
                 Ok::<Vec<Athlete>, DbError>(athletes)
             })
             .await
-            .map_err(DbError::Cache)
     }
 
     pub(crate) async fn get_athlete_entries(
@@ -243,7 +233,6 @@ impl Aquarius {
                 Ok::<Vec<Entry>, DbError>(entries)
             })
             .await
-            .map_err(DbError::Cache)
     }
 
     pub(crate) async fn get_athlete(
@@ -261,7 +250,6 @@ impl Aquarius {
                 Ok::<Athlete, DbError>(athlete)
             })
             .await
-            .map_err(DbError::Cache)
     }
 
     pub(crate) async fn calculate_scoring(&self, regatta_id: i32) -> Result<Vec<Score>, DbError> {
@@ -304,7 +292,6 @@ impl Aquarius {
                 Ok::<Schedule, DbError>(schedule)
             })
             .await
-            .map_err(DbError::Cache)
     }
 
     // private methods for querying the database
