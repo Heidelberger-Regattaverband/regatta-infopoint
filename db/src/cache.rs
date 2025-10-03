@@ -41,19 +41,19 @@ impl Default for CacheConfig {
 /// Trait for a cache with improved error handling and additional methods
 pub trait CacheTrait<K, V> {
     /// Retrieves a value from the cache
-    async fn get(&self, key: &K) -> Result<Option<V>, CacheError>;
+    fn get(&self, key: &K) -> impl Future<Output = Result<Option<V>, CacheError>> + Send;
 
     /// Sets a value in the cache
-    async fn set(&self, key: &K, value: &V) -> Result<(), CacheError>;
+    fn set(&self, key: &K, value: &V) -> impl Future<Output = Result<(), CacheError>> + Send;
 
     /// Removes a value from the cache
-    async fn remove(&self, key: &K) -> Result<(), CacheError>;
+    fn remove(&self, key: &K) -> impl Future<Output = Result<(), CacheError>> + Send;
 
     /// Clears all entries from the cache
-    async fn clear(&self) -> Result<(), CacheError>;
+    fn clear(&self) -> impl Future<Output = Result<(), CacheError>> + Send;
 
     /// Returns cache statistics (hit rate, entry count, etc.)
-    async fn stats(&self) -> CacheStats;
+    fn stats(&self) -> impl Future<Output = CacheStats> + Send;
 }
 
 /// Cache statistics for monitoring and debugging
@@ -140,20 +140,23 @@ where
         }
     }
 
-    async fn set(&self, key: &K, value: &V) -> Result<(), CacheError> {
-        // Insert with TTL and cost of 1
-        self.cache
-            .insert_with_ttl(*key, value.clone(), 1, self.config.ttl)
-            .await;
+    fn set(&self, key: &K, value: &V) -> impl std::future::Future<Output = Result<(), CacheError>> + Send {
+        let key = *key;
+        let value = value.clone();
+        let ttl = self.config.ttl;
+        async move {
+            // Insert with TTL and cost of 1
+            self.cache.insert_with_ttl(key, value, 1, ttl).await;
 
-        // Handle the wait operation more gracefully
-        if let Err(e) = self.cache.wait().await {
-            warn!("Cache wait operation failed: {}", e);
-            // Return error instead of just logging for better error propagation
-            return Err(CacheError::OperationFailed(format!("Wait failed: {}", e)));
+            // Handle the wait operation more gracefully
+            if let Err(e) = self.cache.wait().await {
+                warn!("Cache wait operation failed: {}", e);
+                // Return error instead of just logging for better error propagation
+                return Err(CacheError::OperationFailed(format!("Wait failed: {}", e)));
+            }
+
+            Ok(())
         }
-
-        Ok(())
     }
 
     async fn remove(&self, key: &K) -> Result<(), CacheError> {
@@ -354,7 +357,7 @@ mod tests {
         assert_eq!(result, Some("value1".to_string()));
 
         // Test remove
-        let _ = cache.remove(&1).await.unwrap();
+        cache.remove(&1).await.unwrap();
 
         let result = cache.get(&1).await.unwrap();
         assert_eq!(result, None);
