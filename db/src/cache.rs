@@ -157,16 +157,16 @@ where
 
 /// Configuration for all caches in the system
 #[derive(Debug, Clone)]
-pub struct CachesConfig {
-    pub regatta_cache: CacheConfig,
-    pub race_cache: CacheConfig,
-    pub heat_cache: CacheConfig,
-    pub club_cache: CacheConfig,
-    pub athlete_cache: CacheConfig,
+pub(crate) struct CachesConfig {
+    pub(crate) regatta_cache: CacheConfig,
+    pub(crate) race_cache: CacheConfig,
+    pub(crate) heat_cache: CacheConfig,
+    pub(crate) club_cache: CacheConfig,
+    pub(crate) athlete_cache: CacheConfig,
 }
 
 impl CachesConfig {
-    pub fn new(base_ttl: Duration) -> Self {
+    pub(crate) fn new(base_ttl: Duration) -> Self {
         const MAX_REGATTAS_COUNT: usize = 3;
         const MAX_RACES_COUNT: usize = 200;
         const MAX_HEATS_COUNT: usize = 350;
