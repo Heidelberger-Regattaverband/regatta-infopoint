@@ -1,7 +1,7 @@
 use crate::aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
 use futures::future::join_all;
 use log::{error, warn};
-use std::{hash::Hash, time::Duration};
+use std::{collections::HashMap, hash::Hash, time::Duration};
 use stretto::AsyncCache;
 use thiserror::Error;
 use tokio::task;
@@ -312,8 +312,8 @@ impl Caches {
     }
 
     /// Gets statistics for all caches for monitoring purposes
-    pub async fn get_all_stats(&self) -> std::collections::HashMap<String, CacheStats> {
-        let mut stats = std::collections::HashMap::new();
+    pub async fn get_all_stats(&self) -> HashMap<String, CacheStats> {
+        let mut stats = HashMap::new();
 
         stats.insert("regatta".to_string(), self.regatta.stats().await);
         stats.insert("races".to_string(), self.races.stats().await);
