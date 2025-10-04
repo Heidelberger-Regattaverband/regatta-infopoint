@@ -47,6 +47,7 @@ scraper = { version = "0" }
 clap = { version = "4", features = ["derive"] }
 colored = { version = "3" }
 uptime_lib = { version = "0" }
+thiserror = { version = "2" }
 
 # HTTP
 utoipa = { version = "5", features = ["actix_extras", "chrono", "decimal"] }

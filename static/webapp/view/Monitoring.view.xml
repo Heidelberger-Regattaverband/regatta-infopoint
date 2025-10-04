@@ -11,6 +11,10 @@
           <ObjectListItem title="{monitoring>name}" number="{monitoring>value}" />
         </List>
 
+        <List id="dbCachesList" items="{monitoring>/caches}" headerText="{i18n>monitoring.caches.title}">
+          <ObjectListItem title="{monitoring>name}" number="{monitoring>value}" />
+        </List>
+
         <List id="appList" items="{monitoring>/app}" headerText="{i18n>monitoring.app.title}">
           <ObjectListItem title="{monitoring>name}" number="{monitoring>value}" />
         </List>

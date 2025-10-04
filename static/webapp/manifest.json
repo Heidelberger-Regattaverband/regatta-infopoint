@@ -25,6 +25,7 @@
   },
   "sap.ui5": {
     "rootView": {
+      "async": true,
       "viewName": "de.regatta_hd.infoportal.view.App",
       "type": "XML",
       "id": "app"
@@ -34,7 +35,7 @@
       "cozy": true
     },
     "dependencies": {
-      "minUI5Version": "1.140.0",
+      "minUI5Version": "1.141.0",
       "libs": {
         "sap.ui.core": {},
         "sap.f": {},

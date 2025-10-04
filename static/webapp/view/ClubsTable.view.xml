@@ -55,7 +55,7 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation" vAlign="Middle">
+            <ColumnListItem type="Navigation">
               <cells>
                 <Text text="{clubs>city}" />
                 <HBox alignItems="Center">

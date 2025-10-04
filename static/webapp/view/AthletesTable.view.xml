@@ -58,7 +58,7 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation" vAlign="Inherit">
+            <ColumnListItem type="Navigation">
               <cells>
                 <Text text="{athletes>lastName}" />
                 <Text text="{athletes>firstName}" />
