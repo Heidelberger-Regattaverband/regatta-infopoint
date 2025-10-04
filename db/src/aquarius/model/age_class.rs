@@ -6,6 +6,7 @@ use serde::Serialize;
 use tiberius::Row;
 use utoipa::ToSchema;
 
+/// An age class defines the age range of athletes.
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct AgeClass {

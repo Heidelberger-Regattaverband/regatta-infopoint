@@ -12,7 +12,11 @@ use actix_web::{
     get, post,
     web::{Data, Json, Path, ServiceConfig},
 };
-use db::{aquarius::model::Regatta, tiberius::TiberiusPool, timekeeper::TimeStrip};
+use db::{
+    aquarius::model::{Race, Regatta},
+    tiberius::TiberiusPool,
+    timekeeper::TimeStrip,
+};
 use log::error;
 
 /// Path to REST API
@@ -44,6 +48,7 @@ async fn get_filters(
 
 // Regatta Endpoints
 #[utoipa::path(
+    description = "Get the currently active regatta. If no regatta is active, a 404 error is returned.",
     context_path = PATH,
     responses(
         (status = 200, description = "Active regatta found", body = Regatta),
@@ -65,10 +70,10 @@ async fn get_active_regatta(aquarius: Data<Aquarius>, opt_user: Option<Identity>
 
 // Races Endpoints
 #[utoipa::path(
+    description = "Get all races of a regatta.",
     context_path = PATH,
     responses(
-        (status = 200, description = "Active regatta found"),
-        (status = 404, description = "Race not found"),
+        (status = 200, description = "Races of <regatta_id>", body = Vec<Race>),
         (status = 500, description = INTERNAL_SERVER_ERROR)
     )
 )]
