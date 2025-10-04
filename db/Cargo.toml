@@ -22,6 +22,9 @@ chrono.workspace = true
 bb8.workspace = true
 stretto.workspace = true
 
+# OpenAPI
+utoipa.workspace = true
+
 # Enum and string utils: https://github.com/Peternator7/strum
 strum.workspace = true
 strum_macros.workspace = true

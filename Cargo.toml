@@ -49,6 +49,9 @@ colored = { version = "3" }
 uptime_lib = { version = "0" }
 thiserror = { version = "2" }
 
+# HTTP
+utoipa = { version = "5", features = ["actix_extras", "chrono", "decimal"] }
+
 [profile.release]
 # https://nnethercote.github.io/perf-book/build-configuration.html#codegen-units
 codegen-units = 1

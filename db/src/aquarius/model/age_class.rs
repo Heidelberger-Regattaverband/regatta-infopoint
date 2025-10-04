@@ -4,8 +4,10 @@ use crate::{
 };
 use serde::Serialize;
 use tiberius::Row;
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Clone)]
+/// An age class defines the age range of athletes.
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct AgeClass {
     /// The internal ID of the age class.

@@ -2,9 +2,10 @@ use crate::{error::DbError, tiberius::TiberiusPool};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::Serialize;
 use tiberius::Query;
+use utoipa::ToSchema;
 
 /// A block of heats.
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 pub struct Block {
     /// Begin of the heat block
     begin: DateTime<Utc>,

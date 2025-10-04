@@ -7,9 +7,10 @@ use chrono::NaiveDate;
 use futures::join;
 use serde::Serialize;
 use tiberius::Query;
+use utoipa::ToSchema;
 
 /// A struct containing all available filter values for a regatta.
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Filters {
     /// Available distances of all races.
@@ -34,7 +35,7 @@ pub struct Filters {
     blocks: Vec<Block>,
 }
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 struct Round {
     /// the round id: 4 - Vorlauf, 16 - Hoffnungslauf, 32 - Semifinal, 64 - Final

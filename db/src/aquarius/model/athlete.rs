@@ -5,9 +5,10 @@ use crate::{
 };
 use serde::Serialize;
 use tiberius::{Query, Row, time::chrono::NaiveDateTime};
+use utoipa::ToSchema;
 
 /// An athlete is a person who participates in a regatta.
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Athlete {
     /// The internal ID of the athlete.

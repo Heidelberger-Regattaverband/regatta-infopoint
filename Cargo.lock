@@ -1214,6 +1214,7 @@ dependencies = [
  "tokio",
  "tokio-shared-rt",
  "tokio-util",
+ "utoipa",
 ]
 
 [[package]]

@@ -12,15 +12,27 @@ use actix_web::{
     get, post,
     web::{Data, Json, Path, ServiceConfig},
 };
-use db::{tiberius::TiberiusPool, timekeeper::TimeStrip};
+use db::{
+    aquarius::model::{Race, Regatta},
+    tiberius::TiberiusPool,
+    timekeeper::TimeStrip,
+};
 use log::error;
 
 /// Path to REST API
 pub(crate) const PATH: &str = "/api";
+const INTERNAL_SERVER_ERROR: &str = "Internal server error";
 
 // Filters Endpoints
-
-#[get("/regattas/{id}/filters")]
+#[utoipa::path(
+    context_path = PATH,
+    responses(
+        (status = 200),
+        (status = 404, description = "Regatta not found"),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
+#[get("/regattas/{regatta_id}/filters")]
 async fn get_filters(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
@@ -35,7 +47,15 @@ async fn get_filters(
 }
 
 // Regatta Endpoints
-
+#[utoipa::path(
+    description = "Get the currently active regatta. If no regatta is active, a 404 error is returned.",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Active regatta found", body = Regatta),
+        (status = 404, description = "No active regatta found"),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
 #[get("/active_regatta")]
 async fn get_active_regatta(aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     let regatta = aquarius.get_active_regatta(opt_user).await.map_err(|err| {
@@ -49,7 +69,14 @@ async fn get_active_regatta(aquarius: Data<Aquarius>, opt_user: Option<Identity>
 }
 
 // Races Endpoints
-
+#[utoipa::path(
+    description = "Get all races of a regatta.",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Races of <regatta_id>", body = Vec<Race>),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
 #[get("/regattas/{regatta_id}/races")]
 async fn get_races(
     path: Path<i32>,

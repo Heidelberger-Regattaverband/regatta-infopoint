@@ -6,8 +6,9 @@ use crate::{
 use futures::future::{BoxFuture, join_all};
 use serde::Serialize;
 use tiberius::{Query, Row};
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Entry {
     /** The unique identifier of this entry. */
@@ -15,6 +16,7 @@ pub struct Entry {
 
     /** The race for which the entry was made. */
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[schema(no_recursion)]
     race: Option<Race>,
 
     /** The club that made the entry and has to pay an entry fee for it. */
@@ -47,6 +49,7 @@ pub struct Entry {
 
     /// The heats of the entry.
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[schema(no_recursion)]
     heats: Option<Vec<Heat>>,
 }
 

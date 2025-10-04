@@ -5,8 +5,9 @@ use crate::{
 };
 use serde::Serialize;
 use tiberius::{Query, Row};
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Referee {
     id: i32,

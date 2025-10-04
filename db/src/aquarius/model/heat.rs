@@ -7,8 +7,9 @@ use chrono::{DateTime, Utc};
 use futures::future::join;
 use serde::Serialize;
 use tiberius::{Query, Row};
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Heat {
     /// The unique identifier of this heat.
@@ -19,6 +20,7 @@ pub struct Heat {
 
     /// The race the heat belongs to.
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[schema(no_recursion)]
     race: Option<Race>,
 
     /// The round code of the heat. Known values are: "R" - main race, "A" - division, "V" - Vorlauf

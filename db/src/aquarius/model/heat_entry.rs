@@ -7,9 +7,10 @@ use futures::future::{BoxFuture, join_all};
 use serde::Serialize;
 use std::{cmp::Ordering, time::Duration};
 use tiberius::{Query, Row};
+use utoipa::ToSchema;
 
 /// A entry of a boat in a heat.
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct HeatEntry {
     /// The unique id of the entry.

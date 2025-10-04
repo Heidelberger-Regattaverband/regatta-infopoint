@@ -41,7 +41,7 @@ rustls-pki-types.workspace = true
 rustls-pemfile.workspace = true
 
 # OpenAPI
-utoipa = { version = "5", features = ["actix_extras", "time"] }
+utoipa.workspace = true
 utoipa-swagger-ui = { version = "9", features = ["actix-web"] }
 
 # Database + Pool
