@@ -20,6 +20,7 @@ pub struct Heat {
 
     /// The race the heat belongs to.
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[schema(no_recursion)]
     race: Option<Race>,
 
     /// The round code of the heat. Known values are: "R" - main race, "A" - division, "V" - Vorlauf
