@@ -25,6 +25,7 @@
   },
   "sap.ui5": {
     "rootView": {
+      "async": true,
       "viewName": "de.regatta_hd.infoportal.view.App",
       "type": "XML",
       "id": "app"
