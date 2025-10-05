@@ -47,7 +47,8 @@
           <Text text="{i18n>common.bib}" class="bold" />
         </header>
       </Column>
-      <Column id="timestampPersisted" hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
+      <Column id="timestampPersisted" hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline"
+        visible="{=!${device>/system/phone}}">
         <header>
           <Text text="{i18n>common.persisted}" class="bold" />
         </header>
@@ -58,11 +59,11 @@
       <ColumnListItem type="Navigation">
         <cells>
           <VBox>
-            <Text text="{path:'timestrip>time',formatter:'.formatter.dayTimeIsoLabel'}" class="bold" />
+            <Text text="{timestrip>time}" />
           </VBox>
 
           <VBox>
-            <Text text="{timestrip>split}" class="bold" />
+            <Text text="{timestrip>split}" />
           </VBox>
 
           <VBox>
