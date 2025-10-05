@@ -58,7 +58,7 @@
       <ColumnListItem type="Navigation">
         <cells>
           <VBox>
-            <Text text="{path:'timestrip>time',formatter:'.formatter.dateTimeLabel'}" class="bold" />
+            <Text text="{path:'timestrip>time',formatter:'.formatter.dayTimeIsoLabel'}" class="bold" />
           </VBox>
 
           <VBox>
