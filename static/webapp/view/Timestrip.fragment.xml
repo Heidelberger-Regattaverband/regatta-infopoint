@@ -1,7 +1,8 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
 
-  <Table id="timestripTable" autoPopinMode="true" items="{timestrip>/}" growing="true" growingScrollToLoad="true" growingThreshold="30"
-    mode="SingleSelectMaster" itemPress=".onSelectionChange" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
+  <Table id="timestripTable" autoPopinMode="true" items="{path:'timestrip>/',sorter:[{path:'time',descending:true}]}" growing="true"
+    growingScrollToLoad="true" growingThreshold="30" mode="SingleSelectMaster" itemPress=".onSelectionChange"
+    sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
 
     <!-- The HeaderToolbar shows a title and the filter button -->
     <headerToolbar>
@@ -56,7 +57,7 @@
     </columns>
 
     <items>
-      <ColumnListItem type="Navigation">
+      <ColumnListItem>
         <cells>
           <VBox>
             <Text text="{timestrip>time}" />
