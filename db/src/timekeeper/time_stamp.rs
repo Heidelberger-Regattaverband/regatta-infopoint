@@ -7,9 +7,10 @@ use chrono::{DateTime, Local, Utc};
 use serde::Serialize;
 use strum_macros::Display;
 use tiberius::{Query, Row};
+use utoipa::ToSchema;
 
 /// A time stamp of an event, such as a start or finish time stamp in a race.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct TimeStamp {
     /// The time of the event.
     pub time: DateTime<Utc>,
@@ -140,7 +141,7 @@ impl From<&Row> for TimeStamp {
 }
 
 /// The type of a time stamp.
-#[derive(Debug, Clone, Display, Serialize)]
+#[derive(Debug, Clone, Display, Serialize, ToSchema)]
 pub enum Split {
     /// A start time stamp.
     #[strum(to_string = "Start")]

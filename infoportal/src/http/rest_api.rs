@@ -13,9 +13,9 @@ use actix_web::{
     web::{Data, Json, Path, ServiceConfig},
 };
 use db::{
-    aquarius::model::{Race, Regatta},
+    aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta},
     tiberius::TiberiusPool,
-    timekeeper::TimeStrip,
+    timekeeper::{TimeStamp, TimeStrip},
 };
 use log::error;
 
@@ -27,7 +27,7 @@ const INTERNAL_SERVER_ERROR: &str = "Internal server error";
 #[utoipa::path(
     context_path = PATH,
     responses(
-        (status = 200),
+        (status = 200, description = "Filters for <regatta_id>", body = Filters),
         (status = 404, description = "Regatta not found"),
         (status = 500, description = INTERNAL_SERVER_ERROR)
     )
@@ -52,7 +52,7 @@ async fn get_filters(
     context_path = PATH,
     responses(
         (status = 200, description = "Active regatta found", body = Regatta),
-        (status = 404, description = "No active regatta found"),
+        (status = 404, description = "No active regatta found", body = String),
         (status = 500, description = INTERNAL_SERVER_ERROR)
     )
 )]
@@ -91,6 +91,14 @@ async fn get_races(
     Ok(Json(races))
 }
 
+#[utoipa::path(
+    description = "Get a race with its heats and entries.",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Race found", body = Race),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
 #[get("/races/{race_id}")]
 async fn get_race(
     path: Path<i32>,
@@ -110,6 +118,14 @@ async fn get_race(
 
 // Heats Endpoints
 
+#[utoipa::path(
+    description = "Get all heats of a regatta.",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Heats of regatta", body = Vec<Heat>),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
 #[get("/regattas/{regatta_id}/heats")]
 async fn get_heats(
     path: Path<i32>,
@@ -124,6 +140,14 @@ async fn get_heats(
     Ok(Json(heats))
 }
 
+#[utoipa::path(
+    description = "Get a specific heat by ID.",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Heat found", body = Heat),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
 #[get("/heats/{id}")]
 async fn get_heat(
     path: Path<i32>,
@@ -140,6 +164,14 @@ async fn get_heat(
 
 // Clubs Endpoints
 
+#[utoipa::path(
+    description = "Get all participating clubs of a regatta.",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Participating clubs", body = Vec<Club>),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
 #[get("/regattas/{regatta_id}/clubs")]
 async fn get_participating_clubs(
     path: Path<i32>,
@@ -157,6 +189,14 @@ async fn get_participating_clubs(
     Ok(Json(clubs))
 }
 
+#[utoipa::path(
+    description = "Get all entries of a specific club in a regatta.",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Club entries", body = Vec<Entry>),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
 #[get("/regattas/{regatta_id}/clubs/{club_id}/entries")]
 async fn get_club_entries(
     ids: Path<(i32, i32)>,
@@ -171,6 +211,14 @@ async fn get_club_entries(
     Ok(Json(entries))
 }
 
+#[utoipa::path(
+    description = "Get a specific club participating in a regatta.",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Club details", body = Club),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
 #[get("/regattas/{regatta_id}/clubs/{club_id}")]
 async fn get_regatta_club(
     ids: Path<(i32, i32)>,
@@ -187,6 +235,14 @@ async fn get_regatta_club(
 
 // Athletes Endpoints
 
+#[utoipa::path(
+    description = "Get all participating athletes of a regatta.",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Participating athletes", body = Vec<Athlete>),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
 #[get("/regattas/{regatta_id}/athletes")]
 async fn get_participating_athletes(
     path: Path<i32>,
@@ -204,6 +260,14 @@ async fn get_participating_athletes(
     Ok(Json(clubs))
 }
 
+#[utoipa::path(
+    description = "Get a specific athlete participating in a regatta.",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Athlete details", body = Athlete),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
 #[get("/regattas/{regatta_id}/athletes/{athlete_id}")]
 async fn get_athlete(
     path: Path<(i32, i32)>,
@@ -221,6 +285,14 @@ async fn get_athlete(
     Ok(Json(clubs))
 }
 
+#[utoipa::path(
+    description = "Get all entries of a specific athlete in a regatta.",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Athlete entries", body = Vec<Entry>),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
 #[get("/regattas/{regatta_id}/athletes/{athlete_id}/entries")]
 async fn get_athlete_entries(
     ids: Path<(i32, i32)>,
@@ -240,6 +312,15 @@ async fn get_athlete_entries(
 
 // Misc Endpoints
 
+#[utoipa::path(
+    description = "Get the timestrip data for the active regatta. Requires authentication.",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Timestrip data", body = Vec<TimeStamp>),
+        (status = 401, description = "Unauthorized", body = String, example = "Unauthorized"),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
 #[get("/regattas/active/timestrip")]
 async fn get_timestrip(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     if opt_user.is_some() {
@@ -253,6 +334,15 @@ async fn get_timestrip(opt_user: Option<Identity>) -> Result<impl Responder, Err
     }
 }
 
+#[utoipa::path(
+    description = "Get statistics for a regatta. Requires authentication.",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Regatta statistics"),
+        (status = 401, description = "Unauthorized", body = String, example = "Unauthorized"),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
 #[get("/regattas/{regatta_id}/statistics")]
 async fn get_statistics(
     path: Path<i32>,
@@ -271,6 +361,15 @@ async fn get_statistics(
     }
 }
 
+#[utoipa::path(
+    description = "Calculate scoring for a regatta. Requires authentication.",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Calculated scoring data"),
+        (status = 401, description = "Unauthorized", body = String, example = "Unauthorized"),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
 #[get("/regattas/{regatta_id}/calculateScoring")]
 async fn calculate_scoring(
     path: Path<i32>,
@@ -289,6 +388,14 @@ async fn calculate_scoring(
     }
 }
 
+#[utoipa::path(
+    description = "Get the schedule for a regatta.",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Regatta schedule"),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
 #[get("/regattas/{regatta_id}/schedule")]
 async fn get_schedule(
     path: Path<i32>,
