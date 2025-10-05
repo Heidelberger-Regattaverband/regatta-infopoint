@@ -39,6 +39,10 @@ export default class LaunchpadController extends BaseController {
     super.getRouter().navTo("schedule", {}, false /* history */);
   }
 
+  onNavToTimestrip(): void {
+    super.getRouter().navTo("timestrip", {}, false /* history */);
+  }
+
   onUserSubmit(event: Input$SubmitEvent): void {
     super.byId("password")?.focus();
   }

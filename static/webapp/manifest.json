@@ -140,6 +140,11 @@
           "pattern": "monitoring",
           "name": "monitoring",
           "target": "monitoring"
+        },
+        {
+          "pattern": "timestrip",
+          "name": "timestrip",
+          "target": "timestrip"
         }
       ],
       "targets": {
@@ -224,6 +229,12 @@
         "monitoring": {
           "type": "View",
           "name": "Monitoring",
+          "level": 1,
+          "viewType": "XML"
+        },
+        "timestrip": {
+          "type": "View",
+          "name": "Timestrip",
           "level": 1,
           "viewType": "XML"
         }

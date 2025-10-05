@@ -1,0 +1,16 @@
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.TimestripTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc"
+  xmlns:core="sap.ui.core">
+  <mvc:content>
+
+    <Page title="{i18n>common.timestrip}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
+      <content>
+
+        <ScrollContainer horizontal="false" vertical="true" height="100%" width="100%">
+          <core:Fragment fragmentName="de.regatta_hd.infoportal.view.Timestrip" type="XML" />
+        </ScrollContainer>
+
+      </content>
+    </Page>
+
+  </mvc:content>
+</mvc:View>
