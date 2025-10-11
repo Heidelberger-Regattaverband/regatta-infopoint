@@ -115,7 +115,7 @@
               <tileContent>
                 <TileContent>
                   <content>
-                    <ImageContent src="sap-icon://sys-monitor" />
+                    <ImageContent src="sap-icon://time-account" />
                   </content>
                 </TileContent>
               </tileContent>
