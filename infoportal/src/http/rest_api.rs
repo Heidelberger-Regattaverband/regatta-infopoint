@@ -323,15 +323,17 @@ async fn get_athlete_entries(
 )]
 #[get("/regattas/active/timestrip")]
 async fn get_timestrip(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
-    if opt_user.is_some() {
+    if let Some(user) = opt_user
+        && let Ok(id) = user.id()
+        && id == "sa"
+    {
         let timestrip = TimeStrip::load(TiberiusPool::instance()).await.map_err(|err| {
             error!("{err}");
             ErrorInternalServerError(err)
         })?;
-        Ok(Json(timestrip.time_stamps))
-    } else {
-        Err(ErrorUnauthorized("Unauthorized"))
+        return Ok(Json(timestrip.time_stamps));
     }
+    Err(ErrorUnauthorized("Unauthorized"))
 }
 
 #[utoipa::path(

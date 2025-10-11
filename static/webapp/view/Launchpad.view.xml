@@ -110,6 +110,17 @@
               </tileContent>
             </GenericTile>
 
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.timestrip.header}"
+              visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}" press=".onNavToTimestrip">
+              <tileContent>
+                <TileContent>
+                  <content>
+                    <ImageContent src="sap-icon://time-account" />
+                  </content>
+                </TileContent>
+              </tileContent>
+            </GenericTile>
+
           </layout:content>
         </layout:HorizontalLayout>
 
