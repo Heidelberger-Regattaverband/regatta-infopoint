@@ -111,7 +111,7 @@
             </GenericTile>
 
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.timestrip.header}"
-              visible="{identity>/authenticated}" press=".onNavToTimestrip">
+              visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}" press=".onNavToTimestrip">
               <tileContent>
                 <TileContent>
                   <content>
