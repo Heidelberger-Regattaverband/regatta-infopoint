@@ -1,13 +1,16 @@
 use bb8::ManageConnection;
-use tiberius::{Client, Config as TiberiusConfig, error::Error};
+use tiberius::{Client, Config, error::Error};
 use tokio::net::TcpStream;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
+
+/// The type of a Tiberius connection.
+pub type TiberiusConnection = Client<Compat<TcpStream>>;
 
 /// A connection manager for Tiberius connections.
 #[derive(Debug)]
 pub struct TiberiusConnectionManager {
     /// The database configuration.
-    config: TiberiusConfig,
+    config: Config,
 }
 
 impl TiberiusConnectionManager {
@@ -17,13 +20,13 @@ impl TiberiusConnectionManager {
     /// * `config` - The configuration for the Tiberius connection manager.
     /// # Returns
     /// A new instance of `TiberiusConnectionManager`.
-    pub fn new(config: TiberiusConfig) -> TiberiusConnectionManager {
+    pub fn new(config: Config) -> TiberiusConnectionManager {
         TiberiusConnectionManager { config }
     }
 }
 
 impl ManageConnection for TiberiusConnectionManager {
-    type Connection = Client<Compat<TcpStream>>;
+    type Connection = TiberiusConnection;
     type Error = Error;
 
     async fn connect(&self) -> Result<Self::Connection, Self::Error> {
