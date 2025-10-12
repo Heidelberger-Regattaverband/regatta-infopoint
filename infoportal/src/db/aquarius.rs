@@ -23,17 +23,12 @@ pub(crate) struct Aquarius {
 impl Aquarius {
     /// Creates a new `Aquarius`.
     pub(crate) async fn new() -> Result<Self, DbError> {
-        let active_regatta_id: i32 = if Config::get().active_regatta_id.is_none() {
-            let start = Instant::now();
-            let regatta = Regatta::query_active_regatta(TiberiusPool::instance()).await?;
-            debug!("Query active regatta from DB: {:?}", start.elapsed());
-            regatta.id
-        } else {
-            Config::get().active_regatta_id.unwrap()
+        let active_regatta_id: i32 = match Config::get().active_regatta_id {
+            Some(id) => id,
+            None => Regatta::query_active_regatta(TiberiusPool::instance()).await?.id,
         };
         Ok(Aquarius {
-            caches: Caches::try_new(Duration::from_secs(Config::get().cache_ttl))
-                .map_err(|_| DbError::Custom("Failed to create caches".to_string()))?,
+            caches: Caches::try_new(Duration::from_secs(Config::get().cache_ttl))?,
             active_regatta_id,
         })
     }

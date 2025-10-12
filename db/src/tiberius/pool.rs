@@ -37,7 +37,7 @@ impl TiberiusPool {
             .min_idle(Some(min_idle))
             .build(manager)
             .await
-            .unwrap();
+            .expect("Failed to create Tiberius connection pool");
 
         if POOL.get().is_none() {
             POOL.set(TiberiusPool { inner }).expect("TiberiusPool already set")
