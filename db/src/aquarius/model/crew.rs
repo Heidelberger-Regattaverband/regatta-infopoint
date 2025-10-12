@@ -40,7 +40,11 @@ impl Crew {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list of crew members of the entry
-    pub async fn query_crew_of_entry(entry_id: i32, round: i16, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
+    pub(crate) async fn query_crew_of_entry(
+        entry_id: i32,
+        round: i16,
+        pool: &TiberiusPool,
+    ) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Crew cr
             JOIN Athlet  a ON cr.Crew_Athlete_ID_FK = a.Athlet_ID
