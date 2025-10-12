@@ -90,7 +90,7 @@ impl Athlete {
         Ok(Athlete::from(&row))
     }
 
-    pub fn select_columns(alias: &str) -> String {
+    pub(crate) fn select_columns(alias: &str) -> String {
         format!(
             " {alias}.Athlet_ID, {alias}.Athlet_FirstName, {alias}.Athlet_LastName, {alias}.Athlet_Gender, {alias}.Athlet_DOB "
         )

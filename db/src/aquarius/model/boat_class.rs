@@ -27,7 +27,7 @@ pub struct BoatClass {
 }
 
 impl BoatClass {
-    pub fn select_columns(alias: &str) -> String {
+    pub(crate) fn select_columns(alias: &str) -> String {
         format!(
             " {alias}.BoatClass_ID, {alias}.BoatClass_Caption, {alias}.BoatClass_Abbr, {alias}.BoatClass_NumRowers, {alias}.BoatClass_Coxed "
         )

@@ -158,13 +158,13 @@ impl Club {
         Ok(Club::from(&utils::get_row(query.query(&mut client).await?).await?))
     }
 
-    pub fn select_all_columns(alias: &str) -> String {
+    pub(crate) fn select_all_columns(alias: &str) -> String {
         format!(
             " {alias}.Club_ID, {alias}.Club_Abbr, {alias}.Club_Name, {alias}.Club_UltraAbbr, {alias}.Club_City, {alias}.Club_ExternID, {alias}.Club_HRV_Latitude, {alias}.Club_HRV_Longitude "
         )
     }
 
-    pub fn select_min_columns(alias: &str) -> String {
+    pub(crate) fn select_min_columns(alias: &str) -> String {
         format!(
             " {alias}.Club_ID, {alias}.Club_Abbr, {alias}.Club_UltraAbbr, {alias}.Club_City, {alias}.Club_ExternID "
         )

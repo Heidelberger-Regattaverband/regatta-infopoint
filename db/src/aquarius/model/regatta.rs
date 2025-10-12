@@ -10,12 +10,25 @@ use utoipa::ToSchema;
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Regatta {
+    /// The internal ID of the regatta.
     pub id: i32,
+
+    /// The title of the regatta.
     title: String,
+
+    /// The subtitle of the regatta.
     sub_title: String,
+
+    /// The venue of the regatta.
     venue: String,
+
+    /// The start date of the regatta.
     start_date: String,
+
+    /// The end date of the regatta.
     end_date: String,
+
+    /// The URL of the homepage of the regatta.
     url: String,
 }
 

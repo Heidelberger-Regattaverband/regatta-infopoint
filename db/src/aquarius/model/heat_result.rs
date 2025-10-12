@@ -27,7 +27,7 @@ pub struct HeatResult {
 }
 
 impl HeatResult {
-    pub fn select_columns(alias: &str) -> String {
+    pub(crate) fn select_columns(alias: &str) -> String {
         format!(" {alias}.Result_Rank, {alias}.Result_Delta, {alias}.Result_DisplayValue, {alias}.Result_NetTime ")
     }
 }
