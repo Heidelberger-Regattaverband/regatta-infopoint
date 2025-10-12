@@ -117,8 +117,12 @@ impl HeatEntry {
         let crews = join_all(crew_futures).await;
 
         for (pos, heat_entry) in heat_entries.iter_mut().enumerate() {
-            let crew = crews.get(pos).unwrap();
-            heat_entry.entry.crew = Some(crew.as_deref().unwrap().to_vec());
+            if let Some(crews) = crews.get(pos)
+                && let Ok(crews) = crews.as_deref()
+                && !crews.is_empty()
+            {
+                heat_entry.entry.crew = Some(crews.to_vec());
+            }
         }
 
         Ok(heat_entries)
