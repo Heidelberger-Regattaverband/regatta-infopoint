@@ -200,12 +200,16 @@ async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Res
     let heats = join_all(heats_futures).await;
 
     for (pos, entry) in entries.iter_mut().enumerate() {
-        let crew = crews.get(pos).unwrap().as_deref().unwrap();
-        if !crew.is_empty() {
-            entry.crew = Some(crew.to_vec());
+        if let Some(crews) = crews.get(pos)
+            && let Ok(crews) = crews.as_deref()
+            && !crews.is_empty()
+        {
+            entry.crew = Some(crews.to_vec());
         }
-        let heats = heats.get(pos).unwrap().as_deref().unwrap();
-        if !heats.is_empty() {
+        if let Some(heats) = heats.get(pos)
+            && let Ok(heats) = heats.as_deref()
+            && !heats.is_empty()
+        {
             entry.heats = Some(heats.to_vec());
         }
     }
