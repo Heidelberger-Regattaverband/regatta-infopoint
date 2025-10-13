@@ -1,7 +1,8 @@
+use crate::tiberius::TiberiusConnection;
 use crate::{
     aquarius::model::utils,
     error::DbError,
-    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
+    tiberius::{RowColumn, TryRowColumn},
 };
 use chrono::{DateTime, Local, Utc};
 use serde::Serialize;
@@ -71,29 +72,30 @@ impl TimeStamp {
         self.bib
     }
 
-    pub(crate) async fn query_all_for_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<TimeStamp>, DbError> {
+    pub(crate) async fn query_all_for_regatta(
+        regatta_id: i32,
+        client: &mut TiberiusConnection,
+    ) -> Result<Vec<TimeStamp>, DbError> {
         let mut query = Query::new(
             "SELECT timestamp, event_id, split_nr, heat_nr, bib FROM HRV_Timestamp WHERE event_id = @P1 ORDER BY timestamp ASC"
                 .to_string(),
         );
         query.bind(regatta_id);
 
-        let mut client = pool.get().await?;
-        let stream = query.query(&mut client).await?;
+        let stream = query.query(client).await?;
         let time_stamps = utils::get_rows(stream).await?;
         Ok(time_stamps.into_iter().map(|row| TimeStamp::from(&row)).collect())
     }
 
-    pub(crate) async fn delete(&self, pool: &TiberiusPool) -> Result<(), DbError> {
+    pub(crate) async fn delete(&self, client: &mut TiberiusConnection) -> Result<(), DbError> {
         let mut query = Query::new("DELETE FROM HRV_Timestamp WHERE timestamp = @P1".to_string());
         query.bind(self.time);
 
-        let mut client = pool.get().await?;
-        query.execute(&mut client).await?;
+        query.execute(client).await?;
         Ok(())
     }
 
-    pub(crate) async fn persist(&mut self, regatta_id: i32, pool: &TiberiusPool) -> Result<(), DbError> {
+    pub(crate) async fn persist(&mut self, regatta_id: i32, client: &mut TiberiusConnection) -> Result<(), DbError> {
         if !self.persisted {
             let mut query = Query::new(
             "INSERT INTO HRV_Timestamp (timestamp, event_id, split_nr, heat_nr, bib) VALUES (@P1, @P2, @P3, @P4, @P5)"
@@ -105,22 +107,20 @@ impl TimeStamp {
             query.bind(self.heat_nr);
             query.bind(self.bib);
 
-            let mut client = pool.get().await?;
-            query.execute(&mut client).await?;
+            query.execute(client).await?;
             self.persisted = true;
         }
         Ok(())
     }
 
-    pub(crate) async fn update(&mut self, pool: &TiberiusPool) -> Result<(), DbError> {
+    pub(crate) async fn update(&mut self, client: &mut TiberiusConnection) -> Result<(), DbError> {
         if !self.persisted {
             let mut query =
                 Query::new("UPDATE HRV_Timestamp SET heat_nr = @P2, bib = @P3 WHERE timestamp = @P1".to_string());
             query.bind(self.time);
             query.bind(self.heat_nr);
             query.bind(self.bib);
-            let mut client = pool.get().await?;
-            query.execute(&mut client).await?;
+            query.execute(client).await?;
             self.persisted = true;
         }
         Ok(())

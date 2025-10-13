@@ -25,7 +25,11 @@ impl Aquarius {
     pub(crate) async fn new() -> Result<Self, DbError> {
         let active_regatta_id: i32 = match Config::get().active_regatta_id {
             Some(id) => id,
-            None => Regatta::query_active_regatta(TiberiusPool::instance()).await?.id,
+            None => {
+                Regatta::query_active_regatta(&mut *TiberiusPool::instance().get().await?)
+                    .await?
+                    .id
+            }
         };
         Ok(Aquarius {
             caches: Caches::try_new(Duration::from_secs(Config::get().cache_ttl))?,

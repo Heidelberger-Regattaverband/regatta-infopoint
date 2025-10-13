@@ -34,9 +34,7 @@ impl ManageConnection for TiberiusConnectionManager {
     /// Establishes a new connection to the database. This implementation creates a new TCP stream and connects to
     /// the database using the provided configuration.
     async fn connect(&self) -> Result<Self::Connection, Self::Error> {
-        let tcp = TcpStream::connect(self.config.get_addr()).await?;
-        tcp.set_nodelay(true)?;
-        Client::connect(self.config.clone(), tcp.compat_write()).await
+        create_client(&self.config).await
     }
 
     /// Checks if the connection is valid. This implementation sends a simple query to the database.
@@ -49,4 +47,10 @@ impl ManageConnection for TiberiusConnectionManager {
     fn has_broken(&self, _connection: &mut Self::Connection) -> bool {
         false
     }
+}
+
+pub async fn create_client(config: &Config) -> Result<TiberiusConnection, Error> {
+    let tcp = TcpStream::connect(config.get_addr()).await?;
+    tcp.set_nodelay(true)?;
+    Client::connect(config.clone(), tcp.compat_write()).await
 }

@@ -15,7 +15,7 @@ use crate::{
     error::TimekeeperErr,
 };
 use clap::Parser;
-use db::{tiberius::TiberiusPool, timekeeper::TimeStrip};
+use db::timekeeper::TimeStrip;
 use heats_tab::HeatsTab;
 use log::{debug, warn};
 use logs_tab::LogsTab;
@@ -66,8 +66,8 @@ impl App<'_> {
 
         let db_config = Self::get_db_config(&args);
 
-        TiberiusPool::init(db_config, 1, 1).await;
-        let timestrip = TimeStrip::load(TiberiusPool::instance()).await.unwrap();
+        let client = db::tiberius::create_client(&db_config).await.unwrap();
+        let timestrip = TimeStrip::load(client).await.unwrap();
 
         // Use an mpsc::channel to combine stdin events with app events
         let (sender, receiver) = mpsc::channel();
