@@ -327,7 +327,11 @@ async fn get_timestrip(opt_user: Option<Identity>) -> Result<impl Responder, Err
         && let Ok(id) = user.id()
         && id == "sa"
     {
-        let timestrip = TimeStrip::load(TiberiusPool::instance()).await.map_err(|err| {
+        let client = *TiberiusPool::instance().get().await.map_err(|err| {
+            error!("{err}");
+            ErrorInternalServerError(err)
+        })?;
+        let timestrip = TimeStrip::load(&client).await.map_err(|err| {
             error!("{err}");
             ErrorInternalServerError(err)
         })?;
