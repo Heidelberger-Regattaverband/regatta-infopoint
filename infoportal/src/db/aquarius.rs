@@ -205,7 +205,9 @@ impl Aquarius {
             .athletes
             .compute_if_missing(&regatta_id, opt_user.is_some(), || async move {
                 let start = Instant::now();
-                let athletes = Athlete::query_participating_athletes(regatta_id, TiberiusPool::instance()).await?;
+                let athletes =
+                    Athlete::query_participating_athletes(regatta_id, &mut *TiberiusPool::instance().get().await?)
+                        .await?;
                 debug!(
                     "Query athletes of regatta {} from DB: {:?}",
                     regatta_id,

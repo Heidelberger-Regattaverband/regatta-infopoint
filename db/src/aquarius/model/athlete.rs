@@ -2,7 +2,7 @@ use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::model::{Club, TryToEntity, utils},
     error::DbError,
-    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
+    tiberius::{RowColumn, TryRowColumn},
 };
 use serde::Serialize;
 use tiberius::{Query, Row, time::chrono::NaiveDateTime};
@@ -36,7 +36,10 @@ pub struct Athlete {
 }
 
 impl Athlete {
-    pub async fn query_participating_athletes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Athlete>, DbError> {
+    pub async fn query_participating_athletes(
+        regatta_id: i32,
+        client: &mut TiberiusClient,
+    ) -> Result<Vec<Athlete>, DbError> {
         let round = 64;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1},
@@ -57,8 +60,7 @@ impl Athlete {
         query.bind(regatta_id);
         query.bind(round);
 
-        let mut client = pool.get().await?;
-        let stream = query.query(&mut client).await?;
+        let stream = query.query(client).await?;
         let athletes = utils::get_rows(stream).await?;
         Ok(athletes.into_iter().map(|row| Athlete::from(&row)).collect())
     }
