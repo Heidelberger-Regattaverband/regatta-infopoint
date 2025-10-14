@@ -1,4 +1,4 @@
-use crate::tiberius::TiberiusConnection;
+use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::model::utils,
     error::DbError,
@@ -51,7 +51,7 @@ impl From<&Row> for Regatta {
 }
 
 impl Regatta {
-    pub async fn query_active_regatta(client: &mut TiberiusConnection) -> Result<Regatta, DbError> {
+    pub async fn query_active_regatta(client: &mut TiberiusClient) -> Result<Regatta, DbError> {
         let stream = Query::new("SELECT TOP 1 e.* FROM Event e ORDER BY e.Event_StartDate DESC, e.Event_ID DESC")
             .query(client)
             .await?;

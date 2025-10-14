@@ -1,10 +1,10 @@
 use bb8::ManageConnection;
-use tiberius::{Client, Config, error::Error};
+use tiberius::{Client, Config, error::Error as TiberiusError};
 use tokio::net::TcpStream;
 use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
 
 /// The type of a Tiberius connection.
-pub type TiberiusConnection = Client<Compat<TcpStream>>;
+pub type TiberiusClient = Client<Compat<TcpStream>>;
 
 /// A connection manager for Tiberius connections.
 #[derive(Debug)]
@@ -28,8 +28,8 @@ impl TiberiusConnectionManager {
 /// Implements the `ManageConnection` trait for `TiberiusConnectionManager`.
 /// This allows the connection manager to create, validate, and manage Tiberius connections.
 impl ManageConnection for TiberiusConnectionManager {
-    type Connection = TiberiusConnection;
-    type Error = Error;
+    type Connection = TiberiusClient;
+    type Error = TiberiusError;
 
     /// Establishes a new connection to the database. This implementation creates a new TCP stream and connects to
     /// the database using the provided configuration.
@@ -49,7 +49,14 @@ impl ManageConnection for TiberiusConnectionManager {
     }
 }
 
-pub async fn create_client(config: &Config) -> Result<TiberiusConnection, Error> {
+/// Creates a new Tiberius client connection using the provided configuration.
+/// # Arguments
+/// * `config` - The configuration for the Tiberius connection.
+/// # Returns
+/// A result containing the Tiberius client connection or an error if the connection fails.
+/// # Errors
+/// This function will return an error if the TCP connection or Tiberius client connection fails.
+pub async fn create_client(config: &Config) -> Result<TiberiusClient, TiberiusError> {
     let tcp = TcpStream::connect(config.get_addr()).await?;
     tcp.set_nodelay(true)?;
     Client::connect(config.clone(), tcp.compat_write()).await

@@ -1,4 +1,4 @@
-use crate::tiberius::TiberiusConnection;
+use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::model::Regatta,
     error::DbError,
@@ -12,14 +12,14 @@ pub struct TimeStrip {
     regatta_id: i32,
 
     // A reference to the Tiberius connection pool.
-    client: TiberiusConnection,
+    client: TiberiusClient,
 
     // A vector of time stamps.
     pub time_stamps: Vec<TimeStamp>,
 }
 
 impl TimeStrip {
-    pub async fn load(mut client: TiberiusConnection) -> Result<Self, DbError> {
+    pub async fn load(mut client: TiberiusClient) -> Result<Self, DbError> {
         let regatta = Regatta::query_active_regatta(&mut client).await?;
         info!("Loading time strip for regatta ID: {0}", regatta.id);
         let time_stamps = TimeStamp::query_all_for_regatta(regatta.id, &mut client).await?;
