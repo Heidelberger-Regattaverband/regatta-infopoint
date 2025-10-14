@@ -1,3 +1,4 @@
+use crate::config::Config;
 use crate::{
     db::aquarius::Aquarius,
     http::{
@@ -5,6 +6,7 @@ use crate::{
         ws,
     },
 };
+use ::db::tiberius::create_client;
 use actix_identity::Identity;
 use actix_web::{
     Error, HttpMessage, HttpRequest, HttpResponse, Responder, Scope as ActixScope,
@@ -14,7 +16,6 @@ use actix_web::{
 };
 use db::{
     aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta},
-    tiberius::TiberiusPool,
     timekeeper::{TimeStamp, TimeStrip},
 };
 use log::error;
@@ -327,11 +328,11 @@ async fn get_timestrip(opt_user: Option<Identity>) -> Result<impl Responder, Err
         && let Ok(id) = user.id()
         && id == "sa"
     {
-        let client = *TiberiusPool::instance().get().await.map_err(|err| {
+        let client = create_client(&Config::get().get_db_config()).await.map_err(|err| {
             error!("{err}");
             ErrorInternalServerError(err)
         })?;
-        let timestrip = TimeStrip::load(&client).await.map_err(|err| {
+        let timestrip = TimeStrip::load(client).await.map_err(|err| {
             error!("{err}");
             ErrorInternalServerError(err)
         })?;
