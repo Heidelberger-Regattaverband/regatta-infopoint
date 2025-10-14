@@ -1,3 +1,4 @@
+use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::model::{Club, TryToEntity, utils},
     error::DbError,
@@ -62,7 +63,11 @@ impl Athlete {
         Ok(athletes.into_iter().map(|row| Athlete::from(&row)).collect())
     }
 
-    pub async fn query_athlete(regatta_id: i32, athlete_id: i32, pool: &TiberiusPool) -> Result<Athlete, DbError> {
+    pub async fn query_athlete(
+        regatta_id: i32,
+        athlete_id: i32,
+        client: &mut TiberiusClient,
+    ) -> Result<Athlete, DbError> {
         let round = 64;
         let mut query = Query::new(format!(
             "SELECT {0}, {1},
@@ -84,8 +89,7 @@ impl Athlete {
         query.bind(athlete_id);
         query.bind(round);
 
-        let mut client = pool.get().await?;
-        let stream = query.query(&mut client).await?;
+        let stream = query.query(client).await?;
         let row = utils::get_row(stream).await?;
         Ok(Athlete::from(&row))
     }

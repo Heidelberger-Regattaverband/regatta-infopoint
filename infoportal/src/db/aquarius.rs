@@ -248,7 +248,8 @@ impl Aquarius {
             .athlete
             .compute_if_missing(&athlete_id, opt_user.is_some(), || async move {
                 let start = Instant::now();
-                let athlete = Athlete::query_athlete(regatta_id, athlete_id, TiberiusPool::instance()).await?;
+                let athlete =
+                    Athlete::query_athlete(regatta_id, athlete_id, &mut *TiberiusPool::instance().get().await?).await?;
                 debug!("Query athlete {} from DB: {:?}", athlete_id, start.elapsed());
                 Ok::<Athlete, DbError>(athlete)
             })
