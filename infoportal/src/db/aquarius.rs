@@ -25,7 +25,11 @@ impl Aquarius {
     pub(crate) async fn new() -> Result<Self, DbError> {
         let active_regatta_id: i32 = match Config::get().active_regatta_id {
             Some(id) => id,
-            None => Regatta::query_active_regatta(TiberiusPool::instance()).await?.id,
+            None => {
+                Regatta::query_active_regatta(&mut *TiberiusPool::instance().get().await?)
+                    .await?
+                    .id
+            }
         };
         Ok(Aquarius {
             caches: Caches::try_new(Duration::from_secs(Config::get().cache_ttl))?,
@@ -85,7 +89,8 @@ impl Aquarius {
             .races
             .compute_if_missing(&regatta_id, opt_user.is_some(), || async move {
                 let start = Instant::now();
-                let races = Race::query_races_of_regatta(regatta_id, TiberiusPool::instance()).await?;
+                let races =
+                    Race::query_races_of_regatta(regatta_id, &mut *TiberiusPool::instance().get().await?).await?;
                 debug!("Query races of regatta {} from DB: {:?}", regatta_id, start.elapsed());
                 Ok::<Vec<Race>, DbError>(races)
             })
@@ -201,7 +206,9 @@ impl Aquarius {
             .athletes
             .compute_if_missing(&regatta_id, opt_user.is_some(), || async move {
                 let start = Instant::now();
-                let athletes = Athlete::query_participating_athletes(regatta_id, TiberiusPool::instance()).await?;
+                let athletes =
+                    Athlete::query_participating_athletes(regatta_id, &mut *TiberiusPool::instance().get().await?)
+                        .await?;
                 debug!(
                     "Query athletes of regatta {} from DB: {:?}",
                     regatta_id,
@@ -244,7 +251,8 @@ impl Aquarius {
             .athlete
             .compute_if_missing(&athlete_id, opt_user.is_some(), || async move {
                 let start = Instant::now();
-                let athlete = Athlete::query_athlete(regatta_id, athlete_id, TiberiusPool::instance()).await?;
+                let athlete =
+                    Athlete::query_athlete(regatta_id, athlete_id, &mut *TiberiusPool::instance().get().await?).await?;
                 debug!("Query athlete {} from DB: {:?}", athlete_id, start.elapsed());
                 Ok::<Athlete, DbError>(athlete)
             })
@@ -253,7 +261,7 @@ impl Aquarius {
 
     pub(crate) async fn calculate_scoring(&self, regatta_id: i32) -> Result<Vec<Score>, DbError> {
         let start = Instant::now();
-        let scores = Score::calculate(regatta_id, TiberiusPool::instance()).await;
+        let scores = Score::calculate(regatta_id, &mut *TiberiusPool::instance().get().await?).await;
         debug!(
             "Calculate scoring of regatta {} from DB: {:?}",
             regatta_id,
@@ -282,7 +290,9 @@ impl Aquarius {
             .schedule
             .compute_if_missing(&regatta_id, opt_user.is_some(), || async move {
                 let start = Instant::now();
-                let schedule = Schedule::query_schedule_for_regatta(regatta_id, TiberiusPool::instance()).await?;
+                let schedule =
+                    Schedule::query_schedule_for_regatta(regatta_id, &mut *TiberiusPool::instance().get().await?)
+                        .await?;
                 debug!(
                     "Query schedule of regatta {} from DB: {:?}",
                     regatta_id,
@@ -298,7 +308,7 @@ impl Aquarius {
     async fn query_race_heats_entries(&self, race_id: i32) -> Result<Race, DbError> {
         let start = Instant::now();
         let queries = join3(
-            Race::query_race_by_id(race_id, TiberiusPool::instance()),
+            Race::query_race_by_id(race_id, &mut *TiberiusPool::instance().get().await?),
             Heat::query_heats_of_race(race_id, TiberiusPool::instance()),
             Entry::query_entries_for_race(race_id, TiberiusPool::instance()),
         )
