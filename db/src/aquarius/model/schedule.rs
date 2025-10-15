@@ -1,7 +1,8 @@
+use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::model::utils,
     error::DbError,
-    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
+    tiberius::{RowColumn, TryRowColumn},
 };
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::Serialize;
@@ -63,7 +64,7 @@ impl From<&Row> for ScheduleEntry {
 }
 
 impl Schedule {
-    pub async fn query_schedule_for_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
+    pub async fn query_schedule_for_regatta(regatta_id: i32, client: &mut TiberiusClient) -> Result<Self, DbError> {
         let sql = "SELECT o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_Distance,
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Boats,
             (SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0 
@@ -81,8 +82,7 @@ impl Schedule {
         let mut query: Query = Query::new(sql);
         query.bind(regatta_id);
 
-        let mut client = pool.get().await?;
-        let stream = query.query(&mut client).await?;
+        let stream = query.query(client).await?;
         let entries: Vec<ScheduleEntry> = utils::get_rows(stream)
             .await?
             .into_iter()
