@@ -6,7 +6,7 @@ mod timestrip_tab;
 mod utils;
 
 use crate::{
-    app::{selected_tab::SelectedTab, timestrip_popup::TimeStripTabPopup, timestrip_tab::TimeStripTab},
+    app::{selected_tab::SelectedTab, timestrip_tab::TimeStripTab},
     aquarius::{
         client::Client,
         messages::{EventHeatChanged, Heat},
@@ -24,11 +24,11 @@ use ratatui::{
     crossterm::event::{self, Event, KeyCode, KeyEventKind},
     layout::{
         Constraint::{self, Length, Min},
-        Flex, Layout, Rect,
+        Layout,
     },
     style::Stylize,
     text::Line,
-    widgets::{Clear, Tabs},
+    widgets::Tabs,
 };
 use std::{
     cell::RefCell,
@@ -49,15 +49,13 @@ pub struct App<'a> {
 
     // UI components
     heats_tab: HeatsTab,
-    time_strip_tab: TimeStripTab,
-    time_strip_popup: TimeStripTabPopup<'a>,
+    time_strip_tab: TimeStripTab<'a>,
     logs_tab: LogsTab,
 
     // shared context
     client: Rc<RefCell<Client>>,
     heats: Rc<RefCell<Vec<Heat>>>,
     time_strip: Rc<RefCell<TimeStrip>>,
-    show_time_strip_popup: Rc<RefCell<bool>>,
 }
 
 impl App<'_> {
@@ -80,7 +78,6 @@ impl App<'_> {
         let heats = Rc::new(RefCell::new(Vec::new()));
         let time_strip = Rc::new(RefCell::new(timestrip));
         let selected_time_stamp = Rc::new(RefCell::new(None));
-        let show_time_strip_popup = Rc::new(RefCell::new(false));
 
         Self {
             state: AppState::Running,
@@ -88,16 +85,10 @@ impl App<'_> {
             // tabs
             heats_tab: HeatsTab::new(heats.clone()),
             time_strip_tab: TimeStripTab::new(
-                time_strip.clone(),
-                selected_time_stamp.clone(),
-                show_time_strip_popup.clone(),
-            ),
-            time_strip_popup: TimeStripTabPopup::new(
                 client_rc.clone(),
                 heats.clone(),
                 time_strip.clone(),
                 selected_time_stamp.clone(),
-                show_time_strip_popup.clone(),
             ),
             logs_tab: LogsTab::default(),
             // shared context
@@ -105,7 +96,6 @@ impl App<'_> {
             receiver,
             heats,
             time_strip,
-            show_time_strip_popup,
         }
     }
 
@@ -141,14 +131,7 @@ impl App<'_> {
                 frame.render_widget(Tabs::new(titles).select(self.selected_tab as usize), tabs_area);
                 match self.selected_tab {
                     SelectedTab::Heats => frame.render_widget(&mut self.heats_tab, inner_area),
-                    SelectedTab::TimeStrip => {
-                        frame.render_widget(&mut self.time_strip_tab, inner_area);
-                        if *self.show_time_strip_popup.borrow() {
-                            let popup_area = popup_area(inner_area, 50, 20);
-                            frame.render_widget(Clear, popup_area); // this clears out the background
-                            frame.render_widget(&mut self.time_strip_popup, popup_area);
-                        }
-                    }
+                    SelectedTab::TimeStrip => frame.render_widget(&mut self.time_strip_tab, inner_area),
                     SelectedTab::Logs => frame.render_widget(&mut self.logs_tab, inner_area),
                 };
 
@@ -190,11 +173,7 @@ impl App<'_> {
                         _ => match self.selected_tab {
                             SelectedTab::Heats => self.heats_tab.handle_key_event(key_event),
                             SelectedTab::TimeStrip => {
-                                if *self.show_time_strip_popup.borrow() {
-                                    self.time_strip_popup.handle_key_event(key_event).await;
-                                } else {
-                                    self.time_strip_tab.handle_key_event(key_event).await;
-                                }
+                                self.time_strip_tab.handle_key_event(key_event).await;
                             }
                             SelectedTab::Logs => self.logs_tab.handle_key_event(key_event),
                         },
@@ -249,15 +228,6 @@ impl App<'_> {
         config.encryption(EncryptionLevel::NotSupported);
         config
     }
-}
-
-/// helper function to create a centered rect using up certain percentage of the available rect `r`
-fn popup_area(area: Rect, percent_x: u16, percent_y: u16) -> Rect {
-    let vertical = Layout::vertical([Constraint::Percentage(percent_y)]).flex(Flex::Center);
-    let horizontal = Layout::horizontal([Constraint::Percentage(percent_x)]).flex(Flex::Center);
-    let [area] = vertical.areas(area);
-    let [area] = horizontal.areas(area);
-    area
 }
 
 fn input_thread(sender: Sender<AppEvent>) -> Result<(), TimekeeperErr> {
