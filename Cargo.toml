@@ -29,24 +29,24 @@ tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
 tokio-util = { version = "0", features = ["compat"] }
 
 # Rustls
-rustls = { version = "0" }
-rustls-pki-types = { version = "1" }
-rustls-pemfile = { version = "2" }
+rustls = { version = "0.23" }
+rustls-pki-types = { version = "1.12" }
+rustls-pemfile = { version = "2.2" }
 
 # Enum and string utils: https://github.com/Peternator7/strum
-strum = { version = "0" }
-strum_macros = { version = "0" }
+strum = { version = "0.27" }
+strum_macros = { version = "0.27" }
 
 # Utils
-dotenv = { version = "0" }
-log = { version = "0" }
-env_logger = { version = "0" }
+dotenv = { version = "0.15" }
+log = { version = "0.4" }
+env_logger = { version = "0.11" }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1" }
-scraper = { version = "0" }
-clap = { version = "4", features = ["derive"] }
+scraper = { version = "0.24" }
+clap = { version = "4.5", features = ["derive"] }
 colored = { version = "3" }
-uptime_lib = { version = "0" }
+uptime_lib = { version = "0.3" }
 thiserror = { version = "2" }
 
 # HTTP
