@@ -27,15 +27,15 @@ tokio-util.workspace = true
 futures.workspace = true
 
 # Actix + Middlewares
-actix = { version = "0" }
-actix-web = { version = "4", features = ["rustls-0_23"] }
-actix-web-actors = { version = "4" }
-actix-session = { version = "0", features = ["cookie-session"] }
-actix-identity = "0"
-actix-files = "0"
-actix-extensible-rate-limit = "0"
-actix-web-prom = { version = "0", features = ["process"] }
-prometheus = { version = "0", default-features = false }
+actix = { version = "0.13" }
+actix-web = { version = "4.11", features = ["rustls-0_23"] }
+actix-web-actors = { version = "4.3" }
+actix-session = { version = "0.11", features = ["cookie-session"] }
+actix-identity = "0.9"
+actix-files = "0.6"
+actix-extensible-rate-limit = "0.4"
+actix-web-prom = { version = "0.10", features = ["process"] }
+prometheus = { version = "0.14", default-features = false }
 rustls.workspace = true
 rustls-pki-types.workspace = true
 rustls-pemfile.workspace = true

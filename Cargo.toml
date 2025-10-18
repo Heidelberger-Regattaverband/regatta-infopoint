@@ -11,7 +11,7 @@ authors = ["Markus Ofterdinger <markus@ofterdinger.de>"]
 repository = "https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git"
 
 [workspace.dependencies]
-# Database + Pool
+# database + pool + cache
 # https://github.com/prisma/tiberius#feature-flags
 tiberius = { version = "0", features = [
   "chrono",
@@ -19,30 +19,34 @@ tiberius = { version = "0", features = [
   "tds73",
   "rust_decimal",
 ], default-features = false }
-bb8 = { version = "0" }
-chrono = { version = "0", features = ["serde"] }
-stretto = { version = "0", features = ["async"] }
+bb8 = { version = "0.9" }
+chrono = { version = "0.4", features = ["serde"] }
+stretto = { version = "0.8", features = ["async"] }
 
-# Async stuff
-futures = { version = "0" }
-tokio = { version = "1", features = ["net", "rt-multi-thread", "macros"] }
-tokio-util = { version = "0", features = ["compat"] }
+# async stuff
+futures = { version = "0.3" }
+tokio = { version = "1.48", features = ["net", "rt-multi-thread", "macros"] }
+tokio-util = { version = "0.7", features = ["compat"] }
 
-# Rustls
+# rustls
 rustls = { version = "0.23" }
 rustls-pki-types = { version = "1.12" }
 rustls-pemfile = { version = "2.2" }
 
-# Enum and string utils: https://github.com/Peternator7/strum
+# enum and string utils: https://github.com/Peternator7/strum
 strum = { version = "0.27" }
 strum_macros = { version = "0.27" }
 
-# Utils
-dotenv = { version = "0.15" }
+# serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = { version = "1.0" }
+
+# logging
 log = { version = "0.4" }
 env_logger = { version = "0.11" }
-serde = { version = "1", features = ["derive"] }
-serde_json = { version = "1" }
+
+# utils
+dotenv = { version = "0.15" }
 scraper = { version = "0.24" }
 clap = { version = "4.5", features = ["derive"] }
 colored = { version = "3" }
@@ -50,7 +54,7 @@ uptime_lib = { version = "0.3" }
 thiserror = { version = "2" }
 
 # HTTP
-utoipa = { version = "5", features = ["actix_extras", "chrono", "decimal"] }
+utoipa = { version = "5.4", features = ["actix_extras", "chrono", "decimal"] }
 
 [profile.release]
 # https://nnethercote.github.io/perf-book/build-configuration.html#codegen-units
