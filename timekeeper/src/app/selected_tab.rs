@@ -23,7 +23,7 @@ impl SelectedTab {
     /// Get the next tab, if there is no next tab return the current tab.
     pub(super) fn next(self) -> Self {
         let current_index = self as usize;
-        let next_index = current_index.saturating_add(1);
+        let next_index = (current_index + 1) % 3; // 3 is the number of tabs
         Self::from_repr(next_index).unwrap_or(self)
     }
 

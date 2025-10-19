@@ -1,5 +1,5 @@
 {
-  "_version": "1.72.0",
+  "_version": "2.0.0",
   "start_url": "index.html",
   "sap.app": {
     "id": "de.regatta_hd.infoportal",
@@ -25,6 +25,7 @@
   },
   "sap.ui5": {
     "rootView": {
+      "async": true,
       "viewName": "de.regatta_hd.infoportal.view.App",
       "type": "XML",
       "id": "app"
@@ -34,7 +35,7 @@
       "cozy": true
     },
     "dependencies": {
-      "minUI5Version": "1.135.0",
+      "minUI5Version": "1.141.0",
       "libs": {
         "sap.ui.core": {},
         "sap.f": {},
@@ -139,6 +140,11 @@
           "pattern": "monitoring",
           "name": "monitoring",
           "target": "monitoring"
+        },
+        {
+          "pattern": "timestrip",
+          "name": "timestrip",
+          "target": "timestrip"
         }
       ],
       "targets": {
@@ -223,6 +229,12 @@
         "monitoring": {
           "type": "View",
           "name": "Monitoring",
+          "level": 1,
+          "viewType": "XML"
+        },
+        "timestrip": {
+          "type": "View",
+          "name": "Timestrip",
           "level": 1,
           "viewType": "XML"
         }

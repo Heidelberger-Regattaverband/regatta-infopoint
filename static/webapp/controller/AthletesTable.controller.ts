@@ -83,7 +83,7 @@ export default class AthletesTable extends BaseTableController {
   private async loadModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
     const url = `/api/regattas/${regatta.id}/athletes`;
-    const athletesModel: JSONModel = super.getViewModel(AthletesTable.ATHLETES_MODEL) as JSONModel;
-    return await super.updateJSONModel(athletesModel, url, this.table)
+    const athletesModel: JSONModel = super.getViewJSONModel(AthletesTable.ATHLETES_MODEL);
+    return await super.updateJSONModel(athletesModel, url);
   }
 }

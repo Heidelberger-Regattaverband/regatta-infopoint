@@ -14,10 +14,9 @@ build = "build.rs"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-aquarius = { path = "../aquarius" }
+db = { path = "../db" }
 
 # Utils
-anyhow.workspace = true
 dotenv.workspace = true
 env_logger.workspace = true
 log.workspace = true
@@ -28,35 +27,35 @@ tokio-util.workspace = true
 futures.workspace = true
 
 # Actix + Middlewares
-actix = { version = "0" }
-actix-web = { version = "4", features = ["rustls-0_23"] }
-actix-web-actors = { version = "4" }
-actix-session = { version = "0", features = ["cookie-session"] }
-actix-identity = "0"
-actix-files = "0"
-actix-extensible-rate-limit = "0"
-actix-web-prom = { version = "0", features = ["process"] }
-prometheus = { version = "0", default-features = false }
-rustls = "0.23"
-rustls-pki-types = "1"
-rustls-pemfile = "2"
+actix = { version = "0.13" }
+actix-web = { version = "4.11", features = ["rustls-0_23"] }
+actix-web-actors = { version = "4.3" }
+actix-session = { version = "0.11", features = ["cookie-session"] }
+actix-identity = "0.9"
+actix-files = "0.6"
+actix-extensible-rate-limit = "0.4"
+actix-web-prom = { version = "0.10", features = ["process"] }
+prometheus = { version = "0.14", default-features = false }
+rustls.workspace = true
+rustls-pki-types.workspace = true
+rustls-pemfile.workspace = true
 
 # OpenAPI
-utoipa = { version = "5", features = ["actix_extras", "time"] }
+utoipa.workspace = true
 utoipa-swagger-ui = { version = "9", features = ["actix-web"] }
 
 # Database + Pool
 tiberius.workspace = true
 bb8.workspace = true
 chrono.workspace = true
-stretto.workspace = true
 
 # Utils
 serde.workspace = true
 serde_json.workspace = true
 colored.workspace = true
 sysinfo = "0"
-uptime_lib = "0"
+uptime_lib.workspace = true
+thiserror.workspace = true
 
 [dev-dependencies]
 tokio-shared-rt = "0"

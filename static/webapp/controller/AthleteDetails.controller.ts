@@ -45,7 +45,7 @@ export default class AthleteDetailsController extends BaseController {
 
       entry.race._nav = { disabled: true, back: "athletes" };
 
-      (super.getComponentModel("race") as JSONModel).setData(entry.race);
+      super.getComponentJSONModel("race").setData(entry.race);
       super.navToRaceDetails(entry.race.id);
     }
   }
@@ -66,12 +66,12 @@ export default class AthleteDetailsController extends BaseController {
   private async loadData(): Promise<[boolean, boolean]> {
     const regatta: any = await super.getActiveRegatta();
 
-    const athleteUrl: string = `/api/athletes/${this.athleteId}`;
+    const athleteUrl: string = `/api/regattas/${regatta.id}/athletes/${this.athleteId}`;
     const entriesUrl: string = `/api/regattas/${regatta.id}/athletes/${this.athleteId}/entries`;
 
-    const athleteModel: JSONModel = super.getViewModel(AthleteDetailsController.ATHLETE_MODEL) as JSONModel;
-    const entriesModel: JSONModel = super.getViewModel(AthleteDetailsController.ENTRIES_MODEL) as JSONModel;
+    const athleteModel: JSONModel = super.getViewJSONModel(AthleteDetailsController.ATHLETE_MODEL);
+    const entriesModel: JSONModel = super.getViewJSONModel(AthleteDetailsController.ENTRIES_MODEL);
 
-    return await Promise.all([super.updateJSONModel(entriesModel, entriesUrl, this.table), super.updateJSONModel(athleteModel, athleteUrl)]);
+    return await Promise.all([super.updateJSONModel(entriesModel, entriesUrl), super.updateJSONModel(athleteModel, athleteUrl)]);
   }
 }

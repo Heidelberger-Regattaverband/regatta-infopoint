@@ -10,22 +10,30 @@ repository.workspace = true
 build = "build.rs"
 
 [dependencies]
+db = { path = "../db" }
+
 clap.workspace = true
-encoding_rs = { version = "0" }
+encoding_rs = { version = "0.8" }
 chrono.workspace = true
 
-# UI
-ratatui = { version = "0", features = ["crossterm"] }
-crossterm = { version = "0" }
+# UI + terminal
+ratatui = { version = "0.29", features = ["crossterm"] }
+crossterm = { version = "0.29" }
 
 # logging
 log.workspace = true
-tui-logger = { version = "0" }
-tui-textarea = { version = "0" }
+tui-logger = { version = "0.17" }
+tui-textarea = { version = "0.7" }
 
 # Enum and string utils: https://github.com/Peternator7/strum
-strum = { version = "0" }
-strum_macros = { version = "0" }
+strum.workspace = true
+strum_macros.workspace = true
+
+# Async stuff
+tokio.workspace = true
+
+# DB
+tiberius.workspace = true
 
 [dev-dependencies]
 env_logger.workspace = true

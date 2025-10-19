@@ -39,6 +39,10 @@ export default class LaunchpadController extends BaseController {
     super.getRouter().navTo("schedule", {}, false /* history */);
   }
 
+  onNavToTimestrip(): void {
+    super.getRouter().navTo("timestrip", {}, false /* history */);
+  }
+
   onUserSubmit(event: Input$SubmitEvent): void {
     super.byId("password")?.focus();
   }
@@ -104,9 +108,8 @@ export default class LaunchpadController extends BaseController {
       data: JSON.stringify(credentials),
       url: "/api/login",
       contentType: "application/json",
-      success: (result: { username: any; }) => {
-        this.updateIdentity(true, result.username);
-        this.credentialsModel.setProperty("/username", result.username);
+      success: (result: { username: string, scope: string }) => {
+        this.updateIdentity(true, result.username, result.scope);
         MessageToast.show(super.i18n("msg.loginSucceeded"));
         $(".sapMMessageToast").addClass("sapMMessageToastSuccess");
       },
@@ -125,7 +128,7 @@ export default class LaunchpadController extends BaseController {
       type: "POST",
       url: "/api/logout",
       success: (result: any) => {
-        this.updateIdentity(false, "");
+        this.updateIdentity(false, "", "");
       }
     });
   }
@@ -135,24 +138,23 @@ export default class LaunchpadController extends BaseController {
       type: "GET",
       url: "/api/identity",
       contentType: "application/json",
-      success: (result: { username: string; }) => {
-        this.updateIdentity(true, result.username);
-        this.credentialsModel.setProperty("/username", result.username);
+      success: (result: { username: string, scope: string }) => {
+        this.updateIdentity(true, result.username, result.scope);
       },
       error: (result: any) => {
-        this.updateIdentity(false, "");
+        this.updateIdentity(false, "", "");
       }
     });
   }
 
-  private updateIdentity(authenticated: boolean, name: string): void {
-    const identityModel: JSONModel = super.getComponentModel("identity") as JSONModel;
+  private updateIdentity(authenticated: boolean, name: string, scope: string): void {
+    const identityModel: JSONModel = super.getComponentJSONModel("identity");
     identityModel.setProperty("/authenticated", authenticated);
     identityModel.setProperty("/username", name);
+    identityModel.setProperty("/scope", scope);
   }
 
   private isAuthenticated(): boolean {
-    return this.getViewModel("identity")?.getProperty("/authenticated");
+    return this.getViewJSONModel("identity")?.getProperty("/authenticated");
   }
-
 }

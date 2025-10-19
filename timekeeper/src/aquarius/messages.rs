@@ -1,11 +1,11 @@
+use crate::{error::TimekeeperErr, utils};
 use chrono::{DateTime, Local};
-
-use crate::{error::TimekeeperErr, timestrip::TimeStampType, utils};
+use db::timekeeper::Split;
 use std::fmt::{Display, Formatter, Result as FmtResult};
 
 pub(super) type Bib = u8;
 type Lane = u8;
-pub(super) type HeatNr = u16;
+pub(super) type HeatNr = i16;
 
 /// A message to request the list of open heats.
 #[derive(Default)]
@@ -87,7 +87,7 @@ impl ResponseStartList {
 
 pub(super) struct RequestSetTime {
     pub(super) time: DateTime<Local>,
-    pub(super) stamp_type: TimeStampType,
+    pub(super) split: Split,
     pub(super) heat_nr: HeatNr,
     pub(super) bib: Option<Bib>,
 }
@@ -95,17 +95,10 @@ pub(super) struct RequestSetTime {
 impl Display for RequestSetTime {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         let time = format!("{}", self.time.format("%H:%M:%S%.3f"));
-        let split = match self.stamp_type {
-            TimeStampType::Start => 0,
-            TimeStampType::Finish => 64,
-        };
+        let split = u8::from(&self.split);
         match self.bib {
-            Some(bib) => writeln!(
-                f,
-                "TIME time={} comp={} split={} bib={}",
-                time, self.heat_nr, split, bib
-            ),
-            _ => writeln!(f, "TIME time={} comp={} split={}", time, self.heat_nr, split),
+            Some(bib) => writeln!(f, "TIME time={time} comp={} split={split} bib={bib}", self.heat_nr),
+            _ => writeln!(f, "TIME time={time} comp={} split={split}", self.heat_nr),
         }
     }
 }
@@ -175,7 +168,7 @@ impl Heat {
     /// * `status` - The heat status.
     /// # Returns
     /// A new heat with the given id, number, and status.
-    fn new(id: u16, number: u16, status: u8) -> Self {
+    fn new(id: u16, number: i16, status: u8) -> Self {
         Heat {
             id,
             number,

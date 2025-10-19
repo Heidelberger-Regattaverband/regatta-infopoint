@@ -45,7 +45,7 @@ export default class HeatDetailsController extends BaseController {
   }
 
   onNavBack(): void {
-    const heat: any = (super.getComponentModel(HeatsTableController.HEAT_MODEL) as JSONModel).getData();
+    const heat: any = super.getComponentJSONModel(HeatsTableController.HEAT_MODEL).getData();
     if (heat._nav?.back) {
       super.navBack(heat._nav.back);
     } else {
@@ -78,12 +78,12 @@ export default class HeatDetailsController extends BaseController {
   }
 
   private async loadHeatModel(): Promise<boolean> {
-    const heat: any = (super.getComponentModel(HeatsTableController.HEAT_MODEL) as JSONModel).getData();
+    const heat: any = super.getComponentJSONModel(HeatsTableController.HEAT_MODEL).getData();
     if (heat?.id) {
       this.heatId = heat.id;
     };
     const url: string = `/api/heats/${this.heatId}`;
-    return await super.updateJSONModel(super.getViewModel(HeatDetailsController.ENTRIES_MODEL) as JSONModel, url, super.getView());
+    return await super.updateJSONModel(super.getViewJSONModel(HeatDetailsController.ENTRIES_MODEL), url);
   }
 
   private async onItemChanged(channelId: string, eventId: string, parametersMap: any): Promise<void> {

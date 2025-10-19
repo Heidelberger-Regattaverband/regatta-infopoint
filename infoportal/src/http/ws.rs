@@ -1,4 +1,4 @@
-use crate::http::monitoring::Monitoring;
+use crate::{db::aquarius::Aquarius, http::monitoring::Monitoring};
 use actix::{Actor, ActorContext, AsyncContext, StreamHandler};
 use actix_identity::Identity;
 use actix_web::{
@@ -8,7 +8,7 @@ use actix_web::{
     web::{Data, Payload},
 };
 use actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
-use aquarius::db::tiberius::TiberiusPool;
+use db::tiberius::TiberiusPool;
 use log::{debug, warn};
 use prometheus::Registry;
 use std::time::{Duration, Instant};
@@ -25,13 +25,15 @@ struct WsMonitoring {
     /// otherwise we drop connection.
     hb: Instant,
     registry: Data<Registry>,
+    aquarius: Data<Aquarius>,
 }
 
 impl WsMonitoring {
-    fn new(registry: Data<Registry>) -> Self {
+    fn new(registry: Data<Registry>, aquarius: Data<Aquarius>) -> Self {
         Self {
             hb: Instant::now(),
             registry,
+            aquarius,
         }
     }
 
@@ -39,6 +41,7 @@ impl WsMonitoring {
     /// also this method checks heartbeats from client
     fn hb(&self, ctx: &mut <Self as Actor>::Context) {
         let registry = self.registry.clone();
+        let aquarius = self.aquarius.clone();
 
         ctx.run_interval(HEARTBEAT_INTERVAL, move |act, ctx| {
             // check client heartbeats
@@ -53,13 +56,13 @@ impl WsMonitoring {
                 return;
             }
 
-            Self::send_monitoring(ctx, &registry);
+            Self::send_monitoring(ctx, &registry, &aquarius);
             ctx.ping(b"");
         });
     }
 
-    fn send_monitoring(ctx: &mut WebsocketContext<WsMonitoring>, registry: &Registry) {
-        let monitoring = Monitoring::new(TiberiusPool::instance(), registry);
+    fn send_monitoring(ctx: &mut WebsocketContext<WsMonitoring>, registry: &Registry, aquarius: &Aquarius) {
+        let monitoring = Monitoring::new(TiberiusPool::instance(), registry, &aquarius.get_cache_stats());
         let json = serde_json::to_string(&monitoring).unwrap();
         ctx.text(json);
     }
@@ -71,7 +74,7 @@ impl Actor for WsMonitoring {
     /// Method is called on actor start. We start the heartbeat process here.
     fn started(&mut self, ctx: &mut Self::Context) {
         debug!("Websocket actor started");
-        Self::send_monitoring(ctx, &self.registry);
+        Self::send_monitoring(ctx, &self.registry, &self.aquarius);
         self.hb(ctx);
     }
 
@@ -111,11 +114,12 @@ async fn index(
     request: HttpRequest,
     stream: Payload,
     registry: Data<Registry>,
+    aquarius: Data<Aquarius>,
     opt_user: Option<Identity>,
 ) -> Result<HttpResponse, Error> {
     if opt_user.is_some() {
-        let response = start(WsMonitoring::new(registry), &request, stream);
-        debug!("{:?}", response);
+        let response = start(WsMonitoring::new(registry, aquarius), &request, stream);
+        debug!("{response:?}");
         response
     } else {
         Err(ErrorUnauthorized("Unauthorized"))

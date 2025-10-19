@@ -1,0 +1,85 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+
+  <Table id="timestripTable" autoPopinMode="true" items="{path:'timestrip>/',sorter:[{path:'time',descending:true}]}" growing="true"
+    growingScrollToLoad="true" growingThreshold="30" mode="SingleSelectMaster" itemPress=".onSelectionChange"
+    sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
+
+    <!-- The HeaderToolbar shows a title and the filter button -->
+    <headerToolbar>
+      <OverflowToolbar>
+        <content>
+          <SearchField width="10rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
+          <ToolbarSpacer />
+          <!-- Refresh button -->
+          <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
+            press=".onRefreshButtonPress" />
+        </content>
+      </OverflowToolbar>
+    </headerToolbar>
+
+    <!-- The InfoToolbar shows active filters -->
+    <infoToolbar>
+      <OverflowToolbar visible="false">
+        <content>
+          <Text />
+          <ToolbarSpacer />
+        </content>
+      </OverflowToolbar>
+    </infoToolbar>
+
+    <columns>
+      <Column id="timestampTime" hAlign="Center" width="8rem" importance="High" popinDisplay="Inline">
+        <header>
+          <Text text="{i18n>common.time}" class="bold" />
+        </header>
+      </Column>
+      <Column id="timestampSplit" hAlign="Center" width="6rem" importance="High" popinDisplay="Inline">
+        <header>
+          <Text text="{i18n>common.split}" class="bold" />
+        </header>
+      </Column>
+      <Column id="timestampHeatNr" hAlign="Center" width="5rem" importance="Medium" popinDisplay="Inline">
+        <header>
+          <Text text="{i18n>common.heatNr}" class="bold" />
+        </header>
+      </Column>
+      <Column id="timestampBib" hAlign="Center" width="4rem" importance="Medium" popinDisplay="Inline">
+        <header>
+          <Text text="{i18n>common.bib}" class="bold" />
+        </header>
+      </Column>
+      <Column id="timestampPersisted" hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline"
+        visible="{=!${device>/system/phone}}">
+        <header>
+          <Text text="{i18n>common.persisted}" class="bold" />
+        </header>
+      </Column>
+    </columns>
+
+    <items>
+      <ColumnListItem>
+        <cells>
+          <VBox>
+            <Text text="{timestrip>time}" />
+          </VBox>
+
+          <VBox>
+            <Text text="{timestrip>split}" />
+          </VBox>
+
+          <VBox>
+            <Text text="{timestrip>heat_nr}" />
+          </VBox>
+
+          <VBox>
+            <Text text="{timestrip>bib}" />
+          </VBox>
+
+          <VBox>
+            <Text text="{=${timestrip>persisted}?${i18n>common.yes}:${i18n>common.no}}" />
+          </VBox>
+        </cells>
+      </ColumnListItem>
+    </items>
+  </Table>
+</core:FragmentDefinition>

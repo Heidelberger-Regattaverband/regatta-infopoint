@@ -96,30 +96,30 @@
               </columns>
 
               <items>
-                <ColumnListItem highlight="{path:'heatEntries>',formatter:'.formatter.heatEntryHighlight'}" vAlign="Middle">
+                <ColumnListItem highlight="{path:'heatEntries>',formatter:'.formatter.heatEntryHighlight'}" vAlign="Top">
                   <cells>
                     <Text text="{heatEntries>result/rankLabel}" />
 
                     <VBox>
-                      <Text text="{heatEntries>registration/bib}" visible="{=${heatEntries>registration/cancelled}}" class="cancelled" />
-                      <Text text="{heatEntries>registration/bib}" visible="{=!${heatEntries>registration/cancelled}}" />
+                      <Text text="{heatEntries>entry/bib}" visible="{=${heatEntries>entry/cancelled}}" class="cancelled" />
+                      <Text text="{heatEntries>entry/bib}" visible="{=!${heatEntries>entry/cancelled}}" />
                     </VBox>
 
                     <VBox>
-                      <Text class="boldCancelled" visible="{=${heatEntries>registration/cancelled}}"
-                        text="{parts:[{path:'heat>/race/groupMode'},{path:'heatEntries>registration'}],formatter:'.formatter.boatLabel'}" />
-                      <Text class="bold" visible="{=!${heatEntries>registration/cancelled}}"
-                        text="{parts:[{path:'heat>/race/groupMode'},{path:'heatEntries>registration'}],formatter:'.formatter.boatLabel'}" />
+                      <Text class="boldCancelled" visible="{=${heatEntries>entry/cancelled}}"
+                        text="{parts:[{path:'heat>/race/groupMode'},{path:'heatEntries>entry'}],formatter:'.formatter.boatLabel'}" />
+                      <Text class="bold" visible="{=!${heatEntries>entry/cancelled}}"
+                        text="{parts:[{path:'heat>/race/groupMode'},{path:'heatEntries>entry'}],formatter:'.formatter.boatLabel'}" />
 
-                      <Text text="{path:'heatEntries>registration/crew',formatter:'.formatter.crewLabel'}"
-                        visible="{= ${heatEntries>registration/cancelled}}" class="cancelled" />
-                      <Text text="{path:'heatEntries>registration/crew',formatter:'.formatter.crewLabel'}"
-                        visible="{= !${heatEntries>registration/cancelled}}" />
+                      <Text text="{path:'heatEntries>entry/crew',formatter:'.formatter.crewLabel'}"
+                        visible="{= ${heatEntries>entry/cancelled}}" class="cancelled" />
+                      <Text text="{path:'heatEntries>entry/crew',formatter:'.formatter.crewLabel'}"
+                        visible="{= !${heatEntries>entry/cancelled}}" />
                     </VBox>
 
                     <VBox>
-                      <Text text="{heatEntries>lane}" visible="{=${heatEntries>registration/cancelled}}" class="cancelled" />
-                      <Text text="{heatEntries>lane}" visible="{=!${heatEntries>registration/cancelled}}" />
+                      <Text text="{heatEntries>lane}" visible="{=${heatEntries>entry/cancelled}}" class="cancelled" />
+                      <Text text="{heatEntries>lane}" visible="{=!${heatEntries>entry/cancelled}}" />
                     </VBox>
 
                     <VBox>
