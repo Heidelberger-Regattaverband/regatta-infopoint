@@ -3,6 +3,7 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds, icon, layerGroup, Marker, TileLayer, LayerGroup, control, latLngBounds, FitBoundsOptions, circle, Circle } from "leaflet";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Button, { Button$PressEvent } from "sap/m/Button";
+import "leaflet.markercluster";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -104,9 +105,10 @@ export default class MapController extends BaseController {
     const markFinish: Marker = marker(posFinsih).bindPopup(popup().setContent("Ziel"));
     const markStart1000m: Marker = marker(posStart1000m).bindPopup(popup().setContent("Start 1000m"));
     const markStart1500m: Marker = marker(posStart1500m).bindPopup(popup().setContent("Start 1500m"));
-    const layer: LayerGroup = layerGroup([mark1, markOffice, markFinish, markStart1000m, markStart1500m]);
+    const layerRegatta: LayerGroup = layerGroup([mark1, markOffice, markFinish, markStart1000m, markStart1500m]);
     const bounds: LatLngBounds = latLngBounds([mark1.getLatLng(), markOffice.getLatLng(), markFinish.getLatLng(), markStart1000m.getLatLng(), markStart1500m.getLatLng()]);
-    return [layer, bounds];
+    markers.addLayer(layerRegatta);
+    return [layerRegatta, bounds];
   }
 
   private getClubsLayerGroup(): [LayerGroup, LatLngBounds] {
