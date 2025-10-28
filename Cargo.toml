@@ -30,7 +30,7 @@ tokio-util = { version = "0.7", features = ["compat"] }
 
 # rustls
 rustls = { version = "0.23" }
-rustls-pki-types = { version = "1.12" }
+rustls-pki-types = { version = "1.13" }
 rustls-pemfile = { version = "2.2" }
 
 # enum and string utils: https://github.com/Peternator7/strum
