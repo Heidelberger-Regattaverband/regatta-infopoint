@@ -7,8 +7,8 @@ use db::{
     tiberius::TiberiusPool,
 };
 use futures::future::join3;
-use tracing::debug;
 use std::time::{Duration, Instant};
+use tracing::debug;
 
 /// The `Aquarius` struct is the main interface to the database. It is used to query data from the database.
 pub(crate) struct Aquarius {

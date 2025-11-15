@@ -21,7 +21,6 @@ use actix_web_prom::{PrometheusMetrics, PrometheusMetricsBuilder};
 use colored::Colorize;
 use db::error::DbError;
 use futures::FutureExt;
-use tracing::{debug, info, warn};
 use prometheus::Registry;
 use rustls::ServerConfig;
 use rustls_pemfile::{certs, pkcs8_private_keys};
@@ -34,6 +33,7 @@ use std::{
     sync::{Arc, Mutex},
     time::{self, Instant},
 };
+use tracing::{debug, info, warn};
 
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
