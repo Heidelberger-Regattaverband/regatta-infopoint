@@ -1,5 +1,5 @@
+use crate::config::CONFIG;
 use crate::{
-    config::Config,
     db::aquarius::Aquarius,
     http::{api_doc, rest_api},
 };
@@ -59,11 +59,10 @@ impl Server {
     pub(crate) async fn start(&self) -> IoResult<()> {
         let start = Instant::now();
 
-        let config = Config::get();
         let aquarius = create_app_data().await.unwrap();
-        let (rl_max_requests, rl_interval) = config.get_rate_limiter_config();
+        let (rl_max_requests, rl_interval) = CONFIG.get_rate_limiter_config();
         let secret_key = Key::generate();
-        let http_app_content_path = config.http_app_content_path.clone();
+        let http_app_content_path = CONFIG.http_app_content_path.clone();
 
         let worker_count = Arc::new(Mutex::new(0));
         let prometheus = Self::get_prometeus();
@@ -101,16 +100,16 @@ impl Server {
 
         let mut http_server = HttpServer::new(factory_closure)
             // always bind to http
-            .bind(config.get_http_bind())?;
+            .bind(CONFIG.get_http_bind())?;
 
         // also bind to https if config is available
         if let Some(rustls_cfg) = Self::get_rustls_config() {
-            let https_bind = config.get_https_bind();
+            let https_bind = CONFIG.get_https_bind();
             http_server = http_server.bind_rustls_0_23(https_bind, rustls_cfg)?;
         }
 
         // configure number of workers if env. variable is set
-        if let Some(workers) = config.http_workers {
+        if let Some(workers) = CONFIG.http_workers {
             http_server = http_server.workers(workers);
         }
 
@@ -220,9 +219,8 @@ impl Server {
     /// The HTTPS server configuration is only created if the certificate and private key files are available.
     /// The certificate and private key files are configured in the environment.
     fn get_rustls_config() -> Option<ServerConfig> {
-        let cfg = Config::get();
-        let cert_pem_path = Path::new(&cfg.https_cert_path);
-        let key_pem_path = Path::new(&cfg.https_key_path);
+        let cert_pem_path = Path::new(&CONFIG.https_cert_path);
+        let key_pem_path = Path::new(&CONFIG.https_key_path);
 
         info!(
             "Current working directory is {}",
@@ -233,15 +231,15 @@ impl Server {
             // load TLS key/cert files
             info!(
                 "Try to load TLS config from: certificate {} and private key {}.",
-                cfg.https_cert_path.bold(),
-                cfg.https_key_path.bold()
+                CONFIG.https_cert_path.bold(),
+                CONFIG.https_key_path.bold()
             );
 
             if let (Ok(cert_file), Ok(key_file)) = (File::open(cert_pem_path), File::open(key_pem_path)) {
                 info!(
                     "TLS config loaded from: certificate {} and private key {}.",
-                    cfg.https_cert_path.bold(),
-                    cfg.https_key_path.bold()
+                    CONFIG.https_cert_path.bold(),
+                    CONFIG.https_key_path.bold()
                 );
                 let cert_reader = &mut BufReader::new(cert_file);
                 let cert_chain = certs(cert_reader).map(|cert| cert.unwrap()).collect();
@@ -266,16 +264,16 @@ impl Server {
             } else {
                 warn!(
                     "Can't open one or both files: certificate {} and private key {}.",
-                    &cfg.https_cert_path.bold(),
-                    &cfg.https_key_path.bold()
+                    &CONFIG.https_cert_path.bold(),
+                    &CONFIG.https_key_path.bold()
                 );
                 None
             }
         } else {
             warn!(
                 "One or both are not existing or are directories: certificate {} and private key {}.",
-                &cfg.https_cert_path.bold(),
-                &cfg.https_key_path.bold()
+                &CONFIG.https_cert_path.bold(),
+                &CONFIG.https_key_path.bold()
             );
             None
         }
