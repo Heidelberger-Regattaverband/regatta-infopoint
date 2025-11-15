@@ -98,7 +98,7 @@ impl Config {
         info!(
             max_requests = self.http_rl_max_requests,
             interval_in_secs = self.http_rl_interval,
-            "HTTP/S Server rate limiter configuration:",
+            "HTTP/S server rate limiter:",
         );
 
         (self.http_rl_max_requests, self.http_rl_interval)
@@ -184,7 +184,7 @@ impl Config {
             user = db_user,
             pool_max_size = db_pool_max_size,
             pool_min_idle = db_pool_min_idle,
-            "Database configuration:"
+            "Database:"
         );
 
         // handle ACTIVE_REGATTA_ID with proper error handling - using constants
@@ -199,7 +199,7 @@ impl Config {
         info!(
             active_regatta_id = active_regatta_id,
             cache_ttl = cache_ttl,
-            "Aquarius configuration:"
+            "Aquarius:"
         );
 
         Ok(Config {

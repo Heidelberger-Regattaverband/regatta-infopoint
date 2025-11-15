@@ -69,7 +69,7 @@ impl Server {
         let factory_closure = move || {
             let mut current_count = worker_count.lock().unwrap();
             *current_count += 1;
-            debug!(count = *current_count, "Created new HTTP worker:");
+            debug!(count = *current_count, "Created HTTP worker:");
 
             // get app with some middlewares initialized
             Self::get_app(secret_key.clone(), rl_max_requests, rl_interval)
@@ -228,17 +228,17 @@ impl Server {
 
         if cert_pem_path.exists() && cert_pem_path.is_file() && key_pem_path.exists() && key_pem_path.is_file() {
             // load TLS key/cert files
-            info!(
+            debug!(
                 cert_path = &CONFIG.https_cert_path,
                 key_path = &CONFIG.https_key_path,
-                "Try to load TLS config from:"
+                "Try to load TLS config:"
             );
 
             if let (Ok(cert_file), Ok(key_file)) = (File::open(cert_pem_path), File::open(key_pem_path)) {
                 info!(
                     cert_path = &CONFIG.https_cert_path,
                     key_path = &CONFIG.https_key_path,
-                    "TLS config loaded from:"
+                    "TLS config loaded:"
                 );
                 let cert_reader = &mut BufReader::new(cert_file);
                 let cert_chain = certs(cert_reader).map(|cert| cert.unwrap()).collect();
