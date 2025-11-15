@@ -2,7 +2,7 @@ use crate::built_info;
 use ::std::sync::LazyLock;
 use colored::Colorize;
 use dotenv::dotenv;
-use log::info;
+use tracing::info;
 use std::{
     env,
     error::Error,
@@ -127,7 +127,7 @@ impl Config {
     /// Initializes the configuration by reading variables from the environment.
     fn init() -> Result<Self, ConfigError> {
         dotenv().ok();
-        env_logger::init();
+        tracing_subscriber::fmt::init();
 
         info!(
             "Build: time '{}', commit '{}', head_ref '{}', ",

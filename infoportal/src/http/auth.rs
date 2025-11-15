@@ -78,7 +78,7 @@ impl User {
         let tcp = match TcpStream::connect(db_cfg.get_addr()).await {
             Ok(stream) => stream,
             Err(e) => {
-                log::warn!("Failed to connect to database: {}", e);
+                tracing::warn!("Failed to connect to database: {}", e);
                 return Err(HttpResponse::Unauthorized().json(User::new_guest()));
             }
         };

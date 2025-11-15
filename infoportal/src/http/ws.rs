@@ -9,7 +9,7 @@ use actix_web::{
 };
 use actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
 use db::tiberius::TiberiusPool;
-use log::{debug, warn};
+use tracing::{debug, warn};
 use prometheus::Registry;
 use std::time::{Duration, Instant};
 
