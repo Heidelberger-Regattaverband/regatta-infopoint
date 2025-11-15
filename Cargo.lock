@@ -3583,12 +3583,12 @@ dependencies = [
  "db",
  "encoding_rs",
  "env_logger",
- "log",
  "ratatui",
  "strum 0.27.2",
  "strum_macros 0.27.2",
  "tiberius",
  "tokio",
+ "tracing",
  "tui-logger",
  "tui-textarea",
 ]
