@@ -1,17 +1,18 @@
 use crate::built_info;
+use ::std::sync::LazyLock;
 use colored::Colorize;
 use dotenv::dotenv;
-use log::{error, info};
+use log::info;
 use std::{
     env,
     error::Error,
     fmt::{self, Display},
     str::FromStr,
-    sync::OnceLock,
 };
 use tiberius::{AuthMethod, Config as TiberiusConfig, EncryptionLevel};
 
-static CONFIG: OnceLock<Config> = OnceLock::new();
+/// The global configuration instance. The configuration is initialized once and can be accessed globally.
+pub static CONFIG: LazyLock<Config> = LazyLock::new(|| Config::init().expect("Failed to initialize configuration"));
 
 /// The configuration of the server. The configuration is read from the environment.
 /// The configuration is a singleton and initialized once. The configuration can be accessed by calling `Config::get()`.
@@ -70,21 +71,6 @@ pub struct Config {
 }
 
 impl Config {
-    /// Returns the configuration of the server.
-    /// The configuration is read from the environment.
-    ///
-    /// # Panics
-    /// This function will panic if there are configuration errors during initialization.
-    /// This is intentional as the application cannot start without valid configuration.
-    pub fn get() -> &'static Config {
-        CONFIG.get_or_init(|| {
-            Self::init().unwrap_or_else(|e| {
-                error!("Configuration initialization failed: {}", e);
-                panic!("Failed to initialize configuration: {}", e);
-            })
-        })
-    }
-
     /// Returns the HTTP binding configuration of the server.
     pub fn get_http_bind(&self) -> (String, u16) {
         info!(

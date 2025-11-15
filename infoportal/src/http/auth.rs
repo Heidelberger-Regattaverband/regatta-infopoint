@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::CONFIG;
 use actix_web::HttpResponse;
 use serde::{Deserialize, Serialize};
 use tiberius::Client;
@@ -72,7 +72,7 @@ impl User {
         credentials.username.trim().clone_into(&mut username);
 
         // get database config with given credentials
-        let db_cfg = Config::get().get_db_config_for_user(&username, &credentials.password);
+        let db_cfg = CONFIG.get_db_config_for_user(&username, &credentials.password);
 
         // then try to open a connection to the MS-SQL server ...
         let tcp = match TcpStream::connect(db_cfg.get_addr()).await {

@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::CONFIG;
 use actix_identity::Identity;
 use db::{
     aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule, Score, Statistics},
@@ -23,7 +23,7 @@ pub(crate) struct Aquarius {
 impl Aquarius {
     /// Creates a new `Aquarius`.
     pub(crate) async fn new() -> Result<Self, DbError> {
-        let active_regatta_id: i32 = match Config::get().active_regatta_id {
+        let active_regatta_id: i32 = match CONFIG.active_regatta_id {
             Some(id) => id,
             None => {
                 Regatta::query_active_regatta(&mut *TiberiusPool::instance().get().await?)
@@ -32,7 +32,7 @@ impl Aquarius {
             }
         };
         Ok(Aquarius {
-            caches: Caches::try_new(Duration::from_secs(Config::get().cache_ttl))?,
+            caches: Caches::try_new(Duration::from_secs(CONFIG.cache_ttl))?,
             active_regatta_id,
         })
     }

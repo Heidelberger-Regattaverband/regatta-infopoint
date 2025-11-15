@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::config::CONFIG;
 use crate::{
     db::aquarius::Aquarius,
     http::{
@@ -328,7 +328,7 @@ async fn get_timestrip(opt_user: Option<Identity>) -> Result<impl Responder, Err
         && let Ok(id) = user.id()
         && id == "sa"
     {
-        let client = create_client(&Config::get().get_db_config()).await.map_err(|err| {
+        let client = create_client(&CONFIG.get_db_config()).await.map_err(|err| {
             error!("{err}");
             ErrorInternalServerError(err)
         })?;
