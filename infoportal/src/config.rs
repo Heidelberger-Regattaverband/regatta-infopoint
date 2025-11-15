@@ -1,8 +1,8 @@
 use crate::built_info;
 use ::std::sync::LazyLock;
 use ::tracing::info;
+use ::tracing_subscriber::EnvFilter;
 use ::tracing_subscriber::prelude::*;
-use colored::Colorize;
 use dotenv::dotenv;
 use std::{
     env,
@@ -75,9 +75,9 @@ impl Config {
     /// Returns the HTTP binding configuration of the server.
     pub fn get_http_bind(&self) -> (String, u16) {
         info!(
-            "HTTP server is listening on: {}:{}",
-            self.http_bind.bold(),
-            self.http_port.to_string().bold()
+            bind = self.http_bind,
+            port = self.http_port,
+            "HTTP server is listening on:",
         );
         (self.http_bind.clone(), self.http_port)
     }
@@ -85,9 +85,9 @@ impl Config {
     /// Returns the HTTPS binding configuration of the server.
     pub fn get_https_bind(&self) -> (String, u16) {
         info!(
-            "HTTPS server is listening on: {}:{}",
-            self.https_bind.bold(),
-            self.https_port.to_string().bold()
+            bind = self.https_bind,
+            port = self.https_port,
+            "HTTPS server is listening on:",
         );
 
         (self.https_bind.clone(), self.https_port)
@@ -96,9 +96,9 @@ impl Config {
     /// Returns the rate limiter configuration taken from the environment.
     pub fn get_rate_limiter_config(&self) -> (u64, u64) {
         info!(
-            "HTTP/S Server rate limiter max. requests {} in {} seconds.",
-            self.http_rl_max_requests.to_string().bold(),
-            self.http_rl_interval.to_string().bold()
+            max_requests = self.http_rl_max_requests,
+            interval_in_secs = self.http_rl_interval,
+            "HTTP/S Server rate limiter configuration:",
         );
 
         (self.http_rl_max_requests, self.http_rl_interval)
@@ -128,16 +128,16 @@ impl Config {
     /// Initializes the configuration by reading variables from the environment.
     fn init() -> Result<Self, ConfigError> {
         dotenv().ok();
-        let stdout_log = tracing_subscriber::fmt::layer().with_ansi(true).pretty();
+        let stdout_log = tracing_subscriber::fmt::layer().with_ansi(true).compact();
         tracing_subscriber::registry()
             .with(stdout_log)
-            .with(tracing_subscriber::EnvFilter::from_default_env())
+            .with(EnvFilter::from_default_env())
             .init();
         info!(
-            "Build: time '{}', commit '{}', head_ref '{}', ",
-            built_info::BUILT_TIME_UTC.bold(),
-            built_info::GIT_COMMIT_HASH.unwrap_or_default().bold(),
-            built_info::GIT_HEAD_REF.unwrap_or_default().bold()
+            time = built_info::BUILT_TIME_UTC,
+            commit = built_info::GIT_COMMIT_HASH.unwrap_or_default(),
+            head_ref = built_info::GIT_HEAD_REF.unwrap_or_default(),
+            "Build details:",
         );
 
         // read http config with improved error handling - using constants
@@ -145,10 +145,7 @@ impl Config {
         let http_port: u16 = Self::parse_env_var(consts::HTTP_PORT, consts::DEFAULT_HTTP_PORT)?;
         let http_app_content_path =
             env::var(consts::HTTP_APP_CONTENT_PATH).unwrap_or_else(|_| consts::DEFAULT_STATIC_CONTENT_PATH.to_owned());
-        info!(
-            "Serving static application content from path: {}",
-            http_app_content_path.bold()
-        );
+        info!(path = http_app_content_path, "Serving static content:");
 
         // read https config with improved error handling
         let https_bind = env::var(consts::HTTPS_BIND).unwrap_or_else(|_| consts::DEFAULT_BIND_ADDRESS.to_string());
@@ -180,14 +177,14 @@ impl Config {
         Self::validate_db_config(&db_host, db_port, db_pool_max_size, db_pool_min_idle)?;
 
         info!(
-            "Database configuration: host={}, port={}, encryption={}, name={}, user={}, pool_max_size={}, pool_min_idle={}",
-            db_host.bold(),
-            db_port.to_string().bold(),
-            db_encryption.to_string().bold(),
-            db_name.bold(),
-            db_user.bold(),
-            db_pool_max_size.to_string().bold(),
-            db_pool_min_idle.to_string().bold(),
+            host = db_host,
+            port = db_port,
+            encryption = db_encryption,
+            name = db_name,
+            user = db_user,
+            pool_max_size = db_pool_max_size,
+            pool_min_idle = db_pool_min_idle,
+            "Database configuration:"
         );
 
         // handle ACTIVE_REGATTA_ID with proper error handling - using constants
@@ -200,9 +197,9 @@ impl Config {
         Self::validate_cache_ttl(cache_ttl)?;
 
         info!(
-            "Aquarius: active_regatta_id={}, cache_ttl={}s",
-            active_regatta_id.unwrap_or_default().to_string().bold(),
-            cache_ttl.to_string().bold()
+            active_regatta_id = active_regatta_id,
+            cache_ttl = cache_ttl,
+            "Aquarius configuration:"
         );
 
         Ok(Config {
