@@ -9,9 +9,9 @@ use actix_web::{
 };
 use actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
 use db::tiberius::TiberiusPool;
-use log::{debug, warn};
 use prometheus::Registry;
 use std::time::{Duration, Instant};
+use tracing::{debug, warn};
 
 /// How often heartbeat pings are sent
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(2);

@@ -18,10 +18,8 @@ use actix_web::{
     web::{self, Data},
 };
 use actix_web_prom::{PrometheusMetrics, PrometheusMetricsBuilder};
-use colored::Colorize;
 use db::error::DbError;
 use futures::FutureExt;
-use log::{debug, info, warn};
 use prometheus::Registry;
 use rustls::ServerConfig;
 use rustls_pemfile::{certs, pkcs8_private_keys};
@@ -34,6 +32,7 @@ use std::{
     sync::{Arc, Mutex},
     time::{self, Instant},
 };
+use tracing::{debug, info, warn};
 
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
@@ -70,7 +69,7 @@ impl Server {
         let factory_closure = move || {
             let mut current_count = worker_count.lock().unwrap();
             *current_count += 1;
-            debug!("Created new HTTP worker: count={}", current_count.to_string().bold());
+            debug!(count = *current_count, "Created HTTP worker:");
 
             // get app with some middlewares initialized
             Self::get_app(secret_key.clone(), rl_max_requests, rl_interval)
@@ -115,7 +114,7 @@ impl Server {
 
         // finally run http server
         let server = http_server.run();
-        info!("Infoportal started in {:?}", start.elapsed());
+        info!(elapsed = ?start.elapsed(), "Infoportal started:");
         server.await
     }
 
@@ -223,23 +222,23 @@ impl Server {
         let key_pem_path = Path::new(&CONFIG.https_key_path);
 
         info!(
-            "Current working directory is {}",
-            std::env::current_dir().unwrap().display().to_string().bold()
+            path = %std::env::current_dir().unwrap().display(),
+            "Working directory:"
         );
 
         if cert_pem_path.exists() && cert_pem_path.is_file() && key_pem_path.exists() && key_pem_path.is_file() {
             // load TLS key/cert files
-            info!(
-                "Try to load TLS config from: certificate {} and private key {}.",
-                CONFIG.https_cert_path.bold(),
-                CONFIG.https_key_path.bold()
+            debug!(
+                cert_path = &CONFIG.https_cert_path,
+                key_path = &CONFIG.https_key_path,
+                "Try to load TLS config:"
             );
 
             if let (Ok(cert_file), Ok(key_file)) = (File::open(cert_pem_path), File::open(key_pem_path)) {
                 info!(
-                    "TLS config loaded from: certificate {} and private key {}.",
-                    CONFIG.https_cert_path.bold(),
-                    CONFIG.https_key_path.bold()
+                    cert_path = &CONFIG.https_cert_path,
+                    key_path = &CONFIG.https_key_path,
+                    "TLS config loaded:"
                 );
                 let cert_reader = &mut BufReader::new(cert_file);
                 let cert_chain = certs(cert_reader).map(|cert| cert.unwrap()).collect();
@@ -263,17 +262,17 @@ impl Server {
                 Some(config)
             } else {
                 warn!(
-                    "Can't open one or both files: certificate {} and private key {}.",
-                    &CONFIG.https_cert_path.bold(),
-                    &CONFIG.https_key_path.bold()
+                    cert_path = &CONFIG.https_cert_path,
+                    key_path = &CONFIG.https_key_path,
+                    "Can't open one or both files:",
                 );
                 None
             }
         } else {
             warn!(
-                "One or both are not existing or are directories: certificate {} and private key {}.",
-                &CONFIG.https_cert_path.bold(),
-                &CONFIG.https_key_path.bold()
+                cert_path = &CONFIG.https_cert_path,
+                key_path = &CONFIG.https_key_path,
+                "One or both are not existing or are directories:",
             );
             None
         }

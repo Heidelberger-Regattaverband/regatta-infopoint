@@ -4,7 +4,7 @@ use crate::{
     error::DbError,
     timekeeper::time_stamp::{Split, TimeStamp},
 };
-use log::info;
+use tracing::info;
 
 /// A time strip is a collection of time stamps.
 pub struct TimeStrip {

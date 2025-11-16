@@ -1,4 +1,4 @@
-use ::log::warn;
+use ::tracing::warn;
 use scraper::{Html, Selector};
 use std::{collections::HashMap, sync::OnceLock};
 

@@ -18,7 +18,7 @@ use db::{
     aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta},
     timekeeper::{TimeStamp, TimeStrip},
 };
-use log::error;
+use tracing::error;
 
 /// Path to REST API
 pub(crate) const PATH: &str = "/api";
@@ -433,7 +433,7 @@ async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<i
         Ok(user) => {
             // attach valid user identity to current session
             if let Err(e) = Identity::login(&request.extensions(), user.username.clone()) {
-                log::error!("Failed to attach user identity to session: {}", e);
+                tracing::error!("Failed to attach user identity to session: {}", e);
                 return Err(ErrorInternalServerError("Failed to create session"));
             }
             // return user information: username and scope
@@ -472,7 +472,7 @@ async fn identity(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
         match user.id() {
             Ok(id) => Ok(Json(User::new(id, UserScope::User))),
             Err(e) => {
-                log::error!("Failed to get user ID from identity: {}", e);
+                tracing::error!("Failed to get user ID from identity: {}", e);
                 Err(ErrorInternalServerError("Failed to get user identity"))
             }
         }

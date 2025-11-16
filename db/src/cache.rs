@@ -3,7 +3,6 @@ use crate::{
     error::DbError,
 };
 use futures::future::Future;
-use log::{debug, warn};
 use std::{
     fmt::Display,
     hash::Hash,
@@ -12,6 +11,7 @@ use std::{
 };
 use stretto::AsyncCache;
 use tokio::task;
+use tracing::{debug, warn};
 
 /// A high-performance cache that uses `stretto` as the underlying cache with comprehensive features
 ///

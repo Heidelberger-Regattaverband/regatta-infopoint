@@ -43,13 +43,14 @@ serde_json = { version = "1.0" }
 
 # logging
 log = { version = "0.4" }
+tracing = { version = "0.1" }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 env_logger = { version = "0.11" }
 
 # utils
 dotenv = { version = "0.15" }
 scraper = { version = "0.24" }
 clap = { version = "4.5", features = ["derive"] }
-colored = { version = "3" }
 uptime_lib = { version = "0.3" }
 thiserror = { version = "2" }
 
