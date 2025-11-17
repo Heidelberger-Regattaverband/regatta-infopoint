@@ -11,7 +11,6 @@ use crate::{
     utils,
 };
 use db::timekeeper::TimeStamp;
-use log::{debug, error, info, trace, warn};
 use std::{
     io::Result as IoResult,
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream, ToSocketAddrs},
@@ -23,6 +22,7 @@ use std::{
     thread::{self, JoinHandle},
     time::{Duration, Instant},
 };
+use tracing::{debug, error, info, trace, warn};
 
 /// A client to connect to the Aquarius server.
 pub(crate) struct Client {
@@ -243,21 +243,21 @@ impl Drop for Client {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use log::LevelFilter;
     use std::{
         io::{BufRead, BufReader, Write},
         net::{SocketAddr, TcpListener},
         sync::mpsc::{self, Receiver},
         thread,
     };
+    use tracing::Level;
     const TEST_MESSAGE: &str = "Hello World!";
     const EXIT_COMMAND: &str = "exit";
     const MESSAGE_END: &str = "\r\n";
 
     fn init_client() -> (Client, Receiver<AppEvent>) {
-        let _ = env_logger::builder()
-            .is_test(true)
-            .filter_level(LevelFilter::Trace)
+        let _ = tracing_subscriber::fmt()
+            .with_max_level(Level::TRACE)
+            .with_test_writer()
             .try_init();
         let (sender, receiver) = mpsc::channel();
         let addr = start_test_server();

@@ -263,12 +263,12 @@ impl Display for Boat {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use log::LevelFilter;
+    use tracing::Level;
 
     fn init() {
-        let _ = env_logger::builder()
-            .is_test(true)
-            .filter_level(LevelFilter::Trace)
+        let _ = tracing_subscriber::fmt()
+            .with_max_level(Level::TRACE)
+            .with_test_writer()
             .try_init();
     }
 
