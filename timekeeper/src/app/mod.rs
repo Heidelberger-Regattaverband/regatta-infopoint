@@ -17,7 +17,6 @@ use crate::{
 use clap::Parser;
 use db::timekeeper::TimeStrip;
 use heats_tab::HeatsTab;
-use log::{debug, warn};
 use logs_tab::LogsTab;
 use ratatui::{
     DefaultTerminal,
@@ -38,6 +37,7 @@ use std::{
 };
 use strum::IntoEnumIterator;
 use tiberius::{AuthMethod, Config, EncryptionLevel};
+use tracing::{debug, warn};
 
 pub struct App<'a> {
     // application state
