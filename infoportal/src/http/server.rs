@@ -17,10 +17,8 @@ use actix_web::{
     dev::{Service, ServiceFactory, ServiceRequest, ServiceResponse},
     web::{self, Data},
 };
-use actix_web_prom::{PrometheusMetrics, PrometheusMetricsBuilder};
 use db::error::DbError;
 use futures::FutureExt;
-use prometheus::Registry;
 use rustls::ServerConfig;
 use rustls_pemfile::{certs, pkcs8_private_keys};
 use rustls_pki_types::{PrivateKeyDer, PrivatePkcs8KeyDer};
@@ -64,7 +62,6 @@ impl Server {
         let http_app_content_path = CONFIG.http_app_content_path.clone();
 
         let worker_count = Arc::new(Mutex::new(0));
-        let prometheus = Self::get_prometeus();
 
         let factory_closure = move || {
             let mut current_count = worker_count.lock().unwrap();
@@ -73,10 +70,7 @@ impl Server {
 
             // get app with some middlewares initialized
             Self::get_app(secret_key.clone(), rl_max_requests, rl_interval)
-                // collect metrics about requests and responses
-                .wrap(prometheus.clone())
                 .app_data(aquarius.clone())
-                .app_data(Data::new(prometheus.registry.clone()))
                 .configure(rest_api::config)
                 .configure(api_doc::config)
                 .service(
@@ -171,21 +165,6 @@ impl Server {
             .session_lifecycle(PersistentSession::default().session_ttl(Duration::seconds(SECS_OF_WEEKEND)))
             .cookie_path("".to_string())
             .build()
-    }
-
-    /// Returns a new PrometheusMetrics instance.
-    /// # Returns
-    /// `Arc<PrometheusMetrics>` - The prometheus metrics.
-    /// # Panics
-    /// If the prometheus metrics can't be created.
-    fn get_prometeus() -> Arc<PrometheusMetrics> {
-        Arc::new(
-            PrometheusMetricsBuilder::new("api")
-                .registry(Registry::new())
-                .endpoint("/metrics")
-                .build()
-                .unwrap(),
-        )
     }
 
     /// Returns a new RateLimiter instance.
