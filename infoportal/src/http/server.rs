@@ -3,6 +3,8 @@ use crate::{
     db::aquarius::Aquarius,
     http::{api_doc, rest_api},
 };
+use ::actix_web_opentelemetry::RequestMetrics;
+use ::actix_web_opentelemetry::RequestTracing;
 use actix_extensible_rate_limit::{
     RateLimiter,
     backend::{SimpleInput, SimpleInputFunctionBuilder, SimpleOutput, memory::InMemoryBackend},
@@ -146,6 +148,8 @@ impl Server {
                     res
                 })
             })
+            .wrap(RequestTracing::new())
+            .wrap(RequestMetrics::default())
     }
 
     /// Returns a new SessionMiddleware instance.

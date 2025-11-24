@@ -37,6 +37,10 @@ actix-extensible-rate-limit = "0.4"
 rustls.workspace = true
 rustls-pki-types.workspace = true
 rustls-pemfile.workspace = true
+actix-web-opentelemetry = { version = "0.22", features = [
+    "metrics",
+    "metrics-prometheus",
+] }
 
 # OpenAPI
 utoipa.workspace = true
