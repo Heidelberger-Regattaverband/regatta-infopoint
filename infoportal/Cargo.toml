@@ -28,7 +28,7 @@ futures.workspace = true
 
 # Actix + Middlewares
 actix = { version = "0.13" }
-actix-web = { version = "4.11", features = ["rustls-0_23"] }
+actix-web = { version = "4.12", features = ["rustls-0_23"] }
 actix-web-actors = { version = "4.3" }
 actix-session = { version = "0.11", features = ["cookie-session"] }
 actix-identity = "0.9"
