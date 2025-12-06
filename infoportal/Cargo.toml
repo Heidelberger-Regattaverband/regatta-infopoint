@@ -15,6 +15,7 @@ build = "build.rs"
 
 [dependencies]
 db = { path = "../db" }
+timekeeper = { path = "../timekeeper" }
 
 # Utils
 dotenv.workspace = true

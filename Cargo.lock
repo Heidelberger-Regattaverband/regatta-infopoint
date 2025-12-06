@@ -1882,6 +1882,7 @@ dependencies = [
  "sysinfo",
  "thiserror 2.0.17",
  "tiberius",
+ "timekeeper",
  "tokio",
  "tokio-shared-rt",
  "tokio-util",
