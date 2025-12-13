@@ -1,8 +1,6 @@
 use crate::peak_alloc::PeakAlloc;
 use db::{cache::CacheStats, tiberius::TiberiusPool};
-use prometheus::Registry;
 use serde::Serialize;
-use serde_json::{Map, Number, Value};
 use std::time::Duration;
 use sysinfo::{CpuRefreshKind, Disks, MemoryRefreshKind, RefreshKind, System};
 use utoipa::ToSchema;
@@ -14,8 +12,6 @@ pub(crate) struct Monitoring {
     db: Db,
     /// The system information.
     sys: SysInfo,
-    /// The metrics of the system.
-    metrics: Map<String, Value>,
     /// The application information.
     app: AppInfo,
 }
@@ -24,12 +20,10 @@ impl Monitoring {
     /// Creates a new monitoring struct.
     /// # Arguments
     /// * `pool` - The tiberius pool.
-    /// * `registry` - The prometheus registry.
     /// # Returns
     /// `Monitoring` - The monitoring struct.
-    pub(crate) fn new(pool: &TiberiusPool, registry: &Registry, caches: &CacheStats) -> Self {
+    pub(crate) fn new(pool: &TiberiusPool, caches: &CacheStats) -> Self {
         let sys = get_system();
-        let metrics = get_metrics(registry);
         let state = pool.state();
         let stats = state.statistics;
         Monitoring {
@@ -56,7 +50,6 @@ impl Monitoring {
                 disks: Disks::new_with_refreshed_list().iter().map(Disk::from).collect(),
                 uptime: uptime_lib::get().unwrap_or_default(),
             },
-            metrics,
             app: AppInfo {
                 mem_current: PeakAlloc.current_usage(),
                 mem_max: PeakAlloc.peak_usage(),
@@ -75,30 +68,6 @@ fn get_system() -> System {
     std::thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
     sys.refresh_cpu_all();
     sys
-}
-
-fn get_metrics(registry: &Registry) -> Map<String, Value> {
-    let mut all_metrics = Map::new();
-    registry.gather().iter().for_each(|f| {
-        let mut family_entries = Vec::new();
-        f.get_metric().iter().for_each(|m| {
-            let mut labels: Map<String, Value> = Map::new();
-            m.get_label().iter().for_each(|l| {
-                labels.insert(l.name().to_string(), Value::String(l.value().to_string()));
-            });
-            labels.insert(
-                "counter".to_string(),
-                Value::Number(Number::from_f64(m.get_counter().get_value()).unwrap()),
-            );
-            labels.insert(
-                "gauge".to_string(),
-                Value::Number(Number::from_f64(m.get_gauge().get_value()).unwrap()),
-            );
-            family_entries.push(Value::Object(labels));
-        });
-        all_metrics.insert(f.name().to_string(), Value::Array(family_entries));
-    });
-    all_metrics
 }
 
 /// The sysinfo struct contains the cpus and memory information.
