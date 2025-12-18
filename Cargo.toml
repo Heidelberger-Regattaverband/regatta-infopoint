@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["db", "infoportal", "timekeeper"]
+members = ["aquarius", "db", "infoportal", "timekeeper"]
 
 [workspace.package]
 version = "0.1.0"
