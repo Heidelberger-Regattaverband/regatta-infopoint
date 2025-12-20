@@ -1,10 +1,10 @@
 use crate::utils;
-use encoding_rs::WINDOWS_1252;
-use std::{
+use ::encoding_rs::WINDOWS_1252;
+use ::std::{
     io::{BufRead, BufReader, BufWriter, Error as IoError, ErrorKind, Result as IoResult, Write},
     net::TcpStream,
 };
-use tracing::{info, trace};
+use ::tracing::{info, trace};
 
 /// A struct to handle communication with Aquarius.
 pub(super) struct Communication {

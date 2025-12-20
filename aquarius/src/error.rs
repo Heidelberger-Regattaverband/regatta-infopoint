@@ -1,14 +1,15 @@
-use crate::app::AppEvent;
-use std::{
+use ::std::{
     fmt::{Display, Formatter, Result as FmtResult},
     io::Error as IoError,
     num::ParseIntError,
     sync::mpsc::{RecvError, SendError},
 };
 
+use crate::event::AquariusEvent;
+
 /// Error type for the timekeeper crate.
 #[derive(Debug)]
-pub(crate) enum TimekeeperErr {
+pub enum TimekeeperErr {
     /// Error when parsing a string to a number.
     ParseError(ParseIntError),
 
@@ -18,10 +19,10 @@ pub(crate) enum TimekeeperErr {
     /// Error when the message is invalid.
     InvalidMessage(String),
 
-    /// Error when sending a message containing an `AppEvent` fails.
-    SendError(SendError<AppEvent>),
+    /// Error when sending a message containing an `AquariusEvent` fails.
+    SendError(SendError<AquariusEvent>),
 
-    /// Error when receiving a message containing an `AppEvent` fails.
+    /// Error when receiving a message containing an `AquariusEvent` fails.
     ReceiveError(RecvError),
 }
 

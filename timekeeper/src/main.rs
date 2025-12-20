@@ -1,12 +1,10 @@
 mod app;
-mod aquarius;
 mod args;
-mod error;
 mod utils;
 
+use ::aquarius::error::TimekeeperErr;
+use ::tui_logger::{init_logger, set_default_level};
 use app::App;
-use error::TimekeeperErr;
-use tui_logger::{init_logger, set_default_level};
 
 #[tokio::main]
 async fn main() -> Result<(), TimekeeperErr> {

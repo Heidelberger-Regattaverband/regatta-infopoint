@@ -1,7 +1,5 @@
-use crate::{
-    app::utils::{HIGHLIGHT_SYMBOL, block},
-    aquarius::messages::Heat,
-};
+use crate::app::utils::{HIGHLIGHT_SYMBOL, block};
+use ::aquarius::messages::Heat;
 use ratatui::{
     buffer::Buffer,
     crossterm::event::{KeyCode, KeyEvent},

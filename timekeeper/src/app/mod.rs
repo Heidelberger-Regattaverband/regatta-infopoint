@@ -7,16 +7,16 @@ mod utils;
 
 use crate::{
     app::{selected_tab::SelectedTab, timestrip_popup::TimeStripTabPopup, timestrip_tab::TimeStripTab},
-    aquarius::{
-        client::Client,
-        messages::{EventHeatChanged, Heat},
-    },
     args::Args,
-    error::TimekeeperErr,
 };
-use clap::Parser;
-use db::timekeeper::TimeStrip;
-use heats_tab::HeatsTab;
+use ::aquarius::client::Client;
+use ::aquarius::error::TimekeeperErr;
+use ::aquarius::event::AquariusEvent;
+use ::aquarius::messages::EventHeatChanged;
+use ::aquarius::messages::Heat;
+use ::clap::Parser;
+use ::db::timekeeper::TimeStrip;
+use self::heats_tab::HeatsTab;
 use logs_tab::LogsTab;
 use ratatui::{
     DefaultTerminal,
@@ -115,8 +115,8 @@ impl App<'_> {
             let event = self.receiver.recv().map_err(TimekeeperErr::ReceiveError)?;
             match event {
                 AppEvent::UI(event) => self.handle_ui_event(event).await,
-                AppEvent::Aquarius(event) => self.handle_aquarius_event(event),
-                AppEvent::Client(connected) => self.handle_client_event(connected),
+                AppEvent::AquariusEvent(event) => self.handle_aquarius_event(event),
+                // AppEvent::Client(connected) => self.handle_client_event(connected),
             }
             self.draw(terminal)?;
         }
@@ -260,14 +260,14 @@ fn popup_area(area: Rect, percent_x: u16, percent_y: u16) -> Rect {
     area
 }
 
-fn input_thread(sender: Sender<AppEvent>) -> Result<(), TimekeeperErr> {
+fn input_thread(sender: Sender<AquariusEvent>) -> Result<(), TimekeeperErr> {
     while let Ok(event) = event::read() {
-        sender.send(AppEvent::UI(event)).map_err(TimekeeperErr::SendError)?;
+        sender.send(AquariusEvent::UI(event)).map_err(TimekeeperErr::SendError)?;
     }
     Ok(())
 }
 
-/// The application's state (running or quitting)
+/// The application's state (running or quitting)   
 #[derive(Default, PartialEq, Eq)]
 enum AppState {
     /// The application is running
@@ -282,8 +282,5 @@ pub(crate) enum AppEvent {
     UI(Event),
 
     /// An event from Aquarius
-    Aquarius(EventHeatChanged),
-
-    /// An event from the client, e.g. connection lost
-    Client(bool),
+    AquariusEvent(AquariusEvent),
 }

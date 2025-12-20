@@ -10,6 +10,7 @@ repository.workspace = true
 build = "build.rs"
 
 [dependencies]
+aquarius = { path = "../aquarius" }
 db = { path = "../db" }
 
 clap.workspace = true
