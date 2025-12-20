@@ -2,12 +2,12 @@ mod app;
 mod args;
 mod utils;
 
-use ::aquarius::error::TimekeeperErr;
+use ::aquarius::error::AquariusErr;
 use ::tui_logger::{init_logger, set_default_level};
 use app::App;
 
 #[tokio::main]
-async fn main() -> Result<(), TimekeeperErr> {
+async fn main() -> Result<(), AquariusErr> {
     init_logger(tui_logger::LevelFilter::Debug).unwrap();
     set_default_level(tui_logger::LevelFilter::Trace);
 

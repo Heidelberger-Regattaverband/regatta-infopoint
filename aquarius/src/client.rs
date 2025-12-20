@@ -2,7 +2,7 @@ use crate::event::AquariusEvent;
 use crate::utils;
 use crate::{
     comm::Communication,
-    error::TimekeeperErr,
+    error::AquariusErr,
     messages::{
         Bib, EventHeatChanged, Heat, RequestListOpenHeats, RequestSetTime, RequestStartList, ResponseListOpenHeats,
         ResponseStartList,
@@ -56,18 +56,18 @@ impl Client {
     /// A vector of open heats or an error if the heats could not be read. The heats contain the boats that are in the heats.
     /// # Errors
     /// If the open heats could not be read from Aquarius.
-    pub fn read_open_heats(&mut self) -> Result<Vec<Heat>, TimekeeperErr> {
+    pub fn read_open_heats(&mut self) -> Result<Vec<Heat>, AquariusErr> {
         if let Some(comm) = self.communication.lock().unwrap().as_mut() {
             comm.write(&RequestListOpenHeats::default().to_string())
-                .map_err(TimekeeperErr::IoError)?;
-            let response = comm.receive_all().map_err(TimekeeperErr::IoError)?;
+                .map_err(AquariusErr::IoError)?;
+            let response = comm.receive_all().map_err(AquariusErr::IoError)?;
             let mut heats = ResponseListOpenHeats::parse(&response)?;
             for heat in heats.heats.iter_mut() {
                 Client::read_start_list(comm, heat)?;
             }
             Ok(heats.heats)
         } else {
-            Err(TimekeeperErr::InvalidMessage(
+            Err(AquariusErr::InvalidMessage(
                 "Communication is not initialized.".to_string(),
             ))
         }
@@ -76,8 +76,12 @@ impl Client {
     /// Sends a time stamp to Aquarius.
     /// # Arguments
     /// * `time_stamp` - The time stamp to send to Aquarius.
-    /// * `bib` - The bib number of the boat to send the time stamp to.
-    pub fn send_time(&mut self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), TimekeeperErr> {
+    /// * `bib` - The optional bib number of the boat for which the time stamp is sent.
+    /// # Returns
+    /// An empty result or an error if the time stamp could not be sent.
+    /// # Errors
+    /// If the time stamp could not be sent to Aquarius.
+    pub fn send_time(&mut self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), AquariusErr> {
         if let Some(comm) = self.communication.lock().unwrap().as_mut() {
             let request = RequestSetTime {
                 time: time_stamp.time.into(),
@@ -85,10 +89,10 @@ impl Client {
                 heat_nr: time_stamp.heat_nr().unwrap_or_default(),
                 bib,
             };
-            comm.write(&request.to_string()).map_err(TimekeeperErr::IoError)?;
+            comm.write(&request.to_string()).map_err(AquariusErr::IoError)?;
             Ok(())
         } else {
-            Err(TimekeeperErr::InvalidMessage(
+            Err(AquariusErr::InvalidMessage(
                 "Communication is not initialized.".to_string(),
             ))
         }
@@ -151,10 +155,10 @@ impl Client {
         self.stop_watch_dog.store(true, Relaxed);
     }
 
-    fn read_start_list(comm: &mut Communication, heat: &mut Heat) -> Result<(), TimekeeperErr> {
+    fn read_start_list(comm: &mut Communication, heat: &mut Heat) -> Result<(), AquariusErr> {
         comm.write(&RequestStartList::new(heat.id).to_string())
-            .map_err(TimekeeperErr::IoError)?;
-        let response = comm.receive_all().map_err(TimekeeperErr::IoError)?;
+            .map_err(AquariusErr::IoError)?;
+        let response = comm.receive_all().map_err(AquariusErr::IoError)?;
         let start_list = ResponseStartList::parse(response)?;
         heat.boats = Some(start_list.boats);
         Ok(())

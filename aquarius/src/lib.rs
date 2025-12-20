@@ -1,6 +1,6 @@
 pub mod client;
-pub mod comm;
+mod comm;
 pub mod error;
 pub mod event;
 pub mod messages;
-pub mod utils;
+mod utils;

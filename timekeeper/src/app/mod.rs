@@ -5,20 +5,20 @@ mod timestrip_popup;
 mod timestrip_tab;
 mod utils;
 
+use self::heats_tab::HeatsTab;
+use self::logs_tab::LogsTab;
 use crate::{
     app::{selected_tab::SelectedTab, timestrip_popup::TimeStripTabPopup, timestrip_tab::TimeStripTab},
     args::Args,
 };
 use ::aquarius::client::Client;
-use ::aquarius::error::TimekeeperErr;
+use ::aquarius::error::AquariusErr;
 use ::aquarius::event::AquariusEvent;
 use ::aquarius::messages::EventHeatChanged;
 use ::aquarius::messages::Heat;
 use ::clap::Parser;
 use ::db::timekeeper::TimeStrip;
-use self::heats_tab::HeatsTab;
-use logs_tab::LogsTab;
-use ratatui::{
+use ::ratatui::{
     DefaultTerminal,
     crossterm::event::{self, Event, KeyCode, KeyEventKind},
     layout::{
@@ -29,15 +29,15 @@ use ratatui::{
     text::Line,
     widgets::{Clear, Tabs},
 };
-use std::{
+use ::std::{
     cell::RefCell,
     rc::Rc,
     sync::mpsc::{self, Receiver, Sender},
     thread,
 };
-use strum::IntoEnumIterator;
-use tiberius::{AuthMethod, Config, EncryptionLevel};
-use tracing::{debug, warn};
+use ::strum::IntoEnumIterator;
+use ::tiberius::{AuthMethod, Config, EncryptionLevel};
+use ::tracing::{debug, warn};
 
 pub struct App<'a> {
     // application state
@@ -109,10 +109,10 @@ impl App<'_> {
         }
     }
 
-    pub(crate) async fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), TimekeeperErr> {
+    pub(crate) async fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), AquariusErr> {
         // main loop, runs until the user quits the application by pressing 'q'
         while self.state == AppState::Running {
-            let event = self.receiver.recv().map_err(TimekeeperErr::ReceiveError)?;
+            let event = self.receiver.recv().map_err(AquariusErr::ReceiveError)?;
             match event {
                 AppEvent::UI(event) => self.handle_ui_event(event).await,
                 AppEvent::AquariusEvent(event) => self.handle_aquarius_event(event),
@@ -123,7 +123,7 @@ impl App<'_> {
         Ok(())
     }
 
-    fn draw(&mut self, terminal: &mut DefaultTerminal) -> Result<(), TimekeeperErr> {
+    fn draw(&mut self, terminal: &mut DefaultTerminal) -> Result<(), AquariusErr> {
         terminal
             .draw(|frame| {
                 // vertical layout: header, inner area, footer
@@ -158,7 +158,7 @@ impl App<'_> {
                     footer_area,
                 );
             })
-            .map_err(TimekeeperErr::IoError)?;
+            .map_err(AquariusErr::IoError)?;
         Ok(())
     }
 
@@ -260,9 +260,9 @@ fn popup_area(area: Rect, percent_x: u16, percent_y: u16) -> Rect {
     area
 }
 
-fn input_thread(sender: Sender<AquariusEvent>) -> Result<(), TimekeeperErr> {
+fn input_thread(sender: Sender<AquariusEvent>) -> Result<(), AquariusErr> {
     while let Ok(event) = event::read() {
-        sender.send(AquariusEvent::UI(event)).map_err(TimekeeperErr::SendError)?;
+        sender.send(AquariusEvent::UI(event)).map_err(AquariusErr::SendError)?;
     }
     Ok(())
 }
