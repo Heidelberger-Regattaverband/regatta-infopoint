@@ -13,9 +13,10 @@ pub enum DbError {
     /// Connection pool error.
     #[error("Connection pool error: {0}")]
     Pool(#[from] RunError<TiberiusError>),
+    /// Cache-related error.
+    #[error("Cache error: {0}")]
+    Cache(String),
     /// Custom error with message.
     #[error("Database error: {0}")]
     Custom(String),
-    #[error("Cache error: {0}")]
-    Cache(String),
 }
