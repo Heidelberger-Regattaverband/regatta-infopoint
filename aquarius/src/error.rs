@@ -16,17 +16,18 @@ pub enum AquariusErr {
     /// Error when I/O operations fail.
     #[error("I/O error: {0}")]
     IoError(#[from] io::Error),
+
     /// Error when the message is invalid.
     #[error("Invalid message: {0}")]
     InvalidMessage(String),
 
     /// Error when sending a message containing an `AquariusEvent` fails.
     #[error("Send error: {0}")]
-    SendError(SendError<AquariusEvent>),
+    SendError(#[from] SendError<AquariusEvent>),
 
     /// Error when receiving a message containing an `AquariusEvent` fails.
     #[error("Receive error: {0}")]
-    ReceiveError(RecvError),
+    ReceiveError(#[from] RecvError),
 }
 
 #[cfg(test)]
