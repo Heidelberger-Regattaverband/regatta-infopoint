@@ -136,9 +136,9 @@ impl EventHeatChanged {
         }
 
         let action = parts[0];
-        let number = parts[1].parse().map_err(AquariusErr::ParseError)?;
-        let id = parts[2].parse().map_err(AquariusErr::ParseError)?;
-        let status = parts[3].parse().map_err(AquariusErr::ParseError)?;
+        let number = parts[1].parse()?;
+        let id = parts[2].parse()?;
+        let status = parts[3].parse()?;
 
         match action {
             "!OPEN+" => Ok(EventHeatChanged::new(Heat::new(id, number, status), true)),
@@ -188,9 +188,9 @@ impl Heat {
         if parts.len() != 3 {
             return Err(AquariusErr::InvalidMessage(heat_str.to_owned()));
         }
-        let number = parts[0].parse().map_err(AquariusErr::ParseError)?;
-        let id = parts[1].parse().map_err(AquariusErr::ParseError)?;
-        let status = parts[2].parse().map_err(AquariusErr::ParseError)?;
+        let number = parts[0].parse()?;
+        let id = parts[1].parse()?;
+        let status = parts[2].parse()?;
         Ok(Heat::new(id, number, status))
     }
 }
@@ -244,9 +244,9 @@ impl Boat {
     pub(crate) fn parse(boat_str: &str) -> Result<Self, AquariusErr> {
         let parts: Vec<&str> = boat_str.splitn(4, ' ').collect();
         if parts.len() == 4 {
-            let lane = parts[0].parse().map_err(AquariusErr::ParseError)?;
-            let bib: u8 = parts[1].parse().map_err(AquariusErr::ParseError)?;
-            let state: u8 = parts[2].parse().map_err(AquariusErr::ParseError)?;
+            let lane = parts[0].parse()?;
+            let bib: u8 = parts[1].parse()?;
+            let state: u8 = parts[2].parse()?;
             let club = parts[3].to_owned();
             Ok(Boat::new(lane, bib, club, state))
         } else {

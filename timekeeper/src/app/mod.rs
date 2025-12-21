@@ -114,7 +114,7 @@ impl App<'_> {
     pub(crate) async fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), AquariusErr> {
         // main loop, runs until the user quits the application by pressing 'q'
         while self.state == AppState::Running {
-            let event = self.app_event_receiver.recv().map_err(AquariusErr::ReceiveError)?;
+            let event = self.app_event_receiver.recv()?;
             match event {
                 AppEvent::UI(event) => self.handle_ui_event(event).await,
                 AppEvent::Aquarius(AquariusEvent::HeatListChanged(event)) => self.handle_aquarius_event(event),
@@ -126,41 +126,39 @@ impl App<'_> {
     }
 
     fn draw(&mut self, terminal: &mut DefaultTerminal) -> Result<(), AquariusErr> {
-        terminal
-            .draw(|frame| {
-                // vertical layout: header, inner area, footer
-                let [header_area, inner_area, footer_area] =
-                    Layout::vertical([Constraint::Length(1), Constraint::Min(0), Constraint::Length(1)])
-                        .areas(frame.area());
-                // horizontal header layout: tabs, title
-                let [tabs_area, title_area] = Layout::horizontal([Min(0), Length(20)]).areas(header_area);
+        terminal.draw(|frame| {
+            // vertical layout: header, inner area, footer
+            let [header_area, inner_area, footer_area] =
+                Layout::vertical([Constraint::Length(1), Constraint::Min(0), Constraint::Length(1)])
+                    .areas(frame.area());
+            // horizontal header layout: tabs, title
+            let [tabs_area, title_area] = Layout::horizontal([Min(0), Length(20)]).areas(header_area);
 
-                // render tabs header and title
-                frame.render_widget("Aquarius Zeitmessung".bold(), title_area);
-                let titles = SelectedTab::iter().map(SelectedTab::title);
+            // render tabs header and title
+            frame.render_widget("Aquarius Zeitmessung".bold(), title_area);
+            let titles = SelectedTab::iter().map(SelectedTab::title);
 
-                // render the selected tab
-                frame.render_widget(Tabs::new(titles).select(self.selected_tab as usize), tabs_area);
-                match self.selected_tab {
-                    SelectedTab::Heats => frame.render_widget(&mut self.heats_tab, inner_area),
-                    SelectedTab::TimeStrip => {
-                        frame.render_widget(&mut self.time_strip_tab, inner_area);
-                        if *self.show_time_strip_popup.borrow() {
-                            let popup_area = popup_area(inner_area, 50, 20);
-                            frame.render_widget(Clear, popup_area); // this clears out the background
-                            frame.render_widget(&mut self.time_strip_popup, popup_area);
-                        }
+            // render the selected tab
+            frame.render_widget(Tabs::new(titles).select(self.selected_tab as usize), tabs_area);
+            match self.selected_tab {
+                SelectedTab::Heats => frame.render_widget(&mut self.heats_tab, inner_area),
+                SelectedTab::TimeStrip => {
+                    frame.render_widget(&mut self.time_strip_tab, inner_area);
+                    if *self.show_time_strip_popup.borrow() {
+                        let popup_area = popup_area(inner_area, 50, 20);
+                        frame.render_widget(Clear, popup_area); // this clears out the background
+                        frame.render_widget(&mut self.time_strip_popup, popup_area);
                     }
-                    SelectedTab::Logs => frame.render_widget(&mut self.logs_tab, inner_area),
-                };
+                }
+                SelectedTab::Logs => frame.render_widget(&mut self.logs_tab, inner_area),
+            };
 
-                // render footer
-                frame.render_widget(
-                    Line::raw("◄ ► / tab to change tab | + to start | space to finish | q to quit").centered(),
-                    footer_area,
-                );
-            })
-            .map_err(AquariusErr::IoError)?;
+            // render footer
+            frame.render_widget(
+                Line::raw("◄ ► / tab to change tab | + to start | space to finish | q to quit").centered(),
+                footer_area,
+            );
+        })?;
         Ok(())
     }
 

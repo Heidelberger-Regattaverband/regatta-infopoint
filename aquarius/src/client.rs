@@ -58,9 +58,8 @@ impl Client {
     /// If the open heats could not be read from Aquarius.
     pub fn read_open_heats(&mut self) -> Result<Vec<Heat>, AquariusErr> {
         if let Some(comm) = self.communication.lock().unwrap().as_mut() {
-            comm.write(&RequestListOpenHeats::default().to_string())
-                .map_err(AquariusErr::IoError)?;
-            let response = comm.receive_all().map_err(AquariusErr::IoError)?;
+            comm.write(&RequestListOpenHeats::default().to_string())?;
+            let response = comm.receive_all()?;
             let mut heats = ResponseListOpenHeats::parse(&response)?;
             for heat in heats.heats.iter_mut() {
                 Client::read_start_list(comm, heat)?;
@@ -89,7 +88,7 @@ impl Client {
                 heat_nr: time_stamp.heat_nr().unwrap_or_default(),
                 bib,
             };
-            comm.write(&request.to_string()).map_err(AquariusErr::IoError)?;
+            comm.write(&request.to_string())?;
             Ok(())
         } else {
             Err(AquariusErr::InvalidMessage(
@@ -156,9 +155,8 @@ impl Client {
     }
 
     fn read_start_list(comm: &mut Communication, heat: &mut Heat) -> Result<(), AquariusErr> {
-        comm.write(&RequestStartList::new(heat.id).to_string())
-            .map_err(AquariusErr::IoError)?;
-        let response = comm.receive_all().map_err(AquariusErr::IoError)?;
+        comm.write(&RequestStartList::new(heat.id).to_string())?;
+        let response = comm.receive_all()?;
         let start_list = ResponseStartList::parse(response)?;
         heat.boats = Some(start_list.boats);
         Ok(())
