@@ -14,7 +14,6 @@ aquarius = { path = "../aquarius" }
 db = { path = "../db" }
 
 clap.workspace = true
-encoding_rs = { version = "0.8" }
 chrono.workspace = true
 
 # UI + terminal

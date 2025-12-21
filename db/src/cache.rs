@@ -42,7 +42,7 @@ where
     K: Hash + Eq + Send + Sync + Copy + 'static,
     V: Send + Sync + Clone + 'static,
 {
-    pub fn try_new(config: CacheConfig) -> Result<Self, DbError> {
+    fn try_new(config: CacheConfig) -> Result<Self, DbError> {
         let cache = AsyncCache::new(config.max_entries, config.max_cost, task::spawn)
             .map_err(|e| DbError::Cache(format!("Failed to create cache: {}", e)))?;
         debug!(
@@ -265,12 +265,12 @@ impl Caches {
 
 /// Configuration for all caches in the system with optimized defaults
 #[derive(Debug, Clone)]
-pub(crate) struct CachesConfig {
-    pub(crate) regattas: CacheConfig,
-    pub(crate) races: CacheConfig,
-    pub(crate) heats: CacheConfig,
-    pub(crate) clubs: CacheConfig,
-    pub(crate) athletes: CacheConfig,
+struct CachesConfig {
+    regattas: CacheConfig,
+    races: CacheConfig,
+    heats: CacheConfig,
+    clubs: CacheConfig,
+    athletes: CacheConfig,
 }
 
 impl CachesConfig {
@@ -320,13 +320,13 @@ impl CachesConfig {
 
 /// Cache configuration with builder pattern support
 #[derive(Debug, Clone)]
-pub struct CacheConfig {
+struct CacheConfig {
     /// Maximum number of entries in the cache
-    pub(crate) max_entries: usize,
+    max_entries: usize,
     /// Time-to-live for cache entries
-    pub(crate) ttl: Duration,
+    ttl: Duration,
     /// Maximum cost for the cache (memory limit)
-    pub(crate) max_cost: i64,
+    max_cost: i64,
 }
 
 /// Cache statistics for monitoring and debugging with actual tracking capabilities
