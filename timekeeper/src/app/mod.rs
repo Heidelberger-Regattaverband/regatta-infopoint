@@ -45,7 +45,7 @@ pub struct App<'a> {
     selected_tab: SelectedTab,
 
     // event receiver
-    receiver: Receiver<AquariusEvent>,
+    app_event_receiver: Receiver<AppEvent>,
 
     // UI components
     heats_tab: HeatsTab,
@@ -69,11 +69,13 @@ impl App<'_> {
         let client = db::tiberius::create_client(&db_config).await.unwrap();
         let timestrip = TimeStrip::load(client).await.unwrap();
 
-        // Use an mpsc::channel to combine stdin events with app events
-        let (sender, receiver) = mpsc::channel();
+        let (aquarius_event_sender, aquarius_event_receiver) = mpsc::channel();
+        let (app_event_sender, app_event_receiver) = mpsc::channel();
+        let app_event_sender_clone = app_event_sender.clone();
 
-        let client: Client = Client::new(&args.host, args.port, args.timeout, sender.clone());
-        thread::spawn(move || input_thread(sender.clone()));
+        let client: Client = Client::new(&args.host, args.port, args.timeout, aquarius_event_sender.clone());
+        thread::spawn(move || input_thread(app_event_sender_clone));
+        thread::spawn(move || receive_aquarius_events(aquarius_event_receiver, app_event_sender));
 
         // shared context
         let client_rc = Rc::new(RefCell::new(client));
@@ -102,7 +104,7 @@ impl App<'_> {
             logs_tab: LogsTab::default(),
             // shared context
             client: client_rc,
-            receiver,
+            app_event_receiver,
             heats,
             time_strip,
             show_time_strip_popup,
@@ -112,11 +114,11 @@ impl App<'_> {
     pub(crate) async fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), AquariusErr> {
         // main loop, runs until the user quits the application by pressing 'q'
         while self.state == AppState::Running {
-            let event = self.receiver.recv().map_err(AquariusErr::ReceiveError)?;
+            let event = self.app_event_receiver.recv().map_err(AquariusErr::ReceiveError)?;
             match event {
-                // AppEvent::UI(event) => self.handle_ui_event(event).await,
-                AquariusEvent::HeatListChanged(event) => self.handle_aquarius_event(event),
-                AquariusEvent::Client(connected) => self.handle_client_event(connected),
+                AppEvent::UI(event) => self.handle_ui_event(event).await,
+                AppEvent::Aquarius(AquariusEvent::HeatListChanged(event)) => self.handle_aquarius_event(event),
+                AppEvent::Aquarius(AquariusEvent::Client(connected)) => self.handle_client_event(connected),
             }
             self.draw(terminal)?;
         }
@@ -260,11 +262,17 @@ fn popup_area(area: Rect, percent_x: u16, percent_y: u16) -> Rect {
     area
 }
 
-fn input_thread(sender: Sender<AquariusEvent>) -> Result<(), AquariusErr> {
+fn input_thread(sender: Sender<AppEvent>) {
     while let Ok(event) = event::read() {
-        // sender.send(AquariusEvent::UI(event)).map_err(AquariusErr::SendError)?;
+        sender.send(AppEvent::UI(event)).unwrap();
     }
-    Ok(())
+}
+
+fn receive_aquarius_events(receiver: Receiver<AquariusEvent>, sender: Sender<AppEvent>) {
+    while let Ok(event) = receiver.recv() {
+        debug!("Received AquariusEvent: {:?}", event);
+        sender.send(AppEvent::Aquarius(event)).unwrap();
+    }
 }
 
 /// The application's state (running or quitting)   
@@ -281,6 +289,5 @@ pub(crate) enum AppEvent {
     /// An UI event
     UI(Event),
 
-    /// An event from Aquarius
-    AquariusEvent(AquariusEvent),
+    Aquarius(AquariusEvent),
 }

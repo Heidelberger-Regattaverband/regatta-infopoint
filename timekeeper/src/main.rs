@@ -1,6 +1,5 @@
 mod app;
 mod args;
-mod utils;
 
 use ::aquarius::error::AquariusErr;
 use ::tui_logger::{init_logger, set_default_level};

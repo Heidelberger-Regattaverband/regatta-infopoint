@@ -11,7 +11,7 @@ pub mod built_info {
 #[command(about = built_info::PKG_DESCRIPTION, long_about = None)]
 pub(crate) struct Args {
     /// The host to connect to
-    #[arg(long, default_value = "127.0.0.1")]
+    #[arg(long, default_value = "aquarius")]
     pub(crate) host: String,
 
     /// The port to connect to
@@ -31,7 +31,7 @@ pub(crate) struct Args {
     pub(crate) db_port: u16,
 
     /// The database name
-    #[arg(long, default_value = "")]
+    #[arg(long, default_value = "Regatta_Test")]
     pub(crate) db_name: String,
 
     /// The database user
