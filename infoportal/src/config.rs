@@ -69,12 +69,12 @@ pub struct Config {
     pub active_regatta_id: Option<i32>,
     /// The cache TTL in seconds. The cache TTL can be set by setting the environment variable `CACHE_TTL`.
     pub cache_ttl: u64,
-    /// The Aquarius host. The Aquarius host can be set by setting the environment variable `AQUARIUS_HOST`.
-    /// Defaults to `aquarius`.
-    pub aquarius_host: String,
-    /// The Aquarius port. The Aquarius port can be set by setting the environment variable `AQUARIUS_PORT`.
-    /// Defaults to `2048`.
-    pub aquarius_port: u16,
+    // The Aquarius host. The Aquarius host can be set by setting the environment variable `AQUARIUS_HOST`.
+    // Defaults to `aquarius`.
+    // pub aquarius_host: String,
+    // The Aquarius port. The Aquarius port can be set by setting the environment variable `AQUARIUS_PORT`.
+    // Defaults to `2048`.
+    // pub aquarius_port: u16,
 }
 
 impl Config {
@@ -235,8 +235,8 @@ impl Config {
             active_regatta_id,
             cache_ttl,
             http_app_content_path,
-            aquarius_host,
-            aquarius_port,
+            // aquarius_host,
+            // aquarius_port,
         })
     }
 

@@ -50,7 +50,7 @@ mod tests {
     #[test]
     fn test_args() {
         let args = Args::parse();
-        assert_eq!(args.host, "127.0.0.1");
+        assert_eq!(args.host, "aquarius");
         assert_eq!(args.port, 2048);
         assert_eq!(args.timeout, 1);
     }
