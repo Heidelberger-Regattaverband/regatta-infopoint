@@ -218,7 +218,7 @@ fn spawn_communication_thread(stream: &TcpStream, sender: Sender<AquariusEvent>)
                                 if event.opened {
                                     Client::read_start_list(&mut comm, &mut event.heat).unwrap();
                                 }
-                                sender.send(AquariusEvent::HeatChanged(event)).unwrap();
+                                sender.send(AquariusEvent::HeatListChanged(event)).unwrap();
                             }
                             Err(err) => warn!("{err}"),
                         }
@@ -245,13 +245,13 @@ impl Drop for Client {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::{
+    use ::std::{
         io::{BufRead, BufReader, Write},
         net::{SocketAddr, TcpListener},
         sync::mpsc::{self, Receiver},
         thread,
     };
-    use tracing::Level;
+    use ::tracing::Level;
     const TEST_MESSAGE: &str = "Hello World!";
     const EXIT_COMMAND: &str = "exit";
     const MESSAGE_END: &str = "\r\n";

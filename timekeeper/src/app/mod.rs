@@ -45,7 +45,7 @@ pub struct App<'a> {
     selected_tab: SelectedTab,
 
     // event receiver
-    receiver: Receiver<AppEvent>,
+    receiver: Receiver<AquariusEvent>,
 
     // UI components
     heats_tab: HeatsTab,
@@ -114,9 +114,9 @@ impl App<'_> {
         while self.state == AppState::Running {
             let event = self.receiver.recv().map_err(AquariusErr::ReceiveError)?;
             match event {
-                AppEvent::UI(event) => self.handle_ui_event(event).await,
-                AppEvent::AquariusEvent(event) => self.handle_aquarius_event(event),
-                // AppEvent::Client(connected) => self.handle_client_event(connected),
+                // AppEvent::UI(event) => self.handle_ui_event(event).await,
+                AquariusEvent::HeatListChanged(event) => self.handle_aquarius_event(event),
+                AquariusEvent::Client(connected) => self.handle_client_event(connected),
             }
             self.draw(terminal)?;
         }
@@ -262,7 +262,7 @@ fn popup_area(area: Rect, percent_x: u16, percent_y: u16) -> Rect {
 
 fn input_thread(sender: Sender<AquariusEvent>) -> Result<(), AquariusErr> {
     while let Ok(event) = event::read() {
-        sender.send(AquariusEvent::UI(event)).map_err(AquariusErr::SendError)?;
+        // sender.send(AquariusEvent::UI(event)).map_err(AquariusErr::SendError)?;
     }
     Ok(())
 }
