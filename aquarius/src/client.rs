@@ -57,18 +57,25 @@ impl Client {
     /// # Errors
     /// If the open heats could not be read from Aquarius.
     pub fn read_open_heats(&self) -> Result<Vec<Heat>, AquariusErr> {
-        if let Some(comm) = self.communication.lock().unwrap().as_mut() {
-            comm.write(&RequestListOpenHeats::default().to_string())?;
-            let response = comm.receive_all()?;
-            let mut heats = ResponseListOpenHeats::parse(&response)?;
-            for heat in heats.heats.iter_mut() {
-                Client::read_start_list(comm, heat)?;
+        match self.communication.lock() {
+            Ok(mut guard) => {
+                if let Some(comm) = guard.as_mut() {
+                    comm.write(&RequestListOpenHeats::default().to_string())?;
+                    let response = comm.receive_all()?;
+                    let mut heats = ResponseListOpenHeats::parse(&response)?;
+                    for heat in heats.heats.iter_mut() {
+                        Client::read_start_list(comm, heat)?;
+                    }
+                    Ok(heats.heats)
+                } else {
+                    Err(AquariusErr::InvalidMessage(
+                        "Communication is not initialized.".to_string(),
+                    ))
+                }
             }
-            Ok(heats.heats)
-        } else {
-            Err(AquariusErr::InvalidMessage(
-                "Communication is not initialized.".to_string(),
-            ))
+            Err(err) => Err(AquariusErr::MutexPoisonError(format!(
+                "Communication mutex was poisoned: {err}"
+            ))),
         }
     }
 
@@ -81,19 +88,26 @@ impl Client {
     /// # Errors
     /// If the time stamp could not be sent to Aquarius.
     pub fn send_time(&self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), AquariusErr> {
-        if let Some(comm) = self.communication.lock().unwrap().as_mut() {
-            let request = RequestSetTime {
-                time: time_stamp.time.into(),
-                split: time_stamp.split().clone(),
-                heat_nr: time_stamp.heat_nr().unwrap_or_default(),
-                bib,
-            };
-            comm.write(&request.to_string())?;
-            Ok(())
-        } else {
-            Err(AquariusErr::InvalidMessage(
-                "Communication is not initialized.".to_string(),
-            ))
+        match self.communication.lock() {
+            Ok(mut guard) => {
+                if let Some(comm) = guard.as_mut() {
+                    let request = RequestSetTime {
+                        time: time_stamp.time.into(),
+                        split: time_stamp.split().clone(),
+                        heat_nr: time_stamp.heat_nr().unwrap_or_default(),
+                        bib,
+                    };
+                    comm.write(&request.to_string())?;
+                    Ok(())
+                } else {
+                    Err(AquariusErr::InvalidMessage(
+                        "Communication is not initialized.".to_string(),
+                    ))
+                }
+            }
+            Err(err) => Err(AquariusErr::MutexPoisonError(format!(
+                "Communication mutex was poisoned: {err}"
+            ))),
         }
     }
 
@@ -119,18 +133,33 @@ impl Client {
                 // create a new stream to Aquarius
                 match create_stream(&address, &timeout) {
                     Ok(stream) => {
-                        // Spawn a thread to receive events from Aquarius
-                        match spawn_communication_thread(&stream, sender.clone()) {
-                            Ok(handle) => {
-                                let stream = create_stream(&address, &timeout).unwrap();
-                                send_connected(stream, &comm_clone, &sender).unwrap();
-                                // Wait for the thread to finish
-                                let _ = handle.join().is_ok();
-                                send_disconnected(&comm_clone, &sender);
+                        // Clone the stream for the communication thread
+                        match stream.try_clone() {
+                            Ok(stream_clone) => {
+                                // Spawn a thread to receive events from Aquarius
+                                match spawn_communication_thread(&stream_clone, sender.clone()) {
+                                    Ok(handle) => {
+                                        match send_connected(stream, &comm_clone, &sender) {
+                                            Ok(_) => {
+                                                // Wait for the thread to finish
+                                                let _ = handle.join().is_ok();
+                                                send_disconnected(&comm_clone, &sender);
+                                            }
+                                            Err(err) => {
+                                                warn!("Failed to establish connection: {err}");
+                                                send_disconnected(&comm_clone, &sender);
+                                            }
+                                        }
+                                    }
+                                    Err(err) => {
+                                        send_disconnected(&comm_clone, &sender);
+                                        warn!("Error spawning thread: {err}");
+                                    }
+                                }
                             }
                             Err(err) => {
                                 send_disconnected(&comm_clone, &sender);
-                                warn!("Error spawning thread: {err}");
+                                warn!("Failed to clone stream: {err}");
                             }
                         }
                     }
@@ -168,21 +197,34 @@ fn send_connected(
     comm: &Arc<Mutex<Option<Communication>>>,
     sender: &Sender<AquariusEvent>,
 ) -> io::Result<()> {
-    let mut comm_main = comm.lock().unwrap();
-    *comm_main = Some(Communication::new(&stream)?);
-    info!("Connection established.");
+    match comm.lock() {
+        Ok(mut guard) => {
+            *guard = Some(Communication::new(&stream)?);
+            info!("Connection established.");
 
-    // Send a message to the application that the client is connected
-    if let Err(err) = sender.send(AquariusEvent::Client(true)) {
-        warn!("Error sending message to application: {err}");
+            // Send a message to the application that the client is connected
+            if let Err(err) = sender.send(AquariusEvent::Client(true)) {
+                warn!("Error sending message to application: {err}");
+            }
+            Ok(())
+        }
+        Err(_) => {
+            warn!("Communication mutex was poisoned during connection setup");
+            Err(io::Error::other("Mutex poisoned"))
+        }
     }
-    Ok(())
 }
 
 fn send_disconnected(comm: &Arc<Mutex<Option<Communication>>>, sender: &Sender<AquariusEvent>) {
-    let mut comm_main = comm.lock().unwrap();
-    *comm_main = None;
-    warn!("Connection lost, reconnecting...");
+    match comm.lock() {
+        Ok(mut guard) => {
+            *guard = None;
+            warn!("Connection lost, reconnecting...");
+        }
+        Err(_) => {
+            warn!("Communication mutex was poisoned during disconnection");
+        }
+    }
 
     // Send a message to the application that the client is disconnected
     if let Err(err) = sender.send(AquariusEvent::Client(false)) {

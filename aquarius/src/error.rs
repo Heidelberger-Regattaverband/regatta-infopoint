@@ -28,6 +28,10 @@ pub enum AquariusErr {
     /// Error when receiving a message containing an `AquariusEvent` fails.
     #[error("Receive error: {0}")]
     ReceiveError(#[from] RecvError),
+
+    /// Error when a mutex is poisoned.
+    #[error("Mutex poisoned error: {0}")]
+    MutexPoisonError(String),
 }
 
 #[cfg(test)]
