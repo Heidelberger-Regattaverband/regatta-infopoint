@@ -56,7 +56,7 @@ impl Client {
     /// A vector of open heats or an error if the heats could not be read. The heats contain the boats that are in the heats.
     /// # Errors
     /// If the open heats could not be read from Aquarius.
-    pub fn read_open_heats(&mut self) -> Result<Vec<Heat>, AquariusErr> {
+    pub fn read_open_heats(&self) -> Result<Vec<Heat>, AquariusErr> {
         if let Some(comm) = self.communication.lock().unwrap().as_mut() {
             comm.write(&RequestListOpenHeats::default().to_string())?;
             let response = comm.receive_all()?;
@@ -80,7 +80,7 @@ impl Client {
     /// An empty result or an error if the time stamp could not be sent.
     /// # Errors
     /// If the time stamp could not be sent to Aquarius.
-    pub fn send_time(&mut self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), AquariusErr> {
+    pub fn send_time(&self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), AquariusErr> {
         if let Some(comm) = self.communication.lock().unwrap().as_mut() {
             let request = RequestSetTime {
                 time: time_stamp.time.into(),
@@ -174,7 +174,7 @@ fn send_connected(
 
     // Send a message to the application that the client is connected
     if let Err(err) = sender.send(AquariusEvent::Client(true)) {
-        error!("Error sending message to application: {err}");
+        warn!("Error sending message to application: {err}");
     }
     Ok(())
 }
@@ -186,7 +186,7 @@ fn send_disconnected(comm: &Arc<Mutex<Option<Communication>>>, sender: &Sender<A
 
     // Send a message to the application that the client is disconnected
     if let Err(err) = sender.send(AquariusEvent::Client(false)) {
-        error!("Error sending message to application: {err}");
+        warn!("Error sending message to application: {err}");
     }
 }
 
@@ -216,7 +216,9 @@ fn spawn_communication_thread(stream: &TcpStream, sender: Sender<AquariusEvent>)
                                 if event.opened {
                                     Client::read_start_list(&mut comm, &mut event.heat).unwrap();
                                 }
-                                sender.send(AquariusEvent::HeatListChanged(event)).unwrap();
+                                if let Err(err) = sender.send(AquariusEvent::HeatListChanged(event)) {
+                                    warn!("Error sending event to application: {err}");
+                                }
                             }
                             Err(err) => warn!("{err}"),
                         }
