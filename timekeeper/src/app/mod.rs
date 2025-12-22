@@ -61,7 +61,7 @@ pub struct App<'a> {
 }
 
 impl App<'_> {
-    pub(crate) async fn new() -> Self {
+    pub(crate) async fn new() -> Result<Self, AquariusErr> {
         let args = Args::parse();
 
         let db_config = Self::get_db_config(&args);
@@ -73,7 +73,7 @@ impl App<'_> {
         let (app_event_sender, app_event_receiver) = mpsc::channel();
         let app_event_sender_clone = app_event_sender.clone();
 
-        let client: Client = Client::new(&args.host, args.port, args.timeout, aquarius_event_sender.clone());
+        let client: Client = Client::new(&args.host, args.port, args.timeout, aquarius_event_sender.clone())?;
         thread::spawn(move || input_thread(app_event_sender_clone));
         thread::spawn(move || receive_aquarius_events(aquarius_event_receiver, app_event_sender));
 
@@ -84,7 +84,7 @@ impl App<'_> {
         let selected_time_stamp = Rc::new(RefCell::new(None));
         let show_time_strip_popup = Rc::new(RefCell::new(false));
 
-        Self {
+        Ok(Self {
             state: AppState::Running,
             selected_tab: SelectedTab::Heats,
             // tabs
@@ -108,7 +108,7 @@ impl App<'_> {
             heats,
             time_strip,
             show_time_strip_popup,
-        }
+        })
     }
 
     pub(crate) async fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), AquariusErr> {

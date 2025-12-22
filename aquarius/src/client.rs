@@ -38,8 +38,8 @@ impl Client {
     /// * `sender` - The sender to send events to the application.
     /// # Returns
     /// A client to communicate with Aquarius.
-    pub fn new(host: &str, port: u16, timeout: u16, sender: Sender<AquariusEvent>) -> Self {
-        let mut addrs_iter = format!("{host}:{port}").to_socket_addrs().unwrap();
+    pub fn new(host: &str, port: u16, timeout: u16, sender: Sender<AquariusEvent>) -> Result<Self, AquariusErr> {
+        let mut addrs_iter = format!("{host}:{port}").to_socket_addrs()?;
         let address = addrs_iter
             .next()
             .unwrap_or_else(|| SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port));
@@ -48,7 +48,7 @@ impl Client {
             stop_watch_dog: Arc::new(AtomicBool::new(false)),
         };
         client.start_watch_dog(address, timeout, sender);
-        client
+        Ok(client)
     }
 
     /// Reads the open heats from Aquarius.
@@ -263,7 +263,7 @@ mod tests {
             .try_init();
         let (sender, receiver) = mpsc::channel();
         let addr = start_test_server();
-        let client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender);
+        let client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender).unwrap();
         (client, receiver)
     }
 

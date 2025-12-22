@@ -11,7 +11,7 @@ async fn main() -> Result<(), AquariusErr> {
     set_default_level(tui_logger::LevelFilter::Trace);
 
     let mut terminal = ratatui::init();
-    let app_result = App::new().await.start(&mut terminal).await;
+    let app_result = App::new().await?.start(&mut terminal).await;
     ratatui::restore();
 
     app_result
