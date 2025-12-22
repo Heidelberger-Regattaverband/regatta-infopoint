@@ -230,7 +230,7 @@ impl Boat {
         Boat {
             bib,
             lane,
-            club: utils::unquote(&club),
+            club: utils::unquote(&club).to_owned(),
             state,
         }
     }

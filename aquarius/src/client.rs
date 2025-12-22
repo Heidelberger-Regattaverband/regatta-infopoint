@@ -68,9 +68,7 @@ impl Client {
                     }
                     Ok(heats.heats)
                 } else {
-                    Err(AquariusErr::InvalidMessage(
-                        "Communication is not initialized.".to_owned(),
-                    ))
+                    Err(AquariusErr::NotConnectedError())
                 }
             }
             Err(_) => Err(AquariusErr::MutexPoisonError()),
@@ -98,9 +96,7 @@ impl Client {
                     comm.write(&request.to_string())?;
                     Ok(())
                 } else {
-                    Err(AquariusErr::InvalidMessage(
-                        "Communication is not initialized.".to_owned(),
-                    ))
+                    Err(AquariusErr::NotConnectedError())
                 }
             }
             Err(_) => Err(AquariusErr::MutexPoisonError()),

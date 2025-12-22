@@ -32,6 +32,10 @@ pub enum AquariusErr {
     /// Error when a mutex is poisoned.
     #[error("Mutex poisoned error")]
     MutexPoisonError(),
+
+    /// Error when not connected to the server.
+    #[error("Not connected to Aquarius server")]
+    NotConnectedError(),
 }
 
 #[cfg(test)]
