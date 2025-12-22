@@ -24,8 +24,9 @@ use ::tracing::{debug, info, trace, warn};
 
 /// A client to connect to the Aquarius server.
 pub struct Client {
+    /// The communication struct to communicate with Aquarius.
     communication: Arc<Mutex<Option<Communication>>>,
-
+    /// A flag to stop the watch dog thread.
     stop_watch_dog: Arc<AtomicBool>,
 }
 
@@ -58,8 +59,8 @@ impl Client {
     /// If the open heats could not be read from Aquarius.
     pub fn read_open_heats(&self) -> Result<Vec<Heat>, AquariusErr> {
         match self.communication.lock() {
-            Ok(mut guard) => {
-                if let Some(comm) = guard.as_mut() {
+            Ok(mut guard) => match guard.as_mut() {
+                Some(comm) => {
                     comm.write(&RequestListOpenHeats::default().to_string())?;
                     let response = comm.receive_all()?;
                     let mut heats = ResponseListOpenHeats::parse(&response)?;
@@ -67,10 +68,9 @@ impl Client {
                         Client::read_start_list(comm, heat)?;
                     }
                     Ok(heats.heats)
-                } else {
-                    Err(AquariusErr::NotConnectedError())
                 }
-            }
+                None => Err(AquariusErr::NotConnectedError()),
+            },
             Err(_) => Err(AquariusErr::MutexPoisonError()),
         }
     }
@@ -85,8 +85,8 @@ impl Client {
     /// If the time stamp could not be sent to Aquarius.
     pub fn send_time(&self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), AquariusErr> {
         match self.communication.lock() {
-            Ok(mut guard) => {
-                if let Some(comm) = guard.as_mut() {
+            Ok(mut guard) => match guard.as_mut() {
+                Some(comm) => {
                     let request = RequestSetTime {
                         time: time_stamp.time.into(),
                         split: time_stamp.split().clone(),
@@ -95,10 +95,9 @@ impl Client {
                     };
                     comm.write(&request.to_string())?;
                     Ok(())
-                } else {
-                    Err(AquariusErr::NotConnectedError())
                 }
-            }
+                None => Err(AquariusErr::NotConnectedError()),
+            },
             Err(_) => Err(AquariusErr::MutexPoisonError()),
         }
     }
@@ -111,7 +110,7 @@ impl Client {
     /// # Panics
     /// If the sender could not send a message to the application.
     fn start_watch_dog(&mut self, address: SocketAddr, timeout: u16, sender: Sender<AquariusEvent>) -> JoinHandle<()> {
-        let comm_clone = self.communication.clone();
+        let communication = self.communication.clone();
         let stop_watch_dog = self.stop_watch_dog.clone();
 
         // Spawn a thread to watch the thread that receives events from Aquarius
@@ -122,41 +121,13 @@ impl Client {
             // Loop until the stop flag is set
             while !stop_watch_dog.load(Relaxed) {
                 let start = Instant::now();
-                // create a new stream to Aquarius
-                match create_stream(&address, &timeout) {
+                // Try to connect to Aquarius
+                match connect(&address, &timeout) {
                     Ok(stream) => {
-                        // Clone the stream for the communication thread
-                        match stream.try_clone() {
-                            Ok(stream_clone) => {
-                                // Spawn a thread to receive events from Aquarius
-                                match spawn_communication_thread(&stream_clone, sender.clone()) {
-                                    Ok(handle) => {
-                                        match send_connected(stream, &comm_clone, &sender) {
-                                            Ok(_) => {
-                                                // Wait for the thread to finish
-                                                let _ = handle.join().is_ok();
-                                                send_disconnected(&comm_clone, &sender);
-                                            }
-                                            Err(err) => {
-                                                warn!("Failed to establish connection: {err}");
-                                                send_disconnected(&comm_clone, &sender);
-                                            }
-                                        }
-                                    }
-                                    Err(err) => {
-                                        send_disconnected(&comm_clone, &sender);
-                                        warn!("Error spawning thread: {err}");
-                                    }
-                                }
-                            }
-                            Err(err) => {
-                                send_disconnected(&comm_clone, &sender);
-                                warn!("Failed to clone stream: {err}");
-                            }
-                        }
+                        handle_connected(stream, &sender, &communication);
                     }
                     Err(err) => {
-                        send_disconnected(&comm_clone, &sender);
+                        send_disconnected(&communication, &sender);
                         trace!("Error connecting to Aquarius: {err}");
                     }
                 }
@@ -184,14 +155,54 @@ impl Client {
     }
 }
 
+fn connect(addr: &SocketAddr, timeout: &u16) -> io::Result<TcpStream> {
+    trace!("Connecting to {addr} with a timeout {timeout}");
+    let stream = TcpStream::connect_timeout(addr, Duration::new(*timeout as u64, 0))?;
+    stream.set_nodelay(true)?;
+    info!("Connected to {addr}");
+    Ok(stream)
+}
+
+fn handle_connected(stream: TcpStream, sender: &Sender<AquariusEvent>, communication: &Mutex<Option<Communication>>) {
+    // Clone the stream for the communication thread
+    match stream.try_clone() {
+        Ok(stream_clone) => {
+            // Spawn a thread to receive events from Aquarius
+            match spawn_communication_thread(stream_clone, sender.clone()) {
+                Ok(handle) => {
+                    match send_connected(stream, communication, sender) {
+                        Ok(_) => {
+                            // Wait for the thread to finish
+                            let _ = handle.join().is_ok();
+                            send_disconnected(communication, sender);
+                        }
+                        Err(err) => {
+                            warn!("Failed to establish connection: {err}");
+                            send_disconnected(communication, sender);
+                        }
+                    }
+                }
+                Err(err) => {
+                    send_disconnected(communication, sender);
+                    warn!("Error spawning thread: {err}");
+                }
+            }
+        }
+        Err(err) => {
+            send_disconnected(communication, sender);
+            warn!("Failed to clone stream: {err}");
+        }
+    }
+}
+
 fn send_connected(
     stream: TcpStream,
-    comm: &Arc<Mutex<Option<Communication>>>,
+    comm: &Mutex<Option<Communication>>,
     sender: &Sender<AquariusEvent>,
 ) -> io::Result<()> {
     match comm.lock() {
         Ok(mut guard) => {
-            *guard = Some(Communication::new(&stream)?);
+            *guard = Some(Communication::new(stream)?);
             info!("Connection established.");
 
             // Send a message to the application that the client is connected
@@ -207,7 +218,7 @@ fn send_connected(
     }
 }
 
-fn send_disconnected(comm: &Arc<Mutex<Option<Communication>>>, sender: &Sender<AquariusEvent>) {
+fn send_disconnected(comm: &Mutex<Option<Communication>>, sender: &Sender<AquariusEvent>) {
     match comm.lock() {
         Ok(mut guard) => {
             *guard = None;
@@ -224,15 +235,7 @@ fn send_disconnected(comm: &Arc<Mutex<Option<Communication>>>, sender: &Sender<A
     }
 }
 
-fn create_stream(addr: &SocketAddr, timeout: &u16) -> io::Result<TcpStream> {
-    trace!("Connecting to {addr} with a timeout {timeout}");
-    let stream = TcpStream::connect_timeout(addr, Duration::new(*timeout as u64, 0))?;
-    stream.set_nodelay(true)?;
-    info!("Connected to {addr}");
-    Ok(stream)
-}
-
-fn spawn_communication_thread(stream: &TcpStream, sender: Sender<AquariusEvent>) -> io::Result<JoinHandle<()>> {
+fn spawn_communication_thread(stream: TcpStream, sender: Sender<AquariusEvent>) -> io::Result<JoinHandle<()>> {
     let mut comm = Communication::new(stream)?;
 
     debug!("Starting thread to receive Aquarius events.");

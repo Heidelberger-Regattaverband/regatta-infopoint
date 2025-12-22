@@ -19,14 +19,14 @@ pub(super) struct Communication {
 impl Communication {
     /// Create a new `Communication` struct.
     /// # Arguments
-    /// * `stream` - A reference to a `TcpStream` to communicate with Aquarius.
+    /// * `stream` - The TCP stream to communicate with Aquarius.
     /// # Returns
     /// A new `Communication` struct.
     /// # Errors
     /// An error if the stream cannot be cloned.
-    pub(super) fn new(stream: &TcpStream) -> io::Result<Self> {
+    pub(super) fn new(stream: TcpStream) -> io::Result<Self> {
         let reader = BufReader::new(stream.try_clone()?);
-        let writer = BufWriter::new(stream.try_clone()?);
+        let writer = BufWriter::new(stream);
         Ok(Communication { reader, writer })
     }
 
