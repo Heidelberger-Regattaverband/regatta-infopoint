@@ -213,8 +213,11 @@ fn spawn_communication_thread(stream: &TcpStream, sender: Sender<AquariusEvent>)
                         // Parse the received line and handle the event
                         match EventHeatChanged::parse(&received) {
                             Ok(mut event) => {
-                                if event.opened {
-                                    Client::read_start_list(&mut comm, &mut event.heat).unwrap();
+                                if event.opened
+                                    && let Err(err) = Client::read_start_list(&mut comm, &mut event.heat)
+                                {
+                                    warn!("Failed to read start list: {err}");
+                                    continue;
                                 }
                                 if let Err(err) = sender.send(AquariusEvent::HeatListChanged(event)) {
                                     warn!("Error sending event to application: {err}");
