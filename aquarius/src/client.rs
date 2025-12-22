@@ -69,13 +69,11 @@ impl Client {
                     Ok(heats.heats)
                 } else {
                     Err(AquariusErr::InvalidMessage(
-                        "Communication is not initialized.".to_string(),
+                        "Communication is not initialized.".to_owned(),
                     ))
                 }
             }
-            Err(err) => Err(AquariusErr::MutexPoisonError(format!(
-                "Communication mutex was poisoned: {err}"
-            ))),
+            Err(_) => Err(AquariusErr::MutexPoisonError()),
         }
     }
 
@@ -101,13 +99,11 @@ impl Client {
                     Ok(())
                 } else {
                     Err(AquariusErr::InvalidMessage(
-                        "Communication is not initialized.".to_string(),
+                        "Communication is not initialized.".to_owned(),
                     ))
                 }
             }
-            Err(err) => Err(AquariusErr::MutexPoisonError(format!(
-                "Communication mutex was poisoned: {err}"
-            ))),
+            Err(_) => Err(AquariusErr::MutexPoisonError()),
         }
     }
 

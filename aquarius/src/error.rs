@@ -30,8 +30,8 @@ pub enum AquariusErr {
     ReceiveError(#[from] RecvError),
 
     /// Error when a mutex is poisoned.
-    #[error("Mutex poisoned error: {0}")]
-    MutexPoisonError(String),
+    #[error("Mutex poisoned error")]
+    MutexPoisonError(),
 }
 
 #[cfg(test)]
