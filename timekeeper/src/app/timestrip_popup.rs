@@ -1,4 +1,4 @@
-use crate::aquarius::{client::Client, messages::Heat};
+use ::aquarius::{client::Client, messages::Heat};
 use db::timekeeper::{TimeStamp, TimeStrip};
 use ratatui::{
     buffer::Buffer,

@@ -1,7 +1,5 @@
-use crate::{
-    app::utils::{HIGHLIGHT_SYMBOL, block},
-    aquarius::messages::Heat,
-};
+use crate::app::utils::{HIGHLIGHT_SYMBOL, block};
+use ::aquarius::messages::Heat;
 use ratatui::{
     buffer::Buffer,
     crossterm::event::{KeyCode, KeyEvent},
@@ -19,7 +17,8 @@ pub(crate) struct HeatsTab {
 
 impl Widget for &mut HeatsTab {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let items: Vec<ListItem> = self.heats.borrow().iter().map(ListItem::from).collect();
+        let binding = self.heats.borrow();
+        let items: Vec<ListItem> = binding.iter().map(heat_to_list_item).collect();
 
         // Create a List from all list items and highlight the currently selected one
         let list = List::new(items)
@@ -51,17 +50,15 @@ impl HeatsTab {
     }
 }
 
-impl From<&Heat> for ListItem<'_> {
-    fn from(heat: &Heat) -> Self {
-        let boats = heat
-            .boats
-            .clone()
-            .or_else(|| Some(Vec::new()))
-            .unwrap()
-            .iter()
-            .map(|boat| format!("{:2}: {}", boat.bib, boat.club))
-            .collect::<Vec<String>>()
-            .join("\n       ");
-        ListItem::new(format!("#{:3} - {boats}\n\n", heat.number))
-    }
+fn heat_to_list_item(heat: &Heat) -> ListItem<'_> {
+    let boats = heat
+        .boats
+        .clone()
+        .or_else(|| Some(Vec::new()))
+        .unwrap()
+        .iter()
+        .map(|boat| format!("{:2}: {}", boat.bib, boat.club))
+        .collect::<Vec<String>>()
+        .join("\n       ");
+    ListItem::new(format!("#{:3} - {boats}\n\n", heat.number))
 }
