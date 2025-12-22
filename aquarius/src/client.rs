@@ -9,8 +9,8 @@ use crate::{
     },
 };
 use ::db::timekeeper::TimeStamp;
+use ::std::io;
 use ::std::{
-    io::Result as IoResult,
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream, ToSocketAddrs},
     sync::{
         Arc, Mutex,
@@ -20,7 +20,7 @@ use ::std::{
     thread::{self, JoinHandle},
     time::{Duration, Instant},
 };
-use ::tracing::{debug, error, info, trace, warn};
+use ::tracing::{debug, info, trace, warn};
 
 /// A client to connect to the Aquarius server.
 pub struct Client {
@@ -167,7 +167,7 @@ fn send_connected(
     stream: TcpStream,
     comm: &Arc<Mutex<Option<Communication>>>,
     sender: &Sender<AquariusEvent>,
-) -> IoResult<()> {
+) -> io::Result<()> {
     let mut comm_main = comm.lock().unwrap();
     *comm_main = Some(Communication::new(&stream)?);
     info!("Connection established.");
@@ -190,7 +190,7 @@ fn send_disconnected(comm: &Arc<Mutex<Option<Communication>>>, sender: &Sender<A
     }
 }
 
-fn create_stream(addr: &SocketAddr, timeout: &u16) -> IoResult<TcpStream> {
+fn create_stream(addr: &SocketAddr, timeout: &u16) -> io::Result<TcpStream> {
     trace!("Connecting to {addr} with a timeout {timeout}");
     let stream = TcpStream::connect_timeout(addr, Duration::new(*timeout as u64, 0))?;
     stream.set_nodelay(true)?;
@@ -198,7 +198,7 @@ fn create_stream(addr: &SocketAddr, timeout: &u16) -> IoResult<TcpStream> {
     Ok(stream)
 }
 
-fn spawn_communication_thread(stream: &TcpStream, sender: Sender<AquariusEvent>) -> IoResult<JoinHandle<()>> {
+fn spawn_communication_thread(stream: &TcpStream, sender: Sender<AquariusEvent>) -> io::Result<JoinHandle<()>> {
     let mut comm = Communication::new(stream)?;
 
     debug!("Starting thread to receive Aquarius events.");
