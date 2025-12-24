@@ -1,4 +1,4 @@
-use crate::comm::Connection;
+use crate::connection::Connection;
 use crate::error::AquariusErr;
 use crate::event::AquariusEvent;
 use crate::messages::Bib;
