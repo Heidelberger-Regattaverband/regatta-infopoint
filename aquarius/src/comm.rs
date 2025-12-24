@@ -5,7 +5,7 @@ use ::std::{
     io::{BufRead, BufReader, BufWriter, ErrorKind, Write},
     net::TcpStream,
 };
-use ::tracing::{info, trace};
+use ::tracing::trace;
 
 /// A struct to handle communication with Aquarius.
 pub(super) struct Communication {
@@ -36,10 +36,10 @@ impl Communication {
     /// # Returns
     /// The number of bytes written or an error if the command could not be written.
     pub(super) fn write(&mut self, cmd: &str) -> io::Result<usize> {
-        info!("Writing command: \"{}\"", utils::print_whitespaces(cmd));
+        trace!(cmd = utils::print_whitespaces(cmd), "Writing command:");
         let count = self.writer.write(cmd.as_bytes())?;
         self.writer.flush()?;
-        trace!("Written {count} bytes");
+        trace!(count = count, "Written bytes:");
         Ok(count)
     }
 
@@ -58,7 +58,7 @@ impl Communication {
                 if count == 0 {
                     Err(io::Error::new(ErrorKind::UnexpectedEof, "Connection closed"))
                 } else {
-                    trace!("Received line (len={}:) \"{}\"", count, utils::print_whitespaces(&line));
+                    trace!(line = utils::print_whitespaces(&line), len = count, "Received line:");
                     Ok(line.trim_end().to_string())
                 }
             }
@@ -84,7 +84,7 @@ impl Communication {
                     } else {
                         // Decode the buffer to a string. Aquarius uses Windows-1252 encoding.
                         let line = WINDOWS_1252.decode(&buf).0;
-                        trace!("Received line (len={count}:) \"{}\"", utils::print_whitespaces(&line));
+                        trace!(line = utils::print_whitespaces(&line), len = count, "Received line:");
                         // If the line is empty, break the loop. Aquarius sends \r\n at the end of the message.
                         if count <= 2 {
                             break;
@@ -98,9 +98,9 @@ impl Communication {
             }
         }
         trace!(
-            "Received message (len={}): \"{}\"",
-            result.len(),
-            utils::print_whitespaces(&result)
+            msg = utils::print_whitespaces(&result),
+            len = result.len(),
+            "Received message:",
         );
         Ok(result.trim_end().to_string())
     }

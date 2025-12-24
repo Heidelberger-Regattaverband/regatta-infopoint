@@ -47,9 +47,17 @@ mod tests {
         let parse_error = AquariusErr::ParseError("error".parse::<i32>().unwrap_err());
         let io_error = AquariusErr::IoError(io::Error::other("error"));
         let invalid_message = AquariusErr::InvalidMessage("error".to_string());
+        let send_error = AquariusErr::SendError(SendError(AquariusEvent::Client(true)));
+        let recv_error = AquariusErr::ReceiveError(RecvError);
+        let mutex_poison_error = AquariusErr::MutexPoisonError();
+        let not_connected_error = AquariusErr::NotConnectedError();
 
         assert!(matches!(parse_error, AquariusErr::ParseError(_)));
         assert!(matches!(io_error, AquariusErr::IoError(_)));
         assert!(matches!(invalid_message, AquariusErr::InvalidMessage { .. }));
+        assert!(matches!(send_error, AquariusErr::SendError(_)));
+        assert!(matches!(recv_error, AquariusErr::ReceiveError(_)));
+        assert!(matches!(mutex_poison_error, AquariusErr::MutexPoisonError()));
+        assert!(matches!(not_connected_error, AquariusErr::NotConnectedError()));
     }
 }
