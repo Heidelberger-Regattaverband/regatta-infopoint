@@ -58,18 +58,20 @@ impl Client {
     /// # Errors
     /// If the open heats could not be read from Aquarius.
     pub fn read_open_heats(&mut self) -> Result<Vec<Heat>, AquariusErr> {
-        if let Some(connection) = self.connection.lock().unwrap().as_mut() {
-            connection
-                .write(&RequestListOpenHeats::default().to_string())
-                .map_err(AquariusErr::IoError)?;
-            let response = connection.receive_all().map_err(AquariusErr::IoError)?;
-            let mut heats = ResponseListOpenHeats::parse(&response)?;
-            for heat in heats.heats.iter_mut() {
-                Client::read_start_list(connection, heat)?;
+        if let Ok(mut guard) = self.connection.lock() {
+            if let Some(connection) = guard.as_mut() {
+                connection.write(&RequestListOpenHeats::default().to_string())?;
+                let response = connection.receive_all()?;
+                let mut heats = ResponseListOpenHeats::parse(&response)?;
+                for heat in heats.heats.iter_mut() {
+                    Client::read_start_list(connection, heat)?;
+                }
+                Ok(heats.heats)
+            } else {
+                Err(AquariusErr::NotConnectedError())
             }
-            Ok(heats.heats)
         } else {
-            Err(AquariusErr::NotConnectedError())
+            Err(AquariusErr::MutexPoisonError())
         }
     }
 
@@ -78,17 +80,21 @@ impl Client {
     /// * `time_stamp` - The time stamp to send to Aquarius.
     /// * `bib` - The bib number of the boat to send the time stamp to.
     pub fn send_time(&mut self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), AquariusErr> {
-        if let Some(connection) = self.connection.lock().unwrap().as_mut() {
-            let request = RequestSetTime {
-                time: time_stamp.time.into(),
-                split: time_stamp.split().clone(),
-                heat_nr: time_stamp.heat_nr().unwrap_or_default(),
-                bib,
-            };
-            connection.write(&request.to_string())?;
-            Ok(())
+        if let Ok(mut guard) = self.connection.lock() {
+            if let Some(connection) = guard.as_mut() {
+                let request = RequestSetTime {
+                    time: time_stamp.time.into(),
+                    split: time_stamp.split().clone(),
+                    heat_nr: time_stamp.heat_nr().unwrap_or_default(),
+                    bib,
+                };
+                connection.write(&request.to_string())?;
+                Ok(())
+            } else {
+                Err(AquariusErr::NotConnectedError())
+            }
         } else {
-            Err(AquariusErr::NotConnectedError())
+            Err(AquariusErr::MutexPoisonError())
         }
     }
 
