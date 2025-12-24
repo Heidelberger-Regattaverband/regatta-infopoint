@@ -1,4 +1,3 @@
-use crate::connection;
 use crate::connection::Connection;
 use crate::error::AquariusErr;
 use crate::event::AquariusEvent;
@@ -116,10 +115,11 @@ impl Client {
                 match connect(&address, &timeout) {
                     Ok(connection) => {
                         // Spawn a thread to receive events from Aquarius
-                        match spawn_communication_thread(connection, sender.clone()) {
+                        match spawn_event_thread(connection, sender.clone()) {
                             Ok(handle) => {
-                                let stream = connect(&address, &timeout).unwrap();
-                                send_connected(stream, &connection_mutex, &sender).unwrap();
+                                let connection = connect(&address, &timeout).unwrap();
+                                *connection_mutex.lock().unwrap() = Some(connection);
+                                send_connected(&sender);
                                 // Wait for the thread to finish
                                 let _ = handle.join().is_ok();
                                 send_disconnected(&connection_mutex, &sender);
@@ -167,19 +167,11 @@ fn connect(addr: &SocketAddr, timeout: &u16) -> io::Result<Connection> {
     Connection::new(stream)
 }
 
-fn send_connected(
-    connection: Connection,
-    connection_mutex: &Arc<Mutex<Option<Connection>>>,
-    sender: &Sender<AquariusEvent>,
-) -> io::Result<()> {
-    *connection_mutex.lock().unwrap() = Some(connection);
-    info!("Connection established.");
-
+fn send_connected(sender: &Sender<AquariusEvent>) {
     // Send a message to the application that the client is connected
     if let Err(err) = sender.send(AquariusEvent::Client(true)) {
         error!(%err, "Error sending message to application:");
     }
-    Ok(())
 }
 
 fn send_disconnected(connection_mutex: &Arc<Mutex<Option<Connection>>>, sender: &Sender<AquariusEvent>) {
@@ -192,7 +184,7 @@ fn send_disconnected(connection_mutex: &Arc<Mutex<Option<Connection>>>, sender: 
     }
 }
 
-fn spawn_communication_thread(mut connection: Connection, sender: Sender<AquariusEvent>) -> io::Result<JoinHandle<()>> {
+fn spawn_event_thread(mut connection: Connection, sender: Sender<AquariusEvent>) -> io::Result<JoinHandle<()>> {
     debug!("Starting thread to receive Aquarius events");
     let handle = thread::spawn(move || {
         loop {

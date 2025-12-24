@@ -30,11 +30,6 @@ impl Connection {
         Ok(Connection { reader, writer })
     }
 
-    pub(super) fn try_clone(&self) -> io::Result<Connection> {
-        let stream = self.writer.get_ref().try_clone()?;
-        Connection::new(stream)
-    }
-
     /// Write a command to Aquarius.
     /// # Arguments
     /// * `cmd` - The command to write.
