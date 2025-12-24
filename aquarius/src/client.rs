@@ -126,7 +126,7 @@ impl Client {
                             }
                             Err(err) => {
                                 send_disconnected(&connection_mutex, &sender);
-                                warn!(%err, "Error spawning thread:");
+                                warn!(%err, "Error spawning event thread:");
                             }
                         }
                     }
