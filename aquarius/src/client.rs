@@ -1,4 +1,4 @@
-use crate::comm::Communication;
+use crate::comm::Connection;
 use crate::error::AquariusErr;
 use crate::event::AquariusEvent;
 use crate::messages::Bib;
@@ -9,10 +9,9 @@ use crate::messages::RequestSetTime;
 use crate::messages::RequestStartList;
 use crate::messages::ResponseListOpenHeats;
 use crate::messages::ResponseStartList;
-use crate::utils;
 use ::db::timekeeper::TimeStamp;
+use ::std::io;
 use ::std::{
-    io::Result as IoResult,
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream, ToSocketAddrs},
     sync::{
         Arc, Mutex,
@@ -26,7 +25,7 @@ use ::tracing::{debug, error, info, trace, warn};
 
 /// A client to connect to the Aquarius server.
 pub struct Client {
-    communication: Arc<Mutex<Option<Communication>>>,
+    communication: Arc<Mutex<Option<Connection>>>,
 
     stop_watch_dog: Arc<AtomicBool>,
 }
@@ -100,7 +99,7 @@ impl Client {
     /// # Panics
     /// If the sender could not send a message to the application.
     fn start_watch_dog(&mut self, address: SocketAddr, timeout: u16, sender: Sender<AquariusEvent>) -> JoinHandle<()> {
-        let comm_clone = self.communication.clone();
+        let connection_mutex = self.communication.clone();
         let stop_watch_dog = self.stop_watch_dog.clone();
 
         // Spawn a thread to watch the thread that receives events from Aquarius
@@ -111,26 +110,26 @@ impl Client {
             // Loop until the stop flag is set
             while !stop_watch_dog.load(Relaxed) {
                 let start = Instant::now();
-                // create a new stream to Aquarius
+                // create a connection to Aquarius
                 match connect(&address, &timeout) {
-                    Ok(stream) => {
+                    Ok(connection) => {
                         // Spawn a thread to receive events from Aquarius
-                        match spawn_communication_thread(stream, sender.clone()) {
+                        match spawn_communication_thread(connection, sender.clone()) {
                             Ok(handle) => {
                                 let stream = connect(&address, &timeout).unwrap();
-                                send_connected(stream, &comm_clone, &sender).unwrap();
+                                send_connected(stream, &connection_mutex, &sender).unwrap();
                                 // Wait for the thread to finish
                                 let _ = handle.join().is_ok();
-                                send_disconnected(&comm_clone, &sender);
+                                send_disconnected(&connection_mutex, &sender);
                             }
                             Err(err) => {
-                                send_disconnected(&comm_clone, &sender);
+                                send_disconnected(&connection_mutex, &sender);
                                 warn!("Error spawning thread: {err}");
                             }
                         }
                     }
                     Err(err) => {
-                        send_disconnected(&comm_clone, &sender);
+                        send_disconnected(&connection_mutex, &sender);
                         trace!("Error connecting to Aquarius: {err}");
                     }
                 }
@@ -149,7 +148,7 @@ impl Client {
         self.stop_watch_dog.store(true, Relaxed);
     }
 
-    fn read_start_list(comm: &mut Communication, heat: &mut Heat) -> Result<(), AquariusErr> {
+    fn read_start_list(comm: &mut Connection, heat: &mut Heat) -> Result<(), AquariusErr> {
         comm.write(&RequestStartList::new(heat.id).to_string())?;
         let response = comm.receive_all()?;
         let start_list = ResponseStartList::parse(response)?;
@@ -158,45 +157,41 @@ impl Client {
     }
 }
 
-fn connect(addr: &SocketAddr, timeout: &u16) -> IoResult<TcpStream> {
-    trace!("Connecting to {addr} with a timeout {timeout}");
+fn connect(addr: &SocketAddr, timeout: &u16) -> io::Result<Connection> {
+    debug!(%addr, timeout, "Connecting to:");
     let stream = TcpStream::connect_timeout(addr, Duration::new(*timeout as u64, 0))?;
     stream.set_nodelay(true)?;
-    info!("Connected to {addr}");
-    Ok(stream)
+    info!(%addr, "Connected to:");
+    Connection::new(stream)
 }
 
 fn send_connected(
-    stream: TcpStream,
-    comm: &Arc<Mutex<Option<Communication>>>,
+    connection: Connection,
+    connection_mutex: &Arc<Mutex<Option<Connection>>>,
     sender: &Sender<AquariusEvent>,
-) -> IoResult<()> {
-    let mut comm_main = comm.lock().unwrap();
-    *comm_main = Some(Communication::new(stream)?);
+) -> io::Result<()> {
+    *connection_mutex.lock().unwrap() = Some(connection);
     info!("Connection established.");
 
     // Send a message to the application that the client is connected
     if let Err(err) = sender.send(AquariusEvent::Client(true)) {
-        error!("Error sending message to application: {err}");
+        error!(%err, "Error sending message to application:");
     }
     Ok(())
 }
 
-fn send_disconnected(comm: &Arc<Mutex<Option<Communication>>>, sender: &Sender<AquariusEvent>) {
-    let mut comm_main = comm.lock().unwrap();
-    *comm_main = None;
+fn send_disconnected(connection_mutex: &Arc<Mutex<Option<Connection>>>, sender: &Sender<AquariusEvent>) {
+    *connection_mutex.lock().unwrap() = None;
     warn!("Connection lost, reconnecting...");
 
     // Send a message to the application that the client is disconnected
     if let Err(err) = sender.send(AquariusEvent::Client(false)) {
-        error!("Error sending message to application: {err}");
+        error!(%err, "Error sending message to application:");
     }
 }
 
-fn spawn_communication_thread(stream: TcpStream, sender: Sender<AquariusEvent>) -> IoResult<JoinHandle<()>> {
-    let mut comm = Communication::new(stream)?;
-
-    debug!("Starting thread to receive Aquarius events.");
+fn spawn_communication_thread(mut comm: Connection, sender: Sender<AquariusEvent>) -> io::Result<JoinHandle<()>> {
+    debug!("Starting thread to receive Aquarius events");
     let handle = thread::spawn(move || {
         loop {
             // Read a line from the server and blocks until a line is received.
@@ -204,7 +199,6 @@ fn spawn_communication_thread(stream: TcpStream, sender: Sender<AquariusEvent>) 
                 // successfully received a line
                 Ok(received) => {
                     if !received.is_empty() {
-                        debug!("Received: \"{}\"", utils::print_whitespaces(&received));
                         // Parse the received line and handle the event
                         match EventHeatChanged::parse(&received) {
                             Ok(mut event) => {
@@ -213,18 +207,18 @@ fn spawn_communication_thread(stream: TcpStream, sender: Sender<AquariusEvent>) 
                                 }
                                 sender.send(AquariusEvent::HeatListChanged(event)).unwrap();
                             }
-                            Err(err) => warn!("{err}"),
+                            Err(err) => warn!(%err),
                         }
                     }
                 }
                 // an error occurred while receiving a line
                 Err(err) => {
-                    warn!("{err}");
+                    warn!(%err);
                     break;
                 }
             }
         }
-        debug!("Stopped thread to receive Aquarius events.");
+        debug!("Stopped thread to receive Aquarius events");
     });
     Ok(handle)
 }

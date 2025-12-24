@@ -7,27 +7,32 @@ use ::std::{
 };
 use ::tracing::trace;
 
-/// A struct to handle communication with Aquarius.
-pub(super) struct Communication {
-    /// A buffered reader to read from Aquarius.
+/// A struct to handle a connection to Aquarius.
+pub(super) struct Connection {
+    /// A buffered reader to read from Aquarius server.
     reader: BufReader<TcpStream>,
 
-    /// A buffered writer to write to the server.
+    /// A buffered writer to write to the Aquarius server.
     writer: BufWriter<TcpStream>,
 }
 
-impl Communication {
-    /// Create a new `Communication` struct.
+impl Connection {
+    /// Create a new `Connection` struct.
     /// # Arguments
     /// * `stream` - The TCP stream to communicate with Aquarius.
     /// # Returns
-    /// A new `Communication` struct.
+    /// A new `Connection` struct.
     /// # Errors
     /// An error if the stream cannot be cloned.
     pub(super) fn new(stream: TcpStream) -> io::Result<Self> {
         let reader = BufReader::new(stream.try_clone()?);
         let writer = BufWriter::new(stream);
-        Ok(Communication { reader, writer })
+        Ok(Connection { reader, writer })
+    }
+
+    pub(super) fn try_clone(&self) -> io::Result<Connection> {
+        let stream = self.writer.get_ref().try_clone()?;
+        Connection::new(stream)
     }
 
     /// Write a command to Aquarius.
@@ -58,7 +63,7 @@ impl Communication {
                 if count == 0 {
                     Err(io::Error::new(ErrorKind::UnexpectedEof, "Connection closed"))
                 } else {
-                    trace!(line = utils::print_whitespaces(&line), len = count, "Received line:");
+                    trace!(line = utils::print_whitespaces(&line), count, "Received line:");
                     Ok(line.trim_end().to_string())
                 }
             }
@@ -84,7 +89,7 @@ impl Communication {
                     } else {
                         // Decode the buffer to a string. Aquarius uses Windows-1252 encoding.
                         let line = WINDOWS_1252.decode(&buf).0;
-                        trace!(line = utils::print_whitespaces(&line), len = count, "Received line:");
+                        trace!(line = utils::print_whitespaces(&line), count, "Received line:");
                         // If the line is empty, break the loop. Aquarius sends \r\n at the end of the message.
                         if count <= 2 {
                             break;
