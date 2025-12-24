@@ -17,4 +17,5 @@ tracing.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
+socket-server-mocker = "0.5"
 tracing-subscriber.workspace = true

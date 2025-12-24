@@ -232,13 +232,16 @@ impl Drop for Client {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ::socket_server_mocker::Instruction::*;
+    use ::socket_server_mocker::ServerMocker;
+    use ::socket_server_mocker::TcpMocker;
+    use ::tracing::Level;
     use std::{
         io::{BufRead, BufReader, Write},
         net::{SocketAddr, TcpListener},
         sync::mpsc::{self, Receiver},
         thread,
     };
-    use tracing::Level;
     const TEST_MESSAGE: &str = "Hello World!";
     const EXIT_COMMAND: &str = "exit";
     const MESSAGE_END: &str = "\r\n";
@@ -249,9 +252,26 @@ mod tests {
             .with_test_writer()
             .try_init();
         let (sender, receiver) = mpsc::channel();
-        let addr = start_test_server();
-        let client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender).unwrap();
+        let server = start_mock_server();
+        let client = Client::new(
+            &server.socket_address().ip().to_string(),
+            server.socket_address().port(),
+            1,
+            sender,
+        )
+        .unwrap();
         (client, receiver)
+    }
+
+    fn start_mock_server() -> ServerMocker<TcpMocker> {
+        let server = ServerMocker::tcp().unwrap();
+        server
+            .add_mock_instructions(vec![
+                ReceiveMessageWithMaxSize(16), // The mocked server will first wait for the client to send a message
+                SendMessage(b"hello from server".to_vec()), // Then it will send a message to the client
+            ])
+            .unwrap();
+        server
     }
 
     fn start_test_server() -> SocketAddr {
