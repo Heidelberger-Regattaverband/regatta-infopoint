@@ -9,6 +9,7 @@ use crate::messages::RequestSetTime;
 use crate::messages::RequestStartList;
 use crate::messages::ResponseListOpenHeats;
 use crate::messages::ResponseStartList;
+use crate::utils;
 use ::db::timekeeper::TimeStamp;
 use ::std::io;
 use ::std::{
@@ -132,14 +133,10 @@ impl Client {
                                 // Wait for the thread to finish
                                 let _ = handle.join().is_ok();
                             }
-                            Err(err) => {
-                                warn!(%err, "Error connecting to Aquarius:");
-                            }
+                            Err(err) => warn!(%err, "Error connecting to Aquarius:"),
                         }
                     }
-                    Err(err) => {
-                        trace!(%err, "Error connecting to Aquarius:");
-                    }
+                    Err(err) => trace!(%err, "Error connecting to Aquarius:"),
                 }
                 let mut previous_connection = connection_mutex.lock().unwrap();
                 if previous_connection.is_some() {
@@ -195,7 +192,7 @@ fn spawn_event_thread(mut connection: Connection, sender: Sender<AquariusEvent>)
             match connection.receive_line() {
                 // successfully received a line
                 Ok(received) => {
-                    if !received.is_empty() {
+                    if !received.is_empty() && received.starts_with("!OPEN") {
                         // Parse the received line and handle the event
                         match EventHeatChanged::parse(&received) {
                             Ok(mut event) => {
@@ -206,6 +203,8 @@ fn spawn_event_thread(mut connection: Connection, sender: Sender<AquariusEvent>)
                             }
                             Err(err) => warn!(%err),
                         }
+                    } else {
+                        debug!(line = utils::print_whitespaces(&received), "Ignoring:");
                     }
                 }
                 // an error occurred while receiving a line
