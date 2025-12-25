@@ -112,7 +112,7 @@ impl Client {
         // Spawn a thread to watch the thread that receives events from Aquarius
         let watch_dog: JoinHandle<()> = thread::spawn(move || {
             // The interval to retry connecting to Aquarius in case of a failure
-            let repeat_interval = Duration::from_secs(timeout as u64);
+            let repeat_interval = Duration::from_millis(timeout as u64);
 
             // Loop until the stop flag is set
             while !stop_watch_dog.load(Relaxed) {
@@ -123,24 +123,30 @@ impl Client {
                         // Spawn a thread to receive events from Aquarius
                         match spawn_event_thread(connection, sender.clone()) {
                             Ok(handle) => {
-                                let connection = connect(&address, &timeout).unwrap();
-                                *connection_mutex.lock().unwrap() = Some(connection);
-                                send_connected(&sender);
-                                // Wait for the thread to finish
-                                let _ = handle.join().is_ok();
-                                send_disconnected(&connection_mutex, &sender);
+                                match connect(&address, &timeout) {
+                                    Ok(connection) => {
+                                        *connection_mutex.lock().unwrap() = Some(connection);
+                                        send_connection_status(&sender, true);
+                                        // Wait for the thread to finish
+                                        let _ = handle.join().is_ok();
+                                    }
+                                    Err(err) => {
+                                        warn!(%err, "Error connecting to Aquarius:");
+                                    }
+                                }
                             }
                             Err(err) => {
-                                send_disconnected(&connection_mutex, &sender);
                                 warn!(%err, "Error spawning event thread:");
                             }
                         }
                     }
                     Err(err) => {
-                        send_disconnected(&connection_mutex, &sender);
                         trace!(%err, "Error connecting to Aquarius:");
                     }
                 }
+                *connection_mutex.lock().unwrap() = None;
+                send_connection_status(&sender, false);
+
                 let elapsed = start.elapsed();
                 if elapsed < repeat_interval {
                     thread::sleep(repeat_interval - elapsed);
@@ -173,19 +179,9 @@ fn connect(addr: &SocketAddr, timeout: &u16) -> io::Result<Connection> {
     Connection::new(stream)
 }
 
-fn send_connected(sender: &Sender<AquariusEvent>) {
+fn send_connection_status(sender: &Sender<AquariusEvent>, status: bool) {
     // Send a message to the application that the client is connected
-    if let Err(err) = sender.send(AquariusEvent::Client(true)) {
-        error!(%err, "Error sending message to application:");
-    }
-}
-
-fn send_disconnected(connection_mutex: &Arc<Mutex<Option<Connection>>>, sender: &Sender<AquariusEvent>) {
-    *connection_mutex.lock().unwrap() = None;
-    warn!("Connection lost, reconnecting...");
-
-    // Send a message to the application that the client is disconnected
-    if let Err(err) = sender.send(AquariusEvent::Client(false)) {
+    if let Err(err) = sender.send(AquariusEvent::Client(status)) {
         error!(%err, "Error sending message to application:");
     }
 }
