@@ -52,6 +52,9 @@ mod tests {
         let args = Args::parse();
         assert_eq!(args.host, "aquarius");
         assert_eq!(args.port, 2048);
-        assert_eq!(args.timeout, 1);
+        assert_eq!(args.timeout, 500);
+        assert_eq!(args.db_name, "Regatta_Test");
+        assert_eq!(args.db_host, "data");
+        assert_eq!(args.db_port, 1433);
     }
 }
