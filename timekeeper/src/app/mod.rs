@@ -7,6 +7,7 @@ mod utils;
 
 use self::heats_tab::HeatsTab;
 use self::logs_tab::LogsTab;
+use crate::error::TimekeeperErr;
 use crate::{
     app::{selected_tab::SelectedTab, timestrip_popup::TimeStripTabPopup, timestrip_tab::TimeStripTab},
     args::Args,
@@ -61,13 +62,13 @@ pub struct App<'a> {
 }
 
 impl App<'_> {
-    pub(crate) async fn new() -> Result<Self, AquariusErr> {
+    pub(crate) async fn new() -> Result<Self, TimekeeperErr> {
         let args = Args::parse();
 
         let db_config = Self::get_db_config(&args);
 
-        let client = db::tiberius::create_client(&db_config).await.unwrap();
-        let timestrip = TimeStrip::load(client).await.unwrap();
+        let client = db::tiberius::create_client(&db_config).await?;
+        let timestrip = TimeStrip::load(client).await?;
 
         let (aquarius_event_sender, aquarius_event_receiver) = mpsc::channel();
         let (app_event_sender, app_event_receiver) = mpsc::channel();

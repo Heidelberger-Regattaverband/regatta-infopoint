@@ -36,6 +36,8 @@ tokio.workspace = true
 # DB
 tiberius.workspace = true
 
+thiserror.workspace = true
+
 [dev-dependencies]
 tracing-subscriber.workspace = true
 
