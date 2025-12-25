@@ -60,21 +60,15 @@ impl Client {
     /// # Errors
     /// If the open heats could not be read from Aquarius.
     pub fn read_open_heats(&mut self) -> Result<Vec<Heat>, AquariusErr> {
-        match self.connection.lock() {
-            Ok(mut guard) => match guard.as_mut() {
-                Some(connection) => {
-                    connection.write(&RequestListOpenHeats::default().to_string())?;
-                    let response = connection.receive_all()?;
-                    let mut heats = ResponseListOpenHeats::parse(&response)?;
-                    for heat in heats.heats.iter_mut() {
-                        Client::read_start_list(connection, heat)?;
-                    }
-                    Ok(heats.heats)
-                }
-                None => Err(AquariusErr::NotConnectedError()),
-            },
-            Err(_) => Err(AquariusErr::MutexPoisonError()),
-        }
+        self.with_connection(|connection| {
+            connection.write(&RequestListOpenHeats::default().to_string())?;
+            let response = connection.receive_all()?;
+            let mut heats = ResponseListOpenHeats::parse(&response)?;
+            for heat in heats.heats.iter_mut() {
+                Client::read_start_list(connection, heat)?;
+            }
+            Ok(heats.heats)
+        })
     }
 
     /// Sends a time stamp to Aquarius.
@@ -82,18 +76,25 @@ impl Client {
     /// * `time_stamp` - The time stamp to send to Aquarius.
     /// * `bib` - The bib number of the boat to send the time stamp to.
     pub fn send_time(&mut self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), AquariusErr> {
+        self.with_connection(|connection| {
+            let request = RequestSetTime {
+                time: time_stamp.time.into(),
+                split: time_stamp.split().clone(),
+                heat_nr: time_stamp.heat_nr().unwrap_or_default(),
+                bib,
+            };
+            connection.write(&request.to_string())?;
+            Ok(())
+        })
+    }
+
+    fn with_connection<F, T>(&mut self, func: F) -> Result<T, AquariusErr>
+    where
+        F: FnOnce(&mut Connection) -> Result<T, AquariusErr>,
+    {
         match self.connection.lock() {
             Ok(mut guard) => match guard.as_mut() {
-                Some(connection) => {
-                    let request = RequestSetTime {
-                        time: time_stamp.time.into(),
-                        split: time_stamp.split().clone(),
-                        heat_nr: time_stamp.heat_nr().unwrap_or_default(),
-                        bib,
-                    };
-                    connection.write(&request.to_string())?;
-                    Ok(())
-                }
+                Some(connection) => func(connection),
                 None => Err(AquariusErr::NotConnectedError()),
             },
             Err(_) => Err(AquariusErr::MutexPoisonError()),
