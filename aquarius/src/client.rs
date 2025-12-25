@@ -123,22 +123,16 @@ impl Client {
                 match connect(&address, timeout) {
                     Ok(connection) => {
                         // Spawn a thread to receive events from Aquarius
-                        match spawn_event_thread(connection, sender.clone()) {
-                            Ok(handle) => {
-                                match connect(&address, timeout) {
-                                    Ok(connection) => {
-                                        *connection_mutex.lock().unwrap() = Some(connection);
-                                        send_connection_status(&sender, true);
-                                        // Wait for the thread to finish
-                                        let _ = handle.join().is_ok();
-                                    }
-                                    Err(err) => {
-                                        warn!(%err, "Error connecting to Aquarius:");
-                                    }
-                                }
+                        let handle = spawn_event_thread(connection, sender.clone());
+                        match connect(&address, timeout) {
+                            Ok(connection) => {
+                                *connection_mutex.lock().unwrap() = Some(connection);
+                                send_connection_status(&sender, true);
+                                // Wait for the thread to finish
+                                let _ = handle.join().is_ok();
                             }
                             Err(err) => {
-                                warn!(%err, "Error spawning event thread:");
+                                warn!(%err, "Error connecting to Aquarius:");
                             }
                         }
                     }
@@ -192,9 +186,9 @@ fn send_connection_status(sender: &Sender<AquariusEvent>, status: bool) {
     }
 }
 
-fn spawn_event_thread(mut connection: Connection, sender: Sender<AquariusEvent>) -> io::Result<JoinHandle<()>> {
+fn spawn_event_thread(mut connection: Connection, sender: Sender<AquariusEvent>) -> JoinHandle<()> {
     debug!("Starting thread to receive Aquarius events");
-    let handle = thread::spawn(move || {
+    thread::spawn(move || {
         loop {
             // Read a line from the server and blocks until a line is received.
             match connection.receive_line() {
@@ -221,8 +215,7 @@ fn spawn_event_thread(mut connection: Connection, sender: Sender<AquariusEvent>)
             }
         }
         debug!("Stopped thread to receive Aquarius events");
-    });
-    Ok(handle)
+    })
 }
 
 impl Drop for Client {
