@@ -9,6 +9,7 @@ use crate::messages::RequestSetTime;
 use crate::messages::RequestStartList;
 use crate::messages::ResponseListOpenHeats;
 use crate::messages::ResponseStartList;
+use crate::utils;
 use ::db::timekeeper::TimeStamp;
 use ::std::io;
 use ::std::{
@@ -25,8 +26,10 @@ use ::tracing::{debug, error, info, trace, warn};
 
 /// A client to connect to the Aquarius server.
 pub struct Client {
+    /// The connection to the Aquarius server.
     connection: Arc<Mutex<Option<Connection>>>,
 
+    /// A flag to stop the watch dog thread.
     stop_watch_dog: Arc<AtomicBool>,
 }
 
@@ -58,21 +61,15 @@ impl Client {
     /// # Errors
     /// If the open heats could not be read from Aquarius.
     pub fn read_open_heats(&mut self) -> Result<Vec<Heat>, AquariusErr> {
-        match self.connection.lock() {
-            Ok(mut guard) => match guard.as_mut() {
-                Some(connection) => {
-                    connection.write(&RequestListOpenHeats::default().to_string())?;
-                    let response = connection.receive_all()?;
-                    let mut heats = ResponseListOpenHeats::parse(&response)?;
-                    for heat in heats.heats.iter_mut() {
-                        Client::read_start_list(connection, heat)?;
-                    }
-                    Ok(heats.heats)
-                }
-                None => Err(AquariusErr::NotConnectedError()),
-            },
-            Err(_) => Err(AquariusErr::MutexPoisonError()),
-        }
+        self.with_connection(|connection| {
+            connection.write(&RequestListOpenHeats::default().to_string())?;
+            let response = connection.receive_all()?;
+            let mut heats = ResponseListOpenHeats::parse(&response)?;
+            for heat in heats.heats.iter_mut() {
+                Client::read_start_list(connection, heat)?;
+            }
+            Ok(heats.heats)
+        })
     }
 
     /// Sends a time stamp to Aquarius.
@@ -80,18 +77,25 @@ impl Client {
     /// * `time_stamp` - The time stamp to send to Aquarius.
     /// * `bib` - The bib number of the boat to send the time stamp to.
     pub fn send_time(&mut self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), AquariusErr> {
+        self.with_connection(|connection| {
+            let request = RequestSetTime {
+                time: time_stamp.time.into(),
+                split: time_stamp.split().clone(),
+                heat_nr: time_stamp.heat_nr().unwrap_or_default(),
+                bib,
+            };
+            connection.write(&request.to_string())?;
+            Ok(())
+        })
+    }
+
+    fn with_connection<F, T>(&mut self, func: F) -> Result<T, AquariusErr>
+    where
+        F: FnOnce(&mut Connection) -> Result<T, AquariusErr>,
+    {
         match self.connection.lock() {
             Ok(mut guard) => match guard.as_mut() {
-                Some(connection) => {
-                    let request = RequestSetTime {
-                        time: time_stamp.time.into(),
-                        split: time_stamp.split().clone(),
-                        heat_nr: time_stamp.heat_nr().unwrap_or_default(),
-                        bib,
-                    };
-                    connection.write(&request.to_string())?;
-                    Ok(())
-                }
+                Some(connection) => func(connection),
                 None => Err(AquariusErr::NotConnectedError()),
             },
             Err(_) => Err(AquariusErr::MutexPoisonError()),
@@ -112,35 +116,35 @@ impl Client {
         // Spawn a thread to watch the thread that receives events from Aquarius
         let watch_dog: JoinHandle<()> = thread::spawn(move || {
             // The interval to retry connecting to Aquarius in case of a failure
-            let repeat_interval = Duration::from_secs(timeout as u64);
+            let repeat_interval = Duration::from_millis(timeout as u64);
 
             // Loop until the stop flag is set
             while !stop_watch_dog.load(Relaxed) {
                 let start = Instant::now();
                 // create a new connection to Aquarius
-                match connect(&address, &timeout) {
+                match connect(&address, timeout) {
                     Ok(connection) => {
                         // Spawn a thread to receive events from Aquarius
-                        match spawn_event_thread(connection, sender.clone()) {
-                            Ok(handle) => {
-                                let connection = connect(&address, &timeout).unwrap();
+                        let handle = spawn_event_thread(connection, sender.clone());
+                        match connect(&address, timeout) {
+                            Ok(connection) => {
                                 *connection_mutex.lock().unwrap() = Some(connection);
-                                send_connected(&sender);
+                                send_connection_status(&sender, true);
                                 // Wait for the thread to finish
                                 let _ = handle.join().is_ok();
-                                send_disconnected(&connection_mutex, &sender);
                             }
-                            Err(err) => {
-                                send_disconnected(&connection_mutex, &sender);
-                                warn!(%err, "Error spawning event thread:");
-                            }
+                            Err(err) => warn!(%err, "Error connecting to Aquarius:"),
                         }
                     }
-                    Err(err) => {
-                        send_disconnected(&connection_mutex, &sender);
-                        trace!(%err, "Error connecting to Aquarius:");
-                    }
+                    Err(err) => trace!(%err, "Error connecting to Aquarius:"),
                 }
+                let mut previous_connection = connection_mutex.lock().unwrap();
+                if previous_connection.is_some() {
+                    *previous_connection = None;
+                    send_connection_status(&sender, false);
+                    info!("Disconnected from Aquarius");
+                }
+
                 let elapsed = start.elapsed();
                 if elapsed < repeat_interval {
                     thread::sleep(repeat_interval - elapsed);
@@ -165,40 +169,30 @@ impl Client {
     }
 }
 
-fn connect(addr: &SocketAddr, timeout: &u16) -> io::Result<Connection> {
+fn connect(addr: &SocketAddr, timeout: u16) -> io::Result<Connection> {
     debug!(%addr, timeout, "Connecting to:");
-    let stream = TcpStream::connect_timeout(addr, Duration::new(*timeout as u64, 0))?;
+    let stream = TcpStream::connect_timeout(addr, Duration::from_millis(timeout as u64))?;
     stream.set_nodelay(true)?;
     info!(%addr, "Connected to:");
     Connection::new(stream)
 }
 
-fn send_connected(sender: &Sender<AquariusEvent>) {
+fn send_connection_status(sender: &Sender<AquariusEvent>, status: bool) {
     // Send a message to the application that the client is connected
-    if let Err(err) = sender.send(AquariusEvent::Client(true)) {
+    if let Err(err) = sender.send(AquariusEvent::Client(status)) {
         error!(%err, "Error sending message to application:");
     }
 }
 
-fn send_disconnected(connection_mutex: &Arc<Mutex<Option<Connection>>>, sender: &Sender<AquariusEvent>) {
-    *connection_mutex.lock().unwrap() = None;
-    warn!("Connection lost, reconnecting...");
-
-    // Send a message to the application that the client is disconnected
-    if let Err(err) = sender.send(AquariusEvent::Client(false)) {
-        error!(%err, "Error sending message to application:");
-    }
-}
-
-fn spawn_event_thread(mut connection: Connection, sender: Sender<AquariusEvent>) -> io::Result<JoinHandle<()>> {
+fn spawn_event_thread(mut connection: Connection, sender: Sender<AquariusEvent>) -> JoinHandle<()> {
     debug!("Starting thread to receive Aquarius events");
-    let handle = thread::spawn(move || {
+    thread::spawn(move || {
         loop {
             // Read a line from the server and blocks until a line is received.
             match connection.receive_line() {
                 // successfully received a line
                 Ok(received) => {
-                    if !received.is_empty() {
+                    if !received.is_empty() && received.starts_with("!OPEN") {
                         // Parse the received line and handle the event
                         match EventHeatChanged::parse(&received) {
                             Ok(mut event) => {
@@ -209,6 +203,8 @@ fn spawn_event_thread(mut connection: Connection, sender: Sender<AquariusEvent>)
                             }
                             Err(err) => warn!(%err),
                         }
+                    } else {
+                        debug!(line = utils::print_whitespaces(&received), "Ignoring:");
                     }
                 }
                 // an error occurred while receiving a line
@@ -219,8 +215,7 @@ fn spawn_event_thread(mut connection: Connection, sender: Sender<AquariusEvent>)
             }
         }
         debug!("Stopped thread to receive Aquarius events");
-    });
-    Ok(handle)
+    })
 }
 
 impl Drop for Client {

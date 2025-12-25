@@ -10,11 +10,10 @@ repository.workspace = true
 
 [dependencies]
 db = { path = "../db" }
-
 encoding_rs = { version = "0.8" }
 chrono.workspace = true
-tracing.workspace = true
 thiserror.workspace = true
+tracing.workspace = true
 
 [dev-dependencies]
 socket-server-mocker = "0.5"

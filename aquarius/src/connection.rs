@@ -39,7 +39,7 @@ impl Connection {
         trace!(cmd = utils::print_whitespaces(cmd), "Writing command:");
         let count = self.writer.write(cmd.as_bytes())?;
         self.writer.flush()?;
-        trace!(count = count, "Written bytes:");
+        trace!(count, "Written bytes:");
         Ok(count)
     }
 
