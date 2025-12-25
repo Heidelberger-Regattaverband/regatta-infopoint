@@ -30,6 +30,18 @@ impl Connection {
         Ok(Connection { reader, writer })
     }
 
+    /// Try to clone the connection.
+    /// # Returns
+    /// A new `Connection` struct or an error if the connection cannot be cloned.
+    /// # Errors
+    /// An error if the underlying TCP stream cannot be cloned.
+    #[allow(dead_code)]
+    pub(super) fn try_clone(&self) -> io::Result<Connection> {
+        let reader = BufReader::new(self.reader.get_ref().try_clone()?);
+        let writer = BufWriter::new(self.writer.get_ref().try_clone()?);
+        Ok(Connection { reader, writer })
+    }
+
     /// Write a command to Aquarius.
     /// # Arguments
     /// * `cmd` - The command to write.
