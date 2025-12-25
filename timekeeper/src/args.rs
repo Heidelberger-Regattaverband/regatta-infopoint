@@ -18,8 +18,8 @@ pub(crate) struct Args {
     #[arg(long, default_value = "2048")]
     pub(crate) port: u16,
 
-    /// The connection timeout in seconds
-    #[arg(long, default_value = "1")]
+    /// The connection timeout in milliseconds
+    #[arg(long, default_value = "500")]
     pub(crate) timeout: u16,
 
     /// The database host

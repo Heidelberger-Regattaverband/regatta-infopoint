@@ -25,8 +25,10 @@ use ::tracing::{debug, error, info, trace, warn};
 
 /// A client to connect to the Aquarius server.
 pub struct Client {
+    /// The connection to the Aquarius server.
     connection: Arc<Mutex<Option<Connection>>>,
 
+    /// A flag to stop the watch dog thread.
     stop_watch_dog: Arc<AtomicBool>,
 }
 
@@ -118,12 +120,12 @@ impl Client {
             while !stop_watch_dog.load(Relaxed) {
                 let start = Instant::now();
                 // create a new connection to Aquarius
-                match connect(&address, &timeout) {
+                match connect(&address, timeout) {
                     Ok(connection) => {
                         // Spawn a thread to receive events from Aquarius
                         match spawn_event_thread(connection, sender.clone()) {
                             Ok(handle) => {
-                                match connect(&address, &timeout) {
+                                match connect(&address, timeout) {
                                     Ok(connection) => {
                                         *connection_mutex.lock().unwrap() = Some(connection);
                                         send_connection_status(&sender, true);
@@ -144,8 +146,12 @@ impl Client {
                         trace!(%err, "Error connecting to Aquarius:");
                     }
                 }
-                *connection_mutex.lock().unwrap() = None;
-                send_connection_status(&sender, false);
+                let mut previous_connection = connection_mutex.lock().unwrap();
+                if previous_connection.is_some() {
+                    *previous_connection = None;
+                    send_connection_status(&sender, false);
+                    info!("Disconnected from Aquarius");
+                }
 
                 let elapsed = start.elapsed();
                 if elapsed < repeat_interval {
@@ -171,9 +177,9 @@ impl Client {
     }
 }
 
-fn connect(addr: &SocketAddr, timeout: &u16) -> io::Result<Connection> {
+fn connect(addr: &SocketAddr, timeout: u16) -> io::Result<Connection> {
     debug!(%addr, timeout, "Connecting to:");
-    let stream = TcpStream::connect_timeout(addr, Duration::new(*timeout as u64, 0))?;
+    let stream = TcpStream::connect_timeout(addr, Duration::from_millis(timeout as u64))?;
     stream.set_nodelay(true)?;
     info!(%addr, "Connected to:");
     Connection::new(stream)
