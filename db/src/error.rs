@@ -1,5 +1,6 @@
 //! Common error types for the database layer.
 
+use ::stretto::CacheError;
 use bb8::RunError;
 use thiserror::Error;
 use tiberius::error::Error as TiberiusError;
@@ -16,6 +17,9 @@ pub enum DbError {
     /// Cache-related error.
     #[error("Cache error: {0}")]
     Cache(String),
+    /// Cache-related error.
+    #[error("Cache error: {0}")]
+    CacheError(#[from] CacheError),
     /// Custom error with message.
     #[error("Database error: {0}")]
     Custom(String),

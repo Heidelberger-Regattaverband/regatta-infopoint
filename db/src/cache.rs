@@ -11,7 +11,7 @@ use std::{
 };
 use stretto::AsyncCache;
 use tokio::task;
-use tracing::{debug, warn};
+use tracing::debug;
 
 /// A high-performance cache that uses `stretto` as the underlying cache with comprehensive features
 ///
@@ -43,10 +43,9 @@ where
     V: Send + Sync + Clone + 'static,
 {
     fn try_new(config: CacheConfig) -> Result<Self, DbError> {
-        let cache = AsyncCache::new(config.max_entries, config.max_cost, task::spawn)
-            .map_err(|e| DbError::Cache(format!("Failed to create cache: {}", e)))?;
+        let cache = AsyncCache::new(config.max_entries, config.max_cost, task::spawn)?;
         debug!(max_entries = config.max_entries, max_cost = config.max_cost, ttl = ?config.ttl,
-            "Created cache:",
+            "New Cache:",
         );
         Ok(Cache {
             cache,
@@ -87,22 +86,17 @@ where
         }
     }
 
-    async fn set(&self, key: &K, value: &V) -> Result<(), DbError> {
+    async fn set(&self, key: &K, value: &V) -> Result<bool, DbError> {
         self.set_with_cost(key, value, 1).await
     }
 
-    async fn set_with_cost(&self, key: &K, value: &V, cost: i64) -> Result<(), DbError> {
+    async fn set_with_cost(&self, key: &K, value: &V, cost: i64) -> Result<bool, DbError> {
         // Insert with TTL and specified cost
-        self.cache
-            .insert_with_ttl(*key, value.clone(), cost, self.config.ttl)
-            .await;
-
-        // Handle the wait operation more gracefully
-        if let Err(e) = self.cache.wait().await {
-            warn!("Cache wait operation failed: {}", e);
-            return Err(DbError::Cache(format!("Cache wait failed: {}", e)));
-        }
-        Ok(())
+        let result = self
+            .cache
+            .try_insert_with_ttl(*key, value.clone(), cost, self.config.ttl)
+            .await?;
+        Ok(result)
     }
 
     pub async fn compute_if_missing<F, Fut, E>(&self, key: &K, force: bool, f: F) -> Result<V, DbError>
