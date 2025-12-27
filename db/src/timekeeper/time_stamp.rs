@@ -98,7 +98,7 @@ impl TimeStamp {
     pub(crate) async fn persist(&mut self, regatta_id: i32, client: &mut TiberiusClient) -> Result<(), DbError> {
         if !self.persisted {
             let mut query = Query::new(
-            "INSERT INTO HRV_Timestamp (timestamp, event_id, split_nr, heat_nr, bib) VALUES (@P1, @P2, @P3, @P4, @P5)"
+            "INSERT INTO HRV_Timestamp (timestamp, eventId, splitNr, heatNr, bib) VALUES (@P1, @P2, @P3, @P4, @P5)"
                 .to_string(),
         );
             query.bind(self.time);
@@ -116,7 +116,7 @@ impl TimeStamp {
     pub(crate) async fn update(&mut self, client: &mut TiberiusClient) -> Result<(), DbError> {
         if !self.persisted {
             let mut query =
-                Query::new("UPDATE HRV_Timestamp SET heat_nr = @P2, bib = @P3 WHERE timestamp = @P1".to_string());
+                Query::new("UPDATE HRV_Timestamp SET heatNr = @P2, bib = @P3 WHERE timestamp = @P1".to_string());
             query.bind(self.time);
             query.bind(self.heat_nr);
             query.bind(self.bib);
@@ -129,11 +129,11 @@ impl TimeStamp {
 
 impl From<&Row> for TimeStamp {
     fn from(row: &Row) -> Self {
-        let split_nr: u8 = row.get_column("split_nr");
+        let split_nr: u8 = row.get_column("splitNr");
         TimeStamp {
             time: row.get_column("timestamp"),
             split: Split::from(split_nr),
-            heat_nr: row.try_get_column("heat_nr"),
+            heat_nr: row.try_get_column("heatNr"),
             bib: row.try_get_column("bib"),
             persisted: true,
         }
