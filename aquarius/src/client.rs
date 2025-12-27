@@ -91,7 +91,7 @@ impl Client {
 
     fn with_connection<F, T>(&mut self, func: F) -> Result<T, AquariusErr>
     where
-        F: FnOnce(&mut Connection) -> Result<T, AquariusErr>,
+        F: Fn(&mut Connection) -> Result<T, AquariusErr>,
     {
         match self.connection.lock() {
             Ok(mut guard) => match guard.as_mut() {
