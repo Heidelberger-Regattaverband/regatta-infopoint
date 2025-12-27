@@ -77,7 +77,7 @@ impl TimeStamp {
         client: &mut TiberiusClient,
     ) -> Result<Vec<TimeStamp>, DbError> {
         let mut query = Query::new(
-            "SELECT timestamp, event_id, split_nr, heat_nr, bib FROM HRV_Timestamp WHERE event_id = @P1 ORDER BY timestamp ASC"
+            "SELECT timestamp, eventId, splitNr, heatNr, bib FROM HRV_Timestamp WHERE eventId = @P1 ORDER BY timestamp ASC"
                 .to_string(),
         );
         query.bind(regatta_id);
