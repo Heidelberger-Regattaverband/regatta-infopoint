@@ -45,9 +45,8 @@ where
     fn try_new(config: CacheConfig) -> Result<Self, DbError> {
         let cache = AsyncCache::new(config.max_entries, config.max_cost, task::spawn)
             .map_err(|e| DbError::Cache(format!("Failed to create cache: {}", e)))?;
-        debug!(
-            "Created cache with max_entries: {}, max_cost: {}, ttl: {:?}",
-            config.max_entries, config.max_cost, config.ttl
+        debug!(max_entries = config.max_entries, max_cost = config.max_cost, ttl = ?config.ttl,
+            "Created cache:",
         );
         Ok(Cache {
             cache,

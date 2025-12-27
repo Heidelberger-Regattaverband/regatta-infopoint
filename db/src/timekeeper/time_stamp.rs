@@ -10,6 +10,12 @@ use strum_macros::Display;
 use tiberius::{Query, Row};
 use utoipa::ToSchema;
 
+const TIMESTAMP: &str = "timestamp";
+const EVENT_ID: &str = "eventId";
+const SPLIT_NR: &str = "splitNr";
+const HEAT_NR: &str = "heatNr";
+const BIB: &str = "bib";
+
 /// A time stamp of an event, such as a start or finish time stamp in a race.
 #[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct TimeStamp {
@@ -76,10 +82,9 @@ impl TimeStamp {
         regatta_id: i32,
         client: &mut TiberiusClient,
     ) -> Result<Vec<TimeStamp>, DbError> {
-        let mut query = Query::new(
-            "SELECT timestamp, eventId, splitNr, heatNr, bib FROM HRV_Timestamp WHERE eventId = @P1 ORDER BY timestamp ASC"
-                .to_string(),
-        );
+        let mut query = Query::new(format!(
+            "SELECT {TIMESTAMP}, {EVENT_ID}, {SPLIT_NR}, {HEAT_NR}, {BIB} FROM HRV_Timestamp WHERE eventId = @P1 ORDER BY timestamp ASC"
+        ));
         query.bind(regatta_id);
 
         let stream = query.query(client).await?;
@@ -98,7 +103,7 @@ impl TimeStamp {
     pub(crate) async fn persist(&mut self, regatta_id: i32, client: &mut TiberiusClient) -> Result<(), DbError> {
         if !self.persisted {
             let mut query = Query::new(
-                "INSERT INTO HRV_Timestamp (timestamp, eventId, splitNr, heatNr, bib) VALUES (@P1, @P2, @P3, @P4, @P5)"
+                format!("INSERT INTO HRV_Timestamp ({TIMESTAMP}, {EVENT_ID}, {SPLIT_NR}, {HEAT_NR}, {BIB}) VALUES (@P1, @P2, @P3, @P4, @P5)")
                     .to_string(),
             );
             query.bind(self.time);
@@ -115,8 +120,9 @@ impl TimeStamp {
 
     pub(crate) async fn update(&mut self, client: &mut TiberiusClient) -> Result<(), DbError> {
         if !self.persisted {
-            let mut query =
-                Query::new("UPDATE HRV_Timestamp SET heatNr = @P2, bib = @P3 WHERE timestamp = @P1".to_string());
+            let mut query = Query::new(format!(
+                "UPDATE HRV_Timestamp SET {HEAT_NR} = @P2, {BIB} = @P3 WHERE {TIMESTAMP} = @P1"
+            ));
             query.bind(self.time);
             query.bind(self.heat_nr);
             query.bind(self.bib);
@@ -129,12 +135,12 @@ impl TimeStamp {
 
 impl From<&Row> for TimeStamp {
     fn from(row: &Row) -> Self {
-        let split_nr: u8 = row.get_column("splitNr");
+        let split_nr: u8 = row.get_column(SPLIT_NR);
         TimeStamp {
-            time: row.get_column("timestamp"),
+            time: row.get_column(TIMESTAMP),
             split: Split::from(split_nr),
-            heat_nr: row.try_get_column("heatNr"),
-            bib: row.try_get_column("bib"),
+            heat_nr: row.try_get_column(HEAT_NR),
+            bib: row.try_get_column(BIB),
             persisted: true,
         }
     }
