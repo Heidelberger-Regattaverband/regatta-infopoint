@@ -61,7 +61,7 @@ pub struct App {
     show_time_strip_popup: Rc<RefCell<bool>>,
 }
 
-impl App<'_> {
+impl App {
     pub(crate) async fn new() -> Result<Self, TimekeeperErr> {
         let args = Args::parse();
 
