@@ -4,9 +4,10 @@ use crate::{
 };
 use serde::Serialize;
 use tiberius::Row;
+use utoipa::ToSchema;
 
 /// A boat class is a combination of boat type and number of rowers.
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct BoatClass {
     /// The internal ID of the boat class.
@@ -26,7 +27,7 @@ pub struct BoatClass {
 }
 
 impl BoatClass {
-    pub fn select_columns(alias: &str) -> String {
+    pub(crate) fn select_columns(alias: &str) -> String {
         format!(
             " {alias}.BoatClass_ID, {alias}.BoatClass_Caption, {alias}.BoatClass_Abbr, {alias}.BoatClass_NumRowers, {alias}.BoatClass_Coxed "
         )

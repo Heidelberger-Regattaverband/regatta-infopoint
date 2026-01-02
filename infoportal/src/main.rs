@@ -4,10 +4,11 @@ mod http;
 mod peak_alloc;
 
 use ::db::tiberius::TiberiusPool;
-use config::Config;
 use http::server::Server;
 use peak_alloc::PeakAlloc;
 use std::io::Result;
+
+use crate::config::CONFIG;
 
 #[global_allocator]
 static PEAK_ALLOC: PeakAlloc = PeakAlloc;
@@ -18,23 +19,16 @@ pub mod built_info {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    TiberiusPool::init(
-        Config::get().get_db_config(),
-        Config::get().db_pool_max_size,
-        Config::get().db_pool_min_idle,
-    )
-    .await;
+    TiberiusPool::init(CONFIG.get_db_config(), CONFIG.db_pool_max_size, CONFIG.db_pool_min_idle).await;
     Server::new().start().await
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        config::Config,
-        http::{
-            rest_api::{self, PATH},
-            server::create_app_data,
-        },
+    use crate::config::CONFIG;
+    use crate::http::{
+        rest_api::{self, PATH},
+        server::create_app_data,
     };
     use actix_identity::IdentityMiddleware;
     use actix_web::{
@@ -48,12 +42,7 @@ mod tests {
     #[tokio_shared_rt::test(shared)]
     async fn test_get_regattas() {
         dotenv().ok();
-        TiberiusPool::init(
-            Config::get().get_db_config(),
-            Config::get().db_pool_max_size,
-            Config::get().db_pool_min_idle,
-        )
-        .await;
+        TiberiusPool::init(CONFIG.get_db_config(), CONFIG.db_pool_max_size, CONFIG.db_pool_min_idle).await;
 
         let app_data = create_app_data().await.unwrap();
 
@@ -75,12 +64,7 @@ mod tests {
     #[tokio_shared_rt::test(shared)]
     async fn test_get_heats() {
         dotenv().ok();
-        TiberiusPool::init(
-            Config::get().get_db_config(),
-            Config::get().db_pool_max_size,
-            Config::get().db_pool_min_idle,
-        )
-        .await;
+        TiberiusPool::init(CONFIG.get_db_config(), CONFIG.db_pool_max_size, CONFIG.db_pool_min_idle).await;
 
         let app_data = create_app_data().await.unwrap();
 

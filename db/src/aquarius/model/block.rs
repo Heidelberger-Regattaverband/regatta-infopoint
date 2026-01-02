@@ -1,10 +1,11 @@
-use crate::tiberius::TiberiusPool;
+use crate::{error::DbError, tiberius::TiberiusPool};
 use chrono::{DateTime, NaiveDateTime, Utc};
 use serde::Serialize;
-use tiberius::{Query, error::Error as DbError};
+use tiberius::Query;
+use utoipa::ToSchema;
 
 /// A block of heats.
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 pub struct Block {
     /// Begin of the heat block
     begin: DateTime<Utc>,
@@ -33,32 +34,35 @@ impl Block {
         );
         query.bind(regatta_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let stream = query.query(&mut client).await?;
         let rows = stream.into_first_result().await?;
 
         let mut blocks = Vec::new();
-        if !rows.is_empty() {
-            let mut start: NaiveDateTime = rows[0].get(0).unwrap();
-            let mut end: NaiveDateTime = rows[0].get(0).unwrap();
+        if !rows.is_empty()
+            && let Some(mut start) = rows[0].get::<NaiveDateTime, usize>(0)
+        {
+            let mut end = start;
             let mut heats: i32 = 0;
 
             if rows.len() >= 2 {
                 for i in 0..rows.len() - 1 {
-                    let current: NaiveDateTime = rows[i].get(0).unwrap();
-                    let next: NaiveDateTime = rows[i + 1].get(0).unwrap();
-                    heats += 1;
+                    if let Some(current) = rows[i].get::<NaiveDateTime, usize>(0)
+                        && let Some(next) = rows[i + 1].get::<NaiveDateTime, usize>(0)
+                    {
+                        heats += 1;
 
-                    if next.signed_duration_since(current).num_minutes() > 15 {
-                        blocks.push(Block {
-                            begin: start.and_utc(),
-                            end: end.and_utc(),
-                            heats,
-                        });
-                        start = next;
-                        heats = 0;
+                        if next.signed_duration_since(current).num_minutes() > 15 {
+                            blocks.push(Block {
+                                begin: start.and_utc(),
+                                end: end.and_utc(),
+                                heats,
+                            });
+                            start = next;
+                            heats = 0;
+                        }
+                        end = next;
                     }
-                    end = next;
                 }
                 heats += 1;
                 blocks.push(Block {

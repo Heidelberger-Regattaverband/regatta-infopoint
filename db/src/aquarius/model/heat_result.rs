@@ -4,8 +4,9 @@ use crate::{
 };
 use serde::Serialize;
 use tiberius::Row;
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct HeatResult {
     /// The rank which can be used for sorting, e.g. DNS or DNF is rank 99
@@ -26,7 +27,7 @@ pub struct HeatResult {
 }
 
 impl HeatResult {
-    pub fn select_columns(alias: &str) -> String {
+    pub(crate) fn select_columns(alias: &str) -> String {
         format!(" {alias}.Result_Rank, {alias}.Result_Delta, {alias}.Result_DisplayValue, {alias}.Result_NetTime ")
     }
 }

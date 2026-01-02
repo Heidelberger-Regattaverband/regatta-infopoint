@@ -1,12 +1,15 @@
+use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::model::{Club, TryToEntity, utils},
-    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
+    error::DbError,
+    tiberius::{RowColumn, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError, time::chrono::NaiveDateTime};
+use tiberius::{Query, Row, time::chrono::NaiveDateTime};
+use utoipa::ToSchema;
 
 /// An athlete is a person who participates in a regatta.
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Athlete {
     /// The internal ID of the athlete.
@@ -33,7 +36,10 @@ pub struct Athlete {
 }
 
 impl Athlete {
-    pub async fn query_participating_athletes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Athlete>, DbError> {
+    pub async fn query_participating_athletes(
+        regatta_id: i32,
+        client: &mut TiberiusClient,
+    ) -> Result<Vec<Athlete>, DbError> {
         let round = 64;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1},
@@ -54,13 +60,16 @@ impl Athlete {
         query.bind(regatta_id);
         query.bind(round);
 
-        let mut client = pool.get().await;
-        let stream = query.query(&mut client).await?;
+        let stream = query.query(client).await?;
         let athletes = utils::get_rows(stream).await?;
         Ok(athletes.into_iter().map(|row| Athlete::from(&row)).collect())
     }
 
-    pub async fn query_athlete(regatta_id: i32, athlete_id: i32, pool: &TiberiusPool) -> Result<Athlete, DbError> {
+    pub async fn query_athlete(
+        regatta_id: i32,
+        athlete_id: i32,
+        client: &mut TiberiusClient,
+    ) -> Result<Athlete, DbError> {
         let round = 64;
         let mut query = Query::new(format!(
             "SELECT {0}, {1},
@@ -82,13 +91,12 @@ impl Athlete {
         query.bind(athlete_id);
         query.bind(round);
 
-        let mut client = pool.get().await;
-        let stream = query.query(&mut client).await?;
+        let stream = query.query(client).await?;
         let row = utils::get_row(stream).await?;
         Ok(Athlete::from(&row))
     }
 
-    pub fn select_columns(alias: &str) -> String {
+    pub(crate) fn select_columns(alias: &str) -> String {
         format!(
             " {alias}.Athlet_ID, {alias}.Athlet_FirstName, {alias}.Athlet_LastName, {alias}.Athlet_Gender, {alias}.Athlet_DOB "
         )

@@ -1,9 +1,11 @@
+use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::model::{Club, utils},
-    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
+    error::DbError,
+    tiberius::{RowColumn, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError};
+use tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -24,7 +26,7 @@ impl From<&Row> for Score {
 }
 
 impl Score {
-    pub async fn calculate(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
+    pub async fn calculate(regatta_id: i32, client: &mut TiberiusClient) -> Result<Vec<Self>, DbError> {
         let mut query = Query::new(
             "SELECT Club_ID, SUM(Points_Crew) as points, Club_Name, Club_City, Club_Abbr, Club_UltraAbbr, Club_ExternID FROM
               (SELECT Club_ID, Club_Name, Club_City, Club_Abbr, Club_UltraAbbr, Club_ExternID,
@@ -52,8 +54,7 @@ impl Score {
         );
         query.bind(regatta_id);
 
-        let mut client = pool.get().await;
-        let scores = utils::get_rows(query.query(&mut client).await?).await?;
+        let scores = utils::get_rows(query.query(client).await?).await?;
         let mut index = 0;
         Ok(scores
             .into_iter()

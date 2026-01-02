@@ -4,8 +4,10 @@ use crate::{
 };
 use serde::Serialize;
 use tiberius::Row;
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Clone)]
+/// An age class defines the age range of athletes.
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct AgeClass {
     /// The internal ID of the age class.
@@ -36,13 +38,13 @@ pub struct AgeClass {
 }
 
 impl AgeClass {
-    pub fn select_all_columns(alias: &str) -> String {
+    pub(crate) fn select_all_columns(alias: &str) -> String {
         format!(
             " {alias}.AgeClass_ID, {alias}.AgeClass_Caption, {alias}.AgeClass_Abbr, {alias}.AgeClass_Suffix, {alias}.AgeClass_Gender, \
             {alias}.AgeClass_NumSubClasses, {alias}.AgeClass_MinAge, {alias}.AgeClass_MaxAge "
         )
     }
-    pub fn select_minimal_columns(alias: &str) -> String {
+    pub(crate) fn select_minimal_columns(alias: &str) -> String {
         format!(
             " {alias}.AgeClass_ID, {alias}.AgeClass_Caption, {alias}.AgeClass_Abbr, {alias}.AgeClass_Suffix, {alias}.AgeClass_Gender, \
             {alias}.AgeClass_NumSubClasses "

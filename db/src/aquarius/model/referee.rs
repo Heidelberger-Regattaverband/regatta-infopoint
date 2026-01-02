@@ -1,11 +1,13 @@
 use crate::{
     aquarius::model::{TryToEntity, utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError};
+use tiberius::{Query, Row};
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Referee {
     id: i32,
@@ -27,7 +29,7 @@ impl Referee {
     /// `pool`: The database connection pool.
     /// # Returns
     /// A list of referees.
-    pub async fn query_referees_for_heat(heat_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
+    pub(crate) async fn query_referees_for_heat(heat_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let mut query = Query::new(
             "SELECT r.* FROM Referee r
             JOIN CompReferee cr ON cr.CompReferee_Referee_ID_FK = r.Referee_ID
@@ -35,7 +37,7 @@ impl Referee {
         );
         query.bind(heat_id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let heats = utils::get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Referee::from(&row)).collect())
     }

@@ -1,10 +1,10 @@
+use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::model::Regatta,
-    tiberius::TiberiusPool,
+    error::DbError,
     timekeeper::time_stamp::{Split, TimeStamp},
 };
-use log::info;
-use tiberius::error::Error as DbError;
+use tracing::info;
 
 /// A time strip is a collection of time stamps.
 pub struct TimeStrip {
@@ -12,21 +12,21 @@ pub struct TimeStrip {
     regatta_id: i32,
 
     // A reference to the Tiberius connection pool.
-    pool: &'static TiberiusPool,
+    client: TiberiusClient,
 
     // A vector of time stamps.
     pub time_stamps: Vec<TimeStamp>,
 }
 
 impl TimeStrip {
-    pub async fn load(pool: &'static TiberiusPool) -> Result<Self, DbError> {
-        let regatta = Regatta::query_active_regatta(pool).await?;
+    pub async fn load(mut client: TiberiusClient) -> Result<Self, DbError> {
+        let regatta = Regatta::query_active_regatta(&mut client).await?;
         info!("Loading time strip for regatta ID: {0}", regatta.id);
-        let time_stamps = TimeStamp::query_all_for_regatta(regatta.id, pool).await?;
+        let time_stamps = TimeStamp::query_all_for_regatta(regatta.id, &mut client).await?;
         Ok(TimeStrip {
             regatta_id: regatta.id,
             time_stamps,
-            pool,
+            client,
         })
     }
 
@@ -35,7 +35,7 @@ impl TimeStrip {
         info!("Start time stamp: {time_stamp:?}");
         self.time_stamps.push(time_stamp);
         if let Some(ts) = self.time_stamps.last_mut() {
-            ts.persist(self.regatta_id, self.pool).await?;
+            ts.persist(self.regatta_id, &mut self.client).await?;
         }
         Ok(())
     }
@@ -45,7 +45,7 @@ impl TimeStrip {
         info!("Finish time stamp: {time_stamp:?}");
         self.time_stamps.push(time_stamp);
         if let Some(ts) = self.time_stamps.last_mut() {
-            ts.persist(self.regatta_id, self.pool).await?;
+            ts.persist(self.regatta_id, &mut self.client).await?;
         }
         Ok(())
     }
@@ -53,7 +53,7 @@ impl TimeStrip {
     pub async fn set_heat_nr(&mut self, time_stamp: &TimeStamp, heat_nr: i16) -> Result<TimeStamp, DbError> {
         if let Some(time_stamp) = self.time_stamps.iter_mut().find(|ts| ts.time == time_stamp.time) {
             time_stamp.set_heat_nr(heat_nr);
-            time_stamp.update(self.pool).await?;
+            time_stamp.update(&mut self.client).await?;
             return Ok(time_stamp.clone());
         }
         Ok(time_stamp.clone())
@@ -62,7 +62,7 @@ impl TimeStrip {
     pub async fn set_bib(&mut self, time_stamp: &TimeStamp, bib: u8) -> Result<TimeStamp, DbError> {
         if let Some(time_stamp) = self.time_stamps.iter_mut().find(|ts| ts.time == time_stamp.time) {
             time_stamp.set_bib(bib);
-            time_stamp.update(self.pool).await?;
+            time_stamp.update(&mut self.client).await?;
             return Ok(time_stamp.clone());
         }
         Ok(time_stamp.clone())
@@ -71,8 +71,7 @@ impl TimeStrip {
     pub async fn delete(&mut self, time_stamp: &TimeStamp) -> Result<(), DbError> {
         if let Some(pos) = self.get_index(time_stamp) {
             let time_stamp = self.time_stamps.remove(pos);
-            let pool = self.pool;
-            time_stamp.delete(pool).await?;
+            time_stamp.delete(&mut self.client).await?;
         }
         Ok(())
     }

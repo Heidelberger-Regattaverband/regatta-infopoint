@@ -1,12 +1,14 @@
 use crate::{
     aquarius::model::{Club, Crew, Heat, Race, TryToEntity, utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
 use futures::future::{BoxFuture, join_all};
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError};
+use tiberius::{Query, Row};
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Entry {
     /** The unique identifier of this entry. */
@@ -14,6 +16,7 @@ pub struct Entry {
 
     /** The race for which the entry was made. */
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[schema(no_recursion)]
     race: Option<Race>,
 
     /** The club that made the entry and has to pay an entry fee for it. */
@@ -46,6 +49,7 @@ pub struct Entry {
 
     /// The heats of the entry.
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[schema(no_recursion)]
     heats: Option<Vec<Heat>>,
 }
 
@@ -176,7 +180,7 @@ impl Entry {
 }
 
 async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Result<Vec<Entry>, DbError> {
-    let mut client = pool.get().await;
+    let mut client = pool.get().await?;
     let stream = query.query(&mut client).await?;
 
     let mut crew_futures: Vec<BoxFuture<Result<Vec<Crew>, DbError>>> = Vec::new();
@@ -196,12 +200,16 @@ async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Res
     let heats = join_all(heats_futures).await;
 
     for (pos, entry) in entries.iter_mut().enumerate() {
-        let crew = crews.get(pos).unwrap().as_deref().unwrap();
-        if !crew.is_empty() {
-            entry.crew = Some(crew.to_vec());
+        if let Some(crews) = crews.get(pos)
+            && let Ok(crews) = crews.as_deref()
+            && !crews.is_empty()
+        {
+            entry.crew = Some(crews.to_vec());
         }
-        let heats = heats.get(pos).unwrap().as_deref().unwrap();
-        if !heats.is_empty() {
+        if let Some(heats) = heats.get(pos)
+            && let Ok(heats) = heats.as_deref()
+            && !heats.is_empty()
+        {
             entry.heats = Some(heats.to_vec());
         }
     }

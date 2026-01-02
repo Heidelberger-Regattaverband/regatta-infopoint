@@ -1,14 +1,16 @@
 use crate::{
     aquarius::model::{Club, Crew, Entry, Heat, HeatResult, Race, TryToEntity, utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool},
 };
 use futures::future::{BoxFuture, join_all};
 use serde::Serialize;
 use std::{cmp::Ordering, time::Duration};
-use tiberius::{Query, Row, error::Error as DbError};
+use tiberius::{Query, Row};
+use utoipa::ToSchema;
 
 /// A entry of a boat in a heat.
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct HeatEntry {
     /// The unique id of the entry.
@@ -60,7 +62,7 @@ impl HeatEntry {
         let mut query = Query::new(sql);
         query.bind(heat.id);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         let rows = utils::get_rows(query.query(&mut client).await?).await?;
 
         // convert rows into HeatEntry
@@ -115,8 +117,12 @@ impl HeatEntry {
         let crews = join_all(crew_futures).await;
 
         for (pos, heat_entry) in heat_entries.iter_mut().enumerate() {
-            let crew = crews.get(pos).unwrap();
-            heat_entry.entry.crew = Some(crew.as_deref().unwrap().to_vec());
+            if let Some(crews) = crews.get(pos)
+                && let Ok(crews) = crews.as_deref()
+                && !crews.is_empty()
+            {
+                heat_entry.entry.crew = Some(crews.to_vec());
+            }
         }
 
         Ok(heat_entries)

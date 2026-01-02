@@ -1,6 +1,6 @@
-use log::debug;
+use ::tracing::warn;
 use scraper::{Html, Selector};
-use std::{collections::HashMap, sync::OnceLock, time::Instant};
+use std::{collections::HashMap, sync::OnceLock};
 
 const BASE_URL: &str = "https://verwaltung.rudern.de";
 // donwloaded from https://verwaltung.rudern.de/flags
@@ -21,38 +21,39 @@ impl ClubFlag {
 }
 
 fn load_club_flags() -> HashMap<i32, ClubFlag> {
-    let start = Instant::now();
-
-    let document = Html::parse_document(FLAGS_CONTENT);
-    let a_selector = Selector::parse(r#"a"#).unwrap();
-    let img_selector = Selector::parse(r#"img"#).unwrap();
     let mut club_flags = HashMap::new();
 
-    for a in document.select(&a_selector) {
-        if let Some(href) = a.value().attr("href")
-            && href.starts_with("/clubs/")
-        {
-            for img in a.select(&img_selector) {
-                if let Some(src) = img.value().attr("src") {
-                    let club_extern_id: i32 = href
-                        .split('/')
-                        .next_back()
-                        .unwrap_or_default()
-                        .parse()
-                        .unwrap_or_default();
-                    let flag_url = BASE_URL.to_owned() + src;
-                    club_flags.insert(
-                        club_extern_id,
-                        ClubFlag {
-                            flag_url,
+    let document = Html::parse_document(FLAGS_CONTENT);
+    if let Ok(a_selector) = Selector::parse(r#"a"#)
+        && let Ok(img_selector) = Selector::parse(r#"img"#)
+    {
+        for a in document.select(&a_selector) {
+            if let Some(href) = a.value().attr("href")
+                && href.starts_with("/clubs/")
+            {
+                for img in a.select(&img_selector) {
+                    if let Some(src) = img.value().attr("src") {
+                        let club_extern_id: i32 = href
+                            .split('/')
+                            .next_back()
+                            .unwrap_or_default()
+                            .parse()
+                            .unwrap_or_default();
+                        let flag_url = BASE_URL.to_owned() + src;
+                        club_flags.insert(
                             club_extern_id,
-                        },
-                    );
+                            ClubFlag {
+                                flag_url,
+                                club_extern_id,
+                            },
+                        );
+                    }
                 }
             }
         }
+    } else {
+        warn!("Failed to parse selectors for flags scraper");
     }
-    debug!("Reading flag URLs from html page: {:?}", start.elapsed());
     club_flags
 }
 

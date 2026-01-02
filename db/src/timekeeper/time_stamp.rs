@@ -1,13 +1,23 @@
-use crate::aquarius::model::utils;
-use crate::tiberius::{RowColumn, TiberiusPool, TryRowColumn};
-use chrono::Utc;
-use chrono::{DateTime, Local};
+use crate::tiberius::TiberiusClient;
+use crate::{
+    aquarius::model::utils,
+    error::DbError,
+    tiberius::{RowColumn, TryRowColumn},
+};
+use chrono::{DateTime, Local, Utc};
 use serde::Serialize;
 use strum_macros::Display;
-use tiberius::{Query, Row, error::Error as DbError};
+use tiberius::{Query, Row};
+use utoipa::ToSchema;
+
+const TIMESTAMP: &str = "timestamp";
+const EVENT_ID: &str = "eventId";
+const SPLIT_NR: &str = "splitNr";
+const HEAT_NR: &str = "heatNr";
+const BIB: &str = "bib";
 
 /// A time stamp of an event, such as a start or finish time stamp in a race.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, ToSchema)]
 pub struct TimeStamp {
     /// The time of the event.
     pub time: DateTime<Utc>,
@@ -68,56 +78,55 @@ impl TimeStamp {
         self.bib
     }
 
-    pub(crate) async fn query_all_for_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<TimeStamp>, DbError> {
-        let mut query = Query::new(
-            "SELECT timestamp, event_id, split_nr, heat_nr, bib FROM HRV_Timestamp WHERE event_id = @P1 ORDER BY timestamp ASC"
-                .to_string(),
-        );
+    pub(crate) async fn query_all_for_regatta(
+        regatta_id: i32,
+        client: &mut TiberiusClient,
+    ) -> Result<Vec<TimeStamp>, DbError> {
+        let mut query = Query::new(format!(
+            "SELECT {TIMESTAMP}, {EVENT_ID}, {SPLIT_NR}, {HEAT_NR}, {BIB} FROM HRV_Timestamp WHERE eventId = @P1 ORDER BY timestamp ASC"
+        ));
         query.bind(regatta_id);
 
-        let mut client = pool.get().await;
-        let stream = query.query(&mut client).await?;
+        let stream = query.query(client).await?;
         let time_stamps = utils::get_rows(stream).await?;
         Ok(time_stamps.into_iter().map(|row| TimeStamp::from(&row)).collect())
     }
 
-    pub(crate) async fn delete(&self, pool: &TiberiusPool) -> Result<(), DbError> {
+    pub(crate) async fn delete(&self, client: &mut TiberiusClient) -> Result<(), DbError> {
         let mut query = Query::new("DELETE FROM HRV_Timestamp WHERE timestamp = @P1".to_string());
         query.bind(self.time);
 
-        let mut client = pool.get().await;
-        query.execute(&mut client).await?;
+        query.execute(client).await?;
         Ok(())
     }
 
-    pub(crate) async fn persist(&mut self, regatta_id: i32, pool: &TiberiusPool) -> Result<(), DbError> {
+    pub(crate) async fn persist(&mut self, regatta_id: i32, client: &mut TiberiusClient) -> Result<(), DbError> {
         if !self.persisted {
             let mut query = Query::new(
-            "INSERT INTO HRV_Timestamp (timestamp, event_id, split_nr, heat_nr, bib) VALUES (@P1, @P2, @P3, @P4, @P5)"
-                .to_string(),
-        );
+                format!("INSERT INTO HRV_Timestamp ({TIMESTAMP}, {EVENT_ID}, {SPLIT_NR}, {HEAT_NR}, {BIB}) VALUES (@P1, @P2, @P3, @P4, @P5)")
+                    .to_string(),
+            );
             query.bind(self.time);
             query.bind(regatta_id);
             query.bind(u8::from(&self.split));
             query.bind(self.heat_nr);
             query.bind(self.bib);
 
-            let mut client = pool.get().await;
-            query.execute(&mut client).await?;
+            query.execute(client).await?;
             self.persisted = true;
         }
         Ok(())
     }
 
-    pub(crate) async fn update(&mut self, pool: &TiberiusPool) -> Result<(), DbError> {
+    pub(crate) async fn update(&mut self, client: &mut TiberiusClient) -> Result<(), DbError> {
         if !self.persisted {
-            let mut query =
-                Query::new("UPDATE HRV_Timestamp SET heat_nr = @P2, bib = @P3 WHERE timestamp = @P1".to_string());
+            let mut query = Query::new(format!(
+                "UPDATE HRV_Timestamp SET {HEAT_NR} = @P2, {BIB} = @P3 WHERE {TIMESTAMP} = @P1"
+            ));
             query.bind(self.time);
             query.bind(self.heat_nr);
             query.bind(self.bib);
-            let mut client = pool.get().await;
-            query.execute(&mut client).await?;
+            query.execute(client).await?;
             self.persisted = true;
         }
         Ok(())
@@ -126,19 +135,19 @@ impl TimeStamp {
 
 impl From<&Row> for TimeStamp {
     fn from(row: &Row) -> Self {
-        let split_nr: u8 = row.get_column("split_nr");
+        let split_nr: u8 = row.get_column(SPLIT_NR);
         TimeStamp {
-            time: row.get_column("timestamp"),
+            time: row.get_column(TIMESTAMP),
             split: Split::from(split_nr),
-            heat_nr: row.try_get_column("heat_nr"),
-            bib: row.try_get_column("bib"),
+            heat_nr: row.try_get_column(HEAT_NR),
+            bib: row.try_get_column(BIB),
             persisted: true,
         }
     }
 }
 
 /// The type of a time stamp.
-#[derive(Debug, Clone, Display, Serialize)]
+#[derive(Debug, Clone, Display, Serialize, ToSchema)]
 pub enum Split {
     /// A start time stamp.
     #[strum(to_string = "Start")]

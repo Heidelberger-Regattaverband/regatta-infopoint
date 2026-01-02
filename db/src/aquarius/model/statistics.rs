@@ -1,10 +1,11 @@
 use crate::{
     aquarius::model::{Athlete, TryToEntity, utils},
+    error::DbError,
     tiberius::{RowColumn, TiberiusPool},
 };
 use futures::join;
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError};
+use tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
 struct RacesStatistics {
@@ -147,8 +148,7 @@ impl Statistics {
         );
         query.bind(regatta_id);
 
-        let mut client = pool.get().await;
-
+        let mut client = pool.get().await?;
         let result = join!(
             query.query(&mut client),
             Statistics::query_oldest(regatta_id, "W", pool),
@@ -177,7 +177,7 @@ impl Statistics {
         query.bind(regatta_id);
         query.bind(gender);
 
-        let mut client = pool.get().await;
+        let mut client = pool.get().await?;
         if let Some(row) = utils::try_get_row(query.query(&mut client).await?).await? {
             Ok(row.try_to_entity())
         } else {

@@ -1,12 +1,15 @@
+use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::model::{AgeClass, BoatClass, Entry, Heat, TryToEntity, utils},
-    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
+    error::DbError,
+    tiberius::{RowColumn, TryRowColumn},
 };
 use chrono::{DateTime, Utc};
 use serde::Serialize;
-use tiberius::{Query, Row, error::Error as DbError};
+use tiberius::{Query, Row};
+use utoipa::ToSchema;
 
-#[derive(Debug, Serialize, Clone)]
+#[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Race {
     /// The unique identifier of the race.
@@ -124,7 +127,7 @@ impl Race {
     /// * `pool` - The database connection pool
     /// # Returns
     /// A list with races of the regatta
-    pub async fn query_races_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
+    pub async fn query_races_of_regatta(regatta_id: i32, client: &mut TiberiusClient) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
             JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
@@ -138,13 +141,12 @@ impl Race {
         let mut query = Query::new(sql);
         query.bind(regatta_id);
 
-        let mut client = pool.get().await;
-        let stream = query.query(&mut client).await?;
+        let stream = query.query(client).await?;
         let races = utils::get_rows(stream).await?;
         Ok(races.into_iter().map(|row| Race::from(&row)).collect())
     }
 
-    pub async fn query_race_by_id(race_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
+    pub async fn query_race_by_id(race_id: i32, client: &mut TiberiusClient) -> Result<Self, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
             JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
@@ -154,10 +156,9 @@ impl Race {
             AgeClass::select_minimal_columns("a"),
             BoatClass::select_columns("b")
         );
-        let mut client = pool.get().await;
         let mut query = Query::new(sql);
         query.bind(race_id);
-        let stream = query.query(&mut client).await?;
+        let stream = query.query(client).await?;
         Ok(Race::from(&utils::get_row(stream).await?))
     }
 }
