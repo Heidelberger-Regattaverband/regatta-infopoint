@@ -1,4 +1,5 @@
 use ::aquarius::{client::Client, messages::Heat};
+use ::tui_input::Input;
 use db::timekeeper::{TimeStamp, TimeStrip};
 use ratatui::{
     buffer::Buffer,
@@ -7,7 +8,6 @@ use ratatui::{
     widgets::{Block, BorderType, Padding, Paragraph, Widget},
 };
 use std::{cell::RefCell, rc::Rc};
-use tui_input::Input;
 
 pub(crate) struct TimeStripTabPopup {
     heat_input: Input,
@@ -45,7 +45,7 @@ impl Widget for &mut TimeStripTabPopup {
         ])
         .areas(inner_area);
         Paragraph::new(label_txt).render(label_area, buf);
-        self.heat_input.render(input_area, buf);
+        Paragraph::new(self.heat_input.value()).render(input_area, buf);
     }
 }
 
