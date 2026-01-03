@@ -7,8 +7,8 @@ use ::ratatui::{
     layout::{Constraint, Layout, Rect},
     widgets::{Block, BorderType, Padding, Paragraph, Widget},
 };
-use ::tracing::info;
 use ::std::{cell::RefCell, rc::Rc};
+use ::tracing::info;
 use ::tui_input::Input;
 use ::tui_input::backend::crossterm::EventHandler;
 
@@ -48,7 +48,10 @@ impl Widget for &mut TimeStripTabPopup {
         ])
         .areas(inner_area);
         Paragraph::new(label_txt).render(label_area, buf);
-        info!("TimeStripTabPopup rendering heat_input with value {}", self.heat_input.value());
+        info!(
+            "TimeStripTabPopup rendering heat_input with value {}",
+            self.heat_input.value()
+        );
         Paragraph::new(self.heat_input.value()).render(input_area, buf);
     }
 }
@@ -110,7 +113,8 @@ impl TimeStripTabPopup {
     }
 
     pub(crate) fn set_heat_nr(&mut self, heat_nr: i16) {
-        self.heat_input = self.heat_input.clone().with_value(heat_nr.to_string());
+        info!("TimeStripTabPopup set_heat_nr to {}", heat_nr);
+        self.heat_input = Input::new(heat_nr.to_string());
         self.validate();
     }
 
