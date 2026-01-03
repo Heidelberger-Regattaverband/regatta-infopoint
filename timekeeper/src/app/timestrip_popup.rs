@@ -1,15 +1,16 @@
 use ::aquarius::{client::Client, messages::Heat};
+use ::db::timekeeper::{TimeStamp, TimeStrip};
 use ::ratatui::crossterm::event::Event;
-use ::tui_input::Input;
-use ::tui_input::backend::crossterm::EventHandler;
-use db::timekeeper::{TimeStamp, TimeStrip};
-use ratatui::{
+use ::ratatui::{
     buffer::Buffer,
-    crossterm::event::{KeyCode, KeyEvent},
+    crossterm::event::KeyCode,
     layout::{Constraint, Layout, Rect},
     widgets::{Block, BorderType, Padding, Paragraph, Widget},
 };
-use std::{cell::RefCell, rc::Rc};
+use ::tracing::info;
+use ::std::{cell::RefCell, rc::Rc};
+use ::tui_input::Input;
+use ::tui_input::backend::crossterm::EventHandler;
 
 pub(crate) struct TimeStripTabPopup {
     heat_input: Input,
@@ -47,6 +48,7 @@ impl Widget for &mut TimeStripTabPopup {
         ])
         .areas(inner_area);
         Paragraph::new(label_txt).render(label_area, buf);
+        info!("TimeStripTabPopup rendering heat_input with value {}", self.heat_input.value());
         Paragraph::new(self.heat_input.value()).render(input_area, buf);
     }
 }
@@ -72,8 +74,9 @@ impl TimeStripTabPopup {
     }
 
     #[allow(clippy::await_holding_refcell_ref)]
-    pub(crate) async fn handle_key_event(&mut self, event: Event) {
+    pub(crate) async fn handle_event(&mut self, event: Event) {
         if let Event::Key(key) = event {
+            info!("TimeStripTabPopup handle key event: {:?}", key);
             match key.code {
                 KeyCode::Esc => {
                     if self.heat_input.value().is_empty() {
@@ -96,12 +99,19 @@ impl TimeStripTabPopup {
                     }
                 }
                 _ => {
+                    info!("TimeStripTabPopup passing event to heat_input");
                     if self.heat_input.handle_event(&event).is_some() {
+                        info!("TimeStripTabPopup heat_input changed to {}", self.heat_input.value());
                         self.validate();
                     }
                 }
             }
         }
+    }
+
+    pub(crate) fn set_heat_nr(&mut self, heat_nr: i16) {
+        self.heat_input = self.heat_input.clone().with_value(heat_nr.to_string());
+        self.validate();
     }
 
     fn validate(&mut self) {

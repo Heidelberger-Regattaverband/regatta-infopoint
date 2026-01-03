@@ -146,6 +146,11 @@ impl App {
                 SelectedTab::TimeStrip => {
                     frame.render_widget(&mut self.time_strip_tab, inner_area);
                     if *self.show_time_strip_popup.borrow() {
+                        if let Some(ts) = &*self.time_strip_tab.selected_time_stamp.borrow()
+                            && let Some(heat_nr) = ts.heat_nr()
+                        {
+                            self.time_strip_popup.set_heat_nr(heat_nr);
+                        }
                         let popup_area = popup_area(inner_area, 50, 20);
                         frame.render_widget(Clear, popup_area); // this clears out the background
                         frame.render_widget(&mut self.time_strip_popup, popup_area);
@@ -193,7 +198,7 @@ impl App {
                             SelectedTab::TimeStrip => {
                                 if *self.show_time_strip_popup.borrow() {
                                     self.time_strip_popup
-                                        .handle_key_event(ratatui::crossterm::event::Event::Key(key_event))
+                                        .handle_event(ratatui::crossterm::event::Event::Key(key_event))
                                         .await;
                                 } else {
                                     self.time_strip_tab.handle_key_event(key_event).await;
