@@ -44,6 +44,10 @@ async fn get_filters(
         error!("{err}");
         ErrorInternalServerError(err)
     })?;
+    let _ = aquarius.get_messages(regatta_id).await.map_err(|err| {
+        error!("{err}");
+        ErrorInternalServerError(err)
+    })?;
     Ok(Json(filters))
 }
 

@@ -1,4 +1,5 @@
 use crate::config::CONFIG;
+use ::db::aquarius::model::Message;
 use actix_identity::Identity;
 use db::{
     aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule, Score, Statistics},
@@ -301,6 +302,18 @@ impl Aquarius {
                 Ok::<Schedule, DbError>(schedule)
             })
             .await
+    }
+
+    pub(crate) async fn get_messages(&self, regatta_id: i32) -> Result<Vec<Message>, DbError> {
+        let start = Instant::now();
+        let messages =
+            Message::query_messages_for_regatta(regatta_id, &mut *TiberiusPool::instance().get().await?).await?;
+        debug!(
+            "Query messages of regatta {} from DB: {:?}",
+            regatta_id,
+            start.elapsed()
+        );
+        Ok(messages)
     }
 
     // private methods for querying the database
