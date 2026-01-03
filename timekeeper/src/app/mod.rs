@@ -192,7 +192,9 @@ impl App {
                             SelectedTab::Heats => self.heats_tab.handle_key_event(key_event),
                             SelectedTab::TimeStrip => {
                                 if *self.show_time_strip_popup.borrow() {
-                                    self.time_strip_popup.handle_key_event(key_event).await;
+                                    self.time_strip_popup
+                                        .handle_key_event(ratatui::crossterm::event::Event::Key(key_event))
+                                        .await;
                                 } else {
                                     self.time_strip_tab.handle_key_event(key_event).await;
                                 }

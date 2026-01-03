@@ -1,5 +1,7 @@
 use ::aquarius::{client::Client, messages::Heat};
+use ::ratatui::crossterm::event::Event;
 use ::tui_input::Input;
+use ::tui_input::backend::crossterm::EventHandler;
 use db::timekeeper::{TimeStamp, TimeStrip};
 use ratatui::{
     buffer::Buffer,
@@ -70,33 +72,34 @@ impl TimeStripTabPopup {
     }
 
     #[allow(clippy::await_holding_refcell_ref)]
-    pub(crate) async fn handle_key_event(&mut self, event: KeyEvent) {
-        match event.code {
-            KeyCode::Esc => {
-                if self.heat_input.value().is_empty() {
-                    *self.show_time_strip_popup.borrow_mut() = false;
-                } else {
-                    self.heat_input.reset();
-                }
-            }
-            KeyCode::Enter => {
-                if self.is_valid {
-                    let heat_nr = self.heat_input.value().parse::<i16>().unwrap();
-                    self.heat_input.reset();
-                    if let Some(time_stamp) = self.selected_time_stamp.borrow().as_ref()
-                        && let Ok(time_stamp) = self.time_strip.borrow_mut().set_heat_nr(time_stamp, heat_nr).await
-                    {
+    pub(crate) async fn handle_key_event(&mut self, event: Event) {
+        if let Event::Key(key) = event {
+            match key.code {
+                KeyCode::Esc => {
+                    if self.heat_input.value().is_empty() {
                         *self.show_time_strip_popup.borrow_mut() = false;
-                        self.client.borrow_mut().send_time(&time_stamp, None).unwrap();
+                    } else {
+                        self.heat_input.reset();
                     }
-                    self.is_valid = false;
                 }
-            }
-            _ => {
-                // let input: Input = event.into();
-                // if self.heat_input.input(input) {
-                //     self.validate();
-                // }
+                KeyCode::Enter => {
+                    if self.is_valid {
+                        let heat_nr = self.heat_input.value().parse::<i16>().unwrap();
+                        self.heat_input.reset();
+                        if let Some(time_stamp) = self.selected_time_stamp.borrow().as_ref()
+                            && let Ok(time_stamp) = self.time_strip.borrow_mut().set_heat_nr(time_stamp, heat_nr).await
+                        {
+                            *self.show_time_strip_popup.borrow_mut() = false;
+                            self.client.borrow_mut().send_time(&time_stamp, None).unwrap();
+                        }
+                        self.is_valid = false;
+                    }
+                }
+                _ => {
+                    if self.heat_input.handle_event(&event).is_some() {
+                        self.validate();
+                    }
+                }
             }
         }
     }
