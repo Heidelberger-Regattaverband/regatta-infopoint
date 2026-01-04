@@ -61,7 +61,8 @@ impl From<&Row> for Regatta {
 impl Regatta {
     pub async fn query_active_regatta(client: &mut TiberiusClient) -> Result<Regatta, DbError> {
         let stream = Query::new(format!(
-            "SELECT TOP 1 e.* FROM Event e ORDER BY e.{START_DATE} DESC, e.{ID} DESC"
+            "SELECT TOP 1 {} FROM Event e ORDER BY e.{START_DATE} DESC, e.{ID} DESC",
+            Regatta::select_columns("e")
         ))
         .query(client)
         .await?;
