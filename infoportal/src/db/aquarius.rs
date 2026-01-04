@@ -1,15 +1,15 @@
 use crate::config::CONFIG;
+use ::actix_identity::Identity;
 use ::db::aquarius::model::Message;
-use actix_identity::Identity;
-use db::{
+use ::db::{
     aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule, Score, Statistics},
     cache::{CacheStats, Caches},
     error::DbError,
     tiberius::TiberiusPool,
 };
-use futures::future::join3;
-use std::time::{Duration, Instant};
-use tracing::debug;
+use ::futures::future::join3;
+use ::std::time::{Duration, Instant};
+use ::tracing::debug;
 
 /// The `Aquarius` struct is the main interface to the database. It is used to query data from the database.
 pub(crate) struct Aquarius {
@@ -67,7 +67,7 @@ impl Aquarius {
             .compute_if_missing(&regatta_id, opt_user.is_some(), || async move {
                 let start = Instant::now();
                 let filters = Filters::query(regatta_id, TiberiusPool::instance()).await?;
-                debug!("Query filters from DB: {:?}", start.elapsed());
+                debug!(elapsed = ?start.elapsed(), "Query filters from DB:");
                 Ok::<Filters, DbError>(filters)
             })
             .await
@@ -79,7 +79,7 @@ impl Aquarius {
             .compute_if_missing_opt(&regatta_id, opt_user.is_some(), || async move {
                 let start = Instant::now();
                 let regatta = Regatta::query_by_id(regatta_id, TiberiusPool::instance()).await?;
-                debug!("Query regatta {} from DB: {:?}", regatta_id, start.elapsed());
+                debug!(regatta_id, elapsed = ?start.elapsed(), "Query regatta from DB:");
                 Ok::<Option<Regatta>, DbError>(regatta)
             })
             .await

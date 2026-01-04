@@ -6,6 +6,7 @@ use crate::{
         ws,
     },
 };
+use ::db::aquarius::model::Message;
 use ::db::tiberius::create_client;
 use actix_identity::Identity;
 use actix_web::{
@@ -41,10 +42,6 @@ async fn get_filters(
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let filters = aquarius.get_filters(regatta_id, opt_user).await.map_err(|err| {
-        error!("{err}");
-        ErrorInternalServerError(err)
-    })?;
-    let _ = aquarius.get_messages(regatta_id).await.map_err(|err| {
         error!("{err}");
         ErrorInternalServerError(err)
     })?;
@@ -421,6 +418,23 @@ async fn get_schedule(
     Ok(Json(schedule))
 }
 
+#[utoipa::path(
+    description = "Get all messages for a regatta.",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Messages for <regatta_id>", body = Vec<Message>),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
+#[get("/regattas/{regatta_id}/messages")]
+async fn get_messages(regatta_id: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
+    let messages = aquarius.get_messages(regatta_id.into_inner()).await.map_err(|err| {
+        error!("{err}");
+        ErrorInternalServerError(err)
+    })?;
+    Ok(Json(messages))
+}
+
 /// Authenticate the user. This will attach the user identity to the current session.
 #[utoipa::path(
     context_path = PATH,
@@ -505,6 +519,7 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(get_statistics)
             .service(get_schedule)
             .service(get_timestrip)
+            .service(get_messages)
             .service(login)
             .service(identity)
             .service(logout)

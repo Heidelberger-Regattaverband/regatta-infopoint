@@ -7,6 +7,7 @@ use ::chrono::Utc;
 use ::serde::Serialize;
 use ::tiberius::Query;
 use ::tiberius::Row;
+use ::utoipa::ToSchema;
 
 const ID: &str = "id";
 const EVENT_ID: &str = "eventId";
@@ -15,7 +16,7 @@ const TEXT: &str = "text";
 const MODIFIED_AT: &str = "modifiedAt";
 
 /// Represents a message with a severity level and text content.
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Message {
     /// The unique ID of the message.
