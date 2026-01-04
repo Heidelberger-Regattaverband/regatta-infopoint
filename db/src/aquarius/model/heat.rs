@@ -86,8 +86,8 @@ impl Heat {
             JOIN Offer     o ON o.Offer_ID              = c.Comp_Race_ID_FK
             JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
-            WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_DateTime IS NOT NULL
-            ORDER BY c.Comp_DateTime ASC",
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.{DATE_TIME} IS NOT NULL
+            ORDER BY c.{DATE_TIME} ASC",
             Heat::select_columns("c"),
             AgeClass::select_minimal_columns("a"),
             BoatClass::select_columns("b")
@@ -111,8 +111,8 @@ impl Heat {
     pub async fn query_heats_of_race(race_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0} FROM Comp c
-            WHERE c.Comp_Race_ID_FK = @P1 AND c.Comp_DateTime IS NOT NULL
-            ORDER BY c.Comp_Number ASC",
+            WHERE c.Comp_Race_ID_FK = @P1 AND c.{DATE_TIME} IS NOT NULL
+            ORDER BY c.{NUMBER} ASC",
             Heat::select_columns("c")
         );
         let mut query = Query::new(sql);
@@ -133,10 +133,10 @@ impl Heat {
     pub(crate) async fn query_heats_of_entry(entry_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0} FROM Comp c
-            JOIN CompEntries ce ON c.Comp_ID  = ce.CE_Comp_ID_FK
+            JOIN CompEntries ce ON c.{ID}  = ce.CE_Comp_ID_FK
             JOIN Entry        e ON e.Entry_ID = ce.CE_Entry_ID_FK
             WHERE e.Entry_ID = @P1
-            ORDER BY c.Comp_Round ASC",
+            ORDER BY c.{ROUND} ASC",
             Heat::select_columns("c")
         );
         let mut query = Query::new(sql);
@@ -158,7 +158,7 @@ impl Heat {
             JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
-            WHERE Comp_ID = @P1",
+            WHERE {ID} = @P1",
             Heat::select_columns("c"),
             AgeClass::select_minimal_columns("a"),
             BoatClass::select_columns("b")
@@ -202,6 +202,6 @@ impl From<&Row> for Heat {
 
 impl TryToEntity<Heat> for Row {
     fn try_to_entity(&self) -> Option<Heat> {
-        <Row as TryRowColumn<i32>>::try_get_column(self, "Comp_ID").map(|_id| Heat::from(self))
+        <Row as TryRowColumn<i32>>::try_get_column(self, ID).map(|_id| Heat::from(self))
     }
 }
