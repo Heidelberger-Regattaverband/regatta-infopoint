@@ -9,6 +9,16 @@ use serde::Serialize;
 use tiberius::{Query, Row};
 use utoipa::ToSchema;
 
+const ID: &str = "Comp_ID";
+const NUMBER: &str = "Comp_Number";
+const ROUND_CODE: &str = "Comp_RoundCode";
+const LABEL: &str = "Comp_Label";
+const GROUP_VALUE: &str = "Comp_GroupValue";
+const STATE: &str = "Comp_State";
+const CANCELLED: &str = "Comp_Cancelled";
+const DATE_TIME: &str = "Comp_DateTime";
+const ROUND: &str = "Comp_Round";
+
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Heat {
@@ -58,8 +68,8 @@ pub struct Heat {
 impl Heat {
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
-            " {alias}.Comp_ID, {alias}.Comp_Number, {alias}.Comp_RoundCode, {alias}.Comp_Label, {alias}.Comp_GroupValue, \
-            {alias}.Comp_State, {alias}.Comp_Cancelled, {alias}.Comp_DateTime, {alias}.Comp_Round "
+            "{alias}.{ID}, {alias}.{NUMBER}, {alias}.{ROUND_CODE}, {alias}.{LABEL}, {alias}.{GROUP_VALUE}, \
+            {alias}.{STATE}, {alias}.{CANCELLED}, {alias}.{DATE_TIME}, {alias}.{ROUND}"
         )
     }
 
@@ -174,18 +184,18 @@ impl Heat {
 impl From<&Row> for Heat {
     fn from(value: &Row) -> Self {
         Heat {
-            id: value.get_column("Comp_ID"),
+            id: value.get_column(ID),
             race: value.try_to_entity(),
-            number: value.get_column("Comp_Number"),
-            round_code: value.get_column("Comp_RoundCode"),
-            label: value.try_get_column("Comp_Label"),
-            group_value: value.get_column("Comp_GroupValue"),
-            state: value.get_column("Comp_State"),
-            cancelled: value.get_column("Comp_Cancelled"),
-            date_time: value.try_get_column("Comp_DateTime"),
+            number: value.get_column(NUMBER),
+            round_code: value.get_column(ROUND_CODE),
+            label: value.try_get_column(LABEL),
+            group_value: value.get_column(GROUP_VALUE),
+            state: value.get_column(STATE),
+            cancelled: value.get_column(CANCELLED),
+            date_time: value.try_get_column(DATE_TIME),
             referees: vec![],
             entries: None,
-            round: value.get_column("Comp_Round"),
+            round: value.get_column(ROUND),
         }
     }
 }

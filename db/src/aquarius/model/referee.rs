@@ -7,6 +7,11 @@ use serde::Serialize;
 use tiberius::{Query, Row};
 use utoipa::ToSchema;
 
+const ID: &str = "Referee_ID";
+const FIRST_NAME: &str = "Referee_FirstName";
+const LAST_NAME: &str = "Referee_LastName";
+const CITY: &str = "Referee_City";
+
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Referee {
@@ -30,22 +35,27 @@ impl Referee {
     /// # Returns
     /// A list of referees.
     pub(crate) async fn query_referees_for_heat(heat_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
-        let mut query = Query::new(
-            "SELECT r.* FROM Referee r
-            JOIN CompReferee cr ON cr.CompReferee_Referee_ID_FK = r.Referee_ID
+        let mut query = Query::new(format!(
+            "SELECT {} FROM Referee r
+            JOIN CompReferee cr ON cr.CompReferee_Referee_ID_FK = r.{ID}
             WHERE cr.CompReferee_Comp_ID_FK = @P1",
-        );
+            Referee::select_columns("r")
+        ));
         query.bind(heat_id);
 
         let mut client = pool.get().await?;
         let heats = utils::get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Referee::from(&row)).collect())
     }
+
+    fn select_columns(alias: &str) -> String {
+        format!("{alias}.{ID}, {alias}.{FIRST_NAME}, {alias}.{LAST_NAME}, {alias}.{CITY}")
+    }
 }
 
 impl TryToEntity<Referee> for Row {
     fn try_to_entity(&self) -> Option<Referee> {
-        <Row as TryRowColumn<i32>>::try_get_column(self, "Referee_ID").map(|_id| Referee::from(self))
+        <Row as TryRowColumn<i32>>::try_get_column(self, ID).map(|_id| Referee::from(self))
     }
 }
 
@@ -58,10 +68,10 @@ impl From<&Row> for Referee {
     /// A new Referee.
     fn from(value: &Row) -> Self {
         Referee {
-            id: value.get_column("Referee_ID"),
-            last_name: value.get_column("Referee_LastName"),
-            first_name: value.get_column("Referee_FirstName"),
-            city: value.get_column("Referee_City"),
+            id: value.get_column(ID),
+            last_name: value.get_column(LAST_NAME),
+            first_name: value.get_column(FIRST_NAME),
+            city: value.get_column(CITY),
         }
     }
 }
