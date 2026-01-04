@@ -1,11 +1,12 @@
+use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::{flags_scraper::ClubFlag, model::utils},
     error::DbError,
-    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
+    tiberius::{RowColumn, TryRowColumn},
 };
-use serde::Serialize;
-use tiberius::{Query, Row, numeric::Decimal};
-use utoipa::ToSchema;
+use ::serde::Serialize;
+use ::tiberius::{Query, Row, numeric::Decimal};
+use ::utoipa::ToSchema;
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -61,10 +62,13 @@ impl Club {
     /// Query all clubs that are participating in a regatta.
     /// # Arguments
     /// * `regatta_id` - The regatta identifier
-    /// * `pool` - The database connection pool
+    /// * `client` - The database connection
     /// # Returns
     /// A list of clubs that are participating in the regatta
-    pub async fn query_clubs_participating_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
+    pub async fn query_clubs_participating_regatta(
+        regatta_id: i32,
+        client: &mut TiberiusClient,
+    ) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT DISTINCT {0},
                 (SELECT COUNT(*) FROM (
@@ -104,8 +108,7 @@ impl Club {
         let mut query = Query::new(sql);
         query.bind(regatta_id);
 
-        let mut client = pool.get().await?;
-        let clubs = utils::get_rows(query.query(&mut client).await?).await?;
+        let clubs = utils::get_rows(query.query(client).await?).await?;
         Ok(clubs.into_iter().map(|row| Club::from(&row)).collect())
     }
 
@@ -119,7 +122,7 @@ impl Club {
     pub async fn query_club_with_aggregations(
         regatta_id: i32,
         club_id: i32,
-        pool: &TiberiusPool,
+        client: &mut TiberiusClient,
     ) -> Result<Self, DbError> {
         let mut query = Query::new(format!(
             "SELECT {0},
@@ -154,8 +157,7 @@ impl Club {
         query.bind(regatta_id);
         query.bind(club_id);
 
-        let mut client = pool.get().await?;
-        Ok(Club::from(&utils::get_row(query.query(&mut client).await?).await?))
+        Ok(Club::from(&utils::get_row(query.query(client).await?).await?))
     }
 
     pub(crate) fn select_all_columns(alias: &str) -> String {

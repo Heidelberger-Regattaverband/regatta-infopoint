@@ -119,7 +119,12 @@ impl Aquarius {
             .club_with_aggregations
             .compute_if_missing(&(regatta_id, club_id), opt_user.is_some(), || async move {
                 let start = Instant::now();
-                let club = Club::query_club_with_aggregations(regatta_id, club_id, TiberiusPool::instance()).await?;
+                let club = Club::query_club_with_aggregations(
+                    regatta_id,
+                    club_id,
+                    &mut *TiberiusPool::instance().get().await?,
+                )
+                .await?;
                 debug!(regatta_id, club_id, elapsed = ?start.elapsed(), "Query club from DB:");
                 Ok::<Club, DbError>(club)
             })
@@ -160,7 +165,9 @@ impl Aquarius {
             .clubs
             .compute_if_missing(&regatta_id, opt_user.is_some(), || async move {
                 let start = Instant::now();
-                let clubs = Club::query_clubs_participating_regatta(regatta_id, TiberiusPool::instance()).await?;
+                let clubs =
+                    Club::query_clubs_participating_regatta(regatta_id, &mut *TiberiusPool::instance().get().await?)
+                        .await?;
                 debug!(regatta_id, elapsed = ?start.elapsed(), "Query participating clubs from DB:");
                 Ok::<Vec<Club>, DbError>(clubs)
             })
