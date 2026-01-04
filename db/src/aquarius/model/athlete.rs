@@ -8,6 +8,12 @@ use serde::Serialize;
 use tiberius::{Query, Row, time::chrono::NaiveDateTime};
 use utoipa::ToSchema;
 
+const ID: &str = "Athlet_ID";
+const FIRST_NAME: &str = "Athlet_FirstName";
+const LAST_NAME: &str = "Athlet_LastName";
+const GENDER: &str = "Athlet_Gender";
+const DOB: &str = "Athlet_DOB";
+
 /// An athlete is a person who participates in a regatta.
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -97,20 +103,18 @@ impl Athlete {
     }
 
     pub(crate) fn select_columns(alias: &str) -> String {
-        format!(
-            " {alias}.Athlet_ID, {alias}.Athlet_FirstName, {alias}.Athlet_LastName, {alias}.Athlet_Gender, {alias}.Athlet_DOB "
-        )
+        format!("{alias}.{ID}, {alias}.{FIRST_NAME}, {alias}.{LAST_NAME}, {alias}.{GENDER}, {alias}.{DOB}")
     }
 }
 
 impl From<&Row> for Athlete {
     fn from(row: &Row) -> Self {
         Athlete {
-            id: row.get_column("Athlet_ID"),
-            first_name: row.get_column("Athlet_FirstName"),
-            last_name: row.get_column("Athlet_LastName"),
-            gender: row.get_column("Athlet_Gender"),
-            year: <Row as RowColumn<NaiveDateTime>>::get_column(row, "Athlet_DOB")
+            id: row.get_column(ID),
+            first_name: row.get_column(FIRST_NAME),
+            last_name: row.get_column(LAST_NAME),
+            gender: row.get_column(GENDER),
+            year: <Row as RowColumn<NaiveDateTime>>::get_column(row, DOB)
                 .date()
                 .format("%Y")
                 .to_string(),
@@ -122,6 +126,6 @@ impl From<&Row> for Athlete {
 
 impl TryToEntity<Athlete> for Row {
     fn try_to_entity(&self) -> Option<Athlete> {
-        <Row as TryRowColumn<i32>>::try_get_column(self, "Athlet_ID").map(|_id| Athlete::from(self))
+        <Row as TryRowColumn<i32>>::try_get_column(self, ID).map(|_id| Athlete::from(self))
     }
 }

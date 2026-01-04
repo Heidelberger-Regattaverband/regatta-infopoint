@@ -254,7 +254,7 @@ impl Aquarius {
                 let start = Instant::now();
                 let athlete =
                     Athlete::query_athlete(regatta_id, athlete_id, &mut *TiberiusPool::instance().get().await?).await?;
-                debug!("Query athlete {} from DB: {:?}", athlete_id, start.elapsed());
+                debug!(athlete_id, elapsed = ?start.elapsed(), "Query athlete from DB:");
                 Ok::<Athlete, DbError>(athlete)
             })
             .await

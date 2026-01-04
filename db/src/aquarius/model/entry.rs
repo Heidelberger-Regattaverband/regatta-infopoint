@@ -8,6 +8,13 @@ use serde::Serialize;
 use tiberius::{Query, Row};
 use utoipa::ToSchema;
 
+const ID: &str = "Entry_ID";
+const BIB: &str = "Entry_Bib";
+const COMMENT: &str = "Entry_Comment";
+const BOAT_NUMBER: &str = "Entry_BoatNumber";
+const GROUP_VALUE: &str = "Entry_GroupValue";
+const CANCEL_VALUE: &str = "Entry_CancelValue";
+
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Entry {
@@ -55,16 +62,16 @@ pub struct Entry {
 
 impl From<&Row> for Entry {
     fn from(value: &Row) -> Self {
-        let cancel_value: u8 = value.get_column("Entry_CancelValue");
+        let cancel_value: u8 = value.get_column(CANCEL_VALUE);
 
         Entry {
-            id: value.get_column("Entry_ID"),
-            bib: value.try_get_column("Entry_Bib"),
-            comment: value.try_get_column("Entry_Comment"),
-            boat_number: value.try_get_column("Entry_BoatNumber"),
+            id: value.get_column(ID),
+            bib: value.try_get_column(BIB),
+            comment: value.try_get_column(COMMENT),
+            boat_number: value.try_get_column(BOAT_NUMBER),
             short_label: value.get_column("Label_Short"),
             cancelled: cancel_value > 0,
-            group_value: value.try_get_column("Entry_GroupValue"),
+            group_value: value.try_get_column(GROUP_VALUE),
             club: Club::from(value),
             crew: None,
             race: value.try_to_entity(),
@@ -76,7 +83,7 @@ impl From<&Row> for Entry {
 impl Entry {
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
-            " {alias}.Entry_ID, {alias}.Entry_Bib, {alias}.Entry_Comment, {alias}.Entry_BoatNumber, {alias}.Entry_GroupValue, {alias}.Entry_CancelValue "
+            "{alias}.{ID}, {alias}.{BIB}, {alias}.{COMMENT}, {alias}.{BOAT_NUMBER}, {alias}.{GROUP_VALUE}, {alias}.{CANCEL_VALUE}"
         )
     }
 
