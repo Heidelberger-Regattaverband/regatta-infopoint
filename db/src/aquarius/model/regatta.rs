@@ -60,15 +60,17 @@ impl From<&Row> for Regatta {
 
 impl Regatta {
     pub async fn query_active_regatta(client: &mut TiberiusClient) -> Result<Regatta, DbError> {
-        let stream = Query::new("SELECT TOP 1 e.* FROM Event e ORDER BY e.Event_StartDate DESC, e.Event_ID DESC")
-            .query(client)
-            .await?;
+        let stream = Query::new(format!(
+            "SELECT TOP 1 e.* FROM Event e ORDER BY e.{START_DATE} DESC, e.{ID} DESC"
+        ))
+        .query(client)
+        .await?;
         Ok(Regatta::from(&utils::get_row(stream).await?))
     }
 
     pub async fn query_by_id(regatta_id: i32, client: &mut TiberiusClient) -> Result<Option<Regatta>, DbError> {
         let mut query = Query::new(format!(
-            "SELECT {} FROM Event e WHERE e.Event_ID = @P1",
+            "SELECT {} FROM Event e WHERE e.{ID} = @P1",
             Regatta::select_columns("e")
         ));
         query.bind(regatta_id);
