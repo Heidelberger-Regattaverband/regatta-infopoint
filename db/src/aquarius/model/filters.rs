@@ -1,3 +1,6 @@
+use crate::aquarius::model::age_class::ID as AGE_CLASS_ID;
+use crate::aquarius::model::age_class::MAX_AGE;
+use crate::aquarius::model::age_class::MIN_AGE;
 use crate::{
     aquarius::model::{AgeClass, Block, BoatClass, utils},
     error::DbError,
@@ -93,9 +96,9 @@ async fn query_boat_classes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<
 async fn query_age_classes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<AgeClass>, DbError> {
     let mut query = Query::new(format!(
         "SELECT DISTINCT {0} FROM AgeClass a
-        JOIN Offer o ON o.Offer_AgeClass_ID_FK = a.AgeClass_ID
+        JOIN Offer o ON o.Offer_AgeClass_ID_FK = a.{AGE_CLASS_ID}
         WHERE o.Offer_Event_ID_FK = @P1
-        ORDER BY a.AgeClass_MinAge DESC, a.AgeClass_MaxAge DESC",
+        ORDER BY a.{MIN_AGE} DESC, a.{MAX_AGE} DESC",
         AgeClass::select_all_columns("a")
     ));
     query.bind(regatta_id);

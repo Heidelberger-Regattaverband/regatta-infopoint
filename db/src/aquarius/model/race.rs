@@ -1,3 +1,4 @@
+use crate::aquarius::model::age_class::ID as AGE_CLASS_ID;
 use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::model::{AgeClass, BoatClass, Entry, Heat, TryToEntity, utils},
@@ -130,7 +131,7 @@ impl Race {
     pub async fn query_races_of_regatta(regatta_id: i32, client: &mut TiberiusClient) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
-            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
+            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
             WHERE o.Offer_Event_ID_FK = @P1
             ORDER BY o.Offer_SortValue ASC",
@@ -149,7 +150,7 @@ impl Race {
     pub async fn query_race_by_id(race_id: i32, client: &mut TiberiusClient) -> Result<Self, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
-            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
+            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
             WHERE o.Offer_ID = @P1",
             Race::select_columns("o"),

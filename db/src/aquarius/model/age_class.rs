@@ -2,18 +2,18 @@ use crate::{
     aquarius::model::TryToEntity,
     tiberius::{RowColumn, TryRowColumn},
 };
-use serde::Serialize;
-use tiberius::Row;
-use utoipa::ToSchema;
+use ::serde::Serialize;
+use ::tiberius::Row;
+use ::utoipa::ToSchema;
 
-const ID: &str = "AgeClass_ID";
+pub(super) const ID: &str = "AgeClass_ID";
 const CAPTION: &str = "AgeClass_Caption";
 const ABBREVIATION: &str = "AgeClass_Abbr";
 const SUFFIX: &str = "AgeClass_Suffix";
 const GENDER: &str = "AgeClass_Gender";
 const NUM_SUB_CLASSES: &str = "AgeClass_NumSubClasses";
-const MIN_AGE: &str = "AgeClass_MinAge";
-const MAX_AGE: &str = "AgeClass_MaxAge";
+pub(super) const MIN_AGE: &str = "AgeClass_MinAge";
+pub(super) const MAX_AGE: &str = "AgeClass_MaxAge";
 
 /// An age class defines the age range of athletes.
 #[derive(Debug, Serialize, Clone, ToSchema)]

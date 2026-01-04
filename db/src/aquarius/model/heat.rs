@@ -1,3 +1,4 @@
+use crate::aquarius::model::age_class::ID as AGE_CLASS_ID;
 use crate::{
     aquarius::model::{AgeClass, BoatClass, HeatEntry, Race, Referee, TryToEntity, utils},
     error::DbError,
@@ -84,7 +85,7 @@ impl Heat {
         let sql = format!(
             "SELECT {0}, {1}, {2}, o.* FROM Comp c
             JOIN Offer     o ON o.Offer_ID              = c.Comp_Race_ID_FK
-            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
+            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
             WHERE c.Comp_Event_ID_FK = @P1 AND c.{DATE_TIME} IS NOT NULL
             ORDER BY c.{DATE_TIME} ASC",
@@ -156,7 +157,7 @@ impl Heat {
         let sql = format!(
             "SELECT {0}, {1}, {2}, o.* FROM Comp c
             JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
-            JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
+            JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
             WHERE {ID} = @P1",
             Heat::select_columns("c"),
