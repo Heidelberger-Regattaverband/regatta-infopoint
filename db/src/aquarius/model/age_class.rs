@@ -6,6 +6,15 @@ use serde::Serialize;
 use tiberius::Row;
 use utoipa::ToSchema;
 
+const ID: &str = "AgeClass_ID";
+const CAPTION: &str = "AgeClass_Caption";
+const ABBREVIATION: &str = "AgeClass_Abbr";
+const SUFFIX: &str = "AgeClass_Suffix";
+const GENDER: &str = "AgeClass_Gender";
+const NUM_SUB_CLASSES: &str = "AgeClass_NumSubClasses";
+const MIN_AGE: &str = "AgeClass_MinAge";
+const MAX_AGE: &str = "AgeClass_MaxAge";
+
 /// An age class defines the age range of athletes.
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -40,14 +49,14 @@ pub struct AgeClass {
 impl AgeClass {
     pub(crate) fn select_all_columns(alias: &str) -> String {
         format!(
-            " {alias}.AgeClass_ID, {alias}.AgeClass_Caption, {alias}.AgeClass_Abbr, {alias}.AgeClass_Suffix, {alias}.AgeClass_Gender, \
-            {alias}.AgeClass_NumSubClasses, {alias}.AgeClass_MinAge, {alias}.AgeClass_MaxAge "
+            "{alias}.{ID}, {alias}.{CAPTION}, {alias}.{ABBREVIATION}, {alias}.{SUFFIX}, {alias}.{GENDER}, \
+            {alias}.{NUM_SUB_CLASSES}, {alias}.{MIN_AGE}, {alias}.{MAX_AGE}"
         )
     }
     pub(crate) fn select_minimal_columns(alias: &str) -> String {
         format!(
-            " {alias}.AgeClass_ID, {alias}.AgeClass_Caption, {alias}.AgeClass_Abbr, {alias}.AgeClass_Suffix, {alias}.AgeClass_Gender, \
-            {alias}.AgeClass_NumSubClasses "
+            "{alias}.{ID}, {alias}.{CAPTION}, {alias}.{ABBREVIATION}, {alias}.{SUFFIX}, {alias}.{GENDER}, \
+            {alias}.{NUM_SUB_CLASSES}"
         )
     }
 }
@@ -55,20 +64,20 @@ impl AgeClass {
 impl From<&Row> for AgeClass {
     fn from(row: &Row) -> Self {
         AgeClass {
-            id: row.get_column("AgeClass_ID"),
-            caption: row.get_column("AgeClass_Caption"),
-            abbreviation: row.get_column("AgeClass_Abbr"),
-            suffix: row.try_get_column("AgeClass_Suffix").unwrap_or_default(),
-            gender: row.get_column("AgeClass_Gender"),
-            num_sub_classes: row.get_column("AgeClass_NumSubClasses"),
-            min_age: row.try_get_column("AgeClass_MinAge"),
-            max_age: row.try_get_column("AgeClass_MaxAge"),
+            id: row.get_column(ID),
+            caption: row.get_column(CAPTION),
+            abbreviation: row.get_column(ABBREVIATION),
+            suffix: row.try_get_column(SUFFIX).unwrap_or_default(),
+            gender: row.get_column(GENDER),
+            num_sub_classes: row.get_column(NUM_SUB_CLASSES),
+            min_age: row.try_get_column(MIN_AGE),
+            max_age: row.try_get_column(MAX_AGE),
         }
     }
 }
 
 impl TryToEntity<AgeClass> for Row {
     fn try_to_entity(&self) -> Option<AgeClass> {
-        <Row as TryRowColumn<i32>>::try_get_column(self, "AgeClass_ID").map(|_id| AgeClass::from(self))
+        <Row as TryRowColumn<i32>>::try_get_column(self, ID).map(|_id| AgeClass::from(self))
     }
 }

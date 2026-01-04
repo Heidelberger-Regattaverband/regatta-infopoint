@@ -8,6 +8,12 @@ use serde::Serialize;
 use tiberius::{Query, Row, time::chrono::NaiveDateTime};
 use utoipa::ToSchema;
 
+const ID: &str = "Athlet_ID";
+const FIRST_NAME: &str = "Athlet_FirstName";
+const LAST_NAME: &str = "Athlet_LastName";
+const GENDER: &str = "Athlet_Gender";
+const DOB: &str = "Athlet_DOB";
+
 /// An athlete is a person who participates in a regatta.
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -44,14 +50,14 @@ impl Athlete {
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1},
                 (SELECT COUNT(*) FROM (
-                    SELECT Athlet_ID FROM Athlet
-                    JOIN Crew  ON Crew_Athlete_ID_FK = Athlet_ID
+                    SELECT {ID} FROM Athlet
+                    JOIN Crew  ON Crew_Athlete_ID_FK = {ID}
                     JOIN Entry ON Crew_Entry_ID_FK   = Entry_ID
-                    WHERE Athlet_ID = a.Athlet_ID AND Crew_RoundTo = @P2
+                    WHERE {ID} = a.{ID} AND Crew_RoundTo = @P2
                 ) AS Athlet_Entries_Count ) AS Athlet_Entries_Count
                 FROM Athlet a
                 JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.Club_ID
-                JOIN Crew  cr ON a.Athlet_ID         = cr.Crew_Athlete_ID_FK
+                JOIN Crew  cr ON a.{ID}              = cr.Crew_Athlete_ID_FK
                 JOIN Entry  e ON cr.Crew_Entry_ID_FK = e.Entry_ID
                 WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue = 0 AND cr.Crew_RoundTo = @P2",
             Athlete::select_columns("a"),
@@ -74,16 +80,16 @@ impl Athlete {
         let mut query = Query::new(format!(
             "SELECT {0}, {1},
                 (SELECT COUNT(*) FROM (
-                    SELECT Athlet_ID FROM Athlet
-                    JOIN Crew  ON Crew_Athlete_ID_FK = Athlet_ID
+                    SELECT {ID} FROM Athlet
+                    JOIN Crew  ON Crew_Athlete_ID_FK = {ID}
                     JOIN Entry ON Crew_Entry_ID_FK   = Entry_ID
-                    WHERE e.Entry_Event_ID_FK = @P1 AND Athlet_ID = a.Athlet_ID AND Crew_RoundTo = @P3
+                    WHERE e.Entry_Event_ID_FK = @P1 AND {ID} = a.{ID} AND Crew_RoundTo = @P3
                 ) AS Athlet_Entries_Count ) AS Athlet_Entries_Count
                 FROM Athlet  a
                 JOIN Club   cl ON a.Athlet_Club_ID_FK = cl.Club_ID
-                JOIN Crew   cr ON a.Athlet_ID         = cr.Crew_Athlete_ID_FK
+                JOIN Crew   cr ON a.{ID}              = cr.Crew_Athlete_ID_FK
                 JOIN Entry   e ON cr.Crew_Entry_ID_FK = e.Entry_ID
-                WHERE e.Entry_Event_ID_FK = @P1 AND a.Athlet_ID = @P2 AND cr.Crew_RoundTo = @P3",
+                WHERE e.Entry_Event_ID_FK = @P1 AND a.{ID} = @P2 AND cr.Crew_RoundTo = @P3",
             Athlete::select_columns("a"),
             Club::select_all_columns("cl")
         ));
@@ -97,20 +103,18 @@ impl Athlete {
     }
 
     pub(crate) fn select_columns(alias: &str) -> String {
-        format!(
-            " {alias}.Athlet_ID, {alias}.Athlet_FirstName, {alias}.Athlet_LastName, {alias}.Athlet_Gender, {alias}.Athlet_DOB "
-        )
+        format!("{alias}.{ID}, {alias}.{FIRST_NAME}, {alias}.{LAST_NAME}, {alias}.{GENDER}, {alias}.{DOB}")
     }
 }
 
 impl From<&Row> for Athlete {
     fn from(row: &Row) -> Self {
         Athlete {
-            id: row.get_column("Athlet_ID"),
-            first_name: row.get_column("Athlet_FirstName"),
-            last_name: row.get_column("Athlet_LastName"),
-            gender: row.get_column("Athlet_Gender"),
-            year: <Row as RowColumn<NaiveDateTime>>::get_column(row, "Athlet_DOB")
+            id: row.get_column(ID),
+            first_name: row.get_column(FIRST_NAME),
+            last_name: row.get_column(LAST_NAME),
+            gender: row.get_column(GENDER),
+            year: <Row as RowColumn<NaiveDateTime>>::get_column(row, DOB)
                 .date()
                 .format("%Y")
                 .to_string(),
@@ -122,6 +126,6 @@ impl From<&Row> for Athlete {
 
 impl TryToEntity<Athlete> for Row {
     fn try_to_entity(&self) -> Option<Athlete> {
-        <Row as TryRowColumn<i32>>::try_get_column(self, "Athlet_ID").map(|_id| Athlete::from(self))
+        <Row as TryRowColumn<i32>>::try_get_column(self, ID).map(|_id| Athlete::from(self))
     }
 }
