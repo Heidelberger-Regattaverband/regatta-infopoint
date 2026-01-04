@@ -2,15 +2,15 @@ use crate::{
     aquarius::model::TryToEntity,
     tiberius::{RowColumn, TryRowColumn},
 };
-use serde::Serialize;
-use tiberius::Row;
-use utoipa::ToSchema;
+use ::serde::Serialize;
+use ::tiberius::Row;
+use ::utoipa::ToSchema;
 
-const ID: &str = "BoatClass_ID";
+pub(super) const ID: &str = "BoatClass_ID";
 const CAPTION: &str = "BoatClass_Caption";
 const ABBREVIATION: &str = "BoatClass_Abbr";
-const NUM_ROWERS: &str = "BoatClass_NumRowers";
-const COXED: &str = "BoatClass_Coxed";
+pub(super) const NUM_ROWERS: &str = "BoatClass_NumRowers";
+pub(super) const COXED: &str = "BoatClass_Coxed";
 
 /// A boat class is a combination of boat type and number of rowers.
 #[derive(Debug, Serialize, Clone, ToSchema)]

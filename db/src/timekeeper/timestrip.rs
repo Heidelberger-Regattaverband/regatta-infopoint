@@ -1,10 +1,11 @@
+use ::std::time::Instant;
 use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::model::Regatta,
     error::DbError,
     timekeeper::time_stamp::{Split, TimeStamp},
 };
-use tracing::info;
+use ::tracing::info;
 
 /// A time strip is a collection of time stamps.
 pub struct TimeStrip {
@@ -20,19 +21,21 @@ pub struct TimeStrip {
 
 impl TimeStrip {
     pub async fn load(mut client: TiberiusClient) -> Result<Self, DbError> {
+        let start = Instant::now();
         let regatta = Regatta::query_active_regatta(&mut client).await?;
-        info!("Loading time strip for regatta ID: {0}", regatta.id);
         let time_stamps = TimeStamp::query_all_for_regatta(regatta.id, &mut client).await?;
-        Ok(TimeStrip {
+        let time_strip = TimeStrip {
             regatta_id: regatta.id,
             time_stamps,
             client,
-        })
+        };
+        info!(regatta_id = regatta.id, elapsed = ?start.elapsed(), "Loaded time strip:");
+        Ok(time_strip)
     }
 
     pub async fn add_start(&mut self) -> Result<(), DbError> {
         let time_stamp = TimeStamp::now(Split::Start);
-        info!("Start time stamp: {time_stamp:?}");
+        info!(?time_stamp, "Start time stamp:");
         self.time_stamps.push(time_stamp);
         if let Some(ts) = self.time_stamps.last_mut() {
             ts.persist(self.regatta_id, &mut self.client).await?;
@@ -42,7 +45,7 @@ impl TimeStrip {
 
     pub async fn add_finish(&mut self) -> Result<(), DbError> {
         let time_stamp = TimeStamp::now(Split::Finish);
-        info!("Finish time stamp: {time_stamp:?}");
+        info!(?time_stamp, "Finish time stamp:");
         self.time_stamps.push(time_stamp);
         if let Some(ts) = self.time_stamps.last_mut() {
             ts.persist(self.regatta_id, &mut self.client).await?;

@@ -1,14 +1,15 @@
 use crate::aquarius::model::age_class::ID as AGE_CLASS_ID;
+use crate::aquarius::model::boat_class::ID as BOAT_CLASS_ID;
 use crate::{
     aquarius::model::{AgeClass, BoatClass, HeatEntry, Race, Referee, TryToEntity, utils},
     error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
-use chrono::{DateTime, Utc};
-use futures::future::join;
-use serde::Serialize;
-use tiberius::{Query, Row};
-use utoipa::ToSchema;
+use ::chrono::{DateTime, Utc};
+use ::futures::future::join;
+use ::serde::Serialize;
+use ::tiberius::{Query, Row};
+use ::utoipa::ToSchema;
 
 const ID: &str = "Comp_ID";
 const NUMBER: &str = "Comp_Number";
@@ -86,7 +87,7 @@ impl Heat {
             "SELECT {0}, {1}, {2}, o.* FROM Comp c
             JOIN Offer     o ON o.Offer_ID              = c.Comp_Race_ID_FK
             JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
-            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
+            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
             WHERE c.Comp_Event_ID_FK = @P1 AND c.{DATE_TIME} IS NOT NULL
             ORDER BY c.{DATE_TIME} ASC",
             Heat::select_columns("c"),
@@ -158,7 +159,7 @@ impl Heat {
             "SELECT {0}, {1}, {2}, o.* FROM Comp c
             JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
-            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
+            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
             WHERE {ID} = @P1",
             Heat::select_columns("c"),
             AgeClass::select_minimal_columns("a"),

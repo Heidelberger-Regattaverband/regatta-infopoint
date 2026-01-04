@@ -1,10 +1,11 @@
+use crate::aquarius::model::boat_class::NUM_ROWERS;
 use crate::{
     aquarius::model::TryToEntity,
     tiberius::{RowColumn, TryRowColumn},
 };
-use serde::Serialize;
-use tiberius::Row;
-use utoipa::ToSchema;
+use ::serde::Serialize;
+use ::tiberius::Row;
+use ::utoipa::ToSchema;
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -35,7 +36,7 @@ impl HeatResult {
 impl TryToEntity<HeatResult> for Row {
     fn try_to_entity(&self) -> Option<HeatResult> {
         if let Some(rank) = <Row as TryRowColumn<u8>>::try_get_column(self, "Result_Rank") {
-            let num_rowers: u8 = self.get_column("BoatClass_NumRowers");
+            let num_rowers: u8 = self.get_column(NUM_ROWERS);
             let points: u8 = if rank > 0 { num_rowers + (5 - rank) } else { 0 };
 
             Some(HeatResult {

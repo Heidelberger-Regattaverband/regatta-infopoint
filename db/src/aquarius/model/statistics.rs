@@ -1,11 +1,14 @@
+use crate::aquarius::model::boat_class::COXED;
+use crate::aquarius::model::boat_class::ID as BOAT_CLASS_ID;
+use crate::aquarius::model::boat_class::NUM_ROWERS;
 use crate::{
     aquarius::model::{Athlete, TryToEntity, utils},
     error::DbError,
     tiberius::{RowColumn, TiberiusPool},
 };
-use futures::join;
-use serde::Serialize;
-use tiberius::{Query, Row};
+use ::futures::join;
+use ::serde::Serialize;
+use ::tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
 struct RacesStatistics {
@@ -98,7 +101,7 @@ struct Athletes {
 impl Statistics {
     pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let mut query = Query::new(
-        "SELECT
+        format!("SELECT
           (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1) AS races_all,
           (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1 AND Offer_Cancelled > 0) AS races_cancelled,
           (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1) AS heats_all,
@@ -132,20 +135,20 @@ impl Statistics {
             FROM  Entry
             JOIN  Crew ON Crew_Entry_ID_FK = Entry_ID
             WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) AS entries_clubs,
-          (SELECT COALESCE(SUM(BoatClass_NumRowers), 0) FROM (
-            SELECT BoatClass_NumRowers
+          (SELECT COALESCE(SUM({NUM_ROWERS}), 0) FROM (
+            SELECT {NUM_ROWERS}
             FROM  Entry
             JOIN  Offer     ON Offer_ID = Entry_Race_ID_FK
-            JOIN  BoatClass ON BoatClass_ID = Offer_BoatClass_ID_FK
+            JOIN  BoatClass ON {BOAT_CLASS_ID} = Offer_BoatClass_ID_FK
             WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) as seats) AS entries_seats,
-          (SELECT COALESCE(SUM(BoatClass_Coxed), 0) FROM (
-            SELECT BoatClass_Coxed 
+          (SELECT COALESCE(SUM({COXED}), 0) FROM (
+            SELECT {COXED}
             FROM  Entry
             JOIN  Offer     ON Offer_ID = Entry_Race_ID_FK
-            JOIN  BoatClass ON BoatClass_ID = Offer_BoatClass_ID_FK
+            JOIN  BoatClass ON {BOAT_CLASS_ID} = Offer_BoatClass_ID_FK
             WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) as seats) AS entries_seats_cox
-          ",
-        );
+          "
+        ));
         query.bind(regatta_id);
 
         let mut client = pool.get().await?;

@@ -1,14 +1,15 @@
 use crate::aquarius::model::age_class::ID as AGE_CLASS_ID;
+use crate::aquarius::model::boat_class::ID as BOAT_CLASS_ID;
 use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::model::{AgeClass, BoatClass, Entry, Heat, TryToEntity, utils},
     error::DbError,
     tiberius::{RowColumn, TryRowColumn},
 };
-use chrono::{DateTime, Utc};
-use serde::Serialize;
-use tiberius::{Query, Row};
-use utoipa::ToSchema;
+use ::chrono::{DateTime, Utc};
+use ::serde::Serialize;
+use ::tiberius::{Query, Row};
+use ::utoipa::ToSchema;
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -132,7 +133,7 @@ impl Race {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
             JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
-            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
+            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
             WHERE o.Offer_Event_ID_FK = @P1
             ORDER BY o.Offer_SortValue ASC",
             Race::select_columns("o"),
@@ -151,7 +152,7 @@ impl Race {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
             JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
-            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
+            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
             WHERE o.Offer_ID = @P1",
             Race::select_columns("o"),
             AgeClass::select_minimal_columns("a"),
