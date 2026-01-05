@@ -1,10 +1,10 @@
-use ::std::time::Instant;
 use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::model::Regatta,
     error::DbError,
     timekeeper::time_stamp::{Split, TimeStamp},
 };
+use ::std::time::Instant;
 use ::tracing::info;
 
 /// A time strip is a collection of time stamps.
