@@ -279,7 +279,8 @@ impl Aquarius {
     pub(crate) async fn get_notifications(&self, regatta_id: i32) -> Result<Vec<Notification>, DbError> {
         let start = Instant::now();
         let notifications =
-            Notification::query_messages_for_regatta(regatta_id, &mut *TiberiusPool::instance().get().await?).await?;
+            Notification::query_notifications_for_regatta(regatta_id, &mut *TiberiusPool::instance().get().await?)
+                .await?;
         debug!(regatta_id, elapsed = ?start.elapsed(), "Query notifications from DB:");
         Ok(notifications)
     }

@@ -15,25 +15,25 @@ const SEVERITY: &str = "severity";
 const TEXT: &str = "text";
 const MODIFIED_AT: &str = "modifiedAt";
 
-/// Represents a message with a severity level and text content.
+/// Represents a notification with a severity level and text content.
 #[derive(Debug, Clone, Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Notification {
-    /// The unique ID of the message.
+    /// The unique ID of the notification.
     pub id: i32,
 
-    /// The severity level of the message. Higher values indicate more severe messages.
+    /// The severity level of the notification. Higher values indicate more severe notifications.
     pub severity: u8,
 
-    /// The text of the message.
+    /// The text of the notification.
     pub text: String,
 
-    /// The timestamp when the message was modified.
+    /// The timestamp when the notification was modified.
     pub modified_at: DateTime<Utc>,
 }
 
 impl Notification {
-    pub async fn query_messages_for_regatta(
+    pub async fn query_notifications_for_regatta(
         regatta_id: i32,
         client: &mut TiberiusClient,
     ) -> Result<Vec<Notification>, DbError> {
