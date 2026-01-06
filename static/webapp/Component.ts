@@ -65,12 +65,12 @@ export default class Component extends UIComponent {
                 super.setModel(model, "filters");
             });
 
-            this.loadMessages().then((model: JSONModel) => {
-                super.setModel(model, "messages");
+            this.loadNotifications().then((model: JSONModel) => {
+                super.setModel(model, "notifications");
             });
 
             setInterval(async () => {
-                await this.loadMessages();
+                await this.loadNotifications();
             }, 30000);
         })
 
@@ -151,11 +151,11 @@ export default class Component extends UIComponent {
         return model
     }
 
-    private async loadMessages(): Promise<JSONModel> {
-        console.debug("Loading messages");
+    private async loadNotifications(): Promise<JSONModel> {
+        console.debug("Loading notifications");
         const regattaId = this.regattaModel?.getData().id ?? -1;
-        await this.messagesModel.loadData(`/api/regattas/${regattaId}/messages`);
-        console.debug("Messages loaded");
+        await this.messagesModel.loadData(`/api/regattas/${regattaId}/notifications`);
+        console.debug("Notifications loaded");
         return this.messagesModel;
     }
 }

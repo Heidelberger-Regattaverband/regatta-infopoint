@@ -3,7 +3,7 @@ use crate::http::{
     monitoring::{Connections, Cpu, Db, Disk, Memory, Monitoring, SysInfo},
     rest_api,
 };
-use ::db::aquarius::model::Message;
+use ::db::aquarius::model::Notification;
 use actix_web::web;
 use db::{
     aquarius::model::{
@@ -36,11 +36,11 @@ use utoipa_swagger_ui::SwaggerUi;
         rest_api::get_statistics,
         rest_api::calculate_scoring,
         rest_api::get_schedule,
-        rest_api::get_messages
+        rest_api::get_notifications
     ),
     components(
         schemas(
-            Monitoring, Db, Connections, User, Credentials, Scope, SysInfo, Cpu, Memory, Disk, Message,
+            Monitoring, Db, Connections, User, Credentials, Scope, SysInfo, Cpu, Memory, Disk, Notification,
             Regatta, AgeClass, BoatClass, Filters, Club, Entry, Athlete, Crew, Heat, HeatEntry, Referee, Race, TimeStamp
         ),
     ),

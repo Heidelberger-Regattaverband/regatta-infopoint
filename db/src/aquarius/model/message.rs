@@ -18,7 +18,7 @@ const MODIFIED_AT: &str = "modifiedAt";
 /// Represents a message with a severity level and text content.
 #[derive(Debug, Clone, Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub struct Message {
+pub struct Notification {
     /// The unique ID of the message.
     pub id: i32,
 
@@ -32,11 +32,11 @@ pub struct Message {
     pub modified_at: DateTime<Utc>,
 }
 
-impl Message {
+impl Notification {
     pub async fn query_messages_for_regatta(
         regatta_id: i32,
         client: &mut TiberiusClient,
-    ) -> Result<Vec<Message>, DbError> {
+    ) -> Result<Vec<Notification>, DbError> {
         let sql = format!(
             "SELECT {ID}, {SEVERITY}, {TEXT}, {MODIFIED_AT} FROM HRV_Message WHERE {EVENT_ID} = @P1 ORDER BY {ID}"
         );
@@ -46,15 +46,15 @@ impl Message {
         let results = utils::get_rows(query.query(client).await?)
             .await?
             .into_iter()
-            .map(|row| Message::from(&row))
+            .map(|row| Notification::from(&row))
             .collect();
         Ok(results)
     }
 }
 
-impl From<&Row> for Message {
+impl From<&Row> for Notification {
     fn from(row: &Row) -> Self {
-        Message {
+        Notification {
             id: row.get_column(ID),
             severity: row.get_column(SEVERITY),
             text: row.get_column(TEXT),

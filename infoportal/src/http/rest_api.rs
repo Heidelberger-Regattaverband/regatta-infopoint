@@ -6,7 +6,7 @@ use crate::{
         ws,
     },
 };
-use ::db::aquarius::model::Message;
+use ::db::aquarius::model::Notification;
 use ::db::tiberius::create_client;
 use actix_identity::Identity;
 use actix_web::{
@@ -422,17 +422,20 @@ async fn get_schedule(
     description = "Get all messages for a regatta.",
     context_path = PATH,
     responses(
-        (status = 200, description = "Messages for <regatta_id>", body = Vec<Message>),
+        (status = 200, description = "Messages for <regatta_id>", body = Vec<Notification>),
         (status = 500, description = INTERNAL_SERVER_ERROR)
     )
 )]
-#[get("/regattas/{regatta_id}/messages")]
-async fn get_messages(regatta_id: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
-    let messages = aquarius.get_messages(regatta_id.into_inner()).await.map_err(|err| {
-        error!("{err}");
-        ErrorInternalServerError(err)
-    })?;
-    Ok(Json(messages))
+#[get("/regattas/{regatta_id}/notifications")]
+async fn get_notifications(regatta_id: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
+    let notifications = aquarius
+        .get_notifications(regatta_id.into_inner())
+        .await
+        .map_err(|err| {
+            error!("{err}");
+            ErrorInternalServerError(err)
+        })?;
+    Ok(Json(notifications))
 }
 
 /// Authenticate the user. This will attach the user identity to the current session.
@@ -519,7 +522,7 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(get_statistics)
             .service(get_schedule)
             .service(get_timestrip)
-            .service(get_messages)
+            .service(get_notifications)
             .service(login)
             .service(identity)
             .service(logout)
