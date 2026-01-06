@@ -7,12 +7,14 @@ import Control from "sap/ui/core/Control";
 import Fragment from "sap/ui/core/Fragment";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import BaseController from "./Base.controller";
+import Formatter from "../model/Formatter";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class LaunchpadController extends BaseController {
 
+  readonly formatter: Formatter = Formatter;
   private readonly credentialsModel: JSONModel = new JSONModel({ username: "", password: "" });
   private popover?: ResponsivePopover;
   private popoverPromise?: Promise<ResponsivePopover>;
