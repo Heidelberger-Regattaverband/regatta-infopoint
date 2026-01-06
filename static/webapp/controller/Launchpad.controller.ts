@@ -20,6 +20,7 @@ export default class LaunchpadController extends BaseController {
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.credentialsModel, "credentials");
+    super.getComponentJSONModel("messages");
     this.getIdentity();
   }
 
@@ -69,33 +70,29 @@ export default class LaunchpadController extends BaseController {
   onShowLoginPress(event: Button$PressEvent): void {
     const eventSource: Control = event.getSource();
 
-    if (!this.isAuthenticated()) {
-      if (this.popover?.isOpen()) {
-        // close login dialog if it's already open
-        this.popover.close();
-        delete this.popover;
-      } else {
-        // check if fragment is already loaded or not
-        if (!this.popoverPromise) {
-          // load fragment ...
-          this.popoverPromise = Fragment.load({
-            id: this.getView()?.getId(), name: "de.regatta_hd.infoportal.view.LoginPopover", controller: this
-          }).then((popover: any) => {
-            // ... and initialize
-            super.getView()?.addDependent(popover);
-            popover.addStyleClass(super.getContentDensityClass());
-            return popover;
-          });
-        }
-
-        // finish loading of fragment and open it
-        this.popoverPromise.then((popover: ResponsivePopover) => {
-          this.popover = popover;
-          popover.openBy(eventSource);
-        });
-      }
-    } else {
+    if (this.isAuthenticated()) {
       this.logout();
+    } else if (this.popover?.isOpen()) {
+      // close login dialog if it's already open
+      this.popover.close();
+      delete this.popover;
+    } else {
+      // check if fragment is already loaded or not
+      // load fragment ...
+      this.popoverPromise ??= Fragment.load({
+        id: this.getView()?.getId(), name: "de.regatta_hd.infoportal.view.LoginPopover", controller: this
+      }).then((popover: any) => {
+        // ... and initialize
+        super.getView()?.addDependent(popover);
+        popover.addStyleClass(super.getContentDensityClass());
+        return popover;
+      });
+
+      // finish loading of fragment and open it
+      this.popoverPromise.then((popover: ResponsivePopover) => {
+        this.popover = popover;
+        popover.openBy(eventSource);
+      });
     }
   }
 
