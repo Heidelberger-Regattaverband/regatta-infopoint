@@ -11,25 +11,29 @@ use ::utoipa::ToSchema;
 
 const ID: &str = "id";
 const EVENT_ID: &str = "eventId";
-const SEVERITY: &str = "severity";
+const PRIORITY: &str = "priority";
 const TEXT: &str = "text";
+const TITLE: &str = "title";
 const MODIFIED_AT: &str = "modifiedAt";
 
-/// Represents a notification with a severity level and text content.
+/// Represents a notification with a priority level and text content.
 #[derive(Debug, Clone, Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Notification {
-    /// The unique ID of the notification.
-    pub id: i32,
+    /// The unique identifier of the notification.
+    id: i32,
 
-    /// The severity level of the notification. Higher values indicate more severe notifications.
-    pub severity: u8,
+    /// The priority level of the notification. Higher values indicate more severe notifications.
+    priority: u8,
+
+    /// The title of the notification.
+    title: String,
 
     /// The text of the notification.
-    pub text: String,
+    text: String,
 
     /// The timestamp when the notification was modified.
-    pub modified_at: DateTime<Utc>,
+    modified_at: DateTime<Utc>,
 }
 
 impl Notification {
@@ -38,7 +42,7 @@ impl Notification {
         client: &mut TiberiusClient,
     ) -> Result<Vec<Notification>, DbError> {
         let sql = format!(
-            "SELECT {ID}, {SEVERITY}, {TEXT}, {MODIFIED_AT} FROM HRV_Message WHERE {EVENT_ID} = @P1 ORDER BY {ID}"
+            "SELECT {ID}, {PRIORITY}, {TITLE}, {TEXT}, {MODIFIED_AT} FROM HRV_Notification WHERE {EVENT_ID} = @P1 ORDER BY {ID}"
         );
         let mut query = Query::new(&sql);
         query.bind(regatta_id);
@@ -56,7 +60,8 @@ impl From<&Row> for Notification {
     fn from(row: &Row) -> Self {
         Notification {
             id: row.get_column(ID),
-            severity: row.get_column(SEVERITY),
+            priority: row.get_column(PRIORITY),
+            title: row.get_column(TITLE),
             text: row.get_column(TEXT),
             modified_at: row.get_column(MODIFIED_AT),
         }

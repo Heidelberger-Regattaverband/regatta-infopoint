@@ -15,8 +15,8 @@
       <content>
         <NotificationList id="notificationList" items="{notifications>/}">
           <items>
-            <NotificationListItem title="{notifications>text}" description="description" datetime="{notifications>modifiedAt}"
-              priority="{path:'notifications>severity',formatter:'.formatter.priority'}" close="false" />
+            <NotificationListItem title="{notifications>title}" description="{notifications>text}" datetime="{notifications>modifiedAt}"
+              priority="{path:'notifications>priority',formatter:'.formatter.priority'}" unread="true"/>
           </items>
         </NotificationList>
         <layout:HorizontalLayout allowWrapping="true">
