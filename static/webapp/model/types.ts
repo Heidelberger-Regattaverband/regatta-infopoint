@@ -3,7 +3,7 @@
  * @namespace de.regatta_hd.infoportal.model.types
  */
 
-export interface Message {
+export interface Notification {
     id: number;
     severity: number;
     text: string;
