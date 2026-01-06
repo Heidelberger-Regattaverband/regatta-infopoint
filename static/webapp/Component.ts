@@ -68,6 +68,10 @@ export default class Component extends UIComponent {
             this.loadMessages().then((model: JSONModel) => {
                 super.setModel(model, "messages");
             });
+
+            setInterval(async () => {
+                await this.loadMessages();
+            }, 30000);
         })
 
         // set device model
