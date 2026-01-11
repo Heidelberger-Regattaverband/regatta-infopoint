@@ -14,6 +14,7 @@ import {
   GroupValue,
 } from "./types";
 import { Priority } from "sap/m/library";
+import JSONModel from "sap/ui/model/json/JSONModel";
 
 /**
  * Formatter utility class for regatta application data formatting.
@@ -459,6 +460,20 @@ export default class Formatter {
       case "F": return Formatter.i18n("heat.label.final");
       default: return undefined;
     }
+  }
+
+  /**
+   * Checks if the given JSON model contains any data.
+   * @param model The JSON model to check
+   * @returns true if the model contains data, false otherwise
+   */
+  static containsData(model: JSONModel): boolean {
+    alert("containsData called"+ JSON.stringify(model));
+    const data: any = model.getData();
+    if (Array.isArray(data)) {
+      return data.length > 0;
+    }
+    return Object.keys(data).length > 0;
   }
 
   // -----------------

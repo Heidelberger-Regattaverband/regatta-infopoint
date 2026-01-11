@@ -14,6 +14,7 @@ const EVENT_ID: &str = "eventId";
 const PRIORITY: &str = "priority";
 const TEXT: &str = "text";
 const TITLE: &str = "title";
+const VISIBLE: &str = "visible";
 const MODIFIED_AT: &str = "modifiedAt";
 
 /// Represents a notification with a priority level and text content.
@@ -32,6 +33,9 @@ pub struct Notification {
     /// The text of the notification.
     text: String,
 
+    /// Whether the notification is visible.
+    visible: bool,
+
     /// The timestamp when the notification was modified.
     modified_at: DateTime<Utc>,
 }
@@ -42,7 +46,7 @@ impl Notification {
         client: &mut TiberiusClient,
     ) -> Result<Vec<Notification>, DbError> {
         let sql = format!(
-            "SELECT {ID}, {PRIORITY}, {TITLE}, {TEXT}, {MODIFIED_AT} FROM HRV_Notification WHERE {EVENT_ID} = @P1 ORDER BY {ID}"
+            "SELECT {ID}, {PRIORITY}, {TITLE}, {TEXT}, {VISIBLE}, {MODIFIED_AT} FROM HRV_Notification WHERE {EVENT_ID} = @P1 ORDER BY {ID}"
         );
         let mut query = Query::new(&sql);
         query.bind(regatta_id);
@@ -63,6 +67,7 @@ impl From<&Row> for Notification {
             priority: row.get_column(PRIORITY),
             title: row.get_column(TITLE),
             text: row.get_column(TEXT),
+            visible: row.get_column(VISIBLE),
             modified_at: row.get_column(MODIFIED_AT),
         }
     }

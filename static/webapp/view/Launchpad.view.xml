@@ -13,10 +13,11 @@
       </headerContent>
 
       <content>
-        <NotificationList id="notificationList" items="{notifications>/}">
+        <NotificationList id="notificationList" items="{notifications>/}" visible="true" showNoData="false">
           <items>
-            <NotificationListItem title="{notifications>title}" description="{notifications>text}" datetime="{notifications>modifiedAt}"
-              priority="{path:'notifications>priority',formatter:'.formatter.priority'}" unread="true"/>
+            <NotificationListItem title="{notifications>title}" description="{notifications>text}" unread="true"
+              datetime="{path:'notifications>modifiedAt',formatter:'.formatter.dayTimeIsoLabel'}"
+              priority="{path:'notifications>priority',formatter:'.formatter.priority'}" visible="{notifications>visible}" />
           </items>
         </NotificationList>
         <layout:HorizontalLayout allowWrapping="true">
