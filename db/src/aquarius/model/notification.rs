@@ -37,7 +37,7 @@ pub struct Notification {
     visible: bool,
 
     /// The timestamp when the notification was modified.
-    modified_at: DateTime<Utc>,
+    pub modified_at: DateTime<Utc>,
 }
 
 impl Notification {
@@ -46,7 +46,8 @@ impl Notification {
         client: &mut TiberiusClient,
     ) -> Result<Vec<Notification>, DbError> {
         let sql = format!(
-            "SELECT {ID}, {PRIORITY}, {TITLE}, {TEXT}, {VISIBLE}, {MODIFIED_AT} FROM HRV_Notification WHERE {EVENT_ID} = @P1 ORDER BY {ID}"
+            "SELECT {ID}, {PRIORITY}, {TITLE}, {TEXT}, {VISIBLE}, {MODIFIED_AT} FROM HRV_Notification \
+            WHERE {EVENT_ID} = @P1 AND {VISIBLE} = 1 ORDER BY {ID}"
         );
         let mut query = Query::new(&sql);
         query.bind(regatta_id);

@@ -165,7 +165,7 @@ impl Server {
     fn get_session_middleware(secret_key: Key) -> SessionMiddleware<CookieSessionStore> {
         const SECS_OF_WEEKEND: i64 = 60 * 60 * 24 * 2;
         SessionMiddleware::builder(CookieSessionStore::default(), secret_key)
-            .cookie_secure(true)
+            .cookie_secure(false)
             .cookie_http_only(true)
             // allow the cookie only from the current domain
             .cookie_same_site(SameSite::Strict)
