@@ -6,20 +6,24 @@ use crate::{
         ws,
     },
 };
-use ::db::aquarius::model::Notification;
-use ::db::tiberius::create_client;
-use actix_identity::Identity;
-use actix_web::{
+use ::actix_identity::Identity;
+use ::actix_session::Session;
+use ::actix_web::{
     Error, HttpMessage, HttpRequest, HttpResponse, Responder, Scope as ActixScope,
     error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized, InternalError},
     get, post,
     web::{Data, Json, Path, ServiceConfig},
 };
-use db::{
+use ::db::aquarius::model::Notification;
+use ::db::tiberius::create_client;
+use ::db::{
     aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta},
     timekeeper::{TimeStamp, TimeStrip},
 };
-use tracing::error;
+use ::tiberius::time::chrono::DateTime;
+use ::tiberius::time::chrono::Utc;
+use ::tracing::debug;
+use ::tracing::error;
 
 /// Path to REST API
 pub(crate) const PATH: &str = "/api";
@@ -427,15 +431,47 @@ async fn get_schedule(
     )
 )]
 #[get("/regattas/{regatta_id}/notifications")]
-async fn get_notifications(regatta_id: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
-    let notifications = aquarius
+async fn get_notifications(
+    regatta_id: Path<i32>,
+    aquarius: Data<Aquarius>,
+    session: Session,
+) -> Result<impl Responder, Error> {
+    let all_notifications = aquarius
         .get_notifications(regatta_id.into_inner())
         .await
         .map_err(|err| {
-            error!("{err}");
+            error!(%err, "Failed to get notifications");
             ErrorInternalServerError(err)
         })?;
+
+    let notifications: Vec<Notification> = all_notifications
+        .into_iter()
+        .filter(|notification| {
+            let flag = session
+                .get::<DateTime<Utc>>(&format!("notifications.{}.read", notification.id))
+                .unwrap_or(None);
+            // debug!(?flag, "Notification read flag");
+            flag.is_none()
+        })
+        .collect();
     Ok(Json(notifications))
+}
+
+#[post("/notifications/{notification_id}/read")]
+async fn notification_read(notification_id: Path<i32>, session: Session) -> Result<impl Responder, Error> {
+    session
+        .insert(
+            format!("notifications.{}.read", notification_id.into_inner()),
+            Utc::now(),
+        )
+        .map_err(|err| {
+            error!(%err, "Failed to mark notification as read");
+            ErrorInternalServerError(err)
+        })?;
+    session.entries().iter().for_each(|(key, value)| {
+        debug!("Session key: {}, value: {:?}", key, value);
+    });
+    Ok(HttpResponse::NoContent())
 }
 
 /// Authenticate the user. This will attach the user identity to the current session.
@@ -523,6 +559,7 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(get_schedule)
             .service(get_timestrip)
             .service(get_notifications)
+            .service(notification_read)
             .service(login)
             .service(identity)
             .service(logout)

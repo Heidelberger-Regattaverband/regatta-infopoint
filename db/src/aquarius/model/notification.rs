@@ -22,7 +22,7 @@ const MODIFIED_AT: &str = "modifiedAt";
 #[serde(rename_all = "camelCase")]
 pub struct Notification {
     /// The unique identifier of the notification.
-    id: i32,
+    pub id: i32,
 
     /// The priority level of the notification. Higher values indicate more severe notifications.
     priority: u8,

@@ -8,6 +8,9 @@ import Fragment from "sap/ui/core/Fragment";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import BaseController from "./Base.controller";
 import Formatter from "../model/Formatter";
+import NotificationListItem from "sap/m/NotificationListItem";
+import Event from "sap/ui/base/Event";
+import NotificationList from "sap/m/NotificationList";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -59,6 +62,21 @@ export default class LaunchpadController extends BaseController {
   onLoginPress(event: Button$PressEvent): void {
     // close login popover when login button is pressed
     this.performLogin();
+  }
+
+  onNotificationClose(event: Event): void {
+    const item: NotificationListItem = event.getSource();
+    (item.getParent() as NotificationList).removeItem(item);
+    const notificationId: number = item.getCounter();
+
+    $.ajax({
+      type: "POST",
+      url: `/api/notifications/${notificationId}/read`,
+      success: (result: any) => {
+        // refresh notifications model
+        super.getComponentJSONModel("messages")?.refresh();
+      }
+    });
   }
 
   private performLogin() {
