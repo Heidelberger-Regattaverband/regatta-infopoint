@@ -13,7 +13,7 @@
       </headerContent>
 
       <content>
-        <NotificationList id="notificationList" items="{notifications>/}" visible="true" showNoData="false">
+        <NotificationList id="notificationList" items="{notifications>/}" showNoData="false">
           <items>
             <NotificationListItem title="{notifications>title}" description="{notifications>text}" unread="true"
               datetime="{path:'notifications>modifiedAt',formatter:'.formatter.dayTimeIsoLabel'}"

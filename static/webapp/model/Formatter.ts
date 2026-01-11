@@ -462,20 +462,6 @@ export default class Formatter {
     }
   }
 
-  /**
-   * Checks if the given JSON model contains any data.
-   * @param model The JSON model to check
-   * @returns true if the model contains data, false otherwise
-   */
-  static containsData(model: JSONModel): boolean {
-    alert("containsData called"+ JSON.stringify(model));
-    const data: any = model.getData();
-    if (Array.isArray(data)) {
-      return data.length > 0;
-    }
-    return Object.keys(data).length > 0;
-  }
-
   // -----------------
   // Private helper methods
   // -----------------
