@@ -450,7 +450,6 @@ async fn get_notifications(
             let flag = session
                 .get::<DateTime<Utc>>(&format!("notifications.{}.read", notification.id))
                 .unwrap_or(None);
-            // debug!(?flag, "Notification read flag");
             flag.is_none()
         })
         .collect();
@@ -469,7 +468,7 @@ async fn notification_read(notification_id: Path<i32>, session: Session) -> Resu
             ErrorInternalServerError(err)
         })?;
     session.entries().iter().for_each(|(key, value)| {
-        debug!("Session key: {}, value: {:?}", key, value);
+        debug!(key, value, "Session Entry");
     });
     Ok(HttpResponse::NoContent())
 }
