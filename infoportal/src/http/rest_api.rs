@@ -436,6 +436,10 @@ async fn get_notifications(
     aquarius: Data<Aquarius>,
     session: Session,
 ) -> Result<impl Responder, Error> {
+    session.entries().iter().for_each(|(key, value)| {
+        debug!(key, value, "Query Notification Session Entry");
+    });
+
     let all_notifications = aquarius
         .get_notifications(regatta_id.into_inner())
         .await
@@ -467,9 +471,6 @@ async fn notification_read(notification_id: Path<i32>, session: Session) -> Resu
             error!(%err, "Failed to mark notification as read");
             ErrorInternalServerError(err)
         })?;
-    session.entries().iter().for_each(|(key, value)| {
-        debug!(key, value, "Session Entry");
-    });
     Ok(HttpResponse::NoContent())
 }
 
