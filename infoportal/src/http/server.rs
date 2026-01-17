@@ -3,6 +3,7 @@ use crate::{
     db::aquarius::Aquarius,
     http::{api_doc, rest_api},
 };
+use ::actix_identity::config::LogoutBehavior;
 use ::actix_session::config::TtlExtensionPolicy;
 use ::std::time::Duration;
 use actix_extensible_rate_limit::{
@@ -141,15 +142,19 @@ impl Server {
         >,
     > {
         let expiration = Duration::from_secs(24 * 60 * 60 * 2);
-        let identity_mw = IdentityMiddleware::builder().visit_deadline(Some(expiration)).build();
+        let identity_mw = IdentityMiddleware::builder()
+            .logout_behavior(LogoutBehavior::PurgeSession)
+            .visit_deadline(Some(expiration))
+            .build();
         let session_mw = Self::get_session_middleware(secret_key.clone(), expiration);
+
         App::new()
             // Install the identity framework first.
             .wrap(identity_mw)
             // adds support for HTTPS sessions
             .wrap(session_mw)
             // adds support for rate limiting of HTTP requests
-            .wrap(Self::get_rate_limiter(rl_max_requests, rl_interval))
+            .wrap(Self::get_rate_limiter_middleware(rl_max_requests, rl_interval))
             .wrap_fn(|req, srv| {
                 // println!("Hi from start. You requested: {}", req.path());
                 srv.call(req).map(|res| {
@@ -181,6 +186,27 @@ impl Server {
             .build()
     }
 
+    /// Returns a new RateLimiter instance.
+    /// # Arguments
+    /// * `max_requests` - The maximum number of requests in the given interval.
+    /// * `interval` - The interval in seconds.
+    /// # Returns
+    /// `RateLimiter<InMemoryBackend, SimpleOutput, impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>>` - The rate limiter.
+    /// # Panics
+    /// If the rate limiter can't be created.
+    fn get_rate_limiter_middleware(
+        max_requests: u64,
+        interval: u64,
+    ) -> RateLimiter<InMemoryBackend, SimpleOutput, impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>> {
+        let input = SimpleInputFunctionBuilder::new(time::Duration::from_secs(interval), max_requests)
+            .real_ip_key()
+            .build();
+
+        RateLimiter::builder(InMemoryBackend::builder().build(), input)
+            .add_headers()
+            .build()
+    }
+
     /// Returns a new PrometheusMetrics instance.
     /// # Returns
     /// `Arc<PrometheusMetrics>` - The prometheus metrics.
@@ -194,27 +220,6 @@ impl Server {
                 .build()
                 .unwrap(),
         )
-    }
-
-    /// Returns a new RateLimiter instance.
-    /// # Arguments
-    /// * `max_requests` - The maximum number of requests in the given interval.
-    /// * `interval` - The interval in seconds.
-    /// # Returns
-    /// `RateLimiter<InMemoryBackend, SimpleOutput, impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>>` - The rate limiter.
-    /// # Panics
-    /// If the rate limiter can't be created.
-    fn get_rate_limiter(
-        max_requests: u64,
-        interval: u64,
-    ) -> RateLimiter<InMemoryBackend, SimpleOutput, impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>> {
-        let input = SimpleInputFunctionBuilder::new(time::Duration::from_secs(interval), max_requests)
-            .real_ip_key()
-            .build();
-
-        RateLimiter::builder(InMemoryBackend::builder().build(), input)
-            .add_headers()
-            .build()
     }
 
     /// Returns HTTPS server configuration if available.
