@@ -13,6 +13,14 @@
       </headerContent>
 
       <content>
+        <NotificationList id="notificationList" items="{notifications>/}" showNoData="false">
+          <items>
+            <NotificationListItem title="{notifications>title}" description="{notifications>text}" unread="true"
+              datetime="{path:'notifications>modifiedAt',formatter:'.formatter.dayTimeIsoLabel'}" counter="{notifications>id}"
+              priority="{path:'notifications>priority',formatter:'.formatter.priority'}" visible="{notifications>visible}"
+              close=".onNotificationClose" />
+          </items>
+        </NotificationList>
         <layout:HorizontalLayout allowWrapping="true">
           <layout:content>
 

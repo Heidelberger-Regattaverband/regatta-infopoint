@@ -13,6 +13,8 @@ import {
   RoundCode,
   GroupValue,
 } from "./types";
+import { Priority } from "sap/m/library";
+import JSONModel from "sap/ui/model/json/JSONModel";
 
 /**
  * Formatter utility class for regatta application data formatting.
@@ -31,6 +33,15 @@ export default class Formatter {
       supportedLocales: ["de", "en"],
       fallbackLocale: "de",
     }) as ResourceBundle;
+  }
+
+  static priority(severity?: number): Priority {
+    switch (severity) {
+      case 3: return Priority.High;
+      case 2: return Priority.Medium;
+      case 1: return Priority.Low;
+      default: return Priority.None;
+    }
   }
 
   // -----------------

@@ -3,6 +3,7 @@ use crate::{
     db::aquarius::Aquarius,
     http::{api_doc, rest_api},
 };
+use ::actix_session::config::TtlExtensionPolicy;
 use actix_extensible_rate_limit::{
     RateLimiter,
     backend::{SimpleInput, SimpleInputFunctionBuilder, SimpleOutput, memory::InMemoryBackend},
@@ -67,9 +68,9 @@ impl Server {
         let prometheus = Self::get_prometeus();
 
         let factory_closure = move || {
-            let mut current_count = worker_count.lock().unwrap();
-            *current_count += 1;
-            debug!(count = *current_count, "Created HTTP worker:");
+            let mut count = worker_count.lock().unwrap();
+            *count += 1;
+            debug!(count = *count, "Created HTTP worker:");
 
             // get app with some middlewares initialized
             Self::get_app(secret_key.clone(), rl_max_requests, rl_interval)
@@ -168,7 +169,11 @@ impl Server {
             .cookie_http_only(true)
             // allow the cookie only from the current domain
             .cookie_same_site(SameSite::Strict)
-            .session_lifecycle(PersistentSession::default().session_ttl(Duration::seconds(SECS_OF_WEEKEND)))
+            .session_lifecycle(
+                PersistentSession::default()
+                    .session_ttl_extension_policy(TtlExtensionPolicy::OnEveryRequest)
+                    .session_ttl(Duration::seconds(SECS_OF_WEEKEND)),
+            )
             .cookie_path("".to_string())
             .build()
     }

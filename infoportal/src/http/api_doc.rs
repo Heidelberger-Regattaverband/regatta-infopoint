@@ -3,7 +3,7 @@ use crate::http::{
     monitoring::{Connections, Cpu, Db, Disk, Memory, Monitoring, SysInfo},
     rest_api,
 };
-use ::db::aquarius::model::Message;
+use ::db::aquarius::model::Notification;
 use actix_web::web;
 use db::{
     aquarius::model::{
@@ -17,30 +17,30 @@ use utoipa_swagger_ui::SwaggerUi;
 #[derive(OpenApi)]
 #[openapi(
     paths(
-        rest_api::identity,
-        rest_api::login,
-        rest_api::logout,
+        rest_api::authentication::identity,
+        rest_api::authentication::login,
+        rest_api::authentication::logout,
         rest_api::get_filters,
         rest_api::get_active_regatta,
         rest_api::get_races,
         rest_api::get_race,
         rest_api::get_heats,
         rest_api::get_heat,
-        rest_api::get_participating_clubs,
-        rest_api::get_club_entries,
-        rest_api::get_regatta_club,
-        rest_api::get_participating_athletes,
-        rest_api::get_athlete,
-        rest_api::get_athlete_entries,
+        rest_api::club::get_participating_clubs,
+        rest_api::club::get_club_entries,
+        rest_api::club::get_regatta_club,
+        rest_api::athlete::get_participating_athletes,
+        rest_api::athlete::get_athlete,
+        rest_api::athlete::get_athlete_entries,
         rest_api::get_timestrip,
         rest_api::get_statistics,
         rest_api::calculate_scoring,
         rest_api::get_schedule,
-        rest_api::get_messages
+        rest_api::notification::get_notifications
     ),
     components(
         schemas(
-            Monitoring, Db, Connections, User, Credentials, Scope, SysInfo, Cpu, Memory, Disk, Message,
+            Monitoring, Db, Connections, User, Credentials, Scope, SysInfo, Cpu, Memory, Disk, Notification,
             Regatta, AgeClass, BoatClass, Filters, Club, Entry, Athlete, Crew, Heat, HeatEntry, Referee, Race, TimeStamp
         ),
     ),
