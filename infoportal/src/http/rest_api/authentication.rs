@@ -13,6 +13,7 @@ use ::actix_web::error::InternalError;
 use ::actix_web::get;
 use ::actix_web::post;
 use ::actix_web::web::Json;
+use ::tracing::error;
 
 /// Authenticate the user. This will attach the user identity to the current session.
 #[utoipa::path(
@@ -29,8 +30,8 @@ async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<i
         // authentication succeeded
         Ok(user) => {
             // attach valid user identity to current session
-            if let Err(e) = Identity::login(&request.extensions(), user.username.clone()) {
-                tracing::error!("Failed to attach user identity to session: {}", e);
+            if let Err(err) = Identity::login(&request.extensions(), user.username.clone()) {
+                error!(%err, user = user.username, "Failed to attach user identity to session");
                 return Err(ErrorInternalServerError("Failed to create session"));
             }
             // return user information: username and scope
@@ -68,8 +69,8 @@ async fn identity(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
     if let Some(user) = opt_user {
         match user.id() {
             Ok(id) => Ok(Json(User::new(id, UserScope::User))),
-            Err(e) => {
-                tracing::error!("Failed to get user ID from identity: {}", e);
+            Err(err) => {
+                error!(%err, "Failed to get user ID from identity");
                 Err(ErrorInternalServerError("Failed to get user identity"))
             }
         }

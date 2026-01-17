@@ -1,3 +1,4 @@
+pub(crate) mod athlete;
 pub(crate) mod authentication;
 pub(crate) mod notification;
 
@@ -12,7 +13,7 @@ use ::actix_web::{
 };
 use ::db::tiberius::create_client;
 use ::db::{
-    aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta},
+    aquarius::model::{Club, Entry, Filters, Heat, Race, Regatta},
     timekeeper::{TimeStamp, TimeStrip},
 };
 use ::tracing::error;
@@ -231,83 +232,6 @@ async fn get_regatta_club(
     Ok(Json(club))
 }
 
-// Athletes Endpoints
-
-#[utoipa::path(
-    description = "Get all participating athletes of a regatta.",
-    context_path = PATH,
-    responses(
-        (status = 200, description = "Participating athletes", body = Vec<Athlete>),
-        (status = 500, description = INTERNAL_SERVER_ERROR)
-    )
-)]
-#[get("/regattas/{regatta_id}/athletes")]
-async fn get_participating_athletes(
-    path: Path<i32>,
-    aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
-) -> Result<impl Responder, Error> {
-    let regatta_id = path.into_inner();
-    let clubs = aquarius
-        .get_participating_athletes(regatta_id, opt_user)
-        .await
-        .map_err(|err| {
-            error!("{err}");
-            ErrorInternalServerError(err)
-        })?;
-    Ok(Json(clubs))
-}
-
-#[utoipa::path(
-    description = "Get a specific athlete participating in a regatta.",
-    context_path = PATH,
-    responses(
-        (status = 200, description = "Athlete details", body = Athlete),
-        (status = 500, description = INTERNAL_SERVER_ERROR)
-    )
-)]
-#[get("/regattas/{regatta_id}/athletes/{athlete_id}")]
-async fn get_athlete(
-    path: Path<(i32, i32)>,
-    aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
-) -> Result<impl Responder, Error> {
-    let (regatta_id, athlete_id) = path.into_inner();
-    let clubs = aquarius
-        .get_athlete(regatta_id, athlete_id, opt_user)
-        .await
-        .map_err(|err| {
-            error!("{err}");
-            ErrorInternalServerError(err)
-        })?;
-    Ok(Json(clubs))
-}
-
-#[utoipa::path(
-    description = "Get all entries of a specific athlete in a regatta.",
-    context_path = PATH,
-    responses(
-        (status = 200, description = "Athlete entries", body = Vec<Entry>),
-        (status = 500, description = INTERNAL_SERVER_ERROR)
-    )
-)]
-#[get("/regattas/{regatta_id}/athletes/{athlete_id}/entries")]
-async fn get_athlete_entries(
-    ids: Path<(i32, i32)>,
-    aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
-) -> Result<impl Responder, Error> {
-    let ids = ids.into_inner();
-    let entries = aquarius
-        .get_athlete_entries(ids.0, ids.1, opt_user)
-        .await
-        .map_err(|err| {
-            error!("{err}");
-            ErrorInternalServerError(err)
-        })?;
-    Ok(Json(entries))
-}
-
 // Misc Endpoints
 
 #[utoipa::path(
@@ -418,12 +342,12 @@ async fn get_schedule(
 pub(crate) fn config(cfg: &mut ServiceConfig) {
     cfg.service(
         ActixScope::new(PATH)
-            .service(get_athlete)
+            .service(athlete::get_athlete)
             .service(get_regatta_club)
             .service(get_club_entries)
-            .service(get_athlete_entries)
+            .service(athlete::get_athlete_entries)
             .service(get_participating_clubs)
-            .service(get_participating_athletes)
+            .service(athlete::get_participating_athletes)
             .service(get_active_regatta)
             .service(get_race)
             .service(get_races)

@@ -34,14 +34,11 @@ async fn get_notifications(
     session.entries().iter().for_each(|(key, value)| {
         debug!(key, value, "Query Notification Session Entry");
     });
-
-    let all_notifications = aquarius
-        .get_notifications(regatta_id.into_inner())
-        .await
-        .map_err(|err| {
-            error!(%err, "Failed to get notifications");
-            ErrorInternalServerError(err)
-        })?;
+    let regatta_id = regatta_id.into_inner();
+    let all_notifications = aquarius.get_notifications(regatta_id).await.map_err(|err| {
+        error!(%err, regatta_id, "Failed to get notifications");
+        ErrorInternalServerError(err)
+    })?;
 
     let notifications: Vec<Notification> = all_notifications
         .into_iter()
