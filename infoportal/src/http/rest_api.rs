@@ -1,3 +1,5 @@
+pub(crate) mod notifications;
+
 use crate::config::CONFIG;
 use crate::{
     db::aquarius::Aquarius,
@@ -7,22 +9,17 @@ use crate::{
     },
 };
 use ::actix_identity::Identity;
-use ::actix_session::Session;
 use ::actix_web::{
     Error, HttpMessage, HttpRequest, HttpResponse, Responder, Scope as ActixScope,
     error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized, InternalError},
     get, post,
     web::{Data, Json, Path, ServiceConfig},
 };
-use ::db::aquarius::model::Notification;
 use ::db::tiberius::create_client;
 use ::db::{
     aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta},
     timekeeper::{TimeStamp, TimeStrip},
 };
-use ::tiberius::time::chrono::DateTime;
-use ::tiberius::time::chrono::Utc;
-use ::tracing::debug;
 use ::tracing::error;
 
 /// Path to REST API
@@ -422,58 +419,6 @@ async fn get_schedule(
     Ok(Json(schedule))
 }
 
-#[utoipa::path(
-    description = "Get all messages for a regatta.",
-    context_path = PATH,
-    responses(
-        (status = 200, description = "Messages for <regatta_id>", body = Vec<Notification>),
-        (status = 500, description = INTERNAL_SERVER_ERROR)
-    )
-)]
-#[get("/regattas/{regatta_id}/notifications")]
-async fn get_notifications(
-    regatta_id: Path<i32>,
-    aquarius: Data<Aquarius>,
-    session: Session,
-) -> Result<impl Responder, Error> {
-    session.entries().iter().for_each(|(key, value)| {
-        debug!(key, value, "Query Notification Session Entry");
-    });
-
-    let all_notifications = aquarius
-        .get_notifications(regatta_id.into_inner())
-        .await
-        .map_err(|err| {
-            error!(%err, "Failed to get notifications");
-            ErrorInternalServerError(err)
-        })?;
-
-    let notifications: Vec<Notification> = all_notifications
-        .into_iter()
-        .filter(|notification| {
-            let read_value = session
-                .get::<DateTime<Utc>>(&format!("notifications.{}.read", notification.id))
-                .unwrap_or(None);
-            let read = read_value.is_some_and(|read| read > notification.modified_at);
-            debug!(
-                notification_id = notification.id,
-                read, "Checking notification read status"
-            );
-            !read
-        })
-        .collect();
-    Ok(Json(notifications))
-}
-
-#[post("/notifications/{notification_id}/read")]
-async fn notification_read(notification_id: Path<i32>, session: Session) -> Result<impl Responder, Error> {
-    session.insert(
-        format!("notifications.{}.read", notification_id.into_inner()),
-        Utc::now(),
-    )?;
-    Ok(HttpResponse::NoContent())
-}
-
 /// Authenticate the user. This will attach the user identity to the current session.
 #[utoipa::path(
     context_path = PATH,
@@ -558,8 +503,8 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(get_statistics)
             .service(get_schedule)
             .service(get_timestrip)
-            .service(get_notifications)
-            .service(notification_read)
+            .service(notifications::get_notifications)
+            .service(notifications::notification_read)
             .service(login)
             .service(identity)
             .service(logout)
