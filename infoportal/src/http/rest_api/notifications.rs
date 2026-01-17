@@ -47,7 +47,7 @@ async fn get_notifications(
         .into_iter()
         .filter(|notification| {
             let read_value = session
-                .get::<DateTime<Utc>>(&format!("notifications.{}.read", notification.id))
+                .get::<DateTime<Utc>>(&create_notification_read_key(notification.id))
                 .unwrap_or(None);
             let read = read_value.is_some_and(|read| read > notification.modified_at);
             debug!(
@@ -62,9 +62,11 @@ async fn get_notifications(
 
 #[post("/notifications/{notification_id}/read")]
 async fn notification_read(notification_id: Path<i32>, session: Session) -> Result<impl Responder, Error> {
-    session.insert(
-        format!("notifications.{}.read", notification_id.into_inner()),
-        Utc::now(),
-    )?;
+    session.insert(create_notification_read_key(notification_id.into_inner()), Utc::now())?;
+    session.renew();
     Ok(HttpResponse::NoContent())
+}
+
+fn create_notification_read_key(notification_id: i32) -> String {
+    format!("notifications.{}.read", notification_id)
 }
