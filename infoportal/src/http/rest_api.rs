@@ -2,9 +2,10 @@ pub(crate) mod athlete;
 pub(crate) mod authentication;
 pub(crate) mod club;
 pub(crate) mod misc;
+pub(crate) mod monitoring;
 pub(crate) mod notification;
 
-use crate::{db::aquarius::Aquarius, http::ws};
+use crate::db::aquarius::Aquarius;
 use ::actix_identity::Identity;
 use ::actix_web::{
     Error, Responder, Scope as ActixScope,
@@ -183,6 +184,6 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(authentication::login)
             .service(authentication::identity)
             .service(authentication::logout)
-            .service(ws::index),
+            .service(monitoring::index),
     );
 }
