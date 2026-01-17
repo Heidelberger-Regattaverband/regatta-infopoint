@@ -1,5 +1,3 @@
-// Athletes Endpoints
-
 use crate::db::aquarius::Aquarius;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
@@ -14,6 +12,8 @@ use ::actix_web::web::Path;
 use ::db::aquarius::model::Athlete;
 use ::db::aquarius::model::Entry;
 use ::tracing::error;
+
+// Athletes Endpoints
 
 #[utoipa::path(
     description = "Get all participating athletes of a regatta.",
