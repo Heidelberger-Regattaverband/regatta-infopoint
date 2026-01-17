@@ -4,6 +4,7 @@ use crate::{
     http::{api_doc, rest_api},
 };
 use ::actix_session::config::TtlExtensionPolicy;
+use ::std::time::Duration;
 use actix_extensible_rate_limit::{
     RateLimiter,
     backend::{SimpleInput, SimpleInputFunctionBuilder, SimpleOutput, memory::InMemoryBackend},
@@ -14,7 +15,7 @@ use actix_session::{SessionMiddleware, config::PersistentSession, storage::Cooki
 use actix_web::{
     App, Error, HttpServer,
     body::{BoxBody, EitherBody},
-    cookie::{Key, SameSite, time::Duration},
+    cookie::{Key, SameSite},
     dev::{Service, ServiceFactory, ServiceRequest, ServiceResponse},
     web::{self, Data},
 };
@@ -139,11 +140,14 @@ impl Server {
             InitError = (),
         >,
     > {
+        let expiration = Duration::from_secs(24 * 60 * 60 * 2);
+        let identity_mw = IdentityMiddleware::builder().visit_deadline(Some(expiration)).build();
+        let session_mw = Self::get_session_middleware(secret_key.clone(), expiration);
         App::new()
             // Install the identity framework first.
-            .wrap(IdentityMiddleware::default())
+            .wrap(identity_mw)
             // adds support for HTTPS sessions
-            .wrap(Self::get_session_middleware(secret_key))
+            .wrap(session_mw)
             // adds support for rate limiting of HTTP requests
             .wrap(Self::get_rate_limiter(rl_max_requests, rl_interval))
             .wrap_fn(|req, srv| {
@@ -162,8 +166,7 @@ impl Server {
     /// `SessionMiddleware<CookieSessionStore>` - The session middleware.
     /// # Panics
     /// If the session middleware can't be created.
-    fn get_session_middleware(secret_key: Key) -> SessionMiddleware<CookieSessionStore> {
-        const SECS_OF_WEEKEND: i64 = 60 * 60 * 24 * 2;
+    fn get_session_middleware(secret_key: Key, expiration: Duration) -> SessionMiddleware<CookieSessionStore> {
         SessionMiddleware::builder(CookieSessionStore::default(), secret_key)
             .cookie_secure(true)
             .cookie_http_only(true)
@@ -172,7 +175,7 @@ impl Server {
             .session_lifecycle(
                 PersistentSession::default()
                     .session_ttl_extension_policy(TtlExtensionPolicy::OnEveryRequest)
-                    .session_ttl(Duration::seconds(SECS_OF_WEEKEND)),
+                    .session_ttl(expiration.try_into().unwrap()),
             )
             .cookie_path("".to_string())
             .build()
