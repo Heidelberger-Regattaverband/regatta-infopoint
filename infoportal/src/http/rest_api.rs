@@ -1,18 +1,13 @@
+pub(crate) mod authentication;
 pub(crate) mod notifications;
 
 use crate::config::CONFIG;
-use crate::{
-    db::aquarius::Aquarius,
-    http::{
-        auth::{Credentials, Scope as UserScope, User},
-        ws,
-    },
-};
+use crate::{db::aquarius::Aquarius, http::ws};
 use ::actix_identity::Identity;
 use ::actix_web::{
-    Error, HttpMessage, HttpRequest, HttpResponse, Responder, Scope as ActixScope,
-    error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized, InternalError},
-    get, post,
+    Error, Responder, Scope as ActixScope,
+    error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized},
+    get,
     web::{Data, Json, Path, ServiceConfig},
 };
 use ::db::tiberius::create_client;
@@ -419,70 +414,6 @@ async fn get_schedule(
     Ok(Json(schedule))
 }
 
-/// Authenticate the user. This will attach the user identity to the current session.
-#[utoipa::path(
-    context_path = PATH,
-    request_body = Credentials,
-    responses(
-        (status = 200, description = "Authenticated", body = User),
-        (status = 401, description = "Unauthorized", body = User, example = json!({"user": "anonymous", "scope": "guest"}))
-    )
-)]
-#[post("/login")]
-async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<impl Responder, Error> {
-    match User::authenticate(credentials.into_inner()).await {
-        // authentication succeeded
-        Ok(user) => {
-            // attach valid user identity to current session
-            if let Err(e) = Identity::login(&request.extensions(), user.username.clone()) {
-                tracing::error!("Failed to attach user identity to session: {}", e);
-                return Err(ErrorInternalServerError("Failed to create session"));
-            }
-            // return user information: username and scope
-            Ok(Json(user))
-        }
-        // authentication failed
-        Err(err) => Err(InternalError::from_response("", err).into()),
-    }
-}
-
-/// Logout the user. This will remove the user identity from the current session.
-#[utoipa::path(
-    context_path = PATH,
-    responses(
-        (status = 204, description = "User logged out"),
-        (status = 401, description = "Unauthorized")
-    )
-)]
-#[post("/logout")]
-async fn logout(user: Identity) -> impl Responder {
-    user.logout();
-    HttpResponse::NoContent()
-}
-
-/// Get the user identity. This will return the user information if the user is authenticated. Otherwise, it will return a guest user.
-#[utoipa::path(
-    context_path = PATH,
-    responses(
-        (status = 200, description = "Authenticated", body = User, example = json!({"user": "name", "scope": "user"})),
-        (status = 401, description = "Unauthorized", body = User, example = json!({ "user": "anonymous", "scope": "guest"}))
-    )
-)]
-#[get("/identity")]
-async fn identity(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
-    if let Some(user) = opt_user {
-        match user.id() {
-            Ok(id) => Ok(Json(User::new(id, UserScope::User))),
-            Err(e) => {
-                tracing::error!("Failed to get user ID from identity: {}", e);
-                Err(ErrorInternalServerError("Failed to get user identity"))
-            }
-        }
-    } else {
-        Err(InternalError::from_response("", HttpResponse::Unauthorized().json(User::new_guest())).into())
-    }
-}
-
 /// Configure the REST API. This will add all REST API endpoints to the service configuration.
 pub(crate) fn config(cfg: &mut ServiceConfig) {
     cfg.service(
@@ -505,9 +436,9 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(get_timestrip)
             .service(notifications::get_notifications)
             .service(notifications::notification_read)
-            .service(login)
-            .service(identity)
-            .service(logout)
+            .service(authentication::login)
+            .service(authentication::identity)
+            .service(authentication::logout)
             .service(ws::index),
     );
 }

@@ -17,9 +17,9 @@ use utoipa_swagger_ui::SwaggerUi;
 #[derive(OpenApi)]
 #[openapi(
     paths(
-        rest_api::identity,
-        rest_api::login,
-        rest_api::logout,
+        rest_api::authentication::identity,
+        rest_api::authentication::login,
+        rest_api::authentication::logout,
         rest_api::get_filters,
         rest_api::get_active_regatta,
         rest_api::get_races,
