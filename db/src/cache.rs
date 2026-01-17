@@ -3,6 +3,7 @@ use crate::{
     aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule},
     error::DbError,
 };
+use ::std::mem;
 use futures::future::Future;
 use std::{
     fmt::Display,
@@ -44,7 +45,7 @@ where
     V: Send + Sync + Clone + 'static,
 {
     fn try_new(config: CacheConfig) -> Result<Self, DbError> {
-        let cache = AsyncCache::new(config.max_entries, config.max_cost, task::spawn)?;
+        let cache = AsyncCache::new(config.max_entries, config.max_cost as i64, task::spawn)?;
         debug!(max_entries = config.max_entries, max_cost = config.max_cost, ttl = ?config.ttl,
             "New Cache:",
         );
@@ -88,7 +89,8 @@ where
     }
 
     async fn set(&self, key: &K, value: &V) -> Result<bool, DbError> {
-        self.set_with_cost(key, value, 1).await
+        let cost = mem::size_of::<V>() as i64;
+        self.set_with_cost(key, value, cost).await
     }
 
     async fn set_with_cost(&self, key: &K, value: &V, cost: i64) -> Result<bool, DbError> {
@@ -292,32 +294,32 @@ impl CachesConfig {
             regattas: CacheConfig {
                 max_entries: MAX_REGATTAS_COUNT,
                 ttl: base_ttl,
-                max_cost: 100_000, // Lower cost - regattas are small but critical
+                max_cost: mem::size_of::<Regatta>() * MAX_REGATTAS_COUNT,
             },
             races: CacheConfig {
                 max_entries: MAX_RACES_COUNT,
                 ttl: base_ttl,
-                max_cost: 500_000, // Medium cost for race data with results
+                max_cost: mem::size_of::<Race>() * MAX_RACES_COUNT,
             },
             heats: CacheConfig {
                 max_entries: MAX_HEATS_COUNT,
                 ttl: base_ttl,
-                max_cost: 750_000, // Higher cost - heats contain entry lists
+                max_cost: mem::size_of::<Heat>() * MAX_HEATS_COUNT,
             },
             clubs: CacheConfig {
                 max_entries: MAX_CLUBS_COUNT,
                 ttl: base_ttl,
-                max_cost: 200_000, // Medium cost for club data
+                max_cost: mem::size_of::<Club>() * MAX_CLUBS_COUNT,
             },
             athletes: CacheConfig {
-                max_entries: MAX_RACES_COUNT, // Reuse race count for athletes
+                max_entries: MAX_RACES_COUNT,
                 ttl: base_ttl,
-                max_cost: 300_000, // Medium cost for athlete data
+                max_cost: mem::size_of::<Athlete>() * MAX_RACES_COUNT,
             },
             notifications: CacheConfig {
                 max_entries: MAX_NOTIFICATIONS_COUNT,
                 ttl: base_ttl,
-                max_cost: 50_000, // Low cost - notifications are small
+                max_cost: mem::size_of::<Notification>() * MAX_NOTIFICATIONS_COUNT,
             },
         }
     }
@@ -331,7 +333,7 @@ struct CacheConfig {
     /// Time-to-live for cache entries
     ttl: Duration,
     /// Maximum cost for the cache (memory limit)
-    max_cost: i64,
+    max_cost: usize,
 }
 
 /// Cache statistics for monitoring and debugging with actual tracking capabilities
