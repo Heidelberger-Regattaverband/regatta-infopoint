@@ -47,10 +47,6 @@ async fn get_notifications(
                 .get::<DateTime<Utc>>(&create_notification_read_key(notification.id))
                 .unwrap_or(None);
             let read = read_value.is_some_and(|read| read > notification.modified_at);
-            debug!(
-                notification_id = notification.id,
-                read, "Checking notification read status"
-            );
             !read
         })
         .collect();

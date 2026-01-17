@@ -1,3 +1,4 @@
+use crate::aquarius::model::Notification;
 use crate::{
     aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule},
     error::DbError,
@@ -183,6 +184,8 @@ pub struct Caches {
     pub race_heats_entries: Cache<i32, Race>,
     pub athlete: Cache<i32, Athlete>,
     pub heat: Cache<i32, Heat>,
+
+    pub notifications: Cache<i32, Vec<Notification>>,
 }
 
 impl Caches {
@@ -208,6 +211,8 @@ impl Caches {
             race_heats_entries: Cache::try_new(config.races)?,
             athlete: Cache::try_new(config.athletes)?,
             heat: Cache::try_new(config.heats)?,
+
+            notifications: Cache::try_new(config.notifications)?,
         })
     }
 
@@ -228,6 +233,7 @@ impl Caches {
                 this.race_heats_entries.stats(),
                 this.athlete.stats(),
                 this.heat.stats(),
+                this.notifications.stats(),
             ]
         };
 
@@ -264,6 +270,7 @@ struct CachesConfig {
     heats: CacheConfig,
     clubs: CacheConfig,
     athletes: CacheConfig,
+    notifications: CacheConfig,
 }
 
 impl CachesConfig {
@@ -280,7 +287,7 @@ impl CachesConfig {
         const MAX_RACES_COUNT: usize = 200;
         const MAX_HEATS_COUNT: usize = 350;
         const MAX_CLUBS_COUNT: usize = 100;
-
+        const MAX_NOTIFICATIONS_COUNT: usize = 10;
         Self {
             regattas: CacheConfig {
                 max_entries: MAX_REGATTAS_COUNT,
@@ -306,6 +313,11 @@ impl CachesConfig {
                 max_entries: MAX_RACES_COUNT, // Reuse race count for athletes
                 ttl: base_ttl,
                 max_cost: 300_000, // Medium cost for athlete data
+            },
+            notifications: CacheConfig {
+                max_entries: MAX_NOTIFICATIONS_COUNT,
+                ttl: base_ttl,
+                max_cost: 50_000, // Low cost - notifications are small
             },
         }
     }
