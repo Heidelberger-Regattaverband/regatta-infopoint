@@ -34,7 +34,7 @@ async fn get_participating_clubs(
         .get_participating_clubs(regatta_id, opt_user)
         .await
         .map_err(|err| {
-            error!("{err}");
+            error!(%err, regatta_id, "Failed to get participating clubs");
             ErrorInternalServerError(err)
         })?;
     Ok(Json(clubs))
@@ -54,11 +54,14 @@ async fn get_club_entries(
     aquarius: Data<Aquarius>,
     opt_user: Option<Identity>,
 ) -> Result<impl Responder, Error> {
-    let ids = ids.into_inner();
-    let entries = aquarius.get_club_entries(ids.0, ids.1, opt_user).await.map_err(|err| {
-        error!("{err}");
-        ErrorInternalServerError(err)
-    })?;
+    let (regatta_id, club_id) = ids.into_inner();
+    let entries = aquarius
+        .get_club_entries(regatta_id, club_id, opt_user)
+        .await
+        .map_err(|err| {
+            error!(%err, regatta_id, club_id,"Failed to get club entries");
+            ErrorInternalServerError(err)
+        })?;
     Ok(Json(entries))
 }
 
@@ -76,10 +79,13 @@ async fn get_regatta_club(
     aquarius: Data<Aquarius>,
     opt_user: Option<Identity>,
 ) -> Result<impl Responder, Error> {
-    let ids = ids.into_inner();
-    let club = aquarius.get_regatta_club(ids.0, ids.1, opt_user).await.map_err(|err| {
-        error!("{err}");
-        ErrorInternalServerError(err)
-    })?;
+    let (regatta_id, club_id) = ids.into_inner();
+    let club = aquarius
+        .get_regatta_club(regatta_id, club_id, opt_user)
+        .await
+        .map_err(|err| {
+            error!(%err, regatta_id, club_id, "Failed to get club");
+            ErrorInternalServerError(err)
+        })?;
     Ok(Json(club))
 }
