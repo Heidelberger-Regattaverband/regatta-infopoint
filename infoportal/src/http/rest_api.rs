@@ -1,5 +1,5 @@
 pub(crate) mod authentication;
-pub(crate) mod notifications;
+pub(crate) mod notification;
 
 use crate::config::CONFIG;
 use crate::{db::aquarius::Aquarius, http::ws};
@@ -434,8 +434,8 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(get_statistics)
             .service(get_schedule)
             .service(get_timestrip)
-            .service(notifications::get_notifications)
-            .service(notifications::notification_read)
+            .service(notification::get_notifications)
+            .service(notification::notification_read)
             .service(authentication::login)
             .service(authentication::identity)
             .service(authentication::logout)
