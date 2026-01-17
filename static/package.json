@@ -19,8 +19,8 @@
     "@ui5/cli": "^4.0.39",
     "@ui5/linter": "^1.20.7",
     "typescript": "^5.9.3",
-    "ui5-tooling-modules": "^3.34.1",
-    "ui5-tooling-transpile": "^3.10.0",
+    "ui5-tooling-modules": "^3.34.2",
+    "ui5-tooling-transpile": "^3.10.1",
     "watch": "^1.0.2"
   }
 }
