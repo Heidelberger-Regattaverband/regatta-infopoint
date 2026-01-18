@@ -175,14 +175,14 @@ impl Server {
         SessionMiddleware::builder(CookieSessionStore::default(), secret_key)
             .cookie_secure(true)
             .cookie_http_only(true)
-            // allow the cookie only from the current domain
-            .cookie_same_site(SameSite::Strict)
+            .cookie_same_site(SameSite::Lax)
             .session_lifecycle(
                 PersistentSession::default()
                     .session_ttl_extension_policy(TtlExtensionPolicy::OnEveryRequest)
                     .session_ttl(expiration.try_into().expect("Expected valid duration")),
             )
             .cookie_path("".to_string())
+            .cookie_name("session_id".to_string())
             .build()
     }
 
