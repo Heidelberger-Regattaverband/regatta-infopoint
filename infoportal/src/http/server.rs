@@ -180,7 +180,7 @@ impl Server {
                     .session_ttl_extension_policy(TtlExtensionPolicy::OnEveryRequest)
                     .session_ttl(expiration.try_into().expect("Expected valid duration")),
             )
-            .cookie_path("".to_string())
+            .cookie_path("/".to_string())
             .cookie_name("session_id".to_string())
             .build()
     }
