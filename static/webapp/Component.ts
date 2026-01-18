@@ -71,7 +71,7 @@ export default class Component extends UIComponent {
 
             setInterval(async () => {
                 await this.loadNotifications();
-            }, 60000);
+            }, 6000);
         })
 
         // set device model
@@ -155,6 +155,7 @@ export default class Component extends UIComponent {
         console.debug("Loading notifications");
         const regattaId = this.regattaModel?.getData().id ?? -1;
         await this.messagesModel.loadData(`/api/regattas/${regattaId}/notifications`);
+        this.messagesModel.refresh();
         console.debug("Notifications loaded");
         return this.messagesModel;
     }
