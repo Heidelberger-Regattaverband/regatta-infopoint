@@ -174,7 +174,8 @@ impl Server {
                     .session_ttl_extension_policy(TtlExtensionPolicy::OnEveryRequest)
                     .session_ttl(Duration::seconds(SECS_OF_WEEKEND)),
             )
-            .cookie_path("".to_string())
+            .cookie_path("/".to_string())
+            .cookie_name("session_id".to_string())
             .build()
     }
 

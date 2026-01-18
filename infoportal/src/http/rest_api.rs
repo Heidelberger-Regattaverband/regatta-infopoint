@@ -1,22 +1,19 @@
 pub(crate) mod athlete;
 pub(crate) mod authentication;
 pub(crate) mod club;
+pub(crate) mod misc;
+pub(crate) mod monitoring;
 pub(crate) mod notification;
 
-use crate::config::CONFIG;
-use crate::{db::aquarius::Aquarius, http::ws};
+use crate::db::aquarius::Aquarius;
 use ::actix_identity::Identity;
 use ::actix_web::{
     Error, Responder, Scope as ActixScope,
-    error::{ErrorInternalServerError, ErrorNotFound, ErrorUnauthorized},
+    error::{ErrorInternalServerError, ErrorNotFound},
     get,
     web::{Data, Json, Path, ServiceConfig},
 };
-use ::db::tiberius::create_client;
-use ::db::{
-    aquarius::model::{Filters, Heat, Race, Regatta},
-    timekeeper::{TimeStamp, TimeStrip},
-};
+use ::db::aquarius::model::{Filters, Heat, Race, Regatta};
 use ::tracing::error;
 
 /// Path to REST API
@@ -162,112 +159,6 @@ async fn get_heat(
     Ok(Json(heat))
 }
 
-// Misc Endpoints
-
-#[utoipa::path(
-    description = "Get the timestrip data for the active regatta. Requires authentication.",
-    context_path = PATH,
-    responses(
-        (status = 200, description = "Timestrip data", body = Vec<TimeStamp>),
-        (status = 401, description = "Unauthorized", body = String, example = "Unauthorized"),
-        (status = 500, description = INTERNAL_SERVER_ERROR)
-    )
-)]
-#[get("/regattas/active/timestrip")]
-async fn get_timestrip(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
-    if let Some(user) = opt_user
-        && let Ok(id) = user.id()
-        && id == "sa"
-    {
-        let client = create_client(&CONFIG.get_db_config()).await.map_err(|err| {
-            error!("{err}");
-            ErrorInternalServerError(err)
-        })?;
-        let timestrip = TimeStrip::load(client).await.map_err(|err| {
-            error!("{err}");
-            ErrorInternalServerError(err)
-        })?;
-        return Ok(Json(timestrip.time_stamps));
-    }
-    Err(ErrorUnauthorized("Unauthorized"))
-}
-
-#[utoipa::path(
-    description = "Get statistics for a regatta. Requires authentication.",
-    context_path = PATH,
-    responses(
-        (status = 200, description = "Regatta statistics"),
-        (status = 401, description = "Unauthorized", body = String, example = "Unauthorized"),
-        (status = 500, description = INTERNAL_SERVER_ERROR)
-    )
-)]
-#[get("/regattas/{regatta_id}/statistics")]
-async fn get_statistics(
-    path: Path<i32>,
-    aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
-) -> Result<impl Responder, Error> {
-    if opt_user.is_some() {
-        let regatta_id = path.into_inner();
-        let stats = aquarius.query_statistics(regatta_id).await.map_err(|err| {
-            error!("{err}");
-            ErrorInternalServerError(err)
-        })?;
-        Ok(Json(stats))
-    } else {
-        Err(ErrorUnauthorized("Unauthorized"))
-    }
-}
-
-#[utoipa::path(
-    description = "Calculate scoring for a regatta. Requires authentication.",
-    context_path = PATH,
-    responses(
-        (status = 200, description = "Calculated scoring data"),
-        (status = 401, description = "Unauthorized", body = String, example = "Unauthorized"),
-        (status = 500, description = INTERNAL_SERVER_ERROR)
-    )
-)]
-#[get("/regattas/{regatta_id}/calculateScoring")]
-async fn calculate_scoring(
-    path: Path<i32>,
-    aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
-) -> Result<impl Responder, Error> {
-    if opt_user.is_some() {
-        let regatta_id = path.into_inner();
-        let scoring = aquarius.calculate_scoring(regatta_id).await.map_err(|err| {
-            error!("{err}");
-            ErrorInternalServerError(err)
-        })?;
-        Ok(Json(scoring))
-    } else {
-        Err(ErrorUnauthorized("Unauthorized"))
-    }
-}
-
-#[utoipa::path(
-    description = "Get the schedule for a regatta.",
-    context_path = PATH,
-    responses(
-        (status = 200, description = "Regatta schedule"),
-        (status = 500, description = INTERNAL_SERVER_ERROR)
-    )
-)]
-#[get("/regattas/{regatta_id}/schedule")]
-async fn get_schedule(
-    path: Path<i32>,
-    aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
-) -> Result<impl Responder, Error> {
-    let regatta_id = path.into_inner();
-    let schedule = aquarius.query_schedule(regatta_id, opt_user).await.map_err(|err| {
-        error!("{err}");
-        ErrorInternalServerError(err)
-    })?;
-    Ok(Json(schedule))
-}
-
 /// Configure the REST API. This will add all REST API endpoints to the service configuration.
 pub(crate) fn config(cfg: &mut ServiceConfig) {
     cfg.service(
@@ -284,15 +175,15 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(get_heats)
             .service(get_filters)
             .service(get_heat)
-            .service(calculate_scoring)
-            .service(get_statistics)
-            .service(get_schedule)
-            .service(get_timestrip)
+            .service(misc::calculate_scoring)
+            .service(misc::get_statistics)
+            .service(misc::get_schedule)
+            .service(misc::get_timestrip)
             .service(notification::get_notifications)
             .service(notification::notification_read)
             .service(authentication::login)
             .service(authentication::identity)
             .service(authentication::logout)
-            .service(ws::index),
+            .service(monitoring::index),
     );
 }
