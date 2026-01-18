@@ -3,9 +3,7 @@ use crate::{
     db::aquarius::Aquarius,
     http::{api_doc, rest_api},
 };
-use ::actix_identity::config::LogoutBehavior;
 use ::actix_session::config::TtlExtensionPolicy;
-use ::std::time::Duration;
 use actix_extensible_rate_limit::{
     RateLimiter,
     backend::{SimpleInput, SimpleInputFunctionBuilder, SimpleOutput, memory::InMemoryBackend},
@@ -16,7 +14,7 @@ use actix_session::{SessionMiddleware, config::PersistentSession, storage::Cooki
 use actix_web::{
     App, Error, HttpServer,
     body::{BoxBody, EitherBody},
-    cookie::{Key, SameSite},
+    cookie::{Key, SameSite, time::Duration},
     dev::{Service, ServiceFactory, ServiceRequest, ServiceResponse},
     web::{self, Data},
 };
@@ -79,6 +77,7 @@ impl Server {
                 // collect metrics about requests and responses
                 .wrap(prometheus.clone())
                 .app_data(aquarius.clone())
+                .app_data(Data::new(prometheus.registry.clone()))
                 .configure(rest_api::config)
                 .configure(api_doc::config)
                 .service(
@@ -140,20 +139,13 @@ impl Server {
             InitError = (),
         >,
     > {
-        let expiration = Duration::from_secs(24 * 60 * 60 * 2);
-        let identity_mw = IdentityMiddleware::builder()
-            .logout_behavior(LogoutBehavior::PurgeSession)
-            .visit_deadline(Some(expiration))
-            .build();
-        let session_mw = Self::get_session_middleware(secret_key.clone(), expiration);
-
         App::new()
             // Install the identity framework first.
-            .wrap(identity_mw)
+            .wrap(IdentityMiddleware::default())
             // adds support for HTTPS sessions
-            .wrap(session_mw)
+            .wrap(Self::get_session_middleware(secret_key))
             // adds support for rate limiting of HTTP requests
-            .wrap(Self::get_rate_limiter_middleware(rl_max_requests, rl_interval))
+            .wrap(Self::get_rate_limiter(rl_max_requests, rl_interval))
             .wrap_fn(|req, srv| {
                 // println!("Hi from start. You requested: {}", req.path());
                 srv.call(req).map(|res| {
@@ -170,39 +162,20 @@ impl Server {
     /// `SessionMiddleware<CookieSessionStore>` - The session middleware.
     /// # Panics
     /// If the session middleware can't be created.
-    fn get_session_middleware(secret_key: Key, expiration: Duration) -> SessionMiddleware<CookieSessionStore> {
+    fn get_session_middleware(secret_key: Key) -> SessionMiddleware<CookieSessionStore> {
+        const SECS_OF_WEEKEND: i64 = 60 * 60 * 24 * 2;
         SessionMiddleware::builder(CookieSessionStore::default(), secret_key)
             .cookie_secure(true)
             .cookie_http_only(true)
+            // allow the cookie only from the current domain
             .cookie_same_site(SameSite::Strict)
             .session_lifecycle(
                 PersistentSession::default()
                     .session_ttl_extension_policy(TtlExtensionPolicy::OnEveryRequest)
-                    .session_ttl(expiration.try_into().expect("Expected valid duration")),
+                    .session_ttl(Duration::seconds(SECS_OF_WEEKEND)),
             )
             .cookie_path("/".to_string())
             .cookie_name("session_id".to_string())
-            .build()
-    }
-
-    /// Returns a new RateLimiter instance.
-    /// # Arguments
-    /// * `max_requests` - The maximum number of requests in the given interval.
-    /// * `interval` - The interval in seconds.
-    /// # Returns
-    /// `RateLimiter<InMemoryBackend, SimpleOutput, impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>>` - The rate limiter.
-    /// # Panics
-    /// If the rate limiter can't be created.
-    fn get_rate_limiter_middleware(
-        max_requests: u64,
-        interval: u64,
-    ) -> RateLimiter<InMemoryBackend, SimpleOutput, impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>> {
-        let input = SimpleInputFunctionBuilder::new(time::Duration::from_secs(interval), max_requests)
-            .real_ip_key()
-            .build();
-
-        RateLimiter::builder(InMemoryBackend::builder().build(), input)
-            .add_headers()
             .build()
     }
 
@@ -219,6 +192,27 @@ impl Server {
                 .build()
                 .unwrap(),
         )
+    }
+
+    /// Returns a new RateLimiter instance.
+    /// # Arguments
+    /// * `max_requests` - The maximum number of requests in the given interval.
+    /// * `interval` - The interval in seconds.
+    /// # Returns
+    /// `RateLimiter<InMemoryBackend, SimpleOutput, impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>>` - The rate limiter.
+    /// # Panics
+    /// If the rate limiter can't be created.
+    fn get_rate_limiter(
+        max_requests: u64,
+        interval: u64,
+    ) -> RateLimiter<InMemoryBackend, SimpleOutput, impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>> {
+        let input = SimpleInputFunctionBuilder::new(time::Duration::from_secs(interval), max_requests)
+            .real_ip_key()
+            .build();
+
+        RateLimiter::builder(InMemoryBackend::builder().build(), input)
+            .add_headers()
+            .build()
     }
 
     /// Returns HTTPS server configuration if available.
