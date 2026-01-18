@@ -174,7 +174,7 @@ impl Server {
         SessionMiddleware::builder(CookieSessionStore::default(), secret_key)
             .cookie_secure(true)
             .cookie_http_only(true)
-            .cookie_same_site(SameSite::Lax)
+            .cookie_same_site(SameSite::Strict)
             .session_lifecycle(
                 PersistentSession::default()
                     .session_ttl_extension_policy(TtlExtensionPolicy::OnEveryRequest)
