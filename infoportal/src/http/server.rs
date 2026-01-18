@@ -34,7 +34,7 @@ use std::{
     io::{BufReader, Result as IoResult},
     path::Path,
     sync::{Arc, Mutex},
-    time::{self, Instant},
+    time::Instant,
 };
 
 /// Path to Infoportal UI
@@ -212,7 +212,7 @@ impl Server {
         max_requests: u64,
         interval: u64,
     ) -> RateLimiter<InMemoryBackend, SimpleOutput, impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>> {
-        let input = SimpleInputFunctionBuilder::new(time::Duration::from_secs(interval), max_requests)
+        let input = SimpleInputFunctionBuilder::new(Duration::from_secs(interval), max_requests)
             .real_ip_key()
             .build();
 
