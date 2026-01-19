@@ -3,18 +3,21 @@ use crate::{
     db::aquarius::Aquarius,
     http::{api_doc, rest_api},
 };
-use ::actix_session::config::TtlExtensionPolicy;
-use actix_extensible_rate_limit::{
+use ::actix_extensible_rate_limit::{
     RateLimiter,
     backend::{SimpleInput, SimpleInputFunctionBuilder, SimpleOutput, memory::InMemoryBackend},
 };
+use ::actix_identity::config::LogoutBehavior;
+use ::actix_session::config::TtlExtensionPolicy;
+use ::std::time::Duration;
+use ::tracing::{debug, info, warn};
 use actix_files::Files;
 use actix_identity::IdentityMiddleware;
 use actix_session::{SessionMiddleware, config::PersistentSession, storage::CookieSessionStore};
 use actix_web::{
     App, Error, HttpServer,
     body::{BoxBody, EitherBody},
-    cookie::{Key, SameSite, time::Duration},
+    cookie::{Key, SameSite},
     dev::{Service, ServiceFactory, ServiceRequest, ServiceResponse},
     web::{self, Data},
 };
@@ -31,9 +34,8 @@ use std::{
     io::{BufReader, Result as IoResult},
     path::Path,
     sync::{Arc, Mutex},
-    time::{self, Instant},
+    time::Instant,
 };
-use tracing::{debug, info, warn};
 
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
@@ -139,11 +141,16 @@ impl Server {
             InitError = (),
         >,
     > {
+        let expiration = Duration::from_secs(60 * 60 * 24 * 2); // 2 days
+        let identity_mw = IdentityMiddleware::builder()
+            .visit_deadline(Some(expiration))
+            .logout_behavior(LogoutBehavior::DeleteIdentityKeys)
+            .build();
         App::new()
             // Install the identity framework first.
-            .wrap(IdentityMiddleware::default())
+            .wrap(identity_mw)
             // adds support for HTTPS sessions
-            .wrap(Self::get_session_middleware(secret_key))
+            .wrap(Self::get_session_middleware(secret_key, expiration))
             // adds support for rate limiting of HTTP requests
             .wrap(Self::get_rate_limiter(rl_max_requests, rl_interval))
             .wrap_fn(|req, srv| {
@@ -162,8 +169,7 @@ impl Server {
     /// `SessionMiddleware<CookieSessionStore>` - The session middleware.
     /// # Panics
     /// If the session middleware can't be created.
-    fn get_session_middleware(secret_key: Key) -> SessionMiddleware<CookieSessionStore> {
-        const SECS_OF_WEEKEND: i64 = 60 * 60 * 24 * 2;
+    fn get_session_middleware(secret_key: Key, expiration: Duration) -> SessionMiddleware<CookieSessionStore> {
         SessionMiddleware::builder(CookieSessionStore::default(), secret_key)
             .cookie_secure(true)
             .cookie_http_only(true)
@@ -172,7 +178,7 @@ impl Server {
             .session_lifecycle(
                 PersistentSession::default()
                     .session_ttl_extension_policy(TtlExtensionPolicy::OnEveryRequest)
-                    .session_ttl(Duration::seconds(SECS_OF_WEEKEND)),
+                    .session_ttl(expiration.try_into().expect("a valid duration")),
             )
             .cookie_path("/".to_string())
             .cookie_name("session_id".to_string())
@@ -206,7 +212,7 @@ impl Server {
         max_requests: u64,
         interval: u64,
     ) -> RateLimiter<InMemoryBackend, SimpleOutput, impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>> {
-        let input = SimpleInputFunctionBuilder::new(time::Duration::from_secs(interval), max_requests)
+        let input = SimpleInputFunctionBuilder::new(Duration::from_secs(interval), max_requests)
             .real_ip_key()
             .build();
 

@@ -2,6 +2,7 @@ use crate::aquarius::model::utils;
 use crate::error::DbError;
 use crate::tiberius::RowColumn;
 use crate::tiberius::TiberiusClient;
+use crate::tiberius::TryRowColumn;
 use ::chrono::DateTime;
 use ::chrono::Utc;
 use ::serde::Serialize;
@@ -25,13 +26,15 @@ pub struct Notification {
     pub id: i32,
 
     /// The priority level of the notification. Higher values indicate more severe notifications.
-    priority: u8,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    priority: Option<u8>,
 
     /// The title of the notification.
     title: String,
 
     /// The text of the notification.
-    text: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    text: Option<String>,
 
     /// Whether the notification is visible.
     visible: bool,
@@ -65,9 +68,9 @@ impl From<&Row> for Notification {
     fn from(row: &Row) -> Self {
         Notification {
             id: row.get_column(ID),
-            priority: row.get_column(PRIORITY),
+            priority: row.try_get_column(PRIORITY),
             title: row.get_column(TITLE),
-            text: row.get_column(TEXT),
+            text: row.try_get_column(TEXT),
             visible: row.get_column(VISIBLE),
             modified_at: row.get_column(MODIFIED_AT),
         }
