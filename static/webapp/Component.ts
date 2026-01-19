@@ -71,7 +71,7 @@ export default class Component extends UIComponent {
 
             setInterval(async () => {
                 await this.loadNotifications();
-            }, 6000);
+            }, 60000);
         })
 
         // set device model
