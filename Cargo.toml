@@ -6,7 +6,7 @@ members = ["aquarius", "db", "infoportal", "timekeeper"]
 version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
-rust-version = "1.92.0"
+rust-version = "1.93.0"
 authors = ["Markus Ofterdinger <markus@ofterdinger.de>"]
 repository = "https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git"
 
@@ -25,7 +25,7 @@ stretto = { version = "0.8", features = ["async"] }
 
 # async stuff
 futures = { version = "0.3" }
-tokio = { version = "1.48", features = ["net", "rt-multi-thread", "macros"] }
+tokio = { version = "1.49", features = ["net", "rt-multi-thread", "macros"] }
 tokio-util = { version = "0.7", features = ["compat"] }
 
 # rustls
