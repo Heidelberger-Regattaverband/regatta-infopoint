@@ -182,6 +182,7 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(notification::get_notifications)
             .service(notification::create_notification)
             .service(notification::update_notification)
+            .service(notification::delete_notification)
             .service(notification::notification_read)
             .service(authentication::login)
             .service(authentication::identity)

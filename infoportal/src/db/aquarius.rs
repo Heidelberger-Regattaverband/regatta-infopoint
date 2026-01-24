@@ -323,6 +323,17 @@ impl Aquarius {
         Ok(notification)
     }
 
+    pub(crate) async fn delete_notification(&self, notification_id: i32) -> Result<bool, DbError> {
+        let start = Instant::now();
+        let deleted =
+            Notification::delete_notification(notification_id, &mut *TiberiusPool::instance().get().await?).await?;
+        debug!(notification_id, elapsed = ?start.elapsed(), "Delete notification in DB:");
+
+        // Note: Cache will automatically expire based on TTL, no manual invalidation needed
+
+        Ok(deleted)
+    }
+
     // private methods for querying the database
 
     async fn query_race_heats_entries(&self, race_id: i32) -> Result<Race, DbError> {

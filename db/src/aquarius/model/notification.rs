@@ -8,7 +8,6 @@ use ::chrono::Utc;
 use ::serde::{Deserialize, Serialize};
 use ::tiberius::Query;
 use ::tiberius::Row;
-use ::tracing::info;
 use ::utoipa::ToSchema;
 
 const ID: &str = "id";
@@ -171,7 +170,6 @@ impl Notification {
             set_clauses.join(", "),
             param_count + 1
         );
-        info!(sql = %sql, "Updating notification");
         let mut query = Query::new(&sql);
         // Bind parameters in the same order as set_clauses
         if let Some(priority) = request.priority {
@@ -191,6 +189,15 @@ impl Notification {
 
         let rows = utils::get_rows(query.query(client).await?).await?;
         Ok(rows.into_iter().map(|row| Notification::from(&row)).next())
+    }
+
+    pub async fn delete_notification(notification_id: i32, client: &mut TiberiusClient) -> Result<bool, DbError> {
+        let sql = format!("DELETE FROM HRV_Notification WHERE {ID} = @P1");
+        let mut query = Query::new(&sql);
+        query.bind(notification_id);
+
+        let result = query.execute(client).await?;
+        Ok(!result.rows_affected().is_empty())
     }
 
     async fn query_notification_by_id(

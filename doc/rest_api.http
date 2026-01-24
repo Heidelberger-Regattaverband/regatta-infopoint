@@ -21,10 +21,15 @@ GET {{baseUrl}}/api/regattas/{{activeRegatta}}/heats HTTP/1.1
 ###
 GET {{baseUrl}}/api/identity HTTP/1.1
 
+#######################################
+# Notifications API Examples
+#######################################
+
 ### Get notifications for a regatta
 GET {{baseUrl}}/api/regattas/{{activeRegatta}}/notifications HTTP/1.1
 
 ### Create a new notification
+# @name createNotification
 POST {{baseUrl}}/api/regattas/{{activeRegatta}}/notifications HTTP/1.1
 Content-Type: application/json
 
@@ -35,8 +40,11 @@ Content-Type: application/json
   "visible": true
 }
 
+### Store the created notification ID for later use
+@notificationId = {{createNotification.response.body.$.id}}
+
 ### Update an existing notification (replace {notification_id} with actual ID)
-PUT {{baseUrl}}/api/notifications/2 HTTP/1.1
+PUT {{baseUrl}}/api/notifications/{{notificationId}} HTTP/1.1
 Content-Type: application/json
 
 {
@@ -47,7 +55,11 @@ Content-Type: application/json
 }
 
 ### Mark a notification as read (replace {notification_id} with actual ID)
-POST {{baseUrl}}/api/notifications/1/read HTTP/1.1
+POST {{baseUrl}}/api/notifications/{{notificationId}}/read HTTP/1.1
+
+### Delete a notification (replace {notification_id} with actual ID)
+DELETE {{baseUrl}}/api/notifications/{{notificationId}} HTTP/1.1
+
 ###
 POST {{baseUrl}}/api/login HTTP/1.1
 Content-Type: application/json

@@ -5,6 +5,7 @@ use ::actix_session::Session;
 use ::actix_web::Error;
 use ::actix_web::HttpResponse;
 use ::actix_web::Responder;
+use ::actix_web::delete;
 use ::actix_web::error::ErrorInternalServerError;
 use ::actix_web::get;
 use ::actix_web::post;
@@ -140,6 +141,35 @@ async fn update_notification(
                 "error": "Notification not found"
             })))
         }
+    }
+}
+
+#[utoipa::path(
+    description = "Delete a notification by ID.",
+    context_path = PATH,
+    responses(
+        (status = 204, description = "Notification deleted successfully"),
+        (status = 404, description = "Notification not found"),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
+#[delete("/notifications/{notification_id}")]
+async fn delete_notification(notification_id: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
+    let notification_id = notification_id.into_inner();
+
+    let deleted = aquarius.delete_notification(notification_id).await.map_err(|err| {
+        error!(%err, notification_id, "Failed to delete notification");
+        ErrorInternalServerError(err)
+    })?;
+
+    if deleted {
+        debug!(notification_id, "Deleted notification");
+        Ok(HttpResponse::NoContent().finish())
+    } else {
+        debug!(notification_id, "Notification not found");
+        Ok(HttpResponse::NotFound().json(serde_json::json!({
+            "error": "Notification not found"
+        })))
     }
 }
 
