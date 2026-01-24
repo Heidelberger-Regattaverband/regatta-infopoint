@@ -8,10 +8,11 @@ use ::actix_web::Responder;
 use ::actix_web::error::ErrorInternalServerError;
 use ::actix_web::get;
 use ::actix_web::post;
+use ::actix_web::put;
 use ::actix_web::web::Data;
 use ::actix_web::web::Json;
 use ::actix_web::web::Path;
-use ::db::aquarius::model::Notification;
+use ::db::aquarius::model::{CreateNotificationRequest, Notification, UpdateNotificationRequest};
 use ::tiberius::time::chrono::DateTime;
 use ::tiberius::time::chrono::Utc;
 use ::tracing::debug;
@@ -51,6 +52,95 @@ async fn get_notifications(
         })
         .collect();
     Ok(Json(notifications))
+}
+
+#[utoipa::path(
+    description = "Create a new notification for a regatta.",
+    context_path = PATH,
+    request_body = CreateNotificationRequest,
+    responses(
+        (status = 201, description = "Notification created successfully", body = Notification),
+        (status = 400, description = "Invalid request body"),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
+#[post("/regattas/{regatta_id}/notifications")]
+async fn create_notification(
+    regatta_id: Path<i32>,
+    request: Json<CreateNotificationRequest>,
+    aquarius: Data<Aquarius>,
+) -> Result<impl Responder, Error> {
+    let regatta_id = regatta_id.into_inner();
+    let request = request.into_inner();
+
+    // Basic validation
+    if request.title.trim().is_empty() {
+        return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "Title cannot be empty"
+        })));
+    }
+
+    let notification = aquarius
+        .create_notification(regatta_id, &request)
+        .await
+        .map_err(|err| {
+            error!(%err, regatta_id, "Failed to create notification");
+            ErrorInternalServerError(err)
+        })?;
+
+    debug!(regatta_id, notification_id = notification.id, "Created notification");
+    Ok(HttpResponse::Created().json(notification))
+}
+
+#[utoipa::path(
+    description = "Update an existing notification.",
+    context_path = PATH,
+    request_body = UpdateNotificationRequest,
+    responses(
+        (status = 200, description = "Notification updated successfully", body = Notification),
+        (status = 400, description = "Invalid request body"),
+        (status = 404, description = "Notification not found"),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
+#[put("/notifications/{notification_id}")]
+async fn update_notification(
+    notification_id: Path<i32>,
+    request: Json<UpdateNotificationRequest>,
+    aquarius: Data<Aquarius>,
+) -> Result<impl Responder, Error> {
+    let notification_id = notification_id.into_inner();
+    let request = request.into_inner();
+
+    // Basic validation
+    if let Some(ref title) = request.title
+        && title.trim().is_empty()
+    {
+        return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+            "error": "Title cannot be empty"
+        })));
+    }
+
+    let notification = aquarius
+        .update_notification(notification_id, &request)
+        .await
+        .map_err(|err| {
+            error!(%err, notification_id, "Failed to update notification");
+            ErrorInternalServerError(err)
+        })?;
+
+    match notification {
+        Some(notification) => {
+            debug!(notification_id, "Updated notification");
+            Ok(HttpResponse::Ok().json(notification))
+        }
+        None => {
+            debug!(notification_id, "Notification not found");
+            Ok(HttpResponse::NotFound().json(serde_json::json!({
+                "error": "Notification not found"
+            })))
+        }
+    }
 }
 
 #[post("/notifications/{notification_id}/read")]

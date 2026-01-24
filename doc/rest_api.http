@@ -6,7 +6,7 @@
 @protocol=http
 @baseUrl={{protocol}}://{{hostname}}:{{port}}
 
-@activeRegatta=17
+@activeRegatta=19
 
 ###
 GET {{baseUrl}}/api/active_regatta HTTP/1.1
@@ -20,6 +20,34 @@ GET {{baseUrl}}/api/regattas/{{activeRegatta}}/races HTTP/1.1
 GET {{baseUrl}}/api/regattas/{{activeRegatta}}/heats HTTP/1.1
 ###
 GET {{baseUrl}}/api/identity HTTP/1.1
+
+### Get notifications for a regatta
+GET {{baseUrl}}/api/regattas/{{activeRegatta}}/notifications HTTP/1.1
+
+### Create a new notification
+POST {{baseUrl}}/api/regattas/{{activeRegatta}}/notifications HTTP/1.1
+Content-Type: application/json
+
+{
+  "title": "Test Notification",
+  "text": "This is a test notification created via API",
+  "priority": 1,
+  "visible": true
+}
+
+### Update an existing notification (replace {notification_id} with actual ID)
+PUT {{baseUrl}}/api/notifications/2 HTTP/1.1
+Content-Type: application/json
+
+{
+  "title": "Updated Test Notification",
+  "text": "This notification has been updated",
+  "priority": 2,
+  "visible": true
+}
+
+### Mark a notification as read (replace {notification_id} with actual ID)
+POST {{baseUrl}}/api/notifications/1/read HTTP/1.1
 ###
 POST {{baseUrl}}/api/login HTTP/1.1
 Content-Type: application/json
