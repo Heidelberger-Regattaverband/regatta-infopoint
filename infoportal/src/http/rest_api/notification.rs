@@ -1,12 +1,14 @@
 use crate::db::aquarius::Aquarius;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
+use ::actix_identity::Identity;
 use ::actix_session::Session;
 use ::actix_web::Error;
 use ::actix_web::HttpResponse;
 use ::actix_web::Responder;
 use ::actix_web::delete;
 use ::actix_web::error::ErrorInternalServerError;
+use ::actix_web::error::ErrorUnauthorized;
 use ::actix_web::get;
 use ::actix_web::post;
 use ::actix_web::put;
@@ -14,6 +16,7 @@ use ::actix_web::web::Data;
 use ::actix_web::web::Json;
 use ::actix_web::web::Path;
 use ::db::aquarius::model::{CreateNotificationRequest, Notification, UpdateNotificationRequest};
+use ::serde_json::json;
 use ::tiberius::time::chrono::DateTime;
 use ::tiberius::time::chrono::Utc;
 use ::tracing::debug;
@@ -62,6 +65,7 @@ async fn get_notifications(
     responses(
         (status = 201, description = "Notification created successfully", body = Notification),
         (status = 400, description = "Invalid request body"),
+        (status = 401, description = "Unauthorized"),
         (status = 500, description = INTERNAL_SERVER_ERROR)
     )
 )]
@@ -70,13 +74,18 @@ async fn create_notification(
     regatta_id: Path<i32>,
     request: Json<CreateNotificationRequest>,
     aquarius: Data<Aquarius>,
+    identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
+    if identity.is_none() {
+        return Err(ErrorUnauthorized("Unauthorized"));
+    }
+
     let regatta_id = regatta_id.into_inner();
     let request = request.into_inner();
 
     // Basic validation
     if request.title.trim().is_empty() {
-        return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+        return Ok(HttpResponse::BadRequest().json(json!({
             "error": "Title cannot be empty"
         })));
     }
@@ -88,8 +97,6 @@ async fn create_notification(
             error!(%err, regatta_id, "Failed to create notification");
             ErrorInternalServerError(err)
         })?;
-
-    debug!(regatta_id, notification_id = notification.id, "Created notification");
     Ok(HttpResponse::Created().json(notification))
 }
 
@@ -100,6 +107,7 @@ async fn create_notification(
     responses(
         (status = 200, description = "Notification updated successfully", body = Notification),
         (status = 400, description = "Invalid request body"),
+        (status = 401, description = "Unauthorized"),
         (status = 404, description = "Notification not found"),
         (status = 500, description = INTERNAL_SERVER_ERROR)
     )
@@ -109,7 +117,12 @@ async fn update_notification(
     notification_id: Path<i32>,
     request: Json<UpdateNotificationRequest>,
     aquarius: Data<Aquarius>,
+    identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
+    if identity.is_none() {
+        return Err(ErrorUnauthorized("Unauthorized"));
+    }
+
     let notification_id = notification_id.into_inner();
     let request = request.into_inner();
 
@@ -132,7 +145,7 @@ async fn update_notification(
 
     match notification {
         Some(notification) => Ok(HttpResponse::Ok().json(notification)),
-        None => Ok(HttpResponse::NotFound().json(serde_json::json!({
+        None => Ok(HttpResponse::NotFound().json(json!({
             "error": "Notification not found"
         }))),
     }
@@ -148,7 +161,15 @@ async fn update_notification(
     )
 )]
 #[delete("/notifications/{notification_id}")]
-async fn delete_notification(notification_id: Path<i32>, aquarius: Data<Aquarius>) -> Result<impl Responder, Error> {
+async fn delete_notification(
+    notification_id: Path<i32>,
+    aquarius: Data<Aquarius>,
+    identity: Option<Identity>,
+) -> Result<impl Responder, Error> {
+    if identity.is_none() {
+        return Err(ErrorUnauthorized("Unauthorized"));
+    }
+
     let notification_id = notification_id.into_inner();
 
     let deleted = aquarius.delete_notification(notification_id).await.map_err(|err| {
@@ -159,7 +180,7 @@ async fn delete_notification(notification_id: Path<i32>, aquarius: Data<Aquarius
     if deleted {
         Ok(HttpResponse::NoContent().finish())
     } else {
-        Ok(HttpResponse::NotFound().json(serde_json::json!({
+        Ok(HttpResponse::NotFound().json(json!({
             "error": "Notification not found"
         })))
     }
