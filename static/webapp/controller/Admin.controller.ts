@@ -1,6 +1,5 @@
 import * as $ from "jquery";
 import { Button$PressEvent } from "sap/m/Button";
-import ColumnListItem from "sap/m/ColumnListItem";
 import Dialog from "sap/m/Dialog";
 import MessageToast from "sap/m/MessageToast";
 import { SearchField$SearchEvent } from "sap/m/SearchField";
@@ -19,8 +18,8 @@ import Formatter from "../model/Formatter";
 export default class AdminController extends BaseController {
 
   readonly formatter: Formatter = Formatter;
-  private notificationsModel: JSONModel = new JSONModel();
-  private dialogModel: JSONModel = new JSONModel();
+  private readonly notificationsModel: JSONModel = new JSONModel();
+  private readonly dialogModel: JSONModel = new JSONModel();
   private currentNotificationId?: number;
   private isEditMode: boolean = false;
 
