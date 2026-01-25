@@ -1,5 +1,5 @@
-<mvc:View controllerName="de.regatta_hd.infoportal.controller.Admin" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m"
-  xmlns:core="sap.ui.core" xmlns:f="sap.f" xmlns:layout="sap.ui.layout">
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.Admin" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core"
+  xmlns:f="sap.f" xmlns:layout="sap.ui.layout">
   <mvc:content>
 
     <Page title="{i18n>admin.title}" showNavButton="true" navButtonPress=".navBack">
@@ -10,7 +10,7 @@
       </headerContent>
 
       <content>
-        <Table id="notificationsTable" items="{notifications>/}" mode="SingleSelect" growing="true" growingThreshold="50"
+        <Table id="notificationsTable" items="{notifications>/}" growing="true" growingThreshold="50"
           noDataText="{i18n>admin.noNotifications}">
           <headerToolbar>
             <Toolbar>
@@ -59,23 +59,24 @@
     </Page>
 
     <!-- Add/Edit Notification Dialog -->
-    <Dialog id="notificationDialog" title="{i18n>admin.dialog.title}" contentWidth="30rem" contentHeight="25rem">
+    <Dialog id="notificationDialog" title="{i18n>admin.dialog.title}">
       <content>
-        <VBox class="sapUiMediumMargin">
+        <VBox class="sapUiSmallMargin">
           <Label text="{i18n>admin.dialog.title.label}" required="true" />
           <Input id="titleInput" value="{dialog>/title}" placeholder="{i18n>admin.dialog.title.placeholder}" />
-          
-          <Label text="{i18n>admin.dialog.text.label}" class="sapUiMediumMarginTop" />
-          <TextArea id="textInput" value="{dialog>/text}" placeholder="{i18n>admin.dialog.text.placeholder}" rows="4" />
-          
-          <Label text="{i18n>admin.dialog.priority.label}" class="sapUiMediumMarginTop" />
+
+          <Label text="{i18n>admin.dialog.text.label}" />
+          <TextArea id="textInput" value="{dialog>/text}" placeholder="{i18n>admin.dialog.text.placeholder}" rows="4" width="100%" />
+
+          <Label text="{i18n>admin.dialog.priority.label}" />
           <Select id="prioritySelect" selectedKey="{dialog>/priority}">
+            <core:Item key="0" text="{i18n>admin.priority.none}" />
             <core:Item key="1" text="{i18n>admin.priority.low}" />
             <core:Item key="2" text="{i18n>admin.priority.medium}" />
             <core:Item key="3" text="{i18n>admin.priority.high}" />
           </Select>
-          
-          <CheckBox id="visibleCheckBox" text="{i18n>admin.dialog.visible.label}" selected="{dialog>/visible}" class="sapUiMediumMarginTop" />
+
+          <CheckBox id="visibleCheckBox" text="{i18n>admin.dialog.visible.label}" selected="{dialog>/visible}" />
         </VBox>
       </content>
       <beginButton>

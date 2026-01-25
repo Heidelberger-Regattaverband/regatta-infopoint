@@ -89,7 +89,7 @@ fn default_visible() -> bool {
 }
 
 impl Notification {
-    pub async fn query_notifications_for_regatta(
+    pub async fn query_visible_notifications_for_regatta(
         regatta_id: i32,
         client: &mut TiberiusClient,
     ) -> Result<Vec<Notification>, DbError> {

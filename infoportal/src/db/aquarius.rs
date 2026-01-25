@@ -281,7 +281,7 @@ impl Aquarius {
             .notifications
             .compute_if_missing(&regatta_id, false, || async move {
                 let start = Instant::now();
-                let notifications = Notification::query_notifications_for_regatta(
+                let notifications = Notification::query_visible_notifications_for_regatta(
                     regatta_id,
                     &mut *TiberiusPool::instance().get().await?,
                 )
