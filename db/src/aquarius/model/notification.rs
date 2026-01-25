@@ -8,6 +8,7 @@ use ::chrono::Utc;
 use ::serde::{Deserialize, Serialize};
 use ::tiberius::Query;
 use ::tiberius::Row;
+use ::tracing::info;
 use ::utoipa::ToSchema;
 
 const ID: &str = "id";
@@ -197,6 +198,7 @@ impl Notification {
         query.bind(notification_id);
 
         let result = query.execute(client).await?;
+        info!(notification_id, rows_affected = ?result.rows_affected(), "Deleted notification");
         Ok(!result.rows_affected().is_empty())
     }
 

@@ -131,16 +131,10 @@ async fn update_notification(
         })?;
 
     match notification {
-        Some(notification) => {
-            debug!(notification_id, "Updated notification");
-            Ok(HttpResponse::Ok().json(notification))
-        }
-        None => {
-            debug!(notification_id, "Notification not found");
-            Ok(HttpResponse::NotFound().json(serde_json::json!({
-                "error": "Notification not found"
-            })))
-        }
+        Some(notification) => Ok(HttpResponse::Ok().json(notification)),
+        None => Ok(HttpResponse::NotFound().json(serde_json::json!({
+            "error": "Notification not found"
+        }))),
     }
 }
 
@@ -163,10 +157,8 @@ async fn delete_notification(notification_id: Path<i32>, aquarius: Data<Aquarius
     })?;
 
     if deleted {
-        debug!(notification_id, "Deleted notification");
         Ok(HttpResponse::NoContent().finish())
     } else {
-        debug!(notification_id, "Notification not found");
         Ok(HttpResponse::NotFound().json(serde_json::json!({
             "error": "Notification not found"
         })))
