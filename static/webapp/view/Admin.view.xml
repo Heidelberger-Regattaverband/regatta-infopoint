@@ -20,13 +20,13 @@
             </Toolbar>
           </headerToolbar>
           <columns>
-            <Column>
+            <Column hAlign="Center" width="3rem">
               <Text text="{i18n>admin.column.id}" />
             </Column>
             <Column>
               <Text text="{i18n>admin.column.title}" />
             </Column>
-            <Column>
+            <Column hAlign="Center" width="5rem">
               <Text text="{i18n>admin.column.priority}" />
             </Column>
             <Column>
