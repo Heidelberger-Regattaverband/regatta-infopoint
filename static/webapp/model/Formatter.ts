@@ -43,16 +43,6 @@ export default class Formatter {
     }
   }
 
-  static priorityState(priority?: number): string {
-    switch (priority) {
-      case 3: return "Error";
-      case 2: return "Warning";
-      case 1: return "Success";
-      case 0: return "Information";
-      default: return "None";
-    }
-  }
-
   static dateTime(dateTime?: string): string {
     if (!dateTime) {
       return "";

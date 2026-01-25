@@ -43,7 +43,7 @@
               <cells>
                 <Text text="{notifications>id}" />
                 <Text text="{notifications>title}" />
-                <ObjectStatus text="{notifications>priority}" state="{path:'notifications>priority',formatter:'.formatter.priorityState'}" />
+                <Text text="{path:'notifications>priority',formatter:'.formatter.priority'}" />
                 <Switch state="{notifications>visible}" change=".onVisibilityChange" />
                 <Text text="{path:'notifications>modifiedAt',formatter:'.formatter.dateTime'}" />
                 <HBox>
