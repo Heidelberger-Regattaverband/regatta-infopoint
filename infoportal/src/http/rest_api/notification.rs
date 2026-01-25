@@ -36,9 +36,6 @@ async fn get_notifications(
     aquarius: Data<Aquarius>,
     session: Session,
 ) -> Result<impl Responder, Error> {
-    session.entries().iter().for_each(|(key, value)| {
-        debug!(key, value, "Query Notification Session Entry");
-    });
     let regatta_id = regatta_id.into_inner();
     let all_notifications = aquarius.get_notifications(regatta_id).await.map_err(|err| {
         error!(%err, regatta_id, "Failed to get notifications");
@@ -56,6 +53,34 @@ async fn get_notifications(
         })
         .collect();
     Ok(Json(notifications))
+}
+
+#[utoipa::path(
+    description = "Get all notifications for a regatta (admin only - includes invisible notifications).",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "All notifications for <regatta_id>", body = Vec<Notification>),
+        (status = 401, description = "Unauthorized"),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
+#[get("/regattas/{regatta_id}/notifications/all")]
+async fn get_all_notifications(
+    regatta_id: Path<i32>,
+    aquarius: Data<Aquarius>,
+    identity: Option<Identity>,
+) -> Result<impl Responder, Error> {
+    if identity.is_none() {
+        return Err(ErrorUnauthorized("Unauthorized"));
+    }
+
+    let regatta_id = regatta_id.into_inner();
+    let all_notifications = aquarius.get_all_notifications(regatta_id).await.map_err(|err| {
+        error!(%err, regatta_id, "Failed to get all notifications");
+        ErrorInternalServerError(err)
+    })?;
+
+    Ok(Json(all_notifications))
 }
 
 #[utoipa::path(

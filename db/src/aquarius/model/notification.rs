@@ -100,12 +100,31 @@ impl Notification {
         let mut query = Query::new(&sql);
         query.bind(regatta_id);
 
-        let results = utils::get_rows(query.query(client).await?)
+        let notifications = utils::get_rows(query.query(client).await?)
             .await?
             .into_iter()
             .map(|row| Notification::from(&row))
             .collect();
-        Ok(results)
+        Ok(notifications)
+    }
+
+    pub async fn query_all_notifications_for_regatta(
+        regatta_id: i32,
+        client: &mut TiberiusClient,
+    ) -> Result<Vec<Notification>, DbError> {
+        let sql = format!(
+            "SELECT {ID}, {PRIORITY}, {TITLE}, {TEXT}, {VISIBLE}, {MODIFIED_AT} FROM HRV_Notification \
+            WHERE {EVENT_ID} = @P1 ORDER BY {ID} DESC"
+        );
+        let mut query = Query::new(&sql);
+        query.bind(regatta_id);
+
+        let notifications = utils::get_rows(query.query(client).await?)
+            .await?
+            .into_iter()
+            .map(|row| Notification::from(&row))
+            .collect();
+        Ok(notifications)
     }
 
     pub async fn create_notification(

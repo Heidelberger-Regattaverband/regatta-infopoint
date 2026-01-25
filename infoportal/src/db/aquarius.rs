@@ -292,6 +292,16 @@ impl Aquarius {
             .await
     }
 
+    pub(crate) async fn get_all_notifications(&self, regatta_id: i32) -> Result<Vec<Notification>, DbError> {
+        // Don't cache admin queries to ensure fresh data
+        let start = Instant::now();
+        let notifications =
+            Notification::query_all_notifications_for_regatta(regatta_id, &mut *TiberiusPool::instance().get().await?)
+                .await?;
+        debug!(regatta_id, elapsed = ?start.elapsed(), "Query all notifications from DB:");
+        Ok(notifications)
+    }
+
     pub(crate) async fn create_notification(
         &self,
         regatta_id: i32,
