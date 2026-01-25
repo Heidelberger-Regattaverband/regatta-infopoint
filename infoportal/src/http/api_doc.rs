@@ -36,7 +36,10 @@ use utoipa_swagger_ui::SwaggerUi;
         rest_api::misc::get_statistics,
         rest_api::misc::calculate_scoring,
         rest_api::misc::get_schedule,
-        rest_api::notification::get_notifications
+        rest_api::notification::get_notifications,
+        rest_api::notification::create_notification,
+        rest_api::notification::update_notification,
+        rest_api::notification::delete_notification,
     ),
     components(
         schemas(
