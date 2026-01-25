@@ -2,13 +2,8 @@ import * as $ from "jquery";
 import { Button$PressEvent } from "sap/m/Button";
 import Dialog from "sap/m/Dialog";
 import MessageToast from "sap/m/MessageToast";
-import { SearchField$SearchEvent } from "sap/m/SearchField";
 import { Switch$ChangeEvent } from "sap/m/Switch";
-import Table from "sap/m/Table";
-import Filter from "sap/ui/model/Filter";
-import FilterOperator from "sap/ui/model/FilterOperator";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import ListBinding from "sap/ui/model/ListBinding";
 import BaseController from "./Base.controller";
 import Formatter from "../model/Formatter";
 
@@ -34,25 +29,6 @@ export default class AdminController extends BaseController {
     this.loadNotifications();
   }
 
-  onSearch(event: SearchField$SearchEvent): void {
-    const query: string = event.getParameter("query") || "";
-    const table: Table = super.byId("notificationsTable") as Table;
-    const binding: ListBinding = table.getBinding("items") as ListBinding;
-    
-    const filters: Filter[] = [];
-    if (query && query.length > 0) {
-      const titleFilter = new Filter("title", FilterOperator.Contains, query);
-      const textFilter = new Filter("text", FilterOperator.Contains, query);
-      const combinedFilter = new Filter({
-        filters: [titleFilter, textFilter],
-        and: false
-      });
-      filters.push(combinedFilter);
-    }
-    
-    binding.filter(filters);
-  }
-
   onAddNotification(): void {
     this.isEditMode = false;
     this.currentNotificationId = undefined;
@@ -69,7 +45,7 @@ export default class AdminController extends BaseController {
     const button = event.getSource();
     const context = button.getBindingContext("notifications");
     const notification = context?.getObject();
-    
+
     if (notification) {
       this.isEditMode = true;
       this.currentNotificationId = notification.id;
@@ -87,7 +63,7 @@ export default class AdminController extends BaseController {
     const button = event.getSource();
     const context = button.getBindingContext("notifications");
     const notification = context?.getObject();
-    
+
     if (notification) {
       this.currentNotificationId = notification.id;
       const deleteDialog: Dialog = super.byId("deleteDialog") as Dialog;
@@ -104,7 +80,7 @@ export default class AdminController extends BaseController {
     const context = switchControl.getBindingContext("notifications");
     const notification = context?.getObject();
     const newState: boolean = event.getParameter("state") || false;
-    
+
     if (notification) {
       this.updateNotificationVisibility(notification.id, newState);
     }
@@ -112,7 +88,7 @@ export default class AdminController extends BaseController {
 
   onSaveNotification(): void {
     const dialogData = this.dialogModel.getData();
-    
+
     // Validation
     if (!dialogData.title || dialogData.title.trim() === "") {
       MessageToast.show(super.i18n("admin.validation.titleRequired"));
@@ -146,10 +122,10 @@ export default class AdminController extends BaseController {
     try {
       const regatta = await super.getActiveRegatta();
       const regattaId = regatta.id;
-      
+
       // Load all notifications for admin (including invisible ones)
       const url = `/api/regattas/${regattaId}/notifications/all`;
-      
+
       $.ajax({
         type: "GET",
         url: url,
@@ -172,7 +148,7 @@ export default class AdminController extends BaseController {
   private createNotification(data: any): void {
     this.getActiveRegatta().then((regatta) => {
       const regattaId = regatta.id;
-      
+
       $.ajax({
         type: "POST",
         url: `/api/regattas/${regattaId}/notifications`,

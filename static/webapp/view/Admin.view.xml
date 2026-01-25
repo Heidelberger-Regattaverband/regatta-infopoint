@@ -5,8 +5,6 @@
     <Page title="{i18n>admin.title}" showNavButton="true" navButtonPress=".navBack">
 
       <headerContent>
-        <Button icon="sap-icon://add" text="{i18n>admin.addNotification}" press=".onAddNotification" type="Emphasized" />
-        <Button icon="sap-icon://refresh" press=".onRefresh" />
       </headerContent>
 
       <content>
@@ -16,7 +14,8 @@
             <Toolbar>
               <Title text="{i18n>admin.notificationsTitle}" />
               <ToolbarSpacer />
-              <SearchField id="searchField" search=".onSearch" width="20rem" />
+              <Button icon="sap-icon://add" text="{i18n>admin.addNotification}" press=".onAddNotification" type="Emphasized" />
+              <Button icon="sap-icon://refresh" press=".onRefresh" />
             </Toolbar>
           </headerToolbar>
           <columns>
@@ -29,7 +28,7 @@
             <Column hAlign="Center" width="5rem">
               <Text text="{i18n>admin.column.priority}" />
             </Column>
-            <Column>
+            <Column hAlign="Center" width="5rem">
               <Text text="{i18n>admin.column.visible}" />
             </Column>
             <Column>
