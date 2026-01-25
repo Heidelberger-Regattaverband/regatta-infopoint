@@ -31,10 +31,10 @@
             <Column hAlign="Center" width="5rem">
               <Text text="{i18n>admin.column.visible}" />
             </Column>
-            <Column>
+            <Column hAlign="Center" width="9rem">
               <Text text="{i18n>admin.column.modifiedAt}" />
             </Column>
-            <Column>
+            <Column hAlign="Center" width="5rem">
               <Text text="{i18n>admin.column.actions}" />
             </Column>
           </columns>
