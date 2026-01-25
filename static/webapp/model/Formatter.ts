@@ -14,7 +14,6 @@ import {
   GroupValue,
 } from "./types";
 import { Priority } from "sap/m/library";
-import JSONModel from "sap/ui/model/json/JSONModel";
 
 /**
  * Formatter utility class for regatta application data formatting.
@@ -35,8 +34,8 @@ export default class Formatter {
     }) as ResourceBundle;
   }
 
-  static priority(severity?: number): Priority {
-    switch (severity) {
+  static priority(priority?: number): Priority {
+    switch (priority) {
       case 3: return Priority.High;
       case 2: return Priority.Medium;
       case 1: return Priority.Low;
@@ -46,10 +45,10 @@ export default class Formatter {
 
   static priorityState(priority?: number): string {
     switch (priority) {
-      case 4: return "Error";
-      case 3: return "Warning";
-      case 2: return "Success";
-      case 1: return "Information";
+      case 3: return "Error";
+      case 2: return "Warning";
+      case 1: return "Success";
+      case 0: return "Information";
       default: return "None";
     }
   }
@@ -58,14 +57,14 @@ export default class Formatter {
     if (!dateTime) {
       return "";
     }
-    
+
     const date = new Date(dateTime);
     const day = date.getDate().toString().padStart(2, "0");
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
     const year = date.getFullYear();
     const hours = date.getHours().toString().padStart(2, "0");
     const minutes = date.getMinutes().toString().padStart(2, "0");
-    
+
     return `${day}.${month}.${year} ${hours}:${minutes}`;
   }
 
