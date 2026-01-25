@@ -44,6 +44,31 @@ export default class Formatter {
     }
   }
 
+  static priorityState(priority?: number): string {
+    switch (priority) {
+      case 4: return "Error";
+      case 3: return "Warning";
+      case 2: return "Success";
+      case 1: return "Information";
+      default: return "None";
+    }
+  }
+
+  static dateTime(dateTime?: string): string {
+    if (!dateTime) {
+      return "";
+    }
+    
+    const date = new Date(dateTime);
+    const day = date.getDate().toString().padStart(2, "0");
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const year = date.getFullYear();
+    const hours = date.getHours().toString().padStart(2, "0");
+    const minutes = date.getMinutes().toString().padStart(2, "0");
+    
+    return `${day}.${month}.${year} ${hours}:${minutes}`;
+  }
+
   // -----------------
   // Race formatters
   // -----------------

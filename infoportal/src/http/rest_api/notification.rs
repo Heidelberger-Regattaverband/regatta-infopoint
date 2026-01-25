@@ -19,7 +19,6 @@ use ::db::aquarius::model::{CreateNotificationRequest, Notification, UpdateNotif
 use ::serde_json::json;
 use ::tiberius::time::chrono::DateTime;
 use ::tiberius::time::chrono::Utc;
-use ::tracing::debug;
 use ::tracing::error;
 
 #[utoipa::path(
