@@ -179,7 +179,7 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(misc::get_statistics)
             .service(misc::get_schedule)
             .service(misc::get_timestrip)
-            .service(notification::get_notifications)
+            .service(notification::get_visible_notifications)
             .service(notification::get_all_notifications)
             .service(notification::create_notification)
             .service(notification::update_notification)

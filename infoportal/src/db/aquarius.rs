@@ -276,7 +276,7 @@ impl Aquarius {
             .await
     }
 
-    pub(crate) async fn get_notifications(&self, regatta_id: i32) -> Result<Vec<Notification>, DbError> {
+    pub(crate) async fn get_visible_notifications(&self, regatta_id: i32) -> Result<Vec<Notification>, DbError> {
         self.caches
             .notifications
             .compute_if_missing(&regatta_id, false, || async move {

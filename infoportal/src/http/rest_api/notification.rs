@@ -22,26 +22,26 @@ use ::tiberius::time::chrono::Utc;
 use ::tracing::error;
 
 #[utoipa::path(
-    description = "Get all notifcations for a regatta.",
+    description = "Get visible notifcations for a regatta.",
     context_path = PATH,
     responses(
         (status = 200, description = "Notifications for <regatta_id>", body = Vec<Notification>),
         (status = 500, description = INTERNAL_SERVER_ERROR)
     )
 )]
-#[get("/regattas/{regatta_id}/notifications")]
-async fn get_notifications(
+#[get("/regattas/{regatta_id}/visible_notifications")]
+async fn get_visible_notifications(
     regatta_id: Path<i32>,
     aquarius: Data<Aquarius>,
     session: Session,
 ) -> Result<impl Responder, Error> {
     let regatta_id = regatta_id.into_inner();
-    let all_notifications = aquarius.get_notifications(regatta_id).await.map_err(|err| {
-        error!(%err, regatta_id, "Failed to get notifications");
+    let visible_notifications = aquarius.get_visible_notifications(regatta_id).await.map_err(|err| {
+        error!(%err, regatta_id, "Failed to get visible notifications");
         ErrorInternalServerError(err)
     })?;
 
-    let notifications: Vec<Notification> = all_notifications
+    let notifications: Vec<Notification> = visible_notifications
         .into_iter()
         .filter(|notification| {
             let read_value = session
@@ -63,7 +63,7 @@ async fn get_notifications(
         (status = 500, description = INTERNAL_SERVER_ERROR)
     )
 )]
-#[get("/regattas/{regatta_id}/notifications/all")]
+#[get("/regattas/{regatta_id}/notifications")]
 async fn get_all_notifications(
     regatta_id: Path<i32>,
     aquarius: Data<Aquarius>,

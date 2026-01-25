@@ -25,7 +25,7 @@ use ::utoipa_swagger_ui::SwaggerUi;
         rest_api::misc::get_statistics,
         rest_api::misc::calculate_scoring,
         rest_api::misc::get_schedule,
-        rest_api::notification::get_notifications,
+        rest_api::notification::get_visible_notifications,
         rest_api::notification::get_all_notifications,
         rest_api::notification::create_notification,
         rest_api::notification::update_notification,

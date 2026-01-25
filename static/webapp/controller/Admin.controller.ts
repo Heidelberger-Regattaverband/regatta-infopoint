@@ -124,7 +124,7 @@ export default class AdminController extends BaseController {
       const regattaId = regatta.id;
 
       // Load all notifications for admin (including invisible ones)
-      const url = `/api/regattas/${regattaId}/notifications/all`;
+      const url = `/api/regattas/${regattaId}/notifications`;
 
       $.ajax({
         type: "GET",
