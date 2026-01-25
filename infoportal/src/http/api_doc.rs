@@ -1,18 +1,7 @@
-use crate::http::{
-    auth::{Credentials, Scope, User},
-    monitoring::{Connections, Cpu, Db, Disk, Memory, Monitoring, SysInfo},
-    rest_api,
-};
-use ::db::aquarius::model::Notification;
-use actix_web::web;
-use db::{
-    aquarius::model::{
-        AgeClass, Athlete, BoatClass, Club, Crew, Entry, Filters, Heat, HeatEntry, Race, Referee, Regatta,
-    },
-    timekeeper::TimeStamp,
-};
-use utoipa::OpenApi;
-use utoipa_swagger_ui::SwaggerUi;
+use crate::http::rest_api;
+use ::actix_web::web;
+use ::utoipa::OpenApi;
+use ::utoipa_swagger_ui::SwaggerUi;
 
 #[derive(OpenApi)]
 #[openapi(
@@ -41,14 +30,8 @@ use utoipa_swagger_ui::SwaggerUi;
         rest_api::notification::update_notification,
         rest_api::notification::delete_notification,
     ),
-    components(
-        schemas(
-            Monitoring, Db, Connections, User, Credentials, Scope, SysInfo, Cpu, Memory, Disk, Notification,
-            Regatta, AgeClass, BoatClass, Filters, Club, Entry, Athlete, Crew, Heat, HeatEntry, Referee, Race, TimeStamp
-        ),
-    ),
     tags(
-        (name = "regatta-infopoint", description = "Regatta Infopoint endpoints.")
+        (name = "regatta-infopoint", description = "Regatta Infopoint REST Endpoints.")
     )
 )]
 struct ApiDoc;
