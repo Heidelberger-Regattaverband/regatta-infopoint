@@ -60,7 +60,7 @@ export default class AdminController extends BaseController {
     this.dialogModel.setData({
       title: "",
       text: "",
-      priority: 2,
+      priority: 0,
       visible: true
     });
     this.openDialog();
@@ -77,7 +77,7 @@ export default class AdminController extends BaseController {
       this.dialogModel.setData({
         title: notification.title || "",
         text: notification.text || "",
-        priority: notification.priority || 2,
+        priority: notification.priority || 0,
         visible: notification.visible !== false
       });
       this.openDialog();
