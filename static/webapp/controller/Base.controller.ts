@@ -168,6 +168,10 @@ export default class BaseController extends Controller {
     this.getRouter().navTo("map", params);
   }
 
+  navToAdmin(): void {
+    this.getRouter().navTo("admin");
+  }
+
   async getFilters(): Promise<any> {
     return (await this.getComponent().getFilters()).getData();
   }

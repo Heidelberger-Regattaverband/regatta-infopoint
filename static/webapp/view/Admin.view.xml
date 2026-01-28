@@ -1,0 +1,103 @@
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.Admin" xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core"
+  xmlns:f="sap.f" xmlns:layout="sap.ui.layout">
+  <mvc:content>
+
+    <Page title="{i18n>admin.title}" showNavButton="true" navButtonPress=".navBack">
+
+      <headerContent>
+      </headerContent>
+
+      <content>
+        <Table id="notificationsTable" items="{notifications>/}" growing="true" growingThreshold="50"
+          noDataText="{i18n>admin.noNotifications}">
+          <headerToolbar>
+            <Toolbar>
+              <Title text="{i18n>admin.notificationsTitle}" />
+              <ToolbarSpacer />
+              <Button icon="sap-icon://add" text="{i18n>admin.addNotification}" press=".onAddNotification" type="Emphasized" />
+              <Button icon="sap-icon://refresh" press=".onRefresh" />
+            </Toolbar>
+          </headerToolbar>
+          <columns>
+            <Column hAlign="Center" width="3rem">
+              <Text text="{i18n>admin.column.id}" />
+            </Column>
+            <Column>
+              <Text text="{i18n>admin.column.title}" />
+            </Column>
+            <Column hAlign="Center" width="5rem">
+              <Text text="{i18n>admin.column.priority}" />
+            </Column>
+            <Column hAlign="Center" width="5rem">
+              <Text text="{i18n>admin.column.visible}" />
+            </Column>
+            <Column hAlign="Center" width="9rem">
+              <Text text="{i18n>admin.column.modifiedAt}" />
+            </Column>
+            <Column hAlign="Center" width="5rem">
+              <Text text="{i18n>admin.column.actions}" />
+            </Column>
+          </columns>
+          <items>
+            <ColumnListItem press=".onNotificationPress">
+              <cells>
+                <Text text="{notifications>id}" />
+                <Text text="{notifications>title}" />
+                <Text text="{path:'notifications>priority',formatter:'.formatter.priority'}" />
+                <Switch state="{notifications>visible}" change=".onVisibilityChange" />
+                <Text text="{path:'notifications>modifiedAt',formatter:'.formatter.dateTime'}" />
+                <HBox>
+                  <Button icon="sap-icon://edit" press=".onEditNotification" type="Transparent" />
+                  <Button icon="sap-icon://delete" press=".onDeleteNotification" type="Transparent" />
+                </HBox>
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table>
+      </content>
+    </Page>
+
+    <!-- Add/Edit Notification Dialog -->
+    <Dialog id="notificationDialog" title="{i18n>admin.dialog.title}">
+      <content>
+        <VBox class="sapUiSmallMargin">
+          <Label text="{i18n>admin.dialog.title.label}" required="true" />
+          <Input id="titleInput" value="{dialog>/title}" placeholder="{i18n>admin.dialog.title.placeholder}" />
+
+          <Label text="{i18n>admin.dialog.text.label}" />
+          <TextArea id="textInput" value="{dialog>/text}" placeholder="{i18n>admin.dialog.text.placeholder}" rows="4" width="100%" />
+
+          <Label text="{i18n>admin.dialog.priority.label}" />
+          <Select id="prioritySelect" selectedKey="{dialog>/priority}">
+            <core:Item key="0" text="{i18n>admin.priority.none}" />
+            <core:Item key="1" text="{i18n>admin.priority.low}" />
+            <core:Item key="2" text="{i18n>admin.priority.medium}" />
+            <core:Item key="3" text="{i18n>admin.priority.high}" />
+          </Select>
+
+          <CheckBox id="visibleCheckBox" text="{i18n>admin.dialog.visible.label}" selected="{dialog>/visible}" />
+        </VBox>
+      </content>
+      <beginButton>
+        <Button text="{i18n>common.save}" press=".onSaveNotification" type="Emphasized" />
+      </beginButton>
+      <endButton>
+        <Button text="{i18n>common.cancel}" press=".onCancelDialog" />
+      </endButton>
+    </Dialog>
+
+    <!-- Delete Confirmation Dialog -->
+    <Dialog id="deleteDialog" title="{i18n>admin.delete.title}" type="Message" state="Warning">
+      <content>
+        <Text text="{i18n>admin.delete.message}" />
+      </content>
+      <beginButton>
+        <Button text="{i18n>common.delete}" press=".onConfirmDelete" type="Emphasized" />
+      </beginButton>
+      <endButton>
+        <Button text="{i18n>common.cancel}" press=".onCancelDelete" />
+      </endButton>
+    </Dialog>
+
+  </mvc:content>
+</mvc:View>

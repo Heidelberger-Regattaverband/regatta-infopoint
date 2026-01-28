@@ -29,7 +29,7 @@ pub use filters::Filters;
 pub use heat::Heat;
 pub use heat_entry::HeatEntry;
 pub use heat_result::HeatResult;
-pub use notification::Notification;
+pub use notification::{CreateNotificationRequest, Notification, UpdateNotificationRequest};
 pub use race::Race;
 pub use referee::Referee;
 pub use regatta::Regatta;
