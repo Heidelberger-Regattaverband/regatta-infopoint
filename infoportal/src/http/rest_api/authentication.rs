@@ -66,8 +66,8 @@ async fn logout(user: Identity) -> impl Responder {
 )]
 #[get("/identity")]
 async fn identity(identity: Option<Identity>) -> Result<impl Responder, Error> {
-    if let Some(user) = identity {
-        match user.id() {
+    if let Some(identity) = identity {
+        match identity.id() {
             Ok(id) => {
                 let scope = match id.as_str() {
                     "sa" | "admin" => UserScope::Admin,
@@ -76,8 +76,8 @@ async fn identity(identity: Option<Identity>) -> Result<impl Responder, Error> {
                 Ok(Json(User::new(id, scope)))
             }
             Err(err) => {
-                error!(%err, "Failed to get user ID from identity");
-                Err(ErrorInternalServerError("Failed to get user identity"))
+                error!(%err, "Failed to get identity from session");
+                Err(ErrorInternalServerError("Failed to get identity"))
             }
         }
     } else {
