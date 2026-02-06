@@ -131,6 +131,17 @@
               </tileContent>
             </GenericTile>
 
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>admin.title}"
+              visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}" press=".navToAdmin">
+              <tileContent>
+                <TileContent>
+                  <content>
+                    <ImageContent src="sap-icon://settings" />
+                  </content>
+                </TileContent>
+              </tileContent>
+            </GenericTile>
+
           </layout:content>
         </layout:HorizontalLayout>
 

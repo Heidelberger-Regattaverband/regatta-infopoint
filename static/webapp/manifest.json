@@ -144,6 +144,11 @@
           "pattern": "timestrip",
           "name": "timestrip",
           "target": "timestrip"
+        },
+        {
+          "pattern": "admin",
+          "name": "admin",
+          "target": "admin"
         }
       ],
       "targets": {
@@ -234,6 +239,12 @@
         "timestrip": {
           "type": "View",
           "name": "Timestrip",
+          "level": 1,
+          "viewType": "XML"
+        },
+        "admin": {
+          "type": "View",
+          "name": "Admin",
           "level": 1,
           "viewType": "XML"
         }

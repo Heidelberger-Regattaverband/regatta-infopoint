@@ -1,10 +1,11 @@
 use crate::config::CONFIG;
-use actix_web::HttpResponse;
-use serde::{Deserialize, Serialize};
-use tiberius::Client;
-use tokio::net::TcpStream;
-use tokio_util::compat::TokioAsyncWriteCompatExt;
-use utoipa::ToSchema;
+use ::actix_web::HttpResponse;
+use ::serde::{Deserialize, Serialize};
+use ::tiberius::Client;
+use ::tokio::net::TcpStream;
+use ::tokio_util::compat::TokioAsyncWriteCompatExt;
+use ::tracing::warn;
+use ::utoipa::ToSchema;
 
 /// The credentials struct contains the username and the password of the user.
 /// The credentials are used to authenticate the user.
@@ -77,8 +78,8 @@ impl User {
         // then try to open a connection to the MS-SQL server ...
         let tcp = match TcpStream::connect(db_cfg.get_addr()).await {
             Ok(stream) => stream,
-            Err(e) => {
-                tracing::warn!("Failed to connect to database: {}", e);
+            Err(err) => {
+                warn!(?err, "Failed to connect to database");
                 return Err(HttpResponse::Unauthorized().json(User::new_guest()));
             }
         };
