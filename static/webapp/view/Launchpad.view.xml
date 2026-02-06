@@ -15,10 +15,12 @@
       <content>
         <NotificationList id="notificationList" items="{notifications>/}" showNoData="false">
           <items>
+            <!-- ui5lint-disable no-deprecated-api -->
             <NotificationListItem title="{notifications>title}" description="{notifications>text}" unread="true"
               datetime="{path:'notifications>modifiedAt',formatter:'.formatter.dayTimeIsoLabel'}" counter="{notifications>id}"
               priority="{path:'notifications>priority',formatter:'.formatter.priority'}" visible="{notifications>visible}"
               close=".onNotificationClose" />
+            <!-- ui5lint-enable no-deprecated-api -->
           </items>
         </NotificationList>
         <layout:HorizontalLayout allowWrapping="true">
@@ -124,6 +126,17 @@
                 <TileContent>
                   <content>
                     <ImageContent src="sap-icon://time-account" />
+                  </content>
+                </TileContent>
+              </tileContent>
+            </GenericTile>
+
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>admin.title}"
+              visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}" press=".navToAdmin">
+              <tileContent>
+                <TileContent>
+                  <content>
+                    <ImageContent src="sap-icon://settings" />
                   </content>
                 </TileContent>
               </tileContent>

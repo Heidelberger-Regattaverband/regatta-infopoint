@@ -206,13 +206,9 @@ impl Config {
         // Validate cache TTL
         Self::validate_cache_ttl(cache_ttl)?;
 
-        info!(
-            active_regatta_id = active_regatta_id,
-            cache_ttl = cache_ttl,
-            host = aquarius_host,
-            port = aquarius_port,
-            "Aquarius:"
-        );
+        info!(active_regatta_id, cache_ttl, "Aquarius DB:");
+
+        info!(host = aquarius_host, port = aquarius_port, "Aquarius application:");
 
         Ok(Config {
             http_bind,

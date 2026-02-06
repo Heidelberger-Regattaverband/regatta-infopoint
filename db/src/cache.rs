@@ -3,6 +3,7 @@ use crate::{
     aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule},
     error::DbError,
 };
+use ::std::any::type_name;
 use ::std::mem;
 use futures::future::Future;
 use std::{
@@ -46,8 +47,8 @@ where
 {
     fn try_new(config: CacheConfig) -> Result<Self, DbError> {
         let cache = AsyncCache::new(config.max_entries, config.max_cost as i64, task::spawn)?;
-        debug!(max_entries = config.max_entries, max_cost = config.max_cost, ttl = ?config.ttl,
-            "New Cache:",
+        debug!(type = type_name::<V>(), max_entries = config.max_entries, max_cost = config.max_cost, ttl = ?config.ttl,
+            "New Cache:"
         );
         Ok(Cache {
             cache,

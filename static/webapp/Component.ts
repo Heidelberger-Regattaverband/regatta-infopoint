@@ -154,7 +154,7 @@ export default class Component extends UIComponent {
     private async loadNotifications(): Promise<JSONModel> {
         console.debug("Loading notifications");
         const regattaId = this.regattaModel?.getData().id ?? -1;
-        await this.messagesModel.loadData(`/api/regattas/${regattaId}/notifications`);
+        await this.messagesModel.loadData(`/api/regattas/${regattaId}/visible_notifications`);
         this.messagesModel.refresh();
         console.debug("Notifications loaded");
         return this.messagesModel;
