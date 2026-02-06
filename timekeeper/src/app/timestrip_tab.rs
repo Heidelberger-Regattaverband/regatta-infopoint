@@ -18,7 +18,7 @@ pub(crate) struct TimeStripTab {
 
     // shared context
     time_strip: Rc<RefCell<TimeStrip>>,
-    selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
+    pub(crate) selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
     show_time_strip_popup: Rc<RefCell<bool>>,
 }
 
