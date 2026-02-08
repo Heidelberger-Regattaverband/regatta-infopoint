@@ -8,23 +8,25 @@
       </headerContent>
 
       <content>
-
-        <List id="entriesList" items="{statistics>/entries}" headerText="{i18n>common.entries}">
-          <ObjectListItem title="{statistics>name}" number="{statistics>value}" />
-        </List>
-
-        <List id="racesList" items="{statistics>/races}" headerText="{i18n>statistics.races}">
-          <ObjectListItem title="{statistics>name}" number="{statistics>value}" />
-        </List>
-
-        <List id="heatsList" items="{statistics>/heats}" headerText="{i18n>statistics.heats}">
-          <ObjectListItem title="{statistics>name}" number="{statistics>value}" />
-        </List>
-
-        <List id="athletesList" items="{statistics>/athletes}" headerText="{i18n>statistics.athletes}">
-          <ObjectListItem title="{statistics>name}" number="{statistics>value}" />
-        </List>
-
+        <Table id="statisticsTable"
+          items="{path:'statistics>/all',sorter:{path:'group',descending:false,group:'.getGroup'},groupHeaderFactory:'.getGroupHeader'}">
+          <columns>
+            <Column>
+              <Text text="Name" />
+            </Column>
+            <Column>
+              <Text text="Value" />
+            </Column>
+          </columns>
+          <items>
+            <ColumnListItem>
+              <cells>
+                <Text text="{statistics>name}" />
+                <Text text="{statistics>value}" />
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table>
       </content>
     </Page>
 

@@ -1,5 +1,6 @@
 import { Button$PressEvent } from "sap/m/Button";
-import List from "sap/m/List";
+import GroupHeaderListItem from "sap/m/GroupHeaderListItem";
+import Table from "sap/m/Table";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
@@ -12,10 +13,7 @@ export default class StatisticsController extends BaseController {
 
   private readonly dataLoader: JSONModel = new JSONModel();
   private readonly statisticsModel: JSONModel = new JSONModel();
-  private racesList?: List;
-  private heatsList?: List;
-  private entriesList?: List;
-  private athletesList?: List;
+  private statisticsTable?: Table;
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
@@ -24,10 +22,7 @@ export default class StatisticsController extends BaseController {
 
     super.setViewModel(this.statisticsModel, "statistics");
 
-    this.entriesList = this.getView()?.byId("entriesList") as List;
-    this.racesList = this.getView()?.byId("racesList") as List;
-    this.heatsList = this.getView()?.byId("heatsList") as List;
-    this.athletesList = this.getView()?.byId("athletesList") as List;
+    this.statisticsTable = this.getView()?.byId("statisticsTable") as Table;
   }
 
   onNavBack(): void {
@@ -49,60 +44,84 @@ export default class StatisticsController extends BaseController {
     const succeeded: boolean = await super.updateJSONModel(this.dataLoader, `/api/regattas/${regatta.id}/statistics`);
     let statistics: any = succeeded ? this.dataLoader.getData() : {};
 
-    // transform statistic data into human readable format
-    const entries = [];
+    const all = [];
+
+    if (statistics?.heats) {
+      all.push({ name: this.i18n("common.overall"), value: statistics.heats.all, group: "1" },
+        { name: this.i18n("heat.state.official"), value: statistics.heats.official, group: "1" },
+        { name: this.i18n("heat.state.finished"), value: statistics.heats.finished, group: "1" },
+        { name: this.i18n("heat.state.started"), value: statistics.heats.started, group: "1" },
+        { name: this.i18n("common.seeded"), value: statistics.heats.seeded, group: "1" },
+        { name: this.i18n("common.scheduled"), value: statistics.heats.scheduled, group: "1" },
+        { name: this.i18n("common.cancelled"), value: statistics.heats.cancelled, group: "1" });
+    }
+
     if (statistics?.entries) {
       const seats = statistics.entries.seats + statistics.entries.seatsCox;
-      entries.push({ name: this.i18n("common.overall"), value: statistics.entries.all });
-      entries.push({ name: this.i18n("statistics.entries.cancelled"), value: statistics.entries.cancelled });
-      entries.push({ name: this.i18n("statistics.reportingClubs"), value: statistics.entries.registeringClubs });
-      entries.push({ name: this.i18n("statistics.participatingClubs"), value: statistics.entries.clubs });
-      entries.push({ name: this.i18n("statistics.athletes.overall"), value: statistics.entries.athletes });
-      entries.push({ name: this.i18n("statistics.athletes.female"), value: statistics.entries.athletesFemale });
-      entries.push({ name: this.i18n("statistics.athletes.male"), value: statistics.entries.athletesMale });
-      entries.push({ name: this.i18n("common.seats"), value: seats });
+      all.push({ name: this.i18n("common.overall"), value: statistics.entries.all, group: "2" },
+        { name: this.i18n("statistics.entries.cancelled"), value: statistics.entries.cancelled, group: "2" },
+        { name: this.i18n("statistics.reportingClubs"), value: statistics.entries.registeringClubs, group: "2" },
+        { name: this.i18n("statistics.participatingClubs"), value: statistics.entries.clubs, group: "2" },
+        { name: this.i18n("statistics.athletes.overall"), value: statistics.entries.athletes, group: "2" },
+        { name: this.i18n("statistics.athletes.female"), value: statistics.entries.athletesFemale, group: "2" },
+        { name: this.i18n("statistics.athletes.male"), value: statistics.entries.athletesMale, group: "2" },
+        { name: this.i18n("common.seats"), value: seats, group: "2" });
     }
 
-    const races = [];
     if (statistics?.races) {
-      races.push({ name: this.i18n("common.overall"), value: statistics.races.all });
-      races.push({ name: this.i18n("common.cancelled"), value: statistics.races.cancelled });
+      all.push({ name: this.i18n("common.overall"), value: statistics.races.all, group: "3" },
+        { name: this.i18n("common.cancelled"), value: statistics.races.cancelled, group: "3" });
     }
 
-    const heats = [];
-    if (statistics?.heats) {
-      heats.push({ name: this.i18n("common.overall"), value: statistics.heats.all });
-      heats.push({ name: this.i18n("heat.state.official"), value: statistics.heats.official });
-      heats.push({ name: this.i18n("heat.state.finished"), value: statistics.heats.finished });
-      heats.push({ name: this.i18n("heat.state.started"), value: statistics.heats.started });
-      heats.push({ name: this.i18n("common.seeded"), value: statistics.heats.seeded });
-      heats.push({ name: this.i18n("common.scheduled"), value: statistics.heats.scheduled });
-      heats.push({ name: this.i18n("common.cancelled"), value: statistics.heats.cancelled });
+    if (statistics?.medals) {
+      all.push({ name: this.i18n("statistics.medals.rowers"), value: statistics.medals.rowers, group: "4" },
+        { name: this.i18n("statistics.medals.coxes"), value: statistics.medals.coxes, group: "4" });
     }
 
-    const athletes = [];
     if (statistics?.athletes) {
       if (statistics.athletes.oldestWoman) {
-        athletes.push({ name: this.i18n("statistics.athletes.oldestWoman"), value: Formatter.athleteLabel(statistics.athletes.oldestWoman) });
+        all.push({ name: this.i18n("statistics.athletes.oldestWoman"), value: Formatter.athleteLabel(statistics.athletes.oldestWoman), group: "5" });
       }
       if (statistics.athletes.oldestMan) {
-        athletes.push({ name: this.i18n("statistics.athletes.oldestMan"), value: Formatter.athleteLabel(statistics.athletes.oldestMan) });
+        all.push({ name: this.i18n("statistics.athletes.oldestMan"), value: Formatter.athleteLabel(statistics.athletes.oldestMan), group: "5" });
       }
     }
 
     // update statistics model
-    this.statisticsModel.setProperty("/entries", entries);
-    this.statisticsModel.setProperty("/races", races);
-    this.statisticsModel.setProperty("/heats", heats);
-    this.statisticsModel.setProperty("/athletes", athletes);
+    this.statisticsModel.setProperty("/all", all);
 
     return succeeded;
   }
 
+  getGroup(context: any): string {
+    return context.getProperty("group");
+  }
+
+  getGroupHeader(group: any): any {
+    let title: string = "";
+    switch (group?.key) {
+      case "1":
+        title = this.i18n("statistics.heats");
+        break;
+      case "2":
+        title = this.i18n("common.entries");
+        break;
+      case "3":
+        title = this.i18n("statistics.races");
+        break;
+      case "5":
+        title = this.i18n("statistics.athletes");
+        break;
+      case "4":
+        title = this.i18n("statistics.medals");
+        break;
+    }
+    return new GroupHeaderListItem({
+      title: title,
+    });
+  }
+
   private setBusy(busy: boolean): void {
-    this.entriesList?.setBusy(busy);
-    this.racesList?.setBusy(busy);
-    this.heatsList?.setBusy(busy);
-    this.athletesList?.setBusy(busy);
+    this.statisticsTable?.setBusy(busy);
   }
 }
