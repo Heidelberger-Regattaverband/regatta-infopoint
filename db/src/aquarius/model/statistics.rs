@@ -49,6 +49,14 @@ pub struct Statistics {
     heats: HeatsStatistics,
     entries: EntriesStatistics,
     athletes: Option<Athletes>,
+    medals: MedalsStatistics,
+}
+
+#[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct MedalsStatistics {
+    rowers: i32,
+    coxes: i32,
 }
 
 impl From<&Row> for Statistics {
@@ -79,11 +87,16 @@ impl From<&Row> for Statistics {
             seats: value.get_column("entries_seats"),
             seats_cox: value.get_column("entries_seats_cox"),
         };
+        let medals = MedalsStatistics {
+            rowers: value.get_column("medals_rowers"),
+            coxes: value.get_column("medals_coxes"),
+        };
         Statistics {
             races,
             heats,
             entries,
             athletes: None,
+            medals,
         }
     }
 }
@@ -143,10 +156,24 @@ impl Statistics {
             WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) as seats) AS entries_seats,
           (SELECT COALESCE(SUM({COXED}), 0) FROM (
             SELECT {COXED}
-            FROM  Entry
-            JOIN  Offer     ON Offer_ID = Entry_Race_ID_FK
-            JOIN  BoatClass ON {BOAT_CLASS_ID} = Offer_BoatClass_ID_FK
-            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) as seats) AS entries_seats_cox
+            FROM  Entry      e
+            JOIN  Offer      o ON o.Offer_ID         = e.Entry_Race_ID_FK
+            JOIN  BoatClass bc ON bc.{BOAT_CLASS_ID} = o.Offer_BoatClass_ID_FK
+            WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue = 0) as seats) AS entries_seats_cox,
+          (SELECT SUM(bc.BoatClass_NumRowers) FROM (
+            SELECT bc.BoatClass_NumRowers
+            FROM Comp       c
+            JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.Offer_ID
+            JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
+            WHERE c.Comp_Cancelled = 0
+            ) as bc) as medals_rowers,
+          (SELECT SUM(bc.BoatClass_Coxed) FROM (
+            SELECT bc.BoatClass_Coxed
+            FROM Comp       c
+            JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.Offer_ID
+            JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
+            WHERE c.Comp_Cancelled = 0
+            ) as bc) as medals_coxes
           "
         ));
         query.bind(regatta_id);
