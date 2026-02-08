@@ -7,6 +7,12 @@ use serde::Serialize;
 use tiberius::{Query, Row};
 use utoipa::ToSchema;
 
+const ID: &str = "Crew_ID";
+const POS: &str = "Crew_Pos";
+const IS_COX: &str = "Crew_IsCox";
+const ROUND_FROM: &str = "Crew_RoundFrom";
+const ROUND_TO: &str = "Crew_RoundTo";
+
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Crew {
@@ -30,7 +36,7 @@ pub struct Crew {
 
 impl Crew {
     pub(crate) fn select_columns(alias: &str) -> String {
-        format!(" {alias}.Crew_ID, {alias}.Crew_Pos, {alias}.Crew_IsCox, {alias}.Crew_RoundFrom, {alias}.Crew_RoundTo ")
+        format!("{alias}.{ID}, {alias}.{POS}, {alias}.{IS_COX}, {alias}.{ROUND_FROM}, {alias}.{ROUND_TO}")
     }
 
     /// Query all crew members of a entry.
@@ -49,8 +55,8 @@ impl Crew {
             "SELECT {0}, {1}, {2} FROM Crew cr
             JOIN Athlet  a ON cr.Crew_Athlete_ID_FK = a.Athlet_ID
             JOIN Club   cl ON a.Athlet_Club_ID_FK   = cl.Club_ID
-            WHERE Crew_Entry_ID_FK = @P1 AND cr.Crew_RoundFrom <= @P2 AND @P2 <= cr.Crew_RoundTo
-            ORDER BY cr.Crew_pos ASC",
+            WHERE Crew_Entry_ID_FK = @P1 AND cr.{ROUND_FROM} <= @P2 AND @P2 <= cr.{ROUND_TO}
+            ORDER BY cr.{POS} ASC",
             Crew::select_columns("cr"),
             Athlete::select_columns("a"),
             Club::select_all_columns("cl")
@@ -68,12 +74,12 @@ impl Crew {
 impl From<&Row> for Crew {
     fn from(value: &Row) -> Self {
         Crew {
-            id: value.get_column("Crew_ID"),
-            pos: value.get_column("Crew_Pos"),
-            cox: value.get_column("Crew_IsCox"),
+            id: value.get_column(ID),
+            pos: value.get_column(POS),
+            cox: value.get_column(IS_COX),
             athlete: Athlete::from(value),
-            round_from: value.get_column("Crew_RoundFrom"),
-            round_to: value.get_column("Crew_RoundTo"),
+            round_from: value.get_column(ROUND_FROM),
+            round_to: value.get_column(ROUND_TO),
         }
     }
 }

@@ -1,7 +1,10 @@
+use crate::aquarius::model::Notification;
 use crate::{
     aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule},
     error::DbError,
 };
+use ::std::any::type_name;
+use ::std::mem;
 use futures::future::Future;
 use std::{
     fmt::Display,
@@ -11,7 +14,7 @@ use std::{
 };
 use stretto::AsyncCache;
 use tokio::task;
-use tracing::{debug, warn};
+use tracing::debug;
 
 /// A high-performance cache that uses `stretto` as the underlying cache with comprehensive features
 ///
@@ -43,11 +46,9 @@ where
     V: Send + Sync + Clone + 'static,
 {
     fn try_new(config: CacheConfig) -> Result<Self, DbError> {
-        let cache = AsyncCache::new(config.max_entries, config.max_cost, task::spawn)
-            .map_err(|e| DbError::Cache(format!("Failed to create cache: {}", e)))?;
-        debug!(
-            "Created cache with max_entries: {}, max_cost: {}, ttl: {:?}",
-            config.max_entries, config.max_cost, config.ttl
+        let cache = AsyncCache::new(config.max_entries, config.max_cost as i64, task::spawn)?;
+        debug!(type = type_name::<V>(), max_entries = config.max_entries, max_cost = config.max_cost, ttl = ?config.ttl,
+            "New Cache:"
         );
         Ok(Cache {
             cache,
@@ -88,22 +89,18 @@ where
         }
     }
 
-    async fn set(&self, key: &K, value: &V) -> Result<(), DbError> {
-        self.set_with_cost(key, value, 1).await
+    async fn set(&self, key: &K, value: &V) -> Result<bool, DbError> {
+        let cost = mem::size_of::<V>() as i64;
+        self.set_with_cost(key, value, cost).await
     }
 
-    async fn set_with_cost(&self, key: &K, value: &V, cost: i64) -> Result<(), DbError> {
+    async fn set_with_cost(&self, key: &K, value: &V, cost: i64) -> Result<bool, DbError> {
         // Insert with TTL and specified cost
-        self.cache
-            .insert_with_ttl(*key, value.clone(), cost, self.config.ttl)
-            .await;
-
-        // Handle the wait operation more gracefully
-        if let Err(e) = self.cache.wait().await {
-            warn!("Cache wait operation failed: {}", e);
-            return Err(DbError::Cache(format!("Cache wait failed: {}", e)));
-        }
-        Ok(())
+        let result = self
+            .cache
+            .try_insert_with_ttl(*key, value.clone(), cost, self.config.ttl)
+            .await?;
+        Ok(result)
     }
 
     pub async fn compute_if_missing<F, Fut, E>(&self, key: &K, force: bool, f: F) -> Result<V, DbError>
@@ -190,6 +187,8 @@ pub struct Caches {
     pub race_heats_entries: Cache<i32, Race>,
     pub athlete: Cache<i32, Athlete>,
     pub heat: Cache<i32, Heat>,
+
+    pub notifications: Cache<i32, Vec<Notification>>,
 }
 
 impl Caches {
@@ -215,6 +214,8 @@ impl Caches {
             race_heats_entries: Cache::try_new(config.races)?,
             athlete: Cache::try_new(config.athletes)?,
             heat: Cache::try_new(config.heats)?,
+
+            notifications: Cache::try_new(config.notifications)?,
         })
     }
 
@@ -235,6 +236,7 @@ impl Caches {
                 this.race_heats_entries.stats(),
                 this.athlete.stats(),
                 this.heat.stats(),
+                this.notifications.stats(),
             ]
         };
 
@@ -271,6 +273,7 @@ struct CachesConfig {
     heats: CacheConfig,
     clubs: CacheConfig,
     athletes: CacheConfig,
+    notifications: CacheConfig,
 }
 
 impl CachesConfig {
@@ -287,32 +290,37 @@ impl CachesConfig {
         const MAX_RACES_COUNT: usize = 200;
         const MAX_HEATS_COUNT: usize = 350;
         const MAX_CLUBS_COUNT: usize = 100;
-
+        const MAX_NOTIFICATIONS_COUNT: usize = 10;
         Self {
             regattas: CacheConfig {
                 max_entries: MAX_REGATTAS_COUNT,
                 ttl: base_ttl,
-                max_cost: 100_000, // Lower cost - regattas are small but critical
+                max_cost: mem::size_of::<Regatta>() * MAX_REGATTAS_COUNT,
             },
             races: CacheConfig {
                 max_entries: MAX_RACES_COUNT,
                 ttl: base_ttl,
-                max_cost: 500_000, // Medium cost for race data with results
+                max_cost: mem::size_of::<Race>() * MAX_RACES_COUNT,
             },
             heats: CacheConfig {
                 max_entries: MAX_HEATS_COUNT,
                 ttl: base_ttl,
-                max_cost: 750_000, // Higher cost - heats contain entry lists
+                max_cost: mem::size_of::<Heat>() * MAX_HEATS_COUNT,
             },
             clubs: CacheConfig {
                 max_entries: MAX_CLUBS_COUNT,
                 ttl: base_ttl,
-                max_cost: 200_000, // Medium cost for club data
+                max_cost: mem::size_of::<Club>() * MAX_CLUBS_COUNT,
             },
             athletes: CacheConfig {
-                max_entries: MAX_RACES_COUNT, // Reuse race count for athletes
+                max_entries: MAX_RACES_COUNT,
                 ttl: base_ttl,
-                max_cost: 300_000, // Medium cost for athlete data
+                max_cost: mem::size_of::<Athlete>() * MAX_RACES_COUNT,
+            },
+            notifications: CacheConfig {
+                max_entries: MAX_NOTIFICATIONS_COUNT,
+                ttl: base_ttl,
+                max_cost: mem::size_of::<Notification>() * MAX_NOTIFICATIONS_COUNT,
             },
         }
     }
@@ -326,7 +334,7 @@ struct CacheConfig {
     /// Time-to-live for cache entries
     ttl: Duration,
     /// Maximum cost for the cache (memory limit)
-    max_cost: i64,
+    max_cost: usize,
 }
 
 /// Cache statistics for monitoring and debugging with actual tracking capabilities

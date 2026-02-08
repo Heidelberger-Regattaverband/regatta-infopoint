@@ -1,13 +1,15 @@
+use crate::aquarius::model::boat_class::ID as BOAT_CLASS_ID;
+use crate::aquarius::model::boat_class::NUM_ROWERS;
 use crate::{
     aquarius::model::{Club, Crew, Entry, Heat, HeatResult, Race, TryToEntity, utils},
     error::DbError,
     tiberius::{RowColumn, TiberiusPool},
 };
-use futures::future::{BoxFuture, join_all};
-use serde::Serialize;
-use std::{cmp::Ordering, time::Duration};
-use tiberius::{Query, Row};
-use utoipa::ToSchema;
+use ::futures::future::{BoxFuture, join_all};
+use ::serde::Serialize;
+use ::std::{cmp::Ordering, time::Duration};
+use ::tiberius::{Query, Row};
+use ::utoipa::ToSchema;
 
 /// A entry of a boat in a heat.
 #[derive(Debug, Serialize, Clone, ToSchema)]
@@ -46,11 +48,11 @@ impl HeatEntry {
     /// # Returns
     /// A list of entries of the heat
     pub(crate) async fn query_entries_of_heat(heat: &Heat, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
-        let sql = format!("SELECT DISTINCT ce.CE_ID, ce.CE_Lane, {0}, Label_Short, BoatClass_NumRowers, {1}, {2}, {3}
+        let sql = format!("SELECT DISTINCT ce.CE_ID, ce.CE_Lane, {0}, Label_Short, {NUM_ROWERS}, {1}, {2}, {3}
             FROM CompEntries ce
             JOIN Comp                  ON CE_Comp_ID_FK     = Comp_ID
             JOIN Offer o               ON o.Offer_ID        = Comp_Race_ID_FK
-            JOIN BoatClass             ON o.Offer_BoatClass_ID_FK = BoatClass_ID
+            JOIN BoatClass             ON o.Offer_BoatClass_ID_FK = {BOAT_CLASS_ID}
             FULL OUTER JOIN Entry e    ON CE_Entry_ID_FK    = e.Entry_ID
             FULL OUTER JOIN EntryLabel ON EL_Entry_ID_FK    = e.Entry_ID
             FULL OUTER JOIN Label      ON EL_Label_ID_FK    = Label_ID

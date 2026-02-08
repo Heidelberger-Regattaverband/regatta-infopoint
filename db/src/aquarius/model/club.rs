@@ -1,11 +1,21 @@
+use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::{flags_scraper::ClubFlag, model::utils},
     error::DbError,
-    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
+    tiberius::{RowColumn, TryRowColumn},
 };
-use serde::Serialize;
-use tiberius::{Query, Row, numeric::Decimal};
-use utoipa::ToSchema;
+use ::serde::Serialize;
+use ::tiberius::{Query, Row, numeric::Decimal};
+use ::utoipa::ToSchema;
+
+const ID: &str = "Club_ID";
+const EXTERN_ID: &str = "Club_ExternID";
+const SHORT_NAME: &str = "Club_Abbr";
+const LONG_NAME: &str = "Club_Name";
+const ABBREVIATION: &str = "Club_UltraAbbr";
+const CITY: &str = "Club_City";
+const LATITUDE: &str = "Club_HRV_Latitude";
+const LONGITUDE: &str = "Club_HRV_Longitude";
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -61,51 +71,53 @@ impl Club {
     /// Query all clubs that are participating in a regatta.
     /// # Arguments
     /// * `regatta_id` - The regatta identifier
-    /// * `pool` - The database connection pool
+    /// * `client` - The database connection
     /// # Returns
     /// A list of clubs that are participating in the regatta
-    pub async fn query_clubs_participating_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
+    pub async fn query_clubs_participating_regatta(
+        regatta_id: i32,
+        client: &mut TiberiusClient,
+    ) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT DISTINCT {0},
                 (SELECT COUNT(*) FROM (
                     SELECT DISTINCT Entry_ID FROM Club
-                    JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
+                    JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
                     JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
                     JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
-                    WHERE Entry_Event_ID_FK = @P1 AND c.Club_ID = Club_ID AND Entry_CancelValue = 0
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
                         AND Crew_RoundTo = 64
                 ) AS Participations_Count) AS Participations_Count,
                 (SELECT COUNT(*) FROM (
                     SELECT DISTINCT Athlet_ID
                     FROM Club
-                    JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
+                    JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
                     JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
                     JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
-                    WHERE Entry_Event_ID_FK = @P1 AND c.Club_ID = Club_ID AND Entry_CancelValue = 0
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
                         AND Crew_RoundTo = 64 AND Athlet_Gender = 'W'
                 ) AS Athletes_Female_Count) AS Athletes_Female_Count,
                 (SELECT COUNT(*) FROM (
                     SELECT DISTINCT Athlet_ID
                     FROM Club
-                    JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
+                    JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
                     JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
                     JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
-                    WHERE Entry_Event_ID_FK = @P1 AND c.Club_ID = Club_ID AND Entry_CancelValue = 0
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
                         AND Crew_RoundTo = 64 AND Athlet_Gender = 'M'
                 ) AS Athletes_Male_Count) AS Athletes_Male_Count
             FROM Club c
-            JOIN Athlet  a ON a.Athlet_Club_ID_FK   = c.Club_ID
+            JOIN Athlet  a ON a.Athlet_Club_ID_FK   = c.{ID}
             JOIN Crew   cr ON cr.Crew_Athlete_ID_FK = a.Athlet_ID
             JOIN Entry   e ON cr.Crew_Entry_ID_FK   = e.Entry_ID
             WHERE Entry_Event_ID_FK = @P1 AND Crew_RoundTo = 64
-            ORDER BY Club_City ASC",
+            ORDER BY {CITY} ASC",
             Club::select_all_columns("c")
         );
         let mut query = Query::new(sql);
         query.bind(regatta_id);
 
-        let mut client = pool.get().await?;
-        let clubs = utils::get_rows(query.query(&mut client).await?).await?;
+        let clubs = utils::get_rows(query.query(client).await?).await?;
         Ok(clubs.into_iter().map(|row| Club::from(&row)).collect())
     }
 
@@ -119,62 +131,59 @@ impl Club {
     pub async fn query_club_with_aggregations(
         regatta_id: i32,
         club_id: i32,
-        pool: &TiberiusPool,
+        client: &mut TiberiusClient,
     ) -> Result<Self, DbError> {
         let mut query = Query::new(format!(
             "SELECT {0},
                 (SELECT COUNT(*) FROM (
                     SELECT DISTINCT Entry_ID FROM Club
-                    JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
+                    JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
                     JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
                     JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
-                    WHERE Entry_Event_ID_FK = @P1 AND c.Club_ID = Club_ID AND Entry_CancelValue = 0
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
                         AND Crew_RoundTo = 64
                 ) AS Participations_Count) AS Participations_Count,
                 (SELECT COUNT(*) FROM (
                     SELECT DISTINCT Athlet_ID FROM Club
-                    JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
+                    JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
                     JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
                     JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
-                    WHERE Entry_Event_ID_FK = @P1 AND c.Club_ID = Club_ID AND Entry_CancelValue = 0
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
                         AND Crew_RoundTo = 64 AND Athlet_Gender = 'W'
                 ) AS Athletes_Female_Count) AS Athletes_Female_Count,
                 (SELECT COUNT(*) FROM (
                     SELECT DISTINCT Athlet_ID FROM Club
-                    JOIN Athlet     ON Athlet_Club_ID_FK  = Club_ID
+                    JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
                     JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
                     JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
-                    WHERE Entry_Event_ID_FK = @P1 AND c.Club_ID = Club_ID AND Entry_CancelValue = 0
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
                         AND Crew_RoundTo = 64 AND Athlet_Gender = 'M'
                 ) AS Athletes_Male_Count) AS Athletes_Male_Count
             FROM Club c
-            WHERE c.Club_ID = @P2",
+            WHERE c.{ID} = @P2",
             Club::select_all_columns("c")
         ));
         query.bind(regatta_id);
         query.bind(club_id);
 
-        let mut client = pool.get().await?;
-        Ok(Club::from(&utils::get_row(query.query(&mut client).await?).await?))
+        Ok(Club::from(&utils::get_row(query.query(client).await?).await?))
     }
 
     pub(crate) fn select_all_columns(alias: &str) -> String {
         format!(
-            " {alias}.Club_ID, {alias}.Club_Abbr, {alias}.Club_Name, {alias}.Club_UltraAbbr, {alias}.Club_City, {alias}.Club_ExternID, {alias}.Club_HRV_Latitude, {alias}.Club_HRV_Longitude "
+            "{alias}.{ID}, {alias}.{SHORT_NAME}, {alias}.{LONG_NAME}, {alias}.{ABBREVIATION}, {alias}.{CITY}, {alias}.{EXTERN_ID}, {alias}.{LATITUDE}, {alias}.{LONGITUDE}"
         )
     }
 
     pub(crate) fn select_min_columns(alias: &str) -> String {
-        format!(
-            " {alias}.Club_ID, {alias}.Club_Abbr, {alias}.Club_UltraAbbr, {alias}.Club_City, {alias}.Club_ExternID "
-        )
+        format!("{alias}.{ID}, {alias}.{SHORT_NAME}, {alias}.{ABBREVIATION}, {alias}.{CITY}, {alias}.{EXTERN_ID}")
     }
 }
 
 impl From<&Row> for Club {
     fn from(value: &Row) -> Self {
         let mut flag_url = None;
-        let club_extern_id = value.try_get_column("Club_ExternID");
+        let club_extern_id = value.try_get_column(EXTERN_ID);
         if let Some(extern_id) = club_extern_id {
             if let Some(club_flag) = ClubFlag::get(&extern_id) {
                 flag_url = Some(club_flag.flag_url.clone());
@@ -188,19 +197,19 @@ impl From<&Row> for Club {
         let athletes_count = athletes_female_count.zip(athletes_male_count).map(|(x, y)| x + y);
 
         Club {
-            id: value.get_column("Club_ID"),
+            id: value.get_column(ID),
             extern_id: club_extern_id,
-            short_name: value.try_get_column("Club_Abbr"),
-            long_name: value.try_get_column("Club_Name"),
-            abbreviation: value.try_get_column("Club_UltraAbbr"),
-            city: value.get_column("Club_City"),
+            short_name: value.try_get_column(SHORT_NAME),
+            long_name: value.try_get_column(LONG_NAME),
+            abbreviation: value.try_get_column(ABBREVIATION),
+            city: value.get_column(CITY),
             participations_count: value.try_get_column("Participations_Count"),
             athletes_count,
             athletes_female_count,
             athletes_male_count,
             flag_url,
-            latitude: value.try_get_column("Club_HRV_Latitude"),
-            longitude: value.try_get_column("Club_HRV_Longitude"),
+            latitude: value.try_get_column(LATITUDE),
+            longitude: value.try_get_column(LONGITUDE),
         }
     }
 }

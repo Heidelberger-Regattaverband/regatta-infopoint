@@ -50,9 +50,9 @@ tiberius.workspace = true
 # Utils
 serde.workspace = true
 serde_json.workspace = true
-sysinfo = "0.37"
-uptime_lib.workspace = true
+sysinfo.workspace = true
 thiserror.workspace = true
+uptime_lib.workspace = true
 
 [dev-dependencies]
 tokio-shared-rt = "0"

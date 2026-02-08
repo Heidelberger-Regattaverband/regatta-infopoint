@@ -14,6 +14,7 @@ export default class Component extends UIComponent {
 
     private regattaModel?: JSONModel;
     private filtersModel?: JSONModel;
+    private readonly messagesModel: JSONModel = new JSONModel();
     private regattaModelPromise?: Promise<JSONModel>;
     private filtersModelPromise?: Promise<JSONModel>;
 
@@ -26,28 +27,28 @@ export default class Component extends UIComponent {
         if (this.regattaModelPromise) {
             return this.regattaModelPromise;
         }
-        if (!this.regattaModel) {
+        if (this.regattaModel) {
+            console.debug("Active regatta already loaded");
+        } else {
             this.regattaModelPromise = this.loadActiveRegatta();
             this.regattaModel = await this.regattaModelPromise;
             delete this.regattaModelPromise;
-        } else {
-            console.debug("Active regatta already loaded");
         }
-        return Promise.resolve(this.regattaModel);
+        return this.regattaModel;
     }
 
     async getFilters(): Promise<JSONModel> {
         if (this.filtersModelPromise) {
             return this.filtersModelPromise;
         }
-        if (!this.filtersModel) {
+        if (this.filtersModel) {
+            console.debug("Filters already loaded");
+        } else {
             this.filtersModelPromise = this.loadFilters();
             this.filtersModel = await this.filtersModelPromise;
             delete this.filtersModelPromise;
-        } else {
-            console.debug("Filters already loaded");
         }
-        return Promise.resolve(this.filtersModel);
+        return this.filtersModel;
     }
 
     init(): void {
@@ -63,6 +64,14 @@ export default class Component extends UIComponent {
             this.getFilters().then((model: JSONModel) => {
                 super.setModel(model, "filters");
             });
+
+            this.loadNotifications().then((model: JSONModel) => {
+                super.setModel(model, "notifications");
+            });
+
+            setInterval(async () => {
+                await this.loadNotifications();
+            }, 60000);
         })
 
         // set device model
@@ -99,10 +108,10 @@ export default class Component extends UIComponent {
      */
     getContentDensityClass(): string {
         if (!this.contentDensityClass) {
-            if (!Device.support.touch) {
-                this.contentDensityClass = "sapUiSizeCompact";
-            } else {
+            if (Device.support.touch) {
                 this.contentDensityClass = "sapUiSizeCozy";
+            } else {
+                this.contentDensityClass = "sapUiSizeCompact";
             }
         }
         return this.contentDensityClass;
@@ -140,5 +149,14 @@ export default class Component extends UIComponent {
         await model.loadData(`/api/regattas/${regattaId}/filters`);
         console.debug("Filters loaded");
         return model
+    }
+
+    private async loadNotifications(): Promise<JSONModel> {
+        console.debug("Loading notifications");
+        const regattaId = this.regattaModel?.getData().id ?? -1;
+        await this.messagesModel.loadData(`/api/regattas/${regattaId}/visible_notifications`);
+        this.messagesModel.refresh();
+        console.debug("Notifications loaded");
+        return this.messagesModel;
     }
 }

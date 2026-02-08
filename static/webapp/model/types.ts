@@ -3,6 +3,12 @@
  * @namespace de.regatta_hd.infoportal.model.types
  */
 
+export interface Notification {
+    id: number;
+    severity: number;
+    text: string;
+}
+
 export interface Race {
     number?: number;
     shortLabel?: string;
