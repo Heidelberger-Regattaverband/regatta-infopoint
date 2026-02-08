@@ -83,7 +83,7 @@ impl TimeStamp {
         client: &mut TiberiusClient,
     ) -> Result<Vec<TimeStamp>, DbError> {
         let mut query = Query::new(format!(
-            "SELECT {TIMESTAMP}, {EVENT_ID}, {SPLIT_NR}, {HEAT_NR}, {BIB} FROM HRV_Timestamp WHERE eventId = @P1 ORDER BY timestamp ASC"
+            "SELECT {TIMESTAMP}, {EVENT_ID}, {SPLIT_NR}, {HEAT_NR}, {BIB} FROM HRV_Timestamp WHERE {EVENT_ID} = @P1 ORDER BY {TIMESTAMP} ASC"
         ));
         query.bind(regatta_id);
 
@@ -93,7 +93,7 @@ impl TimeStamp {
     }
 
     pub(crate) async fn delete(&self, client: &mut TiberiusClient) -> Result<(), DbError> {
-        let mut query = Query::new("DELETE FROM HRV_Timestamp WHERE timestamp = @P1".to_string());
+        let mut query = Query::new(format!("DELETE FROM HRV_Timestamp WHERE {TIMESTAMP} = @P1"));
         query.bind(self.time);
 
         query.execute(client).await?;

@@ -1,13 +1,19 @@
+use crate::aquarius::model::age_class::ID as AGE_CLASS_ID;
+use crate::aquarius::model::age_class::MAX_AGE;
+use crate::aquarius::model::age_class::MIN_AGE;
+use crate::aquarius::model::boat_class::COXED;
+use crate::aquarius::model::boat_class::ID as BOAT_CLASS_ID;
+use crate::aquarius::model::boat_class::NUM_ROWERS;
 use crate::{
     aquarius::model::{AgeClass, Block, BoatClass, utils},
     error::DbError,
     tiberius::{RowColumn, TiberiusPool},
 };
-use chrono::NaiveDate;
-use futures::join;
-use serde::Serialize;
-use tiberius::Query;
-use utoipa::ToSchema;
+use ::chrono::NaiveDate;
+use ::futures::join;
+use ::serde::Serialize;
+use ::tiberius::Query;
+use ::utoipa::ToSchema;
 
 /// A struct containing all available filter values for a regatta.
 #[derive(Debug, Serialize, Clone, ToSchema)]
@@ -78,9 +84,9 @@ impl Filters {
 async fn query_boat_classes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<BoatClass>, DbError> {
     let mut query = Query::new(format!(
         "SELECT DISTINCT {0} FROM BoatClass b
-        JOIN Offer o ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID 
+        JOIN Offer o ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID} 
         WHERE o.Offer_Event_ID_FK = @P1
-        ORDER BY b.BoatClass_NumRowers ASC, b.BoatClass_Coxed ASC",
+        ORDER BY b.{NUM_ROWERS} ASC, b.{COXED} ASC",
         BoatClass::select_columns("b")
     ));
     query.bind(regatta_id);
@@ -93,9 +99,9 @@ async fn query_boat_classes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<
 async fn query_age_classes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<AgeClass>, DbError> {
     let mut query = Query::new(format!(
         "SELECT DISTINCT {0} FROM AgeClass a
-        JOIN Offer o ON o.Offer_AgeClass_ID_FK = a.AgeClass_ID
+        JOIN Offer o ON o.Offer_AgeClass_ID_FK = a.{AGE_CLASS_ID}
         WHERE o.Offer_Event_ID_FK = @P1
-        ORDER BY a.AgeClass_MinAge DESC, a.AgeClass_MaxAge DESC",
+        ORDER BY a.{MIN_AGE} DESC, a.{MAX_AGE} DESC",
         AgeClass::select_all_columns("a")
     ));
     query.bind(regatta_id);
