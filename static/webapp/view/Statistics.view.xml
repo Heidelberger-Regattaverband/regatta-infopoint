@@ -8,15 +8,11 @@
       </headerContent>
 
       <content>
-        <Table id="statisticsTable"
-          items="{path:'statistics>/all',sorter:{path:'group',descending:false,group:'.getGroup'},groupHeaderFactory:'.getGroupHeader'}">
+        <Table id="statisticsTable" 
+          items="{path:'statistics>/',sorter:{path:'group',descending:false,group:'.getGroup'},groupHeaderFactory:'.getGroupHeader'}">
           <columns>
-            <Column>
-              <Text text="Name" />
-            </Column>
-            <Column>
-              <Text text="Value" />
-            </Column>
+            <Column /> 
+            <Column />
           </columns>
           <items>
             <ColumnListItem>

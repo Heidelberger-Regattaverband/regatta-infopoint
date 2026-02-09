@@ -86,9 +86,7 @@ export default class StatisticsController extends BaseController {
         all.push({ name: this.i18n("statistics.athletes.oldestMan"), value: Formatter.athleteLabel(statistics.athletes.oldestMan), group: "5" });
       }
     }
-
-    // update statistics model
-    this.statisticsModel.setProperty("/all", all);
+    this.statisticsModel.setData(all);
 
     return succeeded;
   }
