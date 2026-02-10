@@ -1,4 +1,5 @@
 import Button from "sap/m/Button";
+import GroupHeaderListItem from "sap/m/GroupHeaderListItem";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import BaseController from "./Base.controller";
@@ -11,14 +12,14 @@ export default class MonitoringController extends BaseController {
   private readonly units = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
   private readonly monitoringModel: JSONModel = new JSONModel();
   private socket?: WebSocket;
-  private statusButton: Button;
+  private statusButton?: Button;
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getView()?.addEventDelegate({ onBeforeHide: this.onBeforeHide }, this);
     super.getRouter()?.getRoute("monitoring")?.attachMatched((_: Route$MatchedEvent) => this.connect(), this);
     super.setViewModel(this.monitoringModel, "monitoring");
-    this.statusButton = this.byId("statusButton") as Button;
+    this.statusButton = this.byId("statusButton") as Button | undefined;
   }
 
   private onBeforeHide(): void {
@@ -36,57 +37,79 @@ export default class MonitoringController extends BaseController {
   }
 
   private updateModel(monitoring: any) {
-    const dbConnections = [];
+    const all = [];
+
     if (monitoring?.db?.connections) {
-      dbConnections.push({ name: this.i18n("monitoring.dbConnections.total"), value: monitoring.db.connections.total });
-      dbConnections.push({ name: this.i18n("monitoring.dbConnections.used"), value: monitoring.db.connections.used });
-      dbConnections.push({ name: this.i18n("monitoring.dbConnections.idle"), value: monitoring.db.connections.idle });
-      dbConnections.push({ name: this.i18n("monitoring.dbConnections.created"), value: monitoring.db.connections.created });
-      dbConnections.push({ name: this.i18n("monitoring.dbConnections.closedIdleTimeout"), value: monitoring.db.connections.closedIdleTimeout });
-      dbConnections.push({ name: this.i18n("monitoring.dbConnections.closedMaxLifetime"), value: monitoring.db.connections.closedMaxLifetime });
-      dbConnections.push({ name: this.i18n("monitoring.dbConnections.closedError"), value: monitoring.db.connections.closedError });
+      all.push({ name: this.i18n("monitoring.dbConnections.total"), value: monitoring.db.connections.total, group: "1" });
+      all.push({ name: this.i18n("monitoring.dbConnections.used"), value: monitoring.db.connections.used, group: "1" });
+      all.push({ name: this.i18n("monitoring.dbConnections.idle"), value: monitoring.db.connections.idle, group: "1" });
+      all.push({ name: this.i18n("monitoring.dbConnections.created"), value: monitoring.db.connections.created, group: "1" });
+      all.push({ name: this.i18n("monitoring.dbConnections.closedIdleTimeout"), value: monitoring.db.connections.closedIdleTimeout, group: "1" });
+      all.push({ name: this.i18n("monitoring.dbConnections.closedMaxLifetime"), value: monitoring.db.connections.closedMaxLifetime, group: "1" });
+      all.push({ name: this.i18n("monitoring.dbConnections.closedError"), value: monitoring.db.connections.closedError, group: "1" });
     }
 
-    const dbCaches = [];
     if (monitoring?.db?.caches) {
-      dbCaches.push({ name: this.i18n("monitoring.caches.hits"), value: monitoring.db.caches.hits });
-      dbCaches.push({ name: this.i18n("monitoring.caches.misses"), value: monitoring.db.caches.misses });
-      dbCaches.push({ name: this.i18n("monitoring.caches.entries"), value: monitoring.db.caches.entries });
-      dbCaches.push({ name: this.i18n("monitoring.caches.hitRate"), value: this.nicePercent(monitoring.db.caches.hitRate) });
+      all.push({ name: this.i18n("monitoring.caches.hits"), value: monitoring.db.caches.hits, group: "2" });
+      all.push({ name: this.i18n("monitoring.caches.misses"), value: monitoring.db.caches.misses, group: "2" });
+      all.push({ name: this.i18n("monitoring.caches.entries"), value: monitoring.db.caches.entries, group: "2" });
+      all.push({ name: this.i18n("monitoring.caches.hitRate"), value: this.nicePercent(monitoring.db.caches.hitRate), group: "2" });
     }
 
-    const mem: any[] = [];
+    if (monitoring?.app) {
+      all.push({ name: this.i18n("monitoring.app.mem_current"), value: this.niceBytes(monitoring.app.mem_current), group: "3" });
+      all.push({ name: this.i18n("monitoring.app.mem_max"), value: this.niceBytes(monitoring.app.mem_max), group: "3" });
+    }
+
     if (monitoring?.sys?.mem) {
-      mem.push({ name: this.i18n("monitoring.mem.total"), value: this.niceBytes(monitoring.sys.mem.total) });
-      mem.push({ name: this.i18n("monitoring.mem.used"), value: this.niceBytes(monitoring.sys.mem.used) });
-      mem.push({ name: this.i18n("monitoring.mem.available"), value: this.niceBytes(monitoring.sys.mem.available) });
-      mem.push({ name: this.i18n("monitoring.mem.free"), value: this.niceBytes(monitoring.sys.mem.free) });
+      all.push({ name: this.i18n("monitoring.mem.total"), value: this.niceBytes(monitoring.sys.mem.total), group: "4" });
+      all.push({ name: this.i18n("monitoring.mem.used"), value: this.niceBytes(monitoring.sys.mem.used), group: "4" });
+      all.push({ name: this.i18n("monitoring.mem.available"), value: this.niceBytes(monitoring.sys.mem.available), group: "4" });
+      all.push({ name: this.i18n("monitoring.mem.free"), value: this.niceBytes(monitoring.sys.mem.free), group: "4" });
     }
 
-    const cpus: any[] = [];
     if (monitoring?.sys?.cpus) {
       monitoring.sys.cpus.forEach((cpu: any, _index: number) => {
-        cpus.push({ name: cpu.name, value: this.nicePercent(cpu.usage) });
+        all.push({ name: cpu.name, value: this.nicePercent(cpu.usage), group: "5" });
       });
     }
 
-    const sys: any[] = [];
     if (monitoring?.sys?.uptime) {
-      sys.push({ name: this.i18n("monitoring.sys.uptime"), value: this.niceDuration(monitoring.sys.uptime.secs) });
+      all.push({ name: this.i18n("monitoring.sys.uptime"), value: this.niceDuration(monitoring.sys.uptime.secs), group: "6" });
     }
 
-    const app: any[] = [];
-    if (monitoring?.app) {
-      app.push({ name: this.i18n("monitoring.app.mem_current"), value: this.niceBytes(monitoring.app.mem_current) });
-      app.push({ name: this.i18n("monitoring.app.mem_max"), value: this.niceBytes(monitoring.app.mem_max) });
-    }
+    this.monitoringModel.setData(all);
+  }
 
-    this.monitoringModel.setProperty("/db", dbConnections);
-    this.monitoringModel.setProperty("/caches", dbCaches);
-    this.monitoringModel.setProperty("/mem", mem);
-    this.monitoringModel.setProperty("/cpus", cpus);
-    this.monitoringModel.setProperty("/sys", sys);
-    this.monitoringModel.setProperty("/app", app);
+  getGroup(context: any): string {
+    return context.getProperty("group");
+  }
+
+  getGroupHeader(group: any): any {
+    let title: string = "";
+    switch (group?.key) {
+      case "1":
+        title = this.i18n("monitoring.dbConnections.title");
+        break;
+      case "2":
+        title = this.i18n("monitoring.caches.title");
+        break;
+      case "3":
+        title = this.i18n("monitoring.app.title");
+        break;
+      case "4":
+        title = this.i18n("monitoring.mem.title");
+        break;
+      case "5":
+        title = this.i18n("monitoring.cpus.title");
+        break;
+      case "6":
+        title = this.i18n("monitoring.sys.title");
+        break;
+    }
+    return new GroupHeaderListItem({
+      title: title,
+    });
   }
 
   private nicePercent(n: number): string {
@@ -121,7 +144,7 @@ export default class MonitoringController extends BaseController {
 
     this.socket.onopen = (_event: Event) => {
       console.debug('Connected');
-      this.statusButton.setIcon('sap-icon://connected');
+      this.statusButton?.setIcon('sap-icon://connected');
     }
 
     this.socket.onmessage = (event: MessageEvent) => {
@@ -130,7 +153,7 @@ export default class MonitoringController extends BaseController {
     }
 
     this.socket.onclose = (_event: CloseEvent) => {
-      this.statusButton.setIcon('sap-icon://disconnected');
+      this.statusButton?.setIcon('sap-icon://disconnected');
       console.debug('Disconnected');
     }
   }
