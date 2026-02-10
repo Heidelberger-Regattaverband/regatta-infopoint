@@ -22,7 +22,7 @@ export default class StatisticsController extends BaseController {
 
     super.setViewModel(this.statisticsModel, "statistics");
 
-    this.statisticsTable = this.getView()?.byId("statisticsTable") as Table;
+    this.statisticsTable = this.byId("statisticsTable") as Table | undefined;
   }
 
   onNavBack(): void {
