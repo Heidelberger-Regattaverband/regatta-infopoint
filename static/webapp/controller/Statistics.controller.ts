@@ -17,11 +17,8 @@ export default class StatisticsController extends BaseController {
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
-
     super.getRouter()?.getRoute("statistics")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadStatistics(), this);
-
     super.setViewModel(this.statisticsModel, "statistics");
-
     this.statisticsTable = this.byId("statisticsTable") as Table | undefined;
   }
 
@@ -107,11 +104,11 @@ export default class StatisticsController extends BaseController {
       case "3":
         title = this.i18n("statistics.races");
         break;
-      case "5":
-        title = this.i18n("statistics.athletes");
-        break;
       case "4":
         title = this.i18n("statistics.medals");
+        break;
+      case "5":
+        title = this.i18n("statistics.athletes");
         break;
     }
     return new GroupHeaderListItem({

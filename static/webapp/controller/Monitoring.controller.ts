@@ -40,32 +40,32 @@ export default class MonitoringController extends BaseController {
     const all = [];
 
     if (monitoring?.db?.connections) {
-      all.push({ name: this.i18n("monitoring.dbConnections.total"), value: monitoring.db.connections.total, group: "1" });
-      all.push({ name: this.i18n("monitoring.dbConnections.used"), value: monitoring.db.connections.used, group: "1" });
-      all.push({ name: this.i18n("monitoring.dbConnections.idle"), value: monitoring.db.connections.idle, group: "1" });
-      all.push({ name: this.i18n("monitoring.dbConnections.created"), value: monitoring.db.connections.created, group: "1" });
-      all.push({ name: this.i18n("monitoring.dbConnections.closedIdleTimeout"), value: monitoring.db.connections.closedIdleTimeout, group: "1" });
-      all.push({ name: this.i18n("monitoring.dbConnections.closedMaxLifetime"), value: monitoring.db.connections.closedMaxLifetime, group: "1" });
-      all.push({ name: this.i18n("monitoring.dbConnections.closedError"), value: monitoring.db.connections.closedError, group: "1" });
+      all.push({ name: this.i18n("monitoring.dbConnections.total"), value: monitoring.db.connections.total, group: "1" },
+        { name: this.i18n("monitoring.dbConnections.used"), value: monitoring.db.connections.used, group: "1" },
+        { name: this.i18n("monitoring.dbConnections.idle"), value: monitoring.db.connections.idle, group: "1" },
+        { name: this.i18n("monitoring.dbConnections.created"), value: monitoring.db.connections.created, group: "1" },
+        { name: this.i18n("monitoring.dbConnections.closedIdleTimeout"), value: monitoring.db.connections.closedIdleTimeout, group: "1" },
+        { name: this.i18n("monitoring.dbConnections.closedMaxLifetime"), value: monitoring.db.connections.closedMaxLifetime, group: "1" },
+        { name: this.i18n("monitoring.dbConnections.closedError"), value: monitoring.db.connections.closedError, group: "1" });
     }
 
     if (monitoring?.db?.caches) {
-      all.push({ name: this.i18n("monitoring.caches.hits"), value: monitoring.db.caches.hits, group: "2" });
-      all.push({ name: this.i18n("monitoring.caches.misses"), value: monitoring.db.caches.misses, group: "2" });
-      all.push({ name: this.i18n("monitoring.caches.entries"), value: monitoring.db.caches.entries, group: "2" });
-      all.push({ name: this.i18n("monitoring.caches.hitRate"), value: this.nicePercent(monitoring.db.caches.hitRate), group: "2" });
+      all.push({ name: this.i18n("monitoring.caches.hits"), value: monitoring.db.caches.hits, group: "2" },
+        { name: this.i18n("monitoring.caches.misses"), value: monitoring.db.caches.misses, group: "2" },
+        { name: this.i18n("monitoring.caches.entries"), value: monitoring.db.caches.entries, group: "2" },
+        { name: this.i18n("monitoring.caches.hitRate"), value: this.nicePercent(monitoring.db.caches.hitRate), group: "2" });
     }
 
     if (monitoring?.app) {
-      all.push({ name: this.i18n("monitoring.app.mem_current"), value: this.niceBytes(monitoring.app.mem_current), group: "3" });
-      all.push({ name: this.i18n("monitoring.app.mem_max"), value: this.niceBytes(monitoring.app.mem_max), group: "3" });
+      all.push({ name: this.i18n("monitoring.app.mem_current"), value: this.niceBytes(monitoring.app.mem_current), group: "3" },
+        { name: this.i18n("monitoring.app.mem_max"), value: this.niceBytes(monitoring.app.mem_max), group: "3" });
     }
 
     if (monitoring?.sys?.mem) {
-      all.push({ name: this.i18n("monitoring.mem.total"), value: this.niceBytes(monitoring.sys.mem.total), group: "4" });
-      all.push({ name: this.i18n("monitoring.mem.used"), value: this.niceBytes(monitoring.sys.mem.used), group: "4" });
-      all.push({ name: this.i18n("monitoring.mem.available"), value: this.niceBytes(monitoring.sys.mem.available), group: "4" });
-      all.push({ name: this.i18n("monitoring.mem.free"), value: this.niceBytes(monitoring.sys.mem.free), group: "4" });
+      all.push({ name: this.i18n("monitoring.mem.total"), value: this.niceBytes(monitoring.sys.mem.total), group: "4" },
+        { name: this.i18n("monitoring.mem.used"), value: this.niceBytes(monitoring.sys.mem.used), group: "4" },
+        { name: this.i18n("monitoring.mem.available"), value: this.niceBytes(monitoring.sys.mem.available), group: "4" },
+        { name: this.i18n("monitoring.mem.free"), value: this.niceBytes(monitoring.sys.mem.free), group: "4" });
     }
 
     if (monitoring?.sys?.cpus) {
@@ -136,7 +136,7 @@ export default class MonitoringController extends BaseController {
   private connect() {
     this.disconnect();
 
-    const location: Location = window.location;
+    const location: Location = globalThis.location;
     const proto = location.protocol.startsWith('https') ? 'wss' : 'ws';
 
     console.debug('Connecting...');
