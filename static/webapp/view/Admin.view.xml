@@ -3,13 +3,9 @@
   <mvc:content>
 
     <Page title="{i18n>admin.title}" showNavButton="true" navButtonPress=".navBack">
-
-      <headerContent>
-      </headerContent>
-
       <content>
         <Table id="notificationsTable" items="{notifications>/}" growing="true" growingThreshold="50"
-          noDataText="{i18n>admin.noNotifications}">
+          noDataText="{i18n>admin.noNotifications}" sticky="HeaderToolbar,ColumnHeaders" autoPopinMode="true">
           <headerToolbar>
             <Toolbar>
               <Title text="{i18n>admin.notificationsTitle}" />
