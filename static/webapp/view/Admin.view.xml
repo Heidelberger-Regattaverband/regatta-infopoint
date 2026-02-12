@@ -7,14 +7,14 @@
         <Table id="notificationsTable" items="{notifications>/}" growing="true" growingThreshold="50"
           noDataText="{i18n>admin.noNotifications}" sticky="HeaderToolbar,ColumnHeaders" autoPopinMode="true">
           <headerToolbar>
-            <Toolbar>
+            <OverflowToolbar>
               <Title text="{i18n>admin.notificationsTitle}" />
               <ToolbarSpacer />
               <Button icon="sap-icon://add" text="{=!${device>/system/phone}?${i18n>common.add}:''}" tooltip="{i18n>common.add}"
                 press=".onAddNotification" />
               <Button icon="sap-icon://refresh" text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}"
                 press=".onRefresh" />
-            </Toolbar>
+            </OverflowToolbar>
           </headerToolbar>
           <columns>
             <Column hAlign="Center" width="3rem">
