@@ -45,8 +45,8 @@
                 <Switch state="{notifications>visible}" change=".onVisibilityChange" />
                 <Text text="{path:'notifications>modifiedAt',formatter:'.formatter.dateTime'}" />
                 <HBox>
-                  <Button icon="sap-icon://edit" press=".onEditNotification" tooltip="{i18n>common.edit}" />
-                  <Button icon="sap-icon://delete" press=".onDeleteNotification" tooltip="{i18n>common.delete}" />
+                  <Button icon="sap-icon://edit" press=".onEditNotification" tooltip="{i18n>common.edit}" type="Transparent" />
+                  <Button icon="sap-icon://delete" press=".onDeleteNotification" tooltip="{i18n>common.delete}" type="Transparent" />
                 </HBox>
               </cells>
             </ColumnListItem>
