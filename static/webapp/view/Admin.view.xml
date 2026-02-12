@@ -10,8 +10,10 @@
             <Toolbar>
               <Title text="{i18n>admin.notificationsTitle}" />
               <ToolbarSpacer />
-              <Button icon="sap-icon://add" text="{i18n>admin.addNotification}" press=".onAddNotification" type="Emphasized" />
-              <Button icon="sap-icon://refresh" press=".onRefresh" />
+              <Button icon="sap-icon://add" text="{=!${device>/system/phone}?${i18n>common.add}:''}" tooltip="{i18n>common.}"
+                press=".onAddNotification" />
+              <Button icon="sap-icon://refresh" text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}"
+                press=".onRefresh" />
             </Toolbar>
           </headerToolbar>
           <columns>
