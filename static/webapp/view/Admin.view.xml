@@ -17,22 +17,22 @@
             </OverflowToolbar>
           </headerToolbar>
           <columns>
-            <Column hAlign="Center" width="3rem">
+            <Column hAlign="Center" width="3rem" importance="Medium" popinDisplay="Inline">
               <Text text="{i18n>admin.column.id}" />
             </Column>
-            <Column>
+            <Column importance="Medium" popinDisplay="Inline">
               <Text text="{i18n>admin.column.title}" />
             </Column>
-            <Column hAlign="Center" width="5rem">
+            <Column hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">
               <Text text="{i18n>admin.column.priority}" />
             </Column>
-            <Column hAlign="Center" width="5rem">
+            <Column hAlign="Center" width="5rem" importance="Medium" popinDisplay="Inline">
               <Text text="{i18n>admin.column.visible}" />
             </Column>
-            <Column hAlign="Center" width="9rem">
+            <Column hAlign="Center" width="9rem" importance="Low" popinDisplay="Inline">
               <Text text="{i18n>admin.column.modifiedAt}" />
             </Column>
-            <Column hAlign="Center" width="5rem">
+            <Column hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">
               <Text text="{i18n>admin.column.actions}" />
             </Column>
           </columns>
