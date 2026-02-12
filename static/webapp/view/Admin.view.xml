@@ -10,7 +10,7 @@
             <Toolbar>
               <Title text="{i18n>admin.notificationsTitle}" />
               <ToolbarSpacer />
-              <Button icon="sap-icon://add" text="{=!${device>/system/phone}?${i18n>common.add}:''}" tooltip="{i18n>common.}"
+              <Button icon="sap-icon://add" text="{=!${device>/system/phone}?${i18n>common.add}:''}" tooltip="{i18n>common.add}"
                 press=".onAddNotification" />
               <Button icon="sap-icon://refresh" text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}"
                 press=".onRefresh" />
@@ -45,8 +45,8 @@
                 <Switch state="{notifications>visible}" change=".onVisibilityChange" />
                 <Text text="{path:'notifications>modifiedAt',formatter:'.formatter.dateTime'}" />
                 <HBox>
-                  <Button icon="sap-icon://edit" press=".onEditNotification" type="Transparent" />
-                  <Button icon="sap-icon://delete" press=".onDeleteNotification" type="Transparent" />
+                  <Button icon="sap-icon://edit" press=".onEditNotification" tooltip="{i18n>common.edit}" />
+                  <Button icon="sap-icon://delete" press=".onDeleteNotification" tooltip="{i18n>common.delete}" />
                 </HBox>
               </cells>
             </ColumnListItem>
