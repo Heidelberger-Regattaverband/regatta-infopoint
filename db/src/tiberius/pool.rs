@@ -1,7 +1,10 @@
-use crate::{error::DbError, tiberius::TiberiusConnectionManager};
-use bb8::{Pool, PooledConnection, State};
-use std::sync::OnceLock;
-use tiberius::Config;
+use crate::error::DbError;
+use crate::tiberius::TiberiusConnectionManager;
+use ::bb8::Pool;
+use ::bb8::PooledConnection;
+use ::bb8::State;
+use ::std::sync::OnceLock;
+use ::tiberius::Config;
 
 /// A global instance of the Tiberius connection pool.
 static POOL: OnceLock<TiberiusPool> = OnceLock::new();
@@ -58,5 +61,17 @@ impl TiberiusPool {
     /// The current state of the pool.
     pub fn state(&self) -> State {
         self.inner.state()
+    }
+
+    /// Creates a new TiberiusPool from an existing bb8::Pool.
+    /// This is useful for creating user-specific pools.
+    ///
+    /// # Arguments
+    /// * `pool` - The bb8::Pool to wrap
+    ///
+    /// # Returns
+    /// A new TiberiusPool instance
+    pub fn from_pool(pool: Pool<TiberiusConnectionManager>) -> Self {
+        TiberiusPool { inner: pool }
     }
 }
