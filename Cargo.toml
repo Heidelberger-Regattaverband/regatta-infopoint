@@ -6,7 +6,7 @@ members = ["aquarius", "db", "infoportal", "timekeeper"]
 version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
-rust-version = "1.93.0"
+rust-version = "1.93.1"
 authors = ["Markus Ofterdinger <markus@ofterdinger.de>"]
 repository = "https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git"
 
