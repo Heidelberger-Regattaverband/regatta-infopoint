@@ -1,6 +1,6 @@
-use crate::http::auth::Credentials;
-use crate::http::auth::Scope as UserScope;
-use crate::http::auth::User;
+use crate::auth::Credentials;
+use crate::auth::Scope as UserScope;
+use crate::auth::User;
 use crate::http::rest_api::PATH;
 use ::actix_identity::Identity;
 use ::actix_web::Error;

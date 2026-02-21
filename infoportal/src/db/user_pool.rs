@@ -1,3 +1,6 @@
+use ::db::bb8::Pool;
+use ::db::error::DbError;
+use ::db::tiberius::TiberiusConnectionManager;
 use ::db::tiberius::TiberiusPool;
 use ::std::collections::HashMap;
 use ::std::sync::Arc;
@@ -60,7 +63,7 @@ impl UserPoolManager {
     }
 
     /// Get or create a connection pool for the given user credentials
-    pub async fn get_pool(&self, credentials: UserDbCredentials) -> Result<Arc<TiberiusPool>, db::error::DbError> {
+    pub async fn get_pool(&self, credentials: UserDbCredentials) -> Result<Arc<TiberiusPool>, DbError> {
         // First check if pool exists (read lock)
         {
             let pools = self.pools.read().await;
@@ -82,9 +85,9 @@ impl UserPoolManager {
             .base_config
             .to_tiberius_config(&credentials.username, &credentials.password);
 
-        let manager = db::tiberius::TiberiusConnectionManager::new(config);
+        let manager = TiberiusConnectionManager::new(config);
 
-        let inner = db::bb8::Pool::builder()
+        let inner = Pool::builder()
             .max_size(self.base_config.pool_max_size)
             .min_idle(Some(self.base_config.pool_min_idle))
             .build(manager)
