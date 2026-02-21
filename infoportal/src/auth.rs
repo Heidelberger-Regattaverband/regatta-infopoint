@@ -9,12 +9,12 @@ use ::utoipa::ToSchema;
 
 /// The credentials struct contains the username and the password of the user.
 /// The credentials are used to authenticate the user.
-#[derive(Deserialize, ToSchema)]
+#[derive(Clone, Hash, PartialEq, Eq, Deserialize, ToSchema)]
 pub(crate) struct Credentials {
     /// The username of the user.
-    username: String,
+    pub username: String,
     /// The password of the user.
-    password: String,
+    pub password: String,
 }
 
 /// The scope enum contains the possible scopes of the user.
@@ -38,7 +38,7 @@ pub(crate) struct User {
     /// The username of the user.
     pub(crate) username: String,
     /// The scope of the user.
-    scope: Scope,
+    pub(crate) scope: Scope,
 }
 
 impl User {

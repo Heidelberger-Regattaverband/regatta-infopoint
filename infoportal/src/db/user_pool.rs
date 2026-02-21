@@ -1,3 +1,4 @@
+use crate::auth::Credentials;
 use ::db::bb8::Pool;
 use ::db::error::DbError;
 use ::db::tiberius::TiberiusConnectionManager;
@@ -8,13 +9,6 @@ use ::tiberius::AuthMethod;
 use ::tiberius::Config as TiberiusConfig;
 use ::tiberius::EncryptionLevel;
 use ::tokio::sync::RwLock;
-
-/// Credentials for user-specific database connection
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct UserDbCredentials {
-    pub username: String,
-    pub password: String,
-}
 
 /// Configuration for database connection
 #[derive(Debug, Clone)]
@@ -48,7 +42,7 @@ impl DbConfig {
 /// Manager for per-user database connection pools
 pub struct UserPoolManager {
     /// Cache of connection pools by user credentials
-    pools: Arc<RwLock<HashMap<UserDbCredentials, Arc<TiberiusPool>>>>,
+    pools: Arc<RwLock<HashMap<Credentials, Arc<TiberiusPool>>>>,
     /// Base database configuration (host, database name, etc.)
     base_config: DbConfig,
 }
@@ -63,7 +57,7 @@ impl UserPoolManager {
     }
 
     /// Get or create a connection pool for the given user credentials
-    pub async fn get_pool(&self, credentials: UserDbCredentials) -> Result<Arc<TiberiusPool>, DbError> {
+    pub async fn get_pool(&self, credentials: Credentials) -> Result<Arc<TiberiusPool>, DbError> {
         // First check if pool exists (read lock)
         {
             let pools = self.pools.read().await;
@@ -100,7 +94,7 @@ impl UserPoolManager {
     }
 
     /// Remove a user's connection pool (e.g., on logout)
-    pub async fn remove_pool(&self, credentials: &UserDbCredentials) {
+    pub async fn remove_pool(&self, credentials: &Credentials) {
         let mut pools = self.pools.write().await;
         pools.remove(credentials);
     }
@@ -117,29 +111,5 @@ impl UserPoolManager {
     pub async fn pool_count(&self) -> usize {
         let pools = self.pools.read().await;
         pools.len()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_user_credentials_equality() {
-        let cred1 = UserDbCredentials {
-            username: "user1".to_string(),
-            password: "pass1".to_string(),
-        };
-        let cred2 = UserDbCredentials {
-            username: "user1".to_string(),
-            password: "pass1".to_string(),
-        };
-        let cred3 = UserDbCredentials {
-            username: "user2".to_string(),
-            password: "pass1".to_string(),
-        };
-
-        assert_eq!(cred1, cred2);
-        assert_ne!(cred1, cred3);
     }
 }
