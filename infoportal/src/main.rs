@@ -39,7 +39,7 @@ mod tests {
     use db::tiberius::TiberiusPool;
     use dotenv::dotenv;
 
-    #[tokio_shared_rt::test(shared)]
+    #[tokio::test]
     async fn test_get_regattas() {
         dotenv().ok();
         TiberiusPool::init(CONFIG.get_db_config(), CONFIG.db_pool_max_size, CONFIG.db_pool_min_idle).await;
@@ -61,7 +61,7 @@ mod tests {
         assert!(response.status().is_success());
     }
 
-    #[tokio_shared_rt::test(shared)]
+    #[tokio::test]
     async fn test_get_heats() {
         dotenv().ok();
         TiberiusPool::init(CONFIG.get_db_config(), CONFIG.db_pool_max_size, CONFIG.db_pool_min_idle).await;

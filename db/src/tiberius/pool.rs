@@ -33,17 +33,11 @@ impl TiberiusPool {
     /// * `max_size` - The maximum size of the pool.
     /// * `min_idle` - The minimum number of idle connections in the pool.
     pub async fn init(config: Config, max_size: u32, min_idle: u32) {
-        let manager = TiberiusConnectionManager::new(config);
-
-        let inner = Pool::builder()
-            .max_size(max_size)
-            .min_idle(Some(min_idle))
-            .build(manager)
-            .await
-            .expect("Failed to create Tiberius connection pool");
-
         if POOL.get().is_none() {
-            POOL.set(TiberiusPool { inner }).expect("TiberiusPool already set")
+            let pool = TiberiusPool::new(config, max_size, min_idle).await;
+            if POOL.get().is_none() {
+                POOL.set(pool).expect("TiberiusPool already set")
+            }
         }
     }
 
