@@ -47,6 +47,19 @@ impl TiberiusPool {
         }
     }
 
+    pub async fn new(config: Config, max_size: u32, min_idle: u32) -> Self {
+        let manager = TiberiusConnectionManager::new(config);
+
+        let inner = Pool::builder()
+            .max_size(max_size)
+            .min_idle(Some(min_idle))
+            .build(manager)
+            .await
+            .expect("Failed to create Tiberius connection pool");
+
+        TiberiusPool { inner }
+    }
+
     /// Returns a connection from the pool. The connection is automatically returned to the pool when it goes out of scope.
     ///
     /// # Returns
@@ -61,17 +74,5 @@ impl TiberiusPool {
     /// The current state of the pool.
     pub fn state(&self) -> State {
         self.inner.state()
-    }
-
-    /// Creates a new TiberiusPool from an existing bb8::Pool.
-    /// This is useful for creating user-specific pools.
-    ///
-    /// # Arguments
-    /// * `pool` - The bb8::Pool to wrap
-    ///
-    /// # Returns
-    /// A new TiberiusPool instance
-    pub fn from_pool(pool: Pool<TiberiusConnectionManager>) -> Self {
-        TiberiusPool { inner: pool }
     }
 }

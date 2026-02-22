@@ -1,8 +1,6 @@
 use crate::auth::Credentials;
 use crate::config::CONFIG;
-use ::db::bb8::Pool;
 use ::db::error::DbError;
-use ::db::tiberius::TiberiusConnectionManager;
 use ::db::tiberius::TiberiusPool;
 use ::std::collections::HashMap;
 use ::std::sync::Arc;
@@ -43,15 +41,8 @@ impl UserPoolManager {
         // Create new pool with user-specific credentials
         let config = CONFIG.get_db_config_for_user(&credentials.username, credentials.password.value());
 
-        let manager = TiberiusConnectionManager::new(config);
-
-        let inner = Pool::builder()
-            .max_size(CONFIG.db_pool_max_size)
-            .min_idle(Some(CONFIG.db_pool_min_idle))
-            .build(manager)
-            .await?;
-
-        let pool = Arc::new(TiberiusPool::from_pool(inner));
+        let pool = TiberiusPool::new(config, CONFIG.db_pool_max_size, CONFIG.db_pool_min_idle).await;
+        let pool = Arc::new(pool);
         pools.insert(credentials.clone(), Arc::clone(&pool));
 
         Ok(pool)
