@@ -22,7 +22,7 @@ use ::tiberius::time::chrono::Utc;
 use ::tracing::error;
 
 #[utoipa::path(
-    description = "Get visible notifcations for a regatta.",
+    description = "Get visible notifications for a regatta.",
     context_path = PATH,
     responses(
         (status = 200, description = "Notifications for <regatta_id>", body = Vec<Notification>),
