@@ -1,5 +1,5 @@
 use crate::config::CONFIG;
-use crate::db::user_pool::{DbConfig, UserPoolManager};
+use crate::db::user_pool::UserPoolManager;
 use ::actix_identity::Identity;
 use ::db::aquarius::model::{CreateNotificationRequest, Notification, UpdateNotificationRequest};
 use ::db::{
@@ -38,16 +38,7 @@ impl Aquarius {
             }
         };
 
-        // Initialize user pool manager with database configuration
-        let db_config = DbConfig {
-            host: CONFIG.db_host.clone(),
-            port: CONFIG.db_port,
-            database: CONFIG.db_name.clone(),
-            encryption: CONFIG.db_encryption,
-            pool_max_size: CONFIG.db_pool_max_size,
-            pool_min_idle: CONFIG.db_pool_min_idle,
-        };
-        let user_pool_manager = UserPoolManager::new(db_config);
+        let user_pool_manager = UserPoolManager::new();
 
         Ok(Aquarius {
             caches: Caches::try_new(Duration::from_secs(CONFIG.cache_ttl))?,
