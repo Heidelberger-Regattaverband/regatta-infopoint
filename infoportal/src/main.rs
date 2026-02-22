@@ -4,12 +4,11 @@ mod db;
 mod http;
 mod peak_alloc;
 
-use ::db::tiberius::TiberiusPool;
-use http::server::Server;
-use peak_alloc::PeakAlloc;
-use std::io::Result;
-
 use crate::config::CONFIG;
+use crate::http::server::Server;
+use crate::peak_alloc::PeakAlloc;
+use ::db::tiberius::TiberiusPool;
+use ::std::io::Result;
 
 #[global_allocator]
 static PEAK_ALLOC: PeakAlloc = PeakAlloc;
