@@ -77,7 +77,7 @@ impl UserPoolManager {
         // Create new pool with user-specific credentials
         let config = self
             .base_config
-            .to_tiberius_config(&credentials.username, &credentials.password);
+            .to_tiberius_config(&credentials.username, credentials.password.value());
 
         let manager = TiberiusConnectionManager::new(config);
 
