@@ -1,6 +1,6 @@
+use crate::aquarius::model::get_rows;
 use crate::tiberius::TiberiusClient;
 use crate::{
-    aquarius::model::utils,
     error::DbError,
     tiberius::{RowColumn, TryRowColumn},
 };
@@ -88,7 +88,7 @@ impl TimeStamp {
         query.bind(regatta_id);
 
         let stream = query.query(client).await?;
-        let time_stamps = utils::get_rows(stream).await?;
+        let time_stamps = get_rows(stream).await?;
         Ok(time_stamps.into_iter().map(|row| TimeStamp::from(&row)).collect())
     }
 

@@ -1,7 +1,9 @@
-use crate::aquarius::model::age_class::ID as AGE_CLASS_ID;
-use crate::aquarius::model::boat_class::ID as BOAT_CLASS_ID;
+use super::age_class::ID as AGE_CLASS_ID;
+use super::boat_class::ID as BOAT_CLASS_ID;
+use super::get_row;
+use super::get_rows;
 use crate::{
-    aquarius::model::{AgeClass, BoatClass, HeatEntry, Race, Referee, TryToEntity, utils},
+    aquarius::model::{AgeClass, BoatClass, HeatEntry, Race, Referee, TryToEntity},
     error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
@@ -99,7 +101,7 @@ impl Heat {
         query.bind(regatta_id);
 
         let mut client = pool.get().await?;
-        let heats = utils::get_rows(query.query(&mut client).await?).await?;
+        let heats = get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
 
@@ -121,7 +123,7 @@ impl Heat {
         query.bind(race_id);
 
         let mut client = pool.get().await?;
-        let heats = utils::get_rows(query.query(&mut client).await?).await?;
+        let heats = get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
 
@@ -144,7 +146,7 @@ impl Heat {
         let mut query = Query::new(sql);
         query.bind(entry_id);
         let mut client = pool.get().await?;
-        let heats = utils::get_rows(query.query(&mut client).await?).await?;
+        let heats = get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
 
@@ -170,7 +172,7 @@ impl Heat {
         query.bind(heat_id);
 
         let mut client = pool.get().await?;
-        let mut heat = Heat::from(&utils::get_row(query.query(&mut client).await?).await?);
+        let mut heat = Heat::from(&get_row(query.query(&mut client).await?).await?);
 
         let results = join(
             Referee::query_referees_for_heat(heat.id, pool),

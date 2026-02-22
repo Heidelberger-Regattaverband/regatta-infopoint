@@ -1,6 +1,8 @@
+use super::get_row;
+use super::get_rows;
 use crate::tiberius::TiberiusClient;
 use crate::{
-    aquarius::{flags_scraper::ClubFlag, model::utils},
+    aquarius::flags_scraper::ClubFlag,
     error::DbError,
     tiberius::{RowColumn, TryRowColumn},
 };
@@ -117,7 +119,7 @@ impl Club {
         let mut query = Query::new(sql);
         query.bind(regatta_id);
 
-        let clubs = utils::get_rows(query.query(client).await?).await?;
+        let clubs = get_rows(query.query(client).await?).await?;
         Ok(clubs.into_iter().map(|row| Club::from(&row)).collect())
     }
 
@@ -166,7 +168,7 @@ impl Club {
         query.bind(regatta_id);
         query.bind(club_id);
 
-        Ok(Club::from(&utils::get_row(query.query(client).await?).await?))
+        Ok(Club::from(&get_row(query.query(client).await?).await?))
     }
 
     pub(crate) fn select_all_columns(alias: &str) -> String {

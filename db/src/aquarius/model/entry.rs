@@ -1,12 +1,17 @@
+use super::TryToEntity;
+use super::club::Club;
+use super::crew::Crew;
+use super::get_rows;
+use super::heat::Heat;
+use super::race::Race;
 use crate::{
-    aquarius::model::{Club, Crew, Heat, Race, TryToEntity, utils},
     error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
-use futures::future::{BoxFuture, join_all};
-use serde::Serialize;
-use tiberius::{Query, Row};
-use utoipa::ToSchema;
+use ::futures::future::{BoxFuture, join_all};
+use ::serde::Serialize;
+use ::tiberius::{Query, Row};
+use ::utoipa::ToSchema;
 
 const ID: &str = "Entry_ID";
 const BIB: &str = "Entry_Bib";
@@ -192,7 +197,7 @@ async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Res
 
     let mut crew_futures: Vec<BoxFuture<Result<Vec<Crew>, DbError>>> = Vec::new();
     let mut heats_futures: Vec<BoxFuture<Result<Vec<Heat>, DbError>>> = Vec::new();
-    let mut entries: Vec<Entry> = utils::get_rows(stream)
+    let mut entries: Vec<Entry> = get_rows(stream)
         .await?
         .into_iter()
         .map(|row| {

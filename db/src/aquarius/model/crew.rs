@@ -1,11 +1,13 @@
+use super::athlete::Athlete;
+use super::club::Club;
+use super::get_rows;
 use crate::{
-    aquarius::model::{Athlete, Club, utils},
     error::DbError,
     tiberius::{RowColumn, TiberiusPool},
 };
-use serde::Serialize;
-use tiberius::{Query, Row};
-use utoipa::ToSchema;
+use ::serde::Serialize;
+use ::tiberius::{Query, Row};
+use ::utoipa::ToSchema;
 
 const ID: &str = "Crew_ID";
 const POS: &str = "Crew_Pos";
@@ -66,7 +68,7 @@ impl Crew {
         query.bind(round);
 
         let mut client = pool.get().await?;
-        let crew = utils::get_rows(query.query(&mut client).await?).await?;
+        let crew = get_rows(query.query(&mut client).await?).await?;
         Ok(crew.into_iter().map(|row| Crew::from(&row)).collect())
     }
 }

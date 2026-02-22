@@ -1,8 +1,10 @@
-use crate::aquarius::model::age_class::ID as AGE_CLASS_ID;
-use crate::aquarius::model::boat_class::ID as BOAT_CLASS_ID;
+use super::age_class::ID as AGE_CLASS_ID;
+use super::boat_class::ID as BOAT_CLASS_ID;
+use super::get_row;
+use super::get_rows;
 use crate::tiberius::TiberiusClient;
 use crate::{
-    aquarius::model::{AgeClass, BoatClass, Entry, Heat, TryToEntity, utils},
+    aquarius::model::{AgeClass, BoatClass, Entry, Heat, TryToEntity},
     error::DbError,
     tiberius::{RowColumn, TryRowColumn},
 };
@@ -144,7 +146,7 @@ impl Race {
         query.bind(regatta_id);
 
         let stream = query.query(client).await?;
-        let races = utils::get_rows(stream).await?;
+        let races = get_rows(stream).await?;
         Ok(races.into_iter().map(|row| Race::from(&row)).collect())
     }
 
@@ -161,6 +163,6 @@ impl Race {
         let mut query = Query::new(sql);
         query.bind(race_id);
         let stream = query.query(client).await?;
-        Ok(Race::from(&utils::get_row(stream).await?))
+        Ok(Race::from(&get_row(stream).await?))
     }
 }

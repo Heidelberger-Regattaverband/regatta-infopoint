@@ -1,12 +1,13 @@
+use super::get_row;
+use super::try_get_row;
 use crate::tiberius::TiberiusClient;
 use crate::{
-    aquarius::model::utils,
     error::DbError,
     tiberius::{RowColumn, TryRowColumn},
 };
-use serde::Serialize;
-use tiberius::{Query, Row, time::chrono::NaiveDateTime};
-use utoipa::ToSchema;
+use ::serde::Serialize;
+use ::tiberius::{Query, Row, time::chrono::NaiveDateTime};
+use ::utoipa::ToSchema;
 
 const ID: &str = "Event_ID";
 const TITLE: &str = "Event_Title";
@@ -66,7 +67,7 @@ impl Regatta {
         ))
         .query(client)
         .await?;
-        Ok(Regatta::from(&utils::get_row(stream).await?))
+        Ok(Regatta::from(&get_row(stream).await?))
     }
 
     pub async fn query_by_id(regatta_id: i32, client: &mut TiberiusClient) -> Result<Option<Regatta>, DbError> {
@@ -76,7 +77,7 @@ impl Regatta {
         ));
         query.bind(regatta_id);
 
-        let row = utils::try_get_row(query.query(client).await?).await?;
+        let row = try_get_row(query.query(client).await?).await?;
         if let Some(row) = row {
             Ok(Some(Regatta::from(&row)))
         } else {

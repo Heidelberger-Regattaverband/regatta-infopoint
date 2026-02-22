@@ -1,7 +1,7 @@
 use crate::{error::DbError, tiberius::TiberiusConnectionManager};
-use bb8::{Pool, PooledConnection, State};
-use std::sync::OnceLock;
-use tiberius::Config;
+use ::bb8::{Pool, PooledConnection, State};
+use ::std::sync::OnceLock;
+use ::tiberius::Config;
 
 /// A global instance of the Tiberius connection pool.
 static POOL: OnceLock<TiberiusPool> = OnceLock::new();

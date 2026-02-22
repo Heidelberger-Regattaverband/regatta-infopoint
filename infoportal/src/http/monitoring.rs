@@ -1,11 +1,11 @@
 use crate::peak_alloc::PeakAlloc;
-use db::{cache::CacheStats, tiberius::TiberiusPool};
-use prometheus::Registry;
-use serde::Serialize;
-use serde_json::{Map, Number, Value};
-use std::time::Duration;
-use sysinfo::{CpuRefreshKind, Disks, MemoryRefreshKind, RefreshKind, System};
-use utoipa::ToSchema;
+use ::db::{cache::CacheStats, tiberius::TiberiusPool};
+use ::prometheus::Registry;
+use ::serde::Serialize;
+use ::serde_json::{Map, Number, Value};
+use ::std::time::Duration;
+use ::sysinfo::{CpuRefreshKind, Disks, MemoryRefreshKind, RefreshKind, System};
+use ::utoipa::ToSchema;
 
 /// The monitoring struct contains the database state, system information and metrics.
 #[derive(Serialize, ToSchema)]
@@ -241,7 +241,7 @@ pub(crate) struct Connections {
     total: u32,
     /// The number of connections that are currently not in use.
     idle: u32,
-    /// The number of connections that are currently activly being used.
+    /// The number of connections that are currently actively being used.
     used: u32,
     /// The number of connections that have been created.
     created: u64,
