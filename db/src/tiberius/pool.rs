@@ -3,8 +3,6 @@ use crate::tiberius::TiberiusConnectionManager;
 use ::bb8::Pool;
 use ::bb8::PooledConnection;
 use ::bb8::State;
-use crate::{error::DbError, tiberius::TiberiusConnectionManager};
-use ::bb8::{Pool, PooledConnection, State};
 use ::std::sync::OnceLock;
 use ::tiberius::Config;
 
