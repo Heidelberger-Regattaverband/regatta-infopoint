@@ -49,6 +49,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 dotenv = { version = "0.15" }
 scraper = { version = "0.25" }
 clap = { version = "4.5", features = ["derive"] }
+secret-string = { version = "0.0", features = ["serde"] }
 sysinfo = { version = "0.38" }
 thiserror = { version = "2.0" }
 uptime_lib = { version = "0.3" }
