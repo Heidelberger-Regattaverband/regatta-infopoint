@@ -7,28 +7,27 @@ use ::actix_extensible_rate_limit::{
     RateLimiter,
     backend::{SimpleInput, SimpleInputFunctionBuilder, SimpleOutput, memory::InMemoryBackend},
 };
+use ::actix_files::Files;
+use ::actix_identity::IdentityMiddleware;
 use ::actix_identity::config::LogoutBehavior;
 use ::actix_session::config::TtlExtensionPolicy;
-use ::std::time::Duration;
-use ::tracing::{debug, info, warn};
-use actix_files::Files;
-use actix_identity::IdentityMiddleware;
-use actix_session::{SessionMiddleware, config::PersistentSession, storage::CookieSessionStore};
-use actix_web::{
+use ::actix_session::{SessionMiddleware, config::PersistentSession, storage::CookieSessionStore};
+use ::actix_web::{
     App, Error, HttpServer,
     body::{BoxBody, EitherBody},
     cookie::{Key, SameSite},
     dev::{Service, ServiceFactory, ServiceRequest, ServiceResponse},
     web::{self, Data},
 };
-use actix_web_prom::{PrometheusMetrics, PrometheusMetricsBuilder};
-use db::error::DbError;
-use futures::FutureExt;
-use prometheus::Registry;
-use rustls::ServerConfig;
-use rustls_pemfile::{certs, pkcs8_private_keys};
-use rustls_pki_types::{PrivateKeyDer, PrivatePkcs8KeyDer};
-use std::{
+use ::actix_web_prom::{PrometheusMetrics, PrometheusMetricsBuilder};
+use ::db::error::DbError;
+use ::futures::FutureExt;
+use ::prometheus::Registry;
+use ::rustls::ServerConfig;
+use ::rustls_pemfile::{certs, pkcs8_private_keys};
+use ::rustls_pki_types::{PrivateKeyDer, PrivatePkcs8KeyDer};
+use ::std::time::Duration;
+use ::std::{
     fs::File,
     future::Ready,
     io::{BufReader, Result as IoResult},
@@ -36,6 +35,7 @@ use std::{
     sync::{Arc, Mutex},
     time::Instant,
 };
+use ::tracing::{debug, info, warn};
 
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";

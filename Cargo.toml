@@ -34,8 +34,8 @@ rustls-pki-types = { version = "1.13" }
 rustls-pemfile = { version = "2.2" }
 
 # enum and string utils: https://github.com/Peternator7/strum
-strum = { version = "0.27" }
-strum_macros = { version = "0.27" }
+strum = { version = "0.28" }
+strum_macros = { version = "0.28" }
 
 # serialization
 serde = { version = "1.0", features = ["derive"] }
