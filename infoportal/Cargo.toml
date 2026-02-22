@@ -18,6 +18,7 @@ db = { path = "../db" }
 
 # Utils
 dotenv.workspace = true
+secret-string.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
 

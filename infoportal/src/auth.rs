@@ -1,5 +1,6 @@
 use crate::config::CONFIG;
 use ::actix_web::HttpResponse;
+use ::secret_string::SecretString;
 use ::serde::{Deserialize, Serialize};
 use ::tiberius::Client;
 use ::tokio::net::TcpStream;
@@ -14,7 +15,8 @@ pub struct Credentials {
     /// The username of the user.
     pub username: String,
     /// The password of the user.
-    pub password: String,
+    #[schema(value_type = String, format = "Password")]
+    pub password: SecretString<String>,
 }
 
 /// The scope enum contains the possible scopes of the user.
@@ -73,7 +75,7 @@ impl User {
         credentials.username.trim().clone_into(&mut username);
 
         // get database config with given credentials
-        let db_cfg = CONFIG.get_db_config_for_user(&username, &credentials.password);
+        let db_cfg = CONFIG.get_db_config_for_user(&username, credentials.password.value());
 
         // then try to open a connection to the MS-SQL server ...
         let tcp = match TcpStream::connect(db_cfg.get_addr()).await {
