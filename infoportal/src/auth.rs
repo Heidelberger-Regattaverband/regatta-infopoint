@@ -10,7 +10,7 @@ use ::utoipa::ToSchema;
 /// The credentials struct contains the username and the password of the user.
 /// The credentials are used to authenticate the user.
 #[derive(Clone, Hash, PartialEq, Eq, Deserialize, ToSchema)]
-pub(crate) struct Credentials {
+pub struct Credentials {
     /// The username of the user.
     pub username: String,
     /// The password of the user.
