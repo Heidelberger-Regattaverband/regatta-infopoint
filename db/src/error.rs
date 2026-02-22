@@ -1,9 +1,7 @@
-//! Common error types for the database layer.
-
+use ::bb8::RunError;
 use ::stretto::CacheError;
-use bb8::RunError;
-use thiserror::Error;
-use tiberius::error::Error as TiberiusError;
+use ::thiserror::Error;
+use ::tiberius::error::Error as TiberiusError;
 
 /// Database error type that wraps various error sources.
 #[derive(Debug, Error)]

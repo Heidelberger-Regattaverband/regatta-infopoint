@@ -1,5 +1,5 @@
+use super::Club;
 use super::athlete::Athlete;
-use super::club::Club;
 use super::get_rows;
 use crate::{
     error::DbError,

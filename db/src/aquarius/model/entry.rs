@@ -1,9 +1,9 @@
+use super::Club;
+use super::Crew;
+use super::Heat;
+use super::Race;
 use super::TryToEntity;
-use super::club::Club;
-use super::crew::Crew;
 use super::get_rows;
-use super::heat::Heat;
-use super::race::Race;
 use crate::{
     error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},

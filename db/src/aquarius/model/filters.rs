@@ -1,9 +1,9 @@
-use super::age_class::AgeClass;
+use super::AgeClass;
+use super::BoatClass;
 use super::age_class::ID as AGE_CLASS_ID;
 use super::age_class::MAX_AGE;
 use super::age_class::MIN_AGE;
 use super::block::Block;
-use super::boat_class::BoatClass;
 use super::boat_class::COXED;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;

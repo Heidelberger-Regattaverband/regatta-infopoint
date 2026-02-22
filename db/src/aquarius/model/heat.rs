@@ -1,9 +1,14 @@
+use super::AgeClass;
+use super::BoatClass;
+use super::HeatEntry;
+use super::Race;
+use super::Referee;
+use super::TryToEntity;
 use super::age_class::ID as AGE_CLASS_ID;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::get_row;
 use super::get_rows;
 use crate::{
-    aquarius::model::{AgeClass, BoatClass, HeatEntry, Race, Referee, TryToEntity},
     error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };

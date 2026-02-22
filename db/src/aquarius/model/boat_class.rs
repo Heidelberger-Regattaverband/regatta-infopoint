@@ -1,7 +1,5 @@
-use crate::{
-    aquarius::model::TryToEntity,
-    tiberius::{RowColumn, TryRowColumn},
-};
+use super::TryToEntity;
+use crate::tiberius::{RowColumn, TryRowColumn};
 use ::serde::Serialize;
 use ::tiberius::Row;
 use ::utoipa::ToSchema;

@@ -1,5 +1,5 @@
+use super::Athlete;
 use super::TryToEntity;
-use super::athlete::Athlete;
 use super::boat_class::COXED;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;

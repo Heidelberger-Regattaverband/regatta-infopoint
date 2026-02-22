@@ -4,11 +4,11 @@ use crate::{
     error::DbError,
     tiberius::{RowColumn, TryRowColumn},
 };
-use chrono::{DateTime, Local, Utc};
-use serde::Serialize;
-use strum_macros::Display;
-use tiberius::{Query, Row};
-use utoipa::ToSchema;
+use ::chrono::{DateTime, Local, Utc};
+use ::serde::Serialize;
+use ::strum_macros::Display;
+use ::tiberius::{Query, Row};
+use ::utoipa::ToSchema;
 
 const TIMESTAMP: &str = "timestamp";
 const EVENT_ID: &str = "eventId";
@@ -161,9 +161,9 @@ pub enum Split {
 impl From<u8> for Split {
     fn from(value: u8) -> Self {
         match value {
-            0 => Split::Start,
-            64 => Split::Finish,
-            _ => Split::Start,
+            0 => Self::Start,
+            64 => Self::Finish,
+            _ => Self::Start,
         }
     }
 }

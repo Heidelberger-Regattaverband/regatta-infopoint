@@ -1,6 +1,6 @@
+use super::Club;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;
-use super::club::Club;
 use super::get_rows;
 use crate::tiberius::TiberiusClient;
 use crate::{

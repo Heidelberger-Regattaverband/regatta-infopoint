@@ -1,5 +1,5 @@
+use super::Club;
 use super::TryToEntity;
-use super::club::Club;
 use super::get_row;
 use super::get_rows;
 use crate::tiberius::TiberiusClient;
