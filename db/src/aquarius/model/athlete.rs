@@ -1,12 +1,15 @@
+use super::Club;
+use super::TryToEntity;
+use super::get_row;
+use super::get_rows;
 use crate::tiberius::TiberiusClient;
 use crate::{
-    aquarius::model::{Club, TryToEntity, utils},
     error::DbError,
     tiberius::{RowColumn, TryRowColumn},
 };
-use serde::Serialize;
-use tiberius::{Query, Row, time::chrono::NaiveDateTime};
-use utoipa::ToSchema;
+use ::serde::Serialize;
+use ::tiberius::{Query, Row, time::chrono::NaiveDateTime};
+use ::utoipa::ToSchema;
 
 const ID: &str = "Athlet_ID";
 const FIRST_NAME: &str = "Athlet_FirstName";
@@ -67,7 +70,7 @@ impl Athlete {
         query.bind(round);
 
         let stream = query.query(client).await?;
-        let athletes = utils::get_rows(stream).await?;
+        let athletes = get_rows(stream).await?;
         Ok(athletes.into_iter().map(|row| Athlete::from(&row)).collect())
     }
 
@@ -98,7 +101,7 @@ impl Athlete {
         query.bind(round);
 
         let stream = query.query(client).await?;
-        let row = utils::get_row(stream).await?;
+        let row = get_row(stream).await?;
         Ok(Athlete::from(&row))
     }
 

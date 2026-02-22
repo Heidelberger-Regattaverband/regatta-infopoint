@@ -156,7 +156,7 @@ export default class AdminController extends BaseController {
         data: JSON.stringify({
           title: data.title,
           text: data.text || null,
-          priority: data.priority ? parseInt(data.priority, 10) : null,
+          priority: data.priority ? Number.parseInt(data.priority, 10) : null,
           visible: data.visible
         }),
         success: (result: any) => {
@@ -182,7 +182,7 @@ export default class AdminController extends BaseController {
       data: JSON.stringify({
         title: data.title,
         text: data.text || null,
-        priority: data.priority ? parseInt(data.priority, 10) : null,
+        priority: data.priority ? Number.parseInt(data.priority, 10) : null,
         visible: data.visible
       }),
       success: (result: any) => {

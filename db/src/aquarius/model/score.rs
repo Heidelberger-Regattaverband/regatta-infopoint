@@ -1,8 +1,9 @@
-use crate::aquarius::model::boat_class::ID as BOAT_CLASS_ID;
-use crate::aquarius::model::boat_class::NUM_ROWERS;
+use super::Club;
+use super::boat_class::ID as BOAT_CLASS_ID;
+use super::boat_class::NUM_ROWERS;
+use super::get_rows;
 use crate::tiberius::TiberiusClient;
 use crate::{
-    aquarius::model::{Club, utils},
     error::DbError,
     tiberius::{RowColumn, TryRowColumn},
 };
@@ -56,7 +57,7 @@ impl Score {
         ));
         query.bind(regatta_id);
 
-        let scores = utils::get_rows(query.query(client).await?).await?;
+        let scores = get_rows(query.query(client).await?).await?;
         let mut index = 0;
         Ok(scores
             .into_iter()

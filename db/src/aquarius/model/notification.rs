@@ -1,4 +1,5 @@
-use crate::aquarius::model::utils;
+use super::get_row;
+use super::get_rows;
 use crate::error::DbError;
 use crate::tiberius::RowColumn;
 use crate::tiberius::TiberiusClient;
@@ -100,7 +101,7 @@ impl Notification {
         let mut query = Query::new(&sql);
         query.bind(regatta_id);
 
-        let notifications = utils::get_rows(query.query(client).await?)
+        let notifications = get_rows(query.query(client).await?)
             .await?
             .into_iter()
             .map(|row| Notification::from(&row))
@@ -119,7 +120,7 @@ impl Notification {
         let mut query = Query::new(&sql);
         query.bind(regatta_id);
 
-        let notifications = utils::get_rows(query.query(client).await?)
+        let notifications = get_rows(query.query(client).await?)
             .await?
             .into_iter()
             .map(|row| Notification::from(&row))
@@ -146,7 +147,7 @@ impl Notification {
         query.bind(request.visible);
         query.bind(now);
 
-        let row = utils::get_row(query.query(client).await?).await?;
+        let row = get_row(query.query(client).await?).await?;
         Ok(Notification::from(&row))
     }
 
@@ -206,7 +207,7 @@ impl Notification {
         query.bind(now);
         query.bind(notification_id);
 
-        let rows = utils::get_rows(query.query(client).await?).await?;
+        let rows = get_rows(query.query(client).await?).await?;
         Ok(rows.into_iter().map(|row| Notification::from(&row)).next())
     }
 
@@ -230,7 +231,7 @@ impl Notification {
         let mut query = Query::new(&sql);
         query.bind(notification_id);
 
-        let rows = utils::get_rows(query.query(client).await?).await?;
+        let rows = get_rows(query.query(client).await?).await?;
         Ok(rows.into_iter().map(|row| Notification::from(&row)).next())
     }
 }

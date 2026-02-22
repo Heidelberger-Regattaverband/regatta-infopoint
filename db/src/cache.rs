@@ -3,18 +3,18 @@ use crate::{
     aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule},
     error::DbError,
 };
+use ::futures::future::Future;
 use ::std::any::type_name;
 use ::std::mem;
-use futures::future::Future;
-use std::{
+use ::std::{
     fmt::Display,
     hash::Hash,
     sync::atomic::{AtomicU64, Ordering},
     time::Duration,
 };
-use stretto::AsyncCache;
-use tokio::task;
-use tracing::debug;
+use ::stretto::AsyncCache;
+use ::tokio::task;
+use ::tracing::debug;
 
 /// A high-performance cache that uses `stretto` as the underlying cache with comprehensive features
 ///
@@ -178,7 +178,7 @@ pub struct Caches {
     pub filters: Cache<i32, Filters>,
     pub schedule: Cache<i32, Schedule>,
 
-    // Cachesq with composite keys (regatta_id, entity_id)
+    // Caches with composite keys (regatta_id, entity_id)
     pub club_with_aggregations: Cache<(i32, i32), Club>,
     pub club_entries: Cache<(i32, i32), Vec<Entry>>,
     pub athlete_entries: Cache<(i32, i32), Vec<Entry>>,

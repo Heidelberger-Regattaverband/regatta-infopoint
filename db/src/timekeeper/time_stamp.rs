@@ -1,14 +1,14 @@
+use crate::aquarius::model::get_rows;
 use crate::tiberius::TiberiusClient;
 use crate::{
-    aquarius::model::utils,
     error::DbError,
     tiberius::{RowColumn, TryRowColumn},
 };
-use chrono::{DateTime, Local, Utc};
-use serde::Serialize;
-use strum_macros::Display;
-use tiberius::{Query, Row};
-use utoipa::ToSchema;
+use ::chrono::{DateTime, Local, Utc};
+use ::serde::Serialize;
+use ::strum_macros::Display;
+use ::tiberius::{Query, Row};
+use ::utoipa::ToSchema;
 
 const TIMESTAMP: &str = "timestamp";
 const EVENT_ID: &str = "eventId";
@@ -88,7 +88,7 @@ impl TimeStamp {
         query.bind(regatta_id);
 
         let stream = query.query(client).await?;
-        let time_stamps = utils::get_rows(stream).await?;
+        let time_stamps = get_rows(stream).await?;
         Ok(time_stamps.into_iter().map(|row| TimeStamp::from(&row)).collect())
     }
 
@@ -161,9 +161,9 @@ pub enum Split {
 impl From<u8> for Split {
     fn from(value: u8) -> Self {
         match value {
-            0 => Split::Start,
-            64 => Split::Finish,
-            _ => Split::Start,
+            0 => Self::Start,
+            64 => Self::Finish,
+            _ => Self::Start,
         }
     }
 }

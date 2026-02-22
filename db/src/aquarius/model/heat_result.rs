@@ -1,8 +1,6 @@
-use crate::aquarius::model::boat_class::NUM_ROWERS;
-use crate::{
-    aquarius::model::TryToEntity,
-    tiberius::{RowColumn, TryRowColumn},
-};
+use super::TryToEntity;
+use super::boat_class::NUM_ROWERS;
+use crate::tiberius::{RowColumn, TryRowColumn};
 use ::serde::Serialize;
 use ::tiberius::Row;
 use ::utoipa::ToSchema;

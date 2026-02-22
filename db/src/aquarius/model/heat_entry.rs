@@ -1,7 +1,14 @@
-use crate::aquarius::model::boat_class::ID as BOAT_CLASS_ID;
-use crate::aquarius::model::boat_class::NUM_ROWERS;
+use super::TryToEntity;
+use super::boat_class::ID as BOAT_CLASS_ID;
+use super::boat_class::NUM_ROWERS;
+use super::club::Club;
+use super::crew::Crew;
+use super::entry::Entry;
+use super::get_rows;
+use super::heat::Heat;
+use super::heat_result::HeatResult;
+use super::race::Race;
 use crate::{
-    aquarius::model::{Club, Crew, Entry, Heat, HeatResult, Race, TryToEntity, utils},
     error::DbError,
     tiberius::{RowColumn, TiberiusPool},
 };
@@ -65,7 +72,7 @@ impl HeatEntry {
         query.bind(heat.id);
 
         let mut client = pool.get().await?;
-        let rows = utils::get_rows(query.query(&mut client).await?).await?;
+        let rows = get_rows(query.query(&mut client).await?).await?;
 
         // convert rows into HeatEntry
         let mut heat_entries: Vec<HeatEntry> = rows

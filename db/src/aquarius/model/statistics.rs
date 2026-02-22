@@ -1,8 +1,11 @@
-use crate::aquarius::model::boat_class::COXED;
-use crate::aquarius::model::boat_class::ID as BOAT_CLASS_ID;
-use crate::aquarius::model::boat_class::NUM_ROWERS;
+use super::Athlete;
+use super::TryToEntity;
+use super::boat_class::COXED;
+use super::boat_class::ID as BOAT_CLASS_ID;
+use super::boat_class::NUM_ROWERS;
+use super::get_row;
+use super::try_get_row;
 use crate::{
-    aquarius::model::{Athlete, TryToEntity, utils},
     error::DbError,
     tiberius::{RowColumn, TiberiusPool},
 };
@@ -185,7 +188,7 @@ impl Statistics {
             Statistics::query_oldest(regatta_id, "M", pool)
         );
 
-        let mut stats = Statistics::from(&utils::get_row(result.0?).await?);
+        let mut stats = Statistics::from(&get_row(result.0?).await?);
         stats.athletes = Some(Athletes {
             oldest_woman: result.1?,
             oldest_man: result.2?,
@@ -208,7 +211,7 @@ impl Statistics {
         query.bind(gender);
 
         let mut client = pool.get().await?;
-        if let Some(row) = utils::try_get_row(query.query(&mut client).await?).await? {
+        if let Some(row) = try_get_row(query.query(&mut client).await?).await? {
             Ok(row.try_to_entity())
         } else {
             Ok(None)
