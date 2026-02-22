@@ -1,16 +1,12 @@
 use crate::built_info;
+use ::dotenv::dotenv;
 use ::std::sync::LazyLock;
+use ::std::{env, fmt::Display, str::FromStr};
+use ::thiserror::Error;
+use ::tiberius::{AuthMethod, Config as TiberiusConfig, EncryptionLevel};
 use ::tracing::info;
 use ::tracing_subscriber::EnvFilter;
 use ::tracing_subscriber::prelude::*;
-use dotenv::dotenv;
-use std::{
-    env,
-    error::Error,
-    fmt::{self, Display},
-    str::FromStr,
-};
-use tiberius::{AuthMethod, Config as TiberiusConfig, EncryptionLevel};
 
 /// The global configuration instance. The configuration is initialized once and can be accessed globally.
 pub static CONFIG: LazyLock<Config> = LazyLock::new(|| Config::init().expect("Failed to initialize configuration"));
@@ -331,41 +327,22 @@ impl Config {
 }
 
 /// Configuration error type for better error handling
-#[derive(Debug)]
+#[derive(Debug, Error)]
 enum ConfigError {
     /// Environment variable parsing error
+    #[error("Failed to parse environment variable '{var_name}' with value '{value}': {error}")]
     ParseError {
         var_name: String,
         value: String,
         error: String,
     },
     /// Missing required environment variable
+    #[error("Required environment variable '{0}' is not set")]
     MissingRequired(String),
     /// Invalid configuration value
+    #[error("Invalid value for environment variable '{var_name}': {reason}")]
     InvalidValue { var_name: String, reason: String },
 }
-
-impl Display for ConfigError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ConfigError::ParseError { var_name, value, error } => {
-                write!(
-                    f,
-                    "Failed to parse environment variable '{}' with value '{}': {}",
-                    var_name, value, error
-                )
-            }
-            ConfigError::MissingRequired(var_name) => {
-                write!(f, "Required environment variable '{}' is not set", var_name)
-            }
-            ConfigError::InvalidValue { var_name, reason } => {
-                write!(f, "Invalid value for environment variable '{}': {}", var_name, reason)
-            }
-        }
-    }
-}
-
-impl Error for ConfigError {}
 
 /// Constants module for better organization and maintainability
 mod consts {
