@@ -40,7 +40,7 @@ use ::strum::IntoEnumIterator;
 use ::tiberius::{AuthMethod, Config, EncryptionLevel};
 use ::tracing::{debug, warn};
 
-pub struct App<'a> {
+pub struct App {
     // application state
     state: AppState,
     selected_tab: SelectedTab,
@@ -51,7 +51,7 @@ pub struct App<'a> {
     // UI components
     heats_tab: HeatsTab,
     time_strip_tab: TimeStripTab,
-    time_strip_popup: TimeStripTabPopup<'a>,
+    time_strip_popup: TimeStripTabPopup,
     logs_tab: LogsTab,
 
     // shared context
@@ -61,7 +61,7 @@ pub struct App<'a> {
     show_time_strip_popup: Rc<RefCell<bool>>,
 }
 
-impl App<'_> {
+impl App {
     pub(crate) async fn new() -> Result<Self, TimekeeperErr> {
         let args = Args::parse();
 
@@ -146,6 +146,11 @@ impl App<'_> {
                 SelectedTab::TimeStrip => {
                     frame.render_widget(&mut self.time_strip_tab, inner_area);
                     if *self.show_time_strip_popup.borrow() {
+                        if let Some(ts) = &*self.time_strip_tab.selected_time_stamp.borrow()
+                            && let Some(heat_nr) = ts.heat_nr()
+                        {
+                            self.time_strip_popup.set_heat_nr(heat_nr);
+                        }
                         let popup_area = popup_area(inner_area, 50, 20);
                         frame.render_widget(Clear, popup_area); // this clears out the background
                         frame.render_widget(&mut self.time_strip_popup, popup_area);
@@ -192,7 +197,9 @@ impl App<'_> {
                             SelectedTab::Heats => self.heats_tab.handle_key_event(key_event),
                             SelectedTab::TimeStrip => {
                                 if *self.show_time_strip_popup.borrow() {
-                                    self.time_strip_popup.handle_key_event(key_event).await;
+                                    self.time_strip_popup
+                                        .handle_event(ratatui::crossterm::event::Event::Key(key_event))
+                                        .await;
                                 } else {
                                     self.time_strip_tab.handle_key_event(key_event).await;
                                 }
