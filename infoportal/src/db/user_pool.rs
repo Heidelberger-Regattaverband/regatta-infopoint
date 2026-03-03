@@ -44,9 +44,8 @@ impl UserPoolManager {
         // Create new pool with user-specific credentials
         let config = CONFIG.get_db_config_for_user(&credentials.username, credentials.password.value());
 
-        let pool = TiberiusPool::new(config, 5, 1).await;
-        let pool = Arc::new(pool);
-        pools.insert(credentials.username.clone(), Arc::clone(&pool));
+        let pool = Arc::new(TiberiusPool::new(config, 5, 1).await);
+        pools.insert(credentials.username.clone(), pool.clone());
 
         info!(credentials.username, "Created new connection pool for user.",);
         Ok(pool)
