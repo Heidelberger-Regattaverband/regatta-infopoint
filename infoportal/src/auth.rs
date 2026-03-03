@@ -70,7 +70,7 @@ impl User {
     /// # Returns
     /// * `Ok(User)` - The authenticated user.
     /// * `Err(HttpResponse)` - The error response.
-    pub async fn authenticate(credentials: Credentials) -> Result<Self, HttpResponse> {
+    pub async fn authenticate(credentials: &Credentials) -> Result<Self, HttpResponse> {
         let mut username: String = Default::default();
         credentials.username.trim().clone_into(&mut username);
 
@@ -95,7 +95,7 @@ impl User {
                 Scope::User
             };
             Ok(User {
-                username: credentials.username,
+                username: credentials.username.clone(),
                 scope,
             })
         } else {

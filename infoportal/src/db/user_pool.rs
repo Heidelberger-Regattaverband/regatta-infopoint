@@ -21,7 +21,7 @@ impl UserPoolManager {
     }
 
     /// Get or create a connection pool for the given user credentials
-    pub async fn get_pool(&self, credentials: Credentials) -> Result<Arc<TiberiusPool>, DbError> {
+    pub async fn create_pool(&self, credentials: &Credentials) -> Result<Arc<TiberiusPool>, DbError> {
         // First check if pool exists (read lock)
         {
             let pools = self.pools.read().await;

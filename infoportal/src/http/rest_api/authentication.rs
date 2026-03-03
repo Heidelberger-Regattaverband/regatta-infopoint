@@ -1,6 +1,7 @@
 use crate::auth::Credentials;
 use crate::auth::Scope as UserScope;
 use crate::auth::User;
+use crate::db::UserPoolManager;
 use crate::http::rest_api::PATH;
 use ::actix_identity::Identity;
 use ::actix_web::Error;
@@ -12,6 +13,7 @@ use ::actix_web::error::ErrorInternalServerError;
 use ::actix_web::error::InternalError;
 use ::actix_web::get;
 use ::actix_web::post;
+use ::actix_web::web::Data;
 use ::actix_web::web::Json;
 use ::tracing::error;
 
@@ -25,8 +27,13 @@ use ::tracing::error;
     )
 )]
 #[post("/login")]
-async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<impl Responder, Error> {
-    match User::authenticate(credentials.into_inner()).await {
+async fn login(
+    credentials: Json<Credentials>,
+    request: HttpRequest,
+    user_pool_manager: Data<UserPoolManager>,
+) -> Result<impl Responder, Error> {
+    let credentials = credentials.into_inner();
+    match User::authenticate(&credentials).await {
         // authentication succeeded
         Ok(user) => {
             // attach valid user identity to current session
@@ -34,6 +41,10 @@ async fn login(credentials: Json<Credentials>, request: HttpRequest) -> Result<i
                 error!(%err, user = user.username, "Failed to attach user identity to session");
                 return Err(ErrorInternalServerError("Failed to create session"));
             }
+            user_pool_manager.create_pool(&credentials).await.map_err(|err| {
+                error!(%err, user = user.username, "Failed to create user pool");
+                ErrorInternalServerError("Failed to create user pool")
+            })?;
             // return user information: username and scope
             Ok(Json(user))
         }
