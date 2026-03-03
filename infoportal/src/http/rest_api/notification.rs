@@ -1,3 +1,5 @@
+use ::std::sync::Arc;
+
 use crate::db::UserPoolManager;
 use crate::db::aquarius::Aquarius;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
@@ -17,6 +19,7 @@ use ::actix_web::web::Data;
 use ::actix_web::web::Json;
 use ::actix_web::web::Path;
 use ::db::aquarius::model::{CreateNotificationRequest, Notification, UpdateNotificationRequest};
+use ::db::tiberius::TiberiusPool;
 use ::serde_json::json;
 use ::tiberius::time::chrono::DateTime;
 use ::tiberius::time::chrono::Utc;
@@ -74,10 +77,7 @@ async fn get_all_notifications(
     match identity {
         Some(identity) => {
             let regatta_id = regatta_id.into_inner();
-            let user_pool = user_pool_manager
-                .get_pool(&identity.id()?)
-                .await
-                .ok_or_else(|| ErrorInternalServerError("No connection pool found"))?;
+            let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
             let all_notifications = aquarius
                 .get_all_notifications(regatta_id, &user_pool)
                 .await
@@ -110,23 +110,19 @@ async fn create_notification(
     aquarius: Data<Aquarius>,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
-    // Basic validation
-    if request.title.trim().is_empty() {
-        return Ok(HttpResponse::BadRequest().json(json!({
-            "error": "Title cannot be empty"
-        })));
-    }
     match identity {
         Some(identity) => {
-            let regatta_id = regatta_id.into_inner();
-            let request = request.into_inner();
+            // Basic validation
+            if request.title.trim().is_empty() {
+                return Ok(HttpResponse::BadRequest().json(json!({
+                    "error": "Title cannot be empty"
+                })));
+            }
 
-            let user_pool = user_pool_manager
-                .get_pool(&identity.id()?)
-                .await
-                .ok_or_else(|| ErrorInternalServerError("No connection pool found"))?;
+            let regatta_id = regatta_id.into_inner();
+            let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
             let notification = aquarius
-                .create_notification(regatta_id, &request, &user_pool)
+                .create_notification(regatta_id, &request.into_inner(), &user_pool)
                 .await
                 .map_err(|err| {
                     error!(%err, regatta_id, "Failed to create notification");
@@ -158,38 +154,36 @@ async fn update_notification(
     aquarius: Data<Aquarius>,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
-    if identity.is_none() {
-        return Err(ErrorUnauthorized("Unauthorized"));
-    }
-    let notification_id = notification_id.into_inner();
-    let request = request.into_inner();
+    match identity {
+        Some(identity) => {
+            // Basic validation
+            if let Some(ref title) = request.title
+                && title.trim().is_empty()
+            {
+                return Ok(HttpResponse::BadRequest().json(json!({
+                    "error": "Title cannot be empty"
+                })));
+            }
 
-    // Basic validation
-    if let Some(ref title) = request.title
-        && title.trim().is_empty()
-    {
-        return Ok(HttpResponse::BadRequest().json(serde_json::json!({
-            "error": "Title cannot be empty"
-        })));
-    }
+            let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
+            let notification_id = notification_id.into_inner();
 
-    let user_pool = user_pool_manager
-        .get_pool(&identity.unwrap().id()?)
-        .await
-        .ok_or_else(|| ErrorInternalServerError("No connection pool found"))?;
-    let notification = aquarius
-        .update_notification(notification_id, &request, &user_pool)
-        .await
-        .map_err(|err| {
-            error!(%err, notification_id, "Failed to update notification");
-            ErrorInternalServerError(err)
-        })?;
+            let notification = aquarius
+                .update_notification(notification_id, &request.into_inner(), &user_pool)
+                .await
+                .map_err(|err| {
+                    error!(%err, notification_id, "Failed to update notification");
+                    ErrorInternalServerError(err)
+                })?;
 
-    match notification {
-        Some(notification) => Ok(HttpResponse::Ok().json(notification)),
-        None => Ok(HttpResponse::NotFound().json(json!({
-            "error": "Notification not found"
-        }))),
+            match notification {
+                Some(notification) => Ok(HttpResponse::Ok().json(notification)),
+                None => Ok(HttpResponse::NotFound().json(json!({
+                    "error": "Notification not found"
+                }))),
+            }
+        }
+        None => Err(ErrorUnauthorized("Unauthorized")),
     }
 }
 
@@ -209,30 +203,27 @@ async fn delete_notification(
     aquarius: Data<Aquarius>,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
-    if identity.is_none() {
-        return Err(ErrorUnauthorized("Unauthorized"));
-    }
-    let user_pool = user_pool_manager
-        .get_pool(&identity.unwrap().id()?)
-        .await
-        .ok_or_else(|| ErrorInternalServerError("No connection pool found"))?;
+    match identity {
+        Some(identity) => {
+            let notification_id = notification_id.into_inner();
+            let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
+            let deleted = aquarius
+                .delete_notification(notification_id, &user_pool)
+                .await
+                .map_err(|err| {
+                    error!(%err, notification_id, "Failed to delete notification:");
+                    ErrorInternalServerError(err)
+                })?;
 
-    let notification_id = notification_id.into_inner();
-
-    let deleted = aquarius
-        .delete_notification(notification_id, &user_pool)
-        .await
-        .map_err(|err| {
-            error!(%err, notification_id, "Failed to delete notification");
-            ErrorInternalServerError(err)
-        })?;
-
-    if deleted {
-        Ok(HttpResponse::NoContent().finish())
-    } else {
-        Ok(HttpResponse::NotFound().json(json!({
-            "error": "Notification not found"
-        })))
+            if deleted {
+                Ok(HttpResponse::NoContent().finish())
+            } else {
+                Ok(HttpResponse::NotFound().json(json!({
+                    "error": "Notification not found"
+                })))
+            }
+        }
+        None => Err(ErrorUnauthorized("Unauthorized")),
     }
 }
 
@@ -241,6 +232,16 @@ async fn notification_read(notification_id: Path<i32>, session: Session) -> Resu
     session.insert(create_notification_read_key(notification_id.into_inner()), Utc::now())?;
     session.renew();
     Ok(HttpResponse::NoContent())
+}
+
+async fn get_user_pool(
+    identity: &Identity,
+    user_pool_manager: &Data<UserPoolManager>,
+) -> Result<Arc<TiberiusPool>, Error> {
+    user_pool_manager
+        .get_pool(&identity.id()?)
+        .await
+        .ok_or_else(|| ErrorInternalServerError("No connection pool found"))
 }
 
 fn create_notification_read_key(notification_id: i32) -> String {
