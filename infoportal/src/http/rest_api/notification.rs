@@ -98,17 +98,10 @@ async fn get_all_notifications(
 async fn create_notification(
     regatta_id: Path<i32>,
     request: Json<CreateNotificationRequest>,
-    aquarius: Data<Aquarius>,
     identity: Option<Identity>,
+    aquarius: Data<Aquarius>,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
-    if identity.is_none() {
-        return Err(ErrorUnauthorized("Unauthorized"));
-    }
-
-    let regatta_id = regatta_id.into_inner();
-    let request = request.into_inner();
-
     // Basic validation
     if request.title.trim().is_empty() {
         return Ok(HttpResponse::BadRequest().json(json!({
@@ -116,18 +109,26 @@ async fn create_notification(
         })));
     }
 
-    let user_pool = user_pool_manager
-        .get_pool(&identity.unwrap().id()?)
-        .await
-        .ok_or_else(|| ErrorInternalServerError("No connection pool found"))?;
-    let notification = aquarius
-        .create_notification(regatta_id, &request, &user_pool)
-        .await
-        .map_err(|err| {
-            error!(%err, regatta_id, "Failed to create notification");
-            ErrorInternalServerError(err)
-        })?;
-    Ok(HttpResponse::Created().json(notification))
+    match identity {
+        Some(identity) => {
+            let regatta_id = regatta_id.into_inner();
+            let request = request.into_inner();
+
+            let user_pool = user_pool_manager
+                .get_pool(&identity.id()?)
+                .await
+                .ok_or_else(|| ErrorInternalServerError("No connection pool found"))?;
+            let notification = aquarius
+                .create_notification(regatta_id, &request, &user_pool)
+                .await
+                .map_err(|err| {
+                    error!(%err, regatta_id, "Failed to create notification");
+                    ErrorInternalServerError(err)
+                })?;
+            Ok(HttpResponse::Created().json(notification))
+        }
+        None => Err(ErrorUnauthorized("Unauthorized")),
+    }
 }
 
 #[utoipa::path(

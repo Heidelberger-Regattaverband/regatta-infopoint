@@ -5,7 +5,6 @@ use ::db::tiberius::TiberiusPool;
 use ::std::collections::HashMap;
 use ::std::sync::Arc;
 use ::tokio::sync::RwLock;
-use ::tracing::info;
 
 /// Manager for per-user database connection pools
 pub struct UserPoolManager {
@@ -46,8 +45,6 @@ impl UserPoolManager {
 
         let pool = Arc::new(TiberiusPool::new(config, 5, 1).await);
         pools.insert(credentials.username.clone(), pool.clone());
-
-        info!(credentials.username, "Created new connection pool for user.",);
         Ok(pool)
     }
 
