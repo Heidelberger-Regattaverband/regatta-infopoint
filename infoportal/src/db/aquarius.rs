@@ -32,6 +32,7 @@ impl Aquarius {
                     .id
             }
         };
+
         Ok(Aquarius {
             caches: Caches::try_new(Duration::from_secs(CONFIG.cache_ttl))?,
             active_regatta_id,
@@ -292,12 +293,15 @@ impl Aquarius {
             .await
     }
 
-    pub(crate) async fn get_all_notifications(&self, regatta_id: i32) -> Result<Vec<Notification>, DbError> {
+    pub(crate) async fn get_all_notifications(
+        &self,
+        regatta_id: i32,
+        user_pool: &TiberiusPool,
+    ) -> Result<Vec<Notification>, DbError> {
         // Don't cache admin queries to ensure fresh data
         let start = Instant::now();
         let notifications =
-            Notification::query_all_notifications_for_regatta(regatta_id, &mut *TiberiusPool::instance().get().await?)
-                .await?;
+            Notification::query_all_notifications_for_regatta(regatta_id, &mut *user_pool.get().await?).await?;
         debug!(regatta_id, elapsed = ?start.elapsed(), "Query all notifications from DB:");
         Ok(notifications)
     }
@@ -306,14 +310,11 @@ impl Aquarius {
         &self,
         regatta_id: i32,
         request: &CreateNotificationRequest,
+        user_pool: &TiberiusPool,
     ) -> Result<Notification, DbError> {
         let start = Instant::now();
-        let notification =
-            Notification::create_notification(regatta_id, request, &mut *TiberiusPool::instance().get().await?).await?;
+        let notification = Notification::create_notification(regatta_id, request, &mut *user_pool.get().await?).await?;
         debug!(regatta_id, elapsed = ?start.elapsed(), "Create notification in DB:");
-
-        // Note: Cache will automatically expire based on TTL, no manual invalidation needed
-
         Ok(notification)
     }
 
@@ -321,26 +322,25 @@ impl Aquarius {
         &self,
         notification_id: i32,
         request: &UpdateNotificationRequest,
+        user_pool: &TiberiusPool,
     ) -> Result<Option<Notification>, DbError> {
         let start = Instant::now();
         let notification =
-            Notification::update_notification(notification_id, request, &mut *TiberiusPool::instance().get().await?)
-                .await?;
+            Notification::update_notification(notification_id, request, &mut *user_pool.get().await?).await?;
+        self.caches.notifications.invalidate(&notification_id).await?;
         debug!(notification_id, elapsed = ?start.elapsed(), "Update notification in DB:");
-
-        // Note: Cache will automatically expire based on TTL, no manual invalidation needed
-
         Ok(notification)
     }
 
-    pub(crate) async fn delete_notification(&self, notification_id: i32) -> Result<bool, DbError> {
+    pub(crate) async fn delete_notification(
+        &self,
+        notification_id: i32,
+        user_pool: &TiberiusPool,
+    ) -> Result<bool, DbError> {
         let start = Instant::now();
-        let deleted =
-            Notification::delete_notification(notification_id, &mut *TiberiusPool::instance().get().await?).await?;
+        let deleted = Notification::delete_notification(notification_id, &mut *user_pool.get().await?).await?;
+        self.caches.notifications.invalidate(&notification_id).await?;
         debug!(notification_id, elapsed = ?start.elapsed(), "Delete notification in DB:");
-
-        // Note: Cache will automatically expire based on TTL, no manual invalidation needed
-
         Ok(deleted)
     }
 

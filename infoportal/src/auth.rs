@@ -10,7 +10,7 @@ use ::utoipa::ToSchema;
 
 /// The credentials struct contains the username and the password of the user.
 /// The credentials are used to authenticate the user.
-#[derive(Deserialize, ToSchema)]
+#[derive(Clone, Hash, PartialEq, Eq, Deserialize, ToSchema)]
 pub struct Credentials {
     /// The username of the user.
     pub username: String,
@@ -70,7 +70,7 @@ impl User {
     /// # Returns
     /// * `Ok(User)` - The authenticated user.
     /// * `Err(HttpResponse)` - The error response.
-    pub async fn authenticate(credentials: Credentials) -> Result<Self, HttpResponse> {
+    pub async fn authenticate(credentials: &Credentials) -> Result<Self, HttpResponse> {
         let mut username: String = Default::default();
         credentials.username.trim().clone_into(&mut username);
 
@@ -95,7 +95,7 @@ impl User {
                 Scope::User
             };
             Ok(User {
-                username: credentials.username,
+                username: credentials.username.clone(),
                 scope,
             })
         } else {

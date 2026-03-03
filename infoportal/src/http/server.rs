@@ -1,4 +1,5 @@
 use crate::config::CONFIG;
+use crate::db::UserPoolManager;
 use crate::{
     db::aquarius::Aquarius,
     http::{api_doc, rest_api},
@@ -69,6 +70,8 @@ impl Server {
         let worker_count = Arc::new(Mutex::new(0));
         let prometheus = Self::get_prometeus();
 
+        let user_pool_manager = Data::new(UserPoolManager::new());
+
         let factory_closure = move || {
             let mut count = worker_count.lock().unwrap();
             *count += 1;
@@ -80,6 +83,7 @@ impl Server {
                 .wrap(prometheus.clone())
                 .app_data(aquarius.clone())
                 .app_data(Data::new(prometheus.registry.clone()))
+                .app_data(user_pool_manager.clone())
                 .configure(rest_api::config)
                 .configure(api_doc::config)
                 .service(
@@ -260,7 +264,7 @@ impl Server {
                 let mut keys: Vec<PrivatePkcs8KeyDer> =
                     pkcs8_private_keys(key_reader).map(|cert| cert.unwrap()).collect();
 
-                // no keys could be parsedpter for each variant
+                // no keys could be parsed for each variant
                 if keys.is_empty() {
                     warn!("Could not locate PKCS 8 private keys.");
                     return None;
