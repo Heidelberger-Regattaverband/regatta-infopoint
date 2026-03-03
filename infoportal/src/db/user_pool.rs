@@ -10,14 +10,14 @@ use ::tracing::info;
 /// Manager for per-user database connection pools
 pub struct UserPoolManager {
     /// Cache of connection pools by user credentials
-    pools: Arc<RwLock<HashMap<String, Arc<TiberiusPool>>>>,
+    pools: RwLock<HashMap<String, Arc<TiberiusPool>>>,
 }
 
 impl UserPoolManager {
     /// Create a new UserPoolManager with base database configuration
     pub fn new() -> Self {
         Self {
-            pools: Arc::new(RwLock::new(HashMap::new())),
+            pools: RwLock::new(HashMap::new()),
         }
     }
 
