@@ -69,18 +69,26 @@ async fn get_all_notifications(
     regatta_id: Path<i32>,
     identity: Option<Identity>,
     aquarius: Data<Aquarius>,
+    user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
-    if identity.is_none() {
-        return Err(ErrorUnauthorized("Unauthorized"));
+    match identity {
+        Some(identity) => {
+            let regatta_id = regatta_id.into_inner();
+            let user_pool = user_pool_manager
+                .get_pool(&identity.id()?)
+                .await
+                .ok_or_else(|| ErrorInternalServerError("No connection pool found"))?;
+            let all_notifications = aquarius
+                .get_all_notifications(regatta_id, &user_pool)
+                .await
+                .map_err(|err| {
+                    error!(%err, regatta_id, "Failed to get all notifications");
+                    ErrorInternalServerError(err)
+                })?;
+            Ok(Json(all_notifications))
+        }
+        None => Err(ErrorUnauthorized("Unauthorized")),
     }
-
-    let regatta_id = regatta_id.into_inner();
-    let all_notifications = aquarius.get_all_notifications(regatta_id).await.map_err(|err| {
-        error!(%err, regatta_id, "Failed to get all notifications");
-        ErrorInternalServerError(err)
-    })?;
-
-    Ok(Json(all_notifications))
 }
 
 #[utoipa::path(
