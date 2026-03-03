@@ -30,7 +30,7 @@ impl UserPoolManager {
     pub async fn create_pool(&self, credentials: &Credentials) -> Result<Arc<TiberiusPool>, DbError> {
         // First check if pool exists (read lock)
         if let Some(pool) = self.get_pool(&credentials.username).await {
-            return Ok(pool.clone());
+            return Ok(pool);
         }
 
         // Pool doesn't exist, create it (write lock)
