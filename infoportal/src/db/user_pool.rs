@@ -21,17 +21,16 @@ impl UserPoolManager {
         }
     }
 
-    pub async fn get_pool(&self, username: String) -> Option<Arc<TiberiusPool>> {
+    pub async fn get_pool(&self, username: &String) -> Option<Arc<TiberiusPool>> {
         let pools = self.pools.read().await;
-        pools.get(&username).cloned()
+        pools.get(username).cloned()
     }
 
     /// Get or create a connection pool for the given user credentials
     pub async fn create_pool(&self, credentials: &Credentials) -> Result<Arc<TiberiusPool>, DbError> {
         // First check if pool exists (read lock)
-        let pools = self.pools.read().await;
-        if let Some(pool) = pools.get(&credentials.username) {
-            return Ok(Arc::clone(pool));
+        if let Some(pool) = self.get_pool(&credentials.username).await {
+            return Ok(pool.clone());
         }
 
         // Pool doesn't exist, create it (write lock)
@@ -39,7 +38,7 @@ impl UserPoolManager {
 
         // Double-check in case another task created it while we were waiting
         if let Some(pool) = pools.get(&credentials.username) {
-            return Ok(Arc::clone(pool));
+            return Ok(pool.clone());
         }
 
         // Create new pool with user-specific credentials
@@ -54,9 +53,10 @@ impl UserPoolManager {
     }
 
     /// Remove a user's connection pool (e.g., on logout)
-    pub async fn remove_pool(&self, username: String) {
+    #[allow(dead_code)]
+    pub async fn remove_pool(&self, username: &String) {
         let mut pools = self.pools.write().await;
-        pools.remove(&username);
+        pools.remove(username);
     }
 
     /// Clear all connection pools

@@ -162,7 +162,7 @@ async fn update_notification(
     }
 
     let user_pool = user_pool_manager
-        .get_pool(identity.unwrap().id()?)
+        .get_pool(&identity.unwrap().id()?)
         .await
         .ok_or_else(|| ErrorInternalServerError("No connection pool found"))?;
     let notification = aquarius
@@ -201,7 +201,7 @@ async fn delete_notification(
         return Err(ErrorUnauthorized("Unauthorized"));
     }
     let user_pool = user_pool_manager
-        .get_pool(identity.unwrap().id()?)
+        .get_pool(&identity.unwrap().id()?)
         .await
         .ok_or_else(|| ErrorInternalServerError("No connection pool found"))?;
 

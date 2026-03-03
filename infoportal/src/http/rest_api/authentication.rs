@@ -16,6 +16,7 @@ use ::actix_web::post;
 use ::actix_web::web::Data;
 use ::actix_web::web::Json;
 use ::tracing::error;
+use ::tracing::info;
 
 /// Authenticate the user. This will attach the user identity to the current session.
 #[utoipa::path(
@@ -32,6 +33,7 @@ async fn login(
     request: HttpRequest,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
+    info!(username = %credentials.username, "Attempting to authenticate user");
     let credentials = credentials.into_inner();
     match User::authenticate(&credentials).await {
         // authentication succeeded
@@ -41,10 +43,12 @@ async fn login(
                 error!(%err, user = user.username, "Failed to attach user identity to session");
                 return Err(ErrorInternalServerError("Failed to create session"));
             }
+            info!(user = user.username, "User authenticated successfully");
             user_pool_manager.create_pool(&credentials).await.map_err(|err| {
                 error!(%err, user = user.username, "Failed to create user pool");
                 ErrorInternalServerError("Failed to create user pool")
             })?;
+            info!(user = user.username, "User pool created successfully");
             // return user information: username and scope
             Ok(Json(user))
         }
