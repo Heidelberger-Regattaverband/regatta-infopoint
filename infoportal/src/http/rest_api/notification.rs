@@ -1,3 +1,4 @@
+use crate::db::UserPoolManager;
 use crate::db::aquarius::Aquarius;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
@@ -142,6 +143,7 @@ async fn update_notification(
     request: Json<UpdateNotificationRequest>,
     aquarius: Data<Aquarius>,
     identity: Option<Identity>,
+    user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
     if identity.is_none() {
         return Err(ErrorUnauthorized("Unauthorized"));
@@ -159,8 +161,12 @@ async fn update_notification(
         })));
     }
 
+    let user_pool = user_pool_manager
+        .get_pool(identity.unwrap().id()?)
+        .await
+        .ok_or_else(|| ErrorInternalServerError("No connection pool found"))?;
     let notification = aquarius
-        .update_notification(notification_id, &request)
+        .update_notification(notification_id, &request, &user_pool)
         .await
         .map_err(|err| {
             error!(%err, notification_id, "Failed to update notification");
@@ -189,17 +195,25 @@ async fn delete_notification(
     notification_id: Path<i32>,
     aquarius: Data<Aquarius>,
     identity: Option<Identity>,
+    user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
     if identity.is_none() {
         return Err(ErrorUnauthorized("Unauthorized"));
     }
+    let user_pool = user_pool_manager
+        .get_pool(identity.unwrap().id()?)
+        .await
+        .ok_or_else(|| ErrorInternalServerError("No connection pool found"))?;
 
     let notification_id = notification_id.into_inner();
 
-    let deleted = aquarius.delete_notification(notification_id).await.map_err(|err| {
-        error!(%err, notification_id, "Failed to delete notification");
-        ErrorInternalServerError(err)
-    })?;
+    let deleted = aquarius
+        .delete_notification(notification_id, &user_pool)
+        .await
+        .map_err(|err| {
+            error!(%err, notification_id, "Failed to delete notification");
+            ErrorInternalServerError(err)
+        })?;
 
     if deleted {
         Ok(HttpResponse::NoContent().finish())

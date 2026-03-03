@@ -264,7 +264,7 @@ impl Server {
                 let mut keys: Vec<PrivatePkcs8KeyDer> =
                     pkcs8_private_keys(key_reader).map(|cert| cert.unwrap()).collect();
 
-                // no keys could be parsedpter for each variant
+                // no keys could be parsed for each variant
                 if keys.is_empty() {
                     warn!("Could not locate PKCS 8 private keys.");
                     return None;

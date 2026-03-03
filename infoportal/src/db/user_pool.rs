@@ -10,7 +10,7 @@ use ::tracing::info;
 /// Manager for per-user database connection pools
 pub struct UserPoolManager {
     /// Cache of connection pools by user credentials
-    pools: Arc<RwLock<HashMap<Credentials, Arc<TiberiusPool>>>>,
+    pools: Arc<RwLock<HashMap<String, Arc<TiberiusPool>>>>,
 }
 
 impl UserPoolManager {
@@ -21,44 +21,42 @@ impl UserPoolManager {
         }
     }
 
-    pub async fn get_pool(&self, credentials: &Credentials) -> Option<Arc<TiberiusPool>> {
+    pub async fn get_pool(&self, username: String) -> Option<Arc<TiberiusPool>> {
         let pools = self.pools.read().await;
-        pools.get(credentials).cloned()
+        pools.get(&username).cloned()
     }
 
     /// Get or create a connection pool for the given user credentials
     pub async fn create_pool(&self, credentials: &Credentials) -> Result<Arc<TiberiusPool>, DbError> {
         // First check if pool exists (read lock)
-        {
-            let pools = self.pools.read().await;
-            if let Some(pool) = pools.get(credentials) {
-                return Ok(Arc::clone(pool));
-            }
+        let pools = self.pools.read().await;
+        if let Some(pool) = pools.get(&credentials.username) {
+            return Ok(Arc::clone(pool));
         }
 
         // Pool doesn't exist, create it (write lock)
         let mut pools = self.pools.write().await;
 
         // Double-check in case another task created it while we were waiting
-        if let Some(pool) = pools.get(credentials) {
+        if let Some(pool) = pools.get(&credentials.username) {
             return Ok(Arc::clone(pool));
         }
 
         // Create new pool with user-specific credentials
         let config = CONFIG.get_db_config_for_user(&credentials.username, credentials.password.value());
 
-        let pool = TiberiusPool::new(config, CONFIG.db_pool_max_size, CONFIG.db_pool_min_idle).await;
+        let pool = TiberiusPool::new(config, 5, 1).await;
         let pool = Arc::new(pool);
-        pools.insert(credentials.clone(), Arc::clone(&pool));
+        pools.insert(credentials.username.clone(), Arc::clone(&pool));
 
         info!(credentials.username, "Created new connection pool for user.",);
         Ok(pool)
     }
 
     /// Remove a user's connection pool (e.g., on logout)
-    pub async fn remove_pool(&self, credentials: &Credentials) {
+    pub async fn remove_pool(&self, username: String) {
         let mut pools = self.pools.write().await;
-        pools.remove(credentials);
+        pools.remove(&username);
     }
 
     /// Clear all connection pools
