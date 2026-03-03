@@ -67,8 +67,8 @@ async fn get_visible_notifications(
 #[get("/regattas/{regatta_id}/notifications")]
 async fn get_all_notifications(
     regatta_id: Path<i32>,
-    aquarius: Data<Aquarius>,
     identity: Option<Identity>,
+    aquarius: Data<Aquarius>,
 ) -> Result<impl Responder, Error> {
     if identity.is_none() {
         return Err(ErrorUnauthorized("Unauthorized"));
@@ -108,7 +108,6 @@ async fn create_notification(
             "error": "Title cannot be empty"
         })));
     }
-
     match identity {
         Some(identity) => {
             let regatta_id = regatta_id.into_inner();
@@ -147,8 +146,8 @@ async fn create_notification(
 async fn update_notification(
     notification_id: Path<i32>,
     request: Json<UpdateNotificationRequest>,
-    aquarius: Data<Aquarius>,
     identity: Option<Identity>,
+    aquarius: Data<Aquarius>,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
     if identity.is_none() {
@@ -198,8 +197,8 @@ async fn update_notification(
 #[delete("/notifications/{notification_id}")]
 async fn delete_notification(
     notification_id: Path<i32>,
-    aquarius: Data<Aquarius>,
     identity: Option<Identity>,
+    aquarius: Data<Aquarius>,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
     if identity.is_none() {
