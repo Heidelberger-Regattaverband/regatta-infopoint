@@ -3,9 +3,13 @@ import { Button$PressEvent } from "sap/m/Button";
 import Dialog from "sap/m/Dialog";
 import MessageToast from "sap/m/MessageToast";
 import { Switch$ChangeEvent } from "sap/m/Switch";
+import Context from "sap/ui/model/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import BaseController from "./Base.controller";
 import Formatter from "../model/Formatter";
+import BaseController from "./Base.controller";
+import { ComboBox$SelectionChangeEvent } from "sap/m/ComboBox";
+
+const MODEL_NOTIFICATIONS: string = "notifications";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -20,7 +24,7 @@ export default class AdminController extends BaseController {
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
-    super.setViewModel(this.notificationsModel, "notifications");
+    super.setViewModel(this.notificationsModel, MODEL_NOTIFICATIONS);
     super.setViewModel(this.dialogModel, "dialog");
     this.loadNotifications();
   }
@@ -42,17 +46,16 @@ export default class AdminController extends BaseController {
   }
 
   onEditNotification(event: Button$PressEvent): void {
-    const button = event.getSource();
-    const context = button.getBindingContext("notifications");
-    const notification = context?.getObject();
+    const context: Context | undefined | null = event.getSource().getBindingContext(MODEL_NOTIFICATIONS);
+    const notification: any = context?.getObject();
 
     if (notification) {
       this.isEditMode = true;
       this.currentNotificationId = notification.id;
       this.dialogModel.setData({
-        title: notification.title || "",
-        text: notification.text || "",
-        priority: notification.priority || 0,
+        title: notification.title,
+        text: notification.text,
+        priority: Number.parseInt(notification.priority || "0", 10),
         visible: notification.visible !== false
       });
       this.openDialog();
@@ -60,9 +63,8 @@ export default class AdminController extends BaseController {
   }
 
   onDeleteNotification(event: Button$PressEvent): void {
-    const button = event.getSource();
-    const context = button.getBindingContext("notifications");
-    const notification = context?.getObject();
+    const context: Context | undefined | null = event.getSource().getBindingContext(MODEL_NOTIFICATIONS);
+    const notification: any = context?.getObject();
 
     if (notification) {
       this.currentNotificationId = notification.id;
@@ -71,23 +73,28 @@ export default class AdminController extends BaseController {
     }
   }
 
-  onNotificationPress(event: any): void {
-    // Optional: Handle row press if needed
-  }
-
   onVisibilityChange(event: Switch$ChangeEvent): void {
-    const switchControl = event.getSource();
-    const context = switchControl.getBindingContext("notifications");
-    const notification = context?.getObject();
-    const newState: boolean = event.getParameter("state") || false;
+    const context: Context | undefined | null = event.getSource().getBindingContext(MODEL_NOTIFICATIONS);
+    const notification: any = context?.getObject();
+    const newState: boolean = event.getParameters().state || false;
 
     if (notification) {
       this.updateNotificationVisibility(notification.id, newState);
     }
   }
 
+  onPriorityChange(event: ComboBox$SelectionChangeEvent): void {
+    const context: Context | undefined | null = event.getSource().getBindingContext(MODEL_NOTIFICATIONS);
+    const notification: any = context?.getObject();
+    const newPriority: number = Number.parseInt(event.getParameters().selectedItem?.getKey() || "0", 10);
+
+    if (notification) {
+      this.updateNotification(notification.id, { ...notification, priority: newPriority });
+    }
+  }
+
   onSaveNotification(): void {
-    const dialogData = this.dialogModel.getData();
+    const dialogData: any = this.dialogModel.getData();
 
     // Validation
     if (!dialogData.title || dialogData.title.trim() === "") {
@@ -155,8 +162,8 @@ export default class AdminController extends BaseController {
         contentType: "application/json",
         data: JSON.stringify({
           title: data.title,
-          text: data.text || null,
-          priority: data.priority ? Number.parseInt(data.priority, 10) : null,
+          text: data.text,
+          priority: Number.parseInt(data.priority, 10),
           visible: data.visible
         }),
         success: (result: any) => {
@@ -181,8 +188,8 @@ export default class AdminController extends BaseController {
       contentType: "application/json",
       data: JSON.stringify({
         title: data.title,
-        text: data.text || null,
-        priority: data.priority ? Number.parseInt(data.priority, 10) : null,
+        text: data.text,
+        priority: Number.parseInt(data.priority, 10),
         visible: data.visible
       }),
       success: (result: any) => {

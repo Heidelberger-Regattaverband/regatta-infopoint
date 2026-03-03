@@ -17,13 +17,10 @@
             </OverflowToolbar>
           </headerToolbar>
           <columns>
-            <Column hAlign="Center" width="3rem" importance="Medium" popinDisplay="Inline">
-              <Text text="{i18n>admin.column.id}" />
-            </Column>
             <Column importance="Medium" popinDisplay="Inline">
               <Text text="{i18n>admin.column.title}" />
             </Column>
-            <Column hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">
+            <Column hAlign="Center" width="7rem" importance="Low" popinDisplay="Inline">
               <Text text="{i18n>admin.column.priority}" />
             </Column>
             <Column hAlign="Center" width="5rem" importance="Medium" popinDisplay="Inline">
@@ -37,11 +34,15 @@
             </Column>
           </columns>
           <items>
-            <ColumnListItem press=".onNotificationPress">
+            <ColumnListItem>
               <cells>
-                <Text text="{notifications>id}" />
                 <Text text="{notifications>title}" />
-                <Text text="{path:'notifications>priority',formatter:'.formatter.priority'}" />
+                <ComboBox selectedKey="{notifications>priority}" selectionChange=".onPriorityChange">
+                  <core:Item key="0" text="{i18n>admin.priority.none}" />
+                  <core:Item key="1" text="{i18n>admin.priority.low}" />
+                  <core:Item key="2" text="{i18n>admin.priority.medium}" />
+                  <core:Item key="3" text="{i18n>admin.priority.high}" />
+                </ComboBox>
                 <Switch state="{notifications>visible}" change=".onVisibilityChange" />
                 <Text text="{path:'notifications>modifiedAt',formatter:'.formatter.dateTime'}" />
                 <HBox>
