@@ -25,7 +25,7 @@ impl UserPoolManager {
         // First check if pool exists (read lock)
         {
             let pools = self.pools.read().await;
-            if let Some(pool) = pools.get(&credentials) {
+            if let Some(pool) = pools.get(credentials) {
                 return Ok(Arc::clone(pool));
             }
         }
@@ -34,7 +34,7 @@ impl UserPoolManager {
         let mut pools = self.pools.write().await;
 
         // Double-check in case another task created it while we were waiting
-        if let Some(pool) = pools.get(&credentials) {
+        if let Some(pool) = pools.get(credentials) {
             return Ok(Arc::clone(pool));
         }
 
