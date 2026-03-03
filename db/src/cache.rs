@@ -160,6 +160,10 @@ where
             }
         }
     }
+
+    pub async fn invalidate(&self, key: &K) -> Result<(), DbError> {
+        self.cache.try_remove(key).await.map_err(DbError::CacheError)
+    }
 }
 
 /// Container for all caches with improved organization, better error handling, and type safety
@@ -340,8 +344,12 @@ struct CacheConfig {
 /// Cache statistics for monitoring and debugging with actual tracking capabilities
 #[derive(Debug, Clone)]
 pub struct CacheStats {
+    /// Total number of cache hits
     pub hits: u64,
+    /// Total number of cache misses
     pub misses: u64,
+    /// Current number of entries in the cache
     pub entries: usize,
+    /// Cache hit rate as a percentage
     pub hit_rate: f64,
 }

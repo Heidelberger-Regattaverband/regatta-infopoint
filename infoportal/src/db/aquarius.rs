@@ -315,9 +315,6 @@ impl Aquarius {
         let start = Instant::now();
         let notification = Notification::create_notification(regatta_id, request, &mut *user_pool.get().await?).await?;
         debug!(regatta_id, elapsed = ?start.elapsed(), "Create notification in DB:");
-
-        // Note: Cache will automatically expire based on TTL, no manual invalidation needed
-
         Ok(notification)
     }
 
@@ -330,10 +327,8 @@ impl Aquarius {
         let start = Instant::now();
         let notification =
             Notification::update_notification(notification_id, request, &mut *user_pool.get().await?).await?;
+        self.caches.notifications.invalidate(&notification_id).await?;
         debug!(notification_id, elapsed = ?start.elapsed(), "Update notification in DB:");
-
-        // Note: Cache will automatically expire based on TTL, no manual invalidation needed
-
         Ok(notification)
     }
 
@@ -344,10 +339,8 @@ impl Aquarius {
     ) -> Result<bool, DbError> {
         let start = Instant::now();
         let deleted = Notification::delete_notification(notification_id, &mut *user_pool.get().await?).await?;
+        self.caches.notifications.invalidate(&notification_id).await?;
         debug!(notification_id, elapsed = ?start.elapsed(), "Delete notification in DB:");
-
-        // Note: Cache will automatically expire based on TTL, no manual invalidation needed
-
         Ok(deleted)
     }
 
