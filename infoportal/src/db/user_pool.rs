@@ -21,6 +21,11 @@ impl UserPoolManager {
         }
     }
 
+    pub async fn get_pool(&self, credentials: &Credentials) -> Option<Arc<TiberiusPool>> {
+        let pools = self.pools.read().await;
+        pools.get(credentials).cloned()
+    }
+
     /// Get or create a connection pool for the given user credentials
     pub async fn create_pool(&self, credentials: &Credentials) -> Result<Arc<TiberiusPool>, DbError> {
         // First check if pool exists (read lock)
@@ -46,7 +51,7 @@ impl UserPoolManager {
         let pool = Arc::new(pool);
         pools.insert(credentials.clone(), Arc::clone(&pool));
 
-        info!("Created new connection pool for user {}", credentials.username);
+        info!(credentials.username, "Created new connection pool for user.",);
         Ok(pool)
     }
 
