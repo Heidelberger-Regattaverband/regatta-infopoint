@@ -9,6 +9,8 @@ import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
 import { ComboBox$SelectionChangeEvent } from "sap/m/ComboBox";
 
+const MODEL_NOTIFICATIONS: string = "notifications";
+
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
@@ -22,7 +24,7 @@ export default class AdminController extends BaseController {
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
-    super.setViewModel(this.notificationsModel, "notifications");
+    super.setViewModel(this.notificationsModel, MODEL_NOTIFICATIONS);
     super.setViewModel(this.dialogModel, "dialog");
     this.loadNotifications();
   }
@@ -44,15 +46,15 @@ export default class AdminController extends BaseController {
   }
 
   onEditNotification(event: Button$PressEvent): void {
-    const context: Context | undefined | null = event.getSource().getBindingContext("notifications");
-    const notification = context?.getObject();
+    const context: Context | undefined | null = event.getSource().getBindingContext(MODEL_NOTIFICATIONS);
+    const notification: any = context?.getObject();
 
     if (notification) {
       this.isEditMode = true;
       this.currentNotificationId = notification.id;
       this.dialogModel.setData({
-        title: notification.title || "",
-        text: notification.text || "",
+        title: notification.title,
+        text: notification.text,
         priority: Number.parseInt(notification.priority || "0", 10),
         visible: notification.visible !== false
       });
@@ -61,8 +63,8 @@ export default class AdminController extends BaseController {
   }
 
   onDeleteNotification(event: Button$PressEvent): void {
-    const context: Context | undefined | null = event.getSource().getBindingContext("notifications");
-    const notification = context?.getObject();
+    const context: Context | undefined | null = event.getSource().getBindingContext(MODEL_NOTIFICATIONS);
+    const notification: any = context?.getObject();
 
     if (notification) {
       this.currentNotificationId = notification.id;
@@ -72,8 +74,8 @@ export default class AdminController extends BaseController {
   }
 
   onVisibilityChange(event: Switch$ChangeEvent): void {
-    const context: Context | undefined | null = event.getSource().getBindingContext("notifications");
-    const notification = context?.getObject();
+    const context: Context | undefined | null = event.getSource().getBindingContext(MODEL_NOTIFICATIONS);
+    const notification: any = context?.getObject();
     const newState: boolean = event.getParameters().state || false;
 
     if (notification) {
@@ -82,8 +84,8 @@ export default class AdminController extends BaseController {
   }
 
   onPriorityChange(event: ComboBox$SelectionChangeEvent): void {
-    const context: Context | undefined | null = event.getSource().getBindingContext("notifications");
-    const notification = context?.getObject();
+    const context: Context | undefined | null = event.getSource().getBindingContext(MODEL_NOTIFICATIONS);
+    const notification: any = context?.getObject();
     const newPriority: number = Number.parseInt(event.getParameters().selectedItem?.getKey() || "0", 10);
 
     if (notification) {
@@ -92,7 +94,7 @@ export default class AdminController extends BaseController {
   }
 
   onSaveNotification(): void {
-    const dialogData = this.dialogModel.getData();
+    const dialogData: any = this.dialogModel.getData();
 
     // Validation
     if (!dialogData.title || dialogData.title.trim() === "") {
