@@ -100,6 +100,7 @@ async fn create_notification(
     request: Json<CreateNotificationRequest>,
     aquarius: Data<Aquarius>,
     identity: Option<Identity>,
+    user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
     if identity.is_none() {
         return Err(ErrorUnauthorized("Unauthorized"));
@@ -115,8 +116,12 @@ async fn create_notification(
         })));
     }
 
+    let user_pool = user_pool_manager
+        .get_pool(&identity.unwrap().id()?)
+        .await
+        .ok_or_else(|| ErrorInternalServerError("No connection pool found"))?;
     let notification = aquarius
-        .create_notification(regatta_id, &request)
+        .create_notification(regatta_id, &request, &user_pool)
         .await
         .map_err(|err| {
             error!(%err, regatta_id, "Failed to create notification");
@@ -148,7 +153,6 @@ async fn update_notification(
     if identity.is_none() {
         return Err(ErrorUnauthorized("Unauthorized"));
     }
-
     let notification_id = notification_id.into_inner();
     let request = request.into_inner();
 

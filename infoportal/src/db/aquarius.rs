@@ -315,10 +315,10 @@ impl Aquarius {
         &self,
         regatta_id: i32,
         request: &CreateNotificationRequest,
+        user_pool: &TiberiusPool,
     ) -> Result<Notification, DbError> {
         let start = Instant::now();
-        let notification =
-            Notification::create_notification(regatta_id, request, &mut *TiberiusPool::instance().get().await?).await?;
+        let notification = Notification::create_notification(regatta_id, request, &mut *user_pool.get().await?).await?;
         debug!(regatta_id, elapsed = ?start.elapsed(), "Create notification in DB:");
 
         // Note: Cache will automatically expire based on TTL, no manual invalidation needed
