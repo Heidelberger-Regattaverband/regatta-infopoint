@@ -1,5 +1,3 @@
-use ::std::sync::Arc;
-
 use crate::db::UserPoolManager;
 use crate::db::aquarius::Aquarius;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
@@ -21,6 +19,7 @@ use ::actix_web::web::Path;
 use ::db::aquarius::model::{CreateNotificationRequest, Notification, UpdateNotificationRequest};
 use ::db::tiberius::TiberiusPool;
 use ::serde_json::json;
+use ::std::sync::Arc;
 use ::tiberius::time::chrono::DateTime;
 use ::tiberius::time::chrono::Utc;
 use ::tracing::error;

@@ -42,6 +42,9 @@ pub struct Notification {
 
     /// The timestamp when the notification was modified.
     pub modified_at: DateTime<Utc>,
+
+    /// The identifier of the associated event.
+    pub event_id: i32,
 }
 
 /// Request structure for creating a new notification.
@@ -95,7 +98,7 @@ impl Notification {
         client: &mut TiberiusClient,
     ) -> Result<Vec<Notification>, DbError> {
         let sql = format!(
-            "SELECT {ID}, {PRIORITY}, {TITLE}, {TEXT}, {VISIBLE}, {MODIFIED_AT} FROM HRV_Notification \
+            "SELECT {ID}, {PRIORITY}, {TITLE}, {TEXT}, {VISIBLE}, {MODIFIED_AT}, {EVENT_ID} FROM HRV_Notification \
             WHERE {EVENT_ID} = @P1 AND {VISIBLE} = 1 ORDER BY {ID}"
         );
         let mut query = Query::new(&sql);
@@ -114,7 +117,7 @@ impl Notification {
         client: &mut TiberiusClient,
     ) -> Result<Vec<Notification>, DbError> {
         let sql = format!(
-            "SELECT {ID}, {PRIORITY}, {TITLE}, {TEXT}, {VISIBLE}, {MODIFIED_AT} FROM HRV_Notification \
+            "SELECT {ID}, {PRIORITY}, {TITLE}, {TEXT}, {VISIBLE}, {MODIFIED_AT}, {EVENT_ID} FROM HRV_Notification \
             WHERE {EVENT_ID} = @P1 ORDER BY {ID} DESC"
         );
         let mut query = Query::new(&sql);
@@ -136,7 +139,7 @@ impl Notification {
         let now = Utc::now();
         let sql = format!(
             "INSERT INTO HRV_Notification ({EVENT_ID}, {PRIORITY}, {TITLE}, {TEXT}, {VISIBLE}, {MODIFIED_AT}) \
-            OUTPUT INSERTED.{ID}, INSERTED.{PRIORITY}, INSERTED.{TITLE}, INSERTED.{TEXT}, INSERTED.{VISIBLE}, INSERTED.{MODIFIED_AT} \
+            OUTPUT INSERTED.{ID}, INSERTED.{PRIORITY}, INSERTED.{TITLE}, INSERTED.{TEXT}, INSERTED.{VISIBLE}, INSERTED.{MODIFIED_AT}, INSERTED.{EVENT_ID} \
             VALUES (@P1, @P2, @P3, @P4, @P5, @P6)"
         );
         let mut query = Query::new(&sql);
@@ -185,7 +188,7 @@ impl Notification {
 
         let sql = format!(
             "UPDATE HRV_Notification SET {} \
-            OUTPUT INSERTED.{ID}, INSERTED.{PRIORITY}, INSERTED.{TITLE}, INSERTED.{TEXT}, INSERTED.{VISIBLE}, INSERTED.{MODIFIED_AT} \
+            OUTPUT INSERTED.{ID}, INSERTED.{PRIORITY}, INSERTED.{TITLE}, INSERTED.{TEXT}, INSERTED.{VISIBLE}, INSERTED.{MODIFIED_AT}, INSERTED.{EVENT_ID} \
             WHERE {ID} = @P{}",
             set_clauses.join(", "),
             param_count + 1
@@ -211,13 +214,21 @@ impl Notification {
         Ok(rows.into_iter().map(|row| Notification::from(&row)).next())
     }
 
-    pub async fn delete_notification(notification_id: i32, client: &mut TiberiusClient) -> Result<bool, DbError> {
-        let sql = format!("DELETE FROM HRV_Notification WHERE {ID} = @P1");
+    pub async fn delete_notification(
+        notification_id: i32,
+        client: &mut TiberiusClient,
+    ) -> Result<Option<Notification>, DbError> {
+        let sql = format!(
+            "DELETE FROM HRV_Notification \
+            OUTPUT DELETED.{ID}, DELETED.{PRIORITY}, DELETED.{TITLE}, DELETED.{TEXT}, DELETED.{VISIBLE}, DELETED.{MODIFIED_AT}, DELETED.{EVENT_ID} \
+            WHERE {ID} = @P1"
+        );
         let mut query = Query::new(&sql);
         query.bind(notification_id);
 
-        let result = query.execute(client).await?;
-        Ok(result.rows_affected()[0] > 0)
+        let result = query.query(client).await?;
+        let rows = get_rows(result).await?;
+        Ok(rows.into_iter().map(|row| Notification::from(&row)).next())
     }
 
     async fn query_notification_by_id(
@@ -225,7 +236,7 @@ impl Notification {
         client: &mut TiberiusClient,
     ) -> Result<Option<Notification>, DbError> {
         let sql = format!(
-            "SELECT {ID}, {PRIORITY}, {TITLE}, {TEXT}, {VISIBLE}, {MODIFIED_AT} FROM HRV_Notification \
+            "SELECT {ID}, {PRIORITY}, {TITLE}, {TEXT}, {VISIBLE}, {MODIFIED_AT}, {EVENT_ID} FROM HRV_Notification \
             WHERE {ID} = @P1"
         );
         let mut query = Query::new(&sql);
@@ -245,6 +256,7 @@ impl From<&Row> for Notification {
             text: row.try_get_column(TEXT),
             visible: row.get_column(VISIBLE),
             modified_at: row.get_column(MODIFIED_AT),
+            event_id: row.get_column(EVENT_ID),
         }
     }
 }
