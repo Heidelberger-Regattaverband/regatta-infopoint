@@ -1,5 +1,4 @@
 use crate::config::CONFIG;
-use crate::db::user_pool::UserPoolManager;
 use ::actix_identity::Identity;
 use ::db::aquarius::model::{CreateNotificationRequest, Notification, UpdateNotificationRequest};
 use ::db::{
@@ -19,10 +18,6 @@ pub(crate) struct Aquarius {
 
     /// The identifier of the active regatta.
     active_regatta_id: i32,
-
-    /// The user pool manager for per-user database connections.
-    #[allow(dead_code)]
-    pub(crate) user_pool_manager: UserPoolManager,
 }
 
 /// Implementation of the `Aquarius` struct.
@@ -38,12 +33,9 @@ impl Aquarius {
             }
         };
 
-        let user_pool_manager = UserPoolManager::new();
-
         Ok(Aquarius {
             caches: Caches::try_new(Duration::from_secs(CONFIG.cache_ttl))?,
             active_regatta_id,
-            user_pool_manager,
         })
     }
 
