@@ -30,6 +30,12 @@
                   text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" />
               </f:actions>
               <f:navigationActions />
+              <f:content>
+                <OverflowToolbar>
+                  <ObjectStatus title="{i18n>common.state}" text="{path:'heatEntries>/',formatter:'.formatter.heatStateLabel'}"
+                    state="{path:'heatEntries>/',formatter:'.formatter.heatStateHighlight'}" class="bold" />
+                </OverflowToolbar>
+              </f:content>
             </f:DynamicPageTitle>
           </f:title>
 
@@ -44,8 +50,6 @@
                 </VBox>
 
                 <VBox>
-                  <ObjectStatus title="{i18n>common.state}" text="{path:'heatEntries>/',formatter:'.formatter.heatStateLabel'}"
-                    state="{path:'heatEntries>/',formatter:'.formatter.heatStateHighlight'}" class="bold" />
                   <ObjectAttribute title="{i18n>common.seeded}" text="{=${heatEntries>/race/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
                   <ObjectAttribute title="{i18n>common.refereeAbr}"
                     text="{heatEntries>/referees/0/lastName}, {heatEntries>/referees/0/firstName}"

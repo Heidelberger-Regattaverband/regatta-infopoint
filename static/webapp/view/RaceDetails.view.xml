@@ -21,7 +21,7 @@
           <f:title>
             <f:DynamicPageTitle>
               <f:heading>
-                <Title text="{path:'raceEntries>/', formatter:'.formatter.nrRaceLabel'}" wrapping="true" />
+                <Title text="{path:'raceEntries>/',formatter:'.formatter.nrRaceLabel'}" wrapping="true" />
               </f:heading>
               <f:expandedContent>
                 <Label text="{raceEntries>/longLabel} {raceEntries>/comment}" />
@@ -31,6 +31,12 @@
                   text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" />
               </f:actions>
               <f:navigationActions />
+              <f:content>
+                <OverflowToolbar>
+                  <ObjectStatus title="{i18n>common.state}" text="{path:'raceEntries>/',formatter:'.formatter.raceStateLabel'}"
+                    state="{path:'raceEntries>/',formatter:'.formatter.raceStateHighlight'}" class="bold" />
+                </OverflowToolbar>
+              </f:content>
             </f:DynamicPageTitle>
           </f:title>
 
@@ -39,12 +45,10 @@
               <f:content>
                 <HBox>
                   <VBox class="sapUiMediumMarginEnd">
-                    <ObjectStatus title="{i18n>common.state}" text="{path:'raceEntries>/',formatter:'.formatter.raceStateLabel'}"
-                      state="{path:'raceEntries>/',formatter:'.formatter.raceStateHighlight'}" class="bold" />
+                    <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceEntries>/',formatter:'.formatter.distanceLabel'}" />
                     <ObjectAttribute title="{i18n>common.entries}" text="{raceEntries>/entriesCount}" />
                   </VBox>
                   <VBox class="sapUiMediumMarginEnd">
-                    <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceEntries>/',formatter:'.formatter.distanceLabel'}" />
                     <ObjectAttribute title="{i18n>common.seeded}" text="{=${raceEntries>/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
                   </VBox>
                 </HBox>
