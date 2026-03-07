@@ -5,7 +5,6 @@ pub(crate) mod misc;
 pub(crate) mod monitoring;
 pub(crate) mod notification;
 
-use crate::db::aquarius::Aquarius;
 use ::actix_identity::Identity;
 use ::actix_web::{
     Error, Responder, Scope as ActixScope,
@@ -13,6 +12,7 @@ use ::actix_web::{
     get,
     web::{Data, Json, Path, ServiceConfig},
 };
+use ::db::aquarius::Aquarius;
 use ::db::aquarius::model::{Filters, Heat, Race, Regatta};
 use ::tracing::error;
 
@@ -36,10 +36,13 @@ async fn get_filters(
     opt_user: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
-    let filters = aquarius.get_filters(regatta_id, opt_user).await.map_err(|err| {
-        error!("{err}");
-        ErrorInternalServerError(err)
-    })?;
+    let filters = aquarius
+        .get_filters(regatta_id, opt_user.is_some())
+        .await
+        .map_err(|err| {
+            error!("{err}");
+            ErrorInternalServerError(err)
+        })?;
     Ok(Json(filters))
 }
 
@@ -55,7 +58,7 @@ async fn get_filters(
 )]
 #[get("/active_regatta")]
 async fn get_active_regatta(aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
-    let regatta = aquarius.get_active_regatta(opt_user).await.map_err(|err| {
+    let regatta = aquarius.get_active_regatta(opt_user.is_some()).await.map_err(|err| {
         error!("{err}");
         ErrorInternalServerError(err)
     })?;
@@ -81,10 +84,13 @@ async fn get_races(
     opt_user: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
-    let races = aquarius.get_races(regatta_id, opt_user).await.map_err(|err| {
-        error!("{err}");
-        ErrorInternalServerError(err)
-    })?;
+    let races = aquarius
+        .get_races(regatta_id, opt_user.is_some())
+        .await
+        .map_err(|err| {
+            error!("{err}");
+            ErrorInternalServerError(err)
+        })?;
     Ok(Json(races))
 }
 
@@ -104,7 +110,7 @@ async fn get_race(
 ) -> Result<impl Responder, Error> {
     let race_id = path.into_inner();
     let race = aquarius
-        .get_race_heats_entries(race_id, opt_user)
+        .get_race_heats_entries(race_id, opt_user.is_some())
         .await
         .map_err(|err| {
             error!("{err}");
@@ -130,10 +136,13 @@ async fn get_heats(
     opt_user: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
-    let heats = aquarius.get_heats(regatta_id, opt_user).await.map_err(|err| {
-        error!("{err}");
-        ErrorInternalServerError(err)
-    })?;
+    let heats = aquarius
+        .get_heats(regatta_id, opt_user.is_some())
+        .await
+        .map_err(|err| {
+            error!("{err}");
+            ErrorInternalServerError(err)
+        })?;
     Ok(Json(heats))
 }
 
@@ -152,7 +161,7 @@ async fn get_heat(
     opt_user: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let heat_id = path.into_inner();
-    let heat = aquarius.get_heat(heat_id, opt_user).await.map_err(|err| {
+    let heat = aquarius.get_heat(heat_id, opt_user.is_some()).await.map_err(|err| {
         error!("{err}");
         ErrorInternalServerError(err)
     })?;

@@ -1,5 +1,4 @@
 use crate::db::UserPoolManager;
-use crate::db::aquarius::Aquarius;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
 use ::actix_identity::Identity;
@@ -16,6 +15,7 @@ use ::actix_web::put;
 use ::actix_web::web::Data;
 use ::actix_web::web::Json;
 use ::actix_web::web::Path;
+use ::db::aquarius::Aquarius;
 use ::db::aquarius::model::{CreateNotificationRequest, Notification, UpdateNotificationRequest};
 use ::db::tiberius::TiberiusPool;
 use ::serde_json::json;

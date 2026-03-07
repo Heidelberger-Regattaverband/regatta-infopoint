@@ -1,4 +1,3 @@
-use crate::db::aquarius::Aquarius;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
 use ::actix_identity::Identity;
@@ -9,6 +8,7 @@ use ::actix_web::get;
 use ::actix_web::web::Data;
 use ::actix_web::web::Json;
 use ::actix_web::web::Path;
+use ::db::aquarius::Aquarius;
 use ::db::aquarius::model::Club;
 use ::db::aquarius::model::Entry;
 use ::tracing::error;
@@ -31,7 +31,7 @@ async fn get_participating_clubs(
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let clubs = aquarius
-        .get_participating_clubs(regatta_id, opt_user)
+        .get_participating_clubs(regatta_id, opt_user.is_some())
         .await
         .map_err(|err| {
             error!(%err, regatta_id, "Failed to get participating clubs");
@@ -56,7 +56,7 @@ async fn get_club_entries(
 ) -> Result<impl Responder, Error> {
     let (regatta_id, club_id) = ids.into_inner();
     let entries = aquarius
-        .get_club_entries(regatta_id, club_id, opt_user)
+        .get_club_entries(regatta_id, club_id, opt_user.is_some())
         .await
         .map_err(|err| {
             error!(%err, regatta_id, club_id,"Failed to get club entries");
@@ -81,7 +81,7 @@ async fn get_regatta_club(
 ) -> Result<impl Responder, Error> {
     let (regatta_id, club_id) = ids.into_inner();
     let club = aquarius
-        .get_regatta_club(regatta_id, club_id, opt_user)
+        .get_regatta_club(regatta_id, club_id, opt_user.is_some())
         .await
         .map_err(|err| {
             error!(%err, regatta_id, club_id, "Failed to get club");

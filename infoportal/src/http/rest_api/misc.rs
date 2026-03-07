@@ -1,5 +1,4 @@
 use crate::config::CONFIG;
-use crate::db::aquarius::Aquarius;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
 use ::actix_identity::Identity;
@@ -11,6 +10,7 @@ use ::actix_web::get;
 use ::actix_web::web::Data;
 use ::actix_web::web::Json;
 use ::actix_web::web::Path;
+use ::db::aquarius::Aquarius;
 use ::db::tiberius::create_client;
 use ::db::timekeeper::TimeStamp;
 use ::db::timekeeper::TimeStrip;
@@ -115,9 +115,12 @@ async fn get_schedule(
     opt_user: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
-    let schedule = aquarius.query_schedule(regatta_id, opt_user).await.map_err(|err| {
-        error!(%err, regatta_id, "Failed to query schedule");
-        ErrorInternalServerError(err)
-    })?;
+    let schedule = aquarius
+        .query_schedule(regatta_id, opt_user.is_some())
+        .await
+        .map_err(|err| {
+            error!(%err, regatta_id, "Failed to query schedule");
+            ErrorInternalServerError(err)
+        })?;
     Ok(Json(schedule))
 }

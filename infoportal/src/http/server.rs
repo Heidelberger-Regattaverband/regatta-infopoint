@@ -1,9 +1,6 @@
 use crate::config::CONFIG;
 use crate::db::UserPoolManager;
-use crate::{
-    db::aquarius::Aquarius,
-    http::{api_doc, rest_api},
-};
+use crate::http::{api_doc, rest_api};
 use ::actix_extensible_rate_limit::{
     RateLimiter,
     backend::{SimpleInput, SimpleInputFunctionBuilder, SimpleOutput, memory::InMemoryBackend},
@@ -21,6 +18,7 @@ use ::actix_web::{
     web::{self, Data},
 };
 use ::actix_web_prom::{PrometheusMetrics, PrometheusMetricsBuilder};
+use ::db::aquarius::Aquarius;
 use ::db::error::DbError;
 use ::futures::FutureExt;
 use ::prometheus::Registry;
@@ -296,5 +294,7 @@ impl Server {
 }
 
 pub async fn create_app_data() -> Result<Data<Aquarius>, DbError> {
-    Ok(Data::new(Aquarius::new().await?))
+    Ok(Data::new(
+        Aquarius::new(CONFIG.active_regatta_id, CONFIG.cache_ttl).await?,
+    ))
 }
