@@ -41,10 +41,13 @@ async fn login(
                 error!(%err, user = user.username, "Failed to attach user identity to session");
                 return Err(ErrorInternalServerError("Failed to create session"));
             }
-            user_pool_manager.create_pool(&credentials).await.map_err(|err| {
-                error!(%err, user = user.username, "Failed to create user pool");
-                ErrorInternalServerError("Failed to create user pool")
-            })?;
+            user_pool_manager
+                .create_pool(&credentials.username, credentials.password.value())
+                .await
+                .map_err(|err| {
+                    error!(%err, user = user.username, "Failed to create user pool");
+                    ErrorInternalServerError("Failed to create user pool")
+                })?;
             Ok(Json(user))
         }
         // authentication failed

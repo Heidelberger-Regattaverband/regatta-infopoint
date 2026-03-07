@@ -1,3 +1,6 @@
+mod flags_scraper;
+pub mod model;
+
 use crate::aquarius::model::Athlete;
 use crate::aquarius::model::Club;
 use crate::aquarius::model::CreateNotificationRequest;
@@ -18,9 +21,6 @@ use crate::tiberius::TiberiusPool;
 use ::futures::future::join3;
 use ::std::time::{Duration, Instant};
 use ::tracing::debug;
-
-pub mod flags_scraper;
-pub mod model;
 
 /// The `Aquarius` struct is the main interface to the database. It is used to query data from the database.
 pub struct Aquarius {
