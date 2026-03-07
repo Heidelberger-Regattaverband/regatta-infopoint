@@ -1,14 +1,14 @@
 use ::aquarius::{client::Client, messages::Heat};
-use db::timekeeper::{TimeStamp, TimeStrip};
-use ratatui::{
+use ::db::timekeeper::{TimeStamp, TimeStrip};
+use ::ratatui::{
     buffer::Buffer,
     crossterm::event::{KeyCode, KeyEvent},
     layout::{Constraint, Layout, Rect},
     style::{Color, Style},
     widgets::{Block, BorderType, Padding, Paragraph, Widget},
 };
-use std::{cell::RefCell, rc::Rc};
-use tui_textarea::{Input, TextArea};
+use ::ratatui_textarea::{Input, TextArea};
+use ::std::{cell::RefCell, rc::Rc};
 
 pub(crate) struct TimeStripTabPopup<'a> {
     input: TextArea<'a>,
