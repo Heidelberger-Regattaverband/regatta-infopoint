@@ -57,16 +57,18 @@ async fn get_timestrip(identity: Option<Identity>) -> Result<impl Responder, Err
 )]
 #[get("/regattas/{regatta_id}/statistics")]
 async fn get_statistics(
-    path: Path<i32>,
+    regatta_id: Path<i32>,
     aquarius: Data<Aquarius>,
     identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     if identity.is_some() {
-        let regatta_id = path.into_inner();
-        let stats = aquarius.query_statistics(regatta_id).await.map_err(|err| {
-            error!(%err, regatta_id, "Failed to query statistics");
-            ErrorInternalServerError(err)
-        })?;
+        let stats = aquarius
+            .query_statistics(regatta_id.into_inner())
+            .await
+            .map_err(|err| {
+                error!(%err, "Failed to query statistics");
+                ErrorInternalServerError(err)
+            })?;
         Ok(Json(stats))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
@@ -84,16 +86,18 @@ async fn get_statistics(
 )]
 #[get("/regattas/{regatta_id}/calculateScoring")]
 async fn calculate_scoring(
-    path: Path<i32>,
+    regatta_id: Path<i32>,
     aquarius: Data<Aquarius>,
     identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     if identity.is_some() {
-        let regatta_id = path.into_inner();
-        let scoring = aquarius.calculate_scoring(regatta_id).await.map_err(|err| {
-            error!(%err, regatta_id, "Failed to calculate scoring");
-            ErrorInternalServerError(err)
-        })?;
+        let scoring = aquarius
+            .calculate_scoring(regatta_id.into_inner())
+            .await
+            .map_err(|err| {
+                error!(%err, "Failed to calculate scoring");
+                ErrorInternalServerError(err)
+            })?;
         Ok(Json(scoring))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
@@ -110,16 +114,15 @@ async fn calculate_scoring(
 )]
 #[get("/regattas/{regatta_id}/schedule")]
 async fn get_schedule(
-    path: Path<i32>,
+    regatta_id: Path<i32>,
     aquarius: Data<Aquarius>,
     identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
-    let regatta_id = path.into_inner();
     let schedule = aquarius
-        .query_schedule(regatta_id, identity.is_some())
+        .query_schedule(regatta_id.into_inner(), identity.is_some())
         .await
         .map_err(|err| {
-            error!(%err, regatta_id, "Failed to query schedule");
+            error!(%err, "Failed to query schedule");
             ErrorInternalServerError(err)
         })?;
     Ok(Json(schedule))
