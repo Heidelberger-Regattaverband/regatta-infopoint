@@ -1,6 +1,7 @@
-use crate::config::CONFIG;
+use crate::db::UserPoolManager;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
+use crate::http::rest_api::get_user_pool;
 use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::Responder;
@@ -11,7 +12,6 @@ use ::actix_web::web::Data;
 use ::actix_web::web::Json;
 use ::actix_web::web::Path;
 use ::db::aquarius::Aquarius;
-use ::db::tiberius::create_client;
 use ::db::timekeeper::TimeStamp;
 use ::db::timekeeper::TimeStrip;
 use ::tracing::error;
@@ -28,13 +28,17 @@ use ::tracing::error;
     )
 )]
 #[get("/regattas/active/timestrip")]
-async fn get_timestrip(identity: Option<Identity>) -> Result<impl Responder, Error> {
-    if let Some(user) = identity
-        && let Ok(id) = user.id()
+async fn get_timestrip(
+    identity: Option<Identity>,
+    user_pool_manager: Data<UserPoolManager>,
+) -> Result<impl Responder, Error> {
+    if let Some(identity) = identity
+        && let Ok(id) = identity.id()
         && id == "sa"
     {
-        let mut client = create_client(&CONFIG.get_db_config()).await.map_err(|err| {
-            error!(%err, "Failed to create DB client for timestrip");
+        let pool = get_user_pool(&identity, &user_pool_manager).await?;
+        let mut client = pool.get().await.map_err(|err| {
+            error!(%err, "Failed to get DB client from pool");
             ErrorInternalServerError(err)
         })?;
         let timestrip = TimeStrip::load(&mut client).await.map_err(|err| {
