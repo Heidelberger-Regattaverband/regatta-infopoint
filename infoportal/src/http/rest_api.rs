@@ -4,6 +4,7 @@ pub(crate) mod club;
 pub(crate) mod misc;
 pub(crate) mod monitoring;
 pub(crate) mod notification;
+pub(crate) mod race;
 
 use crate::db::UserPoolManager;
 use ::actix_identity::Identity;
@@ -14,7 +15,7 @@ use ::actix_web::{
     web::{Data, Json, Path, ServiceConfig},
 };
 use ::db::aquarius::Aquarius;
-use ::db::aquarius::model::{Filters, Heat, Race, Regatta};
+use ::db::aquarius::model::{Filters, Heat, Regatta};
 use ::db::tiberius::TiberiusPool;
 use ::std::sync::Arc;
 use ::tracing::error;
@@ -68,55 +69,6 @@ async fn get_active_regatta(aquarius: Data<Aquarius>, identity: Option<Identity>
         return Err(ErrorNotFound("No active regatta found"));
     }
     Ok(Json(regatta))
-}
-
-// Races Endpoints
-#[utoipa::path(
-    description = "Get all races of a regatta.",
-    context_path = PATH,
-    responses(
-        (status = 200, description = "Races of <regatta_id>", body = Vec<Race>),
-        (status = 500, description = INTERNAL_SERVER_ERROR)
-    )
-)]
-#[get("/regattas/{regatta_id}/races")]
-async fn get_races(
-    regatta_id: Path<i32>,
-    aquarius: Data<Aquarius>,
-    identity: Option<Identity>,
-) -> Result<impl Responder, Error> {
-    let races = aquarius
-        .get_races(regatta_id.into_inner(), identity.is_some())
-        .await
-        .map_err(|err| {
-            error!("{err}");
-            ErrorInternalServerError(err)
-        })?;
-    Ok(Json(races))
-}
-
-#[utoipa::path(
-    description = "Get a race with its heats and entries.",
-    context_path = PATH,
-    responses(
-        (status = 200, description = "Race found", body = Race),
-        (status = 500, description = INTERNAL_SERVER_ERROR)
-    )
-)]
-#[get("/races/{race_id}")]
-async fn get_race(
-    race_id: Path<i32>,
-    aquarius: Data<Aquarius>,
-    identity: Option<Identity>,
-) -> Result<impl Responder, Error> {
-    let race = aquarius
-        .get_race_heats_entries(race_id.into_inner(), identity.is_some())
-        .await
-        .map_err(|err| {
-            error!("{err}");
-            ErrorInternalServerError(err)
-        })?;
-    Ok(Json(race))
 }
 
 // Heats Endpoints
@@ -180,8 +132,8 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(athlete::get_athlete_entries)
             .service(athlete::get_participating_athletes)
             .service(get_active_regatta)
-            .service(get_race)
-            .service(get_races)
+            .service(race::get_race)
+            .service(race::get_races)
             .service(get_heats)
             .service(get_filters)
             .service(get_heat)
