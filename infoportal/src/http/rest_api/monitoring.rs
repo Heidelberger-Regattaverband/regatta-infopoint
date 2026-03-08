@@ -116,9 +116,9 @@ async fn index(
     stream: Payload,
     registry: Data<Registry>,
     aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
+    identity: Option<Identity>,
 ) -> Result<HttpResponse, Error> {
-    if opt_user.is_some() {
+    if identity.is_some() {
         let response = start(WsMonitoring::new(registry, aquarius), &request, stream);
         debug!(?response, "Websocket start response");
         response

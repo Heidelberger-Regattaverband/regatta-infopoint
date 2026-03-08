@@ -27,11 +27,11 @@ use ::tracing::error;
 async fn get_participating_athletes(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
+    identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let athletes = aquarius
-        .get_participating_athletes(regatta_id, opt_user.is_some())
+        .get_participating_athletes(regatta_id, identity.is_some())
         .await
         .map_err(|err| {
             error!(%err, regatta_id, "Failed to get participating athletes");
@@ -52,11 +52,11 @@ async fn get_participating_athletes(
 async fn get_athlete(
     path: Path<(i32, i32)>,
     aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
+    identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let (regatta_id, athlete_id) = path.into_inner();
     let athletes = aquarius
-        .get_athlete(regatta_id, athlete_id, opt_user.is_some())
+        .get_athlete(regatta_id, athlete_id, identity.is_some())
         .await
         .map_err(|err| {
             error!(%err, regatta_id, athlete_id, "Failed to get athlete details");
@@ -77,11 +77,11 @@ async fn get_athlete(
 async fn get_athlete_entries(
     ids: Path<(i32, i32)>,
     aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
+    identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let (regatta_id, athlete_id) = ids.into_inner();
     let entries = aquarius
-        .get_athlete_entries(regatta_id, athlete_id, opt_user.is_some())
+        .get_athlete_entries(regatta_id, athlete_id, identity.is_some())
         .await
         .map_err(|err| {
             error!(%err, regatta_id, athlete_id, "Failed to get athlete entries");

@@ -28,8 +28,8 @@ use ::tracing::error;
     )
 )]
 #[get("/regattas/active/timestrip")]
-async fn get_timestrip(opt_user: Option<Identity>) -> Result<impl Responder, Error> {
-    if let Some(user) = opt_user
+async fn get_timestrip(identity: Option<Identity>) -> Result<impl Responder, Error> {
+    if let Some(user) = identity
         && let Ok(id) = user.id()
         && id == "sa"
     {
@@ -59,9 +59,9 @@ async fn get_timestrip(opt_user: Option<Identity>) -> Result<impl Responder, Err
 async fn get_statistics(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
+    identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
-    if opt_user.is_some() {
+    if identity.is_some() {
         let regatta_id = path.into_inner();
         let stats = aquarius.query_statistics(regatta_id).await.map_err(|err| {
             error!(%err, regatta_id, "Failed to query statistics");
@@ -86,9 +86,9 @@ async fn get_statistics(
 async fn calculate_scoring(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
+    identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
-    if opt_user.is_some() {
+    if identity.is_some() {
         let regatta_id = path.into_inner();
         let scoring = aquarius.calculate_scoring(regatta_id).await.map_err(|err| {
             error!(%err, regatta_id, "Failed to calculate scoring");
@@ -112,11 +112,11 @@ async fn calculate_scoring(
 async fn get_schedule(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
+    identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let schedule = aquarius
-        .query_schedule(regatta_id, opt_user.is_some())
+        .query_schedule(regatta_id, identity.is_some())
         .await
         .map_err(|err| {
             error!(%err, regatta_id, "Failed to query schedule");

@@ -33,11 +33,11 @@ const INTERNAL_SERVER_ERROR: &str = "Internal server error";
 async fn get_filters(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
+    identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let filters = aquarius
-        .get_filters(regatta_id, opt_user.is_some())
+        .get_filters(regatta_id, identity.is_some())
         .await
         .map_err(|err| {
             error!("{err}");
@@ -57,8 +57,8 @@ async fn get_filters(
     )
 )]
 #[get("/active_regatta")]
-async fn get_active_regatta(aquarius: Data<Aquarius>, opt_user: Option<Identity>) -> Result<impl Responder, Error> {
-    let regatta = aquarius.get_active_regatta(opt_user.is_some()).await.map_err(|err| {
+async fn get_active_regatta(aquarius: Data<Aquarius>, identity: Option<Identity>) -> Result<impl Responder, Error> {
+    let regatta = aquarius.get_active_regatta(identity.is_some()).await.map_err(|err| {
         error!("{err}");
         ErrorInternalServerError(err)
     })?;
@@ -81,11 +81,11 @@ async fn get_active_regatta(aquarius: Data<Aquarius>, opt_user: Option<Identity>
 async fn get_races(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
+    identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let races = aquarius
-        .get_races(regatta_id, opt_user.is_some())
+        .get_races(regatta_id, identity.is_some())
         .await
         .map_err(|err| {
             error!("{err}");
@@ -106,11 +106,11 @@ async fn get_races(
 async fn get_race(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
+    identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let race_id = path.into_inner();
     let race = aquarius
-        .get_race_heats_entries(race_id, opt_user.is_some())
+        .get_race_heats_entries(race_id, identity.is_some())
         .await
         .map_err(|err| {
             error!("{err}");
@@ -133,11 +133,11 @@ async fn get_race(
 async fn get_heats(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
+    identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let regatta_id = path.into_inner();
     let heats = aquarius
-        .get_heats(regatta_id, opt_user.is_some())
+        .get_heats(regatta_id, identity.is_some())
         .await
         .map_err(|err| {
             error!("{err}");
@@ -158,10 +158,10 @@ async fn get_heats(
 async fn get_heat(
     path: Path<i32>,
     aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
+    identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
     let heat_id = path.into_inner();
-    let heat = aquarius.get_heat(heat_id, opt_user.is_some()).await.map_err(|err| {
+    let heat = aquarius.get_heat(heat_id, identity.is_some()).await.map_err(|err| {
         error!("{err}");
         ErrorInternalServerError(err)
     })?;
