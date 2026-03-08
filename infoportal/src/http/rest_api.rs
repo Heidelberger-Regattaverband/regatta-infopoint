@@ -5,6 +5,7 @@ pub(crate) mod misc;
 pub(crate) mod monitoring;
 pub(crate) mod notification;
 
+use crate::db::UserPoolManager;
 use ::actix_identity::Identity;
 use ::actix_web::{
     Error, Responder, Scope as ActixScope,
@@ -14,6 +15,8 @@ use ::actix_web::{
 };
 use ::db::aquarius::Aquarius;
 use ::db::aquarius::model::{Filters, Heat, Race, Regatta};
+use ::db::tiberius::TiberiusPool;
+use ::std::sync::Arc;
 use ::tracing::error;
 
 /// Path to REST API
@@ -31,13 +34,12 @@ const INTERNAL_SERVER_ERROR: &str = "Internal server error";
 )]
 #[get("/regattas/{regatta_id}/filters")]
 async fn get_filters(
-    path: Path<i32>,
+    regatta_id: Path<i32>,
     aquarius: Data<Aquarius>,
     identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
-    let regatta_id = path.into_inner();
     let filters = aquarius
-        .get_filters(regatta_id, identity.is_some())
+        .get_filters(regatta_id.into_inner(), identity.is_some())
         .await
         .map_err(|err| {
             error!("{err}");
@@ -79,13 +81,12 @@ async fn get_active_regatta(aquarius: Data<Aquarius>, identity: Option<Identity>
 )]
 #[get("/regattas/{regatta_id}/races")]
 async fn get_races(
-    path: Path<i32>,
+    regatta_id: Path<i32>,
     aquarius: Data<Aquarius>,
     identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
-    let regatta_id = path.into_inner();
     let races = aquarius
-        .get_races(regatta_id, identity.is_some())
+        .get_races(regatta_id.into_inner(), identity.is_some())
         .await
         .map_err(|err| {
             error!("{err}");
@@ -104,13 +105,12 @@ async fn get_races(
 )]
 #[get("/races/{race_id}")]
 async fn get_race(
-    path: Path<i32>,
+    race_id: Path<i32>,
     aquarius: Data<Aquarius>,
     identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
-    let race_id = path.into_inner();
     let race = aquarius
-        .get_race_heats_entries(race_id, identity.is_some())
+        .get_race_heats_entries(race_id.into_inner(), identity.is_some())
         .await
         .map_err(|err| {
             error!("{err}");
@@ -131,13 +131,12 @@ async fn get_race(
 )]
 #[get("/regattas/{regatta_id}/heats")]
 async fn get_heats(
-    path: Path<i32>,
+    regatta_id: Path<i32>,
     aquarius: Data<Aquarius>,
     identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
-    let regatta_id = path.into_inner();
     let heats = aquarius
-        .get_heats(regatta_id, identity.is_some())
+        .get_heats(regatta_id.into_inner(), identity.is_some())
         .await
         .map_err(|err| {
             error!("{err}");
@@ -156,15 +155,17 @@ async fn get_heats(
 )]
 #[get("/heats/{id}")]
 async fn get_heat(
-    path: Path<i32>,
+    heat_id: Path<i32>,
     aquarius: Data<Aquarius>,
     identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
-    let heat_id = path.into_inner();
-    let heat = aquarius.get_heat(heat_id, identity.is_some()).await.map_err(|err| {
-        error!("{err}");
-        ErrorInternalServerError(err)
-    })?;
+    let heat = aquarius
+        .get_heat(heat_id.into_inner(), identity.is_some())
+        .await
+        .map_err(|err| {
+            error!("{err}");
+            ErrorInternalServerError(err)
+        })?;
     Ok(Json(heat))
 }
 
@@ -199,4 +200,22 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(authentication::logout)
             .service(monitoring::index),
     );
+}
+
+/// Helper function to get the user-specific connection pool for a given identity. Returns an error if no pool is found.
+///
+/// Arguments:
+/// * `identity` - The identity of the user.
+/// * `user_pool_manager` - The user pool manager.
+///
+/// Returns:
+/// * `Result<Arc<TiberiusPool>, Error>` - The user-specific connection pool or an error.
+async fn get_user_pool(
+    identity: &Identity,
+    user_pool_manager: &Data<UserPoolManager>,
+) -> Result<Arc<TiberiusPool>, Error> {
+    user_pool_manager
+        .get_pool(&identity.id()?)
+        .await
+        .ok_or_else(|| ErrorInternalServerError("No connection pool found"))
 }

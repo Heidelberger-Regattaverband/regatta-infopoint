@@ -25,16 +25,15 @@ use ::tracing::error;
 )]
 #[get("/regattas/{regatta_id}/athletes")]
 async fn get_participating_athletes(
-    path: Path<i32>,
+    regatta_id: Path<i32>,
     aquarius: Data<Aquarius>,
     identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
-    let regatta_id = path.into_inner();
     let athletes = aquarius
-        .get_participating_athletes(regatta_id, identity.is_some())
+        .get_participating_athletes(regatta_id.into_inner(), identity.is_some())
         .await
         .map_err(|err| {
-            error!(%err, regatta_id, "Failed to get participating athletes");
+            error!(%err, "Failed to get participating athletes");
             ErrorInternalServerError(err)
         })?;
     Ok(Json(athletes))

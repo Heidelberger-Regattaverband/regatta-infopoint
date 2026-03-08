@@ -25,16 +25,15 @@ use ::tracing::error;
 )]
 #[get("/regattas/{regatta_id}/clubs")]
 async fn get_participating_clubs(
-    path: Path<i32>,
+    regatta_id: Path<i32>,
     aquarius: Data<Aquarius>,
     identity: Option<Identity>,
 ) -> Result<impl Responder, Error> {
-    let regatta_id = path.into_inner();
     let clubs = aquarius
-        .get_participating_clubs(regatta_id, identity.is_some())
+        .get_participating_clubs(regatta_id.into_inner(), identity.is_some())
         .await
         .map_err(|err| {
-            error!(%err, regatta_id, "Failed to get participating clubs");
+            error!(%err, "Failed to get participating clubs");
             ErrorInternalServerError(err)
         })?;
     Ok(Json(clubs))

@@ -64,8 +64,8 @@ async fn login(
     )
 )]
 #[post("/logout")]
-async fn logout(user: Identity) -> impl Responder {
-    user.logout();
+async fn logout(ident: Identity) -> impl Responder {
+    ident.logout();
     HttpResponse::NoContent()
 }
 

@@ -1,6 +1,7 @@
 use crate::db::UserPoolManager;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
+use crate::http::rest_api::get_user_pool;
 use ::actix_identity::Identity;
 use ::actix_session::Session;
 use ::actix_web::Error;
@@ -17,9 +18,7 @@ use ::actix_web::web::Json;
 use ::actix_web::web::Path;
 use ::db::aquarius::Aquarius;
 use ::db::aquarius::model::{CreateNotificationRequest, Notification, UpdateNotificationRequest};
-use ::db::tiberius::TiberiusPool;
 use ::serde_json::json;
-use ::std::sync::Arc;
 use ::tiberius::time::chrono::DateTime;
 use ::tiberius::time::chrono::Utc;
 use ::tracing::error;
@@ -231,16 +230,6 @@ async fn notification_read(notification_id: Path<i32>, session: Session) -> Resu
     session.insert(create_notification_read_key(notification_id.into_inner()), Utc::now())?;
     session.renew();
     Ok(HttpResponse::NoContent())
-}
-
-async fn get_user_pool(
-    identity: &Identity,
-    user_pool_manager: &Data<UserPoolManager>,
-) -> Result<Arc<TiberiusPool>, Error> {
-    user_pool_manager
-        .get_pool(&identity.id()?)
-        .await
-        .ok_or_else(|| ErrorInternalServerError("No connection pool found"))
 }
 
 fn create_notification_read_key(notification_id: i32) -> String {
