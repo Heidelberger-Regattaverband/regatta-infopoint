@@ -33,11 +33,11 @@ async fn get_timestrip(identity: Option<Identity>) -> Result<impl Responder, Err
         && let Ok(id) = user.id()
         && id == "sa"
     {
-        let client = create_client(&CONFIG.get_db_config()).await.map_err(|err| {
+        let mut client = create_client(&CONFIG.get_db_config()).await.map_err(|err| {
             error!(%err, "Failed to create DB client for timestrip");
             ErrorInternalServerError(err)
         })?;
-        let timestrip = TimeStrip::load(client).await.map_err(|err| {
+        let timestrip = TimeStrip::load(&mut client).await.map_err(|err| {
             error!(%err, "Failed to load timestrip data");
             ErrorInternalServerError(err)
         })?;

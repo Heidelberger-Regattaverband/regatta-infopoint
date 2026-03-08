@@ -18,6 +18,7 @@ use ::aquarius::event::AquariusEvent;
 use ::aquarius::messages::EventHeatChanged;
 use ::aquarius::messages::Heat;
 use ::clap::Parser;
+use ::db::tiberius::TiberiusClient;
 use ::db::timekeeper::TimeStrip;
 use ::ratatui::{
     DefaultTerminal,
@@ -59,6 +60,7 @@ pub struct App<'a> {
     heats: Rc<RefCell<Vec<Heat>>>,
     time_strip: Rc<RefCell<TimeStrip>>,
     show_time_strip_popup: Rc<RefCell<bool>>,
+    db_client: Rc<RefCell<TiberiusClient>>,
 }
 
 impl App<'_> {
@@ -67,8 +69,8 @@ impl App<'_> {
 
         let db_config = Self::get_db_config(&args);
 
-        let client = db::tiberius::create_client(&db_config).await?;
-        let timestrip = TimeStrip::load(client).await?;
+        let mut client = db::tiberius::create_client(&db_config).await?;
+        let timestrip = TimeStrip::load(&mut client).await?;
 
         let (aquarius_event_sender, aquarius_event_receiver) = mpsc::channel();
         let (app_event_sender, app_event_receiver) = mpsc::channel();
@@ -84,6 +86,7 @@ impl App<'_> {
         let time_strip = Rc::new(RefCell::new(timestrip));
         let selected_time_stamp = Rc::new(RefCell::new(None));
         let show_time_strip_popup = Rc::new(RefCell::new(false));
+        let db_client = Rc::new(RefCell::new(db::tiberius::create_client(&db_config).await?));
 
         Ok(Self {
             state: AppState::Running,
@@ -94,6 +97,7 @@ impl App<'_> {
                 time_strip.clone(),
                 selected_time_stamp.clone(),
                 show_time_strip_popup.clone(),
+                db_client.clone(),
             ),
             time_strip_popup: TimeStripTabPopup::new(
                 client_rc.clone(),
@@ -101,6 +105,7 @@ impl App<'_> {
                 time_strip.clone(),
                 selected_time_stamp.clone(),
                 show_time_strip_popup.clone(),
+                db_client.clone(),
             ),
             logs_tab: LogsTab::default(),
             // shared context
@@ -109,6 +114,7 @@ impl App<'_> {
             heats,
             time_strip,
             show_time_strip_popup,
+            db_client,
         })
     }
 
@@ -182,10 +188,18 @@ impl App<'_> {
                         KeyCode::Left => self.selected_tab = self.selected_tab.previous(),
                         KeyCode::Char('q') => self.state = AppState::Quitting,
                         KeyCode::Char('+') => {
-                            self.time_strip.borrow_mut().add_start().await.unwrap();
+                            self.time_strip
+                                .borrow_mut()
+                                .add_start(&mut self.db_client.borrow_mut())
+                                .await
+                                .unwrap();
                         }
                         KeyCode::Char(' ') => {
-                            self.time_strip.borrow_mut().add_finish().await.unwrap();
+                            self.time_strip
+                                .borrow_mut()
+                                .add_finish(&mut self.db_client.borrow_mut())
+                                .await
+                                .unwrap();
                         }
                         KeyCode::Char('r') => self.read_open_heats(),
                         _ => match self.selected_tab {
