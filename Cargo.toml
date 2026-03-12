@@ -62,3 +62,11 @@ utoipa = { version = "5.4", features = ["actix_extras", "chrono", "decimal"] }
 codegen-units = 1
 # https://nnethercote.github.io/perf-book/build-configuration.html#link-time-optimization
 lto = "fat"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+# https://doc.rust-lang.org/edition-guide/rust-2024/unsafe-op-in-unsafe-fn.html
+unsafe_op_in_unsafe_fn = "forbid"
+
+[workspace.lints.clippy]
+all = "warn"

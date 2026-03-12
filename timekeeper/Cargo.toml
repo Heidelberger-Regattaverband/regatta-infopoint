@@ -43,3 +43,6 @@ tracing-subscriber.workspace = true
 
 [build-dependencies]
 built = "0"
+
+[lints]
+workspace = true

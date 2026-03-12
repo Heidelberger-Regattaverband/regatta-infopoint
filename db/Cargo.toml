@@ -31,3 +31,6 @@ strum_macros.workspace = true
 
 [dev-dependencies]
 tokio-shared-rt = "0"
+
+[lints]
+workspace = true
