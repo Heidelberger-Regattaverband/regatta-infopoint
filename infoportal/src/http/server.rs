@@ -68,7 +68,7 @@ impl Server {
         let worker_count = Arc::new(Mutex::new(0));
         let prometheus = Self::get_prometeus();
 
-        let user_pool_manager = Data::new(UserPoolManager::new());
+        let user_pool_manager = Data::new(UserPoolManager::new(CONFIG.get_db_config()));
 
         let factory_closure = move || {
             let mut count = worker_count.lock().unwrap();

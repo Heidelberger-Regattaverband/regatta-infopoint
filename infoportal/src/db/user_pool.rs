@@ -1,21 +1,25 @@
-use crate::config::CONFIG;
 use ::db::error::DbError;
 use ::db::tiberius::TiberiusPool;
 use ::std::collections::HashMap;
 use ::std::sync::Arc;
+use ::tiberius::AuthMethod;
+use ::tiberius::Config as TiberiusConfig;
 use ::tokio::sync::RwLock;
 
 /// Manager for per-user database connection pools
 pub struct UserPoolManager {
     /// Cache of connection pools by user credentials
     pools: RwLock<HashMap<String, Arc<TiberiusPool>>>,
+
+    config: TiberiusConfig,
 }
 
 impl UserPoolManager {
     /// Create a new UserPoolManager with base database configuration
-    pub fn new() -> Self {
+    pub fn new(config: TiberiusConfig) -> Self {
         Self {
             pools: RwLock::new(HashMap::new()),
+            config,
         }
     }
 
@@ -40,7 +44,8 @@ impl UserPoolManager {
         }
 
         // Create new pool with user-specific credentials
-        let config = CONFIG.get_db_config_for_user(username, password);
+        let mut config = self.config.clone();
+        config.authentication(AuthMethod::sql_server(username, password));
 
         let pool = Arc::new(TiberiusPool::new(config, 5, 1).await);
         pools.insert(username.to_string(), pool.clone());
