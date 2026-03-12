@@ -18,9 +18,9 @@ use ::actix_web::web::Path;
 use ::db::aquarius::Aquarius;
 use ::db::aquarius::model::{CreateNotificationRequest, Notification, UpdateNotificationRequest};
 use ::db::tiberius::user_pool::UserPoolManager;
+use ::db::tiberius_client::time::chrono::DateTime;
+use ::db::tiberius_client::time::chrono::Utc;
 use ::serde_json::json;
-use ::tiberius::time::chrono::DateTime;
-use ::tiberius::time::chrono::Utc;
 use ::tracing::error;
 
 #[utoipa::path(

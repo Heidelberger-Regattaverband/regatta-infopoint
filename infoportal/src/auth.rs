@@ -1,8 +1,8 @@
 use crate::config::CONFIG;
 use ::actix_web::HttpResponse;
+use ::db::tiberius_client::Client;
 use ::secret_string::SecretString;
 use ::serde::{Deserialize, Serialize};
-use ::tiberius::Client;
 use ::tokio::net::TcpStream;
 use ::tokio_util::compat::TokioAsyncWriteCompatExt;
 use ::tracing::warn;

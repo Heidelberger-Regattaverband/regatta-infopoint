@@ -2024,7 +2024,6 @@ dependencies = [
  "serde_json",
  "sysinfo",
  "thiserror 2.0.18",
- "tiberius",
  "tokio",
  "tokio-shared-rt",
  "tokio-util",

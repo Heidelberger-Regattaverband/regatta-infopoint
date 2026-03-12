@@ -39,9 +39,6 @@ rustls-pemfile.workspace = true
 utoipa.workspace = true
 utoipa-swagger-ui = { version = "9", features = ["actix-web"] }
 
-# Database + Pool
-tiberius.workspace = true
-
 # Utils
 dotenv.workspace = true
 secret-string.workspace = true
