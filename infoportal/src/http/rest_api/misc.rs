@@ -1,4 +1,3 @@
-use crate::db::UserPoolManager;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
 use crate::http::rest_api::get_user_pool;
@@ -12,6 +11,7 @@ use ::actix_web::web::Data;
 use ::actix_web::web::Json;
 use ::actix_web::web::Path;
 use ::db::aquarius::Aquarius;
+use ::db::tiberius::user_pool::UserPoolManager;
 use ::db::timekeeper::TimeStamp;
 use ::db::timekeeper::TimeStrip;
 use ::tracing::error;

@@ -6,7 +6,6 @@ pub(crate) mod monitoring;
 pub(crate) mod notification;
 pub(crate) mod race;
 
-use crate::db::UserPoolManager;
 use ::actix_identity::Identity;
 use ::actix_web::{
     Error, Responder, Scope as ActixScope,
@@ -17,6 +16,7 @@ use ::actix_web::{
 use ::db::aquarius::Aquarius;
 use ::db::aquarius::model::{Filters, Heat, Regatta};
 use ::db::tiberius::TiberiusPool;
+use ::db::tiberius::user_pool::UserPoolManager;
 use ::std::sync::Arc;
 use ::tracing::error;
 

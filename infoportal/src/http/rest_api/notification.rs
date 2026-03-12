@@ -1,4 +1,3 @@
-use crate::db::UserPoolManager;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
 use crate::http::rest_api::get_user_pool;
@@ -18,6 +17,7 @@ use ::actix_web::web::Json;
 use ::actix_web::web::Path;
 use ::db::aquarius::Aquarius;
 use ::db::aquarius::model::{CreateNotificationRequest, Notification, UpdateNotificationRequest};
+use ::db::tiberius::user_pool::UserPoolManager;
 use ::serde_json::json;
 use ::tiberius::time::chrono::DateTime;
 use ::tiberius::time::chrono::Utc;

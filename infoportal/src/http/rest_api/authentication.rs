@@ -1,7 +1,6 @@
 use crate::auth::Credentials;
 use crate::auth::Scope as UserScope;
 use crate::auth::User;
-use crate::db::UserPoolManager;
 use crate::http::rest_api::PATH;
 use ::actix_identity::Identity;
 use ::actix_web::Error;
@@ -15,6 +14,7 @@ use ::actix_web::get;
 use ::actix_web::post;
 use ::actix_web::web::Data;
 use ::actix_web::web::Json;
+use ::db::tiberius::user_pool::UserPoolManager;
 use ::tracing::error;
 
 /// Authenticate the user. This will attach the user identity to the current session.

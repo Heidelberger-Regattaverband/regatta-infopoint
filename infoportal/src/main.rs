@@ -1,6 +1,5 @@
 mod auth;
 mod config;
-mod db;
 mod http;
 mod peak_alloc;
 

@@ -1,5 +1,4 @@
 use crate::config::CONFIG;
-use crate::db::UserPoolManager;
 use crate::http::{api_doc, rest_api};
 use ::actix_extensible_rate_limit::{
     RateLimiter,
@@ -20,6 +19,7 @@ use ::actix_web::{
 use ::actix_web_prom::{PrometheusMetrics, PrometheusMetricsBuilder};
 use ::db::aquarius::Aquarius;
 use ::db::error::DbError;
+use ::db::tiberius::user_pool::UserPoolManager;
 use ::futures::FutureExt;
 use ::prometheus::Registry;
 use ::rustls::ServerConfig;

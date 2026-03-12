@@ -1,6 +1,7 @@
 mod connection;
 mod pool;
 mod row_column;
+pub mod user_pool;
 
 pub use connection::TiberiusClient;
 pub use connection::TiberiusConnectionManager;

@@ -1,5 +1,5 @@
-use ::db::error::DbError;
-use ::db::tiberius::TiberiusPool;
+use crate::error::DbError;
+use crate::tiberius::TiberiusPool;
 use ::std::collections::HashMap;
 use ::std::sync::Arc;
 use ::tiberius::AuthMethod;
