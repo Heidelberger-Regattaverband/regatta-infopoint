@@ -1,7 +1,7 @@
 use ::aquarius::error::AquariusErr;
 use ::db::error::DbError;
+use ::db::tiberius_client::error::Error as TiberiusError;
 use ::thiserror::Error;
-use ::tiberius::error::Error as TiberiusError;
 
 #[derive(Debug, Error)]
 pub(crate) enum TimekeeperErr {

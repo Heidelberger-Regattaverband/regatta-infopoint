@@ -19,6 +19,7 @@ use ::aquarius::messages::EventHeatChanged;
 use ::aquarius::messages::Heat;
 use ::clap::Parser;
 use ::db::tiberius::TiberiusClient;
+use ::db::tiberius_client::{AuthMethod, Config, EncryptionLevel};
 use ::db::timekeeper::TimeStrip;
 use ::ratatui::{
     DefaultTerminal,
@@ -38,7 +39,6 @@ use ::std::{
     thread,
 };
 use ::strum::IntoEnumIterator;
-use ::tiberius::{AuthMethod, Config, EncryptionLevel};
 use ::tracing::{debug, warn};
 
 pub struct App<'a> {

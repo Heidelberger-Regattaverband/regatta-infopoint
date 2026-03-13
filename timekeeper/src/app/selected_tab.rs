@@ -1,5 +1,5 @@
-use ratatui::text::Line;
-use strum_macros::{Display, EnumIter, FromRepr};
+use ::ratatui::text::Line;
+use ::strum_macros::{Display, EnumIter, FromRepr};
 
 #[derive(Default, Clone, Copy, Display, FromRepr, EnumIter)]
 pub(super) enum SelectedTab {

@@ -33,9 +33,6 @@ strum_macros.workspace = true
 # Async stuff
 tokio.workspace = true
 
-# DB
-tiberius.workspace = true
-
 thiserror.workspace = true
 
 [dev-dependencies]

@@ -4036,7 +4036,6 @@ dependencies = [
  "strum 0.28.0",
  "strum_macros 0.28.0",
  "thiserror 2.0.18",
- "tiberius",
  "tokio",
  "tracing",
  "tracing-subscriber",

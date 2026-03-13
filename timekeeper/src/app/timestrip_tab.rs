@@ -3,14 +3,14 @@ use crate::app::{
     utils::{HIGHLIGHT_SYMBOL, block},
 };
 use ::db::tiberius::TiberiusClient;
-use db::timekeeper::TimeStamp;
-use ratatui::{
+use ::db::timekeeper::TimeStamp;
+use ::ratatui::{
     buffer::Buffer,
     crossterm::event::{KeyCode, KeyEvent},
     layout::Rect,
     widgets::{HighlightSpacing, List, ListItem, ListState, StatefulWidget, Widget},
 };
-use std::{cell::RefCell, rc::Rc};
+use ::std::{cell::RefCell, rc::Rc};
 
 const DATE_FORMAT_STR: &str = "%H:%M:%S.%3f";
 
