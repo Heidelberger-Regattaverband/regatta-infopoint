@@ -26,7 +26,6 @@ stretto.workspace = true
 utoipa.workspace = true
 
 # Enum and string utils: https://github.com/Peternator7/strum
-strum.workspace = true
 strum_macros.workspace = true
 
 [dev-dependencies]
