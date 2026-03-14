@@ -87,7 +87,6 @@ impl Server {
                 // collect metrics about requests and responses
                 .wrap(prometheus.clone())
                 .app_data(aquarius.clone())
-                .app_data(Data::new(prometheus.registry.clone()))
                 .app_data(user_pool_manager.clone())
                 .app_data(aquarius_client.clone())
                 .configure(rest_api::config)

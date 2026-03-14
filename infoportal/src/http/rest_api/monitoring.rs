@@ -11,7 +11,6 @@ use ::actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
 use ::aquarius::client::AquariusClient;
 use ::db::aquarius::Aquarius;
 use ::db::tiberius::TiberiusPool;
-use ::prometheus::Registry;
 use ::std::time::{Duration, Instant};
 use ::tracing::{debug, trace};
 
@@ -26,16 +25,14 @@ struct WsMonitoring {
     /// Client must send ping at least once per 5 seconds (CLIENT_TIMEOUT),
     /// otherwise we drop connection.
     hb: Instant,
-    registry: Data<Registry>,
     aquarius: Data<Aquarius>,
     aquarius_client: Data<AquariusClient>,
 }
 
 impl WsMonitoring {
-    fn new(registry: Data<Registry>, aquarius: Data<Aquarius>, aquarius_client: Data<AquariusClient>) -> Self {
+    fn new(aquarius: Data<Aquarius>, aquarius_client: Data<AquariusClient>) -> Self {
         Self {
             hb: Instant::now(),
-            registry,
             aquarius,
             aquarius_client,
         }
@@ -44,7 +41,6 @@ impl WsMonitoring {
     /// helper method that sends ping to client every 5 seconds (HEARTBEAT_INTERVAL).
     /// also this method checks heartbeats from client
     fn hb(&self, ctx: &mut <Self as Actor>::Context) {
-        let registry = self.registry.clone();
         let aquarius = self.aquarius.clone();
         let aquarius_client = self.aquarius_client.clone();
 
@@ -61,23 +57,17 @@ impl WsMonitoring {
                 return;
             }
 
-            Self::send_monitoring(ctx, &registry, &aquarius, &aquarius_client);
+            Self::send_monitoring(ctx, &aquarius, &aquarius_client);
             ctx.ping(b"");
         });
     }
 
     fn send_monitoring(
         ctx: &mut WebsocketContext<WsMonitoring>,
-        registry: &Registry,
         aquarius: &Aquarius,
         aquarius_client: &AquariusClient,
     ) {
-        let monitoring = Monitoring::new(
-            TiberiusPool::instance(),
-            registry,
-            &aquarius.get_cache_stats(),
-            aquarius_client,
-        );
+        let monitoring = Monitoring::new(TiberiusPool::instance(), &aquarius.get_cache_stats(), aquarius_client);
         let json = serde_json::to_string(&monitoring).unwrap();
         ctx.text(json);
     }
@@ -89,7 +79,7 @@ impl Actor for WsMonitoring {
     /// Method is called on actor start. We start the heartbeat process here.
     fn started(&mut self, ctx: &mut Self::Context) {
         trace!("Websocket actor started");
-        Self::send_monitoring(ctx, &self.registry, &self.aquarius, &self.aquarius_client);
+        Self::send_monitoring(ctx, &self.aquarius, &self.aquarius_client);
         self.hb(ctx);
     }
 
@@ -128,13 +118,12 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsMonitoring {
 async fn index(
     request: HttpRequest,
     stream: Payload,
-    registry: Data<Registry>,
     aquarius: Data<Aquarius>,
     aquarius_client: Data<AquariusClient>,
     identity: Option<Identity>,
 ) -> Result<HttpResponse, Error> {
     if identity.is_some() {
-        let response = start(WsMonitoring::new(registry, aquarius, aquarius_client), &request, stream);
+        let response = start(WsMonitoring::new(aquarius, aquarius_client), &request, stream);
         debug!(?response, "Websocket start response");
         response
     } else {
