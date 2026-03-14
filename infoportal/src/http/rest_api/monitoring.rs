@@ -10,7 +10,6 @@ use ::actix_web::{
 use ::actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
 use ::db::aquarius::Aquarius;
 use ::db::tiberius::TiberiusPool;
-use ::prometheus::Registry;
 use ::std::time::{Duration, Instant};
 use ::tracing::{debug, trace};
 
@@ -114,7 +113,7 @@ async fn index(
     aquarius: Data<Aquarius>,
     identity: Option<Identity>,
 ) -> Result<HttpResponse, Error> {
-    if opt_user.is_some() {
+    if identity.is_some() {
         let response = start(WsMonitoring::new(aquarius), &request, stream);
         debug!("{response:?}");
         response

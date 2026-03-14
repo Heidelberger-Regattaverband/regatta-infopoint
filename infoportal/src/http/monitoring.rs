@@ -1,8 +1,6 @@
 use crate::peak_alloc::PeakAlloc;
 use ::db::{cache::CacheStats, tiberius::TiberiusPool};
-use ::prometheus::Registry;
 use ::serde::Serialize;
-use ::serde_json::{Map, Number, Value};
 use ::std::time::Duration;
 use ::sysinfo::{CpuRefreshKind, Disks, MemoryRefreshKind, RefreshKind, System};
 use ::utoipa::ToSchema;

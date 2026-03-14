@@ -16,12 +16,10 @@ use ::actix_web::{
     dev::{Service, ServiceFactory, ServiceRequest, ServiceResponse},
     web::{self, Data},
 };
-use ::actix_web_prom::{PrometheusMetrics, PrometheusMetricsBuilder};
 use ::db::aquarius::Aquarius;
 use ::db::error::DbError;
 use ::db::tiberius::user_pool::UserPoolManager;
 use ::futures::FutureExt;
-use ::prometheus::Registry;
 use ::rustls::ServerConfig;
 use ::rustls_pemfile::{certs, pkcs8_private_keys};
 use ::rustls_pki_types::{PrivateKeyDer, PrivatePkcs8KeyDer};
@@ -77,7 +75,6 @@ impl Server {
             // get app with some middlewares initialized
             Self::get_app(secret_key.clone(), rl_max_requests, rl_interval)
                 .app_data(aquarius.clone())
-                .app_data(Data::new(prometheus.registry.clone()))
                 .app_data(user_pool_manager.clone())
                 .configure(rest_api::config)
                 .configure(api_doc::config)
@@ -159,8 +156,6 @@ impl Server {
                     res
                 })
             })
-            .wrap(RequestTracing::new())
-            .wrap(RequestMetrics::default())
     }
 
     /// Returns a new SessionMiddleware instance.
