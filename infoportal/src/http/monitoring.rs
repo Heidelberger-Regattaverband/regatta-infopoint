@@ -1,4 +1,5 @@
 use crate::peak_alloc::PeakAlloc;
+use ::aquarius::client::AquariusClient;
 use ::db::{cache::CacheStats, tiberius::TiberiusPool};
 use ::prometheus::Registry;
 use ::serde::Serialize;
@@ -27,7 +28,12 @@ impl Monitoring {
     /// * `registry` - The prometheus registry.
     /// # Returns
     /// `Monitoring` - The monitoring struct.
-    pub(crate) fn new(pool: &TiberiusPool, registry: &Registry, caches: &CacheStats) -> Self {
+    pub(crate) fn new(
+        pool: &TiberiusPool,
+        registry: &Registry,
+        caches: &CacheStats,
+        aquarius_client: &AquariusClient,
+    ) -> Self {
         let sys = get_system();
         let metrics = get_metrics(registry);
         let state = pool.state();
@@ -60,6 +66,7 @@ impl Monitoring {
             app: AppInfo {
                 mem_current: PeakAlloc.current_usage(),
                 mem_max: PeakAlloc.peak_usage(),
+                aquarius_connected: aquarius_client.is_connected(),
             },
         }
     }
@@ -260,4 +267,6 @@ pub(crate) struct AppInfo {
     mem_current: usize,
     /// The peak memory usage.
     mem_max: usize,
+    /// Whether the aquarius client is currently connected.
+    aquarius_connected: bool,
 }
