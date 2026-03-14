@@ -12,7 +12,7 @@ use crate::{
     app::{selected_tab::SelectedTab, timestrip_popup::TimeStripTabPopup, timestrip_tab::TimeStripTab},
     args::Args,
 };
-use ::aquarius::client::Client;
+use ::aquarius::client::AquariusClient;
 use ::aquarius::error::AquariusErr;
 use ::aquarius::event::AquariusEvent;
 use ::aquarius::messages::EventHeatChanged;
@@ -56,7 +56,7 @@ pub struct App<'a> {
     logs_tab: LogsTab,
 
     // shared context
-    client: Rc<RefCell<Client>>,
+    client: Rc<RefCell<AquariusClient>>,
     heats: Rc<RefCell<Vec<Heat>>>,
     time_strip: Rc<RefCell<TimeStrip>>,
     show_time_strip_popup: Rc<RefCell<bool>>,
@@ -76,7 +76,8 @@ impl App<'_> {
         let (app_event_sender, app_event_receiver) = mpsc::channel();
         let app_event_sender_clone = app_event_sender.clone();
 
-        let client: Client = Client::new(&args.host, args.port, args.timeout, aquarius_event_sender.clone())?;
+        let client: AquariusClient =
+            AquariusClient::new(&args.host, args.port, args.timeout, aquarius_event_sender.clone())?;
         thread::spawn(move || input_thread(app_event_sender_clone));
         thread::spawn(move || receive_aquarius_events(aquarius_event_receiver, app_event_sender));
 

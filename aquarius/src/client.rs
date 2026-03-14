@@ -25,7 +25,7 @@ use ::std::{
 use ::tracing::{debug, error, info, trace, warn};
 
 /// A client to connect to the Aquarius server.
-pub struct Client {
+pub struct AquariusClient {
     /// The connection to the Aquarius server.
     connection: Arc<Mutex<Option<Connection>>>,
 
@@ -33,21 +33,23 @@ pub struct Client {
     stop_watch_dog: Arc<AtomicBool>,
 }
 
-impl Client {
-    /// Connects the client to Aquarius application. The client connects to the given host and port.
+impl AquariusClient {
+    /// Creates a new `AquariusClient` and connects it to the Aquarius application.
     /// # Arguments
     /// * `host` - The host to connect to.
     /// * `port` - The port to connect to.
-    /// * `timeout` - The timeout in seconds to connect to Aquarius.
+    /// * `timeout` - The timeout in milliseconds to connect to Aquarius.
     /// * `sender` - The sender to send events to the application.
     /// # Returns
-    /// A client to communicate with Aquarius.
+    /// A client to communicate with Aquarius application.
+    /// # Errors
+    /// If the client could not be created.
     pub fn new(host: &str, port: u16, timeout: u16, sender: Sender<AquariusEvent>) -> Result<Self, AquariusErr> {
         let mut addrs_iter = format!("{host}:{port}").to_socket_addrs()?;
         let address = addrs_iter
             .next()
             .unwrap_or_else(|| SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port));
-        let mut client = Client {
+        let mut client = AquariusClient {
             connection: Arc::new(Mutex::new(None)),
             stop_watch_dog: Arc::new(AtomicBool::new(false)),
         };
@@ -66,7 +68,7 @@ impl Client {
             let response = connection.receive_all()?;
             let mut heats = ResponseListOpenHeats::parse(&response)?;
             for heat in heats.heats.iter_mut() {
-                Client::read_start_list(connection, heat)?;
+                AquariusClient::read_start_list(connection, heat)?;
             }
             Ok(heats.heats)
         })
@@ -197,7 +199,7 @@ fn spawn_event_thread(mut connection: Connection, sender: Sender<AquariusEvent>)
                         match EventHeatChanged::parse(&received) {
                             Ok(mut event) => {
                                 if event.opened {
-                                    Client::read_start_list(&mut connection, &mut event.heat).unwrap();
+                                    AquariusClient::read_start_list(&mut connection, &mut event.heat).unwrap();
                                 }
                                 sender.send(AquariusEvent::HeatListChanged(event)).unwrap();
                             }
@@ -218,7 +220,7 @@ fn spawn_event_thread(mut connection: Connection, sender: Sender<AquariusEvent>)
     })
 }
 
-impl Drop for Client {
+impl Drop for AquariusClient {
     fn drop(&mut self) {
         self.stop_watch_dog();
     }
@@ -238,14 +240,14 @@ mod tests {
     const EXIT_COMMAND: &str = "exit";
     const MESSAGE_END: &str = "\r\n";
 
-    fn init_client() -> (Client, Receiver<AquariusEvent>) {
+    fn init_client() -> (AquariusClient, Receiver<AquariusEvent>) {
         let _ = tracing_subscriber::fmt()
             .with_max_level(Level::TRACE)
             .with_test_writer()
             .try_init();
         let (sender, receiver) = mpsc::channel();
         let addr = start_test_server();
-        let client = Client::new(&addr.ip().to_string(), addr.port(), 1, sender).unwrap();
+        let client = AquariusClient::new(&addr.ip().to_string(), addr.port(), 1, sender).unwrap();
         (client, receiver)
     }
 

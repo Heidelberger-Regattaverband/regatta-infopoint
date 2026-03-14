@@ -65,12 +65,15 @@ pub struct Config {
     pub active_regatta_id: Option<i32>,
     /// The cache TTL in seconds. The cache TTL can be set by setting the environment variable `CACHE_TTL`.
     pub cache_ttl: u64,
-    // The Aquarius host. The Aquarius host can be set by setting the environment variable `AQUARIUS_HOST`.
-    // Defaults to `aquarius`.
-    // pub aquarius_host: String,
-    // The Aquarius port. The Aquarius port can be set by setting the environment variable `AQUARIUS_PORT`.
-    // Defaults to `2048`.
-    // pub aquarius_port: u16,
+    /// The Aquarius host. The Aquarius host can be set by setting the environment variable `AQUARIUS_HOST`.
+    /// Defaults to `aquarius`.
+    pub aquarius_host: String,
+    /// The Aquarius port. The Aquarius port can be set by setting the environment variable `AQUARIUS_PORT`.
+    /// Defaults to `2048`.
+    pub aquarius_port: u16,
+    /// The connection timeout for the Aquarius client in milliseconds. The timeout can be set by setting the environment variable `AQUARIUS_TIMEOUT`.
+    /// Defaults to `500`.
+    pub aquarius_timeout: u16,
 }
 
 impl Config {
@@ -198,6 +201,7 @@ impl Config {
         let aquarius_host =
             env::var(consts::AQUARIUS_HOST).unwrap_or_else(|_| consts::DEFAULT_AQUARIUS_HOST.to_string());
         let aquarius_port: u16 = Self::parse_env_var(consts::AQUARIUS_PORT, consts::DEFAULT_AQUARIUS_PORT)?;
+        let aquarius_timeout: u16 = Self::parse_env_var(consts::AQUARIUS_TIMEOUT, consts::DEFAULT_AQUARIUS_TIMEOUT)?;
 
         // Validate cache TTL
         Self::validate_cache_ttl(cache_ttl)?;
@@ -227,8 +231,9 @@ impl Config {
             active_regatta_id,
             cache_ttl,
             http_app_content_path,
-            // aquarius_host,
-            // aquarius_port,
+            aquarius_host,
+            aquarius_port,
+            aquarius_timeout,
         })
     }
 
@@ -369,6 +374,7 @@ mod consts {
     pub(super) const CACHE_TTL: &str = "CACHE_TTL";
     pub(super) const AQUARIUS_HOST: &str = "AQUARIUS_HOST";
     pub(super) const AQUARIUS_PORT: &str = "AQUARIUS_PORT";
+    pub(super) const AQUARIUS_TIMEOUT: &str = "AQUARIUS_TIMEOUT";
 
     // Default values
     pub(super) const DEFAULT_BIND_ADDRESS: &str = "0.0.0.0";
@@ -386,6 +392,7 @@ mod consts {
     pub(super) const DEFAULT_CACHE_TTL: &str = "30";
     pub(super) const DEFAULT_AQUARIUS_HOST: &str = "aquarius";
     pub(super) const DEFAULT_AQUARIUS_PORT: &str = "2048";
+    pub(super) const DEFAULT_AQUARIUS_TIMEOUT: &str = "500";
 
     // Validation limits
     pub(super) const CACHE_TTL_MAX_RECOMMENDED: u64 = 3600;
