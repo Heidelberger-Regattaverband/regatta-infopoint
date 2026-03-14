@@ -1,16 +1,12 @@
 use crate::built_info;
+use ::db::tiberius_client::{AuthMethod, Config as TiberiusConfig, EncryptionLevel};
+use ::dotenv::dotenv;
 use ::std::sync::LazyLock;
+use ::std::{env, fmt::Display, str::FromStr};
+use ::thiserror::Error;
 use ::tracing::info;
 use ::tracing_subscriber::EnvFilter;
 use ::tracing_subscriber::prelude::*;
-use dotenv::dotenv;
-use std::{
-    env,
-    error::Error,
-    fmt::{self, Display},
-    str::FromStr,
-};
-use tiberius::{AuthMethod, Config as TiberiusConfig, EncryptionLevel};
 
 /// The global configuration instance. The configuration is initialized once and can be accessed globally.
 pub static CONFIG: LazyLock<Config> = LazyLock::new(|| Config::init().expect("Failed to initialize configuration"));
@@ -69,6 +65,12 @@ pub struct Config {
     pub active_regatta_id: Option<i32>,
     /// The cache TTL in seconds. The cache TTL can be set by setting the environment variable `CACHE_TTL`.
     pub cache_ttl: u64,
+    // The Aquarius host. The Aquarius host can be set by setting the environment variable `AQUARIUS_HOST`.
+    // Defaults to `aquarius`.
+    // pub aquarius_host: String,
+    // The Aquarius port. The Aquarius port can be set by setting the environment variable `AQUARIUS_PORT`.
+    // Defaults to `2048`.
+    // pub aquarius_port: u16,
 }
 
 impl Config {
@@ -193,14 +195,16 @@ impl Config {
         // handle cache TTL with proper error handling - using constants
         let cache_ttl: u64 = Self::parse_env_var(consts::CACHE_TTL, consts::DEFAULT_CACHE_TTL)?;
 
+        let aquarius_host =
+            env::var(consts::AQUARIUS_HOST).unwrap_or_else(|_| consts::DEFAULT_AQUARIUS_HOST.to_string());
+        let aquarius_port: u16 = Self::parse_env_var(consts::AQUARIUS_PORT, consts::DEFAULT_AQUARIUS_PORT)?;
+
         // Validate cache TTL
         Self::validate_cache_ttl(cache_ttl)?;
 
-        info!(
-            active_regatta_id = active_regatta_id,
-            cache_ttl = cache_ttl,
-            "Aquarius:"
-        );
+        info!(active_regatta_id, cache_ttl, "Aquarius DB:");
+
+        info!(host = aquarius_host, port = aquarius_port, "Aquarius application:");
 
         Ok(Config {
             http_bind,
@@ -223,6 +227,8 @@ impl Config {
             active_regatta_id,
             cache_ttl,
             http_app_content_path,
+            // aquarius_host,
+            // aquarius_port,
         })
     }
 
@@ -321,41 +327,22 @@ impl Config {
 }
 
 /// Configuration error type for better error handling
-#[derive(Debug)]
+#[derive(Debug, Error)]
 enum ConfigError {
     /// Environment variable parsing error
+    #[error("Failed to parse environment variable '{var_name}' with value '{value}': {error}")]
     ParseError {
         var_name: String,
         value: String,
         error: String,
     },
     /// Missing required environment variable
+    #[error("Required environment variable '{0}' is not set")]
     MissingRequired(String),
     /// Invalid configuration value
+    #[error("Invalid value for environment variable '{var_name}': {reason}")]
     InvalidValue { var_name: String, reason: String },
 }
-
-impl Display for ConfigError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            ConfigError::ParseError { var_name, value, error } => {
-                write!(
-                    f,
-                    "Failed to parse environment variable '{}' with value '{}': {}",
-                    var_name, value, error
-                )
-            }
-            ConfigError::MissingRequired(var_name) => {
-                write!(f, "Required environment variable '{}' is not set", var_name)
-            }
-            ConfigError::InvalidValue { var_name, reason } => {
-                write!(f, "Invalid value for environment variable '{}': {}", var_name, reason)
-            }
-        }
-    }
-}
-
-impl Error for ConfigError {}
 
 /// Constants module for better organization and maintainability
 mod consts {
@@ -380,6 +367,8 @@ mod consts {
     pub(super) const DB_POOL_MIN_IDLE: &str = "DB_POOL_MIN_IDLE";
     pub(super) const ACTIVE_REGATTA_ID: &str = "ACTIVE_REGATTA_ID";
     pub(super) const CACHE_TTL: &str = "CACHE_TTL";
+    pub(super) const AQUARIUS_HOST: &str = "AQUARIUS_HOST";
+    pub(super) const AQUARIUS_PORT: &str = "AQUARIUS_PORT";
 
     // Default values
     pub(super) const DEFAULT_BIND_ADDRESS: &str = "0.0.0.0";
@@ -395,6 +384,8 @@ mod consts {
     pub(super) const DEFAULT_DB_POOL_MAX_SIZE: &str = "100";
     pub(super) const DEFAULT_DB_POOL_MIN_IDLE: &str = "30";
     pub(super) const DEFAULT_CACHE_TTL: &str = "30";
+    pub(super) const DEFAULT_AQUARIUS_HOST: &str = "aquarius";
+    pub(super) const DEFAULT_AQUARIUS_PORT: &str = "2048";
 
     // Validation limits
     pub(super) const CACHE_TTL_MAX_RECOMMENDED: u64 = 3600;

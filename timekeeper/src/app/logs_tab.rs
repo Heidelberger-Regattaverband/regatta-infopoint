@@ -1,11 +1,11 @@
-use ratatui::{
+use ::ratatui::{
     buffer::Buffer,
     crossterm::event::{KeyCode, KeyEvent},
     layout::Rect,
     style::{Color, Style},
     widgets::Widget,
 };
-use tui_logger::{TuiLoggerSmartWidget, TuiWidgetEvent, TuiWidgetState};
+use ::tui_logger::{TuiLoggerSmartWidget, TuiWidgetEvent, TuiWidgetState};
 
 #[derive(Default)]
 pub(crate) struct LogsTab {

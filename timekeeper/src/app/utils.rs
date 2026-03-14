@@ -1,4 +1,4 @@
-use ratatui::{
+use ::ratatui::{
     symbols::border,
     widgets::{Block, Padding},
 };

@@ -16,15 +16,10 @@ build = "build.rs"
 [dependencies]
 db = { path = "../db" }
 
-# Utils
-dotenv.workspace = true
-tracing.workspace = true
-tracing-subscriber.workspace = true
-
 # Async stuff
+futures.workspace = true
 tokio.workspace = true
 tokio-util.workspace = true
-futures.workspace = true
 
 # Actix + Middlewares
 actix = { version = "0.13" }
@@ -46,17 +41,16 @@ actix-web-opentelemetry = { version = "0.22", features = [
 utoipa.workspace = true
 utoipa-swagger-ui = { version = "9", features = ["actix-web"] }
 
-# Database + Pool
-tiberius.workspace = true
-bb8.workspace = true
-chrono.workspace = true
-
 # Utils
+dotenv.workspace = true
+secret-string.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-sysinfo = "0"
-uptime_lib.workspace = true
+sysinfo.workspace = true
 thiserror.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+uptime_lib.workspace = true
 
 [dev-dependencies]
 tokio-shared-rt = "0"

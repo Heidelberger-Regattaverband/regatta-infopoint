@@ -33,6 +33,8 @@ export default class HeatsTableController extends BaseTableController {
     super.setViewModel(new JSONModel(), HeatsTableController.HEATS_MODEL);
     super.getRouter()?.getRoute("heats")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadHeatsModel(), this);
 
+    super.sortTable("heatDateTime", false, "dateTime");
+
     super.getFilters().then((filters: any) => {
       super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG).then((viewSettingsDialog: ViewSettingsDialog) => {
         if (filters.dates && filters.dates.length > 1) {

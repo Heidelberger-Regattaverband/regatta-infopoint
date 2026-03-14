@@ -7,29 +7,21 @@
       </headerContent>
 
       <content>
-        <List id="dbConnectionsList" items="{monitoring>/db}" headerText="{i18n>monitoring.dbConnections.title}">
-          <ObjectListItem title="{monitoring>name}" number="{monitoring>value}" />
-        </List>
-
-        <List id="dbCachesList" items="{monitoring>/caches}" headerText="{i18n>monitoring.caches.title}">
-          <ObjectListItem title="{monitoring>name}" number="{monitoring>value}" />
-        </List>
-
-        <List id="appList" items="{monitoring>/app}" headerText="{i18n>monitoring.app.title}">
-          <ObjectListItem title="{monitoring>name}" number="{monitoring>value}" />
-        </List>
-
-        <List id="memList" items="{monitoring>/mem}" headerText="{i18n>monitoring.mem.title}">
-          <ObjectListItem title="{monitoring>name}" number="{monitoring>value}" />
-        </List>
-
-        <List id="cpusList" items="{monitoring>/cpus}" headerText="{i18n>monitoring.cpus.title}">
-          <ObjectListItem title="{monitoring>name}" number="{monitoring>value}" />
-        </List>
-
-        <List id="sysList" items="{monitoring>/sys}" headerText="{i18n>monitoring.sys.title}">
-          <ObjectListItem title="{monitoring>name}" number="{monitoring>value}" />
-        </List>
+        <Table id="monitoringTable"
+          items="{path:'monitoring>/',sorter:{path:'group',descending:false,group:'.getGroup'},groupHeaderFactory:'.getGroupHeader'}">
+          <columns>
+            <Column />
+            <Column />
+          </columns>
+          <items>
+            <ColumnListItem>
+              <cells>
+                <Text text="{monitoring>name}" />
+                <Text text="{monitoring>value}" />
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table>
       </content>
     </Page>
 

@@ -1,16 +1,18 @@
-use crate::{db::aquarius::Aquarius, http::monitoring::Monitoring};
-use actix::{Actor, ActorContext, AsyncContext, StreamHandler};
-use actix_identity::Identity;
-use actix_web::{
+use crate::http::monitoring::Monitoring;
+use ::actix::{Actor, ActorContext, AsyncContext, StreamHandler};
+use ::actix_identity::Identity;
+use ::actix_web::{
     Error, HttpRequest, HttpResponse,
     error::ErrorUnauthorized,
     get,
     web::{Data, Payload},
 };
-use actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
-use db::tiberius::TiberiusPool;
-use std::time::{Duration, Instant};
-use tracing::{debug, warn};
+use ::actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
+use ::db::aquarius::Aquarius;
+use ::db::tiberius::TiberiusPool;
+use ::prometheus::Registry;
+use ::std::time::{Duration, Instant};
+use ::tracing::{debug, trace};
 
 /// How often heartbeat pings are sent
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(2);
@@ -43,7 +45,7 @@ impl WsMonitoring {
             // check client heartbeats
             if Instant::now().duration_since(act.hb) > CLIENT_TIMEOUT {
                 // heartbeat timed out
-                warn!("Websocket Client heartbeat failed, disconnecting!");
+                debug!("Websocket Client heartbeat failed, disconnecting!");
 
                 // stop actor
                 ctx.stop();
@@ -76,7 +78,7 @@ impl Actor for WsMonitoring {
 
     /// Method is called on actor stop.
     fn stopped(&mut self, _ctx: &mut Self::Context) {
-        debug!("Websocket actor stopped");
+        trace!("Websocket actor stopped");
     }
 }
 
@@ -85,7 +87,7 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsMonitoring {
     /// This method is called for every message received from the websocket client
     fn handle(&mut self, msg: Result<Message, ProtocolError>, ctx: &mut Self::Context) {
         // process websocket messages
-        debug!("WS: {msg:?}");
+        trace!(?msg, "Received websocket message");
         match msg {
             Ok(Message::Ping(msg)) => {
                 self.hb = Instant::now();
@@ -110,7 +112,7 @@ async fn index(
     request: HttpRequest,
     stream: Payload,
     aquarius: Data<Aquarius>,
-    opt_user: Option<Identity>,
+    identity: Option<Identity>,
 ) -> Result<HttpResponse, Error> {
     if opt_user.is_some() {
         let response = start(WsMonitoring::new(aquarius), &request, stream);

@@ -1,5 +1,5 @@
-use std::alloc::{GlobalAlloc, Layout, System};
-use std::sync::atomic::{AtomicUsize, Ordering};
+use ::std::alloc::{GlobalAlloc, Layout, System};
+use ::std::sync::atomic::{AtomicUsize, Ordering};
 
 /// This atomic counter monitors the amount of memory (in bytes) that is
 /// currently allocated for this process.

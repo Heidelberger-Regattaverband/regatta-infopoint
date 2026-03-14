@@ -1,12 +1,12 @@
+use super::get_rows;
 use crate::tiberius::TiberiusClient;
 use crate::{
-    aquarius::model::utils,
     error::DbError,
     tiberius::{RowColumn, TryRowColumn},
 };
-use chrono::{DateTime, NaiveDateTime, Utc};
-use serde::Serialize;
-use tiberius::{Query, Row};
+use ::chrono::{DateTime, NaiveDateTime, Utc};
+use ::serde::Serialize;
+use ::tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -83,7 +83,7 @@ impl Schedule {
         query.bind(regatta_id);
 
         let stream = query.query(client).await?;
-        let entries: Vec<ScheduleEntry> = utils::get_rows(stream)
+        let entries: Vec<ScheduleEntry> = get_rows(stream)
             .await?
             .into_iter()
             .map(|row| ScheduleEntry::from(&row))

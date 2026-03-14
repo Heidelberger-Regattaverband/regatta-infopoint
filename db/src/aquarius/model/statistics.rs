@@ -1,11 +1,17 @@
+use super::Athlete;
+use super::TryToEntity;
+use super::boat_class::COXED;
+use super::boat_class::ID as BOAT_CLASS_ID;
+use super::boat_class::NUM_ROWERS;
+use super::get_row;
+use super::try_get_row;
 use crate::{
-    aquarius::model::{Athlete, TryToEntity, utils},
     error::DbError,
     tiberius::{RowColumn, TiberiusPool},
 };
-use futures::join;
-use serde::Serialize;
-use tiberius::{Query, Row};
+use ::futures::join;
+use ::serde::Serialize;
+use ::tiberius::{Query, Row};
 
 #[derive(Debug, Serialize, Clone)]
 struct RacesStatistics {
@@ -46,6 +52,14 @@ pub struct Statistics {
     heats: HeatsStatistics,
     entries: EntriesStatistics,
     athletes: Option<Athletes>,
+    medals: MedalsStatistics,
+}
+
+#[derive(Debug, Serialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct MedalsStatistics {
+    rowers: i32,
+    coxes: i32,
 }
 
 impl From<&Row> for Statistics {
@@ -76,11 +90,16 @@ impl From<&Row> for Statistics {
             seats: value.get_column("entries_seats"),
             seats_cox: value.get_column("entries_seats_cox"),
         };
+        let medals = MedalsStatistics {
+            rowers: value.get_column("medals_rowers"),
+            coxes: value.get_column("medals_coxes"),
+        };
         Statistics {
             races,
             heats,
             entries,
             athletes: None,
+            medals,
         }
     }
 }
@@ -98,7 +117,7 @@ struct Athletes {
 impl Statistics {
     pub async fn query(regatta_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let mut query = Query::new(
-        "SELECT
+        format!("SELECT
           (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1) AS races_all,
           (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1 AND Offer_Cancelled > 0) AS races_cancelled,
           (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1) AS heats_all,
@@ -132,20 +151,34 @@ impl Statistics {
             FROM  Entry
             JOIN  Crew ON Crew_Entry_ID_FK = Entry_ID
             WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) AS entries_clubs,
-          (SELECT COALESCE(SUM(BoatClass_NumRowers), 0) FROM (
-            SELECT BoatClass_NumRowers
+          (SELECT COALESCE(SUM({NUM_ROWERS}), 0) FROM (
+            SELECT {NUM_ROWERS}
             FROM  Entry
             JOIN  Offer     ON Offer_ID = Entry_Race_ID_FK
-            JOIN  BoatClass ON BoatClass_ID = Offer_BoatClass_ID_FK
+            JOIN  BoatClass ON {BOAT_CLASS_ID} = Offer_BoatClass_ID_FK
             WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) as seats) AS entries_seats,
-          (SELECT COALESCE(SUM(BoatClass_Coxed), 0) FROM (
-            SELECT BoatClass_Coxed 
-            FROM  Entry
-            JOIN  Offer     ON Offer_ID = Entry_Race_ID_FK
-            JOIN  BoatClass ON BoatClass_ID = Offer_BoatClass_ID_FK
-            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) as seats) AS entries_seats_cox
-          ",
-        );
+          (SELECT COALESCE(SUM({COXED}), 0) FROM (
+            SELECT {COXED}
+            FROM  Entry      e
+            JOIN  Offer      o ON o.Offer_ID         = e.Entry_Race_ID_FK
+            JOIN  BoatClass bc ON bc.{BOAT_CLASS_ID} = o.Offer_BoatClass_ID_FK
+            WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue = 0) as seats) AS entries_seats_cox,
+          (SELECT SUM(bc.BoatClass_NumRowers) FROM (
+            SELECT bc.BoatClass_NumRowers
+            FROM Comp       c
+            JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.Offer_ID
+            JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
+            WHERE c.Comp_Cancelled = 0
+            ) as bc) as medals_rowers,
+          (SELECT SUM(bc.BoatClass_Coxed) FROM (
+            SELECT bc.BoatClass_Coxed
+            FROM Comp       c
+            JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.Offer_ID
+            JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
+            WHERE c.Comp_Cancelled = 0
+            ) as bc) as medals_coxes
+          "
+        ));
         query.bind(regatta_id);
 
         let mut client = pool.get().await?;
@@ -155,7 +188,7 @@ impl Statistics {
             Statistics::query_oldest(regatta_id, "M", pool)
         );
 
-        let mut stats = Statistics::from(&utils::get_row(result.0?).await?);
+        let mut stats = Statistics::from(&get_row(result.0?).await?);
         stats.athletes = Some(Athletes {
             oldest_woman: result.1?,
             oldest_man: result.2?,
@@ -178,7 +211,7 @@ impl Statistics {
         query.bind(gender);
 
         let mut client = pool.get().await?;
-        if let Some(row) = utils::try_get_row(query.query(&mut client).await?).await? {
+        if let Some(row) = try_get_row(query.query(&mut client).await?).await? {
             Ok(row.try_to_entity())
         } else {
             Ok(None)

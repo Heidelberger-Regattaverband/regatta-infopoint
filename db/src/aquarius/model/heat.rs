@@ -1,13 +1,32 @@
+use super::AgeClass;
+use super::BoatClass;
+use super::HeatEntry;
+use super::Race;
+use super::Referee;
+use super::TryToEntity;
+use super::age_class::ID as AGE_CLASS_ID;
+use super::boat_class::ID as BOAT_CLASS_ID;
+use super::get_row;
+use super::get_rows;
 use crate::{
-    aquarius::model::{AgeClass, BoatClass, HeatEntry, Race, Referee, TryToEntity, utils},
     error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
-use chrono::{DateTime, Utc};
-use futures::future::join;
-use serde::Serialize;
-use tiberius::{Query, Row};
-use utoipa::ToSchema;
+use ::chrono::{DateTime, Utc};
+use ::futures::future::join;
+use ::serde::Serialize;
+use ::tiberius::{Query, Row};
+use ::utoipa::ToSchema;
+
+const ID: &str = "Comp_ID";
+const NUMBER: &str = "Comp_Number";
+const ROUND_CODE: &str = "Comp_RoundCode";
+const LABEL: &str = "Comp_Label";
+const GROUP_VALUE: &str = "Comp_GroupValue";
+const STATE: &str = "Comp_State";
+const CANCELLED: &str = "Comp_Cancelled";
+const DATE_TIME: &str = "Comp_DateTime";
+const ROUND: &str = "Comp_Round";
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -58,8 +77,8 @@ pub struct Heat {
 impl Heat {
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
-            " {alias}.Comp_ID, {alias}.Comp_Number, {alias}.Comp_RoundCode, {alias}.Comp_Label, {alias}.Comp_GroupValue, \
-            {alias}.Comp_State, {alias}.Comp_Cancelled, {alias}.Comp_DateTime, {alias}.Comp_Round "
+            "{alias}.{ID}, {alias}.{NUMBER}, {alias}.{ROUND_CODE}, {alias}.{LABEL}, {alias}.{GROUP_VALUE}, \
+            {alias}.{STATE}, {alias}.{CANCELLED}, {alias}.{DATE_TIME}, {alias}.{ROUND}"
         )
     }
 
@@ -74,10 +93,10 @@ impl Heat {
         let sql = format!(
             "SELECT {0}, {1}, {2}, o.* FROM Comp c
             JOIN Offer     o ON o.Offer_ID              = c.Comp_Race_ID_FK
-            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
-            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
-            WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_DateTime IS NOT NULL
-            ORDER BY c.Comp_DateTime ASC",
+            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
+            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.{DATE_TIME} IS NOT NULL
+            ORDER BY c.{DATE_TIME} ASC",
             Heat::select_columns("c"),
             AgeClass::select_minimal_columns("a"),
             BoatClass::select_columns("b")
@@ -87,7 +106,7 @@ impl Heat {
         query.bind(regatta_id);
 
         let mut client = pool.get().await?;
-        let heats = utils::get_rows(query.query(&mut client).await?).await?;
+        let heats = get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
 
@@ -101,15 +120,15 @@ impl Heat {
     pub async fn query_heats_of_race(race_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0} FROM Comp c
-            WHERE c.Comp_Race_ID_FK = @P1 AND c.Comp_DateTime IS NOT NULL
-            ORDER BY c.Comp_Number ASC",
+            WHERE c.Comp_Race_ID_FK = @P1 AND c.{DATE_TIME} IS NOT NULL
+            ORDER BY c.{NUMBER} ASC",
             Heat::select_columns("c")
         );
         let mut query = Query::new(sql);
         query.bind(race_id);
 
         let mut client = pool.get().await?;
-        let heats = utils::get_rows(query.query(&mut client).await?).await?;
+        let heats = get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
 
@@ -123,16 +142,16 @@ impl Heat {
     pub(crate) async fn query_heats_of_entry(entry_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0} FROM Comp c
-            JOIN CompEntries ce ON c.Comp_ID  = ce.CE_Comp_ID_FK
+            JOIN CompEntries ce ON c.{ID}  = ce.CE_Comp_ID_FK
             JOIN Entry        e ON e.Entry_ID = ce.CE_Entry_ID_FK
             WHERE e.Entry_ID = @P1
-            ORDER BY c.Comp_Round ASC",
+            ORDER BY c.{ROUND} ASC",
             Heat::select_columns("c")
         );
         let mut query = Query::new(sql);
         query.bind(entry_id);
         let mut client = pool.get().await?;
-        let heats = utils::get_rows(query.query(&mut client).await?).await?;
+        let heats = get_rows(query.query(&mut client).await?).await?;
         Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
 
@@ -146,9 +165,9 @@ impl Heat {
         let sql = format!(
             "SELECT {0}, {1}, {2}, o.* FROM Comp c
             JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
-            JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
-            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
-            WHERE Comp_ID = @P1",
+            JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
+            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
+            WHERE {ID} = @P1",
             Heat::select_columns("c"),
             AgeClass::select_minimal_columns("a"),
             BoatClass::select_columns("b")
@@ -158,7 +177,7 @@ impl Heat {
         query.bind(heat_id);
 
         let mut client = pool.get().await?;
-        let mut heat = Heat::from(&utils::get_row(query.query(&mut client).await?).await?);
+        let mut heat = Heat::from(&get_row(query.query(&mut client).await?).await?);
 
         let results = join(
             Referee::query_referees_for_heat(heat.id, pool),
@@ -174,24 +193,24 @@ impl Heat {
 impl From<&Row> for Heat {
     fn from(value: &Row) -> Self {
         Heat {
-            id: value.get_column("Comp_ID"),
+            id: value.get_column(ID),
             race: value.try_to_entity(),
-            number: value.get_column("Comp_Number"),
-            round_code: value.get_column("Comp_RoundCode"),
-            label: value.try_get_column("Comp_Label"),
-            group_value: value.get_column("Comp_GroupValue"),
-            state: value.get_column("Comp_State"),
-            cancelled: value.get_column("Comp_Cancelled"),
-            date_time: value.try_get_column("Comp_DateTime"),
+            number: value.get_column(NUMBER),
+            round_code: value.get_column(ROUND_CODE),
+            label: value.try_get_column(LABEL),
+            group_value: value.get_column(GROUP_VALUE),
+            state: value.get_column(STATE),
+            cancelled: value.get_column(CANCELLED),
+            date_time: value.try_get_column(DATE_TIME),
             referees: vec![],
             entries: None,
-            round: value.get_column("Comp_Round"),
+            round: value.get_column(ROUND),
         }
     }
 }
 
 impl TryToEntity<Heat> for Row {
     fn try_to_entity(&self) -> Option<Heat> {
-        <Row as TryRowColumn<i32>>::try_get_column(self, "Comp_ID").map(|_id| Heat::from(self))
+        <Row as TryRowColumn<i32>>::try_get_column(self, ID).map(|_id| Heat::from(self))
     }
 }

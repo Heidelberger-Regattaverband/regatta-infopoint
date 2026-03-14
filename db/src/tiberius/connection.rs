@@ -1,7 +1,7 @@
-use bb8::ManageConnection;
-use tiberius::{Client, Config, error::Error as TiberiusError};
-use tokio::net::TcpStream;
-use tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
+use ::bb8::ManageConnection;
+use ::tiberius::{Client, Config, error::Error as TiberiusError};
+use ::tokio::net::TcpStream;
+use ::tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
 
 /// The type of a Tiberius connection.
 pub type TiberiusClient = Client<Compat<TcpStream>>;

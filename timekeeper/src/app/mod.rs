@@ -5,20 +5,23 @@ mod timestrip_popup;
 mod timestrip_tab;
 mod utils;
 
+use self::heats_tab::HeatsTab;
+use self::logs_tab::LogsTab;
+use crate::error::TimekeeperErr;
 use crate::{
     app::{selected_tab::SelectedTab, timestrip_popup::TimeStripTabPopup, timestrip_tab::TimeStripTab},
-    aquarius::{
-        client::Client,
-        messages::{EventHeatChanged, Heat},
-    },
     args::Args,
-    error::TimekeeperErr,
 };
-use clap::Parser;
-use db::timekeeper::TimeStrip;
-use heats_tab::HeatsTab;
-use logs_tab::LogsTab;
-use ratatui::{
+use ::aquarius::client::Client;
+use ::aquarius::error::AquariusErr;
+use ::aquarius::event::AquariusEvent;
+use ::aquarius::messages::EventHeatChanged;
+use ::aquarius::messages::Heat;
+use ::clap::Parser;
+use ::db::tiberius::TiberiusClient;
+use ::db::tiberius_client::{AuthMethod, Config, EncryptionLevel};
+use ::db::timekeeper::TimeStrip;
+use ::ratatui::{
     DefaultTerminal,
     crossterm::event::{self, Event, KeyCode, KeyEventKind},
     layout::{
@@ -29,15 +32,14 @@ use ratatui::{
     text::Line,
     widgets::{Clear, Tabs},
 };
-use std::{
+use ::std::{
     cell::RefCell,
     rc::Rc,
     sync::mpsc::{self, Receiver, Sender},
     thread,
 };
-use strum::IntoEnumIterator;
-use tiberius::{AuthMethod, Config, EncryptionLevel};
-use tracing::{debug, warn};
+use ::strum::IntoEnumIterator;
+use ::tracing::{debug, warn};
 
 pub struct App<'a> {
     // application state
@@ -45,7 +47,7 @@ pub struct App<'a> {
     selected_tab: SelectedTab,
 
     // event receiver
-    receiver: Receiver<AppEvent>,
+    app_event_receiver: Receiver<AppEvent>,
 
     // UI components
     heats_tab: HeatsTab,
@@ -58,22 +60,25 @@ pub struct App<'a> {
     heats: Rc<RefCell<Vec<Heat>>>,
     time_strip: Rc<RefCell<TimeStrip>>,
     show_time_strip_popup: Rc<RefCell<bool>>,
+    db_client: Rc<RefCell<TiberiusClient>>,
 }
 
 impl App<'_> {
-    pub(crate) async fn new() -> Self {
+    pub(crate) async fn new() -> Result<Self, TimekeeperErr> {
         let args = Args::parse();
 
         let db_config = Self::get_db_config(&args);
 
-        let client = db::tiberius::create_client(&db_config).await.unwrap();
-        let timestrip = TimeStrip::load(client).await.unwrap();
+        let mut client = db::tiberius::create_client(&db_config).await?;
+        let timestrip = TimeStrip::load(&mut client).await?;
 
-        // Use an mpsc::channel to combine stdin events with app events
-        let (sender, receiver) = mpsc::channel();
+        let (aquarius_event_sender, aquarius_event_receiver) = mpsc::channel();
+        let (app_event_sender, app_event_receiver) = mpsc::channel();
+        let app_event_sender_clone = app_event_sender.clone();
 
-        let client: Client = Client::new(&args.host, args.port, args.timeout, sender.clone());
-        thread::spawn(move || input_thread(sender.clone()));
+        let client: Client = Client::new(&args.host, args.port, args.timeout, aquarius_event_sender.clone())?;
+        thread::spawn(move || input_thread(app_event_sender_clone));
+        thread::spawn(move || receive_aquarius_events(aquarius_event_receiver, app_event_sender));
 
         // shared context
         let client_rc = Rc::new(RefCell::new(client));
@@ -81,8 +86,9 @@ impl App<'_> {
         let time_strip = Rc::new(RefCell::new(timestrip));
         let selected_time_stamp = Rc::new(RefCell::new(None));
         let show_time_strip_popup = Rc::new(RefCell::new(false));
+        let db_client = Rc::new(RefCell::new(db::tiberius::create_client(&db_config).await?));
 
-        Self {
+        Ok(Self {
             state: AppState::Running,
             selected_tab: SelectedTab::Heats,
             // tabs
@@ -91,6 +97,7 @@ impl App<'_> {
                 time_strip.clone(),
                 selected_time_stamp.clone(),
                 show_time_strip_popup.clone(),
+                db_client.clone(),
             ),
             time_strip_popup: TimeStripTabPopup::new(
                 client_rc.clone(),
@@ -98,67 +105,67 @@ impl App<'_> {
                 time_strip.clone(),
                 selected_time_stamp.clone(),
                 show_time_strip_popup.clone(),
+                db_client.clone(),
             ),
             logs_tab: LogsTab::default(),
             // shared context
             client: client_rc,
-            receiver,
+            app_event_receiver,
             heats,
             time_strip,
             show_time_strip_popup,
-        }
+            db_client,
+        })
     }
 
-    pub(crate) async fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), TimekeeperErr> {
+    pub(crate) async fn start(mut self, terminal: &mut DefaultTerminal) -> Result<(), AquariusErr> {
         // main loop, runs until the user quits the application by pressing 'q'
         while self.state == AppState::Running {
-            let event = self.receiver.recv().map_err(TimekeeperErr::ReceiveError)?;
+            let event = self.app_event_receiver.recv()?;
             match event {
                 AppEvent::UI(event) => self.handle_ui_event(event).await,
-                AppEvent::Aquarius(event) => self.handle_aquarius_event(event),
-                AppEvent::Client(connected) => self.handle_client_event(connected),
+                AppEvent::Aquarius(AquariusEvent::HeatListChanged(event)) => self.handle_aquarius_event(event),
+                AppEvent::Aquarius(AquariusEvent::Client(connected)) => self.handle_client_event(connected),
             }
             self.draw(terminal)?;
         }
         Ok(())
     }
 
-    fn draw(&mut self, terminal: &mut DefaultTerminal) -> Result<(), TimekeeperErr> {
-        terminal
-            .draw(|frame| {
-                // vertical layout: header, inner area, footer
-                let [header_area, inner_area, footer_area] =
-                    Layout::vertical([Constraint::Length(1), Constraint::Min(0), Constraint::Length(1)])
-                        .areas(frame.area());
-                // horizontal header layout: tabs, title
-                let [tabs_area, title_area] = Layout::horizontal([Min(0), Length(20)]).areas(header_area);
+    fn draw(&mut self, terminal: &mut DefaultTerminal) -> Result<(), AquariusErr> {
+        terminal.draw(|frame| {
+            // vertical layout: header, inner area, footer
+            let [header_area, inner_area, footer_area] =
+                Layout::vertical([Constraint::Length(1), Constraint::Min(0), Constraint::Length(1)])
+                    .areas(frame.area());
+            // horizontal header layout: tabs, title
+            let [tabs_area, title_area] = Layout::horizontal([Min(0), Length(20)]).areas(header_area);
 
-                // render tabs header and title
-                frame.render_widget("Aquarius Zeitmessung".bold(), title_area);
-                let titles = SelectedTab::iter().map(SelectedTab::title);
+            // render tabs header and title
+            frame.render_widget("Aquarius Zeitmessung".bold(), title_area);
+            let titles = SelectedTab::iter().map(SelectedTab::title);
 
-                // render the selected tab
-                frame.render_widget(Tabs::new(titles).select(self.selected_tab as usize), tabs_area);
-                match self.selected_tab {
-                    SelectedTab::Heats => frame.render_widget(&mut self.heats_tab, inner_area),
-                    SelectedTab::TimeStrip => {
-                        frame.render_widget(&mut self.time_strip_tab, inner_area);
-                        if *self.show_time_strip_popup.borrow() {
-                            let popup_area = popup_area(inner_area, 50, 20);
-                            frame.render_widget(Clear, popup_area); // this clears out the background
-                            frame.render_widget(&mut self.time_strip_popup, popup_area);
-                        }
+            // render the selected tab
+            frame.render_widget(Tabs::new(titles).select(self.selected_tab as usize), tabs_area);
+            match self.selected_tab {
+                SelectedTab::Heats => frame.render_widget(&mut self.heats_tab, inner_area),
+                SelectedTab::TimeStrip => {
+                    frame.render_widget(&mut self.time_strip_tab, inner_area);
+                    if *self.show_time_strip_popup.borrow() {
+                        let popup_area = popup_area(inner_area, 50, 20);
+                        frame.render_widget(Clear, popup_area); // this clears out the background
+                        frame.render_widget(&mut self.time_strip_popup, popup_area);
                     }
-                    SelectedTab::Logs => frame.render_widget(&mut self.logs_tab, inner_area),
-                };
+                }
+                SelectedTab::Logs => frame.render_widget(&mut self.logs_tab, inner_area),
+            };
 
-                // render footer
-                frame.render_widget(
-                    Line::raw("◄ ► / tab to change tab | + to start | space to finish | q to quit").centered(),
-                    footer_area,
-                );
-            })
-            .map_err(TimekeeperErr::IoError)?;
+            // render footer
+            frame.render_widget(
+                Line::raw("◄ ► / tab to change tab | + to start | space to finish | q to quit").centered(),
+                footer_area,
+            );
+        })?;
         Ok(())
     }
 
@@ -181,10 +188,18 @@ impl App<'_> {
                         KeyCode::Left => self.selected_tab = self.selected_tab.previous(),
                         KeyCode::Char('q') => self.state = AppState::Quitting,
                         KeyCode::Char('+') => {
-                            self.time_strip.borrow_mut().add_start().await.unwrap();
+                            self.time_strip
+                                .borrow_mut()
+                                .add_start(&mut self.db_client.borrow_mut())
+                                .await
+                                .unwrap();
                         }
                         KeyCode::Char(' ') => {
-                            self.time_strip.borrow_mut().add_finish().await.unwrap();
+                            self.time_strip
+                                .borrow_mut()
+                                .add_finish(&mut self.db_client.borrow_mut())
+                                .await
+                                .unwrap();
                         }
                         KeyCode::Char('r') => self.read_open_heats(),
                         _ => match self.selected_tab {
@@ -260,14 +275,20 @@ fn popup_area(area: Rect, percent_x: u16, percent_y: u16) -> Rect {
     area
 }
 
-fn input_thread(sender: Sender<AppEvent>) -> Result<(), TimekeeperErr> {
+fn input_thread(sender: Sender<AppEvent>) {
     while let Ok(event) = event::read() {
-        sender.send(AppEvent::UI(event)).map_err(TimekeeperErr::SendError)?;
+        sender.send(AppEvent::UI(event)).unwrap();
     }
-    Ok(())
 }
 
-/// The application's state (running or quitting)
+fn receive_aquarius_events(receiver: Receiver<AquariusEvent>, sender: Sender<AppEvent>) {
+    while let Ok(event) = receiver.recv() {
+        debug!("Received AquariusEvent: {:?}", event);
+        sender.send(AppEvent::Aquarius(event)).unwrap();
+    }
+}
+
+/// The application's state (running or quitting)   
 #[derive(Default, PartialEq, Eq)]
 enum AppState {
     /// The application is running
@@ -281,9 +302,5 @@ pub(crate) enum AppEvent {
     /// An UI event
     UI(Event),
 
-    /// An event from Aquarius
-    Aquarius(EventHeatChanged),
-
-    /// An event from the client, e.g. connection lost
-    Client(bool),
+    Aquarius(AquariusEvent),
 }

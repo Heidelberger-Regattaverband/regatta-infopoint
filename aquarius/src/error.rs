@@ -1,0 +1,63 @@
+use crate::event::AquariusEvent;
+use ::std::io;
+use ::std::{
+    num::ParseIntError,
+    sync::mpsc::{RecvError, SendError},
+};
+use ::thiserror::Error;
+
+/// Error type for the Aquarius crate.
+#[derive(Debug, Error)]
+pub enum AquariusErr {
+    /// Error when parsing a string to a number.
+    #[error("Parse error: {0}")]
+    ParseError(#[from] ParseIntError),
+
+    /// Error when I/O operations fail.
+    #[error("I/O error: {0}")]
+    IoError(#[from] io::Error),
+
+    /// Error when the message is invalid.
+    #[error("Invalid message: {0}")]
+    InvalidMessage(String),
+
+    /// Error when sending a message containing an `AquariusEvent` fails.
+    #[error("Send error: {0}")]
+    SendError(#[from] SendError<AquariusEvent>),
+
+    /// Error when receiving a message containing an `AquariusEvent` fails.
+    #[error("Receive error: {0}")]
+    ReceiveError(#[from] RecvError),
+
+    /// Error when a mutex is poisoned.
+    #[error("Mutex poisoned error")]
+    MutexPoisonError(),
+
+    /// Error when not connected to the server.
+    #[error("Not connected to Aquarius server")]
+    NotConnectedError(),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_message_err() {
+        let parse_error = AquariusErr::ParseError("error".parse::<i32>().unwrap_err());
+        let io_error = AquariusErr::IoError(io::Error::other("error"));
+        let invalid_message = AquariusErr::InvalidMessage("error".to_string());
+        let send_error = AquariusErr::SendError(SendError(AquariusEvent::Client(true)));
+        let recv_error = AquariusErr::ReceiveError(RecvError);
+        let mutex_poison_error = AquariusErr::MutexPoisonError();
+        let not_connected_error = AquariusErr::NotConnectedError();
+
+        assert!(matches!(parse_error, AquariusErr::ParseError(_)));
+        assert!(matches!(io_error, AquariusErr::IoError(_)));
+        assert!(matches!(invalid_message, AquariusErr::InvalidMessage { .. }));
+        assert!(matches!(send_error, AquariusErr::SendError(_)));
+        assert!(matches!(recv_error, AquariusErr::ReceiveError(_)));
+        assert!(matches!(mutex_poison_error, AquariusErr::MutexPoisonError()));
+        assert!(matches!(not_connected_error, AquariusErr::NotConnectedError()));
+    }
+}

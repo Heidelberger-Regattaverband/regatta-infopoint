@@ -2,14 +2,15 @@ use crate::app::{
     TimeStrip,
     utils::{HIGHLIGHT_SYMBOL, block},
 };
-use db::timekeeper::TimeStamp;
-use ratatui::{
+use ::db::tiberius::TiberiusClient;
+use ::db::timekeeper::TimeStamp;
+use ::ratatui::{
     buffer::Buffer,
     crossterm::event::{KeyCode, KeyEvent},
     layout::Rect,
     widgets::{HighlightSpacing, List, ListItem, ListState, StatefulWidget, Widget},
 };
-use std::{cell::RefCell, rc::Rc};
+use ::std::{cell::RefCell, rc::Rc};
 
 const DATE_FORMAT_STR: &str = "%H:%M:%S.%3f";
 
@@ -20,6 +21,7 @@ pub(crate) struct TimeStripTab {
     time_strip: Rc<RefCell<TimeStrip>>,
     selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
     show_time_strip_popup: Rc<RefCell<bool>>,
+    db_client: Rc<RefCell<TiberiusClient>>,
 }
 
 impl Widget for &mut TimeStripTab {
@@ -48,12 +50,14 @@ impl TimeStripTab {
         time_strip: Rc<RefCell<TimeStrip>>,
         selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
         show_time_strip_popup: Rc<RefCell<bool>>,
+        db_client: Rc<RefCell<TiberiusClient>>,
     ) -> Self {
         Self {
             state: ListState::default(),
             time_strip,
             selected_time_stamp,
             show_time_strip_popup,
+            db_client,
         }
     }
 
@@ -74,7 +78,11 @@ impl TimeStripTab {
             KeyCode::Delete => {
                 // delete the selected time stamp
                 if let Some(time_stamp) = self.selected_time_stamp.borrow_mut().take() {
-                    self.time_strip.borrow_mut().delete(&time_stamp).await.unwrap();
+                    self.time_strip
+                        .borrow_mut()
+                        .delete(&time_stamp, &mut self.db_client.borrow_mut())
+                        .await
+                        .unwrap();
                 }
             }
             _ => {}

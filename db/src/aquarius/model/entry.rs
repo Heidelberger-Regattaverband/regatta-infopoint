@@ -1,12 +1,24 @@
+use super::Club;
+use super::Crew;
+use super::Heat;
+use super::Race;
+use super::TryToEntity;
+use super::get_rows;
 use crate::{
-    aquarius::model::{Club, Crew, Heat, Race, TryToEntity, utils},
     error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
-use futures::future::{BoxFuture, join_all};
-use serde::Serialize;
-use tiberius::{Query, Row};
-use utoipa::ToSchema;
+use ::futures::future::{BoxFuture, join_all};
+use ::serde::Serialize;
+use ::tiberius::{Query, Row};
+use ::utoipa::ToSchema;
+
+const ID: &str = "Entry_ID";
+const BIB: &str = "Entry_Bib";
+const COMMENT: &str = "Entry_Comment";
+const BOAT_NUMBER: &str = "Entry_BoatNumber";
+const GROUP_VALUE: &str = "Entry_GroupValue";
+const CANCEL_VALUE: &str = "Entry_CancelValue";
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -55,16 +67,16 @@ pub struct Entry {
 
 impl From<&Row> for Entry {
     fn from(value: &Row) -> Self {
-        let cancel_value: u8 = value.get_column("Entry_CancelValue");
+        let cancel_value: u8 = value.get_column(CANCEL_VALUE);
 
         Entry {
-            id: value.get_column("Entry_ID"),
-            bib: value.try_get_column("Entry_Bib"),
-            comment: value.try_get_column("Entry_Comment"),
-            boat_number: value.try_get_column("Entry_BoatNumber"),
+            id: value.get_column(ID),
+            bib: value.try_get_column(BIB),
+            comment: value.try_get_column(COMMENT),
+            boat_number: value.try_get_column(BOAT_NUMBER),
             short_label: value.get_column("Label_Short"),
             cancelled: cancel_value > 0,
-            group_value: value.try_get_column("Entry_GroupValue"),
+            group_value: value.try_get_column(GROUP_VALUE),
             club: Club::from(value),
             crew: None,
             race: value.try_to_entity(),
@@ -76,7 +88,7 @@ impl From<&Row> for Entry {
 impl Entry {
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
-            " {alias}.Entry_ID, {alias}.Entry_Bib, {alias}.Entry_Comment, {alias}.Entry_BoatNumber, {alias}.Entry_GroupValue, {alias}.Entry_CancelValue "
+            "{alias}.{ID}, {alias}.{BIB}, {alias}.{COMMENT}, {alias}.{BOAT_NUMBER}, {alias}.{GROUP_VALUE}, {alias}.{CANCEL_VALUE}"
         )
     }
 
@@ -98,9 +110,9 @@ impl Entry {
             FROM Club AS ac
             JOIN Athlet      a ON ac.Club_ID  = a.Athlet_Club_ID_FK
             JOIN Crew       cr ON a.Athlet_ID = cr.Crew_Athlete_ID_FK
-            JOIN Entry       e ON e.Entry_ID  = cr.Crew_Entry_ID_FK 
+            JOIN Entry       e ON e.{ID}  = cr.Crew_Entry_ID_FK 
             JOIN Club       oc ON oc.Club_ID  = e.Entry_OwnerClub_ID_FK
-            JOIN EntryLabel el ON e.Entry_ID  = el.EL_Entry_ID_FK
+            JOIN EntryLabel el ON e.{ID} = el.EL_Entry_ID_FK
             JOIN Label       l ON l.Label_ID  = el.EL_Label_ID_FK
             JOIN Offer       o ON o.Offer_ID  = e.Entry_Race_ID_FK
             WHERE e.Entry_Event_ID_FK = @P1 AND ac.Club_ID = @P2
@@ -134,9 +146,9 @@ impl Entry {
             "SELECT DISTINCT {0}, {1}, {2}, l.Label_Short
             FROM Athlet      a
             JOIN Crew       cr ON a.Athlet_ID = cr.Crew_Athlete_ID_FK
-            JOIN Entry       e ON e.Entry_ID  = cr.Crew_Entry_ID_FK 
+            JOIN Entry       e ON e.{ID}  = cr.Crew_Entry_ID_FK 
             JOIN Club       oc ON oc.Club_ID  = e.Entry_OwnerClub_ID_FK
-            JOIN EntryLabel el ON e.Entry_ID  = el.EL_Entry_ID_FK
+            JOIN EntryLabel el ON e.{ID} = el.EL_Entry_ID_FK
             JOIN Label       l ON l.Label_ID  = el.EL_Label_ID_FK
             JOIN Offer       o ON o.Offer_ID  = e.Entry_Race_ID_FK
             WHERE e.Entry_Event_ID_FK = @P1 AND a.Athlet_ID = @P2
@@ -164,11 +176,11 @@ impl Entry {
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, l.Label_Short
             FROM Entry       e
-            JOIN EntryLabel el ON el.EL_Entry_ID_FK = e.Entry_ID
+            JOIN EntryLabel el ON el.EL_Entry_ID_FK = e.{ID}
             JOIN Label       l ON el.EL_Label_ID_FK = l.Label_ID
             JOIN Club        c ON c.Club_ID         = e.Entry_OwnerClub_ID_FK
             WHERE e.Entry_Race_ID_FK = @P1 AND el.EL_RoundFrom <= @P2 AND @P2 <= el.EL_RoundTo
-            ORDER BY e.Entry_Bib ASC",
+            ORDER BY e.{BIB} ASC",
             Entry::select_columns("e"),
             Club::select_all_columns("c")
         ));
@@ -185,7 +197,7 @@ async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Res
 
     let mut crew_futures: Vec<BoxFuture<Result<Vec<Crew>, DbError>>> = Vec::new();
     let mut heats_futures: Vec<BoxFuture<Result<Vec<Heat>, DbError>>> = Vec::new();
-    let mut entries: Vec<Entry> = utils::get_rows(stream)
+    let mut entries: Vec<Entry> = get_rows(stream)
         .await?
         .into_iter()
         .map(|row| {

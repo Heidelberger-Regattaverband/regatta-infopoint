@@ -1,4 +1,4 @@
-use clap::{Parser, command};
+use clap::Parser;
 
 pub mod built_info {
     // The file has been placed there by the build script.
@@ -11,15 +11,15 @@ pub mod built_info {
 #[command(about = built_info::PKG_DESCRIPTION, long_about = None)]
 pub(crate) struct Args {
     /// The host to connect to
-    #[arg(long, default_value = "127.0.0.1")]
+    #[arg(long, default_value = "aquarius")]
     pub(crate) host: String,
 
     /// The port to connect to
     #[arg(long, default_value = "2048")]
     pub(crate) port: u16,
 
-    /// The connection timeout in seconds
-    #[arg(long, default_value = "1")]
+    /// The connection timeout in milliseconds
+    #[arg(long, default_value = "500")]
     pub(crate) timeout: u16,
 
     /// The database host
@@ -31,7 +31,7 @@ pub(crate) struct Args {
     pub(crate) db_port: u16,
 
     /// The database name
-    #[arg(long, default_value = "")]
+    #[arg(long, default_value = "Regatta_Test")]
     pub(crate) db_name: String,
 
     /// The database user
@@ -50,8 +50,11 @@ mod tests {
     #[test]
     fn test_args() {
         let args = Args::parse();
-        assert_eq!(args.host, "127.0.0.1");
+        assert_eq!(args.host, "aquarius");
         assert_eq!(args.port, 2048);
-        assert_eq!(args.timeout, 1);
+        assert_eq!(args.timeout, 500);
+        assert_eq!(args.db_name, "Regatta_Test");
+        assert_eq!(args.db_host, "data");
+        assert_eq!(args.db_port, 1433);
     }
 }

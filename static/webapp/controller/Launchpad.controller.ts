@@ -7,12 +7,17 @@ import Control from "sap/ui/core/Control";
 import Fragment from "sap/ui/core/Fragment";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import BaseController from "./Base.controller";
+import Formatter from "../model/Formatter";
+import NotificationListItem from "sap/m/NotificationListItem";
+import Event from "sap/ui/base/Event";
+import NotificationList from "sap/m/NotificationList";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class LaunchpadController extends BaseController {
 
+  readonly formatter: Formatter = Formatter;
   private readonly credentialsModel: JSONModel = new JSONModel({ username: "", password: "" });
   private popover?: ResponsivePopover;
   private popoverPromise?: Promise<ResponsivePopover>;
@@ -20,6 +25,7 @@ export default class LaunchpadController extends BaseController {
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.credentialsModel, "credentials");
+    super.getComponentJSONModel("messages");
     this.getIdentity();
   }
 
@@ -58,6 +64,21 @@ export default class LaunchpadController extends BaseController {
     this.performLogin();
   }
 
+  onNotificationClose(event: Event): void {
+    const item: NotificationListItem = event.getSource();
+    (item.getParent() as NotificationList).removeItem(item);
+    const notificationId: number = item.getCounter();
+
+    $.ajax({
+      type: "POST",
+      url: `/api/notifications/${notificationId}/read`,
+      success: (result: any) => {
+        // refresh notifications model
+        super.getComponentJSONModel("messages")?.refresh();
+      }
+    });
+  }
+
   private performLogin() {
     if (this.popover) {
       this.popover.close();
@@ -69,33 +90,29 @@ export default class LaunchpadController extends BaseController {
   onShowLoginPress(event: Button$PressEvent): void {
     const eventSource: Control = event.getSource();
 
-    if (!this.isAuthenticated()) {
-      if (this.popover?.isOpen()) {
-        // close login dialog if it's already open
-        this.popover.close();
-        delete this.popover;
-      } else {
-        // check if fragment is already loaded or not
-        if (!this.popoverPromise) {
-          // load fragment ...
-          this.popoverPromise = Fragment.load({
-            id: this.getView()?.getId(), name: "de.regatta_hd.infoportal.view.LoginPopover", controller: this
-          }).then((popover: any) => {
-            // ... and initialize
-            super.getView()?.addDependent(popover);
-            popover.addStyleClass(super.getContentDensityClass());
-            return popover;
-          });
-        }
-
-        // finish loading of fragment and open it
-        this.popoverPromise.then((popover: ResponsivePopover) => {
-          this.popover = popover;
-          popover.openBy(eventSource);
-        });
-      }
-    } else {
+    if (this.isAuthenticated()) {
       this.logout();
+    } else if (this.popover?.isOpen()) {
+      // close login dialog if it's already open
+      this.popover.close();
+      delete this.popover;
+    } else {
+      // check if fragment is already loaded or not
+      // load fragment ...
+      this.popoverPromise ??= Fragment.load({
+        id: this.getView()?.getId(), name: "de.regatta_hd.infoportal.view.LoginPopover", controller: this
+      }).then((popover: any) => {
+        // ... and initialize
+        super.getView()?.addDependent(popover);
+        popover.addStyleClass(super.getContentDensityClass());
+        return popover;
+      });
+
+      // finish loading of fragment and open it
+      this.popoverPromise.then((popover: ResponsivePopover) => {
+        this.popover = popover;
+        popover.openBy(eventSource);
+      });
     }
   }
 

@@ -3,8 +3,8 @@
 /// * `string` - The string to unquote.
 /// # Returns
 /// The unquoted string.
-pub(crate) fn unquote(string: &str) -> String {
-    string.trim_start_matches('\'').trim_end_matches('\'').to_string()
+pub(crate) fn unquote(string: &str) -> &str {
+    string.trim_start_matches('\'').trim_end_matches('\'')
 }
 
 /// Print a string with whitespaces replaced by escape sequences.

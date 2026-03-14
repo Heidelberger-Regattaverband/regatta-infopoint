@@ -35,8 +35,8 @@ export default class BaseController extends Controller {
    * @returns {boolean} whether the application is running in a secure context
    */
   isSecureContext(): boolean {
-    console.debug(`isSecureContext: ${window.isSecureContext}`);
-    return window.isSecureContext;
+    console.debug(`isSecureContext: ${globalThis.isSecureContext}`);
+    return globalThis.isSecureContext;
   }
 
   /**
@@ -94,7 +94,7 @@ export default class BaseController extends Controller {
   navBack(target: string): void {
     const previousHash: string | undefined = History.getInstance().getPreviousHash();
     if (previousHash) {
-      window.history.back();
+      globalThis.history.back();
     } else {
       this.getRouter().navTo(target, {}, undefined, false /* history*/);
     }
@@ -166,6 +166,10 @@ export default class BaseController extends Controller {
       params = { "lat": location.lat, "lng": location.lng };
     }
     this.getRouter().navTo("map", params);
+  }
+
+  navToAdmin(): void {
+    this.getRouter().navTo("admin");
   }
 
   async getFilters(): Promise<any> {

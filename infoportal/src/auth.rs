@@ -1,19 +1,22 @@
 use crate::config::CONFIG;
-use actix_web::HttpResponse;
-use serde::{Deserialize, Serialize};
-use tiberius::Client;
-use tokio::net::TcpStream;
-use tokio_util::compat::TokioAsyncWriteCompatExt;
-use utoipa::ToSchema;
+use ::actix_web::HttpResponse;
+use ::db::tiberius_client::Client;
+use ::secret_string::SecretString;
+use ::serde::{Deserialize, Serialize};
+use ::tokio::net::TcpStream;
+use ::tokio_util::compat::TokioAsyncWriteCompatExt;
+use ::tracing::warn;
+use ::utoipa::ToSchema;
 
 /// The credentials struct contains the username and the password of the user.
 /// The credentials are used to authenticate the user.
-#[derive(Deserialize, ToSchema)]
-pub(crate) struct Credentials {
+#[derive(Clone, Hash, PartialEq, Eq, Deserialize, ToSchema)]
+pub struct Credentials {
     /// The username of the user.
-    username: String,
+    pub username: String,
     /// The password of the user.
-    password: String,
+    #[schema(value_type = String, format = "Password")]
+    pub password: SecretString<String>,
 }
 
 /// The scope enum contains the possible scopes of the user.
@@ -37,7 +40,7 @@ pub(crate) struct User {
     /// The username of the user.
     pub(crate) username: String,
     /// The scope of the user.
-    scope: Scope,
+    pub(crate) scope: Scope,
 }
 
 impl User {
@@ -67,18 +70,18 @@ impl User {
     /// # Returns
     /// * `Ok(User)` - The authenticated user.
     /// * `Err(HttpResponse)` - The error response.
-    pub async fn authenticate(credentials: Credentials) -> Result<Self, HttpResponse> {
+    pub async fn authenticate(credentials: &Credentials) -> Result<Self, HttpResponse> {
         let mut username: String = Default::default();
         credentials.username.trim().clone_into(&mut username);
 
         // get database config with given credentials
-        let db_cfg = CONFIG.get_db_config_for_user(&username, &credentials.password);
+        let db_cfg = CONFIG.get_db_config_for_user(&username, credentials.password.value());
 
         // then try to open a connection to the MS-SQL server ...
         let tcp = match TcpStream::connect(db_cfg.get_addr()).await {
             Ok(stream) => stream,
-            Err(e) => {
-                tracing::warn!("Failed to connect to database: {}", e);
+            Err(err) => {
+                warn!(?err, "Failed to connect to database");
                 return Err(HttpResponse::Unauthorized().json(User::new_guest()));
             }
         };
@@ -92,7 +95,7 @@ impl User {
                 Scope::User
             };
             Ok(User {
-                username: credentials.username,
+                username: credentials.username.clone(),
                 scope,
             })
         } else {

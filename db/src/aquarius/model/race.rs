@@ -1,13 +1,17 @@
+use super::age_class::ID as AGE_CLASS_ID;
+use super::boat_class::ID as BOAT_CLASS_ID;
+use super::get_row;
+use super::get_rows;
 use crate::tiberius::TiberiusClient;
 use crate::{
-    aquarius::model::{AgeClass, BoatClass, Entry, Heat, TryToEntity, utils},
+    aquarius::model::{AgeClass, BoatClass, Entry, Heat, TryToEntity},
     error::DbError,
     tiberius::{RowColumn, TryRowColumn},
 };
-use chrono::{DateTime, Utc};
-use serde::Serialize;
-use tiberius::{Query, Row};
-use utoipa::ToSchema;
+use ::chrono::{DateTime, Utc};
+use ::serde::Serialize;
+use ::tiberius::{Query, Row};
+use ::utoipa::ToSchema;
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -130,8 +134,8 @@ impl Race {
     pub async fn query_races_of_regatta(regatta_id: i32, client: &mut TiberiusClient) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
-            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
-            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
+            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
+            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
             WHERE o.Offer_Event_ID_FK = @P1
             ORDER BY o.Offer_SortValue ASC",
             Race::select_columns("o"),
@@ -142,15 +146,15 @@ impl Race {
         query.bind(regatta_id);
 
         let stream = query.query(client).await?;
-        let races = utils::get_rows(stream).await?;
+        let races = get_rows(stream).await?;
         Ok(races.into_iter().map(|row| Race::from(&row)).collect())
     }
 
     pub async fn query_race_by_id(race_id: i32, client: &mut TiberiusClient) -> Result<Self, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
-            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.AgeClass_ID
-            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.BoatClass_ID
+            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
+            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
             WHERE o.Offer_ID = @P1",
             Race::select_columns("o"),
             AgeClass::select_minimal_columns("a"),
@@ -159,6 +163,6 @@ impl Race {
         let mut query = Query::new(sql);
         query.bind(race_id);
         let stream = query.query(client).await?;
-        Ok(Race::from(&utils::get_row(stream).await?))
+        Ok(Race::from(&get_row(stream).await?))
     }
 }
