@@ -254,7 +254,7 @@ impl Caches {
             total_entries += stat.entries;
         }
 
-        let stats = CacheStats {
+        CacheStats {
             hits: total_hits,
             misses: total_misses,
             entries: total_entries,
@@ -263,9 +263,7 @@ impl Caches {
             } else {
                 0.0
             },
-        };
-        debug!("Cache statistics: {:?}", stats);
-        stats
+        }
     }
 }
 
