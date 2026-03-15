@@ -123,9 +123,7 @@ async fn index(
     identity: Option<Identity>,
 ) -> Result<HttpResponse, Error> {
     if identity.is_some() {
-        let response = start(WsMonitoring::new(aquarius, aquarius_client), &request, stream);
-        debug!(?response, "Websocket start response");
-        response
+        start(WsMonitoring::new(aquarius, aquarius_client), &request, stream)
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
     }

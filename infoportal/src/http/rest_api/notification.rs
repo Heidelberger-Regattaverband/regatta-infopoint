@@ -37,11 +37,13 @@ async fn get_visible_notifications(
     aquarius: Data<Aquarius>,
     session: Session,
 ) -> Result<impl Responder, Error> {
-    let regatta_id = regatta_id.into_inner();
-    let visible_notifications = aquarius.get_visible_notifications(regatta_id).await.map_err(|err| {
-        error!(%err, regatta_id, "Failed to get visible notifications");
-        ErrorInternalServerError(err)
-    })?;
+    let visible_notifications = aquarius
+        .get_visible_notifications(regatta_id.into_inner())
+        .await
+        .map_err(|err| {
+            error!(%err, "Failed to get visible notifications");
+            ErrorInternalServerError(err)
+        })?;
 
     let notifications: Vec<Notification> = visible_notifications
         .into_iter()
@@ -74,13 +76,12 @@ async fn get_all_notifications(
 ) -> Result<impl Responder, Error> {
     match identity {
         Some(identity) => {
-            let regatta_id = regatta_id.into_inner();
             let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
             let all_notifications = aquarius
-                .get_all_notifications(regatta_id, &user_pool)
+                .get_all_notifications(regatta_id.into_inner(), &user_pool)
                 .await
                 .map_err(|err| {
-                    error!(%err, regatta_id, "Failed to get all notifications");
+                    error!(%err, "Failed to get all notifications");
                     ErrorInternalServerError(err)
                 })?;
             Ok(Json(all_notifications))
@@ -117,13 +118,12 @@ async fn create_notification(
                 })));
             }
 
-            let regatta_id = regatta_id.into_inner();
             let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
             let notification = aquarius
-                .create_notification(regatta_id, &request.into_inner(), &user_pool)
+                .create_notification(regatta_id.into_inner(), &request.into_inner(), &user_pool)
                 .await
                 .map_err(|err| {
-                    error!(%err, regatta_id, "Failed to create notification");
+                    error!(%err, "Failed to create notification");
                     ErrorInternalServerError(err)
                 })?;
             Ok(HttpResponse::Created().json(notification))
@@ -164,13 +164,12 @@ async fn update_notification(
             }
 
             let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
-            let notification_id = notification_id.into_inner();
 
             let notification = aquarius
-                .update_notification(notification_id, &request.into_inner(), &user_pool)
+                .update_notification(notification_id.into_inner(), &request.into_inner(), &user_pool)
                 .await
                 .map_err(|err| {
-                    error!(%err, notification_id, "Failed to update notification");
+                    error!(%err, "Failed to update notification");
                     ErrorInternalServerError(err)
                 })?;
 
@@ -203,13 +202,12 @@ async fn delete_notification(
 ) -> Result<impl Responder, Error> {
     match identity {
         Some(identity) => {
-            let notification_id = notification_id.into_inner();
             let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
             let deleted = aquarius
-                .delete_notification(notification_id, &user_pool)
+                .delete_notification(notification_id.into_inner(), &user_pool)
                 .await
                 .map_err(|err| {
-                    error!(%err, notification_id, "Failed to delete notification:");
+                    error!(%err, "Failed to delete notification:");
                     ErrorInternalServerError(err)
                 })?;
 
@@ -225,6 +223,14 @@ async fn delete_notification(
     }
 }
 
+#[utoipa::path(
+    description = "Mark a notification as read for the current user.",
+    context_path = PATH,
+    responses(
+        (status = 204, description = "Notification marked as read successfully"),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
 #[post("/notifications/{notification_id}/read")]
 async fn notification_read(notification_id: Path<i32>, session: Session) -> Result<impl Responder, Error> {
     session.insert(create_notification_read_key(notification_id.into_inner()), Utc::now())?;
