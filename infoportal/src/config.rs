@@ -16,16 +16,16 @@ pub static CONFIG: LazyLock<Config> = LazyLock::new(|| Config::init().expect("Fa
 pub struct Config {
     /// The IP address the HTTP server is listening on. Defaults to `0.0.0.0`.
     /// The IP address can be set by setting the environment variable `HTTP_BIND`.
-    pub http_bind: String,
+    http_bind: String,
     /// The port the HTTP server is listening on. Defaults to `8080`.
     /// The port can be set by setting the environment variable `HTTP_PORT`.
-    pub http_port: u16,
+    http_port: u16,
     /// The IP address the HTTPS server is listening on. Defaults to `0.0.0.0`
     /// The IP address can be set by setting the environment variable `HTTPS_BIND`.
-    pub https_bind: String,
+    https_bind: String,
     /// The port the HTTPS server is listening on. Defaults to `8443`.
     /// The port can be set by setting the environment variable `HTTPS_PORT`.
-    pub https_port: u16,
+    https_port: u16,
     /// The path to the HTTPS certificate. Defaults to `./ssl/cert.pem`.
     /// The path can be set by setting the environment variable `HTTPS_CERT_PATH`.
     pub https_cert_path: String,
@@ -34,9 +34,9 @@ pub struct Config {
     pub https_key_path: String,
     /// The maximum number of requests per interval.
     /// The maximum number of requests can be set by setting the environment variable `HTTP_RL_MAX_REQUESTS`.
-    pub http_rl_max_requests: u64,
+    http_rl_max_requests: u64,
     /// The rate interval in seconds. The rate interval can be set by setting the environment variable `HTTP_RL_INTERVAL`.
-    pub http_rl_interval: u64,
+    http_rl_interval: u64,
     /// The number of HTTP workers. The number of HTTP workers can be set by setting the environment variable `HTTP_WORKERS`.
     pub http_workers: Option<usize>,
     /// The path to the static application content that is delivered to the browser. Defaults to `./static/dist`.
@@ -65,11 +65,11 @@ pub struct Config {
     pub active_regatta_id: Option<i32>,
     /// The cache TTL in seconds. The cache TTL can be set by setting the environment variable `CACHE_TTL`.
     pub cache_ttl: u64,
-    /// The Aquarius host. The Aquarius host can be set by setting the environment variable `AQUARIUS_HOST`.
-    /// Defaults to `aquarius`.
+    /// Whether the Aquarius integration is enabled. The Aquarius integration can be enabled by setting the environment variable `AQUARIUS_ENABLED` to `true`.
+    pub aquarius_enabled: bool,
+    /// The Aquarius host. The Aquarius host can be set by setting the environment variable `AQUARIUS_HOST`. Defaults to `aquarius`.
     pub aquarius_host: String,
-    /// The Aquarius port. The Aquarius port can be set by setting the environment variable `AQUARIUS_PORT`.
-    /// Defaults to `2048`.
+    /// The Aquarius port. The Aquarius port can be set by setting the environment variable `AQUARIUS_PORT`. Defaults to `2048`.
     pub aquarius_port: u16,
     /// The connection timeout for the Aquarius client in milliseconds. The timeout can be set by setting the environment variable `AQUARIUS_TIMEOUT`.
     /// Defaults to `500`.
@@ -79,33 +79,16 @@ pub struct Config {
 impl Config {
     /// Returns the HTTP binding configuration of the server.
     pub fn get_http_bind(&self) -> (String, u16) {
-        info!(
-            bind = self.http_bind,
-            port = self.http_port,
-            "HTTP server is listening on:",
-        );
         (self.http_bind.clone(), self.http_port)
     }
 
     /// Returns the HTTPS binding configuration of the server.
     pub fn get_https_bind(&self) -> (String, u16) {
-        info!(
-            bind = self.https_bind,
-            port = self.https_port,
-            "HTTPS server is listening on:",
-        );
-
         (self.https_bind.clone(), self.https_port)
     }
 
     /// Returns the rate limiter configuration taken from the environment.
     pub fn get_rate_limiter_config(&self) -> (u64, u64) {
-        info!(
-            max_requests = self.http_rl_max_requests,
-            interval_in_secs = self.http_rl_interval,
-            "HTTP/S server rate limiter:",
-        );
-
         (self.http_rl_max_requests, self.http_rl_interval)
     }
 
@@ -145,29 +128,6 @@ impl Config {
             "Build details:",
         );
 
-        // read http config with improved error handling - using constants
-        let http_bind = env::var(consts::HTTP_BIND).unwrap_or_else(|_| consts::DEFAULT_BIND_ADDRESS.to_string());
-        let http_port: u16 = Self::parse_env_var(consts::HTTP_PORT, consts::DEFAULT_HTTP_PORT)?;
-        let http_app_content_path =
-            env::var(consts::HTTP_APP_CONTENT_PATH).unwrap_or_else(|_| consts::DEFAULT_STATIC_CONTENT_PATH.to_owned());
-        info!(path = http_app_content_path, "Serving static content:");
-
-        // read https config with improved error handling
-        let https_bind = env::var(consts::HTTPS_BIND).unwrap_or_else(|_| consts::DEFAULT_BIND_ADDRESS.to_string());
-        let https_port: u16 = Self::parse_env_var(consts::HTTPS_PORT, consts::DEFAULT_HTTPS_PORT)?;
-        let https_cert_path =
-            env::var(consts::HTTPS_CERT_PATH).unwrap_or_else(|_| consts::DEFAULT_SSL_CERT_PATH.to_string());
-        let https_key_path =
-            env::var(consts::HTTPS_KEY_PATH).unwrap_or_else(|_| consts::DEFAULT_SSL_KEY_PATH.to_string());
-
-        // read ratelimiter config with improved error handling
-        let http_rl_max_requests: u64 =
-            Self::parse_env_var(consts::HTTP_RL_MAX_REQUESTS, consts::DEFAULT_HTTP_RL_MAX_REQUESTS)?;
-        let http_rl_interval: u64 = Self::parse_env_var(consts::HTTP_RL_INTERVAL, consts::DEFAULT_HTTP_RL_INTERVAL)?;
-
-        // handle HTTP_WORKERS with proper error handling
-        let http_workers: Option<usize> = Self::parse_optional_env_var(consts::HTTP_WORKERS);
-
         // read db config - these are required with improved error handling
         let db_host = Self::get_required_env_var(consts::DB_HOST)?;
         let db_port: u16 = Self::parse_env_var(consts::DB_PORT, consts::DEFAULT_DB_PORT)?;
@@ -192,34 +152,21 @@ impl Config {
             "Database:"
         );
 
-        // handle ACTIVE_REGATTA_ID with proper error handling - using constants
-        let active_regatta_id: Option<i32> = Self::parse_optional_env_var(consts::ACTIVE_REGATTA_ID);
-
-        // handle cache TTL with proper error handling - using constants
-        let cache_ttl: u64 = Self::parse_env_var(consts::CACHE_TTL, consts::DEFAULT_CACHE_TTL)?;
-
-        let aquarius_host =
-            env::var(consts::AQUARIUS_HOST).unwrap_or_else(|_| consts::DEFAULT_AQUARIUS_HOST.to_string());
-        let aquarius_port: u16 = Self::parse_env_var(consts::AQUARIUS_PORT, consts::DEFAULT_AQUARIUS_PORT)?;
-        let aquarius_timeout: u16 = Self::parse_env_var(consts::AQUARIUS_TIMEOUT, consts::DEFAULT_AQUARIUS_TIMEOUT)?;
-
-        // Validate cache TTL
-        Self::validate_cache_ttl(cache_ttl)?;
-
-        info!(active_regatta_id, cache_ttl, "Aquarius DB:");
-
-        info!(host = aquarius_host, port = aquarius_port, "Aquarius application:");
-
-        Ok(Config {
-            http_bind,
-            http_port,
-            https_bind,
-            https_port,
-            https_cert_path,
-            https_key_path,
-            http_rl_max_requests,
-            http_rl_interval,
-            http_workers,
+        let config = Config {
+            http_bind: env::var(consts::HTTP_BIND).unwrap_or_else(|_| consts::DEFAULT_BIND_ADDRESS.to_string()),
+            http_port: Self::parse_env_var(consts::HTTP_PORT, consts::DEFAULT_HTTP_PORT)?,
+            https_bind: env::var(consts::HTTPS_BIND).unwrap_or_else(|_| consts::DEFAULT_BIND_ADDRESS.to_string()),
+            https_port: Self::parse_env_var(consts::HTTPS_PORT, consts::DEFAULT_HTTPS_PORT)?,
+            https_cert_path: env::var(consts::HTTPS_CERT_PATH)
+                .unwrap_or_else(|_| consts::DEFAULT_SSL_CERT_PATH.to_string()),
+            https_key_path: env::var(consts::HTTPS_KEY_PATH)
+                .unwrap_or_else(|_| consts::DEFAULT_SSL_KEY_PATH.to_string()),
+            http_rl_max_requests: Self::parse_env_var(
+                consts::HTTP_RL_MAX_REQUESTS,
+                consts::DEFAULT_HTTP_RL_MAX_REQUESTS,
+            )?,
+            http_rl_interval: Self::parse_env_var(consts::HTTP_RL_INTERVAL, consts::DEFAULT_HTTP_RL_INTERVAL)?,
+            http_workers: Self::parse_optional_env_var(consts::HTTP_WORKERS),
             db_host,
             db_port,
             db_name,
@@ -228,13 +175,48 @@ impl Config {
             db_encryption,
             db_pool_max_size,
             db_pool_min_idle,
-            active_regatta_id,
-            cache_ttl,
-            http_app_content_path,
-            aquarius_host,
-            aquarius_port,
-            aquarius_timeout,
-        })
+            active_regatta_id: Self::parse_optional_env_var(consts::ACTIVE_REGATTA_ID),
+            cache_ttl: Self::parse_env_var(consts::CACHE_TTL, consts::DEFAULT_CACHE_TTL)?,
+            http_app_content_path: env::var(consts::HTTP_APP_CONTENT_PATH)
+                .unwrap_or_else(|_| consts::DEFAULT_STATIC_CONTENT_PATH.to_owned()),
+            aquarius_enabled: Self::parse_env_var(consts::AQUARIUS_ENABLED, consts::DEFAULT_AQUARIUS_ENABLED)?,
+            aquarius_host: env::var(consts::AQUARIUS_HOST)
+                .unwrap_or_else(|_| consts::DEFAULT_AQUARIUS_HOST.to_string()),
+            aquarius_port: Self::parse_env_var(consts::AQUARIUS_PORT, consts::DEFAULT_AQUARIUS_PORT)?,
+            aquarius_timeout: Self::parse_env_var(consts::AQUARIUS_TIMEOUT, consts::DEFAULT_AQUARIUS_TIMEOUT)?,
+        };
+        // Validate cache TTL
+        Self::validate_cache_ttl(config.cache_ttl)?;
+        info!(
+            active_regatta_id = config.active_regatta_id,
+            cache_ttl = config.cache_ttl,
+            "Aquarius DB:"
+        );
+        info!(
+            bind = config.https_bind,
+            port = config.https_port,
+            "HTTPS server is listening on:",
+        );
+        info!(
+            bind = config.http_bind,
+            port = config.http_port,
+            "HTTP server is listening on:",
+        );
+        info!(
+            max_requests = config.http_rl_max_requests,
+            interval_in_secs = config.http_rl_interval,
+            "HTTP/S server rate limiter:",
+        );
+        info!(path = config.http_app_content_path, "Serving static content:");
+        info!(
+            host = config.aquarius_host,
+            port = config.aquarius_port,
+            enabled = config.aquarius_enabled,
+            timeout_in_ms = config.aquarius_timeout,
+            "Aquarius application:"
+        );
+
+        Ok(config)
     }
 
     // Private helper methods
@@ -302,16 +284,19 @@ impl Config {
     }
 
     /// Helper function to parse environment variable with proper error handling
-    fn parse_env_var<T: FromStr>(var_name: &str, default: &str) -> Result<T, ConfigError>
+    fn parse_env_var<T: FromStr>(var_name: &str, default: T) -> Result<T, ConfigError>
     where
         T::Err: Display,
     {
-        let value = env::var(var_name).unwrap_or_else(|_| default.to_string());
-        value.parse().map_err(|e: T::Err| ConfigError::ParseError {
-            var_name: var_name.to_string(),
-            value: value.clone(),
-            error: e.to_string(),
-        })
+        let value = env::var(var_name);
+        match value {
+            Ok(value) => value.trim().parse().map_err(|e: T::Err| ConfigError::ParseError {
+                var_name: var_name.to_string(),
+                value,
+                error: e.to_string(),
+            }),
+            Err(_) => Ok(default), // use default if variable is not set
+        }
     }
 
     /// Helper function to get required environment variable
@@ -372,27 +357,29 @@ mod consts {
     pub(super) const DB_POOL_MIN_IDLE: &str = "DB_POOL_MIN_IDLE";
     pub(super) const ACTIVE_REGATTA_ID: &str = "ACTIVE_REGATTA_ID";
     pub(super) const CACHE_TTL: &str = "CACHE_TTL";
+    pub(super) const AQUARIUS_ENABLED: &str = "AQUARIUS_ENABLED";
     pub(super) const AQUARIUS_HOST: &str = "AQUARIUS_HOST";
     pub(super) const AQUARIUS_PORT: &str = "AQUARIUS_PORT";
     pub(super) const AQUARIUS_TIMEOUT: &str = "AQUARIUS_TIMEOUT";
 
     // Default values
     pub(super) const DEFAULT_BIND_ADDRESS: &str = "0.0.0.0";
-    pub(super) const DEFAULT_HTTP_PORT: &str = "8080";
-    pub(super) const DEFAULT_HTTPS_PORT: &str = "8443";
+    pub(super) const DEFAULT_HTTP_PORT: u16 = 8080;
+    pub(super) const DEFAULT_HTTPS_PORT: u16 = 8443;
     pub(super) const DEFAULT_SSL_CERT_PATH: &str = "./ssl/cert.pem";
     pub(super) const DEFAULT_SSL_KEY_PATH: &str = "./ssl/key.pem";
     pub(super) const DEFAULT_STATIC_CONTENT_PATH: &str = "./static/dist";
-    pub(super) const DEFAULT_HTTP_RL_MAX_REQUESTS: &str = "500";
-    pub(super) const DEFAULT_HTTP_RL_INTERVAL: &str = "600";
-    pub(super) const DEFAULT_DB_PORT: &str = "1433";
-    pub(super) const DEFAULT_DB_ENCRYPTION: &str = "false";
-    pub(super) const DEFAULT_DB_POOL_MAX_SIZE: &str = "100";
-    pub(super) const DEFAULT_DB_POOL_MIN_IDLE: &str = "30";
-    pub(super) const DEFAULT_CACHE_TTL: &str = "30";
+    pub(super) const DEFAULT_HTTP_RL_MAX_REQUESTS: u64 = 500;
+    pub(super) const DEFAULT_HTTP_RL_INTERVAL: u64 = 600;
+    pub(super) const DEFAULT_DB_PORT: u16 = 1433;
+    pub(super) const DEFAULT_DB_ENCRYPTION: bool = false;
+    pub(super) const DEFAULT_DB_POOL_MAX_SIZE: u32 = 100;
+    pub(super) const DEFAULT_DB_POOL_MIN_IDLE: u32 = 30;
+    pub(super) const DEFAULT_CACHE_TTL: u64 = 30;
+    pub(super) const DEFAULT_AQUARIUS_ENABLED: bool = false;
     pub(super) const DEFAULT_AQUARIUS_HOST: &str = "aquarius";
-    pub(super) const DEFAULT_AQUARIUS_PORT: &str = "2048";
-    pub(super) const DEFAULT_AQUARIUS_TIMEOUT: &str = "500";
+    pub(super) const DEFAULT_AQUARIUS_PORT: u16 = 2048;
+    pub(super) const DEFAULT_AQUARIUS_TIMEOUT: u16 = 500;
 
     // Validation limits
     pub(super) const CACHE_TTL_MAX_RECOMMENDED: u64 = 3600;
