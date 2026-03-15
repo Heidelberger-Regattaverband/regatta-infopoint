@@ -57,8 +57,9 @@ export default class MonitoringController extends BaseController {
     }
 
     if (monitoring?.app) {
-      all.push({ name: this.i18n("monitoring.app.mem_current"), value: this.niceBytes(monitoring.app.mem_current), group: "3" },
-        { name: this.i18n("monitoring.app.mem_max"), value: this.niceBytes(monitoring.app.mem_max), group: "3" });
+      all.push({ name: this.i18n("monitoring.app.mem_current"), value: this.niceBytes(monitoring.app.memCurrent), group: "3" },
+        { name: this.i18n("monitoring.app.mem_max"), value: this.niceBytes(monitoring.app.memMax), group: "3" },
+        { name: "Aquarius", value: monitoring.app.aquariusConnected ? "Connected" : "Disconnected", group: "3" });
     }
 
     if (monitoring?.sys?.mem) {

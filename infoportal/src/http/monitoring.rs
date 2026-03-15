@@ -186,7 +186,7 @@ pub(crate) struct Db {
 
 #[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct Caches {
+struct Caches {
     pub hits: u64,
     pub misses: u64,
     pub entries: usize,
@@ -207,7 +207,7 @@ impl From<CacheStats> for Caches {
 /// The connections struct contains the current, idle and created connections.
 #[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct Connections {
+struct Connections {
     /// The total number of connections.
     total: u32,
     /// The number of connections that are currently not in use.
@@ -226,7 +226,8 @@ pub(crate) struct Connections {
 
 /// The AppInfo struct contains the current and peak memory usage.
 #[derive(Serialize, ToSchema)]
-pub(crate) struct AppInfo {
+#[serde(rename_all = "camelCase")]
+struct AppInfo {
     /// The current memory usage.
     mem_current: usize,
     /// The peak memory usage.
