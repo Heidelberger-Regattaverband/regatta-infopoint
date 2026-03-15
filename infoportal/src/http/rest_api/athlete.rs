@@ -13,8 +13,6 @@ use ::db::aquarius::model::Athlete;
 use ::db::aquarius::model::Entry;
 use ::tracing::error;
 
-// Athletes Endpoints
-
 #[utoipa::path(
     description = "Get all participating athletes of a regatta.",
     context_path = PATH,
