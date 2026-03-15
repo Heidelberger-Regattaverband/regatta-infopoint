@@ -65,8 +65,6 @@ pub struct Config {
     pub active_regatta_id: Option<i32>,
     /// The cache TTL in seconds. The cache TTL can be set by setting the environment variable `CACHE_TTL`.
     pub cache_ttl: u64,
-    /// Whether the Aquarius integration is enabled. The Aquarius integration can be enabled by setting the environment variable `AQUARIUS_ENABLED` to `true`.
-    pub aquarius_enabled: bool,
     /// The Aquarius host. The Aquarius host can be set by setting the environment variable `AQUARIUS_HOST`. Defaults to `aquarius`.
     pub aquarius_host: String,
     /// The Aquarius port. The Aquarius port can be set by setting the environment variable `AQUARIUS_PORT`. Defaults to `2048`.
@@ -128,30 +126,6 @@ impl Config {
             "Build details:",
         );
 
-        // read db config - these are required with improved error handling
-        let db_host = Self::get_required_env_var(consts::DB_HOST)?;
-        let db_port: u16 = Self::parse_env_var(consts::DB_PORT, consts::DEFAULT_DB_PORT)?;
-        let db_name = Self::get_required_env_var(consts::DB_NAME)?;
-        let db_user = Self::get_required_env_var(consts::DB_USER)?;
-        let db_password = Self::get_required_env_var(consts::DB_PASSWORD)?;
-        let db_encryption: bool = Self::parse_env_var(consts::DB_ENCRYPTION, consts::DEFAULT_DB_ENCRYPTION)?;
-        let db_pool_max_size: u32 = Self::parse_env_var(consts::DB_POOL_MAX_SIZE, consts::DEFAULT_DB_POOL_MAX_SIZE)?;
-        let db_pool_min_idle: u32 = Self::parse_env_var(consts::DB_POOL_MIN_IDLE, consts::DEFAULT_DB_POOL_MIN_IDLE)?;
-
-        // Validate database configuration values
-        Self::validate_db_config(&db_host, db_port, db_pool_max_size, db_pool_min_idle)?;
-
-        info!(
-            host = db_host,
-            port = db_port,
-            encryption = db_encryption,
-            name = db_name,
-            user = db_user,
-            pool_max_size = db_pool_max_size,
-            pool_min_idle = db_pool_min_idle,
-            "Database:"
-        );
-
         let config = Config {
             http_bind: env::var(consts::HTTP_BIND).unwrap_or_else(|_| consts::DEFAULT_BIND_ADDRESS.to_string()),
             http_port: Self::parse_env_var(consts::HTTP_PORT, consts::DEFAULT_HTTP_PORT)?,
@@ -167,53 +141,65 @@ impl Config {
             )?,
             http_rl_interval: Self::parse_env_var(consts::HTTP_RL_INTERVAL, consts::DEFAULT_HTTP_RL_INTERVAL)?,
             http_workers: Self::parse_optional_env_var(consts::HTTP_WORKERS),
-            db_host,
-            db_port,
-            db_name,
-            db_user,
-            db_password,
-            db_encryption,
-            db_pool_max_size,
-            db_pool_min_idle,
+            db_host: Self::get_required_env_var(consts::DB_HOST)?,
+            db_port: Self::parse_env_var(consts::DB_PORT, consts::DEFAULT_DB_PORT)?,
+            db_name: Self::get_required_env_var(consts::DB_NAME)?,
+            db_user: Self::get_required_env_var(consts::DB_USER)?,
+            db_password: Self::get_required_env_var(consts::DB_PASSWORD)?,
+            db_encryption: Self::parse_env_var(consts::DB_ENCRYPTION, consts::DEFAULT_DB_ENCRYPTION)?,
+            db_pool_max_size: Self::parse_env_var(consts::DB_POOL_MAX_SIZE, consts::DEFAULT_DB_POOL_MAX_SIZE)?,
+            db_pool_min_idle: Self::parse_env_var(consts::DB_POOL_MIN_IDLE, consts::DEFAULT_DB_POOL_MIN_IDLE)?,
             active_regatta_id: Self::parse_optional_env_var(consts::ACTIVE_REGATTA_ID),
             cache_ttl: Self::parse_env_var(consts::CACHE_TTL, consts::DEFAULT_CACHE_TTL)?,
             http_app_content_path: env::var(consts::HTTP_APP_CONTENT_PATH)
                 .unwrap_or_else(|_| consts::DEFAULT_STATIC_CONTENT_PATH.to_owned()),
-            aquarius_enabled: Self::parse_env_var(consts::AQUARIUS_ENABLED, consts::DEFAULT_AQUARIUS_ENABLED)?,
             aquarius_host: env::var(consts::AQUARIUS_HOST)
                 .unwrap_or_else(|_| consts::DEFAULT_AQUARIUS_HOST.to_string()),
             aquarius_port: Self::parse_env_var(consts::AQUARIUS_PORT, consts::DEFAULT_AQUARIUS_PORT)?,
             aquarius_timeout: Self::parse_env_var(consts::AQUARIUS_TIMEOUT, consts::DEFAULT_AQUARIUS_TIMEOUT)?,
         };
+        // Validate database configuration values
+        Self::validate_db_config(
+            &config.db_host,
+            config.db_port,
+            config.db_pool_max_size,
+            config.db_pool_min_idle,
+        )?;
         // Validate cache TTL
         Self::validate_cache_ttl(config.cache_ttl)?;
+        info!(
+            host = config.db_host,
+            port = config.db_port,
+            encryption = config.db_encryption,
+            name = config.db_name,
+            user = config.db_user,
+            pool_max_size = config.db_pool_max_size,
+            pool_min_idle = config.db_pool_min_idle,
+            "Database:"
+        );
         info!(
             active_regatta_id = config.active_regatta_id,
             cache_ttl = config.cache_ttl,
             "Aquarius DB:"
         );
         info!(
-            bind = config.https_bind,
-            port = config.https_port,
-            "HTTPS server is listening on:",
-        );
-        info!(
-            bind = config.http_bind,
-            port = config.http_port,
-            "HTTP server is listening on:",
+            https_bind = config.https_bind,
+            https_port = config.https_port,
+            http_bind = config.http_bind,
+            http_port = config.http_port,
+            "Server is listening on:",
         );
         info!(
             max_requests = config.http_rl_max_requests,
             interval_in_secs = config.http_rl_interval,
-            "HTTP/S server rate limiter:",
+            "HTTP/S rate limiter:",
         );
         info!(path = config.http_app_content_path, "Serving static content:");
         info!(
             host = config.aquarius_host,
             port = config.aquarius_port,
-            enabled = config.aquarius_enabled,
             timeout_in_ms = config.aquarius_timeout,
-            "Aquarius application:"
+            "Aquarius Client:"
         );
 
         Ok(config)
@@ -357,7 +343,6 @@ mod consts {
     pub(super) const DB_POOL_MIN_IDLE: &str = "DB_POOL_MIN_IDLE";
     pub(super) const ACTIVE_REGATTA_ID: &str = "ACTIVE_REGATTA_ID";
     pub(super) const CACHE_TTL: &str = "CACHE_TTL";
-    pub(super) const AQUARIUS_ENABLED: &str = "AQUARIUS_ENABLED";
     pub(super) const AQUARIUS_HOST: &str = "AQUARIUS_HOST";
     pub(super) const AQUARIUS_PORT: &str = "AQUARIUS_PORT";
     pub(super) const AQUARIUS_TIMEOUT: &str = "AQUARIUS_TIMEOUT";
@@ -376,7 +361,6 @@ mod consts {
     pub(super) const DEFAULT_DB_POOL_MAX_SIZE: u32 = 100;
     pub(super) const DEFAULT_DB_POOL_MIN_IDLE: u32 = 30;
     pub(super) const DEFAULT_CACHE_TTL: u64 = 30;
-    pub(super) const DEFAULT_AQUARIUS_ENABLED: bool = false;
     pub(super) const DEFAULT_AQUARIUS_HOST: &str = "aquarius";
     pub(super) const DEFAULT_AQUARIUS_PORT: u16 = 2048;
     pub(super) const DEFAULT_AQUARIUS_TIMEOUT: u16 = 500;
