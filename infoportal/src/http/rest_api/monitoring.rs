@@ -86,7 +86,7 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsMonitoring {
     /// This method is called for every message received from the websocket client
     fn handle(&mut self, msg: Result<Message, ProtocolError>, ctx: &mut Self::Context) {
         // process websocket messages
-        trace!(?msg, "Received websocket message");
+        trace!(?msg, "Received Monitoring websocket message");
         match msg {
             Ok(Message::Ping(msg)) => {
                 self.heart_beat = Instant::now();

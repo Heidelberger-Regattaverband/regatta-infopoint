@@ -82,6 +82,7 @@ fn receive_aquarius_events(receiver: Receiver<AquariusEvent>) {
     }
     debug!("AquariusEvent receiver thread for timekeeping websocket stopped");
 }
+
 impl Actor for WsTimekeeping {
     type Context = WebsocketContext<Self>;
 
