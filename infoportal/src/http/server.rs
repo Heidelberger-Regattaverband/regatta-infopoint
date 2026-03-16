@@ -17,8 +17,6 @@ use ::actix_web::{
     web::{self, Data},
 };
 use ::actix_web_prom::{PrometheusMetrics, PrometheusMetricsBuilder};
-use ::aquarius::client::AquariusClient;
-use ::aquarius::event::AquariusEvent;
 use ::db::aquarius::Aquarius;
 use ::db::error::DbError;
 use ::db::tiberius::user_pool::UserPoolManager;
@@ -28,10 +26,7 @@ use ::rustls::ServerConfig;
 use ::rustls_pemfile::{certs, pkcs8_private_keys};
 use ::rustls_pki_types::{PrivateKeyDer, PrivatePkcs8KeyDer};
 use ::std::fs::File;
-use ::std::sync::mpsc;
-use ::std::sync::mpsc::Receiver;
 use ::std::sync::{Arc, Mutex};
-use ::std::thread;
 use ::std::time::Duration;
 use ::std::{
     future::Ready,
@@ -75,8 +70,6 @@ impl Server {
 
         let user_pool_manager = Data::new(UserPoolManager::new(CONFIG.get_db_config()));
 
-        let aquarius_client = Data::new(Self::get_aquarius_client().await);
-
         let factory_closure = move || {
             let mut count = worker_count.lock().unwrap();
             *count += 1;
@@ -88,7 +81,6 @@ impl Server {
                 .wrap(prometheus.clone())
                 .app_data(aquarius.clone())
                 .app_data(user_pool_manager.clone())
-                .app_data(aquarius_client.clone())
                 .configure(rest_api::config)
                 .configure(api_doc::config)
                 .service(
@@ -297,24 +289,6 @@ impl Server {
             );
             None
         }
-    }
-
-    async fn get_aquarius_client() -> AquariusClient {
-        let (aquarius_event_sender, aquarius_event_receiver) = mpsc::channel();
-        let client = AquariusClient::new(
-            &CONFIG.aquarius_host,
-            CONFIG.aquarius_port,
-            CONFIG.aquarius_timeout,
-            aquarius_event_sender,
-        );
-        thread::spawn(move || receive_aquarius_events(aquarius_event_receiver));
-        client.expect("Aquarius client")
-    }
-}
-
-fn receive_aquarius_events(receiver: Receiver<AquariusEvent>) {
-    while let Ok(event) = receiver.recv() {
-        debug!("Received AquariusEvent: {:?}", event);
     }
 }
 

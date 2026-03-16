@@ -1,5 +1,10 @@
+use super::CLIENT_TIMEOUT;
+use super::HEARTBEAT_INTERVAL;
 use crate::http::monitoring::Monitoring;
-use ::actix::{Actor, ActorContext, AsyncContext, StreamHandler};
+use ::actix::Actor;
+use ::actix::ActorContext;
+use ::actix::AsyncContext;
+use ::actix::StreamHandler;
 use ::actix_identity::Identity;
 use ::actix_web::{
     Error, HttpRequest, HttpResponse,
@@ -8,47 +13,38 @@ use ::actix_web::{
     web::{Data, Payload},
 };
 use ::actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
-use ::aquarius::client::AquariusClient;
 use ::db::aquarius::Aquarius;
 use ::db::tiberius::TiberiusPool;
-use ::std::time::{Duration, Instant};
-use ::tracing::{debug, trace};
-
-/// How often heartbeat pings are sent
-const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(2);
-
-/// How long before lack of client response causes a timeout
-const CLIENT_TIMEOUT: Duration = Duration::from_secs(5);
+use ::std::time::Instant;
+use ::tracing::debug;
+use ::tracing::trace;
 
 /// Define HTTP actor
 struct WsMonitoring {
     /// Client must send ping at least once per 5 seconds (CLIENT_TIMEOUT),
     /// otherwise we drop connection.
-    hb: Instant,
+    heart_beat: Instant,
     aquarius: Data<Aquarius>,
-    aquarius_client: Data<AquariusClient>,
 }
 
 impl WsMonitoring {
-    fn new(aquarius: Data<Aquarius>, aquarius_client: Data<AquariusClient>) -> Self {
+    fn new(aquarius: Data<Aquarius>) -> Self {
         Self {
-            hb: Instant::now(),
+            heart_beat: Instant::now(),
             aquarius,
-            aquarius_client,
         }
     }
 
     /// helper method that sends ping to client every 5 seconds (HEARTBEAT_INTERVAL).
     /// also this method checks heartbeats from client
-    fn hb(&self, ctx: &mut <Self as Actor>::Context) {
+    fn start_heart_beat(&self, ctx: &mut <Self as Actor>::Context) {
         let aquarius = self.aquarius.clone();
-        let aquarius_client = self.aquarius_client.clone();
 
         ctx.run_interval(HEARTBEAT_INTERVAL, move |act, ctx| {
             // check client heartbeats
-            if Instant::now().duration_since(act.hb) > CLIENT_TIMEOUT {
+            if Instant::now().duration_since(act.heart_beat) > CLIENT_TIMEOUT {
                 // heartbeat timed out
-                debug!("Websocket Client heartbeat failed, disconnecting!");
+                debug!("Monitoring websocket heartbeat failed, disconnecting!");
 
                 // stop actor
                 ctx.stop();
@@ -57,17 +53,13 @@ impl WsMonitoring {
                 return;
             }
 
-            Self::send_monitoring(ctx, &aquarius, &aquarius_client);
+            Self::send_monitoring(ctx, &aquarius);
             ctx.ping(b"");
         });
     }
 
-    fn send_monitoring(
-        ctx: &mut WebsocketContext<WsMonitoring>,
-        aquarius: &Aquarius,
-        aquarius_client: &AquariusClient,
-    ) {
-        let monitoring = Monitoring::new(TiberiusPool::instance(), &aquarius.get_cache_stats(), aquarius_client);
+    fn send_monitoring(ctx: &mut WebsocketContext<WsMonitoring>, aquarius: &Aquarius) {
+        let monitoring = Monitoring::new(TiberiusPool::instance(), &aquarius.get_cache_stats());
         let json = serde_json::to_string(&monitoring).unwrap();
         ctx.text(json);
     }
@@ -78,14 +70,14 @@ impl Actor for WsMonitoring {
 
     /// Method is called on actor start. We start the heartbeat process here.
     fn started(&mut self, ctx: &mut Self::Context) {
-        trace!("Websocket actor started");
-        Self::send_monitoring(ctx, &self.aquarius, &self.aquarius_client);
-        self.hb(ctx);
+        trace!("Monitoring websocket actor started");
+        Self::send_monitoring(ctx, &self.aquarius);
+        self.start_heart_beat(ctx);
     }
 
     /// Method is called on actor stop.
     fn stopped(&mut self, _ctx: &mut Self::Context) {
-        trace!("Websocket actor stopped");
+        trace!("Monitoring websocket actor stopped");
     }
 }
 
@@ -97,11 +89,11 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsMonitoring {
         trace!(?msg, "Received websocket message");
         match msg {
             Ok(Message::Ping(msg)) => {
-                self.hb = Instant::now();
+                self.heart_beat = Instant::now();
                 ctx.pong(&msg);
             }
             Ok(Message::Pong(_)) => {
-                self.hb = Instant::now();
+                self.heart_beat = Instant::now();
             }
             Ok(Message::Text(text)) => ctx.text(text),
             Ok(Message::Binary(bin)) => ctx.binary(bin),
@@ -119,11 +111,10 @@ async fn index(
     request: HttpRequest,
     stream: Payload,
     aquarius: Data<Aquarius>,
-    aquarius_client: Data<AquariusClient>,
     identity: Option<Identity>,
 ) -> Result<HttpResponse, Error> {
     if identity.is_some() {
-        start(WsMonitoring::new(aquarius, aquarius_client), &request, stream)
+        start(WsMonitoring::new(aquarius), &request, stream)
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
     }

@@ -1,5 +1,4 @@
 use crate::peak_alloc::PeakAlloc;
-use ::aquarius::client::AquariusClient;
 use ::db::{cache::CacheStats, tiberius::TiberiusPool};
 use ::serde::Serialize;
 use ::std::time::Duration;
@@ -23,7 +22,7 @@ impl Monitoring {
     /// * `pool` - The tiberius pool.
     /// # Returns
     /// `Monitoring` - The monitoring struct.
-    pub(crate) fn new(pool: &TiberiusPool, caches: &CacheStats, aquarius_client: &AquariusClient) -> Self {
+    pub(crate) fn new(pool: &TiberiusPool, caches: &CacheStats) -> Self {
         let sys = get_system();
         let state = pool.state();
         let stats = state.statistics;
@@ -54,7 +53,6 @@ impl Monitoring {
             app: AppInfo {
                 mem_current: PeakAlloc.current_usage(),
                 mem_max: PeakAlloc.peak_usage(),
-                aquarius_connected: aquarius_client.is_connected(),
             },
         }
     }
@@ -232,6 +230,4 @@ struct AppInfo {
     mem_current: usize,
     /// The peak memory usage.
     mem_max: usize,
-    /// Whether the aquarius client is currently connected.
-    aquarius_connected: bool,
 }

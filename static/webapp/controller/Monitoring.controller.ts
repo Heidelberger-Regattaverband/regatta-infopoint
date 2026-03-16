@@ -58,8 +58,7 @@ export default class MonitoringController extends BaseController {
 
     if (monitoring?.app) {
       all.push({ name: this.i18n("monitoring.app.mem_current"), value: this.niceBytes(monitoring.app.memCurrent), group: "3" },
-        { name: this.i18n("monitoring.app.mem_max"), value: this.niceBytes(monitoring.app.memMax), group: "3" },
-        { name: "Aquarius", value: monitoring.app.aquariusConnected ? "Connected" : "Disconnected", group: "3" });
+        { name: this.i18n("monitoring.app.mem_max"), value: this.niceBytes(monitoring.app.memMax), group: "3" });
     }
 
     if (monitoring?.sys?.mem) {
@@ -140,11 +139,11 @@ export default class MonitoringController extends BaseController {
     const location: Location = globalThis.location;
     const proto = location.protocol.startsWith('https') ? 'wss' : 'ws';
 
-    console.debug('Connecting...');
+    console.debug('Connecting Monitoring WebSocket ...');
     this.socket = new WebSocket(`${proto}://${location.host}/api/monitoring`);
 
     this.socket.onopen = (_event: Event) => {
-      console.debug('Connected');
+      console.debug('Monitoring WebSocket Connected');
       this.statusButton?.setIcon('sap-icon://connected');
     }
 
@@ -155,7 +154,7 @@ export default class MonitoringController extends BaseController {
 
     this.socket.onclose = (_event: CloseEvent) => {
       this.statusButton?.setIcon('sap-icon://disconnected');
-      console.debug('Disconnected');
+      console.debug('Monitoring WebSocket Disconnected');
     }
   }
 
@@ -163,7 +162,7 @@ export default class MonitoringController extends BaseController {
     if (this.socket) {
       this.socket.close();
       delete this.socket;
-      console.debug('Disconnecting...');
+      console.debug('Disconnecting Monitoring WebSocket ...');
     }
   }
 }

@@ -14,19 +14,26 @@ import BaseTableController from "./BaseTable.controller";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class TimestripController extends BaseTableController {
+export default class TimekeepingController extends BaseTableController {
 
   private static readonly TIMESTAMP_MODEL: string = "timestamp";
   private static readonly TIMESTRIP_MODEL: string = "timestrip";
 
   readonly formatter: Formatter = Formatter;
+  private socket?: WebSocket;
+  private statusButton?: Button;
 
   onInit(): void {
     super.init(super.getView()?.byId("timestripTable") as Table, "timestamp" /* eventBus channel */);
-
+    this.statusButton = this.byId("timekeeperStatusButton") as Button;
     super.getView()?.addStyleClass(super.getContentDensityClass());
-    super.setViewModel(new JSONModel(), TimestripController.TIMESTRIP_MODEL);
-    super.getRouter()?.getRoute("timestrip")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadTimestripModel(), this);
+    super.getView()?.addEventDelegate({ onBeforeHide: this.onBeforeHide }, this);
+    super.setViewModel(new JSONModel(), TimekeepingController.TIMESTRIP_MODEL);
+    super.getRouter()?.getRoute("timekeeping")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadTimestripModel(), this);
+  }
+
+  private onBeforeHide(): void {
+    this.disconnect();
   }
 
   onSelectionChange(event: ListBase$SelectionChangeEvent): void {
@@ -42,6 +49,10 @@ export default class TimestripController extends BaseTableController {
     super.navToStartPage();
     // reduce table growing threshold to improve performance next time table is shown
     this.table.setGrowingThreshold(30);
+  }
+
+  onStatusButtonPress(): void {
+    this.connect();
   }
 
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
@@ -63,7 +74,7 @@ export default class TimestripController extends BaseTableController {
   }
 
   onItemChanged(item: any): void {
-    super.getComponentJSONModel(TimestripController.TIMESTAMP_MODEL).setData(item);
+    super.getComponentJSONModel(TimekeepingController.TIMESTAMP_MODEL).setData(item);
     super.getEventBus()?.publish("timestamp", "itemChanged", {});
   }
 
@@ -80,7 +91,44 @@ export default class TimestripController extends BaseTableController {
 
   private async loadTimestripModel(): Promise<boolean> {
     const url: string = `/api/regattas/active/timestrip`;
-    const timestripModel: JSONModel = super.getViewJSONModel(TimestripController.TIMESTRIP_MODEL);
+    const timestripModel: JSONModel = super.getViewJSONModel(TimekeepingController.TIMESTRIP_MODEL);
     return await super.updateJSONModel(timestripModel, url);
   }
+
+  private updateModel(monitoring: any) {
+  }
+
+  private connect() {
+    this.disconnect();
+
+    const location: Location = globalThis.location;
+    const proto = location.protocol.startsWith('https') ? 'wss' : 'ws';
+
+    console.debug('Connecting Timekeeping WebSocket ...');
+    this.socket = new WebSocket(`${proto}://${location.host}/api/timekeeping`);
+
+    this.socket.onopen = (_event: Event) => {
+      console.debug('Timekeeping WebSocket Connected');
+      this.statusButton?.setIcon('sap-icon://connected');
+    }
+
+    this.socket.onmessage = (event: MessageEvent) => {
+      const monitoring = JSON.parse(event.data);
+      this.updateModel(monitoring);
+    }
+
+    this.socket.onclose = (_event: CloseEvent) => {
+      this.statusButton?.setIcon('sap-icon://disconnected');
+      console.debug('Timekeeping WebSocket Disconnected');
+    }
+  }
+
+  private disconnect() {
+    if (this.socket) {
+      this.socket.close();
+      delete this.socket;
+      console.debug('Disconnecting Timekeeping WebSocket ...');
+    }
+  }
+
 }

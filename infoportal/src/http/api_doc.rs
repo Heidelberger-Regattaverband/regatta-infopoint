@@ -21,7 +21,7 @@ use ::utoipa_swagger_ui::SwaggerUi;
         rest_api::athlete::get_participating_athletes,
         rest_api::athlete::get_athlete,
         rest_api::athlete::get_athlete_entries,
-        rest_api::misc::get_timestrip,
+        rest_api::timekeeping::get_timestrip,
         rest_api::misc::get_statistics,
         rest_api::misc::calculate_scoring,
         rest_api::misc::get_schedule,
