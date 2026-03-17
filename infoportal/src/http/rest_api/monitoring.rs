@@ -58,7 +58,7 @@ impl WsMonitoring {
         });
     }
 
-    fn send_monitoring(ctx: &mut WebsocketContext<WsMonitoring>, aquarius: &Aquarius) {
+    fn send_monitoring(ctx: &mut <Self as Actor>::Context, aquarius: &Aquarius) {
         let monitoring = Monitoring::new(TiberiusPool::instance(), &aquarius.get_cache_stats());
         let json = serde_json::to_string(&monitoring).unwrap();
         ctx.text(json);

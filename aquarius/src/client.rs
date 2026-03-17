@@ -30,11 +30,8 @@ pub struct AquariusClient {
     /// The connection to the Aquarius application.
     connection: Arc<Mutex<Option<Connection>>>,
 
-    /// A flag to stop the watch dog thread.
-    stop_watch_dog: Arc<AtomicBool>,
-
-    /// A flag to indicate if the client is currently connected to the Aquarius application.
-    connected: Arc<AtomicBool>,
+    /// A flag to indicate if the client should shut down.
+    shutdown: Arc<AtomicBool>,
 }
 
 impl AquariusClient {
@@ -52,11 +49,10 @@ impl AquariusClient {
         let mut addrs_iter = format!("{host}:{port}").to_socket_addrs()?;
         let address = addrs_iter
             .next()
-            .unwrap_or_else(|| SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port));
+            .unwrap_or_else(|| SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), port));
         let client = AquariusClient {
             connection: Arc::new(Mutex::new(None)),
-            stop_watch_dog: Arc::new(AtomicBool::new(false)),
-            connected: Arc::new(AtomicBool::new(false)),
+            shutdown: Arc::new(AtomicBool::new(false)),
         };
         client.start_watch_dog(address, timeout, sender);
         Ok(client)
@@ -66,7 +62,7 @@ impl AquariusClient {
     /// # Returns
     /// `true` if the client is connected to the Aquarius application, `false` otherwise
     pub fn is_connected(&self) -> bool {
-        self.connected.load(Relaxed)
+        self.connection.lock().unwrap().is_some()
     }
 
     /// Reads the open heats from Aquarius.
@@ -121,8 +117,7 @@ impl AquariusClient {
     /// A handle to the thread that watches the thread that receives events from Aquarius.
     fn start_watch_dog(&self, address: SocketAddr, timeout: u16, sender: Sender<AquariusEvent>) -> JoinHandle<()> {
         let connection_mutex = self.connection.clone();
-        let stop_watch_dog = self.stop_watch_dog.clone();
-        let connected = self.connected.clone();
+        let shutdown = self.shutdown.clone();
 
         // Spawn a thread to watch the thread that receives events from Aquarius
         let watch_dog: JoinHandle<()> = thread::spawn(move || {
@@ -130,20 +125,19 @@ impl AquariusClient {
             let repeat_interval = Duration::from_millis(timeout as u64);
 
             // Loop until the stop flag is set
-            while !stop_watch_dog.load(Relaxed) {
+            while !shutdown.load(Relaxed) {
                 let start = Instant::now();
                 // create a new connection to Aquarius
                 match connect(&address, timeout) {
                     Ok(connection) => {
                         // Spawn a thread to receive events from Aquarius
-                        let handle = spawn_event_thread(connection, sender.clone());
+                        let event_thread_handle = spawn_event_thread(shutdown.clone(), connection, sender.clone());
                         match connect(&address, timeout) {
                             Ok(connection) => {
                                 *connection_mutex.lock().unwrap() = Some(connection);
-                                connected.store(true, Relaxed);
                                 send_connection_status(&sender, true);
                                 // Wait for the thread to finish
-                                let _ = handle.join().is_ok();
+                                let _ = event_thread_handle.join().is_ok();
                             }
                             Err(err) => warn!(%err, "Error connecting to Aquarius:"),
                         }
@@ -153,7 +147,6 @@ impl AquariusClient {
                 let mut previous_connection = connection_mutex.lock().unwrap();
                 if previous_connection.is_some() {
                     *previous_connection = None;
-                    connected.store(false, Relaxed);
                     send_connection_status(&sender, false);
                     info!("Disconnected from Aquarius");
                 }
@@ -169,9 +162,14 @@ impl AquariusClient {
         watch_dog
     }
 
-    fn stop_watch_dog(&self) {
-        self.stop_watch_dog.store(true, Relaxed);
-        self.connected.store(false, Relaxed);
+    /// Closes the connection to Aquarius and stops the watch dog thread.
+    pub fn shutdown(&self) {
+        self.shutdown.store(true, Relaxed);
+        self.with_connection(|connection| {
+            connection.disconnect()?;
+            Ok(())
+        })
+        .ok();
     }
 
     fn read_start_list(comm: &mut Connection, heat: &mut Heat) -> Result<(), AquariusErr> {
@@ -184,10 +182,10 @@ impl AquariusClient {
 }
 
 fn connect(addr: &SocketAddr, timeout: u16) -> io::Result<Connection> {
-    debug!(%addr, timeout, "Connecting to:");
+    trace!(%addr, timeout, "Connecting to:");
     let stream = TcpStream::connect_timeout(addr, Duration::from_millis(timeout as u64))?;
     stream.set_nodelay(true)?;
-    info!(%addr, "Connected to:");
+    trace!(%addr, "Connected to:");
     Connection::new(stream)
 }
 
@@ -198,10 +196,14 @@ fn send_connection_status(sender: &Sender<AquariusEvent>, status: bool) {
     }
 }
 
-fn spawn_event_thread(mut connection: Connection, sender: Sender<AquariusEvent>) -> JoinHandle<()> {
+fn spawn_event_thread(
+    stop_watch_dog: Arc<AtomicBool>,
+    mut connection: Connection,
+    sender: Sender<AquariusEvent>,
+) -> JoinHandle<()> {
     debug!("Starting thread to receive Aquarius events");
     thread::spawn(move || {
-        loop {
+        while !stop_watch_dog.load(Relaxed) {
             // Read a line from the server and blocks until a line is received.
             match connection.receive_line() {
                 // successfully received a line
@@ -234,7 +236,7 @@ fn spawn_event_thread(mut connection: Connection, sender: Sender<AquariusEvent>)
 
 impl Drop for AquariusClient {
     fn drop(&mut self) {
-        self.stop_watch_dog();
+        self.shutdown();
     }
 }
 

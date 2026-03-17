@@ -2,6 +2,7 @@ use crate::error::AquariusErr;
 use crate::utils;
 use ::chrono::{DateTime, Local};
 use ::db::timekeeper::Split;
+use ::serde::Serialize;
 use ::std::fmt::{Display, Formatter, Result as FmtResult};
 use ::std::str::FromStr;
 
@@ -143,7 +144,7 @@ impl EventHeatChanged {
 }
 
 /// A heat in a competition.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Heat {
     // The heat identifier.
     pub id: u16,
@@ -199,7 +200,7 @@ impl Display for Heat {
 }
 
 /// A boat in a heat.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Boat {
     /// The lane number the boat is starting in.
     pub lane: Lane,

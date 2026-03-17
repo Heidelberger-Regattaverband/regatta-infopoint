@@ -1,10 +1,12 @@
 use crate::utils;
 use ::encoding_rs::WINDOWS_1252;
 use ::std::io;
+use ::std::net::Shutdown;
 use ::std::{
     io::{BufRead, BufReader, BufWriter, ErrorKind, Write},
     net::TcpStream,
 };
+use ::tracing::debug;
 use ::tracing::trace;
 
 /// A struct to handle a connection to Aquarius.
@@ -14,6 +16,8 @@ pub(super) struct Connection {
 
     /// A buffered writer to write to the Aquarius server.
     writer: BufWriter<TcpStream>,
+
+    stream: TcpStream,
 }
 
 impl Connection {
@@ -26,8 +30,17 @@ impl Connection {
     /// An error if the stream cannot be cloned.
     pub(super) fn new(stream: TcpStream) -> io::Result<Self> {
         let reader = BufReader::new(stream.try_clone()?);
-        let writer = BufWriter::new(stream);
-        Ok(Connection { reader, writer })
+        let writer = BufWriter::new(stream.try_clone()?);
+        Ok(Connection { reader, writer, stream })
+    }
+
+    /// Closes the connection to Aquarius.
+    /// # Returns
+    /// An empty result or an error if the connection could not be closed.
+    pub(super) fn disconnect(&mut self) -> io::Result<()> {
+        debug!("Disconnecting from Aquarius");
+        self.stream.flush()?;
+        self.stream.shutdown(Shutdown::Both)
     }
 
     /// Write a command to Aquarius.

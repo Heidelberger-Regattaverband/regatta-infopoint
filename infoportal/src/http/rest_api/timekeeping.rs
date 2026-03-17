@@ -23,10 +23,12 @@ use ::actix_web_actors::ws::ProtocolError;
 use ::actix_web_actors::ws::WebsocketContext;
 use ::aquarius::client::AquariusClient;
 use ::aquarius::event::AquariusEvent;
+use ::aquarius::messages::Heat;
 use ::db::tiberius::user_pool::UserPoolManager;
 use ::db::timekeeper::TimeStamp;
 use ::db::timekeeper::TimeStrip;
 use ::std::sync::Arc;
+use ::std::sync::RwLock;
 use ::std::sync::mpsc;
 use ::std::sync::mpsc::Receiver;
 use ::std::thread;
@@ -39,11 +41,14 @@ use ::tracing::warn;
 struct WsTimekeeping {
     heart_beat: Instant,
     aquarius_client: Arc<AquariusClient>,
+    heats: Arc<RwLock<Vec<Heat>>>,
 }
 
 impl WsTimekeeping {
     fn new() -> Self {
         let (aquarius_event_sender, aquarius_event_receiver) = mpsc::channel();
+        let heats = Arc::new(RwLock::new(Vec::new()));
+
         let instance = Self {
             heart_beat: Instant::now(),
             aquarius_client: Arc::new(
@@ -55,9 +60,10 @@ impl WsTimekeeping {
                 )
                 .unwrap(),
             ),
+            heats: heats.clone(),
         };
         let aquarius_client = instance.aquarius_client.clone();
-        thread::spawn(move || receive_aquarius_events(aquarius_event_receiver, aquarius_client));
+        thread::spawn(move || receive_aquarius_events(aquarius_event_receiver, aquarius_client, heats));
         instance
     }
 
@@ -77,20 +83,36 @@ impl WsTimekeeping {
             ctx.ping(b"");
         });
     }
+
+    fn send_heats(&self, ctx: &mut <Self as Actor>::Context) {
+        let heats = self.heats.read().unwrap();
+        let json = serde_json::to_string(&*heats).unwrap();
+        ctx.text(json);
+    }
 }
 
-fn receive_aquarius_events(receiver: Receiver<AquariusEvent>, aquarius_client: Arc<AquariusClient>) {
+fn receive_aquarius_events(
+    receiver: Receiver<AquariusEvent>,
+    aquarius_client: Arc<AquariusClient>,
+    heats: Arc<RwLock<Vec<Heat>>>,
+) {
     while let Ok(event) = receiver.recv() {
         match event {
             AquariusEvent::HeatListChanged(event) => {
                 debug!("Received HeatListChanged event = {:?}", event);
             }
             AquariusEvent::Client(connected) => {
-                let heats = aquarius_client.read_open_heats();
-                debug!(
-                    "Received Client event: connected = {}, open heats = {:?}",
-                    connected, heats
-                );
+                if connected {
+                    if let Ok(open_heats) = aquarius_client.read_open_heats() {
+                        let mut heats_lock = heats.write().unwrap();
+                        heats_lock.clear();
+                        heats_lock.extend(open_heats);
+                    } else {
+                        error!("Failed to read open heats from Aquarius client");
+                    }
+                } else {
+                    heats.write().unwrap().clear();
+                }
             }
         }
     }
@@ -107,7 +129,8 @@ impl Actor for WsTimekeeping {
 
     /// Method is called on actor stop.
     fn stopped(&mut self, _ctx: &mut Self::Context) {
-        trace!("Timekeeping websocket actor stopped");
+        debug!("Timekeeping websocket actor stopped");
+        self.aquarius_client.shutdown();
     }
 }
 

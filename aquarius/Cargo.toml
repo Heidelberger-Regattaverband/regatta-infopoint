@@ -12,6 +12,7 @@ repository.workspace = true
 db = { path = "../db" }
 encoding_rs = { version = "0.8" }
 chrono.workspace = true
+serde.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
 

@@ -498,6 +498,7 @@ dependencies = [
  "chrono",
  "db",
  "encoding_rs",
+ "serde",
  "thiserror 2.0.18",
  "tracing",
  "tracing-subscriber",
