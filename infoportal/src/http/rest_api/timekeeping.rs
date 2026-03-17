@@ -26,6 +26,7 @@ use ::aquarius::event::AquariusEvent;
 use ::db::tiberius::user_pool::UserPoolManager;
 use ::db::timekeeper::TimeStamp;
 use ::db::timekeeper::TimeStrip;
+use ::std::sync::Arc;
 use ::std::sync::mpsc;
 use ::std::sync::mpsc::Receiver;
 use ::std::thread;
@@ -37,7 +38,7 @@ use ::tracing::warn;
 
 struct WsTimekeeping {
     heart_beat: Instant,
-    aquarius_client: AquariusClient,
+    aquarius_client: Arc<AquariusClient>,
 }
 
 impl WsTimekeeping {
@@ -45,15 +46,18 @@ impl WsTimekeeping {
         let (aquarius_event_sender, aquarius_event_receiver) = mpsc::channel();
         let instance = Self {
             heart_beat: Instant::now(),
-            aquarius_client: AquariusClient::new(
-                &CONFIG.aquarius_host,
-                CONFIG.aquarius_port,
-                CONFIG.aquarius_timeout,
-                aquarius_event_sender,
-            )
-            .unwrap(),
+            aquarius_client: Arc::new(
+                AquariusClient::new(
+                    &CONFIG.aquarius_host,
+                    CONFIG.aquarius_port,
+                    CONFIG.aquarius_timeout,
+                    aquarius_event_sender,
+                )
+                .unwrap(),
+            ),
         };
-        thread::spawn(move || receive_aquarius_events(aquarius_event_receiver));
+        let aquarius_client = instance.aquarius_client.clone();
+        thread::spawn(move || receive_aquarius_events(aquarius_event_receiver, aquarius_client));
         instance
     }
 
@@ -75,12 +79,21 @@ impl WsTimekeeping {
     }
 }
 
-fn receive_aquarius_events(receiver: Receiver<AquariusEvent>) {
-    debug!("Starting AquariusEvent receiver thread for timekeeping websocket");
+fn receive_aquarius_events(receiver: Receiver<AquariusEvent>, aquarius_client: Arc<AquariusClient>) {
     while let Ok(event) = receiver.recv() {
-        debug!("Received AquariusEvent: {:?}", event);
+        match event {
+            AquariusEvent::HeatListChanged(event) => {
+                debug!("Received HeatListChanged event = {:?}", event);
+            }
+            AquariusEvent::Client(connected) => {
+                let heats = aquarius_client.read_open_heats();
+                debug!(
+                    "Received Client event: connected = {}, open heats = {:?}",
+                    connected, heats
+                );
+            }
+        }
     }
-    debug!("AquariusEvent receiver thread for timekeeping websocket stopped");
 }
 
 impl Actor for WsTimekeeping {

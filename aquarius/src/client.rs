@@ -52,7 +52,7 @@ impl AquariusClient {
         let address = addrs_iter
             .next()
             .unwrap_or_else(|| SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), port));
-        let mut client = AquariusClient {
+        let client = AquariusClient {
             connection: Arc::new(Mutex::new(None)),
             stop_watch_dog: Arc::new(AtomicBool::new(false)),
             connected: Arc::new(AtomicBool::new(false)),
@@ -73,7 +73,7 @@ impl AquariusClient {
     /// A vector of open heats or an error if the heats could not be read. The heats contain the boats that are in the heats.
     /// # Errors
     /// If the open heats could not be read from Aquarius.
-    pub fn read_open_heats(&mut self) -> Result<Vec<Heat>, AquariusErr> {
+    pub fn read_open_heats(&self) -> Result<Vec<Heat>, AquariusErr> {
         self.with_connection(|connection| {
             connection.write(&RequestListOpenHeats::default().to_string())?;
             let response = connection.receive_all()?;
@@ -89,7 +89,7 @@ impl AquariusClient {
     /// # Arguments
     /// * `time_stamp` - The time stamp to send to Aquarius.
     /// * `bib` - The bib number of the boat to send the time stamp to.
-    pub fn send_time(&mut self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), AquariusErr> {
+    pub fn send_time(&self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), AquariusErr> {
         self.with_connection(|connection| {
             let request = RequestSetTime {
                 time: time_stamp.time.into(),
@@ -102,7 +102,7 @@ impl AquariusClient {
         })
     }
 
-    fn with_connection<F, T>(&mut self, func: F) -> Result<T, AquariusErr>
+    fn with_connection<F, T>(&self, func: F) -> Result<T, AquariusErr>
     where
         F: Fn(&mut Connection) -> Result<T, AquariusErr>,
     {
@@ -118,7 +118,7 @@ impl AquariusClient {
     /// Starts a thread to watch the thread that receives events from Aquarius.
     /// # Returns
     /// A handle to the thread that watches the thread that receives events from Aquarius.
-    fn start_watch_dog(&mut self, address: SocketAddr, timeout: u16, sender: Sender<AquariusEvent>) -> JoinHandle<()> {
+    fn start_watch_dog(&self, address: SocketAddr, timeout: u16, sender: Sender<AquariusEvent>) -> JoinHandle<()> {
         let connection_mutex = self.connection.clone();
         let stop_watch_dog = self.stop_watch_dog.clone();
         let connected = self.connected.clone();
@@ -168,7 +168,7 @@ impl AquariusClient {
         watch_dog
     }
 
-    fn stop_watch_dog(&mut self) {
+    fn stop_watch_dog(&self) {
         self.stop_watch_dog.store(true, Relaxed);
         self.connected.store(false, Relaxed);
     }
