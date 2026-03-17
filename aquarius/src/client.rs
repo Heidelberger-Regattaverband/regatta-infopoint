@@ -12,6 +12,7 @@ use crate::messages::ResponseStartList;
 use crate::utils;
 use ::db::timekeeper::TimeStamp;
 use ::std::io;
+use ::std::str::FromStr;
 use ::std::{
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream, ToSocketAddrs},
     sync::{
@@ -77,7 +78,7 @@ impl AquariusClient {
         self.with_connection(|connection| {
             connection.write(&RequestListOpenHeats::default().to_string())?;
             let response = connection.receive_all()?;
-            let mut heats = ResponseListOpenHeats::parse(&response)?;
+            let mut heats = ResponseListOpenHeats::from_str(&response)?;
             for heat in heats.heats.iter_mut() {
                 AquariusClient::read_start_list(connection, heat)?;
             }
@@ -176,7 +177,7 @@ impl AquariusClient {
     fn read_start_list(comm: &mut Connection, heat: &mut Heat) -> Result<(), AquariusErr> {
         comm.write(&RequestStartList::new(heat.id).to_string())?;
         let response = comm.receive_all()?;
-        let start_list = ResponseStartList::parse(response)?;
+        let start_list = ResponseStartList::from_str(&response)?;
         heat.boats = Some(start_list.boats);
         Ok(())
     }
@@ -207,7 +208,7 @@ fn spawn_event_thread(mut connection: Connection, sender: Sender<AquariusEvent>)
                 Ok(received) => {
                     if !received.is_empty() && received.starts_with("!OPEN") {
                         // Parse the received line and handle the event
-                        match EventHeatChanged::parse(&received) {
+                        match EventHeatChanged::from_str(&received) {
                             Ok(mut event) => {
                                 if event.opened {
                                     AquariusClient::read_start_list(&mut connection, &mut event.heat).unwrap();
