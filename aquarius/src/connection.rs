@@ -6,7 +6,6 @@ use ::std::{
     io::{BufRead, BufReader, BufWriter, ErrorKind, Write},
     net::TcpStream,
 };
-use ::tracing::debug;
 use ::tracing::trace;
 
 /// A struct to handle a connection to Aquarius.
@@ -38,8 +37,8 @@ impl Connection {
     /// # Returns
     /// An empty result or an error if the connection could not be closed.
     pub(super) fn disconnect(&mut self) -> io::Result<()> {
-        debug!("Disconnecting from Aquarius");
-        self.stream.flush()?;
+        trace!("Disconnecting from Aquarius");
+        self.writer.flush()?;
         self.stream.shutdown(Shutdown::Both)
     }
 
