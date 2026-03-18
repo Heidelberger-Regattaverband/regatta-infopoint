@@ -30,7 +30,7 @@ pub struct AquariusClient {
     /// The connection to the Aquarius application.
     connection: Arc<Mutex<Option<Connection>>>,
 
-    /// A flag to indicate if the client should shut down.
+    /// A flag to indicate if the Aquarius client should shut down.
     shutdown: Arc<AtomicBool>,
 }
 
@@ -56,13 +56,6 @@ impl AquariusClient {
         };
         client.start_watch_dog(address, timeout, sender);
         Ok(client)
-    }
-
-    /// Checks if the client is currently connected to the Aquarius application.
-    /// # Returns
-    /// `true` if the client is connected to the Aquarius application, `false` otherwise
-    pub fn is_connected(&self) -> bool {
-        self.connection.lock().unwrap().is_some()
     }
 
     /// Reads the open heats from Aquarius.
@@ -97,19 +90,6 @@ impl AquariusClient {
             connection.write(&request.to_string())?;
             Ok(())
         })
-    }
-
-    fn with_connection<F, T>(&self, func: F) -> Result<T, AquariusErr>
-    where
-        F: Fn(&mut Connection) -> Result<T, AquariusErr>,
-    {
-        match self.connection.lock() {
-            Ok(mut guard) => match guard.as_mut() {
-                Some(connection) => func(connection),
-                None => Err(AquariusErr::NotConnectedError()),
-            },
-            Err(_) => Err(AquariusErr::MutexPoisonError()),
-        }
     }
 
     /// Starts a thread to watch the thread that receives events from Aquarius.
@@ -178,6 +158,20 @@ impl AquariusClient {
         let start_list = ResponseStartList::from_str(&response)?;
         heat.boats = Some(start_list.boats);
         Ok(())
+    }
+
+    /// Helper method to execute a function with the connection to Aquarius. If the connection is not available, an error is returned.
+    fn with_connection<F, T>(&self, func: F) -> Result<T, AquariusErr>
+    where
+        F: Fn(&mut Connection) -> Result<T, AquariusErr>,
+    {
+        match self.connection.lock() {
+            Ok(mut guard) => match guard.as_mut() {
+                Some(connection) => func(connection),
+                None => Err(AquariusErr::NotConnectedError()),
+            },
+            Err(_) => Err(AquariusErr::MutexPoisonError()),
+        }
     }
 }
 

@@ -4,8 +4,9 @@ use crate::config::CONFIG;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
 use crate::http::rest_api::get_user_pool;
+use ::actix::Message as ActixMessage;
 use ::actix::StreamHandler;
-use ::actix::{Actor, ActorContext, AsyncContext};
+use ::actix::{Actor, ActorContext, Addr, AsyncContext, Handler};
 use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::HttpRequest;
@@ -38,55 +39,54 @@ use ::tracing::error;
 use ::tracing::trace;
 use ::tracing::warn;
 
+/// Message to trigger sending heats to the WebSocket client
+#[derive(ActixMessage)]
+#[rtype(result = "()")]
+struct SendHeatsMessage;
+
 struct WsTimekeeping {
     heart_beat: Instant,
     aquarius_client: Arc<AquariusClient>,
     heats: Arc<RwLock<Vec<Heat>>>,
+    event_receiver: Option<Receiver<AquariusEvent>>,
 }
 
 impl WsTimekeeping {
     fn new() -> Self {
-        let (aquarius_event_sender, aquarius_event_receiver) = mpsc::channel();
-        let heats = Arc::new(RwLock::new(Vec::new()));
+        let (event_sender, event_receiver) = mpsc::channel();
 
-        let instance = Self {
+        Self {
             heart_beat: Instant::now(),
             aquarius_client: Arc::new(
                 AquariusClient::new(
                     &CONFIG.aquarius_host,
                     CONFIG.aquarius_port,
                     CONFIG.aquarius_timeout,
-                    aquarius_event_sender,
+                    event_sender,
                 )
                 .unwrap(),
             ),
-            heats: heats.clone(),
-        };
-        let aquarius_client = instance.aquarius_client.clone();
-        thread::spawn(move || receive_aquarius_events(aquarius_event_receiver, aquarius_client, heats));
-        instance
+            heats: Arc::new(RwLock::new(Vec::new())),
+            event_receiver: Some(event_receiver),
+        }
     }
 
     fn start_heart_beat(&self, ctx: &mut <Self as Actor>::Context) {
         ctx.run_interval(HEARTBEAT_INTERVAL, move |act, ctx| {
             // check client heartbeats
             if Instant::now().duration_since(act.heart_beat) > CLIENT_TIMEOUT {
-                // heartbeat timed out
                 warn!("Timekeeping websocket heartbeat failed, disconnecting!");
-
-                // stop actor
                 ctx.stop();
-
-                // don't try to send a ping
-                return;
+            } else {
+                ctx.ping(b"");
             }
-            ctx.ping(b"");
         });
     }
 
     fn send_heats(&self, ctx: &mut <Self as Actor>::Context) {
         let heats = self.heats.read().unwrap();
         let json = serde_json::to_string(&*heats).unwrap();
+        debug!("Sending heats to timekeeping websocket client: {}", json);
         ctx.text(json);
     }
 }
@@ -95,11 +95,19 @@ fn receive_aquarius_events(
     receiver: Receiver<AquariusEvent>,
     aquarius_client: Arc<AquariusClient>,
     heats: Arc<RwLock<Vec<Heat>>>,
+    addr: Addr<WsTimekeeping>,
 ) {
     while let Ok(event) = receiver.recv() {
         match event {
             AquariusEvent::HeatListChanged(event) => {
-                debug!("Received HeatListChanged event = {:?}", event);
+                debug!("Received HeatListChanged event = {:?}", &event);
+                if event.opened {
+                    let mut heats_lock = heats.write().unwrap();
+                    heats_lock.push(event.heat);
+                } else {
+                    let mut heats_lock = heats.write().unwrap();
+                    heats_lock.retain(|heat| heat.id != event.heat.id);
+                }
             }
             AquariusEvent::Client(connected) => {
                 if connected {
@@ -115,6 +123,15 @@ fn receive_aquarius_events(
                 }
             }
         }
+        addr.do_send(SendHeatsMessage);
+    }
+}
+
+impl Handler<SendHeatsMessage> for WsTimekeeping {
+    type Result = ();
+
+    fn handle(&mut self, _msg: SendHeatsMessage, ctx: &mut Self::Context) -> Self::Result {
+        self.send_heats(ctx);
     }
 }
 
@@ -125,6 +142,15 @@ impl Actor for WsTimekeeping {
     fn started(&mut self, ctx: &mut Self::Context) {
         trace!("Timekeeping websocket actor started");
         self.start_heart_beat(ctx);
+
+        if let Some(receiver) = self.event_receiver.take() {
+            let aquarius_client = self.aquarius_client.clone();
+            let heats = self.heats.clone();
+            let addr = ctx.address();
+            thread::spawn(move || receive_aquarius_events(receiver, aquarius_client, heats, addr));
+        } else {
+            error!("Failed to take event receiver for timekeeping websocket actor");
+        }
     }
 
     /// Method is called on actor stop.
