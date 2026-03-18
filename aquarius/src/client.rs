@@ -104,7 +104,7 @@ impl AquariusClient {
             // The interval to retry connecting to Aquarius in case of a failure
             let repeat_interval = Duration::from_millis(timeout as u64);
 
-            // Loop until the stop flag is set
+            // Loop until the client is shut down
             while !shutdown.load(Relaxed) {
                 let start = Instant::now();
                 // create a new connection to Aquarius

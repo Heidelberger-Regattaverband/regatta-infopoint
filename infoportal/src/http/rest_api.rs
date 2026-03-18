@@ -28,7 +28,7 @@ const INTERNAL_SERVER_ERROR: &str = "Internal server error";
 
 /// How often heartbeat pings are sent
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(2);
-
+/// How long before lack of client response causes a timeout
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(5);
 
 // Filters Endpoints

@@ -16,50 +16,42 @@ use ::actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
 use ::db::aquarius::Aquarius;
 use ::db::tiberius::TiberiusPool;
 use ::std::time::Instant;
-use ::tracing::debug;
 use ::tracing::trace;
+use ::tracing::warn;
 
 /// Define HTTP actor
 struct WsMonitoring {
-    /// Client must send ping at least once per 5 seconds (CLIENT_TIMEOUT),
-    /// otherwise we drop connection.
+    /// Timestamp of the last heartbeat received from the client. Used to detect if the client is still alive.
     heart_beat: Instant,
-    aquarius: Data<Aquarius>,
+    /// Reference to the Aquarius database. Used to get the monitoring data.
+    aquarius_db: Data<Aquarius>,
 }
 
 impl WsMonitoring {
     fn new(aquarius: Data<Aquarius>) -> Self {
         Self {
             heart_beat: Instant::now(),
-            aquarius,
+            aquarius_db: aquarius,
         }
     }
 
-    /// helper method that sends ping to client every 5 seconds (HEARTBEAT_INTERVAL).
-    /// also this method checks heartbeats from client
     fn start_heart_beat(&self, ctx: &mut <Self as Actor>::Context) {
-        let aquarius = self.aquarius.clone();
+        let aquarius_db = self.aquarius_db.clone();
 
         ctx.run_interval(HEARTBEAT_INTERVAL, move |act, ctx| {
             // check client heartbeats
             if Instant::now().duration_since(act.heart_beat) > CLIENT_TIMEOUT {
-                // heartbeat timed out
-                debug!("Monitoring websocket heartbeat failed, disconnecting!");
-
-                // stop actor
+                warn!("Monitoring websocket heartbeat failed, disconnecting!");
                 ctx.stop();
-
-                // don't try to send a ping
-                return;
+            } else {
+                Self::send_monitoring(ctx, &aquarius_db);
+                ctx.ping(b"");
             }
-
-            Self::send_monitoring(ctx, &aquarius);
-            ctx.ping(b"");
         });
     }
 
-    fn send_monitoring(ctx: &mut <Self as Actor>::Context, aquarius: &Aquarius) {
-        let monitoring = Monitoring::new(TiberiusPool::instance(), &aquarius.get_cache_stats());
+    fn send_monitoring(ctx: &mut <Self as Actor>::Context, aquarius_db: &Aquarius) {
+        let monitoring = Monitoring::new(TiberiusPool::instance(), &aquarius_db.get_cache_stats());
         let json = serde_json::to_string(&monitoring).unwrap();
         ctx.text(json);
     }
@@ -71,7 +63,7 @@ impl Actor for WsMonitoring {
     /// Method is called on actor start. We start the heartbeat process here.
     fn started(&mut self, ctx: &mut Self::Context) {
         trace!("Monitoring websocket actor started");
-        Self::send_monitoring(ctx, &self.aquarius);
+        Self::send_monitoring(ctx, &self.aquarius_db);
         self.start_heart_beat(ctx);
     }
 
