@@ -1,6 +1,7 @@
 import Button, { Button$PressEvent } from "sap/m/Button";
 import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
+import MessageToast from "sap/m/MessageToast";
 import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import Table from "sap/m/Table";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
@@ -16,16 +17,21 @@ import BaseTableController from "./BaseTable.controller";
  */
 export default class TimekeepingController extends BaseTableController {
 
-  private static readonly TIMESTAMP_MODEL: string = "timestamp";
   private static readonly TIMESTRIP_MODEL: string = "timestrip";
 
   readonly formatter: Formatter = Formatter;
   private socket?: WebSocket;
   private statusButton?: Button;
+  private startButton?: Button;
+  private stopButton?: Button;
+  // bind keyListener method to this context to have access to navigation methods
+  private readonly keyListener: (event: KeyboardEvent) => void = this.onKeyDown.bind(this);
 
   onInit(): void {
     super.init(super.getView()?.byId("timestripTable") as Table, "timestamp" /* eventBus channel */);
     this.statusButton = this.byId("timekeeperStatusButton") as Button;
+    this.startButton = this.byId("startButton") as Button;
+    this.stopButton = this.byId("stopButton") as Button;
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getView()?.addEventDelegate({ onBeforeHide: this.onBeforeHide }, this);
     super.setViewModel(new JSONModel(), TimekeepingController.TIMESTRIP_MODEL);
@@ -58,6 +64,14 @@ export default class TimekeepingController extends BaseTableController {
     this.connect();
   }
 
+  onStartButtonPress(): void {
+    this.sendTimestamp({ command: "AddStart" });
+  }
+
+  onStopButtonPress(): void {
+    this.sendTimestamp({ command: "AddFinish" });
+  }
+
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
     const query: string | undefined = event.getParameters().newValue?.trim();
     if (query) {
@@ -77,8 +91,6 @@ export default class TimekeepingController extends BaseTableController {
   }
 
   onItemChanged(item: any): void {
-    super.getComponentJSONModel(TimekeepingController.TIMESTAMP_MODEL).setData(item);
-    super.getEventBus()?.publish("timestamp", "itemChanged", {});
   }
 
   private createSearchFilters(query: string): Filter[] {
@@ -114,16 +126,25 @@ export default class TimekeepingController extends BaseTableController {
     this.socket.onopen = (_event: Event) => {
       this.statusButton?.setEnabled(true);
       this.statusButton?.setIcon('sap-icon://connected');
+      this.startButton?.setEnabled(true);
+      this.stopButton?.setEnabled(true);
       console.debug('Timekeeping WebSocket Connected');
     }
     this.socket.onclose = (_event: CloseEvent) => {
       this.statusButton?.setEnabled(true);
       this.statusButton?.setIcon('sap-icon://disconnected');
+      this.startButton?.setEnabled(false);
+      this.stopButton?.setEnabled(false);
       console.debug('Timekeeping WebSocket Disconnected');
     }
     this.socket.onmessage = (event: MessageEvent) => {
-      const timekeeping = JSON.parse(event.data);
-      this.updateModel(timekeeping);
+      const data = JSON.parse(event.data);
+      if (data.error) {
+        console.error('Timekeeping WebSocket error:', data.error);
+        MessageToast.show(data.error);
+      } else {
+        this.updateModel(data);
+      }
     }
   }
 
@@ -132,6 +153,30 @@ export default class TimekeepingController extends BaseTableController {
       console.debug('Disconnecting Timekeeping WebSocket ...');
       this.socket.close();
       delete this.socket;
+    }
+  }
+
+  private sendTimestamp(command: any) {
+    if (this.socket?.readyState === WebSocket.OPEN) {
+      this.socket.send(JSON.stringify(command));
+    }
+  }
+
+  private onKeyDown(event: KeyboardEvent): void {
+    switch (event.key) {
+      case "Space":
+        event.preventDefault();
+        break;
+      case "ArrowLeft":
+        break;
+      case "ArrowRight":
+        break;
+      case "ArrowUp":
+      case "Home":
+        break;
+      case "ArrowDown":
+      case "End":
+        break;
     }
   }
 }

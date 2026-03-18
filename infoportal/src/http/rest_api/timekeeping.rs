@@ -4,6 +4,7 @@ use crate::config::CONFIG;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
 use crate::http::rest_api::get_user_pool;
+use ::actix::ActorFutureExt;
 use ::actix::Message as ActixMessage;
 use ::actix::StreamHandler;
 use ::actix::{Actor, ActorContext, Addr, AsyncContext, Handler};
@@ -25,9 +26,11 @@ use ::actix_web_actors::ws::WebsocketContext;
 use ::aquarius::client::AquariusClient;
 use ::aquarius::event::AquariusEvent;
 use ::aquarius::messages::Heat;
+use ::db::tiberius::TiberiusPool;
 use ::db::tiberius::user_pool::UserPoolManager;
 use ::db::timekeeper::TimeStamp;
 use ::db::timekeeper::TimeStrip;
+use ::serde::Deserialize;
 use ::std::sync::Arc;
 use ::std::sync::RwLock;
 use ::std::sync::mpsc;
@@ -39,20 +42,39 @@ use ::tracing::error;
 use ::tracing::trace;
 use ::tracing::warn;
 
+#[derive(Debug, Deserialize)]
+struct TimekeepingCommand {
+    command: TimekeepingCommandType,
+}
+
+#[derive(Debug, Deserialize)]
+enum TimekeepingCommandType {
+    AddStart,
+    AddFinish,
+}
+
 /// Message to trigger sending heats to the WebSocket client
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
 struct SendHeatsMessage;
+
+/// Message to trigger persisting a timestamp and sending it back to the client
+#[derive(ActixMessage)]
+#[rtype(result = "()")]
+struct AddTimestampMessage {
+    command: TimekeepingCommandType,
+}
 
 struct WsTimekeeping {
     heart_beat: Instant,
     aquarius_client: Arc<AquariusClient>,
     heats: Arc<RwLock<Vec<Heat>>>,
     event_receiver: Option<Receiver<AquariusEvent>>,
+    pool: Arc<TiberiusPool>,
 }
 
 impl WsTimekeeping {
-    fn new() -> Self {
+    fn new(pool: Arc<TiberiusPool>) -> Self {
         let (event_sender, event_receiver) = mpsc::channel();
 
         Self {
@@ -68,12 +90,12 @@ impl WsTimekeeping {
             ),
             heats: Arc::new(RwLock::new(Vec::new())),
             event_receiver: Some(event_receiver),
+            pool,
         }
     }
 
     fn start_heart_beat(&self, ctx: &mut <Self as Actor>::Context) {
         ctx.run_interval(HEARTBEAT_INTERVAL, move |act, ctx| {
-            // check client heartbeats
             if Instant::now().duration_since(act.heart_beat) > CLIENT_TIMEOUT {
                 warn!("Timekeeping websocket heartbeat failed, disconnecting!");
                 ctx.stop();
@@ -135,10 +157,59 @@ impl Handler<SendHeatsMessage> for WsTimekeeping {
     }
 }
 
+impl Handler<AddTimestampMessage> for WsTimekeeping {
+    type Result = ();
+
+    fn handle(&mut self, msg: AddTimestampMessage, ctx: &mut Self::Context) -> Self::Result {
+        let pool = self.pool.clone();
+        let command = msg.command;
+
+        ctx.wait(
+            actix::fut::wrap_future(async move {
+                let mut client = pool.get().await.map_err(|err| {
+                    error!(%err, "Failed to get DB client from pool");
+                    format!("Failed to get DB client: {err}")
+                })?;
+                let mut time_strip = TimeStrip::load(&mut client).await.map_err(|err| {
+                    error!(%err, "Failed to load timestrip");
+                    format!("Failed to load timestrip: {err}")
+                })?;
+
+                match command {
+                    TimekeepingCommandType::AddStart => time_strip.add_start(&mut client).await.map_err(|err| {
+                        error!(%err, "Failed to add start timestamp");
+                        format!("Failed to add start timestamp: {err}")
+                    })?,
+                    TimekeepingCommandType::AddFinish => time_strip.add_finish(&mut client).await.map_err(|err| {
+                        error!(%err, "Failed to add finish timestamp");
+                        format!("Failed to add finish timestamp: {err}")
+                    })?,
+                }
+
+                Ok::<Vec<TimeStamp>, String>(time_strip.time_stamps)
+            })
+            .map(
+                |result: Result<Vec<TimeStamp>, String>, _actor, ctx: &mut WebsocketContext<WsTimekeeping>| match result
+                {
+                    Ok(time_stamps) => {
+                        let json = serde_json::to_string(&time_stamps).unwrap_or_default();
+                        debug!("Sending updated timestrip to client: {}", json);
+                        ctx.text(json);
+                    }
+                    Err(err) => {
+                        let error_json = serde_json::json!({"error": err});
+                        error!("Failed to persist timestamp: {}", err);
+                        ctx.text(error_json.to_string());
+                    }
+                },
+            ),
+        );
+    }
+}
+
 impl Actor for WsTimekeeping {
     type Context = WebsocketContext<Self>;
 
-    /// Method is called on actor start. We start the heartbeat process here.
     fn started(&mut self, ctx: &mut Self::Context) {
         trace!("Timekeeping websocket actor started");
         self.start_heart_beat(ctx);
@@ -153,7 +224,6 @@ impl Actor for WsTimekeeping {
         }
     }
 
-    /// Method is called on actor stop.
     fn stopped(&mut self, _ctx: &mut Self::Context) {
         debug!("Timekeeping websocket actor stopped");
         self.aquarius_client.shutdown();
@@ -161,9 +231,7 @@ impl Actor for WsTimekeeping {
 }
 
 impl StreamHandler<Result<Message, ProtocolError>> for WsTimekeeping {
-    /// This method is called for every message received from the websocket client
     fn handle(&mut self, msg: Result<Message, ProtocolError>, ctx: &mut Self::Context) {
-        // process websocket messages
         trace!(?msg, "Received timekeeping websocket message");
         match msg {
             Ok(Message::Ping(msg)) => {
@@ -173,7 +241,19 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsTimekeeping {
             Ok(Message::Pong(_)) => {
                 self.heart_beat = Instant::now();
             }
-            Ok(Message::Text(text)) => ctx.text(text),
+            Ok(Message::Text(text)) => match serde_json::from_str::<TimekeepingCommand>(&text) {
+                Ok(command) => {
+                    debug!(?command, "Received timekeeping command");
+                    ctx.address().do_send(AddTimestampMessage {
+                        command: command.command,
+                    });
+                }
+                Err(err) => {
+                    warn!(%err, %text, "Failed to parse timekeeping command");
+                    let error_json = serde_json::json!({"error": format!("Invalid command: {err}")});
+                    ctx.text(error_json.to_string());
+                }
+            },
             Ok(Message::Binary(bin)) => ctx.binary(bin),
             Ok(Message::Close(reason)) => {
                 ctx.close(reason);
@@ -189,9 +269,11 @@ async fn get_timekeeping_ws(
     request: HttpRequest,
     stream: Payload,
     identity: Option<Identity>,
+    user_pool_manager: Data<UserPoolManager>,
 ) -> Result<HttpResponse, Error> {
-    if identity.is_some() {
-        ws::start(WsTimekeeping::new(), &request, stream)
+    if let Some(ref identity) = identity {
+        let pool = get_user_pool(identity, &user_pool_manager).await?;
+        ws::start(WsTimekeeping::new(pool), &request, stream)
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
     }
