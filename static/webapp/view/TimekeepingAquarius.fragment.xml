@@ -1,0 +1,25 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+
+  <Table id="aquariusTable" autoPopinMode="true" items="{path:'timestrip>/',sorter:[{path:'time',descending:true}]}" growing="true"
+    growingScrollToLoad="true" growingThreshold="30" mode="SingleSelectMaster" itemPress=".onSelectionChange" sticky="ColumnHeaders"
+    class="sapUiNoContentPadding">
+
+    <columns>
+      <Column id="aquariusTime" hAlign="Center" width="8rem" importance="High" popinDisplay="Inline">
+        <header>
+          <Text text="{i18n>common.time}" class="bold" />
+        </header>
+      </Column>
+    </columns>
+
+    <items>
+      <ColumnListItem>
+        <cells>
+          <VBox>
+            <Text text="{timestrip>time}" />
+          </VBox>
+        </cells>
+      </ColumnListItem>
+    </items>
+  </Table>
+</core:FragmentDefinition>

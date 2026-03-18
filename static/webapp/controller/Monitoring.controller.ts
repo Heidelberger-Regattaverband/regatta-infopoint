@@ -134,6 +134,8 @@ export default class MonitoringController extends BaseController {
   }
 
   private connect() {
+    this.statusButton?.setEnabled(false);
+
     this.disconnect();
 
     const location: Location = globalThis.location;
@@ -143,26 +145,26 @@ export default class MonitoringController extends BaseController {
     this.socket = new WebSocket(`${proto}://${location.host}/api/monitoring`);
 
     this.socket.onopen = (_event: Event) => {
-      console.debug('Monitoring WebSocket Connected');
+      this.statusButton?.setEnabled(true);
       this.statusButton?.setIcon('sap-icon://connected');
+      console.debug('Monitoring WebSocket Connected');
     }
-
+    this.socket.onclose = (_event: CloseEvent) => {
+      this.statusButton?.setEnabled(true);
+      this.statusButton?.setIcon('sap-icon://disconnected');
+      console.debug('Monitoring WebSocket Disconnected');
+    }
     this.socket.onmessage = (event: MessageEvent) => {
       const monitoring = JSON.parse(event.data);
       this.updateModel(monitoring);
-    }
-
-    this.socket.onclose = (_event: CloseEvent) => {
-      this.statusButton?.setIcon('sap-icon://disconnected');
-      console.debug('Monitoring WebSocket Disconnected');
     }
   }
 
   private disconnect() {
     if (this.socket) {
+      console.debug('Disconnecting Monitoring WebSocket ...');
       this.socket.close();
       delete this.socket;
-      console.debug('Disconnecting Monitoring WebSocket ...');
     }
   }
 }

@@ -7,9 +7,24 @@
         <Button id="timekeeperStatusButton" icon="sap-icon://disconnected" enabled="true" type="Transparent" press=".onStatusButtonPress" />
       </headerContent>
       <content>
-        <ScrollContainer horizontal="false" vertical="true" height="100%" width="100%">
-          <core:Fragment fragmentName="de.regatta_hd.infoportal.view.Timestrip" type="XML" />
-        </ScrollContainer>
+        <IconTabBar>
+          <items>
+            <IconTabFilter text="{i18n>common.timestrip}">
+              <content>
+                <ScrollContainer horizontal="false" vertical="true" height="100%" width="100%">
+                  <core:Fragment fragmentName="de.regatta_hd.infoportal.view.TimekeepingTimestrip" type="XML" />
+                </ScrollContainer>
+              </content>
+            </IconTabFilter>
+            <IconTabFilter text="Aquarius">
+              <content>
+                <ScrollContainer horizontal="false" vertical="true" height="100%" width="100%">
+                  <core:Fragment fragmentName="de.regatta_hd.infoportal.view.TimekeepingAquarius" type="XML" />
+                </ScrollContainer>
+              </content>
+            </IconTabFilter>
+          </items>
+        </IconTabBar>
       </content>
     </Page>
 

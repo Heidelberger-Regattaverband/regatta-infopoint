@@ -29,7 +29,9 @@ export default class TimekeepingController extends BaseTableController {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getView()?.addEventDelegate({ onBeforeHide: this.onBeforeHide }, this);
     super.setViewModel(new JSONModel(), TimekeepingController.TIMESTRIP_MODEL);
-    super.getRouter()?.getRoute("timekeeping")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadTimestripModel(), this);
+    super.getRouter()?.getRoute("timekeeping")?.attachMatched(async (_: Route$MatchedEvent) => {
+      await this.loadTimestripModel(); this.connect();
+    }, this);
   }
 
   private onBeforeHide(): void {
@@ -52,6 +54,7 @@ export default class TimekeepingController extends BaseTableController {
   }
 
   onStatusButtonPress(): void {
+    this.statusButton?.setEnabled(false);
     this.connect();
   }
 
@@ -95,10 +98,11 @@ export default class TimekeepingController extends BaseTableController {
     return await super.updateJSONModel(timestripModel, url);
   }
 
-  private updateModel(monitoring: any) {
+  private updateModel(timekeeping: any) {
   }
 
   private connect() {
+    this.statusButton?.setEnabled(false);
     this.disconnect();
 
     const location: Location = globalThis.location;
@@ -108,27 +112,26 @@ export default class TimekeepingController extends BaseTableController {
     this.socket = new WebSocket(`${proto}://${location.host}/api/timekeeping`);
 
     this.socket.onopen = (_event: Event) => {
-      console.debug('Timekeeping WebSocket Connected');
+      this.statusButton?.setEnabled(true);
       this.statusButton?.setIcon('sap-icon://connected');
+      console.debug('Timekeeping WebSocket Connected');
     }
-
-    this.socket.onmessage = (event: MessageEvent) => {
-      const monitoring = JSON.parse(event.data);
-      this.updateModel(monitoring);
-    }
-
     this.socket.onclose = (_event: CloseEvent) => {
+      this.statusButton?.setEnabled(true);
       this.statusButton?.setIcon('sap-icon://disconnected');
       console.debug('Timekeeping WebSocket Disconnected');
+    }
+    this.socket.onmessage = (event: MessageEvent) => {
+      const timekeeping = JSON.parse(event.data);
+      this.updateModel(timekeeping);
     }
   }
 
   private disconnect() {
     if (this.socket) {
+      console.debug('Disconnecting Timekeeping WebSocket ...');
       this.socket.close();
       delete this.socket;
-      console.debug('Disconnecting Timekeeping WebSocket ...');
     }
   }
-
 }
