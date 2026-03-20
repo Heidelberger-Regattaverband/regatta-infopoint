@@ -42,29 +42,40 @@ use ::tracing::error;
 use ::tracing::trace;
 use ::tracing::warn;
 
+/// A command sent from the client to trigger timekeeping actions on the server.
+/// Direction: Client -> Server
 #[derive(Debug, Deserialize)]
 struct TimekeepingCommand {
+    /// The type of timekeeping command to execute
     command: TimekeepingCommandType,
 }
 
+/// The specific types of timekeeping commands that can be sent from the client.
 #[derive(Debug, Deserialize)]
 enum TimekeepingCommandType {
+    /// Add a start timestamp to the timestrip
     AddStart,
+    /// Add a finish timestamp to the timestrip
     AddFinish,
+    /// Get the current timestrip data
+    GetTimestrip,
 }
 
-/// Message to trigger sending heats to the WebSocket client
+/// A message with the current heats open in Aquarius.
+/// Direction: Server -> Client
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
-struct SendHeatsMessage {
+struct OpenHeatsMsg {
     heats: Vec<Heat>,
 }
 
 /// Message to trigger persisting a timestamp and sending it back to the client
+/// Direction: Server -> Server (internal)
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
-struct AddTimestampMessage {
-    command: TimekeepingCommandType,
+struct AddTimestampMsg {
+    /// The split number for the timestamp (0 for start, 64 for finish)
+    split: u8,
 }
 
 struct WsTimekeeping {
@@ -140,28 +151,28 @@ fn receive_aquarius_events(
                 }
             }
         }
-        addr.do_send(SendHeatsMessage {
+        addr.do_send(OpenHeatsMsg {
             heats: heats.read().unwrap().clone(),
         });
     }
 }
 
-impl Handler<SendHeatsMessage> for WsTimekeeping {
+impl Handler<OpenHeatsMsg> for WsTimekeeping {
     type Result = ();
 
-    fn handle(&mut self, msg: SendHeatsMessage, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: OpenHeatsMsg, ctx: &mut Self::Context) -> Self::Result {
         let json = serde_json::to_string(&msg.heats).unwrap_or_default();
         debug!("Sending heats to timekeeping websocket client: {}", json);
         ctx.text(json);
     }
 }
 
-impl Handler<AddTimestampMessage> for WsTimekeeping {
+impl Handler<AddTimestampMsg> for WsTimekeeping {
     type Result = ();
 
-    fn handle(&mut self, msg: AddTimestampMessage, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: AddTimestampMsg, ctx: &mut Self::Context) -> Self::Result {
         let pool = self.pool.clone();
-        let command = msg.command;
+        let split = msg.split;
 
         ctx.wait(
             actix::fut::wrap_future(async move {
@@ -174,24 +185,29 @@ impl Handler<AddTimestampMessage> for WsTimekeeping {
                     format!("Failed to load timestrip: {err}")
                 })?;
 
-                match command {
-                    TimekeepingCommandType::AddStart => time_strip.add_start(&mut client).await.map_err(|err| {
-                        error!(%err, "Failed to add start timestamp");
-                        format!("Failed to add start timestamp: {err}")
-                    })?,
-                    TimekeepingCommandType::AddFinish => time_strip.add_finish(&mut client).await.map_err(|err| {
-                        error!(%err, "Failed to add finish timestamp");
-                        format!("Failed to add finish timestamp: {err}")
-                    })?,
+                match split {
+                    0 => time_strip
+                        .add_start(&mut client)
+                        .await
+                        .map_err(|err| format!("Failed to add start timestamp: {err}"))?,
+                    64 => time_strip
+                        .add_finish(&mut client)
+                        .await
+                        .map_err(|err| format!("Failed to add finish timestamp: {err}"))?,
+                    _ => {
+                        return Err(format!("Invalid split number: {split}"));
+                    }
                 }
-
-                Ok::<Vec<TimeStamp>, String>(time_strip.time_stamps)
+                time_strip
+                    .time_stamps
+                    .last()
+                    .cloned()
+                    .ok_or("No timestamps available".to_string())
             })
             .map(
-                |result: Result<Vec<TimeStamp>, String>, _actor, ctx: &mut WebsocketContext<WsTimekeeping>| match result
-                {
-                    Ok(time_stamps) => {
-                        let json = serde_json::to_string(&time_stamps).unwrap_or_default();
+                |result: Result<TimeStamp, String>, _actor, ctx: &mut WebsocketContext<WsTimekeeping>| match result {
+                    Ok(time_stamp) => {
+                        let json = serde_json::to_string(&time_stamp).unwrap_or_default();
                         debug!("Sending updated timestrip to client: {}", json);
                         ctx.text(json);
                     }
@@ -229,6 +245,7 @@ impl Actor for WsTimekeeping {
     }
 }
 
+/// WebSocket handler for timekeeping commands from the client.
 impl StreamHandler<Result<Message, ProtocolError>> for WsTimekeeping {
     fn handle(&mut self, msg: Result<Message, ProtocolError>, ctx: &mut Self::Context) {
         trace!(?msg, "Received timekeeping websocket message");
@@ -241,12 +258,13 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsTimekeeping {
                 self.heart_beat = Instant::now();
             }
             Ok(Message::Text(text)) => match serde_json::from_str::<TimekeepingCommand>(&text) {
-                Ok(command) => {
-                    debug!(?command, "Received timekeeping command");
-                    ctx.address().do_send(AddTimestampMessage {
-                        command: command.command,
-                    });
-                }
+                Ok(cmd_msg) => match cmd_msg.command {
+                    TimekeepingCommandType::GetTimestrip => ctx.address().do_send(OpenHeatsMsg {
+                        heats: self.heats.read().unwrap().clone(),
+                    }),
+                    TimekeepingCommandType::AddStart => ctx.address().do_send(AddTimestampMsg { split: 0 }),
+                    TimekeepingCommandType::AddFinish => ctx.address().do_send(AddTimestampMsg { split: 64 }),
+                },
                 Err(err) => {
                     warn!(%err, %text, "Failed to parse timekeeping command");
                     let error_json = serde_json::json!({"error": format!("Invalid command: {err}")});
