@@ -56,7 +56,9 @@ enum TimekeepingCommandType {
 /// Message to trigger sending heats to the WebSocket client
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
-struct SendHeatsMessage;
+struct SendHeatsMessage {
+    heats: Vec<Heat>,
+}
 
 /// Message to trigger persisting a timestamp and sending it back to the client
 #[derive(ActixMessage)]
@@ -104,13 +106,6 @@ impl WsTimekeeping {
             }
         });
     }
-
-    fn send_heats(&self, ctx: &mut <Self as Actor>::Context) {
-        let heats = self.heats.read().unwrap();
-        let json = serde_json::to_string(&*heats).unwrap();
-        debug!("Sending heats to timekeeping websocket client: {}", json);
-        ctx.text(json);
-    }
 }
 
 fn receive_aquarius_events(
@@ -145,15 +140,19 @@ fn receive_aquarius_events(
                 }
             }
         }
-        addr.do_send(SendHeatsMessage);
+        addr.do_send(SendHeatsMessage {
+            heats: heats.read().unwrap().clone(),
+        });
     }
 }
 
 impl Handler<SendHeatsMessage> for WsTimekeeping {
     type Result = ();
 
-    fn handle(&mut self, _msg: SendHeatsMessage, ctx: &mut Self::Context) -> Self::Result {
-        self.send_heats(ctx);
+    fn handle(&mut self, msg: SendHeatsMessage, ctx: &mut Self::Context) -> Self::Result {
+        let json = serde_json::to_string(&msg.heats).unwrap_or_default();
+        debug!("Sending heats to timekeeping websocket client: {}", json);
+        ctx.text(json);
     }
 }
 
