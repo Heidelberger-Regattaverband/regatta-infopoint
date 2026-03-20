@@ -47,7 +47,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # utils
 dotenv = { version = "0.15" }
-scraper = { version = "0.25" }
+scraper = { version = "0.26" }
 clap = { version = "4.6", features = ["derive"] }
 secret-string = { version = "0.0", features = ["serde"] }
 sysinfo = { version = "0.38" }
