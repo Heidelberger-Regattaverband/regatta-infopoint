@@ -28,7 +28,7 @@ export default class Component extends UIComponent {
             return this.regattaModelPromise;
         }
         if (this.regattaModel) {
-            console.debug("Active regatta already loaded");
+            console.trace("Active regatta already loaded");
         } else {
             this.regattaModelPromise = this.loadActiveRegatta();
             this.regattaModel = await this.regattaModelPromise;
@@ -42,7 +42,7 @@ export default class Component extends UIComponent {
             return this.filtersModelPromise;
         }
         if (this.filtersModel) {
-            console.debug("Filters already loaded");
+            console.trace("Filters already loaded");
         } else {
             this.filtersModelPromise = this.loadFilters();
             this.filtersModel = await this.filtersModelPromise;

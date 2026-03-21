@@ -27,7 +27,7 @@
         <cells>
           <Text text="{aquariusHeats>id}" />
           <Text text="{aquariusHeats>number}" />
-          <Text text="{path:'aquariusHeats>state>/' ,formatter:'.formatter.heatStateLabel2'}" />
+          <Text text="{path:'aquariusHeats>state',formatter:'.formatter.heatStateLabel2'}" />
         </cells>
       </ColumnListItem>
     </items>

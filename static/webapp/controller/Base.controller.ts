@@ -22,19 +22,25 @@ export default class BaseController extends Controller {
    */
   showDataUpdatedMessage(succeeded: boolean): void {
     if (succeeded) { // NOSONAR
-      MessageToast.show(this.i18n("msg.dataUpdated"));
-      $(".sapMMessageToast").addClass("sapMMessageToastInfo");
+      this.showInfoMessageToast(this.i18n("msg.dataUpdated"));
     } else {
-      MessageToast.show(this.i18n("msg.dataUpdateFailed"));
-      $(".sapMMessageToast").addClass("sapMMessageToastDanger");
+      this.showErrorMessageToast(this.i18n("msg.dataUpdateFailed"));
     }
   }
 
+  /**
+   * Shows an info message toast with the given message.
+   * @param message the message to be shown
+   */
   showInfoMessageToast(message: string): void {
     MessageToast.show(message);
     $(".sapMMessageToast").addClass("sapMMessageToastInfo");
   }
 
+  /**
+   * Shows an error message toast with the given message.
+   * @param message the message to be shown
+   */
   showErrorMessageToast(message: string): void {
     MessageToast.show(message);
     $(".sapMMessageToast").addClass("sapMMessageToastDanger");

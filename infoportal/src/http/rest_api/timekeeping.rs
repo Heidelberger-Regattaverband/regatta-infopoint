@@ -145,9 +145,9 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsTimekeeping {
                     TimekeepingCommand::GetTimestrip => ctx.address().do_send(GetTimestrip),
                 },
                 Err(err) => {
-                    warn!(%err, %text, "Failed to parse timekeeping command");
-                    let error_json = serde_json::json!({"error": format!("Invalid command: {err}")});
-                    ctx.text(error_json.to_string());
+                    ctx.address().do_send(ServerEvent::Error {
+                        error: format!("Failed to parse command: {err}"),
+                    });
                 }
             },
             Ok(Message::Binary(bin)) => ctx.binary(bin),

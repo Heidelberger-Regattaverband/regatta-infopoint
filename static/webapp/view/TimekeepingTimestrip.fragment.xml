@@ -49,7 +49,7 @@
     <items>
       <ColumnListItem>
         <cells>
-          <Text text="{timestrip>time}" />
+          <Text text="{path:'timestrip>time',formatter:'.formatter.timestamp'}" />
           <Text text="{timestrip>split}" />
           <Text text="{timestrip>heat_nr}" />
           <Text text="{timestrip>bib}" />
