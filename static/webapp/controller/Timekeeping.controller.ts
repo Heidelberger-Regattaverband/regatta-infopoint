@@ -144,20 +144,15 @@ export default class TimekeepingController extends BaseTableController {
       if (data.error) {
         console.error('Timekeeping WebSocket error:', data.error);
         MessageToast.show(data.error);
-      } else {
-        const eventType: string = data.event;
-        switch (eventType) {
-          case "AquariusHeats":
-            console.debug('Received AquariusHeats event:', data.heats);
-            super.getViewJSONModel(TimekeepingController.AQUARIUS_HEATS_MODEL).setData(data.heats);
-            break;
-          case "AddTimestamp":
-            MessageToast.show("Timestamp added successfully");
-            break;
-          default:
-            console.warn(`Received unknown Timekeeping WebSocket event type: ${eventType}`);
+      } else
+        if (data.AquariusHeats) {
+          console.debug('Received AquariusHeats event:', data.AquariusHeats.heats);
+          super.getViewJSONModel(TimekeepingController.AQUARIUS_HEATS_MODEL).setData(data.AquariusHeats.heats);
+        } else if (data.AddTimestamp) {
+          MessageToast.show("Timestamp added successfully");
+        } else {
+          console.warn(`Received unknown Timekeeping WebSocket event type: ${JSON.stringify(data)}`);
         }
-      }
     }
   }
 

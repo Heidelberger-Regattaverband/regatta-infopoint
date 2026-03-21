@@ -150,25 +150,25 @@ pub struct Heat {
     pub id: u16,
     // The heat number.
     pub number: HeatNr,
-    // The heat status.
-    status: u8,
+    // The heat state.
+    state: u8,
     // The boats in the heat.
     pub boats: Option<Vec<Boat>>,
 }
 
 impl Heat {
-    /// Create a new heat with the given id, number, and status.
+    /// Create a new heat with the given id, number, and state.
     /// # Arguments
     /// * `id` - The heat identifier
     /// * `number` - The heat number.
-    /// * `status` - The heat status.
+    /// * `state` - The heat state.
     /// # Returns
-    /// A new heat with the given id, number, and status.
-    fn new(id: u16, number: i16, status: u8) -> Self {
+    /// A new heat with the given id, number, and state.
+    fn new(id: u16, number: i16, state: u8) -> Self {
         Heat {
             id,
             number,
-            status,
+            state,
             boats: None,
         }
     }
@@ -191,11 +191,7 @@ impl FromStr for Heat {
 
 impl Display for Heat {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        writeln!(
-            f,
-            "Heat: id={}, number={}, status={}",
-            self.id, self.number, self.status
-        )
+        writeln!(f, "Heat: id={}, number={}, state={}", self.id, self.number, self.state)
     }
 }
 
@@ -280,13 +276,13 @@ mod tests {
         assert_eq!(response.heats.len(), 3);
         assert_eq!(response.heats[0].id, 2766);
         assert_eq!(response.heats[0].number, 3);
-        assert_eq!(response.heats[0].status, 4);
+        assert_eq!(response.heats[0].state, 4);
         assert_eq!(response.heats[1].id, 2767);
         assert_eq!(response.heats[1].number, 50);
-        assert_eq!(response.heats[1].status, 4);
+        assert_eq!(response.heats[1].state, 4);
         assert_eq!(response.heats[2].id, 2786);
         assert_eq!(response.heats[2].number, 71);
-        assert_eq!(response.heats[2].status, 4);
+        assert_eq!(response.heats[2].state, 4);
 
         let message = "3 2766 4\n50 2767 4\n71 2786 4f";
         assert!(ResponseListOpenHeats::from_str(message).is_err());
@@ -297,7 +293,7 @@ mod tests {
         let heat = Heat::new(1234, 50, 4);
         assert_eq!(heat.id, 1234);
         assert_eq!(heat.number, 50);
-        assert_eq!(heat.status, 4);
+        assert_eq!(heat.state, 4);
     }
 
     #[test]
@@ -313,7 +309,7 @@ mod tests {
     #[test]
     fn test_display_heat() {
         let heat = Heat::new(2766, 1, 4);
-        assert_eq!(heat.to_string(), "Heat: id=2766, number=1, status=4\n");
+        assert_eq!(heat.to_string(), "Heat: id=2766, number=1, state=4\n");
     }
 
     #[test]
@@ -375,7 +371,7 @@ mod tests {
         let event = EventHeatChanged::new(heat.clone(), true);
         assert_eq!(event.heat.id, 1234);
         assert_eq!(event.heat.number, 50);
-        assert_eq!(event.heat.status, 4);
+        assert_eq!(event.heat.state, 4);
         assert!(event.opened);
 
         let event = EventHeatChanged::new(heat, false);
@@ -391,7 +387,7 @@ mod tests {
         let event = event.unwrap();
         assert_eq!(event.heat.id, 1234);
         assert_eq!(event.heat.number, 50);
-        assert_eq!(event.heat.status, 4);
+        assert_eq!(event.heat.state, 4);
         assert!(event.opened);
 
         let event = EventHeatChanged::from_str("!OPEN- 50 1234 4");
@@ -399,7 +395,7 @@ mod tests {
         let event = event.unwrap();
         assert_eq!(event.heat.id, 1234);
         assert_eq!(event.heat.number, 50);
-        assert_eq!(event.heat.status, 4);
+        assert_eq!(event.heat.state, 4);
         assert!(!event.opened);
 
         let event = EventHeatChanged::from_str("!OPEN+ 50 1234");

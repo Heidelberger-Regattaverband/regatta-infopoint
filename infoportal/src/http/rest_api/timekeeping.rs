@@ -62,16 +62,13 @@ enum TimekeepingCommandType {
     GetTimestrip,
 }
 
-/// A message with the current heats open in Aquarius.
 /// Direction: Server -> Client
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
 #[derive(Debug, Serialize)]
-struct AquariusHeatsEvent {
-    #[allow(dead_code)]
-    event: String,
-    /// The list of currently open heats in Aquarius
-    heats: Vec<Heat>,
+enum ServerEvent {
+    /// Event to send the current heats open in Aquarius to the client
+    AquariusHeats { heats: Vec<Heat> },
 }
 
 /// Message to trigger persisting a timestamp and sending it back to the client
@@ -139,8 +136,7 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsTimekeeping {
             }
             Ok(Message::Text(text)) => match serde_json::from_str::<TimekeepingCommand>(&text) {
                 Ok(cmd_msg) => match cmd_msg.command {
-                    TimekeepingCommandType::GetTimestrip => ctx.address().do_send(AquariusHeatsEvent {
-                        event: "AquariusHeats".to_string(),
+                    TimekeepingCommandType::GetTimestrip => ctx.address().do_send(ServerEvent::AquariusHeats {
                         heats: self.heats.read().unwrap().clone(),
                     }),
                     TimekeepingCommandType::AddStart => ctx.address().do_send(AddTimestampMsg { split: 0 }),
@@ -162,10 +158,10 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsTimekeeping {
     }
 }
 
-impl Handler<AquariusHeatsEvent> for WsTimekeeping {
+impl Handler<ServerEvent> for WsTimekeeping {
     type Result = ();
 
-    fn handle(&mut self, event: AquariusHeatsEvent, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, event: ServerEvent, ctx: &mut Self::Context) -> Self::Result {
         let json = serde_json::to_string(&event).unwrap_or_default();
         ctx.text(json);
     }
@@ -328,8 +324,7 @@ fn receive_aquarius_events(
                 }
             }
         }
-        addr.do_send(AquariusHeatsEvent {
-            event: "AquariusHeats".to_string(),
+        addr.do_send(ServerEvent::AquariusHeats {
             heats: heats.read().unwrap().clone(),
         });
     }

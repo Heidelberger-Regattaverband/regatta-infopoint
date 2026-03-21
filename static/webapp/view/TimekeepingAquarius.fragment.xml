@@ -15,6 +15,11 @@
           <Text text="{i18n>common.heatNr}" class="bold" />
         </header>
       </Column>
+      <Column id="aquariusHeatStatus" hAlign="Center" width="4rem" importance="High" popinDisplay="Inline">
+        <header>
+          <Text text="{i18n>common.state}" class="bold" />
+        </header>
+      </Column>
     </columns>
 
     <items>
@@ -22,6 +27,7 @@
         <cells>
           <Text text="{aquariusHeats>id}" />
           <Text text="{aquariusHeats>number}" />
+          <Text text="{path:'aquariusHeats>state>/' ,formatter:'.formatter.heatStateLabel2'}" />
         </cells>
       </ColumnListItem>
     </items>
