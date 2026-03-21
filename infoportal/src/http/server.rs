@@ -25,13 +25,13 @@ use ::prometheus::Registry;
 use ::rustls::ServerConfig;
 use ::rustls_pemfile::{certs, pkcs8_private_keys};
 use ::rustls_pki_types::{PrivateKeyDer, PrivatePkcs8KeyDer};
+use ::std::fs::File;
+use ::std::sync::{Arc, Mutex};
 use ::std::time::Duration;
 use ::std::{
-    fs::File,
     future::Ready,
     io::{BufReader, Result as IoResult},
     path::Path,
-    sync::{Arc, Mutex},
     time::Instant,
 };
 use ::tracing::{debug, info, warn};
@@ -80,7 +80,6 @@ impl Server {
                 // collect metrics about requests and responses
                 .wrap(prometheus.clone())
                 .app_data(aquarius.clone())
-                .app_data(Data::new(prometheus.registry.clone()))
                 .app_data(user_pool_manager.clone())
                 .configure(rest_api::config)
                 .configure(api_doc::config)

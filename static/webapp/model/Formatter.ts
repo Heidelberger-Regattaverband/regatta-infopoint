@@ -383,7 +383,11 @@ export default class Formatter {
       return Formatter.i18n("heat.state.cancelled");
     }
 
-    switch (heat.state) {
+    return Formatter.heatStateLabel2(heat.state);
+  }
+
+  static heatStateLabel2(heatState?: number): string | undefined {
+    switch (heatState) {
       case HeatState.Initial: return Formatter.i18n("common.scheduled");
       case HeatState.Seeded: return Formatter.i18n("common.seeded");
       case HeatState.Started: return Formatter.i18n("heat.state.started");

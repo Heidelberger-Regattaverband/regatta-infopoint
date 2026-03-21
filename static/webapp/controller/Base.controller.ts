@@ -30,6 +30,16 @@ export default class BaseController extends Controller {
     }
   }
 
+  showInfoMessageToast(message: string): void {
+    MessageToast.show(message);
+    $(".sapMMessageToast").addClass("sapMMessageToastInfo");
+  }
+
+  showErrorMessageToast(message: string): void {
+    MessageToast.show(message);
+    $(".sapMMessageToast").addClass("sapMMessageToastDanger");
+  }
+
   /**
    * Convenience method for getting the secure context of the application.
    * @returns {boolean} whether the application is running in a secure context

@@ -1,4 +1,4 @@
-use ::aquarius::{client::Client, messages::Heat};
+use ::aquarius::{client::AquariusClient, messages::Heat};
 use ::db::tiberius::TiberiusClient;
 use ::db::timekeeper::{TimeStamp, TimeStrip};
 use ::ratatui::{
@@ -16,7 +16,7 @@ pub(crate) struct TimeStripTabPopup<'a> {
     is_valid: bool,
 
     // shared context
-    client: Rc<RefCell<Client>>,
+    client: Rc<RefCell<AquariusClient>>,
     heats: Rc<RefCell<Vec<Heat>>>,
     time_strip: Rc<RefCell<TimeStrip>>,
     selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
@@ -51,7 +51,7 @@ impl Widget for &mut TimeStripTabPopup<'_> {
 
 impl TimeStripTabPopup<'_> {
     pub(crate) fn new(
-        client: Rc<RefCell<Client>>,
+        client: Rc<RefCell<AquariusClient>>,
         heats: Rc<RefCell<Vec<Heat>>>,
         time_strip: Rc<RefCell<TimeStrip>>,
         selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,

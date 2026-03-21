@@ -12,7 +12,6 @@ use ::db::aquarius::Aquarius;
 use ::db::aquarius::model::Race;
 use ::tracing::error;
 
-// Races Endpoints
 #[utoipa::path(
     description = "Get all races of a regatta.",
     context_path = PATH,

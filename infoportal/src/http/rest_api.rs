@@ -5,6 +5,7 @@ pub(crate) mod misc;
 pub(crate) mod monitoring;
 pub(crate) mod notification;
 pub(crate) mod race;
+pub(crate) mod timekeeping;
 
 use ::actix_identity::Identity;
 use ::actix_web::{
@@ -18,11 +19,17 @@ use ::db::aquarius::model::{Filters, Heat, Regatta};
 use ::db::tiberius::TiberiusPool;
 use ::db::tiberius::user_pool::UserPoolManager;
 use ::std::sync::Arc;
+use ::std::time::Duration;
 use ::tracing::error;
 
 /// Path to REST API
 pub(crate) const PATH: &str = "/api";
 const INTERNAL_SERVER_ERROR: &str = "Internal server error";
+
+/// How often heartbeat pings are sent
+const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(2);
+/// How long before lack of client response causes a timeout
+const CLIENT_TIMEOUT: Duration = Duration::from_secs(5);
 
 // Filters Endpoints
 #[utoipa::path(
@@ -140,7 +147,7 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(misc::calculate_scoring)
             .service(misc::get_statistics)
             .service(misc::get_schedule)
-            .service(misc::get_timestrip)
+            .service(timekeeping::get_timekeeping_ws)
             .service(notification::get_visible_notifications)
             .service(notification::get_all_notifications)
             .service(notification::create_notification)
