@@ -43,17 +43,10 @@ use ::tracing::error;
 use ::tracing::trace;
 use ::tracing::warn;
 
-/// A command sent from the client to trigger timekeeping actions on the server.
+/// A timekeeping command sent from the client to trigger timekeeping actions on the server.
 /// Direction: Client -> Server
 #[derive(Debug, Deserialize)]
-struct TimekeepingCommand {
-    /// The type of timekeeping command to execute
-    command: TimekeepingCommandType,
-}
-
-/// The specific types of timekeeping commands that can be sent from the client.
-#[derive(Debug, Deserialize)]
-enum TimekeepingCommandType {
+enum TimekeepingCommand {
     /// Add a start timestamp to the timestrip
     AddStart,
     /// Add a finish timestamp to the timestrip
@@ -62,6 +55,7 @@ enum TimekeepingCommandType {
     GetTimestrip,
 }
 
+/// Events sent from the server to the client to update the UI with timekeeping-related information.
 /// Direction: Server -> Client
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
@@ -135,12 +129,12 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsTimekeeping {
                 self.heart_beat = Instant::now();
             }
             Ok(Message::Text(text)) => match serde_json::from_str::<TimekeepingCommand>(&text) {
-                Ok(cmd_msg) => match cmd_msg.command {
-                    TimekeepingCommandType::GetTimestrip => ctx.address().do_send(ServerEvent::AquariusHeats {
+                Ok(cmd_msg) => match cmd_msg {
+                    TimekeepingCommand::GetTimestrip => ctx.address().do_send(ServerEvent::AquariusHeats {
                         heats: self.heats.read().unwrap().clone(),
                     }),
-                    TimekeepingCommandType::AddStart => ctx.address().do_send(AddTimestampMsg { split: 0 }),
-                    TimekeepingCommandType::AddFinish => ctx.address().do_send(AddTimestampMsg { split: 64 }),
+                    TimekeepingCommand::AddStart => ctx.address().do_send(AddTimestampMsg { split: 0 }),
+                    TimekeepingCommand::AddFinish => ctx.address().do_send(AddTimestampMsg { split: 64 }),
                 },
                 Err(err) => {
                     warn!(%err, %text, "Failed to parse timekeeping command");

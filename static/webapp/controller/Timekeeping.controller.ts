@@ -62,16 +62,15 @@ export default class TimekeepingController extends BaseTableController {
   }
 
   onStatusButtonPress(): void {
-    this.statusButton?.setEnabled(false);
     this.connect();
   }
 
   onStartButtonPress(): void {
-    this.sendTimestamp({ command: "AddStart" });
+    this.sendCommand({ AddStart: null });
   }
 
   onStopButtonPress(): void {
-    this.sendTimestamp({ command: "AddFinish" });
+    this.sendCommand({ AddFinish: null });
   }
 
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
@@ -164,7 +163,7 @@ export default class TimekeepingController extends BaseTableController {
     }
   }
 
-  private sendTimestamp(command: any) {
+  private sendCommand(command: any) {
     if (this.socket?.readyState === WebSocket.OPEN) {
       this.socket.send(JSON.stringify(command));
     }
