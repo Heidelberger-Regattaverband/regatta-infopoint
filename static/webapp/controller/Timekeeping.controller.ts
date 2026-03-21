@@ -125,30 +125,26 @@ export default class TimekeepingController extends BaseTableController {
     this.socket.onopen = (_event: Event) => {
       this.statusButton?.setEnabled(true);
       this.statusButton?.setIcon('sap-icon://connected');
-      this.startButton?.setEnabled(true);
-      this.stopButton?.setEnabled(true);
       console.debug('Timekeeping WebSocket Connected');
     }
     this.socket.onclose = (_event: CloseEvent) => {
       this.statusButton?.setEnabled(true);
       this.statusButton?.setIcon('sap-icon://disconnected');
-      this.startButton?.setEnabled(false);
-      this.stopButton?.setEnabled(false);
       console.debug('Timekeeping WebSocket Disconnected');
     }
     this.socket.onmessage = (msgEvent: MessageEvent) => {
       const data: any = JSON.parse(msgEvent.data);
       if (data.error) {
         console.error('Timekeeping WebSocket error:', data.error);
-        MessageToast.show(data.error);
+        super.showErrorMessageToast(data.error);
       } else
         if (data.AquariusHeats) {
           super.getViewJSONModel(TimekeepingController.AQUARIUS_HEATS_MODEL).setData(data.AquariusHeats.heats);
         } else if (data.Timestamp) {
-          MessageToast.show("Timestamp added successfully");
+          super.showInfoMessageToast("Timestamp added successfully");
         } else if (data.Timestrip) {
           super.getViewJSONModel(TimekeepingController.TIMESTRIP_MODEL).setData(data.Timestrip.time_stamps);
-          MessageToast.show("Timestrip retrieved successfully");
+          super.showInfoMessageToast("Timestrip retrieved successfully");
         } else {
           console.warn(`Received unknown Timekeeping WebSocket event type: ${JSON.stringify(data)}`);
         }
