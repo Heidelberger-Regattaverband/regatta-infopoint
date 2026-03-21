@@ -37,8 +37,9 @@ export default class TimekeepingController extends BaseTableController {
     super.getView()?.addEventDelegate({ onBeforeHide: this.onBeforeHide }, this);
     super.setViewModel(new JSONModel(), TimekeepingController.TIMESTRIP_MODEL);
     super.setViewModel(new JSONModel(), TimekeepingController.AQUARIUS_HEATS_MODEL);
-    super.getRouter()?.getRoute("timekeeping")?.attachMatched(async (_: Route$MatchedEvent) => {
-      await this.loadTimestripModel(); this.connect();
+    super.getRouter()?.getRoute("timekeeping")?.attachMatched((_: Route$MatchedEvent) => {
+      this.connect();
+      this.loadTimestripModel();
     }, this);
   }
 
@@ -143,7 +144,7 @@ export default class TimekeepingController extends BaseTableController {
       } else
         if (data.AquariusHeats) {
           super.getViewJSONModel(TimekeepingController.AQUARIUS_HEATS_MODEL).setData(data.AquariusHeats.heats);
-        } else if (data.AddTimestamp) {
+        } else if (data.Timestamp) {
           MessageToast.show("Timestamp added successfully");
         } else if (data.Timestrip) {
           super.getViewJSONModel(TimekeepingController.TIMESTRIP_MODEL).setData(data.Timestrip.time_stamps);

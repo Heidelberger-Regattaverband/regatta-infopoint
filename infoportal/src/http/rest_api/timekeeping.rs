@@ -244,10 +244,8 @@ impl Handler<GetTimestrip> for WsTimekeeping {
                             time_stamps: time_strip.time_stamps,
                         });
                     }
-                    Err(err) => {
-                        let error_json = serde_json::json!({"error": err});
-                        error!("Failed to persist timestamp: {}", err);
-                        ctx.text(error_json.to_string());
+                    Err(error) => {
+                        ctx.address().do_send(ServerEvent::Error { error });
                     }
                 },
             ),
