@@ -260,11 +260,12 @@ impl Actor for WsTimekeeping {
         trace!("Timekeeping websocket actor started");
         self.start_heart_beat(ctx);
 
-        if let Some(receiver) = self.event_receiver.take() {
+        if let Some(event_receiver) = self.event_receiver.take() {
             let aquarius_client = self.aquarius_client.clone();
             let heats = self.heats.clone();
-            let addr = ctx.address();
-            thread::spawn(move || receive_aquarius_events(receiver, aquarius_client, heats, addr));
+            let address = ctx.address();
+            thread::spawn(move || receive_aquarius_events(event_receiver, aquarius_client, heats, address));
+            ctx.address().do_send(GetTimestrip);
         } else {
             error!("Failed to take event receiver for timekeeping websocket actor");
         }
