@@ -4,10 +4,12 @@
 
     <Page title="{i18n>launchpad.timekeeping.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
       <headerContent>
-        <Button id="startButton" text="{i18n>common.start}" icon="sap-icon://media-play" type="Accept" press=".onStartButtonPress" enabled="false" />
-        <Button id="stopButton" text="{i18n>common.stop}" icon="sap-icon://media-pause" type="Reject" press=".onStopButtonPress" enabled="false" />
+        <Button id="startButton" text="{i18n>common.start}" icon="sap-icon://media-play" type="Accept" press=".onStartButtonPress"
+          enabled="false" />
+        <Button id="stopButton" text="{i18n>common.stop}" icon="sap-icon://media-pause" type="Reject" press=".onStopButtonPress"
+          enabled="false" />
         <ToolbarSpacer />
-        <Button id="timekeeperStatusButton" icon="sap-icon://disconnected" enabled="true" type="Transparent" press=".onStatusButtonPress" />
+        <Button id="timekeepingStatusButton" icon="sap-icon://disconnected" enabled="true" type="Transparent" press=".onStatusButtonPress" />
       </headerContent>
       <content>
         <IconTabBar>

@@ -31,6 +31,7 @@ use ::db::tiberius::user_pool::UserPoolManager;
 use ::db::timekeeper::TimeStamp;
 use ::db::timekeeper::TimeStrip;
 use ::serde::Deserialize;
+use ::serde::Serialize;
 use ::std::sync::Arc;
 use ::std::sync::RwLock;
 use ::std::sync::mpsc;
@@ -65,7 +66,11 @@ enum TimekeepingCommandType {
 /// Direction: Server -> Client
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
-struct OpenHeatsMsg {
+#[derive(Debug, Serialize)]
+struct AquariusHeatsEvent {
+    #[allow(dead_code)]
+    event: String,
+    /// The list of currently open heats in Aquarius
     heats: Vec<Heat>,
 }
 
@@ -119,50 +124,49 @@ impl WsTimekeeping {
     }
 }
 
-fn receive_aquarius_events(
-    receiver: Receiver<AquariusEvent>,
-    aquarius_client: Arc<AquariusClient>,
-    heats: Arc<RwLock<Vec<Heat>>>,
-    addr: Addr<WsTimekeeping>,
-) {
-    while let Ok(event) = receiver.recv() {
-        match event {
-            AquariusEvent::HeatListChanged(event) => {
-                debug!("Received HeatListChanged event = {:?}", &event);
-                if event.opened {
-                    let mut heats_lock = heats.write().unwrap();
-                    heats_lock.push(event.heat);
-                } else {
-                    let mut heats_lock = heats.write().unwrap();
-                    heats_lock.retain(|heat| heat.id != event.heat.id);
-                }
+/// WebSocket handler for timekeeping commands from the client.
+/// Direction: Client -> Server
+impl StreamHandler<Result<Message, ProtocolError>> for WsTimekeeping {
+    fn handle(&mut self, msg: Result<Message, ProtocolError>, ctx: &mut Self::Context) {
+        trace!(?msg, "Received timekeeping websocket message");
+        match msg {
+            Ok(Message::Ping(msg)) => {
+                self.heart_beat = Instant::now();
+                ctx.pong(&msg);
             }
-            AquariusEvent::Client(connected) => {
-                if connected {
-                    if let Ok(open_heats) = aquarius_client.read_open_heats() {
-                        let mut heats_lock = heats.write().unwrap();
-                        heats_lock.clear();
-                        heats_lock.extend(open_heats);
-                    } else {
-                        error!("Failed to read open heats from Aquarius client");
-                    }
-                } else {
-                    heats.write().unwrap().clear();
-                }
+            Ok(Message::Pong(_)) => {
+                self.heart_beat = Instant::now();
             }
+            Ok(Message::Text(text)) => match serde_json::from_str::<TimekeepingCommand>(&text) {
+                Ok(cmd_msg) => match cmd_msg.command {
+                    TimekeepingCommandType::GetTimestrip => ctx.address().do_send(AquariusHeatsEvent {
+                        event: "AquariusHeats".to_string(),
+                        heats: self.heats.read().unwrap().clone(),
+                    }),
+                    TimekeepingCommandType::AddStart => ctx.address().do_send(AddTimestampMsg { split: 0 }),
+                    TimekeepingCommandType::AddFinish => ctx.address().do_send(AddTimestampMsg { split: 64 }),
+                },
+                Err(err) => {
+                    warn!(%err, %text, "Failed to parse timekeeping command");
+                    let error_json = serde_json::json!({"error": format!("Invalid command: {err}")});
+                    ctx.text(error_json.to_string());
+                }
+            },
+            Ok(Message::Binary(bin)) => ctx.binary(bin),
+            Ok(Message::Close(reason)) => {
+                ctx.close(reason);
+                ctx.stop();
+            }
+            _ => ctx.stop(),
         }
-        addr.do_send(OpenHeatsMsg {
-            heats: heats.read().unwrap().clone(),
-        });
     }
 }
 
-impl Handler<OpenHeatsMsg> for WsTimekeeping {
+impl Handler<AquariusHeatsEvent> for WsTimekeeping {
     type Result = ();
 
-    fn handle(&mut self, msg: OpenHeatsMsg, ctx: &mut Self::Context) -> Self::Result {
-        let json = serde_json::to_string(&msg.heats).unwrap_or_default();
-        debug!("Sending heats to timekeeping websocket client: {}", json);
+    fn handle(&mut self, event: AquariusHeatsEvent, ctx: &mut Self::Context) -> Self::Result {
+        let json = serde_json::to_string(&event).unwrap_or_default();
         ctx.text(json);
     }
 }
@@ -245,42 +249,6 @@ impl Actor for WsTimekeeping {
     }
 }
 
-/// WebSocket handler for timekeeping commands from the client.
-impl StreamHandler<Result<Message, ProtocolError>> for WsTimekeeping {
-    fn handle(&mut self, msg: Result<Message, ProtocolError>, ctx: &mut Self::Context) {
-        trace!(?msg, "Received timekeeping websocket message");
-        match msg {
-            Ok(Message::Ping(msg)) => {
-                self.heart_beat = Instant::now();
-                ctx.pong(&msg);
-            }
-            Ok(Message::Pong(_)) => {
-                self.heart_beat = Instant::now();
-            }
-            Ok(Message::Text(text)) => match serde_json::from_str::<TimekeepingCommand>(&text) {
-                Ok(cmd_msg) => match cmd_msg.command {
-                    TimekeepingCommandType::GetTimestrip => ctx.address().do_send(OpenHeatsMsg {
-                        heats: self.heats.read().unwrap().clone(),
-                    }),
-                    TimekeepingCommandType::AddStart => ctx.address().do_send(AddTimestampMsg { split: 0 }),
-                    TimekeepingCommandType::AddFinish => ctx.address().do_send(AddTimestampMsg { split: 64 }),
-                },
-                Err(err) => {
-                    warn!(%err, %text, "Failed to parse timekeeping command");
-                    let error_json = serde_json::json!({"error": format!("Invalid command: {err}")});
-                    ctx.text(error_json.to_string());
-                }
-            },
-            Ok(Message::Binary(bin)) => ctx.binary(bin),
-            Ok(Message::Close(reason)) => {
-                ctx.close(reason);
-                ctx.stop();
-            }
-            _ => ctx.stop(),
-        }
-    }
-}
-
 #[get("/timekeeping")]
 async fn get_timekeeping_ws(
     request: HttpRequest,
@@ -326,4 +294,43 @@ async fn get_timestrip(
         return Ok(Json(timestrip.time_stamps));
     }
     Err(ErrorUnauthorized("Unauthorized"))
+}
+
+fn receive_aquarius_events(
+    receiver: Receiver<AquariusEvent>,
+    aquarius_client: Arc<AquariusClient>,
+    heats: Arc<RwLock<Vec<Heat>>>,
+    addr: Addr<WsTimekeeping>,
+) {
+    while let Ok(event) = receiver.recv() {
+        match event {
+            AquariusEvent::HeatListChanged(event) => {
+                debug!("Received HeatListChanged event = {:?}", &event);
+                if event.opened {
+                    let mut heats_lock = heats.write().unwrap();
+                    heats_lock.push(event.heat);
+                } else {
+                    let mut heats_lock = heats.write().unwrap();
+                    heats_lock.retain(|heat| heat.id != event.heat.id);
+                }
+            }
+            AquariusEvent::Client(connected) => {
+                if connected {
+                    if let Ok(open_heats) = aquarius_client.read_open_heats() {
+                        let mut heats_lock = heats.write().unwrap();
+                        heats_lock.clear();
+                        heats_lock.extend(open_heats);
+                    } else {
+                        error!("Failed to read open heats from Aquarius client");
+                    }
+                } else {
+                    heats.write().unwrap().clear();
+                }
+            }
+        }
+        addr.do_send(AquariusHeatsEvent {
+            event: "AquariusHeats".to_string(),
+            heats: heats.read().unwrap().clone(),
+        });
+    }
 }

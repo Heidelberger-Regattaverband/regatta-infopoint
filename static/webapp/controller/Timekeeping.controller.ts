@@ -18,6 +18,7 @@ import BaseTableController from "./BaseTable.controller";
 export default class TimekeepingController extends BaseTableController {
 
   private static readonly TIMESTRIP_MODEL: string = "timestrip";
+  private static readonly AQUARIUS_HEATS_MODEL: string = "aquariusHeats";
 
   readonly formatter: Formatter = Formatter;
   private socket?: WebSocket;
@@ -29,12 +30,13 @@ export default class TimekeepingController extends BaseTableController {
 
   onInit(): void {
     super.init(super.getView()?.byId("timestripTable") as Table, "timestamp" /* eventBus channel */);
-    this.statusButton = this.byId("timekeeperStatusButton") as Button;
+    this.statusButton = this.byId("timekeepingStatusButton") as Button;
     this.startButton = this.byId("startButton") as Button;
     this.stopButton = this.byId("stopButton") as Button;
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getView()?.addEventDelegate({ onBeforeHide: this.onBeforeHide }, this);
     super.setViewModel(new JSONModel(), TimekeepingController.TIMESTRIP_MODEL);
+    super.setViewModel(new JSONModel(), TimekeepingController.AQUARIUS_HEATS_MODEL);
     super.getRouter()?.getRoute("timekeeping")?.attachMatched(async (_: Route$MatchedEvent) => {
       await this.loadTimestripModel(); this.connect();
     }, this);
@@ -47,7 +49,7 @@ export default class TimekeepingController extends BaseTableController {
   onSelectionChange(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
-      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("timestrip");
+      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(TimekeepingController.TIMESTRIP_MODEL);
       const timestamp: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
       this.onItemChanged(timestamp);
     }
@@ -137,13 +139,24 @@ export default class TimekeepingController extends BaseTableController {
       this.stopButton?.setEnabled(false);
       console.debug('Timekeeping WebSocket Disconnected');
     }
-    this.socket.onmessage = (event: MessageEvent) => {
-      const data = JSON.parse(event.data);
+    this.socket.onmessage = (msgEvent: MessageEvent) => {
+      const data: any = JSON.parse(msgEvent.data);
       if (data.error) {
         console.error('Timekeeping WebSocket error:', data.error);
         MessageToast.show(data.error);
       } else {
-        this.updateModel(data);
+        const eventType: string = data.event;
+        switch (eventType) {
+          case "AquariusHeats":
+            console.debug('Received AquariusHeats event:', data.heats);
+            super.getViewJSONModel(TimekeepingController.AQUARIUS_HEATS_MODEL).setData(data.heats);
+            break;
+          case "AddTimestamp":
+            MessageToast.show("Timestamp added successfully");
+            break;
+          default:
+            console.warn(`Received unknown Timekeeping WebSocket event type: ${eventType}`);
+        }
       }
     }
   }
