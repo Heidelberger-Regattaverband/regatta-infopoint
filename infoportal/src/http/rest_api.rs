@@ -147,7 +147,6 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(misc::calculate_scoring)
             .service(misc::get_statistics)
             .service(misc::get_schedule)
-            .service(timekeeping::get_timestrip)
             .service(timekeeping::get_timekeeping_ws)
             .service(notification::get_visible_notifications)
             .service(notification::get_all_notifications)

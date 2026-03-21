@@ -86,9 +86,8 @@ export default class TimekeepingController extends BaseTableController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadTimestripModel().then((succeeded: boolean) => {
-      super.showDataUpdatedMessage(succeeded);
-    }).finally(() => source.setEnabled(true));
+    this.loadTimestripModel();
+    source.setEnabled(true);
   }
 
   onItemChanged(item: any): void {
@@ -105,10 +104,8 @@ export default class TimekeepingController extends BaseTableController {
     })]
   }
 
-  private async loadTimestripModel(): Promise<boolean> {
-    const url: string = `/api/regattas/active/timestrip`;
-    const timestripModel: JSONModel = super.getViewJSONModel(TimekeepingController.TIMESTRIP_MODEL);
-    return await super.updateJSONModel(timestripModel, url);
+  private loadTimestripModel() {
+    this.sendCommand({ GetTimestrip: null });
   }
 
   private updateModel(timekeeping: any) {
@@ -145,10 +142,12 @@ export default class TimekeepingController extends BaseTableController {
         MessageToast.show(data.error);
       } else
         if (data.AquariusHeats) {
-          console.debug('Received AquariusHeats event:', data.AquariusHeats.heats);
           super.getViewJSONModel(TimekeepingController.AQUARIUS_HEATS_MODEL).setData(data.AquariusHeats.heats);
         } else if (data.AddTimestamp) {
           MessageToast.show("Timestamp added successfully");
+        } else if (data.Timestrip) {
+          super.getViewJSONModel(TimekeepingController.TIMESTRIP_MODEL).setData(data.Timestrip.time_stamps);
+          MessageToast.show("Timestrip retrieved successfully");
         } else {
           console.warn(`Received unknown Timekeeping WebSocket event type: ${JSON.stringify(data)}`);
         }

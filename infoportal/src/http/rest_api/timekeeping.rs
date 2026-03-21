@@ -1,8 +1,6 @@
 use super::CLIENT_TIMEOUT;
 use super::HEARTBEAT_INTERVAL;
 use crate::config::CONFIG;
-use crate::http::rest_api::INTERNAL_SERVER_ERROR;
-use crate::http::rest_api::PATH;
 use crate::http::rest_api::get_user_pool;
 use ::actix::ActorFutureExt;
 use ::actix::Message as ActixMessage;
@@ -12,12 +10,9 @@ use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::HttpRequest;
 use ::actix_web::HttpResponse;
-use ::actix_web::Responder;
-use ::actix_web::error::ErrorInternalServerError;
 use ::actix_web::error::ErrorUnauthorized;
 use ::actix_web::get;
 use ::actix_web::web::Data;
-use ::actix_web::web::Json;
 use ::actix_web::web::Payload;
 use ::actix_web_actors::ws;
 use ::actix_web_actors::ws::Message;
@@ -63,16 +58,31 @@ enum TimekeepingCommand {
 enum ServerEvent {
     /// Event to send the current heats open in Aquarius to the client
     AquariusHeats { heats: Vec<Heat> },
+    /// Event to send the current timestrip data to the client
+    Timestrip { time_stamps: Vec<TimeStamp> },
+    /// Event to send a single timestamp update to the client
+    Timestamp { time_stamp: TimeStamp },
+    /// Event to send an error message to the client
+    Error {
+        /// The error message to send to the client
+        error: String,
+    },
 }
 
 /// Message to trigger persisting a timestamp and sending it back to the client
-/// Direction: Server -> Server (internal)
+/// Direction: Server -> Server
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
-struct AddTimestampMsg {
+struct AddTimestamp {
     /// The split number for the timestamp (0 for start, 64 for finish)
     split: u8,
 }
+
+/// Message to trigger loading the current timestrip and sending it back to the client
+/// Direction: Server -> Server
+#[derive(ActixMessage)]
+#[rtype(result = "()")]
+struct GetTimestrip;
 
 struct WsTimekeeping {
     heart_beat: Instant,
@@ -130,11 +140,9 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsTimekeeping {
             }
             Ok(Message::Text(text)) => match serde_json::from_str::<TimekeepingCommand>(&text) {
                 Ok(cmd_msg) => match cmd_msg {
-                    TimekeepingCommand::GetTimestrip => ctx.address().do_send(ServerEvent::AquariusHeats {
-                        heats: self.heats.read().unwrap().clone(),
-                    }),
-                    TimekeepingCommand::AddStart => ctx.address().do_send(AddTimestampMsg { split: 0 }),
-                    TimekeepingCommand::AddFinish => ctx.address().do_send(AddTimestampMsg { split: 64 }),
+                    TimekeepingCommand::AddStart => ctx.address().do_send(AddTimestamp { split: 0 }),
+                    TimekeepingCommand::AddFinish => ctx.address().do_send(AddTimestamp { split: 64 }),
+                    TimekeepingCommand::GetTimestrip => ctx.address().do_send(GetTimestrip),
                 },
                 Err(err) => {
                     warn!(%err, %text, "Failed to parse timekeeping command");
@@ -161,10 +169,10 @@ impl Handler<ServerEvent> for WsTimekeeping {
     }
 }
 
-impl Handler<AddTimestampMsg> for WsTimekeeping {
+impl Handler<AddTimestamp> for WsTimekeeping {
     type Result = ();
 
-    fn handle(&mut self, msg: AddTimestampMsg, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: AddTimestamp, ctx: &mut Self::Context) -> Self::Result {
         let pool = self.pool.clone();
         let split = msg.split;
 
@@ -201,9 +209,40 @@ impl Handler<AddTimestampMsg> for WsTimekeeping {
             .map(
                 |result: Result<TimeStamp, String>, _actor, ctx: &mut WebsocketContext<WsTimekeeping>| match result {
                     Ok(time_stamp) => {
-                        let json = serde_json::to_string(&time_stamp).unwrap_or_default();
-                        debug!("Sending updated timestrip to client: {}", json);
-                        ctx.text(json);
+                        ctx.address().do_send(ServerEvent::Timestamp { time_stamp });
+                    }
+                    Err(error) => {
+                        ctx.address().do_send(ServerEvent::Error { error });
+                    }
+                },
+            ),
+        );
+    }
+}
+
+impl Handler<GetTimestrip> for WsTimekeeping {
+    type Result = ();
+
+    fn handle(&mut self, _msg: GetTimestrip, ctx: &mut Self::Context) -> Self::Result {
+        let pool = self.pool.clone();
+
+        ctx.wait(
+            actix::fut::wrap_future(async move {
+                let mut client = pool
+                    .get()
+                    .await
+                    .map_err(|err| format!("Failed to get DB client: {err}"))?;
+                let time_strip = TimeStrip::load(&mut client)
+                    .await
+                    .map_err(|err| format!("Failed to load timestrip: {err}"))?;
+                Ok(time_strip)
+            })
+            .map(
+                |result: Result<TimeStrip, String>, _actor, ctx: &mut WebsocketContext<WsTimekeeping>| match result {
+                    Ok(time_strip) => {
+                        ctx.address().do_send(ServerEvent::Timestrip {
+                            time_stamps: time_strip.time_stamps,
+                        });
                     }
                     Err(err) => {
                         let error_json = serde_json::json!({"error": err});
@@ -234,7 +273,7 @@ impl Actor for WsTimekeeping {
     }
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
-        debug!("Timekeeping websocket actor stopped");
+        trace!("Timekeeping websocket actor stopped");
         self.aquarius_client.shutdown();
     }
 }
@@ -252,38 +291,6 @@ async fn get_timekeeping_ws(
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
     }
-}
-
-#[utoipa::path(
-    description = "Get the timestrip data for the active regatta. Requires authentication.",
-    context_path = PATH,
-    responses(
-        (status = 200, description = "Timestrip data", body = Vec<TimeStamp>),
-        (status = 401, description = "Unauthorized", body = String, example = "Unauthorized"),
-        (status = 500, description = INTERNAL_SERVER_ERROR)
-    )
-)]
-#[get("/regattas/active/timestrip")]
-async fn get_timestrip(
-    identity: Option<Identity>,
-    user_pool_manager: Data<UserPoolManager>,
-) -> Result<impl Responder, Error> {
-    if let Some(identity) = identity
-        && let Ok(id) = identity.id()
-        && id == "sa"
-    {
-        let pool = get_user_pool(&identity, &user_pool_manager).await?;
-        let mut client = pool.get().await.map_err(|err| {
-            error!(%err, "Failed to get DB client from pool");
-            ErrorInternalServerError(err)
-        })?;
-        let timestrip = TimeStrip::load(&mut client).await.map_err(|err| {
-            error!(%err, "Failed to load timestrip data");
-            ErrorInternalServerError(err)
-        })?;
-        return Ok(Json(timestrip.time_stamps));
-    }
-    Err(ErrorUnauthorized("Unauthorized"))
 }
 
 fn receive_aquarius_events(
