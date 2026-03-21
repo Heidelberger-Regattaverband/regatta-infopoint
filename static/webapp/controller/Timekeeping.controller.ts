@@ -113,7 +113,6 @@ export default class TimekeepingController extends BaseTableController {
   }
 
   private connect() {
-    this.statusButton?.setEnabled(false);
     this.disconnect();
 
     const location: Location = globalThis.location;
@@ -123,12 +122,10 @@ export default class TimekeepingController extends BaseTableController {
     this.socket = new WebSocket(`${proto}://${location.host}/api/timekeeping`);
 
     this.socket.onopen = (_event: Event) => {
-      this.statusButton?.setEnabled(true);
       this.statusButton?.setIcon('sap-icon://connected');
       console.debug('Timekeeping WebSocket Connected');
     }
     this.socket.onclose = (_event: CloseEvent) => {
-      this.statusButton?.setEnabled(true);
       this.statusButton?.setIcon('sap-icon://disconnected');
       console.debug('Timekeeping WebSocket Disconnected');
     }
