@@ -20,7 +20,7 @@ impl TimeStrip {
     pub async fn load(client: &mut TiberiusClient) -> Result<Self, DbError> {
         let start = Instant::now();
         let regatta = Regatta::query_active_regatta(client).await?;
-        let time_stamps = TimeStamp::query_all_for_regatta(regatta.id, client).await?;
+        let time_stamps = TimeStamp::query_all_for_regatta(regatta.id, None, None, client).await?;
         let time_strip = TimeStrip {
             regatta_id: regatta.id,
             time_stamps,

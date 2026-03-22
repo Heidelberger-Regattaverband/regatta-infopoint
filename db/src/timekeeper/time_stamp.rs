@@ -80,12 +80,16 @@ impl TimeStamp {
 
     pub(crate) async fn query_all_for_regatta(
         regatta_id: i32,
+        offset: Option<i32>,
+        top: Option<i32>,
         client: &mut TiberiusClient,
     ) -> Result<Vec<TimeStamp>, DbError> {
         let mut query = Query::new(format!(
-            "SELECT {TIMESTAMP}, {EVENT_ID}, {SPLIT_NR}, {HEAT_NR}, {BIB} FROM HRV_Timestamp WHERE {EVENT_ID} = @P1 ORDER BY {TIMESTAMP} ASC"
+            "SELECT {TIMESTAMP}, {EVENT_ID}, {SPLIT_NR}, {HEAT_NR}, {BIB} FROM HRV_Timestamp WHERE {EVENT_ID} = @P1 ORDER BY {TIMESTAMP} DESC OFFSET @P2 ROWS FETCH NEXT @P3 ROWS ONLY"
         ));
         query.bind(regatta_id);
+        query.bind(offset.unwrap_or(0)); // OFFSET
+        query.bind(top.unwrap_or(30)); // FETCH NEXT
 
         let stream = query.query(client).await?;
         let time_stamps = get_rows(stream).await?;
