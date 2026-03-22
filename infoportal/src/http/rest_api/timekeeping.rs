@@ -177,14 +177,13 @@ impl Handler<AddTimestamp> for TimekeepingActor {
 
         ctx.wait(
             actix::fut::wrap_future(async move {
-                let mut client = pool.get().await.map_err(|err| {
-                    error!(%err, "Failed to get DB client from pool");
-                    format!("Failed to get DB client: {err}")
-                })?;
-                let mut time_strip = TimeStrip::load(&mut client).await.map_err(|err| {
-                    error!(%err, "Failed to load timestrip");
-                    format!("Failed to load timestrip: {err}")
-                })?;
+                let mut client = pool
+                    .get()
+                    .await
+                    .map_err(|err| format!("Failed to get DB client: {err}"))?;
+                let mut time_strip = TimeStrip::load(&mut client)
+                    .await
+                    .map_err(|err| format!("Failed to load timestrip: {err}"))?;
 
                 match split {
                     0 => time_strip
