@@ -35,22 +35,19 @@ impl MonitoringActor {
     }
 
     fn start_heart_beat(&self, ctx: &mut <Self as Actor>::Context) {
-        let aquarius_db = self.aquarius_db.clone();
-
         ctx.run_interval(HEARTBEAT_INTERVAL, move |act, ctx| {
-            // check client heartbeats
             if Instant::now().duration_since(act.heart_beat) > CLIENT_TIMEOUT {
                 warn!("Monitoring websocket heartbeat failed, disconnecting!");
                 ctx.stop();
             } else {
-                Self::send_monitoring(ctx, &aquarius_db);
+                act.send_monitoring(ctx);
                 ctx.ping(b"");
             }
         });
     }
 
-    fn send_monitoring(ctx: &mut <Self as Actor>::Context, aquarius_db: &Aquarius) {
-        let monitoring = Monitoring::new(TiberiusPool::instance(), &aquarius_db.get_cache_stats());
+    fn send_monitoring(&self, ctx: &mut <Self as Actor>::Context) {
+        let monitoring = Monitoring::new(TiberiusPool::instance(), &self.aquarius_db.get_cache_stats());
         ctx.address().do_send(MonitoringEvent::Update { monitoring });
     }
 }
@@ -61,7 +58,7 @@ impl Actor for MonitoringActor {
     /// Method is called on actor start. We start the heartbeat process here.
     fn started(&mut self, ctx: &mut Self::Context) {
         trace!("Monitoring websocket actor started");
-        Self::send_monitoring(ctx, &self.aquarius_db);
+        self.send_monitoring(ctx);
         self.start_heart_beat(ctx);
     }
 
