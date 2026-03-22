@@ -155,8 +155,11 @@ export default class MonitoringController extends BaseController {
       console.debug('Monitoring WebSocket Disconnected');
     }
     this.socket.onmessage = (event: MessageEvent) => {
-      const monitoring = JSON.parse(event.data);
-      this.updateModel(monitoring);
+      const monitoring: any = JSON.parse(event.data);
+      if (monitoring.Update) {
+        this.updateModel(monitoring.Update.monitoring);
+      } else
+        console.warn('Unknown Monitoring WebSocket Message', monitoring);
     }
   }
 

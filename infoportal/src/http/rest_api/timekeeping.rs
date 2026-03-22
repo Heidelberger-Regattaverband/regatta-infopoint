@@ -84,7 +84,7 @@ struct AddTimestamp {
 #[rtype(result = "()")]
 struct GetTimestrip;
 
-struct WsTimekeeping {
+struct TimekeepingActor {
     heart_beat: Instant,
     aquarius_client: Arc<AquariusClient>,
     heats: Arc<RwLock<Vec<Heat>>>,
@@ -92,7 +92,7 @@ struct WsTimekeeping {
     pool: Arc<TiberiusPool>,
 }
 
-impl WsTimekeeping {
+impl TimekeepingActor {
     fn new(pool: Arc<TiberiusPool>) -> Self {
         let (event_sender, event_receiver) = mpsc::channel();
 
@@ -127,7 +127,7 @@ impl WsTimekeeping {
 
 /// WebSocket handler for timekeeping commands from the client.
 /// Direction: Client -> Server
-impl StreamHandler<Result<Message, ProtocolError>> for WsTimekeeping {
+impl StreamHandler<Result<Message, ProtocolError>> for TimekeepingActor {
     fn handle(&mut self, msg: Result<Message, ProtocolError>, ctx: &mut Self::Context) {
         trace!(?msg, "Received timekeeping websocket message");
         match msg {
@@ -150,17 +150,16 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsTimekeeping {
                     });
                 }
             },
-            Ok(Message::Binary(bin)) => ctx.binary(bin),
             Ok(Message::Close(reason)) => {
                 ctx.close(reason);
                 ctx.stop();
             }
-            _ => ctx.stop(),
+            _ => {}
         }
     }
 }
 
-impl Handler<ServerEvent> for WsTimekeeping {
+impl Handler<ServerEvent> for TimekeepingActor {
     type Result = ();
 
     fn handle(&mut self, event: ServerEvent, ctx: &mut Self::Context) -> Self::Result {
@@ -169,7 +168,7 @@ impl Handler<ServerEvent> for WsTimekeeping {
     }
 }
 
-impl Handler<AddTimestamp> for WsTimekeeping {
+impl Handler<AddTimestamp> for TimekeepingActor {
     type Result = ();
 
     fn handle(&mut self, msg: AddTimestamp, ctx: &mut Self::Context) -> Self::Result {
@@ -207,20 +206,19 @@ impl Handler<AddTimestamp> for WsTimekeeping {
                     .ok_or("No timestamps available".to_string())
             })
             .map(
-                |result: Result<TimeStamp, String>, _actor, ctx: &mut WebsocketContext<WsTimekeeping>| match result {
-                    Ok(time_stamp) => {
-                        ctx.address().do_send(ServerEvent::Timestamp { time_stamp });
-                    }
-                    Err(error) => {
-                        ctx.address().do_send(ServerEvent::Error { error });
-                    }
+                |result: Result<TimeStamp, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
+                    let event = match result {
+                        Ok(time_stamp) => ServerEvent::Timestamp { time_stamp },
+                        Err(error) => ServerEvent::Error { error },
+                    };
+                    ctx.address().do_send(event);
                 },
             ),
         );
     }
 }
 
-impl Handler<GetTimestrip> for WsTimekeeping {
+impl Handler<GetTimestrip> for TimekeepingActor {
     type Result = ();
 
     fn handle(&mut self, _msg: GetTimestrip, ctx: &mut Self::Context) -> Self::Result {
@@ -238,22 +236,21 @@ impl Handler<GetTimestrip> for WsTimekeeping {
                 Ok(time_strip)
             })
             .map(
-                |result: Result<TimeStrip, String>, _actor, ctx: &mut WebsocketContext<WsTimekeeping>| match result {
-                    Ok(time_strip) => {
-                        ctx.address().do_send(ServerEvent::Timestrip {
+                |result: Result<TimeStrip, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
+                    let event = match result {
+                        Ok(time_strip) => ServerEvent::Timestrip {
                             time_stamps: time_strip.time_stamps,
-                        });
-                    }
-                    Err(error) => {
-                        ctx.address().do_send(ServerEvent::Error { error });
-                    }
+                        },
+                        Err(error) => ServerEvent::Error { error },
+                    };
+                    ctx.address().do_send(event);
                 },
             ),
         );
     }
 }
 
-impl Actor for WsTimekeeping {
+impl Actor for TimekeepingActor {
     type Context = WebsocketContext<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
@@ -286,7 +283,8 @@ async fn get_timekeeping_ws(
 ) -> Result<HttpResponse, Error> {
     if let Some(ref identity) = identity {
         let pool = get_user_pool(identity, &user_pool_manager).await?;
-        ws::start(WsTimekeeping::new(pool), &request, stream)
+        let actor = TimekeepingActor::new(pool);
+        ws::start(actor, &request, stream)
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
     }
@@ -296,7 +294,7 @@ fn receive_aquarius_events(
     receiver: Receiver<AquariusEvent>,
     aquarius_client: Arc<AquariusClient>,
     heats: Arc<RwLock<Vec<Heat>>>,
-    addr: Addr<WsTimekeeping>,
+    addr: Addr<TimekeepingActor>,
 ) {
     while let Ok(event) = receiver.recv() {
         match event {
