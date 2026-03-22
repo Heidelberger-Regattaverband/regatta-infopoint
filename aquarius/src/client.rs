@@ -146,7 +146,7 @@ impl AquariusClient {
     pub fn shutdown(&self) {
         self.shutdown.store(true, Relaxed);
         self.with_connection(|connection| {
-            connection.disconnect()?;
+            connection.disconnect();
             Ok(())
         })
         .ok();

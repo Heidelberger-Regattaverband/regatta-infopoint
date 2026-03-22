@@ -5,7 +5,6 @@ use ::std::io::{BufRead, BufReader, BufWriter, ErrorKind, Write};
 use ::std::net::Shutdown;
 use ::std::net::TcpStream;
 use ::tracing::trace;
-use ::tracing::warn;
 
 /// A struct to handle a connection to the Aquarius application.
 pub(super) struct Connection {
@@ -36,10 +35,12 @@ impl Connection {
     /// Closes the connection to Aquarius.
     /// # Returns
     /// An empty result or an error if the connection could not be closed.
-    pub(super) fn disconnect(&mut self) -> io::Result<()> {
+    pub(super) fn disconnect(&mut self) {
         trace!("Disconnecting from Aquarius");
-        self.writer.flush()?;
-        self.stream.shutdown(Shutdown::Both)
+        // ignore any error from flushing, since we want to close the connection anyway.
+        let _ = self.writer.flush();
+        // ignore any error from shutting down, since we want to close the connection anyway.
+        let _ = self.stream.shutdown(Shutdown::Both);
     }
 
     /// Write a command to Aquarius.
@@ -120,9 +121,7 @@ impl Connection {
 
 impl Drop for Connection {
     fn drop(&mut self) {
-        if let Err(err) = self.disconnect() {
-            warn!(error = ?err, "Error while disconnecting from Aquarius");
-        }
+        self.disconnect();
     }
 }
 
@@ -282,7 +281,7 @@ mod tests {
         let (listener, mut conn) = setup();
         let (mut server, _) = listener.accept().unwrap();
 
-        conn.disconnect().unwrap();
+        conn.disconnect();
 
         // After disconnect the server should see EOF.
         let mut buf = vec![0u8; 64];
