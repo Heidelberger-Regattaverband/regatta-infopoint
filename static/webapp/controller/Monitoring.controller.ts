@@ -57,8 +57,8 @@ export default class MonitoringController extends BaseController {
     }
 
     if (monitoring?.app) {
-      all.push({ name: this.i18n("monitoring.app.mem_current"), value: this.niceBytes(monitoring.app.mem_current), group: "3" },
-        { name: this.i18n("monitoring.app.mem_max"), value: this.niceBytes(monitoring.app.mem_max), group: "3" });
+      all.push({ name: this.i18n("monitoring.app.mem_current"), value: this.niceBytes(monitoring.app.memCurrent), group: "3" },
+        { name: this.i18n("monitoring.app.mem_max"), value: this.niceBytes(monitoring.app.memMax), group: "3" });
     }
 
     if (monitoring?.sys?.mem) {
@@ -134,35 +134,40 @@ export default class MonitoringController extends BaseController {
   }
 
   private connect() {
+    this.statusButton?.setEnabled(false);
+
     this.disconnect();
 
     const location: Location = globalThis.location;
     const proto = location.protocol.startsWith('https') ? 'wss' : 'ws';
 
-    console.debug('Connecting...');
+    console.debug('Connecting Monitoring WebSocket ...');
     this.socket = new WebSocket(`${proto}://${location.host}/api/monitoring`);
 
     this.socket.onopen = (_event: Event) => {
-      console.debug('Connected');
+      this.statusButton?.setEnabled(true);
       this.statusButton?.setIcon('sap-icon://connected');
+      console.debug('Monitoring WebSocket Connected');
     }
-
-    this.socket.onmessage = (event: MessageEvent) => {
-      const monitoring = JSON.parse(event.data);
-      this.updateModel(monitoring);
-    }
-
     this.socket.onclose = (_event: CloseEvent) => {
+      this.statusButton?.setEnabled(true);
       this.statusButton?.setIcon('sap-icon://disconnected');
-      console.debug('Disconnected');
+      console.debug('Monitoring WebSocket Disconnected');
+    }
+    this.socket.onmessage = (event: MessageEvent) => {
+      const monitoring: any = JSON.parse(event.data);
+      if (monitoring.Update) {
+        this.updateModel(monitoring.Update.monitoring);
+      } else
+        console.warn('Unknown Monitoring WebSocket Message', monitoring);
     }
   }
 
   private disconnect() {
     if (this.socket) {
+      console.debug('Disconnecting Monitoring WebSocket ...');
       this.socket.close();
       delete this.socket;
-      console.debug('Disconnecting...');
     }
   }
 }

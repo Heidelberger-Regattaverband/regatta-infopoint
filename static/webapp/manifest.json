@@ -141,9 +141,9 @@
           "target": "monitoring"
         },
         {
-          "pattern": "timestrip",
-          "name": "timestrip",
-          "target": "timestrip"
+          "pattern": "timekeeping",
+          "name": "timekeeping",
+          "target": "timekeeping"
         },
         {
           "pattern": "admin",
@@ -236,9 +236,9 @@
           "level": 1,
           "viewType": "XML"
         },
-        "timestrip": {
+        "timekeeping": {
           "type": "View",
-          "name": "Timestrip",
+          "name": "Timekeeping",
           "level": 1,
           "viewType": "XML"
         },

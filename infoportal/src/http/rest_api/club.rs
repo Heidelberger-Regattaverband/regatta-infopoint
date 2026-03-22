@@ -13,8 +13,6 @@ use ::db::aquarius::model::Club;
 use ::db::aquarius::model::Entry;
 use ::tracing::error;
 
-// Clubs Endpoints
-
 #[utoipa::path(
     description = "Get all participating clubs of a regatta.",
     context_path = PATH,

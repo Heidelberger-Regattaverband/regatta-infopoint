@@ -6,6 +6,6 @@ pub enum AquariusEvent {
     /// An event indicating that the list of heats has changed
     HeatListChanged(EventHeatChanged),
 
-    /// An event from the client, e.g. connection lost
+    /// An event from the client, e.g. connected or connection lost
     Client(bool),
 }

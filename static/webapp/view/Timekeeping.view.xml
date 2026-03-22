@@ -1,0 +1,35 @@
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.Timekeeping" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc"
+  xmlns:core="sap.ui.core">
+  <mvc:content>
+
+    <Page title="{i18n>launchpad.timekeeping.header}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
+      <headerContent>
+        <Button id="startButton" text="{i18n>common.start}" icon="sap-icon://media-play" type="Accept" press=".onStartButtonPress" />
+        <Button id="stopButton" text="{i18n>common.stop}" icon="sap-icon://media-pause" type="Reject" press=".onStopButtonPress" />
+        <ToolbarSpacer />
+        <Button id="timekeepingStatusButton" icon="sap-icon://disconnected" enabled="true" type="Transparent" press=".onStatusButtonPress" />
+      </headerContent>
+      <content>
+        <IconTabBar>
+          <items>
+            <IconTabFilter text="{i18n>common.timestrip}">
+              <content>
+                <ScrollContainer horizontal="false" vertical="true" height="100%" width="100%">
+                  <core:Fragment fragmentName="de.regatta_hd.infoportal.view.TimekeepingTimestrip" type="XML" />
+                </ScrollContainer>
+              </content>
+            </IconTabFilter>
+            <IconTabFilter text="Aquarius">
+              <content>
+                <ScrollContainer horizontal="false" vertical="true" height="100%" width="100%">
+                  <core:Fragment fragmentName="de.regatta_hd.infoportal.view.TimekeepingAquarius" type="XML" />
+                </ScrollContainer>
+              </content>
+            </IconTabFilter>
+          </items>
+        </IconTabBar>
+      </content>
+    </Page>
+
+  </mvc:content>
+</mvc:View>

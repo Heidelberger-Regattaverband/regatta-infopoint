@@ -2,7 +2,9 @@ use crate::error::AquariusErr;
 use crate::utils;
 use ::chrono::{DateTime, Local};
 use ::db::timekeeper::Split;
+use ::serde::Serialize;
 use ::std::fmt::{Display, Formatter, Result as FmtResult};
+use ::std::str::FromStr;
 
 pub(super) type Bib = u8;
 type Lane = u8;
@@ -25,16 +27,13 @@ pub struct ResponseListOpenHeats {
     pub(crate) heats: Vec<Heat>,
 }
 
-impl ResponseListOpenHeats {
-    /// Create a new response from the given message.
-    /// # Arguments
-    /// * `message` - The message to parse.
-    /// # Returns
-    /// The parsed response or an error if the message is invalid.
-    pub(crate) fn parse(message: &str) -> Result<Self, AquariusErr> {
+impl FromStr for ResponseListOpenHeats {
+    type Err = AquariusErr;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut instance = ResponseListOpenHeats { heats: Vec::new() };
-        for line in message.lines() {
-            let heat = Heat::parse(line)?;
+        for line in s.lines() {
+            let heat = Heat::from_str(line)?;
             instance.heats.push(heat);
         }
         Ok(instance)
@@ -70,16 +69,13 @@ pub(crate) struct ResponseStartList {
     pub(crate) boats: Vec<Boat>,
 }
 
-impl ResponseStartList {
-    /// Parse the response from a string.
-    /// # Arguments
-    /// * `message` - The message to parse.
-    /// # Returns
-    /// The parsed response or an error if the message is invalid.
-    pub(crate) fn parse(message: String) -> Result<Self, AquariusErr> {
+impl FromStr for ResponseStartList {
+    type Err = AquariusErr;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut instance = ResponseStartList { boats: Vec::new() };
-        for line in message.lines() {
-            let boat = Boat::parse(line)?;
+        for line in s.lines() {
+            let boat = Boat::from_str(line)?;
             instance.boats.push(boat);
         }
         Ok(instance)
@@ -113,26 +109,13 @@ pub struct EventHeatChanged {
     pub opened: bool,
 }
 
-impl EventHeatChanged {
-    /// Create a new event that a heat has changed.
-    /// # Arguments
-    /// * `heat` - The heat that has changed.
-    /// * `opened` - Whether the heat has been opened or closed.
-    /// # Returns
-    /// A new event that a heat has changed.
-    pub(crate) fn new(heat: Heat, opened: bool) -> Self {
-        EventHeatChanged { heat, opened }
-    }
+impl FromStr for EventHeatChanged {
+    type Err = AquariusErr;
 
-    /// Parse an event from a string.
-    /// # Arguments
-    /// * `event_str` - The string to parse.
-    /// # Returns
-    /// The parsed event or an error if the string is invalid.
-    pub(crate) fn parse(event_str: &str) -> Result<Self, AquariusErr> {
-        let parts: Vec<&str> = event_str.split_whitespace().collect();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let parts: Vec<&str> = s.split_whitespace().collect();
         if parts.len() != 4 {
-            return Err(AquariusErr::InvalidMessage(event_str.to_owned()));
+            return Err(AquariusErr::InvalidMessage(s.to_owned()));
         }
 
         let action = parts[0];
@@ -143,50 +126,61 @@ impl EventHeatChanged {
         match action {
             "!OPEN+" => Ok(EventHeatChanged::new(Heat::new(id, number, status), true)),
             "!OPEN-" => Ok(EventHeatChanged::new(Heat::new(id, number, status), false)),
-            _ => Err(AquariusErr::InvalidMessage(event_str.to_owned())),
+            _ => Err(AquariusErr::InvalidMessage(s.to_owned())),
         }
     }
 }
 
+impl EventHeatChanged {
+    /// Create a new event that a heat has changed.
+    /// # Arguments
+    /// * `heat` - The heat that has changed.
+    /// * `opened` - Whether the heat has been opened or closed.
+    /// # Returns
+    /// A new event that a heat has changed.
+    pub(crate) fn new(heat: Heat, opened: bool) -> Self {
+        EventHeatChanged { heat, opened }
+    }
+}
+
 /// A heat in a competition.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Heat {
     // The heat identifier.
     pub id: u16,
     // The heat number.
     pub number: HeatNr,
-    // The heat status.
-    status: u8,
+    // The heat state.
+    state: u8,
     // The boats in the heat.
     pub boats: Option<Vec<Boat>>,
 }
 
 impl Heat {
-    /// Create a new heat with the given id, number, and status.
+    /// Create a new heat with the given id, number, and state.
     /// # Arguments
     /// * `id` - The heat identifier
     /// * `number` - The heat number.
-    /// * `status` - The heat status.
+    /// * `state` - The heat state.
     /// # Returns
-    /// A new heat with the given id, number, and status.
-    fn new(id: u16, number: i16, status: u8) -> Self {
+    /// A new heat with the given id, number, and state.
+    fn new(id: u16, number: i16, state: u8) -> Self {
         Heat {
             id,
             number,
-            status,
+            state,
             boats: None,
         }
     }
+}
 
-    /// Parse a heat from a string. The string should be in the format "number id status".
-    /// # Arguments
-    /// * `heat_str` - The string to parse.
-    /// # Returns
-    /// The parsed heat or an error if the string is invalid.
-    pub fn parse(heat_str: &str) -> Result<Self, AquariusErr> {
-        let parts: Vec<&str> = heat_str.split_whitespace().collect();
+impl FromStr for Heat {
+    type Err = AquariusErr;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let parts: Vec<&str> = s.split_whitespace().collect();
         if parts.len() != 3 {
-            return Err(AquariusErr::InvalidMessage(heat_str.to_owned()));
+            return Err(AquariusErr::InvalidMessage(s.to_owned()));
         }
         let number = parts[0].parse()?;
         let id = parts[1].parse()?;
@@ -197,16 +191,12 @@ impl Heat {
 
 impl Display for Heat {
     fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
-        writeln!(
-            f,
-            "Heat: id={}, number={}, status={}",
-            self.id, self.number, self.status
-        )
+        writeln!(f, "Heat: id={}, number={}, state={}", self.id, self.number, self.state)
     }
 }
 
 /// A boat in a heat.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Boat {
     /// The lane number the boat is starting in.
     pub lane: Lane,
@@ -234,15 +224,13 @@ impl Boat {
             state,
         }
     }
+}
 
-    /// Parse a boat from a string in the format "lane bib club".
-    ///
-    /// # Arguments
-    /// * `boat_str` - The string to parse.
-    /// # Returns
-    /// The parsed boat or an error if the string is invalid.
-    pub(crate) fn parse(boat_str: &str) -> Result<Self, AquariusErr> {
-        let parts: Vec<&str> = boat_str.splitn(4, ' ').collect();
+impl FromStr for Boat {
+    type Err = AquariusErr;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let parts: Vec<&str> = s.splitn(4, ' ').collect();
         if parts.len() == 4 {
             let lane = parts[0].parse()?;
             let bib: u8 = parts[1].parse()?;
@@ -250,7 +238,7 @@ impl Boat {
             let club = parts[3].to_owned();
             Ok(Boat::new(lane, bib, club, state))
         } else {
-            Err(AquariusErr::InvalidMessage(boat_str.to_owned()))
+            Err(AquariusErr::InvalidMessage(s.to_owned()))
         }
     }
 }
@@ -282,22 +270,22 @@ mod tests {
     #[test]
     fn test_response_list_open_heats() {
         let message = "3 2766 4\n50 2767 4\n71 2786 4";
-        let response = ResponseListOpenHeats::parse(message);
+        let response = ResponseListOpenHeats::from_str(message);
         assert!(response.is_ok());
         let response = response.unwrap();
         assert_eq!(response.heats.len(), 3);
         assert_eq!(response.heats[0].id, 2766);
         assert_eq!(response.heats[0].number, 3);
-        assert_eq!(response.heats[0].status, 4);
+        assert_eq!(response.heats[0].state, 4);
         assert_eq!(response.heats[1].id, 2767);
         assert_eq!(response.heats[1].number, 50);
-        assert_eq!(response.heats[1].status, 4);
+        assert_eq!(response.heats[1].state, 4);
         assert_eq!(response.heats[2].id, 2786);
         assert_eq!(response.heats[2].number, 71);
-        assert_eq!(response.heats[2].status, 4);
+        assert_eq!(response.heats[2].state, 4);
 
         let message = "3 2766 4\n50 2767 4\n71 2786 4f";
-        assert!(ResponseListOpenHeats::parse(message).is_err());
+        assert!(ResponseListOpenHeats::from_str(message).is_err());
     }
 
     #[test]
@@ -305,23 +293,23 @@ mod tests {
         let heat = Heat::new(1234, 50, 4);
         assert_eq!(heat.id, 1234);
         assert_eq!(heat.number, 50);
-        assert_eq!(heat.status, 4);
+        assert_eq!(heat.state, 4);
     }
 
     #[test]
-    fn test_heat_parse() {
+    fn test_heat_from_str() {
         init();
 
-        assert!(Heat::parse("50 1234 4 34").is_err());
-        assert!(Heat::parse("50f 1234 4").is_err());
-        assert!(Heat::parse("50 1234f 4").is_err());
-        assert!(Heat::parse("50 1234 4f").is_err());
+        assert!(Heat::from_str("50 1234 4 34").is_err());
+        assert!(Heat::from_str("50f 1234 4").is_err());
+        assert!(Heat::from_str("50 1234f 4").is_err());
+        assert!(Heat::from_str("50 1234 4f").is_err());
     }
 
     #[test]
     fn test_display_heat() {
         let heat = Heat::new(2766, 1, 4);
-        assert_eq!(heat.to_string(), "Heat: id=2766, number=1, status=4\n");
+        assert_eq!(heat.to_string(), "Heat: id=2766, number=1, state=4\n");
     }
 
     #[test]
@@ -335,7 +323,7 @@ mod tests {
         let message =
             "1 1 0 'RV Neptun Konstanz'\n2 2 0 'RG Heidelberg'\n3 3 0 'Heidelberger RK'\n4 4 0 'Marbacher RV'"
                 .to_owned();
-        let response = ResponseStartList::parse(message);
+        let response = ResponseStartList::from_str(&message);
         assert!(response.is_ok());
         let response = response.unwrap();
         assert_eq!(response.boats.len(), 4);
@@ -359,8 +347,8 @@ mod tests {
     }
 
     #[test]
-    fn test_boat_parse() {
-        let boat = Boat::parse("1 12 0 'RV Neptun Konstanz'");
+    fn test_boat_from_str() {
+        let boat = Boat::from_str("1 12 0 'RV Neptun Konstanz'");
         assert!(boat.is_ok());
         let boat = boat.unwrap();
         assert_eq!(boat.lane, 1);
@@ -368,7 +356,7 @@ mod tests {
         assert_eq!(boat.club, "RV Neptun Konstanz");
         assert_eq!(boat.state, 0);
 
-        assert!(Boat::parse("1 12").is_err());
+        assert!(Boat::from_str("1 12").is_err());
     }
 
     #[test]
@@ -383,7 +371,7 @@ mod tests {
         let event = EventHeatChanged::new(heat.clone(), true);
         assert_eq!(event.heat.id, 1234);
         assert_eq!(event.heat.number, 50);
-        assert_eq!(event.heat.status, 4);
+        assert_eq!(event.heat.state, 4);
         assert!(event.opened);
 
         let event = EventHeatChanged::new(heat, false);
@@ -391,38 +379,38 @@ mod tests {
     }
 
     #[test]
-    fn test_event_heat_changed_parse() {
+    fn test_event_heat_changed_from_str() {
         init();
 
-        let event = EventHeatChanged::parse("!OPEN+ 50 1234 4");
+        let event = EventHeatChanged::from_str("!OPEN+ 50 1234 4");
         assert!(event.is_ok());
         let event = event.unwrap();
         assert_eq!(event.heat.id, 1234);
         assert_eq!(event.heat.number, 50);
-        assert_eq!(event.heat.status, 4);
+        assert_eq!(event.heat.state, 4);
         assert!(event.opened);
 
-        let event = EventHeatChanged::parse("!OPEN- 50 1234 4");
+        let event = EventHeatChanged::from_str("!OPEN- 50 1234 4");
         assert!(event.is_ok());
         let event = event.unwrap();
         assert_eq!(event.heat.id, 1234);
         assert_eq!(event.heat.number, 50);
-        assert_eq!(event.heat.status, 4);
+        assert_eq!(event.heat.state, 4);
         assert!(!event.opened);
 
-        let event = EventHeatChanged::parse("!OPEN+ 50 1234");
+        let event = EventHeatChanged::from_str("!OPEN+ 50 1234");
         assert!(event.is_err());
 
-        let event = EventHeatChanged::parse("!OPEN+ 50 1234 4 34");
+        let event = EventHeatChanged::from_str("!OPEN+ 50 1234 4 34");
         assert!(event.is_err());
 
-        let event = EventHeatChanged::parse("!OPEN= 50 1234 4");
+        let event = EventHeatChanged::from_str("!OPEN= 50 1234 4");
         assert!(event.is_err());
-        let event = EventHeatChanged::parse("!OPEN+ 50f 1234 4");
+        let event = EventHeatChanged::from_str("!OPEN+ 50f 1234 4");
         assert!(event.is_err());
-        let event = EventHeatChanged::parse("!OPEN+ 50 1234f 4");
+        let event = EventHeatChanged::from_str("!OPEN+ 50 1234f 4");
         assert!(event.is_err());
-        let event = EventHeatChanged::parse("!OPEN+ 50 1234 4f");
+        let event = EventHeatChanged::from_str("!OPEN+ 50 1234 4f");
         assert!(event.is_err());
     }
 }

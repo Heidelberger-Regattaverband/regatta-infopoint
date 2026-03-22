@@ -1,6 +1,5 @@
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
-use crate::http::rest_api::get_user_pool;
 use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::Responder;
@@ -11,44 +10,9 @@ use ::actix_web::web::Data;
 use ::actix_web::web::Json;
 use ::actix_web::web::Path;
 use ::db::aquarius::Aquarius;
-use ::db::tiberius::user_pool::UserPoolManager;
-use ::db::timekeeper::TimeStamp;
-use ::db::timekeeper::TimeStrip;
 use ::tracing::error;
 
 // Misc Endpoints
-
-#[utoipa::path(
-    description = "Get the timestrip data for the active regatta. Requires authentication.",
-    context_path = PATH,
-    responses(
-        (status = 200, description = "Timestrip data", body = Vec<TimeStamp>),
-        (status = 401, description = "Unauthorized", body = String, example = "Unauthorized"),
-        (status = 500, description = INTERNAL_SERVER_ERROR)
-    )
-)]
-#[get("/regattas/active/timestrip")]
-async fn get_timestrip(
-    identity: Option<Identity>,
-    user_pool_manager: Data<UserPoolManager>,
-) -> Result<impl Responder, Error> {
-    if let Some(identity) = identity
-        && let Ok(id) = identity.id()
-        && id == "sa"
-    {
-        let pool = get_user_pool(&identity, &user_pool_manager).await?;
-        let mut client = pool.get().await.map_err(|err| {
-            error!(%err, "Failed to get DB client from pool");
-            ErrorInternalServerError(err)
-        })?;
-        let timestrip = TimeStrip::load(&mut client).await.map_err(|err| {
-            error!(%err, "Failed to load timestrip data");
-            ErrorInternalServerError(err)
-        })?;
-        return Ok(Json(timestrip.time_stamps));
-    }
-    Err(ErrorUnauthorized("Unauthorized"))
-}
 
 #[utoipa::path(
     description = "Get statistics for a regatta. Requires authentication.",
