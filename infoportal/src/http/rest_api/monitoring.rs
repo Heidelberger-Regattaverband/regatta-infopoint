@@ -10,7 +10,6 @@ use ::actix_web::{
 use ::actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
 use ::db::aquarius::Aquarius;
 use ::db::tiberius::TiberiusPool;
-use ::prometheus::Registry;
 use ::std::time::{Duration, Instant};
 use ::tracing::{debug, trace};
 
@@ -25,15 +24,13 @@ struct WsMonitoring {
     /// Client must send ping at least once per 5 seconds (CLIENT_TIMEOUT),
     /// otherwise we drop connection.
     hb: Instant,
-    registry: Data<Registry>,
     aquarius: Data<Aquarius>,
 }
 
 impl WsMonitoring {
-    fn new(registry: Data<Registry>, aquarius: Data<Aquarius>) -> Self {
+    fn new(aquarius: Data<Aquarius>) -> Self {
         Self {
             hb: Instant::now(),
-            registry,
             aquarius,
         }
     }
@@ -41,7 +38,6 @@ impl WsMonitoring {
     /// helper method that sends ping to client every 5 seconds (HEARTBEAT_INTERVAL).
     /// also this method checks heartbeats from client
     fn hb(&self, ctx: &mut <Self as Actor>::Context) {
-        let registry = self.registry.clone();
         let aquarius = self.aquarius.clone();
 
         ctx.run_interval(HEARTBEAT_INTERVAL, move |act, ctx| {
@@ -57,13 +53,13 @@ impl WsMonitoring {
                 return;
             }
 
-            Self::send_monitoring(ctx, &registry, &aquarius);
+            Self::send_monitoring(ctx, &aquarius);
             ctx.ping(b"");
         });
     }
 
-    fn send_monitoring(ctx: &mut WebsocketContext<WsMonitoring>, registry: &Registry, aquarius: &Aquarius) {
-        let monitoring = Monitoring::new(TiberiusPool::instance(), registry, &aquarius.get_cache_stats());
+    fn send_monitoring(ctx: &mut WebsocketContext<WsMonitoring>, aquarius: &Aquarius) {
+        let monitoring = Monitoring::new(TiberiusPool::instance(), &aquarius.get_cache_stats());
         let json = serde_json::to_string(&monitoring).unwrap();
         ctx.text(json);
     }
@@ -74,8 +70,8 @@ impl Actor for WsMonitoring {
 
     /// Method is called on actor start. We start the heartbeat process here.
     fn started(&mut self, ctx: &mut Self::Context) {
-        trace!("Websocket actor started");
-        Self::send_monitoring(ctx, &self.registry, &self.aquarius);
+        debug!("Websocket actor started");
+        Self::send_monitoring(ctx, &self.aquarius);
         self.hb(ctx);
     }
 
@@ -114,13 +110,12 @@ impl StreamHandler<Result<Message, ProtocolError>> for WsMonitoring {
 async fn index(
     request: HttpRequest,
     stream: Payload,
-    registry: Data<Registry>,
     aquarius: Data<Aquarius>,
     identity: Option<Identity>,
 ) -> Result<HttpResponse, Error> {
     if identity.is_some() {
-        let response = start(WsMonitoring::new(registry, aquarius), &request, stream);
-        debug!(?response, "Websocket start response");
+        let response = start(WsMonitoring::new(aquarius), &request, stream);
+        debug!("{response:?}");
         response
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
