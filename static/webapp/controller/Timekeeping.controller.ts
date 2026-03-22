@@ -23,16 +23,12 @@ export default class TimekeepingController extends BaseTableController {
   readonly formatter: Formatter = Formatter;
   private socket?: WebSocket;
   private statusButton?: Button;
-  private startButton?: Button;
-  private stopButton?: Button;
   // bind keyListener method to this context to have access to navigation methods
   private readonly keyListener: (event: KeyboardEvent) => void = this.onKeyDown.bind(this);
 
   onInit(): void {
     super.init(super.getView()?.byId("timestripTable") as Table, "timestamp" /* eventBus channel */);
     this.statusButton = this.byId("timekeepingStatusButton") as Button;
-    this.startButton = this.byId("startButton") as Button;
-    this.stopButton = this.byId("stopButton") as Button;
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getView()?.addEventDelegate({ onBeforeHide: this.onBeforeHide }, this);
     super.setViewModel(new JSONModel(), TimekeepingController.TIMESTRIP_MODEL);
@@ -70,7 +66,7 @@ export default class TimekeepingController extends BaseTableController {
     this.sendCommand({ AddStart: null });
   }
 
-  onStopButtonPress(): void {
+  onFinishButtonPress(): void {
     this.sendCommand({ AddFinish: null });
   }
 
