@@ -30,7 +30,7 @@ export default class TimekeepingController extends BaseTableController {
     super.init(super.getView()?.byId("timestripTable") as Table, "timestamp" /* eventBus channel */);
     this.statusButton = this.byId("timekeepingStatusButton") as Button;
     super.getView()?.addStyleClass(super.getContentDensityClass());
-    super.getView()?.addEventDelegate({ onBeforeHide: this.onBeforeHide }, this);
+    super.getView()?.addEventDelegate({ onBeforeShow: this.onBeforeShow, onBeforeHide: this.onBeforeHide }, this);
     super.setViewModel(new JSONModel(), TimekeepingController.TIMESTRIP_MODEL);
     super.setViewModel(new JSONModel(), TimekeepingController.AQUARIUS_HEATS_MODEL);
     super.getRouter()?.getRoute("timekeeping")?.attachMatched((_: Route$MatchedEvent) => {
@@ -39,7 +39,12 @@ export default class TimekeepingController extends BaseTableController {
     }, this);
   }
 
+  private onBeforeShow(): void {
+    globalThis.addEventListener("keydown", this.keyListener);
+  }
+
   private onBeforeHide(): void {
+    globalThis.removeEventListener("keydown", this.keyListener);
     this.disconnect();
   }
 
@@ -202,18 +207,13 @@ export default class TimekeepingController extends BaseTableController {
 
   private onKeyDown(event: KeyboardEvent): void {
     switch (event.key) {
-      case "Space":
-        event.preventDefault();
+      case " ":
+        this.sendCommand({ AddFinish: null });
         break;
-      case "ArrowLeft":
+      case "+":
+        this.sendCommand({ AddStart: null });
         break;
-      case "ArrowRight":
-        break;
-      case "ArrowUp":
-      case "Home":
-        break;
-      case "ArrowDown":
-      case "End":
+      default:
         break;
     }
   }
