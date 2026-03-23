@@ -4,7 +4,7 @@ use crate::{
     error::DbError,
     tiberius::{RowColumn, TryRowColumn},
 };
-use ::chrono::{DateTime, Local, Utc};
+use ::chrono::{DateTime, Utc};
 use ::serde::Serialize;
 use ::strum_macros::Display;
 use ::tiberius::{Query, Row};
@@ -36,15 +36,9 @@ pub struct TimeStamp {
 }
 
 impl TimeStamp {
-    /// Create a new time stamp with the current time in UTC.
-    ///
-    /// # Arguments
-    /// * `split` - The type of the time stamp.
-    /// # Returns
-    /// A new time stamp with the current time.
-    pub(crate) fn now(split: Split) -> TimeStamp {
+    pub(crate) fn from_time(time: DateTime<Utc>, split: Split) -> TimeStamp {
         TimeStamp {
-            time: Local::now().to_utc(),
+            time,
             split,
             heat_nr: None,
             bib: None,

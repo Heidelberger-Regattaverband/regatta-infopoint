@@ -184,10 +184,10 @@ impl App<'_> {
                         KeyCode::Left => self.selected_tab = self.selected_tab.previous(),
                         KeyCode::Char('q') => self.state = AppState::Quitting,
                         KeyCode::Char('+') => {
-                            self.time_strip.borrow_mut().add_start().await.unwrap();
+                            self.time_strip.borrow_mut().add_start(None).await.unwrap();
                         }
                         KeyCode::Char(' ') => {
-                            self.time_strip.borrow_mut().add_finish().await.unwrap();
+                            self.time_strip.borrow_mut().add_finish(None).await.unwrap();
                         }
                         KeyCode::Char('r') => self.read_open_heats(),
                         _ => match self.selected_tab {

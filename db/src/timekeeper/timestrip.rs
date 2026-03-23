@@ -4,6 +4,8 @@ use crate::{
     error::DbError,
     timekeeper::time_stamp::{Split, TimeStamp},
 };
+use ::chrono::DateTime;
+use ::chrono::Utc;
 use ::std::collections::VecDeque;
 use ::std::collections::vec_deque;
 use ::std::sync::Arc;
@@ -37,26 +39,22 @@ impl TimeStrip {
         Ok(time_strip)
     }
 
-    pub async fn add_start(&mut self) -> Result<(), DbError> {
-        let time_stamp = TimeStamp::now(Split::Start);
+    pub async fn add_start(&mut self, time: Option<DateTime<Utc>>) -> Result<TimeStamp, DbError> {
+        let mut time_stamp = TimeStamp::from_time(time.unwrap_or_else(Utc::now), Split::Start);
         info!(?time_stamp, "Start time stamp:");
-        self.time_stamps.push_front(time_stamp);
-        if let Some(ts) = self.time_stamps.front_mut() {
-            let mut client = self.pool.get().await?;
-            ts.persist(self.regatta_id, &mut client).await?;
-        }
-        Ok(())
+        self.time_stamps.push_front(time_stamp.clone());
+        let mut client = self.pool.get().await?;
+        time_stamp.persist(self.regatta_id, &mut client).await?;
+        Ok(time_stamp)
     }
 
-    pub async fn add_finish(&mut self) -> Result<(), DbError> {
-        let time_stamp = TimeStamp::now(Split::Finish);
+    pub async fn add_finish(&mut self, time: Option<DateTime<Utc>>) -> Result<TimeStamp, DbError> {
+        let mut time_stamp = TimeStamp::from_time(time.unwrap_or_else(Utc::now), Split::Finish);
         info!(?time_stamp, "Finish time stamp:");
-        self.time_stamps.push_front(time_stamp);
-        if let Some(ts) = self.time_stamps.front_mut() {
-            let mut client = self.pool.get().await?;
-            ts.persist(self.regatta_id, &mut client).await?;
-        }
-        Ok(())
+        self.time_stamps.push_front(time_stamp.clone());
+        let mut client = self.pool.get().await?;
+        time_stamp.persist(self.regatta_id, &mut client).await?;
+        Ok(time_stamp)
     }
 
     pub async fn set_heat_nr(&mut self, time_stamp: &TimeStamp, heat_nr: i16) -> Result<TimeStamp, DbError> {
