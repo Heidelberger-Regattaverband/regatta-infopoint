@@ -89,11 +89,11 @@ struct TimekeepingActor {
     aquarius_client: Arc<AquariusClient>,
     heats: Arc<RwLock<Vec<Heat>>>,
     event_receiver: Option<Receiver<AquariusEvent>>,
-    pool: Arc<TiberiusPool>,
+    time_strip: Arc<RwLock<TimeStrip>>,
 }
 
 impl TimekeepingActor {
-    fn new(pool: Arc<TiberiusPool>) -> Self {
+    async fn new(pool: Arc<TiberiusPool>) -> Self {
         let (event_sender, event_receiver) = mpsc::channel();
 
         Self {
@@ -109,7 +109,7 @@ impl TimekeepingActor {
             ),
             heats: Arc::new(RwLock::new(Vec::new())),
             event_receiver: Some(event_receiver),
-            pool,
+            time_strip: Arc::new(RwLock::new(TimeStrip::load(pool.clone()).await.unwrap())),
         }
     }
 
@@ -172,15 +172,14 @@ impl Handler<AddTimestamp> for TimekeepingActor {
     type Result = ();
 
     fn handle(&mut self, msg: AddTimestamp, ctx: &mut Self::Context) -> Self::Result {
-        let pool = self.pool.clone();
+        let time_strip = self.time_strip.clone();
         let split = msg.split;
 
         ctx.wait(
             actix::fut::wrap_future(async move {
-                let mut time_strip = TimeStrip::load(pool.clone())
-                    .await
-                    .map_err(|err| format!("Failed to load timestrip: {err}"))?;
-
+                let mut time_strip = time_strip
+                    .write()
+                    .map_err(|err| format!("Failed to acquire write lock: {err}"))?;
                 match split {
                     0 => time_strip
                         .add_start()
@@ -218,27 +217,24 @@ impl Handler<GetTimestrip> for TimekeepingActor {
     type Result = ();
 
     fn handle(&mut self, _msg: GetTimestrip, ctx: &mut Self::Context) -> Self::Result {
-        let pool = self.pool.clone();
+        let time_strip = self.time_strip.read().unwrap();
 
-        ctx.wait(
-            actix::fut::wrap_future(async move {
-                let time_strip = TimeStrip::load(pool.clone())
-                    .await
-                    .map_err(|err| format!("Failed to load timestrip: {err}"))?;
-                Ok(time_strip)
-            })
-            .map(
-                |result: Result<TimeStrip, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
-                    let event = match result {
-                        Ok(time_strip) => ServerEvent::Timestrip {
-                            time_stamps: time_strip.time_stamps.into(),
-                        },
-                        Err(error) => ServerEvent::Error { error },
-                    };
-                    ctx.address().do_send(event);
-                },
-            ),
-        );
+        let time_stamps = time_strip.time_stamps.clone();
+        ctx.address().do_send(ServerEvent::Timestrip {
+            time_stamps: time_stamps.into(),
+        });
+
+        // ctx.wait(actix::fut::wrap_future(async move { Ok(time_strip) }).map(
+        //     |result: Result<TimeStrip, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
+        //         let event = match result {
+        //             Ok(time_strip) => ServerEvent::Timestrip {
+        //                 time_stamps: time_strip.time_stamps.into(),
+        //             },
+        //             Err(error) => ServerEvent::Error { error },
+        //         };
+        //         ctx.address().do_send(event);
+        //     },
+        // ));
     }
 }
 
@@ -275,7 +271,7 @@ async fn get_timekeeping_ws(
 ) -> Result<HttpResponse, Error> {
     if let Some(ref identity) = identity {
         let pool = get_user_pool(identity, &user_pool_manager).await?;
-        let actor = TimekeepingActor::new(pool);
+        let actor = TimekeepingActor::new(pool).await;
         ws::start(actor, &request, stream)
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
