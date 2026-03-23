@@ -78,11 +78,7 @@ impl TimeStripTab {
             KeyCode::Delete => {
                 // delete the selected time stamp
                 if let Some(time_stamp) = self.selected_time_stamp.borrow_mut().take() {
-                    self.time_strip
-                        .borrow_mut()
-                        .delete(&time_stamp, &mut self.db_client.borrow_mut())
-                        .await
-                        .unwrap();
+                    self.time_strip.borrow_mut().delete(&time_stamp).await.unwrap();
                 }
             }
             _ => {}

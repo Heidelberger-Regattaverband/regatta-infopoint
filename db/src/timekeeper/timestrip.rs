@@ -1,10 +1,12 @@
 use crate::tiberius::TiberiusClient;
+use crate::tiberius::TiberiusPool;
 use crate::{
     aquarius::model::Regatta,
     error::DbError,
     timekeeper::time_stamp::{Split, TimeStamp},
 };
 use ::std::collections::VecDeque;
+use ::std::sync::Arc;
 use ::std::time::Instant;
 use ::tracing::info;
 
@@ -15,37 +17,44 @@ pub struct TimeStrip {
 
     // A deque of time stamps.
     pub time_stamps: VecDeque<TimeStamp>,
+
+    pool: Arc<TiberiusPool>,
 }
 
 impl TimeStrip {
-    pub async fn load(client: &mut TiberiusClient) -> Result<Self, DbError> {
+    pub async fn load(pool: Arc<TiberiusPool>) -> Result<Self, DbError> {
         let start = Instant::now();
-        let regatta = Regatta::query_active_regatta(client).await?;
-        let time_stamps = TimeStamp::query_all_for_regatta(regatta.id, None, None, client).await?;
+        let pool_clone = pool.clone();
+        let mut client = pool_clone.get().await?;
+        let regatta = Regatta::query_active_regatta(&mut client).await?;
+        let time_stamps = TimeStamp::query_all_for_regatta(regatta.id, None, None, &mut client).await?;
         let time_strip = TimeStrip {
             regatta_id: regatta.id,
             time_stamps: VecDeque::from(time_stamps),
+            pool,
         };
         info!(regatta_id = regatta.id, elapsed = ?start.elapsed(), "Loaded time strip:");
         Ok(time_strip)
     }
 
-    pub async fn add_start(&mut self, client: &mut TiberiusClient) -> Result<(), DbError> {
+    pub async fn add_start(&mut self) -> Result<(), DbError> {
         let time_stamp = TimeStamp::now(Split::Start);
         info!(?time_stamp, "Start time stamp:");
         self.time_stamps.push_front(time_stamp);
         if let Some(ts) = self.time_stamps.front_mut() {
-            ts.persist(self.regatta_id, client).await?;
+            let mut client = self.pool.get().await?;
+            ts.persist(self.regatta_id, &mut client).await?;
         }
         Ok(())
     }
 
-    pub async fn add_finish(&mut self, client: &mut TiberiusClient) -> Result<(), DbError> {
+    pub async fn add_finish(&mut self) -> Result<(), DbError> {
         let time_stamp = TimeStamp::now(Split::Finish);
         info!(?time_stamp, "Finish time stamp:");
         self.time_stamps.push_front(time_stamp);
         if let Some(ts) = self.time_stamps.front_mut() {
-            ts.persist(self.regatta_id, client).await?;
+            let mut client = self.pool.get().await?;
+            ts.persist(self.regatta_id, &mut client).await?;
         }
         Ok(())
     }
@@ -78,11 +87,12 @@ impl TimeStrip {
         Ok(time_stamp.clone())
     }
 
-    pub async fn delete(&mut self, time_stamp: &TimeStamp, client: &mut TiberiusClient) -> Result<(), DbError> {
+    pub async fn delete(&mut self, time_stamp: &TimeStamp) -> Result<(), DbError> {
         if let Some(pos) = self.get_index(time_stamp)
             && let Some(time_stamp) = self.time_stamps.remove(pos)
         {
-            time_stamp.delete(client).await?;
+            let mut client = self.pool.get().await?;
+            time_stamp.delete(&mut client).await?;
         }
         Ok(())
     }

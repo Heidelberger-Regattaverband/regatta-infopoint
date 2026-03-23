@@ -177,21 +177,17 @@ impl Handler<AddTimestamp> for TimekeepingActor {
 
         ctx.wait(
             actix::fut::wrap_future(async move {
-                let mut client = pool
-                    .get()
-                    .await
-                    .map_err(|err| format!("Failed to get DB client: {err}"))?;
-                let mut time_strip = TimeStrip::load(&mut client)
+                let mut time_strip = TimeStrip::load(pool.clone())
                     .await
                     .map_err(|err| format!("Failed to load timestrip: {err}"))?;
 
                 match split {
                     0 => time_strip
-                        .add_start(&mut client)
+                        .add_start()
                         .await
                         .map_err(|err| format!("Failed to add start timestamp: {err}"))?,
                     64 => time_strip
-                        .add_finish(&mut client)
+                        .add_finish()
                         .await
                         .map_err(|err| format!("Failed to add finish timestamp: {err}"))?,
                     _ => {
@@ -226,11 +222,7 @@ impl Handler<GetTimestrip> for TimekeepingActor {
 
         ctx.wait(
             actix::fut::wrap_future(async move {
-                let mut client = pool
-                    .get()
-                    .await
-                    .map_err(|err| format!("Failed to get DB client: {err}"))?;
-                let time_strip = TimeStrip::load(&mut client)
+                let time_strip = TimeStrip::load(pool.clone())
                     .await
                     .map_err(|err| format!("Failed to load timestrip: {err}"))?;
                 Ok(time_strip)
