@@ -2,7 +2,6 @@ use crate::app::{
     TimeStrip,
     utils::{HIGHLIGHT_SYMBOL, block},
 };
-use ::db::tiberius::TiberiusClient;
 use ::db::timekeeper::TimeStamp;
 use ::ratatui::{
     buffer::Buffer,
@@ -21,7 +20,6 @@ pub(crate) struct TimeStripTab {
     time_strip: Rc<RefCell<TimeStrip>>,
     selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
     show_time_strip_popup: Rc<RefCell<bool>>,
-    db_client: Rc<RefCell<TiberiusClient>>,
 }
 
 impl Widget for &mut TimeStripTab {
@@ -50,14 +48,12 @@ impl TimeStripTab {
         time_strip: Rc<RefCell<TimeStrip>>,
         selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
         show_time_strip_popup: Rc<RefCell<bool>>,
-        db_client: Rc<RefCell<TiberiusClient>>,
     ) -> Self {
         Self {
             state: ListState::default(),
             time_strip,
             selected_time_stamp,
             show_time_strip_popup,
-            db_client,
         }
     }
 

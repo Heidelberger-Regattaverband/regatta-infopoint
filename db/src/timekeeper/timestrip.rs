@@ -1,4 +1,3 @@
-use crate::tiberius::TiberiusClient;
 use crate::tiberius::TiberiusPool;
 use crate::{
     aquarius::model::Regatta,
@@ -59,29 +58,21 @@ impl TimeStrip {
         Ok(())
     }
 
-    pub async fn set_heat_nr(
-        &mut self,
-        time_stamp: &TimeStamp,
-        heat_nr: i16,
-        client: &mut TiberiusClient,
-    ) -> Result<TimeStamp, DbError> {
+    pub async fn set_heat_nr(&mut self, time_stamp: &TimeStamp, heat_nr: i16) -> Result<TimeStamp, DbError> {
         if let Some(time_stamp) = self.time_stamps.iter_mut().find(|ts| ts.time == time_stamp.time) {
             time_stamp.set_heat_nr(heat_nr);
-            time_stamp.update(client).await?;
+            let mut client = self.pool.get().await?;
+            time_stamp.update(&mut client).await?;
             return Ok(time_stamp.clone());
         }
         Ok(time_stamp.clone())
     }
 
-    pub async fn set_bib(
-        &mut self,
-        time_stamp: &TimeStamp,
-        bib: u8,
-        client: &mut TiberiusClient,
-    ) -> Result<TimeStamp, DbError> {
+    pub async fn set_bib(&mut self, time_stamp: &TimeStamp, bib: u8) -> Result<TimeStamp, DbError> {
         if let Some(time_stamp) = self.time_stamps.iter_mut().find(|ts| ts.time == time_stamp.time) {
             time_stamp.set_bib(bib);
-            time_stamp.update(client).await?;
+            let mut client = self.pool.get().await?;
+            time_stamp.update(&mut client).await?;
             return Ok(time_stamp.clone());
         }
         Ok(time_stamp.clone())
