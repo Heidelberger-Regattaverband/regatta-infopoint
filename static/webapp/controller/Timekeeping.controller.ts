@@ -209,9 +209,13 @@ export default class TimekeepingController extends BaseTableController {
     switch (event.key) {
       case " ":
         this.sendCommand({ AddFinish: null });
+        event.stopPropagation();
+        event.preventDefault();
         break;
       case "+":
         this.sendCommand({ AddStart: null });
+        event.stopPropagation();
+        event.preventDefault();
         break;
       default:
         break;

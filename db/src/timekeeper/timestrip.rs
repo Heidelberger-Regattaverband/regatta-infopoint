@@ -44,8 +44,10 @@ impl TimeStrip {
         if let Some(timestamp) = self.time_stamps.front_mut() {
             let mut client = self.pool.get().await?;
             timestamp.persist(self.regatta_id, &mut client).await?;
+            Ok(timestamp.clone())
+        } else {
+            Ok(timestamp)
         }
-        Ok(timestamp)
     }
 
     pub async fn add_finish(&mut self, time: Option<DateTime<Utc>>) -> Result<Timestamp, DbError> {
@@ -54,8 +56,10 @@ impl TimeStrip {
         if let Some(timestamp) = self.time_stamps.front_mut() {
             let mut client = self.pool.get().await?;
             timestamp.persist(self.regatta_id, &mut client).await?;
+            Ok(timestamp.clone())
+        } else {
+            Ok(timestamp)
         }
-        Ok(timestamp)
     }
 
     pub async fn set_heat_nr(&mut self, timestamp: &Timestamp, heat_nr: i16) -> Result<Timestamp, DbError> {
