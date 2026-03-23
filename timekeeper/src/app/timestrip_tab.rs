@@ -24,8 +24,8 @@ pub(crate) struct TimeStripTab {
 
 impl Widget for &mut TimeStripTab {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let time_stamps = &self.time_strip.borrow().time_stamps;
-        let items: Vec<ListItem> = time_stamps
+        let time_strip = self.time_strip.borrow();
+        let items: Vec<ListItem> = time_strip
             .iter()
             .rev()
             .map(|ts| ListItem::from(MyTimeStamp(ts)))
@@ -83,14 +83,14 @@ impl TimeStripTab {
     }
 
     fn update_selected_time_stamp(&mut self) {
-        let time_stamps = &self.time_strip.borrow().time_stamps;
+        let time_strip = self.time_strip.borrow();
 
         // get the index of the selected time stamp
         if let Some(index) = self.state.selected() {
             // as the list is reversed, we need to calculate the correct index in the time strip
-            let time_strip_index = time_stamps.len().saturating_sub(index).saturating_sub(1);
+            let time_strip_index = time_strip.len().saturating_sub(index).saturating_sub(1);
             // get the time stamp from the time strip
-            if let Some(time_stamp) = time_stamps.get(time_strip_index) {
+            if let Some(time_stamp) = time_strip.get(time_strip_index) {
                 *self.selected_time_stamp.borrow_mut() = Some(time_stamp.clone());
             } else {
                 *self.selected_time_stamp.borrow_mut() = None;

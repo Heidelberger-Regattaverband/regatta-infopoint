@@ -192,7 +192,6 @@ impl Handler<AddTimestamp> for TimekeepingActor {
                     }
                 }
                 time_strip
-                    .time_stamps
                     .iter()
                     .next()
                     .cloned()
@@ -217,16 +216,10 @@ impl Handler<GetTimestrip> for TimekeepingActor {
     fn handle(&mut self, _msg: GetTimestrip, ctx: &mut Self::Context) -> Self::Result {
         let time_strip = self.time_strip.clone();
 
-        // let time_stamps = time_strip.time_stamps.clone();
-        // ctx.address().do_send(ServerEvent::Timestrip {
-        //     time_stamps: time_stamps.into(),
-        // });
-
         ctx.wait(
             actix::fut::wrap_future(async move {
                 let time_strip = time_strip.read().await;
-                let time_stamps = time_strip.time_stamps.clone();
-                Ok(time_stamps.into())
+                Ok(time_strip.to_vec())
             })
             .map(
                 |result: Result<Vec<TimeStamp>, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {

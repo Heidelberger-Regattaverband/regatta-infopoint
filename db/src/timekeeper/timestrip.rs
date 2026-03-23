@@ -5,6 +5,7 @@ use crate::{
     timekeeper::time_stamp::{Split, TimeStamp},
 };
 use ::std::collections::VecDeque;
+use ::std::collections::vec_deque;
 use ::std::sync::Arc;
 use ::std::time::Instant;
 use ::tracing::info;
@@ -15,7 +16,7 @@ pub struct TimeStrip {
     regatta_id: i32,
 
     // A deque of time stamps.
-    pub time_stamps: VecDeque<TimeStamp>,
+    time_stamps: VecDeque<TimeStamp>,
 
     pool: Arc<TiberiusPool>,
 }
@@ -90,5 +91,30 @@ impl TimeStrip {
 
     fn get_index(&self, time_stamp: &TimeStamp) -> Option<usize> {
         self.time_stamps.iter().position(|ts| ts.time == time_stamp.time)
+    }
+
+    /// Returns an iterator over the time stamps.
+    pub fn iter(&self) -> vec_deque::Iter<'_, TimeStamp> {
+        self.time_stamps.iter()
+    }
+
+    /// Returns the number of time stamps.
+    pub fn len(&self) -> usize {
+        self.time_stamps.len()
+    }
+
+    /// Returns `true` if there are no time stamps.
+    pub fn is_empty(&self) -> bool {
+        self.time_stamps.is_empty()
+    }
+
+    /// Returns a reference to the time stamp at the given index.
+    pub fn get(&self, index: usize) -> Option<&TimeStamp> {
+        self.time_stamps.get(index)
+    }
+
+    /// Returns a `Vec` containing clones of all time stamps.
+    pub fn to_vec(&self) -> Vec<TimeStamp> {
+        self.time_stamps.clone().into()
     }
 }
