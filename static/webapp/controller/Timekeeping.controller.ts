@@ -88,19 +88,17 @@ export default class TimekeepingController extends BaseTableController {
   }
 
   onDeleteTimestamp(event: Button$PressEvent): void {
-    const source: Button = event.getSource();
-    const bindingCtx: Context | null | undefined = source.getBindingContext(TimekeepingController.TIMESTRIP_MODEL);
+    const bindingCtx: Context | null | undefined = event.getSource().getBindingContext(TimekeepingController.TIMESTRIP_MODEL);
     if (bindingCtx) {
       const timestamp: any = bindingCtx.getModel().getProperty(bindingCtx.getPath());
       if (timestamp?.time) {
-        MessageBox.confirm(this.i18n("timekeeping.deleteTimestamp.message"), {
-          title: this.i18n("timekeeping.deleteTimestamp.title"),
+        MessageBox.confirm(super.i18n("timekeeping.deleteTimestamp.message"), {
+          title: super.i18n("timekeeping.deleteTimestamp.title"),
           emphasizedAction: MessageBox.Action.CANCEL,
           onClose: (action: any) => {
             if (action === MessageBox.Action.OK) {
               this.sendCommand({ DeleteTimestamp: { time: timestamp.time } });
-              // reload the timestrip after deletion
-              this.loadTimestripModel();
+              this.deleteTimestamp(timestamp);
             }
           }
         });
@@ -155,6 +153,7 @@ export default class TimekeepingController extends BaseTableController {
         if (data.AquariusHeats) {
           super.getViewJSONModel(TimekeepingController.AQUARIUS_HEATS_MODEL).setData(data.AquariusHeats.heats);
         } else if (data.Timestamp) {
+          this.updateTimestamp(data.Timestamp.timestamp);
           super.showInfoMessageToast("Timestamp added successfully");
         } else if (data.Timestrip) {
           super.getViewJSONModel(TimekeepingController.TIMESTRIP_MODEL).setData(data.Timestrip.time_stamps);
@@ -163,6 +162,28 @@ export default class TimekeepingController extends BaseTableController {
           console.warn(`Received unknown Timekeeping WebSocket event type: ${JSON.stringify(data)}`);
         }
     }
+  }
+
+  private updateTimestamp(timestamp: any) {
+    const timestripModel: JSONModel = super.getViewJSONModel(TimekeepingController.TIMESTRIP_MODEL);
+    const existingTimestamps: any[] = timestripModel.getData() || [];
+    const timestampIndex: number = existingTimestamps.findIndex((t: any) => t.time === timestamp.time);
+    if (timestampIndex >= 0) {
+      existingTimestamps[timestampIndex] = timestamp;
+    } else {
+      existingTimestamps.push(timestamp);
+    }
+    timestripModel.setData(existingTimestamps);
+  }
+
+  private deleteTimestamp(timestamp: any) {
+    const timestripModel: JSONModel = super.getViewJSONModel(TimekeepingController.TIMESTRIP_MODEL);
+    const existingTimestamps: any[] = timestripModel.getData() || [];
+    const timestampIndex: number = existingTimestamps.findIndex((t: any) => t.time === timestamp.time);
+    if (timestampIndex >= 0) {
+      existingTimestamps.splice(timestampIndex, 1);
+    }
+    timestripModel.setData(existingTimestamps);
   }
 
   private disconnect() {
