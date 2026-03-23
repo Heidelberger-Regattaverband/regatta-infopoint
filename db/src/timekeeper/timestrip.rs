@@ -39,18 +39,22 @@ impl TimeStrip {
     }
 
     pub async fn add_start(&mut self, time: Option<DateTime<Utc>>) -> Result<Timestamp, DbError> {
-        let mut timestamp = Timestamp::from_time(time.unwrap_or_else(Utc::now), Split::Start);
+        let timestamp = Timestamp::from_time(time.unwrap_or_else(Utc::now), Split::Start);
         self.time_stamps.push_front(timestamp.clone());
-        let mut client = self.pool.get().await?;
-        timestamp.persist(self.regatta_id, &mut client).await?;
+        if let Some(timestamp) = self.time_stamps.front_mut() {
+            let mut client = self.pool.get().await?;
+            timestamp.persist(self.regatta_id, &mut client).await?;
+        }
         Ok(timestamp)
     }
 
     pub async fn add_finish(&mut self, time: Option<DateTime<Utc>>) -> Result<Timestamp, DbError> {
-        let mut timestamp = Timestamp::from_time(time.unwrap_or_else(Utc::now), Split::Finish);
+        let timestamp = Timestamp::from_time(time.unwrap_or_else(Utc::now), Split::Finish);
         self.time_stamps.push_front(timestamp.clone());
-        let mut client = self.pool.get().await?;
-        timestamp.persist(self.regatta_id, &mut client).await?;
+        if let Some(timestamp) = self.time_stamps.front_mut() {
+            let mut client = self.pool.get().await?;
+            timestamp.persist(self.regatta_id, &mut client).await?;
+        }
         Ok(timestamp)
     }
 

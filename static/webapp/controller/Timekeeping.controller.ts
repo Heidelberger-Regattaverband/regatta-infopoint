@@ -95,6 +95,7 @@ export default class TimekeepingController extends BaseTableController {
       if (timestamp?.time) {
         MessageBox.confirm(this.i18n("timekeeping.deleteTimestamp.message"), {
           title: this.i18n("timekeeping.deleteTimestamp.title"),
+          emphasizedAction: MessageBox.Action.CANCEL,
           onClose: (action: any) => {
             if (action === MessageBox.Action.OK) {
               this.sendCommand({ DeleteTimestamp: { time: timestamp.time } });
