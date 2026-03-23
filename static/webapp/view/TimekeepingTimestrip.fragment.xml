@@ -19,30 +19,23 @@
 
     <columns>
       <Column id="timestampTime" hAlign="Center" width="8rem" importance="High" popinDisplay="Inline">
-        <header>
-          <Text text="{i18n>common.time}" class="bold" />
-        </header>
+        <Text text="{i18n>common.time}" class="bold" />
       </Column>
       <Column id="timestampSplit" hAlign="Center" width="6rem" importance="High" popinDisplay="Inline">
-        <header>
-          <Text text="{i18n>common.split}" class="bold" />
-        </header>
+        <Text text="{i18n>common.split}" class="bold" />
       </Column>
       <Column id="timestampHeatNr" hAlign="Center" width="5rem" importance="Medium" popinDisplay="Inline">
-        <header>
-          <Text text="{i18n>common.heatNr}" class="bold" />
-        </header>
+        <Text text="{i18n>common.heatNr}" class="bold" />
       </Column>
       <Column id="timestampBib" hAlign="Center" width="4rem" importance="Medium" popinDisplay="Inline">
-        <header>
-          <Text text="{i18n>common.bib}" class="bold" />
-        </header>
+        <Text text="{i18n>common.bib}" class="bold" />
       </Column>
       <Column id="timestampPersisted" hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline"
         visible="{=!${device>/system/phone}}">
-        <header>
-          <Text text="{i18n>common.persisted}" class="bold" />
-        </header>
+        <Text text="{i18n>common.persisted}" class="bold" />
+      </Column>
+      <Column id="timestampDelete" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+        <Text text="{i18n>admin.column.actions}" class="bold" />
       </Column>
     </columns>
 
@@ -54,6 +47,7 @@
           <Text text="{timestrip>heat_nr}" />
           <Text text="{timestrip>bib}" />
           <Text text="{=${timestrip>persisted}?${i18n>common.yes}:${i18n>common.no}}" />
+          <Button icon="sap-icon://delete" tooltip="{i18n>common.delete}" type="Reject" press=".onDeleteTimestamp" />
         </cells>
       </ColumnListItem>
     </items>

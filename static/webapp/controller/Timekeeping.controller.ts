@@ -1,10 +1,10 @@
 import Button, { Button$PressEvent } from "sap/m/Button";
 import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
-import MessageToast from "sap/m/MessageToast";
 import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import Table from "sap/m/Table";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import Control from "sap/ui/core/Control";
 import Context from "sap/ui/model/Context";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
@@ -85,6 +85,19 @@ export default class TimekeepingController extends BaseTableController {
     source.setEnabled(false);
     this.loadTimestripModel();
     source.setEnabled(true);
+  }
+
+  onDeleteTimestamp(event: Button$PressEvent): void {
+    const source: Button = event.getSource();
+    const bindingCtx: Context | null | undefined = source.getBindingContext(TimekeepingController.TIMESTRIP_MODEL);
+    if (bindingCtx) {
+      const timestamp: any = bindingCtx.getModel().getProperty(bindingCtx.getPath());
+      if (timestamp?.time) {
+        this.sendCommand({ DeleteTimestamp: { time: timestamp.time } });
+        // reload the timestrip after deletion
+        this.loadTimestripModel();
+      }
+    }
   }
 
   onItemChanged(item: any): void {
