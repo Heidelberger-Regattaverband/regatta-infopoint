@@ -89,7 +89,7 @@ struct TimekeepingActor {
     aquarius_client: Arc<AquariusClient>,
     heats: Arc<RwLock<Vec<Heat>>>,
     event_receiver: Option<Receiver<AquariusEvent>>,
-    time_strip: Arc<RwLock<TimeStrip>>,
+    time_strip: Arc<::tokio::sync::RwLock<TimeStrip>>,
 }
 
 impl TimekeepingActor {
@@ -109,7 +109,7 @@ impl TimekeepingActor {
             ),
             heats: Arc::new(RwLock::new(Vec::new())),
             event_receiver: Some(event_receiver),
-            time_strip: Arc::new(RwLock::new(TimeStrip::load(pool.clone()).await.unwrap())),
+            time_strip: Arc::new(::tokio::sync::RwLock::new(TimeStrip::load(pool.clone()).await.unwrap())),
         }
     }
 
@@ -177,9 +177,7 @@ impl Handler<AddTimestamp> for TimekeepingActor {
 
         ctx.wait(
             actix::fut::wrap_future(async move {
-                let mut time_strip = time_strip
-                    .write()
-                    .map_err(|err| format!("Failed to acquire write lock: {err}"))?;
+                let mut time_strip = time_strip.write().await;
                 match split {
                     0 => time_strip
                         .add_start()
@@ -217,24 +215,29 @@ impl Handler<GetTimestrip> for TimekeepingActor {
     type Result = ();
 
     fn handle(&mut self, _msg: GetTimestrip, ctx: &mut Self::Context) -> Self::Result {
-        let time_strip = self.time_strip.read().unwrap();
+        let time_strip = self.time_strip.clone();
 
-        let time_stamps = time_strip.time_stamps.clone();
-        ctx.address().do_send(ServerEvent::Timestrip {
-            time_stamps: time_stamps.into(),
-        });
+        // let time_stamps = time_strip.time_stamps.clone();
+        // ctx.address().do_send(ServerEvent::Timestrip {
+        //     time_stamps: time_stamps.into(),
+        // });
 
-        // ctx.wait(actix::fut::wrap_future(async move { Ok(time_strip) }).map(
-        //     |result: Result<TimeStrip, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
-        //         let event = match result {
-        //             Ok(time_strip) => ServerEvent::Timestrip {
-        //                 time_stamps: time_strip.time_stamps.into(),
-        //             },
-        //             Err(error) => ServerEvent::Error { error },
-        //         };
-        //         ctx.address().do_send(event);
-        //     },
-        // ));
+        ctx.wait(
+            actix::fut::wrap_future(async move {
+                let time_strip = time_strip.read().await;
+                let time_stamps = time_strip.time_stamps.clone();
+                Ok(time_stamps.into())
+            })
+            .map(
+                |result: Result<Vec<TimeStamp>, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
+                    let event = match result {
+                        Ok(time_stamps) => ServerEvent::Timestrip { time_stamps },
+                        Err(error) => ServerEvent::Error { error },
+                    };
+                    ctx.address().do_send(event);
+                },
+            ),
+        );
     }
 }
 
