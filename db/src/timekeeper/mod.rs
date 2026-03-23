@@ -1,6 +1,6 @@
-mod time_stamp;
+mod timestamp;
 mod timestrip;
 
-pub use time_stamp::Split;
-pub use time_stamp::Timestamp;
+pub use timestamp::Split;
+pub use timestamp::Timestamp;
 pub use timestrip::TimeStrip;

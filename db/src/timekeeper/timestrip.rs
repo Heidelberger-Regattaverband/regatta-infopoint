@@ -1,6 +1,8 @@
+use crate::aquarius::model::Regatta;
+use crate::error::DbError;
 use crate::tiberius::TiberiusPool;
 use crate::timekeeper::Timestamp;
-use crate::{aquarius::model::Regatta, error::DbError, timekeeper::time_stamp::Split};
+use crate::timekeeper::timestamp::Split;
 use ::chrono::DateTime;
 use ::chrono::Utc;
 use ::std::collections::VecDeque;
