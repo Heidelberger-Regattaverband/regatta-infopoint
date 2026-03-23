@@ -1969,6 +1969,7 @@ dependencies = [
  "actix-web-prom",
  "aquarius",
  "built",
+ "chrono",
  "db",
  "dotenv",
  "futures",

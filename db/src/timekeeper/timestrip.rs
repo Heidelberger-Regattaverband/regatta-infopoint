@@ -1,9 +1,6 @@
 use crate::tiberius::TiberiusPool;
-use crate::{
-    aquarius::model::Regatta,
-    error::DbError,
-    timekeeper::time_stamp::{Split, TimeStamp},
-};
+use crate::timekeeper::Timestamp;
+use crate::{aquarius::model::Regatta, error::DbError, timekeeper::time_stamp::Split};
 use ::chrono::DateTime;
 use ::chrono::Utc;
 use ::std::collections::VecDeque;
@@ -18,7 +15,7 @@ pub struct TimeStrip {
     regatta_id: i32,
 
     // A deque of time stamps.
-    time_stamps: VecDeque<TimeStamp>,
+    time_stamps: VecDeque<Timestamp>,
 
     pool: Arc<TiberiusPool>,
 }
@@ -29,7 +26,7 @@ impl TimeStrip {
         let pool_clone = pool.clone();
         let mut client = pool_clone.get().await?;
         let regatta = Regatta::query_active_regatta(&mut client).await?;
-        let time_stamps = TimeStamp::query_all_for_regatta(regatta.id, None, None, &mut client).await?;
+        let time_stamps = Timestamp::query_all_for_regatta(regatta.id, None, None, &mut client).await?;
         let time_strip = TimeStrip {
             regatta_id: regatta.id,
             time_stamps: VecDeque::from(time_stamps),
@@ -39,60 +36,55 @@ impl TimeStrip {
         Ok(time_strip)
     }
 
-    pub async fn add_start(&mut self, time: Option<DateTime<Utc>>) -> Result<TimeStamp, DbError> {
-        let mut time_stamp = TimeStamp::from_time(time.unwrap_or_else(Utc::now), Split::Start);
-        info!(?time_stamp, "Start time stamp:");
-        self.time_stamps.push_front(time_stamp.clone());
+    pub async fn add_start(&mut self, time: Option<DateTime<Utc>>) -> Result<Timestamp, DbError> {
+        let mut timestamp = Timestamp::from_time(time.unwrap_or_else(Utc::now), Split::Start);
+        self.time_stamps.push_front(timestamp.clone());
         let mut client = self.pool.get().await?;
-        time_stamp.persist(self.regatta_id, &mut client).await?;
-        Ok(time_stamp)
+        timestamp.persist(self.regatta_id, &mut client).await?;
+        Ok(timestamp)
     }
 
-    pub async fn add_finish(&mut self, time: Option<DateTime<Utc>>) -> Result<TimeStamp, DbError> {
-        let mut time_stamp = TimeStamp::from_time(time.unwrap_or_else(Utc::now), Split::Finish);
-        info!(?time_stamp, "Finish time stamp:");
-        self.time_stamps.push_front(time_stamp.clone());
+    pub async fn add_finish(&mut self, time: Option<DateTime<Utc>>) -> Result<Timestamp, DbError> {
+        let mut timestamp = Timestamp::from_time(time.unwrap_or_else(Utc::now), Split::Finish);
+        self.time_stamps.push_front(timestamp.clone());
         let mut client = self.pool.get().await?;
-        time_stamp.persist(self.regatta_id, &mut client).await?;
-        Ok(time_stamp)
+        timestamp.persist(self.regatta_id, &mut client).await?;
+        Ok(timestamp)
     }
 
-    pub async fn set_heat_nr(&mut self, time_stamp: &TimeStamp, heat_nr: i16) -> Result<TimeStamp, DbError> {
-        if let Some(time_stamp) = self.time_stamps.iter_mut().find(|ts| ts.time == time_stamp.time) {
-            time_stamp.set_heat_nr(heat_nr);
+    pub async fn set_heat_nr(&mut self, timestamp: &Timestamp, heat_nr: i16) -> Result<Timestamp, DbError> {
+        if let Some(timestamp) = self.time_stamps.iter_mut().find(|ts| ts.time == timestamp.time) {
+            timestamp.set_heat_nr(heat_nr);
             let mut client = self.pool.get().await?;
-            time_stamp.update(&mut client).await?;
-            return Ok(time_stamp.clone());
+            timestamp.update(&mut client).await?;
+            return Ok(timestamp.clone());
         }
-        Ok(time_stamp.clone())
+        Ok(timestamp.clone())
     }
 
-    pub async fn set_bib(&mut self, time_stamp: &TimeStamp, bib: u8) -> Result<TimeStamp, DbError> {
-        if let Some(time_stamp) = self.time_stamps.iter_mut().find(|ts| ts.time == time_stamp.time) {
-            time_stamp.set_bib(bib);
+    pub async fn set_bib(&mut self, timestamp: &Timestamp, bib: u8) -> Result<Timestamp, DbError> {
+        if let Some(timestamp) = self.time_stamps.iter_mut().find(|ts| ts.time == timestamp.time) {
+            timestamp.set_bib(bib);
             let mut client = self.pool.get().await?;
-            time_stamp.update(&mut client).await?;
-            return Ok(time_stamp.clone());
+            timestamp.update(&mut client).await?;
+            return Ok(timestamp.clone());
         }
-        Ok(time_stamp.clone())
+        Ok(timestamp.clone())
     }
 
-    pub async fn delete(&mut self, time_stamp: &TimeStamp) -> Result<(), DbError> {
-        if let Some(pos) = self.get_index(time_stamp)
-            && let Some(time_stamp) = self.time_stamps.remove(pos)
+    pub async fn delete(&mut self, time: &DateTime<Utc>) -> Result<Timestamp, DbError> {
+        if let Some(pos) = self.get_index(time)
+            && let Some(timestamp) = self.time_stamps.remove(pos)
         {
             let mut client = self.pool.get().await?;
-            time_stamp.delete(&mut client).await?;
+            timestamp.delete(&mut client).await?;
+            return Ok(timestamp);
         }
-        Ok(())
-    }
-
-    fn get_index(&self, time_stamp: &TimeStamp) -> Option<usize> {
-        self.time_stamps.iter().position(|ts| ts.time == time_stamp.time)
+        Err(DbError::Custom("Timestamp not found".to_string()))
     }
 
     /// Returns an iterator over the time stamps.
-    pub fn iter(&self) -> vec_deque::Iter<'_, TimeStamp> {
+    pub fn iter(&self) -> vec_deque::Iter<'_, Timestamp> {
         self.time_stamps.iter()
     }
 
@@ -107,12 +99,16 @@ impl TimeStrip {
     }
 
     /// Returns a reference to the time stamp at the given index.
-    pub fn get(&self, index: usize) -> Option<&TimeStamp> {
+    pub fn get(&self, index: usize) -> Option<&Timestamp> {
         self.time_stamps.get(index)
     }
 
     /// Returns a `Vec` containing clones of all time stamps.
-    pub fn to_vec(&self) -> Vec<TimeStamp> {
+    pub fn to_vec(&self) -> Vec<Timestamp> {
         self.time_stamps.clone().into()
+    }
+
+    fn get_index(&self, time: &DateTime<Utc>) -> Option<usize> {
+        self.time_stamps.iter().position(|timestamp| timestamp.time == *time)
     }
 }

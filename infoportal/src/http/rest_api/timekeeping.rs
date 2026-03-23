@@ -21,10 +21,12 @@ use ::actix_web_actors::ws::WebsocketContext;
 use ::aquarius::client::AquariusClient;
 use ::aquarius::event::AquariusEvent;
 use ::aquarius::messages::Heat;
+use ::chrono::DateTime;
+use ::chrono::Utc;
 use ::db::tiberius::TiberiusPool;
 use ::db::tiberius::user_pool::UserPoolManager;
-use ::db::timekeeper::TimeStamp;
 use ::db::timekeeper::TimeStrip;
+use ::db::timekeeper::Timestamp;
 use ::serde::Deserialize;
 use ::serde::Serialize;
 use ::std::sync::Arc;
@@ -46,6 +48,11 @@ enum TimekeepingCommand {
     AddStart,
     /// Add a finish timestamp to the timestrip
     AddFinish,
+    /// Delete a timestamp from the timestrip
+    DeleteTimestamp {
+        /// The time of the timestamp to delete
+        time: DateTime<Utc>,
+    },
     /// Get the current timestrip data
     GetTimestrip,
 }
@@ -59,9 +66,9 @@ enum ServerEvent {
     /// Event to send the current heats open in Aquarius to the client
     AquariusHeats { heats: Vec<Heat> },
     /// Event to send the current timestrip data to the client
-    Timestrip { time_stamps: Vec<TimeStamp> },
+    Timestrip { time_stamps: Vec<Timestamp> },
     /// Event to send a single timestamp update to the client
-    Timestamp { time_stamp: TimeStamp },
+    Timestamp { timestamp: Timestamp },
     /// Event to send an error message to the client
     Error {
         /// The error message to send to the client
@@ -76,6 +83,15 @@ enum ServerEvent {
 struct AddTimestamp {
     /// The split number for the timestamp (0 for start, 64 for finish)
     split: u8,
+}
+
+/// Message to trigger deleting a timestamp
+/// Direction: Server -> Server
+#[derive(ActixMessage)]
+#[rtype(result = "()")]
+struct DeleteTimestamp {
+    /// The time of the timestamp to delete
+    time: DateTime<Utc>,
 }
 
 /// Message to trigger loading the current timestrip and sending it back to the client
@@ -143,6 +159,7 @@ impl StreamHandler<Result<Message, ProtocolError>> for TimekeepingActor {
                     TimekeepingCommand::AddStart => ctx.address().do_send(AddTimestamp { split: 0 }),
                     TimekeepingCommand::AddFinish => ctx.address().do_send(AddTimestamp { split: 64 }),
                     TimekeepingCommand::GetTimestrip => ctx.address().do_send(GetTimestrip),
+                    TimekeepingCommand::DeleteTimestamp { time } => ctx.address().do_send(DeleteTimestamp { time }),
                 },
                 Err(err) => {
                     ctx.address().do_send(ServerEvent::Error {
@@ -178,7 +195,7 @@ impl Handler<AddTimestamp> for TimekeepingActor {
         ctx.wait(
             actix::fut::wrap_future(async move {
                 let mut time_strip = time_strip.write().await;
-                let time_stamp = match split {
+                let timestamp = match split {
                     0 => time_strip
                         .add_start(None)
                         .await
@@ -191,15 +208,43 @@ impl Handler<AddTimestamp> for TimekeepingActor {
                         return Err(format!("Invalid split number: {split}"));
                     }
                 };
-                Ok(time_stamp)
+                Ok(timestamp)
             })
             .map(
-                |result: Result<TimeStamp, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
+                |result: Result<Timestamp, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
                     let event = match result {
-                        Ok(time_stamp) => ServerEvent::Timestamp { time_stamp },
+                        Ok(timestamp) => ServerEvent::Timestamp { timestamp },
                         Err(error) => ServerEvent::Error { error },
                     };
                     ctx.address().do_send(event);
+                },
+            ),
+        );
+    }
+}
+
+impl Handler<DeleteTimestamp> for TimekeepingActor {
+    type Result = ();
+
+    fn handle(&mut self, msg: DeleteTimestamp, ctx: &mut Self::Context) -> Self::Result {
+        let time_strip = self.time_strip.clone();
+        let time = msg.time;
+
+        ctx.wait(
+            actix::fut::wrap_future(async move {
+                let mut time_strip = time_strip.write().await;
+                let timestamp = time_strip
+                    .delete(&time)
+                    .await
+                    .map_err(|err| format!("Failed to delete timestamp: {err}"))?;
+                Ok(timestamp)
+            })
+            .map(
+                |result: Result<Timestamp, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
+                    if let Err(error) = result {
+                        let event = ServerEvent::Error { error };
+                        ctx.address().do_send(event);
+                    }
                 },
             ),
         );
@@ -218,7 +263,7 @@ impl Handler<GetTimestrip> for TimekeepingActor {
                 Ok(time_strip.to_vec())
             })
             .map(
-                |result: Result<Vec<TimeStamp>, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
+                |result: Result<Vec<Timestamp>, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
                     let event = match result {
                         Ok(time_stamps) => ServerEvent::Timestrip { time_stamps },
                         Err(error) => ServerEvent::Error { error },

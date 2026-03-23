@@ -10,7 +10,7 @@ use crate::messages::RequestStartList;
 use crate::messages::ResponseListOpenHeats;
 use crate::messages::ResponseStartList;
 use crate::utils;
-use ::db::timekeeper::TimeStamp;
+use ::db::timekeeper::Timestamp;
 use ::std::io;
 use ::std::str::FromStr;
 use ::std::{
@@ -77,14 +77,14 @@ impl AquariusClient {
 
     /// Sends a time stamp to Aquarius.
     /// # Arguments
-    /// * `time_stamp` - The time stamp to send to Aquarius.
+    /// * `timestamp` - The time stamp to send to Aquarius.
     /// * `bib` - The bib number of the boat to send the time stamp to.
-    pub fn send_time(&self, time_stamp: &TimeStamp, bib: Option<Bib>) -> Result<(), AquariusErr> {
+    pub fn send_time(&self, timestamp: &Timestamp, bib: Option<Bib>) -> Result<(), AquariusErr> {
         self.with_connection(|connection| {
             let request = RequestSetTime {
-                time: time_stamp.time.into(),
-                split: time_stamp.split().clone(),
-                heat_nr: time_stamp.heat_nr().unwrap_or_default(),
+                time: timestamp.time.into(),
+                split: timestamp.split().clone(),
+                heat_nr: timestamp.heat_nr().unwrap_or_default(),
                 bib,
             };
             connection.write(&request.to_string())?;

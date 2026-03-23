@@ -2,7 +2,7 @@ use crate::app::{
     TimeStrip,
     utils::{HIGHLIGHT_SYMBOL, block},
 };
-use ::db::timekeeper::TimeStamp;
+use ::db::timekeeper::Timestamp;
 use ::ratatui::{
     buffer::Buffer,
     crossterm::event::{KeyCode, KeyEvent},
@@ -18,7 +18,7 @@ pub(crate) struct TimeStripTab {
 
     // shared context
     time_strip: Rc<RefCell<TimeStrip>>,
-    selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
+    selected_time_stamp: Rc<RefCell<Option<Timestamp>>>,
     show_time_strip_popup: Rc<RefCell<bool>>,
 }
 
@@ -46,7 +46,7 @@ impl Widget for &mut TimeStripTab {
 impl TimeStripTab {
     pub(crate) fn new(
         time_strip: Rc<RefCell<TimeStrip>>,
-        selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
+        selected_time_stamp: Rc<RefCell<Option<Timestamp>>>,
         show_time_strip_popup: Rc<RefCell<bool>>,
     ) -> Self {
         Self {
@@ -73,8 +73,8 @@ impl TimeStripTab {
             }
             KeyCode::Delete => {
                 // delete the selected time stamp
-                if let Some(time_stamp) = self.selected_time_stamp.borrow_mut().take() {
-                    self.time_strip.borrow_mut().delete(&time_stamp).await.unwrap();
+                if let Some(timestamp) = self.selected_time_stamp.borrow_mut().take() {
+                    self.time_strip.borrow_mut().delete(&timestamp.time).await.unwrap();
                 }
             }
             _ => {}
@@ -90,8 +90,8 @@ impl TimeStripTab {
             // as the list is reversed, we need to calculate the correct index in the time strip
             let time_strip_index = time_strip.len().saturating_sub(index).saturating_sub(1);
             // get the time stamp from the time strip
-            if let Some(time_stamp) = time_strip.get(time_strip_index) {
-                *self.selected_time_stamp.borrow_mut() = Some(time_stamp.clone());
+            if let Some(timestamp) = time_strip.get(time_strip_index) {
+                *self.selected_time_stamp.borrow_mut() = Some(timestamp.clone());
             } else {
                 *self.selected_time_stamp.borrow_mut() = None;
             }
@@ -118,4 +118,4 @@ impl<'a> From<MyTimeStamp<'a>> for ListItem<'a> {
     }
 }
 
-struct MyTimeStamp<'a>(&'a TimeStamp);
+struct MyTimeStamp<'a>(&'a Timestamp);

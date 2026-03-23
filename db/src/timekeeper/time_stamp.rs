@@ -18,7 +18,7 @@ const BIB: &str = "bib";
 
 /// A time stamp of an event, such as a start or finish time stamp in a race.
 #[derive(Debug, Clone, Serialize, ToSchema)]
-pub struct TimeStamp {
+pub struct Timestamp {
     /// The time of the event.
     pub time: DateTime<Utc>,
 
@@ -35,9 +35,9 @@ pub struct TimeStamp {
     persisted: bool,
 }
 
-impl TimeStamp {
-    pub(crate) fn from_time(time: DateTime<Utc>, split: Split) -> TimeStamp {
-        TimeStamp {
+impl Timestamp {
+    pub(crate) fn from_time(time: DateTime<Utc>, split: Split) -> Timestamp {
+        Timestamp {
             time,
             split,
             heat_nr: None,
@@ -77,7 +77,7 @@ impl TimeStamp {
         offset: Option<i32>,
         top: Option<i32>,
         client: &mut TiberiusClient,
-    ) -> Result<Vec<TimeStamp>, DbError> {
+    ) -> Result<Vec<Timestamp>, DbError> {
         let mut query = Query::new(format!(
             "SELECT {TIMESTAMP}, {EVENT_ID}, {SPLIT_NR}, {HEAT_NR}, {BIB} FROM HRV_Timestamp \
             WHERE {EVENT_ID} = @P1 ORDER BY {TIMESTAMP} DESC \
@@ -89,7 +89,7 @@ impl TimeStamp {
 
         let stream = query.query(client).await?;
         let time_stamps = get_rows(stream).await?;
-        Ok(time_stamps.into_iter().map(|row| TimeStamp::from(&row)).collect())
+        Ok(time_stamps.into_iter().map(|row| Timestamp::from(&row)).collect())
     }
 
     pub(crate) async fn delete(&self, client: &mut TiberiusClient) -> Result<(), DbError> {
@@ -133,10 +133,10 @@ impl TimeStamp {
     }
 }
 
-impl From<&Row> for TimeStamp {
+impl From<&Row> for Timestamp {
     fn from(row: &Row) -> Self {
         let split_nr: u8 = row.get_column(SPLIT_NR);
-        TimeStamp {
+        Timestamp {
             time: row.get_column(TIMESTAMP),
             split: Split::from(split_nr),
             heat_nr: row.try_get_column(HEAT_NR),

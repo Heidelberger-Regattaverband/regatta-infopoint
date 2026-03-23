@@ -1,5 +1,5 @@
 use ::aquarius::{client::AquariusClient, messages::Heat};
-use ::db::timekeeper::{TimeStamp, TimeStrip};
+use ::db::timekeeper::{TimeStrip, Timestamp};
 use ::ratatui::{
     buffer::Buffer,
     crossterm::event::{KeyCode, KeyEvent},
@@ -18,7 +18,7 @@ pub(crate) struct TimeStripTabPopup<'a> {
     client: Rc<RefCell<AquariusClient>>,
     heats: Rc<RefCell<Vec<Heat>>>,
     time_strip: Rc<RefCell<TimeStrip>>,
-    selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
+    selected_time_stamp: Rc<RefCell<Option<Timestamp>>>,
     show_time_strip_popup: Rc<RefCell<bool>>,
 }
 
@@ -52,7 +52,7 @@ impl TimeStripTabPopup<'_> {
         client: Rc<RefCell<AquariusClient>>,
         heats: Rc<RefCell<Vec<Heat>>>,
         time_strip: Rc<RefCell<TimeStrip>>,
-        selected_time_stamp: Rc<RefCell<Option<TimeStamp>>>,
+        selected_time_stamp: Rc<RefCell<Option<Timestamp>>>,
         show_time_strip_popup: Rc<RefCell<bool>>,
     ) -> Self {
         Self {
@@ -80,11 +80,11 @@ impl TimeStripTabPopup<'_> {
                 if self.is_valid {
                     let heat_nr = self.input.lines()[0].parse::<i16>().unwrap();
                     self.input.delete_line_by_head();
-                    if let Some(time_stamp) = self.selected_time_stamp.borrow().as_ref()
-                        && let Ok(time_stamp) = self.time_strip.borrow_mut().set_heat_nr(time_stamp, heat_nr).await
+                    if let Some(timestamp) = self.selected_time_stamp.borrow().as_ref()
+                        && let Ok(timestamp) = self.time_strip.borrow_mut().set_heat_nr(timestamp, heat_nr).await
                     {
                         *self.show_time_strip_popup.borrow_mut() = false;
-                        self.client.borrow_mut().send_time(&time_stamp, None).unwrap();
+                        self.client.borrow_mut().send_time(&timestamp, None).unwrap();
                     }
                     self.is_valid = false;
                 }
