@@ -85,7 +85,9 @@ impl TimeStamp {
         client: &mut TiberiusClient,
     ) -> Result<Vec<TimeStamp>, DbError> {
         let mut query = Query::new(format!(
-            "SELECT {TIMESTAMP}, {EVENT_ID}, {SPLIT_NR}, {HEAT_NR}, {BIB} FROM HRV_Timestamp WHERE {EVENT_ID} = @P1 ORDER BY {TIMESTAMP} DESC OFFSET @P2 ROWS FETCH NEXT @P3 ROWS ONLY"
+            "SELECT {TIMESTAMP}, {EVENT_ID}, {SPLIT_NR}, {HEAT_NR}, {BIB} FROM HRV_Timestamp \
+            WHERE {EVENT_ID} = @P1 ORDER BY {TIMESTAMP} DESC \
+            OFFSET @P2 ROWS FETCH NEXT @P3 ROWS ONLY"
         ));
         query.bind(regatta_id);
         query.bind(offset.unwrap_or(0)); // OFFSET

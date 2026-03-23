@@ -200,7 +200,8 @@ impl Handler<AddTimestamp> for TimekeepingActor {
                 }
                 time_strip
                     .time_stamps
-                    .last()
+                    .iter()
+                    .next()
                     .cloned()
                     .ok_or("No timestamps available".to_string())
             })
@@ -238,7 +239,7 @@ impl Handler<GetTimestrip> for TimekeepingActor {
                 |result: Result<TimeStrip, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
                     let event = match result {
                         Ok(time_strip) => ServerEvent::Timestrip {
-                            time_stamps: time_strip.time_stamps,
+                            time_stamps: time_strip.time_stamps.into(),
                         },
                         Err(error) => ServerEvent::Error { error },
                     };

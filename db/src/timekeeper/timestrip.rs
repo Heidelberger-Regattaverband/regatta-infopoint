@@ -4,6 +4,7 @@ use crate::{
     error::DbError,
     timekeeper::time_stamp::{Split, TimeStamp},
 };
+use ::std::collections::VecDeque;
 use ::std::time::Instant;
 use ::tracing::info;
 
@@ -12,8 +13,8 @@ pub struct TimeStrip {
     // The ID of the regatta this time strip belongs to.
     regatta_id: i32,
 
-    // A vector of time stamps.
-    pub time_stamps: Vec<TimeStamp>,
+    // A deque of time stamps.
+    pub time_stamps: VecDeque<TimeStamp>,
 }
 
 impl TimeStrip {
@@ -23,7 +24,7 @@ impl TimeStrip {
         let time_stamps = TimeStamp::query_all_for_regatta(regatta.id, None, None, client).await?;
         let time_strip = TimeStrip {
             regatta_id: regatta.id,
-            time_stamps,
+            time_stamps: VecDeque::from(time_stamps),
         };
         info!(regatta_id = regatta.id, elapsed = ?start.elapsed(), "Loaded time strip:");
         Ok(time_strip)
@@ -32,8 +33,8 @@ impl TimeStrip {
     pub async fn add_start(&mut self, client: &mut TiberiusClient) -> Result<(), DbError> {
         let time_stamp = TimeStamp::now(Split::Start);
         info!(?time_stamp, "Start time stamp:");
-        self.time_stamps.push(time_stamp);
-        if let Some(ts) = self.time_stamps.last_mut() {
+        self.time_stamps.push_front(time_stamp);
+        if let Some(ts) = self.time_stamps.front_mut() {
             ts.persist(self.regatta_id, client).await?;
         }
         Ok(())
@@ -42,8 +43,8 @@ impl TimeStrip {
     pub async fn add_finish(&mut self, client: &mut TiberiusClient) -> Result<(), DbError> {
         let time_stamp = TimeStamp::now(Split::Finish);
         info!(?time_stamp, "Finish time stamp:");
-        self.time_stamps.push(time_stamp);
-        if let Some(ts) = self.time_stamps.last_mut() {
+        self.time_stamps.push_front(time_stamp);
+        if let Some(ts) = self.time_stamps.front_mut() {
             ts.persist(self.regatta_id, client).await?;
         }
         Ok(())
@@ -78,8 +79,9 @@ impl TimeStrip {
     }
 
     pub async fn delete(&mut self, time_stamp: &TimeStamp, client: &mut TiberiusClient) -> Result<(), DbError> {
-        if let Some(pos) = self.get_index(time_stamp) {
-            let time_stamp = self.time_stamps.remove(pos);
+        if let Some(pos) = self.get_index(time_stamp)
+            && let Some(time_stamp) = self.time_stamps.remove(pos)
+        {
             time_stamp.delete(client).await?;
         }
         Ok(())
