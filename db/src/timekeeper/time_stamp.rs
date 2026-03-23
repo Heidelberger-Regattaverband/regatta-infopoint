@@ -4,7 +4,7 @@ use crate::{
     error::DbError,
     tiberius::{RowColumn, TryRowColumn},
 };
-use ::chrono::{DateTime, Local, Utc};
+use ::chrono::{DateTime, Utc};
 use ::serde::Serialize;
 use ::strum_macros::Display;
 use ::tiberius::{Query, Row};
@@ -36,15 +36,9 @@ pub struct TimeStamp {
 }
 
 impl TimeStamp {
-    /// Create a new time stamp with the current time in UTC.
-    ///
-    /// # Arguments
-    /// * `split` - The type of the time stamp.
-    /// # Returns
-    /// A new time stamp with the current time.
-    pub(crate) fn now(split: Split) -> TimeStamp {
+    pub(crate) fn from_time(time: DateTime<Utc>, split: Split) -> TimeStamp {
         TimeStamp {
-            time: Local::now().to_utc(),
+            time,
             split,
             heat_nr: None,
             bib: None,
@@ -85,7 +79,9 @@ impl TimeStamp {
         client: &mut TiberiusClient,
     ) -> Result<Vec<TimeStamp>, DbError> {
         let mut query = Query::new(format!(
-            "SELECT {TIMESTAMP}, {EVENT_ID}, {SPLIT_NR}, {HEAT_NR}, {BIB} FROM HRV_Timestamp WHERE {EVENT_ID} = @P1 ORDER BY {TIMESTAMP} DESC OFFSET @P2 ROWS FETCH NEXT @P3 ROWS ONLY"
+            "SELECT {TIMESTAMP}, {EVENT_ID}, {SPLIT_NR}, {HEAT_NR}, {BIB} FROM HRV_Timestamp \
+            WHERE {EVENT_ID} = @P1 ORDER BY {TIMESTAMP} DESC \
+            OFFSET @P2 ROWS FETCH NEXT @P3 ROWS ONLY"
         ));
         query.bind(regatta_id);
         query.bind(offset.unwrap_or(0)); // OFFSET
