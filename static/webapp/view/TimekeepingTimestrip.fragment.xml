@@ -17,10 +17,10 @@
     </headerToolbar>
 
     <columns>
-      <Column id="timestampTime" hAlign="Center" width="10rem" importance="High" popinDisplay="Inline">
+      <Column id="timestampTime" hAlign="Center" width="11rem" importance="High" popinDisplay="Inline">
         <Text text="{i18n>common.time}" class="bold" />
       </Column>
-      <Column id="timestampSplit" hAlign="Center" width="4rem" importance="High" popinDisplay="Inline">
+      <Column id="timestampSplit" hAlign="Center" width="5rem" importance="High" popinDisplay="Inline">
         <Text text="{i18n>common.split}" class="bold" />
       </Column>
       <Column id="timestampHeatNr" hAlign="Center" width="4rem" importance="Medium" popinDisplay="Inline">
