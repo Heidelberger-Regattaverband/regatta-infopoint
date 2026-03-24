@@ -38,12 +38,12 @@ export default class RaceDetailsController extends BaseController {
   private onBeforeShow(): void {
     this.loadRaceModel().then(() => {
       super.getEventBus()?.subscribe("race", "itemChanged", this.onItemChanged, this);
-      window.addEventListener("keydown", this.keyListener);
+      globalThis.addEventListener("keydown", this.keyListener);
     })
   }
 
   private onBeforeHide(): void {
-    window.removeEventListener("keydown", this.keyListener);
+    globalThis.removeEventListener("keydown", this.keyListener);
     super.getEventBus()?.unsubscribe("race", "itemChanged", this.onItemChanged, this);
     delete this.raceId;
   }

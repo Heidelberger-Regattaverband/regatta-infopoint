@@ -2,15 +2,13 @@ import Button, { Button$PressEvent } from "sap/m/Button";
 import MessageBox from "sap/m/MessageBox";
 import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
-import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import Table from "sap/m/Table";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
-import Filter from "sap/ui/model/Filter";
-import FilterOperator from "sap/ui/model/FilterOperator";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import BaseTableController from "./BaseTable.controller";
+import IconPool from "sap/ui/core/IconPool";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -37,6 +35,19 @@ export default class TimekeepingController extends BaseTableController {
       this.connect();
       this.loadTimestripModel();
     }, this);
+    this._loadIcons();
+  }
+
+  private _loadIcons(): void {
+    const fonts: any[] = [
+      {
+        fontFamily: "SAP-icons-TNT",
+        fontURI: sap.ui.require.toUrl("sap/tnt/themes/base/fonts/")
+      }
+    ];
+    fonts.forEach((font: any) => {
+      IconPool.registerFont(font);
+    });
   }
 
   private onBeforeShow(): void {
@@ -75,21 +86,8 @@ export default class TimekeepingController extends BaseTableController {
     this.sendCommand({ AddFinish: null });
   }
 
-  onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
-    const query: string | undefined = event.getParameters().newValue?.trim();
-    if (query) {
-      super.setSearchFilters(this.createSearchFilters(query));
-    } else {
-      super.setSearchFilters([]);
-    }
-    super.applyFilters();
-  }
-
   onRefreshButtonPress(event: Button$PressEvent): void {
-    const source: Button = event.getSource();
-    source.setEnabled(false);
     this.loadTimestripModel();
-    source.setEnabled(true);
   }
 
   onDeleteTimestamp(event: Button$PressEvent): void {
@@ -114,22 +112,12 @@ export default class TimekeepingController extends BaseTableController {
   onItemChanged(item: any): void {
   }
 
-  private createSearchFilters(query: string): Filter[] {
-    return [new Filter({
-      filters: [
-        new Filter("heat_nr", FilterOperator.Contains, query),
-        new Filter("bib", FilterOperator.Contains, query),
-        new Filter("split", FilterOperator.Contains, query)
-      ],
-      and: false
-    })]
-  }
-
   private loadTimestripModel() {
     this.sendCommand({ GetTimestrip: null });
   }
 
   private updateModel(timekeeping: any) {
+    // nothing to do yet
   }
 
   private connect() {

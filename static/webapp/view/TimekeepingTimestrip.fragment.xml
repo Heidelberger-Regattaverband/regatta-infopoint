@@ -8,7 +8,6 @@
     <headerToolbar>
       <OverflowToolbar>
         <content>
-          <SearchField width="10rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
           <ToolbarSpacer />
           <!-- Refresh button -->
           <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
@@ -18,21 +17,20 @@
     </headerToolbar>
 
     <columns>
-      <Column id="timestampTime" hAlign="Center" width="8rem" importance="High" popinDisplay="Inline">
+      <Column id="timestampTime" hAlign="Center" width="10rem" importance="High" popinDisplay="Inline">
         <Text text="{i18n>common.time}" class="bold" />
       </Column>
-      <Column id="timestampSplit" hAlign="Center" width="6rem" importance="High" popinDisplay="Inline">
+      <Column id="timestampSplit" hAlign="Center" width="4rem" importance="High" popinDisplay="Inline">
         <Text text="{i18n>common.split}" class="bold" />
       </Column>
-      <Column id="timestampHeatNr" hAlign="Center" width="5rem" importance="Medium" popinDisplay="Inline">
+      <Column id="timestampHeatNr" hAlign="Center" width="4rem" importance="Medium" popinDisplay="Inline">
         <Text text="{i18n>common.heatNr}" class="bold" />
       </Column>
       <Column id="timestampBib" hAlign="Center" width="4rem" importance="Medium" popinDisplay="Inline">
         <Text text="{i18n>common.bib}" class="bold" />
       </Column>
-      <Column id="timestampPersisted" hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline"
-        visible="{=!${device>/system/phone}}">
-        <Text text="{i18n>common.persisted}" class="bold" />
+      <Column id="timestampStatus" hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">
+        <Text text="{i18n>common.state}" class="bold" />
       </Column>
       <Column id="timestampDelete" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
         <Text text="{i18n>admin.column.actions}" class="bold" />
@@ -46,7 +44,7 @@
           <Text text="{timestrip>split}" />
           <Text text="{timestrip>heat_nr}" />
           <Text text="{timestrip>bib}" />
-          <Text text="{=${timestrip>persisted}?${i18n>common.yes}:${i18n>common.no}}" />
+          <core:Icon src="{=${timestrip>persisted}?'sap-icon://SAP-icons-TNT/data-store':''}" tooltip="{i18n>common.persisted}" />
           <Button icon="sap-icon://delete" tooltip="{i18n>common.delete}" type="Reject" press=".onDeleteTimestamp" />
         </cells>
       </ColumnListItem>
