@@ -163,14 +163,14 @@ impl Statistics {
             JOIN  Offer      o ON o.Offer_ID         = e.Entry_Race_ID_FK
             JOIN  BoatClass bc ON bc.{BOAT_CLASS_ID} = o.Offer_BoatClass_ID_FK
             WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue = 0) as seats) AS entries_seats_cox,
-          (SELECT SUM(bc.BoatClass_NumRowers) FROM (
+          (SELECT COALESCE(SUM(bc.BoatClass_NumRowers), 0) FROM (
             SELECT bc.BoatClass_NumRowers
             FROM Comp       c
             JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.Offer_ID
             JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
             WHERE c.Comp_Cancelled = 0
             ) as bc) as medals_rowers,
-          (SELECT SUM(bc.BoatClass_Coxed) FROM (
+          (SELECT COALESCE(SUM(bc.BoatClass_Coxed), 0) FROM (
             SELECT bc.BoatClass_Coxed
             FROM Comp       c
             JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.Offer_ID
