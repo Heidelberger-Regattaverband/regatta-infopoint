@@ -30,6 +30,7 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           components: clippy, rustfmt
+          toolchain: stable
 
       - name: Restore build & cargo cache
         uses: Swatinem/rust-cache@v2
