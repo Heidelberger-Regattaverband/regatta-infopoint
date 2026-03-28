@@ -180,11 +180,14 @@ impl Notification {
             set_clauses.push(format!("{VISIBLE} = @P{param_count}"));
             param_count += 1;
         }
-        set_clauses.push(format!("{MODIFIED_AT} = @P{param_count}"));
 
+        // If no fields are provided, return the existing notification without updating
         if set_clauses.is_empty() {
             return Self::query_notification_by_id(notification_id, client).await;
         }
+
+        // Always update the modified_at timestamp
+        set_clauses.push(format!("{MODIFIED_AT} = @P{param_count}"));
 
         let sql = format!(
             "UPDATE HRV_Notification SET {} \
