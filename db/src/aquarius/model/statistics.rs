@@ -168,14 +168,14 @@ impl Statistics {
             FROM Comp       c
             JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.Offer_ID
             JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
-            WHERE c.Comp_Cancelled = 0
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_Cancelled = 0
             ) as bc) as medals_rowers,
           (SELECT COALESCE(SUM(bc.BoatClass_Coxed), 0) FROM (
             SELECT bc.BoatClass_Coxed
             FROM Comp       c
             JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.Offer_ID
             JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
-            WHERE c.Comp_Cancelled = 0
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_Cancelled = 0
             ) as bc) as medals_coxes
           "
         ));
