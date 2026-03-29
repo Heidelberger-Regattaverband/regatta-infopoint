@@ -52,14 +52,12 @@ pub struct Notification {
 #[serde(rename_all = "camelCase")]
 pub struct CreateNotificationRequest {
     /// The priority level of the notification. Higher values indicate more severe notifications.
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub priority: Option<u8>,
 
     /// The title of the notification.
     pub title: String,
 
     /// The text of the notification.
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub text: Option<String>,
 
     /// Whether the notification is visible. Defaults to true if not provided.
@@ -72,19 +70,15 @@ pub struct CreateNotificationRequest {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateNotificationRequest {
     /// The priority level of the notification. Higher values indicate more severe notifications.
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub priority: Option<u8>,
 
     /// The title of the notification.
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
 
     /// The text of the notification.
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub text: Option<String>,
 
     /// Whether the notification is visible.
-    #[serde(skip_serializing_if = "Option::is_none")]
     pub visible: Option<bool>,
 }
 
