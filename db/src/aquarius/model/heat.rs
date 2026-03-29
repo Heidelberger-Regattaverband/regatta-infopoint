@@ -91,7 +91,7 @@ impl Heat {
     /// A list of heats
     pub async fn query_heats_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
-            "SELECT {0}, {1}, {2}, o.* FROM Comp c
+            "SELECT {0}, {1}, {2}, {3} FROM Comp c
             JOIN Offer     o ON o.Offer_ID              = c.Comp_Race_ID_FK
             JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
@@ -99,7 +99,8 @@ impl Heat {
             ORDER BY c.{DATE_TIME} ASC",
             Heat::select_columns("c"),
             AgeClass::select_minimal_columns("a"),
-            BoatClass::select_columns("b")
+            BoatClass::select_columns("b"),
+            Race::select_columns("o")
         );
 
         let mut query = Query::new(sql);

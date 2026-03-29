@@ -115,6 +115,12 @@ impl TryToEntity<Race> for Row {
 impl Race {
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
+            "{alias}.Offer_ID, {alias}.Offer_RaceNumber, {alias}.Offer_Distance, {alias}.Offer_IsLightweight, {alias}.Offer_Cancelled, {alias}.Offer_ShortLabel, \
+            {alias}.Offer_LongLabel, {alias}.Offer_Comment, {alias}.Offer_GroupMode, {alias}.Offer_SortValue, {alias}.Offer_HRV_Seeded"
+        )
+    }
+    pub(crate) fn select_columns_with_analytical(alias: &str) -> String {
+        format!(
             " {alias}.Offer_ID, {alias}.Offer_RaceNumber, {alias}.Offer_Distance, {alias}.Offer_IsLightweight, {alias}.Offer_Cancelled, {alias}.Offer_ShortLabel, \
             {alias}.Offer_LongLabel, {alias}.Offer_Comment, {alias}.Offer_GroupMode, {alias}.Offer_SortValue, {alias}.Offer_HRV_Seeded, \
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = {alias}.Offer_ID AND e.Entry_CancelValue = 0) as Entries_Count, \
@@ -138,7 +144,7 @@ impl Race {
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
             WHERE o.Offer_Event_ID_FK = @P1
             ORDER BY o.Offer_SortValue ASC",
-            Race::select_columns("o"),
+            Race::select_columns_with_analytical("o"),
             AgeClass::select_minimal_columns("a"),
             BoatClass::select_columns("b")
         );
@@ -156,7 +162,7 @@ impl Race {
             JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
             WHERE o.Offer_ID = @P1",
-            Race::select_columns("o"),
+            Race::select_columns_with_analytical("o"),
             AgeClass::select_minimal_columns("a"),
             BoatClass::select_columns("b")
         );
