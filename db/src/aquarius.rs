@@ -146,6 +146,21 @@ impl Aquarius {
             .await
     }
 
+    pub async fn get_heats_ready_to_start(&self) -> Result<Vec<Heat>, DbError> {
+        let start = Instant::now();
+        let heats: Vec<Heat> =
+            Heat::query_heats_ready_to_start(self.active_regatta_id, TiberiusPool::instance()).await?;
+        debug!(elapsed = ?start.elapsed(), "Query heats ready to start from DB:");
+        Ok(heats)
+    }
+
+    pub async fn get_heats_started(&self) -> Result<Vec<Heat>, DbError> {
+        let start = Instant::now();
+        let heats: Vec<Heat> = Heat::query_heats_started(self.active_regatta_id, TiberiusPool::instance()).await?;
+        debug!(elapsed = ?start.elapsed(), "Query heats started from DB:");
+        Ok(heats)
+    }
+
     /// Returns heat details for the given identifier.
     pub async fn get_heat(&self, heat_id: i32, force_cache: bool) -> Result<Heat, DbError> {
         self.caches

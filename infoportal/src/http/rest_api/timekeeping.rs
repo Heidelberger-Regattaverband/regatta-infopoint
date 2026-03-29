@@ -23,6 +23,8 @@ use ::aquarius::event::AquariusEvent;
 use ::aquarius::messages::Heat;
 use ::chrono::DateTime;
 use ::chrono::Utc;
+use ::db::aquarius::Aquarius;
+use ::db::aquarius::model::Heat as DbHeat;
 use ::db::tiberius::TiberiusPool;
 use ::db::tiberius::user_pool::UserPoolManager;
 use ::db::timekeeper::TimeStrip;
@@ -45,9 +47,15 @@ use ::tracing::warn;
 #[derive(Debug, Deserialize)]
 enum TimekeepingCommand {
     /// Add a start timestamp to the timestrip
-    AddStart,
+    AddStart {
+        /// The time of the timestamp to add
+        time: Option<DateTime<Utc>>,
+    },
     /// Add a finish timestamp to the timestrip
-    AddFinish,
+    AddFinish {
+        /// The time of the timestamp to add
+        time: Option<DateTime<Utc>>,
+    },
     /// Delete a timestamp from the timestrip
     DeleteTimestamp {
         /// The time of the timestamp to delete
@@ -55,6 +63,8 @@ enum TimekeepingCommand {
     },
     /// Get the current timestrip data
     GetTimestrip,
+    /// Get the current heats open in Aquarius
+    GetHeatsReadyToStart,
 }
 
 /// Events sent from the server to the client to update the UI with timekeeping-related information.
@@ -69,6 +79,8 @@ enum ServerEvent {
     Timestrip { time_stamps: Vec<Timestamp> },
     /// Event to send a single timestamp update to the client
     Timestamp { timestamp: Timestamp },
+    /// Event to send the current heats ready to start to the client
+    HeatsReadyToStart { heats: Vec<DbHeat> },
     /// Event to send an error message to the client
     Error {
         /// The error message to send to the client
@@ -81,6 +93,8 @@ enum ServerEvent {
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
 struct AddTimestamp {
+    /// The time of the timestamp to add (if None, the current time will be used)
+    time: Option<DateTime<Utc>>,
     /// The split number for the timestamp (0 for start, 64 for finish)
     split: u8,
 }
@@ -100,16 +114,23 @@ struct DeleteTimestamp {
 #[rtype(result = "()")]
 struct GetTimestrip;
 
+/// Message to trigger loading the current heats ready to start from Aquarius and sending them back to the client
+/// Direction: Server -> Server
+#[derive(ActixMessage)]
+#[rtype(result = "()")]
+struct GetHeatsReadyToStart;
+
 struct TimekeepingActor {
     heart_beat: Instant,
     aquarius_client: Arc<AquariusClient>,
+    aquarius_db: Data<Aquarius>,
     heats: Arc<RwLock<Vec<Heat>>>,
     event_receiver: Option<Receiver<AquariusEvent>>,
     time_strip: Arc<::tokio::sync::RwLock<TimeStrip>>,
 }
 
 impl TimekeepingActor {
-    async fn new(pool: Arc<TiberiusPool>) -> Self {
+    async fn new(pool: Arc<TiberiusPool>, aquarius_db: Data<Aquarius>) -> Self {
         let (event_sender, event_receiver) = mpsc::channel();
 
         Self {
@@ -126,6 +147,7 @@ impl TimekeepingActor {
             heats: Arc::new(RwLock::new(Vec::new())),
             event_receiver: Some(event_receiver),
             time_strip: Arc::new(::tokio::sync::RwLock::new(TimeStrip::load(pool.clone()).await.unwrap())),
+            aquarius_db,
         }
     }
 
@@ -156,10 +178,11 @@ impl StreamHandler<Result<Message, ProtocolError>> for TimekeepingActor {
             }
             Ok(Message::Text(text)) => match serde_json::from_str::<TimekeepingCommand>(&text) {
                 Ok(cmd_msg) => match cmd_msg {
-                    TimekeepingCommand::AddStart => ctx.address().do_send(AddTimestamp { split: 0 }),
-                    TimekeepingCommand::AddFinish => ctx.address().do_send(AddTimestamp { split: 64 }),
+                    TimekeepingCommand::AddStart { time } => ctx.address().do_send(AddTimestamp { split: 0, time }),
+                    TimekeepingCommand::AddFinish { time } => ctx.address().do_send(AddTimestamp { split: 64, time }),
                     TimekeepingCommand::GetTimestrip => ctx.address().do_send(GetTimestrip),
                     TimekeepingCommand::DeleteTimestamp { time } => ctx.address().do_send(DeleteTimestamp { time }),
+                    TimekeepingCommand::GetHeatsReadyToStart => ctx.address().do_send(GetHeatsReadyToStart),
                 },
                 Err(err) => {
                     ctx.address().do_send(ServerEvent::Error {
@@ -197,11 +220,11 @@ impl Handler<AddTimestamp> for TimekeepingActor {
                 let mut time_strip = time_strip.write().await;
                 let timestamp = match split {
                     0 => time_strip
-                        .add_start(None)
+                        .add_start(msg.time)
                         .await
                         .map_err(|err| format!("Failed to add start timestamp: {err}"))?,
                     64 => time_strip
-                        .add_finish(None)
+                        .add_finish(msg.time)
                         .await
                         .map_err(|err| format!("Failed to add finish timestamp: {err}"))?,
                     _ => {
@@ -275,6 +298,32 @@ impl Handler<GetTimestrip> for TimekeepingActor {
     }
 }
 
+impl Handler<GetHeatsReadyToStart> for TimekeepingActor {
+    type Result = ();
+
+    fn handle(&mut self, _msg: GetHeatsReadyToStart, ctx: &mut Self::Context) -> Self::Result {
+        let aquarius_db = self.aquarius_db.clone();
+
+        ctx.wait(
+            actix::fut::wrap_future(async move {
+                aquarius_db
+                    .get_heats_ready_to_start()
+                    .await
+                    .map_err(|err| format!("Failed to read heats ready to start from Aquarius DB: {err}"))
+            })
+            .map(
+                |result: Result<Vec<DbHeat>, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
+                    let event = match result {
+                        Ok(heats) => ServerEvent::HeatsReadyToStart { heats },
+                        Err(error) => ServerEvent::Error { error },
+                    };
+                    ctx.address().do_send(event);
+                },
+            ),
+        );
+    }
+}
+
 impl Actor for TimekeepingActor {
     type Context = WebsocketContext<Self>;
 
@@ -304,11 +353,12 @@ async fn get_timekeeping_ws(
     request: HttpRequest,
     stream: Payload,
     identity: Option<Identity>,
+    aquarius_db: Data<Aquarius>,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<HttpResponse, Error> {
     if let Some(ref identity) = identity {
         let pool = get_user_pool(identity, &user_pool_manager).await?;
-        let actor = TimekeepingActor::new(pool).await;
+        let actor = TimekeepingActor::new(pool, aquarius_db.clone()).await;
         ws::start(actor, &request, stream)
     } else {
         Err(ErrorUnauthorized("Unauthorized"))

@@ -1,14 +1,16 @@
 import Button, { Button$PressEvent } from "sap/m/Button";
-import MessageBox from "sap/m/MessageBox";
+import { ComboBoxBase$LoadItemsEvent } from "sap/m/ComboBoxBase";
 import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
+import MessageBox from "sap/m/MessageBox";
 import Table from "sap/m/Table";
+import IconPool from "sap/ui/core/IconPool";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import BaseTableController from "./BaseTable.controller";
-import IconPool from "sap/ui/core/IconPool";
+import ListBinding from "sap/ui/model/ListBinding";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -17,6 +19,7 @@ export default class TimekeepingController extends BaseTableController {
 
   private static readonly TIMESTRIP_MODEL: string = "timestrip";
   private static readonly AQUARIUS_HEATS_MODEL: string = "aquariusHeats";
+  private static readonly HEATS_MODEL: string = "heats";
 
   readonly formatter: Formatter = Formatter;
   private socket?: WebSocket;
@@ -31,9 +34,9 @@ export default class TimekeepingController extends BaseTableController {
     super.getView()?.addEventDelegate({ onBeforeShow: this.onBeforeShow, onBeforeHide: this.onBeforeHide }, this);
     super.setViewModel(new JSONModel(), TimekeepingController.TIMESTRIP_MODEL);
     super.setViewModel(new JSONModel(), TimekeepingController.AQUARIUS_HEATS_MODEL);
+    super.setViewModel(new JSONModel(), TimekeepingController.HEATS_MODEL);
     super.getRouter()?.getRoute("timekeeping")?.attachMatched((_: Route$MatchedEvent) => {
       this.connect();
-      this.loadTimestripModel();
     }, this);
     this._loadIcons();
   }
@@ -79,15 +82,15 @@ export default class TimekeepingController extends BaseTableController {
   }
 
   onStartButtonPress(): void {
-    this.sendCommand({ AddStart: null });
+    this.sendAddStartCommand();
   }
 
   onFinishButtonPress(): void {
-    this.sendCommand({ AddFinish: null });
+    this.sendAddFinishCommand();
   }
 
   onRefreshButtonPress(event: Button$PressEvent): void {
-    this.loadTimestripModel();
+    this.sendGetTimestripCommand();
   }
 
   onDeleteTimestamp(event: Button$PressEvent): void {
@@ -109,11 +112,17 @@ export default class TimekeepingController extends BaseTableController {
     }
   }
 
-  onItemChanged(item: any): void {
+  onLoadHeats(event: ComboBoxBase$LoadItemsEvent): void {
+    this.sendGetHeatsReadyToStartCommand();
+    const binding: ListBinding | undefined = event.getSource().getBinding("items") as ListBinding;
+    if (binding) {
+      binding.resume();
+    } else {
+      console.warn("Failed to load heats for timestrip item: No binding found on ComboBox items aggregation");
+    }
   }
 
-  private loadTimestripModel() {
-    this.sendCommand({ GetTimestrip: null });
+  onItemChanged(item: any): void {
   }
 
   private updateModel(timekeeping: any) {
@@ -130,6 +139,7 @@ export default class TimekeepingController extends BaseTableController {
     this.socket = new WebSocket(`${proto}://${location.host}/api/timekeeping`);
 
     this.socket.onopen = (_event: Event) => {
+      this.sendGetTimestripCommand();
       this.statusButton?.setIcon('sap-icon://connected');
       console.debug('Timekeeping WebSocket Connected');
     }
@@ -151,6 +161,9 @@ export default class TimekeepingController extends BaseTableController {
         } else if (data.Timestrip) {
           super.getViewJSONModel(TimekeepingController.TIMESTRIP_MODEL).setData(data.Timestrip.time_stamps);
           super.showInfoMessageToast("Timestrip retrieved successfully");
+        } else if (data.HeatsReadyToStart) {
+          super.getViewJSONModel(TimekeepingController.HEATS_MODEL).setData(data.HeatsReadyToStart.heats);
+          super.showInfoMessageToast("Heats ready to start retrieved successfully");
         } else {
           console.warn(`Received unknown Timekeeping WebSocket event type: ${JSON.stringify(data)}`);
         }
@@ -193,16 +206,32 @@ export default class TimekeepingController extends BaseTableController {
     }
   }
 
+  private sendGetTimestripCommand() {
+    this.sendCommand({ GetTimestrip: null });
+  }
+
+  private sendAddStartCommand() {
+    this.sendCommand({ AddStart: { time: new Date().toISOString() } });
+  }
+
+  private sendAddFinishCommand() {
+    this.sendCommand({ AddFinish: { time: new Date().toISOString() } });
+  }
+
+  private sendGetHeatsReadyToStartCommand() {
+    this.sendCommand({ GetHeatsReadyToStart: null });
+  }
+
   private onKeyDown(event: KeyboardEvent): void {
     switch (event.key) {
       case " ":
-        this.sendCommand({ AddFinish: null });
+        this.sendAddFinishCommand();
         event.stopPropagation();
         event.preventDefault();
         event.stopImmediatePropagation();
         break;
       case "+":
-        this.sendCommand({ AddStart: null });
+        this.sendAddStartCommand();
         event.stopPropagation();
         event.preventDefault();
         event.stopImmediatePropagation();

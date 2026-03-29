@@ -42,7 +42,9 @@
         <cells>
           <Text text="{path:'timestrip>time',formatter:'.formatter.timestamp'}" />
           <Text text="{timestrip>split}" />
-          <Text text="{timestrip>heat_nr}" />
+          <ComboBox value="{timestrip>heat_nr}" items="{heats>/}" loadItems=".onLoadHeats">
+            <core:ListItem key="{heats>number}" text="{heats>number}" />
+          </ComboBox>
           <Text text="{timestrip>bib}" />
           <core:Icon src="{=${timestrip>persisted}?'sap-icon://SAP-icons-TNT/data-store':''}" tooltip="{i18n>common.persisted}" />
           <Button icon="sap-icon://delete" tooltip="{i18n>common.delete}" type="Reject" press=".onDeleteTimestamp" />

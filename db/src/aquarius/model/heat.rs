@@ -82,6 +82,38 @@ impl Heat {
         )
     }
 
+    pub async fn query_heats_ready_to_start(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
+        let sql = format!(
+            "SELECT {0} FROM Comp c
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.{STATE} = 1
+            ORDER BY c.{NUMBER} ASC",
+            Heat::select_columns("c")
+        );
+
+        let mut query = Query::new(sql);
+        query.bind(regatta_id);
+
+        let mut client = pool.get().await?;
+        let heats = get_rows(query.query(&mut client).await?).await?;
+        Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
+    }
+
+    pub async fn query_heats_started(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
+        let sql = format!(
+            "SELECT {0} FROM Comp c
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.{STATE} = 2
+            ORDER BY c.{NUMBER} ASC",
+            Heat::select_columns("c")
+        );
+
+        let mut query = Query::new(sql);
+        query.bind(regatta_id);
+
+        let mut client = pool.get().await?;
+        let heats = get_rows(query.query(&mut client).await?).await?;
+        Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
+    }
+
     /// Query all heats of a regatta. The heats are ordered by their date and time.
     ///
     /// # Arguments
