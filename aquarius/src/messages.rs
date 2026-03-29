@@ -33,7 +33,7 @@ impl FromStr for ResponseListOpenHeats {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut instance = ResponseListOpenHeats { heats: Vec::new() };
         for line in s.lines() {
-            let heat = Heat::from_str(line)?;
+            let heat = line.parse::<Heat>()?;
             instance.heats.push(heat);
         }
         Ok(instance)
@@ -75,7 +75,7 @@ impl FromStr for ResponseStartList {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let mut instance = ResponseStartList { boats: Vec::new() };
         for line in s.lines() {
-            let boat = Boat::from_str(line)?;
+            let boat = line.parse::<Boat>()?;
             instance.boats.push(boat);
         }
         Ok(instance)
@@ -270,7 +270,7 @@ mod tests {
     #[test]
     fn test_response_list_open_heats() {
         let message = "3 2766 4\n50 2767 4\n71 2786 4";
-        let response = ResponseListOpenHeats::from_str(message);
+        let response = message.parse::<ResponseListOpenHeats>();
         assert!(response.is_ok());
         let response = response.unwrap();
         assert_eq!(response.heats.len(), 3);
@@ -285,7 +285,7 @@ mod tests {
         assert_eq!(response.heats[2].state, 4);
 
         let message = "3 2766 4\n50 2767 4\n71 2786 4f";
-        assert!(ResponseListOpenHeats::from_str(message).is_err());
+        assert!(message.parse::<ResponseListOpenHeats>().is_err());
     }
 
     #[test]
@@ -300,10 +300,10 @@ mod tests {
     fn test_heat_from_str() {
         init();
 
-        assert!(Heat::from_str("50 1234 4 34").is_err());
-        assert!(Heat::from_str("50f 1234 4").is_err());
-        assert!(Heat::from_str("50 1234f 4").is_err());
-        assert!(Heat::from_str("50 1234 4f").is_err());
+        assert!("50 1234 4 34".parse::<Heat>().is_err());
+        assert!("50f 1234 4".parse::<Heat>().is_err());
+        assert!("50 1234f 4".parse::<Heat>().is_err());
+        assert!("50 1234 4f".parse::<Heat>().is_err());
     }
 
     #[test]
@@ -323,7 +323,7 @@ mod tests {
         let message =
             "1 1 0 'RV Neptun Konstanz'\n2 2 0 'RG Heidelberg'\n3 3 0 'Heidelberger RK'\n4 4 0 'Marbacher RV'"
                 .to_owned();
-        let response = ResponseStartList::from_str(&message);
+        let response = message.parse::<ResponseStartList>();
         assert!(response.is_ok());
         let response = response.unwrap();
         assert_eq!(response.boats.len(), 4);
@@ -348,7 +348,7 @@ mod tests {
 
     #[test]
     fn test_boat_from_str() {
-        let boat = Boat::from_str("1 12 0 'RV Neptun Konstanz'");
+        let boat = "1 12 0 'RV Neptun Konstanz'".parse::<Boat>();
         assert!(boat.is_ok());
         let boat = boat.unwrap();
         assert_eq!(boat.lane, 1);
@@ -356,7 +356,7 @@ mod tests {
         assert_eq!(boat.club, "RV Neptun Konstanz");
         assert_eq!(boat.state, 0);
 
-        assert!(Boat::from_str("1 12").is_err());
+        assert!("1 12".parse::<Boat>().is_err());
     }
 
     #[test]
@@ -382,7 +382,7 @@ mod tests {
     fn test_event_heat_changed_from_str() {
         init();
 
-        let event = EventHeatChanged::from_str("!OPEN+ 50 1234 4");
+        let event = "!OPEN+ 50 1234 4".parse::<EventHeatChanged>();
         assert!(event.is_ok());
         let event = event.unwrap();
         assert_eq!(event.heat.id, 1234);
@@ -390,7 +390,7 @@ mod tests {
         assert_eq!(event.heat.state, 4);
         assert!(event.opened);
 
-        let event = EventHeatChanged::from_str("!OPEN- 50 1234 4");
+        let event = "!OPEN- 50 1234 4".parse::<EventHeatChanged>();
         assert!(event.is_ok());
         let event = event.unwrap();
         assert_eq!(event.heat.id, 1234);
@@ -398,19 +398,19 @@ mod tests {
         assert_eq!(event.heat.state, 4);
         assert!(!event.opened);
 
-        let event = EventHeatChanged::from_str("!OPEN+ 50 1234");
+        let event = "!OPEN+ 50 1234".parse::<EventHeatChanged>();
         assert!(event.is_err());
 
-        let event = EventHeatChanged::from_str("!OPEN+ 50 1234 4 34");
+        let event = "!OPEN+ 50 1234 4 34".parse::<EventHeatChanged>();
         assert!(event.is_err());
 
-        let event = EventHeatChanged::from_str("!OPEN= 50 1234 4");
+        let event = "!OPEN= 50 1234 4".parse::<EventHeatChanged>();
         assert!(event.is_err());
-        let event = EventHeatChanged::from_str("!OPEN+ 50f 1234 4");
+        let event = "!OPEN+ 50f 1234 4".parse::<EventHeatChanged>();
         assert!(event.is_err());
-        let event = EventHeatChanged::from_str("!OPEN+ 50 1234f 4");
+        let event = "!OPEN+ 50 1234f 4".parse::<EventHeatChanged>();
         assert!(event.is_err());
-        let event = EventHeatChanged::from_str("!OPEN+ 50 1234 4f");
+        let event = "!OPEN+ 50 1234 4f".parse::<EventHeatChanged>();
         assert!(event.is_err());
     }
 }

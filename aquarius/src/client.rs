@@ -12,17 +12,14 @@ use crate::messages::ResponseStartList;
 use crate::utils;
 use ::db::timekeeper::Timestamp;
 use ::std::io;
-use ::std::str::FromStr;
-use ::std::{
-    net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream, ToSocketAddrs},
-    sync::{
-        Arc, Mutex,
-        atomic::{AtomicBool, Ordering::Relaxed},
-        mpsc::Sender,
-    },
-    thread::{self, JoinHandle},
-    time::{Duration, Instant},
+use ::std::net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream, ToSocketAddrs};
+use ::std::sync::{
+    Arc, Mutex,
+    atomic::{AtomicBool, Ordering::Relaxed},
+    mpsc::Sender,
 };
+use ::std::thread::{self, JoinHandle};
+use ::std::time::{Duration, Instant};
 use ::tracing::{debug, error, info, trace, warn};
 
 /// A client to connect to the Aquarius application.
@@ -67,7 +64,7 @@ impl AquariusClient {
         self.with_connection(|connection| {
             connection.write(&RequestListOpenHeats::default().to_string())?;
             let response = connection.receive_all()?;
-            let mut heats = ResponseListOpenHeats::from_str(&response)?;
+            let mut heats = response.parse::<ResponseListOpenHeats>()?;
             for heat in heats.heats.iter_mut() {
                 AquariusClient::read_start_list(connection, heat)?;
             }
@@ -155,7 +152,7 @@ impl AquariusClient {
     fn read_start_list(comm: &mut Connection, heat: &mut Heat) -> Result<(), AquariusErr> {
         comm.write(&RequestStartList::new(heat.id).to_string())?;
         let response = comm.receive_all()?;
-        let start_list = ResponseStartList::from_str(&response)?;
+        let start_list = response.parse::<ResponseStartList>()?;
         heat.boats = Some(start_list.boats);
         Ok(())
     }
@@ -204,7 +201,7 @@ fn spawn_event_thread(
                 Ok(received) => {
                     if !received.is_empty() && received.starts_with("!OPEN") {
                         // Parse the received line and handle the event
-                        match EventHeatChanged::from_str(&received) {
+                        match received.parse::<EventHeatChanged>() {
                             Ok(mut event) => {
                                 if event.opened {
                                     AquariusClient::read_start_list(&mut connection, &mut event.heat).unwrap();
