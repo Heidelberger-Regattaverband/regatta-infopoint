@@ -164,14 +164,15 @@ impl Heat {
     /// The heat with the given identifier
     pub async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let sql = format!(
-            "SELECT {0}, {1}, {2}, o.* FROM Comp c
+            "SELECT {0}, {1}, {2}, {3} FROM Comp c
             JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
             WHERE {ID} = @P1",
             Heat::select_columns("c"),
             AgeClass::select_minimal_columns("a"),
-            BoatClass::select_columns("b")
+            BoatClass::select_columns("b"),
+            Race::select_columns("o")
         );
 
         let mut query = Query::new(sql);
