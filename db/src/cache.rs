@@ -1,17 +1,13 @@
 use crate::aquarius::model::Notification;
-use crate::{
-    aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule},
-    error::DbError,
-};
+use crate::aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
+use crate::error::DbError;
 use ::futures::future::Future;
 use ::std::any::type_name;
+use ::std::fmt::Display;
+use ::std::hash::Hash;
 use ::std::mem;
-use ::std::{
-    fmt::Display,
-    hash::Hash,
-    sync::atomic::{AtomicU64, Ordering},
-    time::Duration,
-};
+use ::std::sync::atomic::{AtomicU64, Ordering};
+use ::std::time::Duration;
 use ::stretto::AsyncCache;
 use ::tokio::task;
 use ::tracing::debug;
@@ -25,10 +21,10 @@ use ::tracing::debug;
 /// - Thread-safe operations
 /// - Graceful error handling
 /// - Cache-aside pattern support
-pub struct Cache<K, V>
+pub(crate) struct Cache<K, V>
 where
     K: Hash + Eq + Send + Sync + Copy + 'static,
-    V: Send + Sync + Clone + 'static,
+    V: Send + Sync + Clone + CacheCost + 'static,
 {
     /// The underlying stretto cache
     cache: AsyncCache<K, V>,
@@ -43,7 +39,7 @@ where
 impl<K, V> Cache<K, V>
 where
     K: Hash + Eq + Send + Sync + Copy + 'static,
-    V: Send + Sync + Clone + 'static,
+    V: Send + Sync + Clone + CacheCost + 'static,
 {
     fn try_new(config: CacheConfig) -> Result<Self, DbError> {
         let cache = AsyncCache::new(config.max_entries, config.max_cost as i64, task::spawn)?;
@@ -90,7 +86,7 @@ where
     }
 
     async fn set(&self, key: &K, value: &V) -> Result<bool, DbError> {
-        let cost = mem::size_of::<V>() as i64;
+        let cost = value.cache_cost();
         self.set_with_cost(key, value, cost).await
     }
 
@@ -103,7 +99,7 @@ where
         Ok(result)
     }
 
-    pub async fn compute_if_missing<F, Fut, E>(&self, key: &K, force: bool, f: F) -> Result<V, DbError>
+    pub(crate) async fn compute_if_missing<F, Fut, E>(&self, key: &K, force: bool, f: F) -> Result<V, DbError>
     where
         F: FnOnce() -> Fut,
         Fut: Future<Output = Result<V, E>>,
@@ -129,7 +125,12 @@ where
         }
     }
 
-    pub async fn compute_if_missing_opt<F, Fut, E>(&self, key: &K, force: bool, f: F) -> Result<Option<V>, DbError>
+    pub(crate) async fn compute_if_missing_opt<F, Fut, E>(
+        &self,
+        key: &K,
+        force: bool,
+        f: F,
+    ) -> Result<Option<V>, DbError>
     where
         F: FnOnce() -> Fut,
         Fut: Future<Output = Result<Option<V>, E>>,
@@ -161,10 +162,55 @@ where
         }
     }
 
-    pub async fn invalidate(&self, key: &K) -> Result<(), DbError> {
+    pub(crate) async fn invalidate(&self, key: &K) -> Result<(), DbError> {
         self.cache.try_remove(key).await.map_err(DbError::CacheError)
     }
 }
+
+/// Trait for estimating the memory cost of a cached value.
+///
+/// Used by the cache to assign a meaningful cost for admission and eviction policies.
+/// Implementations should estimate the total memory footprint including heap allocations.
+pub(crate) trait CacheCost {
+    /// Returns the estimated memory cost in bytes.
+    fn cache_cost(&self) -> i64;
+}
+
+/// Blanket implementation for `Vec<T>` that accounts for heap-allocated elements.
+/// The cost includes the `Vec` stack overhead plus the estimated cost of each element.
+impl<T: CacheCost> CacheCost for Vec<T> {
+    fn cache_cost(&self) -> i64 {
+        let stack = mem::size_of::<Vec<T>>() as i64;
+        let heap: i64 = self.iter().map(|item| item.cache_cost()).sum();
+        stack + heap
+    }
+}
+
+/// Implements `CacheCost` for types where `mem::size_of` is a reasonable approximation.
+/// This covers model structs whose heap-allocated fields (e.g. `String`) are relatively small.
+macro_rules! impl_cache_cost {
+    ($($ty:ty),*) => {
+        $(
+            impl CacheCost for $ty {
+                fn cache_cost(&self) -> i64 {
+                    mem::size_of::<$ty>() as i64
+                }
+            }
+        )*
+    };
+}
+
+impl_cache_cost!(
+    Regatta,
+    Race,
+    Heat,
+    Club,
+    Athlete,
+    Entry,
+    Notification,
+    Filters,
+    Schedule
+);
 
 /// Container for all caches with improved organization, better error handling, and type safety
 ///
@@ -172,31 +218,31 @@ where
 /// - Per-regatta caches for regatta-scoped data
 /// - Composite key caches for entity relationships  
 /// - Individual entity caches for direct lookups
-pub struct Caches {
+pub(crate) struct Caches {
     // Caches with entries per regatta
-    pub regattas: Cache<i32, Regatta>,
-    pub races: Cache<i32, Vec<Race>>,
-    pub heats: Cache<i32, Vec<Heat>>,
-    pub clubs: Cache<i32, Vec<Club>>,
-    pub athletes: Cache<i32, Vec<Athlete>>,
-    pub filters: Cache<i32, Filters>,
-    pub schedule: Cache<i32, Schedule>,
+    pub(crate) regattas: Cache<i32, Regatta>,
+    pub(crate) races: Cache<i32, Vec<Race>>,
+    pub(crate) heats: Cache<i32, Vec<Heat>>,
+    pub(crate) clubs: Cache<i32, Vec<Club>>,
+    pub(crate) athletes: Cache<i32, Vec<Athlete>>,
+    pub(crate) filters: Cache<i32, Filters>,
+    pub(crate) schedule: Cache<i32, Schedule>,
 
     // Caches with composite keys (regatta_id, entity_id)
-    pub club_with_aggregations: Cache<(i32, i32), Club>,
-    pub club_entries: Cache<(i32, i32), Vec<Entry>>,
-    pub athlete_entries: Cache<(i32, i32), Vec<Entry>>,
+    pub(crate) club_with_aggregations: Cache<(i32, i32), Club>,
+    pub(crate) club_entries: Cache<(i32, i32), Vec<Entry>>,
+    pub(crate) athlete_entries: Cache<(i32, i32), Vec<Entry>>,
 
     // Caches with entries per race/heat/athlete
-    pub race_heats_entries: Cache<i32, Race>,
-    pub athlete: Cache<i32, Athlete>,
-    pub heat: Cache<i32, Heat>,
+    pub(crate) race_heats_entries: Cache<i32, Race>,
+    pub(crate) athlete: Cache<i32, Athlete>,
+    pub(crate) heat: Cache<i32, Heat>,
 
-    pub notifications: Cache<i32, Vec<Notification>>,
+    pub(crate) notifications: Cache<i32, Vec<Notification>>,
 }
 
 impl Caches {
-    pub fn try_new(ttl: Duration) -> Result<Self, DbError> {
+    pub(crate) fn try_new(ttl: Duration) -> Result<Self, DbError> {
         let config = CachesConfig::new(ttl);
 
         Ok(Caches {
