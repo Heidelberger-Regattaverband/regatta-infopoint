@@ -24,19 +24,18 @@
                 <Title text="{path:'raceEntries>/',formatter:'.formatter.nrRaceLabel'}" wrapping="true" />
               </f:heading>
               <f:expandedContent>
-                <Label text="{raceEntries>/longLabel} {raceEntries>/comment}" />
+                <VBox>
+                  <Label text="{raceEntries>/longLabel} {raceEntries>/comment}" />
+                  <ObjectStatus title="{i18n>common.state}" text="{path:'raceEntries>/',formatter:'.formatter.raceStateLabel'}"
+                    state="{path:'raceEntries>/',formatter:'.formatter.raceStateHighlight'}" class="bold" />
+                </VBox>
               </f:expandedContent>
               <f:actions>
                 <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press=".onRefreshButtonPress" type="Transparent"
                   text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" />
               </f:actions>
               <f:navigationActions />
-              <f:content>
-                <OverflowToolbar>
-                  <ObjectStatus title="{i18n>common.state}" text="{path:'raceEntries>/',formatter:'.formatter.raceStateLabel'}"
-                    state="{path:'raceEntries>/',formatter:'.formatter.raceStateHighlight'}" class="bold" />
-                </OverflowToolbar>
-              </f:content>
+              <f:content />
             </f:DynamicPageTitle>
           </f:title>
 
