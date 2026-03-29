@@ -18,23 +18,27 @@
           <!-- DynamicPage Title -->
           <f:title>
             <f:DynamicPageTitle>
-              <f:heading>
-                <Title wrapping="true"
-                  text="{path:'heatEntries>/race',formatter:'.formatter.nrRaceLabel'}, {path:'heatEntries>/',formatter:'.formatter.heatLabel'}" />
-              </f:heading>
-              <f:expandedContent>
+              <f:expandedHeading>
                 <VBox>
+                  <Title wrapping="true"
+                    text="{path:'heatEntries>/race',formatter:'.formatter.nrRaceLabel'}, {path:'heatEntries>/',formatter:'.formatter.heatLabel'}" />
                   <Label text="{heatEntries>/race/longLabel} {heatEntries>/race/comment}" />
                   <ObjectStatus title="{i18n>common.state}" text="{path:'heatEntries>/',formatter:'.formatter.heatStateLabel'}"
                     state="{path:'heatEntries>/',formatter:'.formatter.heatStateHighlight'}" class="bold" />
                 </VBox>
-              </f:expandedContent>
+              </f:expandedHeading>
+              <f:snappedHeading>
+                <VBox>
+                  <Title wrapping="true"
+                    text="{path:'heatEntries>/race',formatter:'.formatter.nrRaceLabel'}, {path:'heatEntries>/',formatter:'.formatter.heatLabel'}" />
+                  <ObjectStatus title="{i18n>common.state}" text="{path:'heatEntries>/',formatter:'.formatter.heatStateLabel'}"
+                    state="{path:'heatEntries>/',formatter:'.formatter.heatStateHighlight'}" class="bold" />
+                </VBox>
+              </f:snappedHeading>
               <f:actions>
                 <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press=".onRefreshButtonPress" type="Transparent"
                   text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" />
               </f:actions>
-              <f:navigationActions />
-              <f:content />
             </f:DynamicPageTitle>
           </f:title>
 
