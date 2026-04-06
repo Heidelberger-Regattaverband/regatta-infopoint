@@ -1,13 +1,14 @@
-import * as $ from "jquery";
+import $ from "jquery";
 import { Button$PressEvent } from "sap/m/Button";
+import { ComboBox$SelectionChangeEvent } from "sap/m/ComboBox";
 import Dialog from "sap/m/Dialog";
+import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import { Switch$ChangeEvent } from "sap/m/Switch";
 import Context from "sap/ui/model/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
-import { ComboBox$SelectionChangeEvent } from "sap/m/ComboBox";
 
 const MODEL_NOTIFICATIONS: string = "notifications";
 
@@ -67,9 +68,15 @@ export default class AdminController extends BaseController {
     const notification: any = context?.getObject();
 
     if (notification) {
-      this.currentNotificationId = notification.id;
-      const deleteDialog: Dialog = super.byId("deleteDialog") as Dialog;
-      deleteDialog.open();
+      MessageBox.confirm(super.i18n("admin.delete.message"), {
+        title: super.i18n("admin.delete.title"),
+        emphasizedAction: MessageBox.Action.CANCEL,
+        onClose: (action: any) => {
+          if (action === MessageBox.Action.OK) {
+            this.deleteNotification(notification.id);
+          }
+        }
+      });
     }
   }
 
@@ -114,16 +121,6 @@ export default class AdminController extends BaseController {
     this.closeDialog();
   }
 
-  onConfirmDelete(): void {
-    if (this.currentNotificationId) {
-      this.deleteNotification(this.currentNotificationId);
-    }
-    this.closeDeleteDialog();
-  }
-
-  onCancelDelete(): void {
-    this.closeDeleteDialog();
-  }
 
   private async loadNotifications(): Promise<void> {
     try {
@@ -256,10 +253,6 @@ export default class AdminController extends BaseController {
     dialog.close();
   }
 
-  private closeDeleteDialog(): void {
-    const deleteDialog: Dialog = super.byId("deleteDialog") as Dialog;
-    deleteDialog.close();
-  }
 
   navBack(): void {
     super.navBack("startpage");

@@ -85,18 +85,5 @@
       </endButton>
     </Dialog>
 
-    <!-- Delete Confirmation Dialog -->
-    <Dialog id="deleteDialog" title="{i18n>admin.delete.title}" type="Message" state="Warning">
-      <content>
-        <Text text="{i18n>admin.delete.message}" />
-      </content>
-      <beginButton>
-        <Button text="{i18n>common.delete}" press=".onConfirmDelete" type="Emphasized" />
-      </beginButton>
-      <endButton>
-        <Button text="{i18n>common.cancel}" press=".onCancelDelete" />
-      </endButton>
-    </Dialog>
-
   </mvc:content>
 </mvc:View>
