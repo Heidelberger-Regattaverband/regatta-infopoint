@@ -119,14 +119,14 @@
               <tileContent>
                 <TileContent>
                   <content>
-                    <ImageContent src="sap-icon://settings" />
+                    <ImageContent src="sap-icon://notification-2" />
                   </content>
                 </TileContent>
               </tileContent>
             </GenericTile>
 
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>monitoring.title}"
-              visible="{identity>/authenticated}" press=".onNavToMonitoring">
+              visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}" press=".onNavToMonitoring">
               <tileContent>
                 <TileContent>
                   <content>
