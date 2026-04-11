@@ -86,6 +86,12 @@
               </tileContent>
             </GenericTile>
 
+            <Bar visible="{identity>/authenticated}">
+              <contentLeft>
+                <Text text="{i18n>common.analytics}" class="bold" />
+              </contentLeft>
+            </Bar>
+
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.scoringTile.header}"
               visible="{identity>/authenticated}" press=".onNavToScoring">
               <tileContent>
