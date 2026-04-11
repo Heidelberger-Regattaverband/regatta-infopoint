@@ -18,7 +18,7 @@
           </headerToolbar>
           <columns>
             <Column importance="Medium" popinDisplay="Inline">
-              <Text text="{i18n>admin.column.title}" />
+              <Text text="{i18n>common.title}" />
             </Column>
             <Column hAlign="Center" width="7rem" importance="Low" popinDisplay="Inline">
               <Text text="{i18n>admin.column.priority}" />
@@ -60,7 +60,7 @@
     <Dialog id="notificationDialog" title="{i18n>admin.dialog.title}">
       <content>
         <VBox class="sapUiSmallMargin">
-          <Label text="{i18n>admin.dialog.title.label}" required="true" />
+          <Label text="{i18n>common.title}" required="true" />
           <Input id="titleInput" value="{dialog>/title}" placeholder="{i18n>admin.dialog.title.placeholder}" />
 
           <Label text="{i18n>admin.dialog.text.label}" />
