@@ -4,8 +4,8 @@
 
     <Page title="{i18n>admin.title}" showNavButton="true" navButtonPress=".navBack">
       <content>
-        <Table id="notificationsTable" items="{notifications>/}" growing="true" growingThreshold="50"
-          noDataText="{i18n>admin.noNotifications}" sticky="HeaderToolbar,ColumnHeaders" autoPopinMode="true">
+        <Table id="notificationsTable" items="{notifications>/}" growing="true" growingThreshold="50" sticky="HeaderToolbar,ColumnHeaders"
+          autoPopinMode="true">
           <headerToolbar>
             <OverflowToolbar>
               <Title text="{i18n>admin.notificationsTitle}" />
