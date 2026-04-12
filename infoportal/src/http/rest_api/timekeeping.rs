@@ -270,13 +270,12 @@ impl Handler<DeleteTimestamp> for TimekeepingActor {
 
     fn handle(&mut self, msg: DeleteTimestamp, ctx: &mut Self::Context) -> Self::Result {
         let time_strip = self.time_strip.clone();
-        let time = msg.time;
 
         ctx.wait(
             actix::fut::wrap_future(async move {
                 let mut time_strip = time_strip.write().await;
                 let timestamp = time_strip
-                    .delete(&time)
+                    .delete(&msg.time)
                     .await
                     .map_err(|err| format!("Failed to delete timestamp: {err}"))?;
                 Ok(timestamp)
@@ -298,21 +297,18 @@ impl Handler<UpdateTimestamp> for TimekeepingActor {
 
     fn handle(&mut self, msg: UpdateTimestamp, ctx: &mut Self::Context) -> Self::Result {
         let time_strip = self.time_strip.clone();
-        let time = msg.time;
-        let heat_nr = msg.heat_nr;
-
         ctx.wait(
             actix::fut::wrap_future(async move {
                 let mut time_strip = time_strip.write().await;
-                let timestamp = time_strip.get_by_time(&time).cloned();
+                let timestamp = time_strip.get_by_time(&msg.time).cloned();
                 if let Some(timestamp) = timestamp {
                     let timestamp = time_strip
-                        .set_heat_nr(&timestamp, heat_nr)
+                        .set_heat_nr(&timestamp, msg.heat_nr)
                         .await
                         .map_err(|err| format!("Failed to update timestamp heat number: {err}"))?;
                     Ok(timestamp)
                 } else {
-                    Err(format!("Timestamp with time {time} not found"))
+                    Err(format!("Timestamp with time {} not found", msg.time))
                 }
             })
             .map(
