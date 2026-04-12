@@ -20,7 +20,7 @@ use ::actix_web_actors::ws::ProtocolError;
 use ::actix_web_actors::ws::WebsocketContext;
 use ::aquarius::client::AquariusClient;
 use ::aquarius::event::AquariusEvent;
-use ::aquarius::messages::Heat;
+use ::aquarius::messages::Heat as AquariusHeat;
 use ::chrono::DateTime;
 use ::chrono::Utc;
 use ::db::aquarius::Aquarius;
@@ -74,7 +74,7 @@ enum TimekeepingCommand {
 #[derive(Debug, Serialize)]
 enum ServerEvent {
     /// Event to send the current heats open in Aquarius to the client
-    AquariusHeats { heats: Vec<Heat> },
+    AquariusHeats { heats: Vec<AquariusHeat> },
     /// Event to send the current timestrip data to the client
     Timestrip { time_stamps: Vec<Timestamp> },
     /// Event to send a single timestamp update to the client
@@ -124,7 +124,7 @@ struct TimekeepingActor {
     heart_beat: Instant,
     aquarius_client: Arc<AquariusClient>,
     aquarius_db: Data<Aquarius>,
-    heats: Arc<RwLock<Vec<Heat>>>,
+    heats: Arc<RwLock<Vec<AquariusHeat>>>,
     event_receiver: Option<Receiver<AquariusEvent>>,
     time_strip: Arc<::tokio::sync::RwLock<TimeStrip>>,
 }
@@ -368,7 +368,7 @@ async fn get_timekeeping_ws(
 fn receive_aquarius_events(
     receiver: Receiver<AquariusEvent>,
     aquarius_client: Arc<AquariusClient>,
-    heats: Arc<RwLock<Vec<Heat>>>,
+    heats: Arc<RwLock<Vec<AquariusHeat>>>,
     addr: Addr<TimekeepingActor>,
 ) {
     while let Ok(event) = receiver.recv() {
