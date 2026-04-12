@@ -109,7 +109,7 @@ impl<'a> From<MyTimeStamp<'a>> for ListItem<'a> {
             prefix,
             value.0.time.format(DATE_FORMAT_STR),
             value.0.heat_nr().unwrap_or_default(),
-            value.0.bib_opt().unwrap_or_default(),
+            value.0.bib().unwrap_or_default(),
             match value.0.is_persisted() {
                 true => "\u{1F506}",
                 false => "\u{1F329}",

@@ -61,6 +61,13 @@ enum TimekeepingCommand {
         /// The time of the timestamp to delete
         time: DateTime<Utc>,
     },
+    /// Update a timestamp with a new heat number
+    UpdateTimestamp {
+        /// The time of the timestamp to update
+        time: DateTime<Utc>,
+        /// The new heat number to set for the timestamp
+        heat_nr: i16,
+    },
     /// Get the current timestrip data
     GetTimestrip,
     /// Get the current heats open in Aquarius
@@ -76,7 +83,7 @@ enum ServerEvent {
     /// Event to send the current heats open in Aquarius to the client
     AquariusHeats { heats: Vec<AquariusHeat> },
     /// Event to send the current timestrip data to the client
-    Timestrip { time_stamps: Vec<Timestamp> },
+    TimeStrip { time_stamps: Vec<Timestamp> },
     /// Event to send a single timestamp update to the client
     Timestamp { timestamp: Timestamp },
     /// Event to send the current heats ready to start to the client
@@ -106,6 +113,15 @@ struct AddTimestamp {
 struct DeleteTimestamp {
     /// The time of the timestamp to delete
     time: DateTime<Utc>,
+}
+
+#[derive(ActixMessage)]
+#[rtype(result = "()")]
+struct UpdateTimestamp {
+    /// The time of the timestamp to update
+    time: DateTime<Utc>,
+    /// The new heat number to set for the timestamp
+    heat_nr: i16,
 }
 
 /// Message to trigger loading the current timestrip and sending it back to the client
@@ -182,6 +198,9 @@ impl StreamHandler<Result<Message, ProtocolError>> for TimekeepingActor {
                     TimekeepingCommand::AddFinish { time } => ctx.address().do_send(AddTimestamp { split: 64, time }),
                     TimekeepingCommand::GetTimestrip => ctx.address().do_send(GetTimestrip),
                     TimekeepingCommand::DeleteTimestamp { time } => ctx.address().do_send(DeleteTimestamp { time }),
+                    TimekeepingCommand::UpdateTimestamp { time, heat_nr } => {
+                        ctx.address().do_send(UpdateTimestamp { time, heat_nr })
+                    }
                     TimekeepingCommand::GetHeatsReadyToStart => ctx.address().do_send(GetHeatsReadyToStart),
                 },
                 Err(err) => {
@@ -274,6 +293,41 @@ impl Handler<DeleteTimestamp> for TimekeepingActor {
     }
 }
 
+impl Handler<UpdateTimestamp> for TimekeepingActor {
+    type Result = ();
+
+    fn handle(&mut self, msg: UpdateTimestamp, ctx: &mut Self::Context) -> Self::Result {
+        let time_strip = self.time_strip.clone();
+        let time = msg.time;
+        let heat_nr = msg.heat_nr;
+
+        ctx.wait(
+            actix::fut::wrap_future(async move {
+                let mut time_strip = time_strip.write().await;
+                let timestamp = time_strip.get_by_time(&time).cloned();
+                if let Some(timestamp) = timestamp {
+                    let timestamp = time_strip
+                        .set_heat_nr(&timestamp, heat_nr)
+                        .await
+                        .map_err(|err| format!("Failed to update timestamp heat number: {err}"))?;
+                    Ok(timestamp)
+                } else {
+                    Err(format!("Timestamp with time {time} not found"))
+                }
+            })
+            .map(
+                |result: Result<Timestamp, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
+                    let event = match result {
+                        Ok(timestamp) => ServerEvent::Timestamp { timestamp },
+                        Err(error) => ServerEvent::Error { error },
+                    };
+                    ctx.address().do_send(event);
+                },
+            ),
+        );
+    }
+}
+
 impl Handler<GetTimestrip> for TimekeepingActor {
     type Result = ();
 
@@ -288,7 +342,7 @@ impl Handler<GetTimestrip> for TimekeepingActor {
             .map(
                 |result: Result<Vec<Timestamp>, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
                     let event = match result {
-                        Ok(time_stamps) => ServerEvent::Timestrip { time_stamps },
+                        Ok(time_stamps) => ServerEvent::TimeStrip { time_stamps },
                         Err(error) => ServerEvent::Error { error },
                     };
                     ctx.address().do_send(event);

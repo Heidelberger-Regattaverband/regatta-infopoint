@@ -11,6 +11,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import BaseTableController from "./BaseTable.controller";
 import ListBinding from "sap/ui/model/ListBinding";
+import { ComboBox$ChangeEvent } from "sap/m/ComboBox";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -122,6 +123,18 @@ export default class TimekeepingController extends BaseTableController {
     }
   }
 
+  onHeatChange(event: ComboBox$ChangeEvent): void {
+    const heatNr: string = event.getParameter("value") || "";
+    const bindingCtx: Context | null | undefined = event.getSource().getBindingContext(TimekeepingController.TIMESTRIP_MODEL);
+    if (bindingCtx) {
+      const timestamp: any = bindingCtx.getModel().getProperty(bindingCtx.getPath());
+      if (timestamp) {
+        timestamp.heat_nr = heatNr;
+        this.sendCommand({ UpdateTimestamp: { time: timestamp.time, heat_nr: Number.parseInt(heatNr, 10) } });
+      }
+    }
+  }
+
   onItemChanged(item: any): void {
   }
 
@@ -158,8 +171,8 @@ export default class TimekeepingController extends BaseTableController {
         } else if (data.Timestamp) {
           this.updateTimestamp(data.Timestamp.timestamp);
           super.showInfoMessageToast("Timestamp added successfully");
-        } else if (data.Timestrip) {
-          super.getViewJSONModel(TimekeepingController.TIMESTRIP_MODEL).setData(data.Timestrip.time_stamps);
+        } else if (data.TimeStrip) {
+          super.getViewJSONModel(TimekeepingController.TIMESTRIP_MODEL).setData(data.TimeStrip.time_stamps);
           super.showInfoMessageToast("Timestrip retrieved successfully");
         } else if (data.HeatsReadyToStart) {
           super.getViewJSONModel(TimekeepingController.HEATS_MODEL).setData(data.HeatsReadyToStart.heats);
@@ -177,7 +190,7 @@ export default class TimekeepingController extends BaseTableController {
     if (timestampIndex >= 0) {
       existingTimestamps[timestampIndex] = timestamp;
     } else {
-      existingTimestamps.push(timestamp);
+      existingTimestamps.unshift(timestamp);
     }
     timestripModel.setData(existingTimestamps);
   }
