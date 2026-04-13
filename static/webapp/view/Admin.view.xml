@@ -4,8 +4,8 @@
 
     <Page title="{i18n>admin.title}" showNavButton="true" navButtonPress=".navBack">
       <content>
-        <Table id="notificationsTable" items="{notifications>/}" growing="true" growingThreshold="50"
-          noDataText="{i18n>admin.noNotifications}" sticky="HeaderToolbar,ColumnHeaders" autoPopinMode="true">
+        <Table id="notificationsTable" items="{notifications>/}" growing="true" growingThreshold="50" sticky="HeaderToolbar,ColumnHeaders"
+          autoPopinMode="true">
           <headerToolbar>
             <OverflowToolbar>
               <Title text="{i18n>admin.notificationsTitle}" />
@@ -18,7 +18,7 @@
           </headerToolbar>
           <columns>
             <Column importance="Medium" popinDisplay="Inline">
-              <Text text="{i18n>admin.column.title}" />
+              <Text text="{i18n>common.title}" />
             </Column>
             <Column hAlign="Center" width="7rem" importance="Low" popinDisplay="Inline">
               <Text text="{i18n>admin.column.priority}" />
@@ -46,7 +46,7 @@
                 <Switch state="{notifications>visible}" change=".onVisibilityChange" />
                 <Text text="{path:'notifications>modifiedAt',formatter:'.formatter.dateTime'}" />
                 <HBox>
-                  <Button icon="sap-icon://edit" press=".onEditNotification" tooltip="{i18n>common.edit}" type="Transparent" />
+                  <Button icon="sap-icon://edit" press=".onEditNotification" tooltip="{i18n>common.edit}" type="Default" />
                   <Button icon="sap-icon://delete" press=".onDeleteNotification" tooltip="{i18n>common.delete}" type="Reject" />
                 </HBox>
               </cells>
@@ -60,7 +60,7 @@
     <Dialog id="notificationDialog" title="{i18n>admin.dialog.title}">
       <content>
         <VBox class="sapUiSmallMargin">
-          <Label text="{i18n>admin.dialog.title.label}" required="true" />
+          <Label text="{i18n>common.title}" required="true" />
           <Input id="titleInput" value="{dialog>/title}" placeholder="{i18n>admin.dialog.title.placeholder}" />
 
           <Label text="{i18n>admin.dialog.text.label}" />

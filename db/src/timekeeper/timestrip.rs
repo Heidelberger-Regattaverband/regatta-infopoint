@@ -113,6 +113,11 @@ impl TimeStrip {
         self.time_stamps.get(index)
     }
 
+    /// Returns a reference to the time stamp with the given time.
+    pub fn get_by_time(&self, time: &DateTime<Utc>) -> Option<&Timestamp> {
+        self.time_stamps.iter().find(|timestamp| timestamp.time == *time)
+    }
+
     /// Returns a `Vec` containing clones of all time stamps.
     pub fn to_vec(&self) -> Vec<Timestamp> {
         self.time_stamps.clone().into()

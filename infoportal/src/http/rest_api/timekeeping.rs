@@ -20,7 +20,7 @@ use ::actix_web_actors::ws::ProtocolError;
 use ::actix_web_actors::ws::WebsocketContext;
 use ::aquarius::client::AquariusClient;
 use ::aquarius::event::AquariusEvent;
-use ::aquarius::messages::Heat;
+use ::aquarius::messages::Heat as AquariusHeat;
 use ::chrono::DateTime;
 use ::chrono::Utc;
 use ::db::aquarius::Aquarius;
@@ -61,6 +61,13 @@ enum TimekeepingCommand {
         /// The time of the timestamp to delete
         time: DateTime<Utc>,
     },
+    /// Update a timestamp with a new heat number
+    UpdateTimestamp {
+        /// The time of the timestamp to update
+        time: DateTime<Utc>,
+        /// The new heat number to set for the timestamp
+        heat_nr: i16,
+    },
     /// Get the current timestrip data
     GetTimestrip,
     /// Get the current heats open in Aquarius
@@ -74,9 +81,9 @@ enum TimekeepingCommand {
 #[derive(Debug, Serialize)]
 enum ServerEvent {
     /// Event to send the current heats open in Aquarius to the client
-    AquariusHeats { heats: Vec<Heat> },
+    AquariusHeats { heats: Vec<AquariusHeat> },
     /// Event to send the current timestrip data to the client
-    Timestrip { time_stamps: Vec<Timestamp> },
+    TimeStrip { time_stamps: Vec<Timestamp> },
     /// Event to send a single timestamp update to the client
     Timestamp { timestamp: Timestamp },
     /// Event to send the current heats ready to start to the client
@@ -108,6 +115,15 @@ struct DeleteTimestamp {
     time: DateTime<Utc>,
 }
 
+#[derive(ActixMessage)]
+#[rtype(result = "()")]
+struct UpdateTimestamp {
+    /// The time of the timestamp to update
+    time: DateTime<Utc>,
+    /// The new heat number to set for the timestamp
+    heat_nr: i16,
+}
+
 /// Message to trigger loading the current timestrip and sending it back to the client
 /// Direction: Server -> Server
 #[derive(ActixMessage)]
@@ -124,7 +140,7 @@ struct TimekeepingActor {
     heart_beat: Instant,
     aquarius_client: Arc<AquariusClient>,
     aquarius_db: Data<Aquarius>,
-    heats: Arc<RwLock<Vec<Heat>>>,
+    heats: Arc<RwLock<Vec<AquariusHeat>>>,
     event_receiver: Option<Receiver<AquariusEvent>>,
     time_strip: Arc<::tokio::sync::RwLock<TimeStrip>>,
 }
@@ -182,6 +198,9 @@ impl StreamHandler<Result<Message, ProtocolError>> for TimekeepingActor {
                     TimekeepingCommand::AddFinish { time } => ctx.address().do_send(AddTimestamp { split: 64, time }),
                     TimekeepingCommand::GetTimestrip => ctx.address().do_send(GetTimestrip),
                     TimekeepingCommand::DeleteTimestamp { time } => ctx.address().do_send(DeleteTimestamp { time }),
+                    TimekeepingCommand::UpdateTimestamp { time, heat_nr } => {
+                        ctx.address().do_send(UpdateTimestamp { time, heat_nr })
+                    }
                     TimekeepingCommand::GetHeatsReadyToStart => ctx.address().do_send(GetHeatsReadyToStart),
                 },
                 Err(err) => {
@@ -251,13 +270,12 @@ impl Handler<DeleteTimestamp> for TimekeepingActor {
 
     fn handle(&mut self, msg: DeleteTimestamp, ctx: &mut Self::Context) -> Self::Result {
         let time_strip = self.time_strip.clone();
-        let time = msg.time;
 
         ctx.wait(
             actix::fut::wrap_future(async move {
                 let mut time_strip = time_strip.write().await;
                 let timestamp = time_strip
-                    .delete(&time)
+                    .delete(&msg.time)
                     .await
                     .map_err(|err| format!("Failed to delete timestamp: {err}"))?;
                 Ok(timestamp)
@@ -268,6 +286,38 @@ impl Handler<DeleteTimestamp> for TimekeepingActor {
                         let event = ServerEvent::Error { error };
                         ctx.address().do_send(event);
                     }
+                },
+            ),
+        );
+    }
+}
+
+impl Handler<UpdateTimestamp> for TimekeepingActor {
+    type Result = ();
+
+    fn handle(&mut self, msg: UpdateTimestamp, ctx: &mut Self::Context) -> Self::Result {
+        let time_strip = self.time_strip.clone();
+        ctx.wait(
+            actix::fut::wrap_future(async move {
+                let mut time_strip = time_strip.write().await;
+                let timestamp = time_strip.get_by_time(&msg.time).cloned();
+                if let Some(timestamp) = timestamp {
+                    let timestamp = time_strip
+                        .set_heat_nr(&timestamp, msg.heat_nr)
+                        .await
+                        .map_err(|err| format!("Failed to update timestamp heat number: {err}"))?;
+                    Ok(timestamp)
+                } else {
+                    Err(format!("Timestamp with time {} not found", msg.time))
+                }
+            })
+            .map(
+                |result: Result<Timestamp, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
+                    let event = match result {
+                        Ok(timestamp) => ServerEvent::Timestamp { timestamp },
+                        Err(error) => ServerEvent::Error { error },
+                    };
+                    ctx.address().do_send(event);
                 },
             ),
         );
@@ -288,7 +338,7 @@ impl Handler<GetTimestrip> for TimekeepingActor {
             .map(
                 |result: Result<Vec<Timestamp>, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
                     let event = match result {
-                        Ok(time_stamps) => ServerEvent::Timestrip { time_stamps },
+                        Ok(time_stamps) => ServerEvent::TimeStrip { time_stamps },
                         Err(error) => ServerEvent::Error { error },
                     };
                     ctx.address().do_send(event);
@@ -368,7 +418,7 @@ async fn get_timekeeping_ws(
 fn receive_aquarius_events(
     receiver: Receiver<AquariusEvent>,
     aquarius_client: Arc<AquariusClient>,
-    heats: Arc<RwLock<Vec<Heat>>>,
+    heats: Arc<RwLock<Vec<AquariusHeat>>>,
     addr: Addr<TimekeepingActor>,
 ) {
     while let Ok(event) = receiver.recv() {

@@ -54,7 +54,7 @@ impl Timestamp {
         self.persisted
     }
 
-    pub fn set_heat_nr(&mut self, heat_nr: i16) {
+    pub(crate) fn set_heat_nr(&mut self, heat_nr: i16) {
         self.heat_nr = Some(heat_nr);
         self.persisted = false;
     }
@@ -63,12 +63,12 @@ impl Timestamp {
         self.heat_nr
     }
 
-    pub fn set_bib(&mut self, bib: u8) {
+    pub(crate) fn set_bib(&mut self, bib: u8) {
         self.bib = Some(bib);
         self.persisted = false;
     }
 
-    pub fn bib_opt(&self) -> Option<u8> {
+    pub fn bib(&self) -> Option<u8> {
         self.bib
     }
 
@@ -146,6 +146,9 @@ impl From<&Row> for Timestamp {
     }
 }
 
+const SPLIT_START: u8 = 0;
+const SPLIT_FINISH: u8 = 64;
+
 /// The type of a time stamp.
 #[derive(Debug, Clone, Display, Serialize, ToSchema)]
 pub enum Split {
@@ -161,8 +164,8 @@ pub enum Split {
 impl From<u8> for Split {
     fn from(value: u8) -> Self {
         match value {
-            0 => Self::Start,
-            64 => Self::Finish,
+            SPLIT_START => Self::Start,
+            SPLIT_FINISH => Self::Finish,
             _ => Self::Start,
         }
     }
@@ -171,8 +174,8 @@ impl From<u8> for Split {
 impl From<&Split> for u8 {
     fn from(split: &Split) -> Self {
         match split {
-            Split::Start => 0,
-            Split::Finish => 64,
+            Split::Start => SPLIT_START,
+            Split::Finish => SPLIT_FINISH,
         }
     }
 }

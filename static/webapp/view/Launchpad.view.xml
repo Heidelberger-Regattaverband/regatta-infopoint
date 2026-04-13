@@ -25,7 +25,6 @@
         </NotificationList>
         <layout:HorizontalLayout allowWrapping="true">
           <layout:content>
-
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>common.offerAndEntries}" press=".navToRaces">
               <tileContent>
                 <TileContent>
@@ -40,7 +39,7 @@
               <tileContent>
                 <TileContent>
                   <content>
-                    <ImageContent src="sap-icon://fob-watch" />
+                    <ImageContent src="sap-icon://time-account" />
                   </content>
                 </TileContent>
               </tileContent>
@@ -87,6 +86,12 @@
               </tileContent>
             </GenericTile>
 
+            <Bar visible="{identity>/authenticated}">
+              <contentLeft>
+                <Text text="{i18n>common.analytics}" class="bold" />
+              </contentLeft>
+            </Bar>
+
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.scoringTile.header}"
               visible="{identity>/authenticated}" press=".onNavToScoring">
               <tileContent>
@@ -109,8 +114,14 @@
               </tileContent>
             </GenericTile>
 
+            <Bar visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}">
+              <contentLeft>
+                <Text text="{i18n>admin.title}" class="bold" />
+              </contentLeft>
+            </Bar>
+
             <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>monitoring.title}"
-              visible="{identity>/authenticated}" press=".onNavToMonitoring">
+              visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}" press=".onNavToMonitoring">
               <tileContent>
                 <TileContent>
                   <content>
@@ -125,26 +136,24 @@
               <tileContent>
                 <TileContent>
                   <content>
-                    <ImageContent src="sap-icon://time-account" />
+                    <ImageContent src="sap-icon://fob-watch" />
                   </content>
                 </TileContent>
               </tileContent>
             </GenericTile>
-
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>admin.title}"
-              visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}" press=".navToAdmin">
-              <tileContent>
-                <TileContent>
-                  <content>
-                    <ImageContent src="sap-icon://settings" />
-                  </content>
-                </TileContent>
-              </tileContent>
-            </GenericTile>
-
           </layout:content>
-        </layout:HorizontalLayout>
 
+          <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>admin.notificationsTitle}"
+            visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}" press=".navToAdmin">
+            <tileContent>
+              <TileContent>
+                <content>
+                  <ImageContent src="sap-icon://notification-2" />
+                </content>
+              </TileContent>
+            </tileContent>
+          </GenericTile>
+        </layout:HorizontalLayout>
       </content>
     </Page>
 
