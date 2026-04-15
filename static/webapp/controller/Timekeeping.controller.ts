@@ -21,6 +21,7 @@ export default class TimekeepingController extends BaseTableController {
   private static readonly TIMESTRIP_MODEL: string = "timestrip";
   private static readonly AQUARIUS_HEATS_MODEL: string = "aquariusHeats";
   private static readonly HEATS_MODEL: string = "heats";
+  private static readonly BIBS_MODEL: string = "bibs";
 
   readonly formatter: Formatter = Formatter;
   private socket?: WebSocket;
@@ -36,6 +37,7 @@ export default class TimekeepingController extends BaseTableController {
     super.setViewModel(new JSONModel(), TimekeepingController.TIMESTRIP_MODEL);
     super.setViewModel(new JSONModel(), TimekeepingController.AQUARIUS_HEATS_MODEL);
     super.setViewModel(new JSONModel(), TimekeepingController.HEATS_MODEL);
+    super.setViewModel(new JSONModel(), TimekeepingController.BIBS_MODEL);
     super.getRouter()?.getRoute("timekeeping")?.attachMatched((_: Route$MatchedEvent) => {
       this.connect();
     }, this);
