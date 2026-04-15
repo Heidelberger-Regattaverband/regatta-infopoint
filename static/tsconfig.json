@@ -12,10 +12,9 @@
     "alwaysStrict": true,
     "rootDir": "./webapp",
     "allowSyntheticDefaultImports": true,
-    "baseUrl": "./",
     "paths": {
       "de/regatta_hd/infoportal/*": [
-        "webapp/*"
+        "./webapp/*"
       ]
     },
     "composite": true,
