@@ -11,6 +11,7 @@
     "strictNullChecks": true,
     "alwaysStrict": true,
     "rootDir": "./webapp",
+    "allowSyntheticDefaultImports": true,
     "baseUrl": "./",
     "paths": {
       "de/regatta_hd/infoportal/*": [
