@@ -176,34 +176,30 @@ impl App<'_> {
     #[allow(clippy::await_holding_refcell_ref)]
     async fn handle_ui_event(&mut self, event: Event) {
         match event {
-            Event::Key(key_event) => {
-                if key_event.kind == KeyEventKind::Press {
-                    match key_event.code {
-                        KeyCode::Tab => self.selected_tab = self.selected_tab.next(),
-                        KeyCode::Right => self.selected_tab = self.selected_tab.next(),
-                        KeyCode::Left => self.selected_tab = self.selected_tab.previous(),
-                        KeyCode::Char('q') => self.state = AppState::Quitting,
-                        KeyCode::Char('+') => {
-                            self.time_strip.borrow_mut().add_start(None).await.unwrap();
-                        }
-                        KeyCode::Char(' ') => {
-                            self.time_strip.borrow_mut().add_finish(None).await.unwrap();
-                        }
-                        KeyCode::Char('r') => self.read_open_heats(),
-                        _ => match self.selected_tab {
-                            SelectedTab::Heats => self.heats_tab.handle_key_event(key_event),
-                            SelectedTab::TimeStrip => {
-                                if *self.show_time_strip_popup.borrow() {
-                                    self.time_strip_popup.handle_key_event(key_event).await;
-                                } else {
-                                    self.time_strip_tab.handle_key_event(key_event).await;
-                                }
-                            }
-                            SelectedTab::Logs => self.logs_tab.handle_key_event(key_event),
-                        },
-                    }
+            Event::Key(key_event) if key_event.kind == KeyEventKind::Press => match key_event.code {
+                KeyCode::Tab => self.selected_tab = self.selected_tab.next(),
+                KeyCode::Right => self.selected_tab = self.selected_tab.next(),
+                KeyCode::Left => self.selected_tab = self.selected_tab.previous(),
+                KeyCode::Char('q') => self.state = AppState::Quitting,
+                KeyCode::Char('+') => {
+                    self.time_strip.borrow_mut().add_start(None).await.unwrap();
                 }
-            }
+                KeyCode::Char(' ') => {
+                    self.time_strip.borrow_mut().add_finish(None).await.unwrap();
+                }
+                KeyCode::Char('r') => self.read_open_heats(),
+                _ => match self.selected_tab {
+                    SelectedTab::Heats => self.heats_tab.handle_key_event(key_event),
+                    SelectedTab::TimeStrip => {
+                        if *self.show_time_strip_popup.borrow() {
+                            self.time_strip_popup.handle_key_event(key_event).await;
+                        } else {
+                            self.time_strip_tab.handle_key_event(key_event).await;
+                        }
+                    }
+                    SelectedTab::Logs => self.logs_tab.handle_key_event(key_event),
+                },
+            },
             Event::Mouse(mouse) => {
                 debug!("Mouse event: {mouse:?}");
             }
@@ -216,7 +212,7 @@ impl App<'_> {
         match event.opened {
             true => {
                 heats.push(event.heat);
-                heats.sort_by(|a, b| a.number.cmp(&b.number));
+                heats.sort_by_key(|a| a.number);
             }
             false => {
                 let index = heats.iter().position(|heat| heat.id == event.heat.id);
@@ -236,7 +232,7 @@ impl App<'_> {
                         heats.push(heat.clone());
                     }
                 });
-                heats.sort_by(|a, b| a.number.cmp(&b.number));
+                heats.sort_by_key(|a| a.number);
             }
             Err(err) => warn!("Error reading open heats: {err}"),
         };
