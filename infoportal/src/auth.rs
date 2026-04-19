@@ -81,7 +81,7 @@ impl User {
     /// * `Ok(User)` - The authenticated user.
     /// * `Err(HttpResponse)` - The error response.
     pub async fn authenticate(credentials: &Credentials) -> Result<Self, HttpResponse> {
-        let username = credentials.username.trim().to_lowercase().to_string();
+        let username = credentials.username.trim().to_lowercase();
 
         // get database config with given credentials
         let db_cfg = CONFIG.get_db_config_for_user(&username, credentials.password.value());

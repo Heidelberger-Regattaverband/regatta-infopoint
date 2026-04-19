@@ -31,3 +31,14 @@ cd static && npm run ts-typecheck
 - `Cargo.toml` - workspace root
 - `static/package.json` - UI5 frontend
 - `.env` - local env config
+
+# Code Review Guidelines
+- Focus on correctness, security, design, and maintainability.
+- For each issue, provide:
+  - A clear description of the problem
+  - The file and line number(s) where it occurs
+  - A suggested fix or improvement
+- Avoid nitpicks unless they impact readability or consistency.
+- Consider the overall architecture and how components interact.
+- Look for patterns of code duplication or inconsistency.
+- Consider Rust best practices and idiomatic usage.
