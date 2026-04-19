@@ -74,17 +74,17 @@ where
         }
     }
 
-    async fn get(&self, key: &K) -> Result<Option<V>, DbError> {
+    async fn get(&self, key: &K) -> Option<V> {
         match self.cache.get(key).await {
             Some(value_ref) => {
                 let value = value_ref.value().clone();
                 value_ref.release();
                 self.hits.fetch_add(1, Ordering::Relaxed);
-                Ok(Some(value))
+                Some(value)
             }
             None => {
                 self.misses.fetch_add(1, Ordering::Relaxed);
-                Ok(None)
+                None
             }
         }
     }
@@ -116,7 +116,7 @@ where
             self.set(key, &value).await?;
             Ok(value)
         } else {
-            match self.get(key).await? {
+            match self.get(key).await {
                 Some(value) => Ok(value),
                 None => {
                     let value = f()
@@ -150,7 +150,7 @@ where
             }
             Ok(value)
         } else {
-            match self.get(key).await? {
+            match self.get(key).await {
                 Some(value) => Ok(Some(value)),
                 None => {
                     let value = f()
