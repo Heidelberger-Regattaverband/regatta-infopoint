@@ -38,7 +38,7 @@ use ::tracing::{debug, info, warn};
 
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
-const INFOPORTAL_V2: &str = "{INFOPORTAL}2";
+const INFOPORTAL_V2: &str = "infoportal2";
 
 /// The server struct contains the configuration of the server.
 pub struct Server {}

@@ -26,12 +26,6 @@ The `infoportal` crate is an actix-web HTTP/HTTPS server serving a regatta infor
 
 ### Bugs / Correctness
 
-1. **`server.rs:41` – Broken string interpolation in `INFOPORTAL_V2`**
-   ```rust
-   const INFOPORTAL_V2: &str = "{INFOPORTAL}2";
-   ```
-   This is a literal string `"{INFOPORTAL}2"`, not an interpolated value. It should likely be `"infoportal2"` or constructed using `format!`. Since it's a `const`, `format!` can't be used — just hardcode `"infoportal2"`.
-
 2. **`auth.rs:74-75` – Unnecessary mutable default + clone_into**
    ```rust
    let mut username: String = Default::default();
