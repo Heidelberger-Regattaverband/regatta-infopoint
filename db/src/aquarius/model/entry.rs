@@ -4,6 +4,7 @@ use super::Heat;
 use super::Race;
 use super::TryToEntity;
 use super::get_rows;
+use crate::cache::heap_size::HeapSize;
 use crate::{
     error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
@@ -63,6 +64,12 @@ pub struct Entry {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[schema(no_recursion)]
     heats: Option<Vec<Heat>>,
+}
+
+impl HeapSize for Entry {
+    fn heap_size(&self) -> i64 {
+        self.comment.heap_size() + self.short_label.heap_size()
+    }
 }
 
 impl From<&Row> for Entry {

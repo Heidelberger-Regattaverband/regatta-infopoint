@@ -1,5 +1,9 @@
+pub(crate) mod cost;
+pub(crate) mod heap_size;
+
 use crate::aquarius::model::Notification;
 use crate::aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
+use crate::cache::cost::CacheCost;
 use crate::error::DbError;
 use ::futures::future::Future;
 use ::std::any::type_name;
@@ -166,51 +170,6 @@ where
         self.cache.try_remove(key).await.map_err(DbError::CacheError)
     }
 }
-
-/// Trait for estimating the memory cost of a cached value.
-///
-/// Used by the cache to assign a meaningful cost for admission and eviction policies.
-/// Implementations should estimate the total memory footprint including heap allocations.
-pub(crate) trait CacheCost {
-    /// Returns the estimated memory cost in bytes.
-    fn cache_cost(&self) -> i64;
-}
-
-/// Blanket implementation for `Vec<T>` that accounts for heap-allocated elements.
-/// The cost includes the `Vec` stack overhead plus the estimated cost of each element.
-impl<T: CacheCost> CacheCost for Vec<T> {
-    fn cache_cost(&self) -> i64 {
-        let stack = mem::size_of::<Vec<T>>() as i64;
-        let heap: i64 = self.iter().map(|item| item.cache_cost()).sum();
-        stack + heap
-    }
-}
-
-/// Implements `CacheCost` for types where `mem::size_of` is a reasonable approximation.
-/// This covers model structs whose heap-allocated fields (e.g. `String`) are relatively small.
-macro_rules! impl_cache_cost {
-    ($($ty:ty),*) => {
-        $(
-            impl CacheCost for $ty {
-                fn cache_cost(&self) -> i64 {
-                    mem::size_of::<$ty>() as i64
-                }
-            }
-        )*
-    };
-}
-
-impl_cache_cost!(
-    Regatta,
-    Race,
-    Heat,
-    Club,
-    Athlete,
-    Entry,
-    Notification,
-    Filters,
-    Schedule
-);
 
 /// Container for all caches with improved organization, better error handling, and type safety
 ///
