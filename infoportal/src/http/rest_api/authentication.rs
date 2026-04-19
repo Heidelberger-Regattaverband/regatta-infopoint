@@ -1,5 +1,5 @@
 use crate::auth::Credentials;
-use crate::auth::Scope as UserScope;
+use crate::auth::Scope;
 use crate::auth::User;
 use crate::http::rest_api::PATH;
 use crate::http::rest_api::into_internal_error;
@@ -80,10 +80,7 @@ async fn identity(identity: Option<Identity>) -> Result<impl Responder, Error> {
     if let Some(identity) = identity {
         match identity.id() {
             Ok(id) => {
-                let scope = match id.as_str() {
-                    "sa" | "admin" => UserScope::Admin,
-                    _ => UserScope::User,
-                };
+                let scope = Scope::from_username(&id);
                 Ok(Json(User::new(id, scope)))
             }
             Err(err) => {

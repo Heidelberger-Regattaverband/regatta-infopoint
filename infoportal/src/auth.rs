@@ -33,6 +33,16 @@ pub(crate) enum Scope {
     Admin,
 }
 
+impl Scope {
+    /// Determines the scope based on the username.
+    pub(crate) fn from_username(username: &str) -> Self {
+        match username {
+            "sa" | "admin" => Scope::Admin,
+            _ => Scope::User,
+        }
+    }
+}
+
 /// The user struct contains the username and the scope of the user.
 #[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -88,7 +98,7 @@ impl User {
         // ... and connect with credentials
         if let Ok(client) = Client::connect(db_cfg, tcp.compat_write()).await {
             let _ = client.close().await;
-            let scope: Scope = if username == "sa" { Scope::Admin } else { Scope::User };
+            let scope = Scope::from_username(&username);
             Ok(User { username, scope })
         } else {
             Err(HttpResponse::Unauthorized().json(User::new_guest()))
