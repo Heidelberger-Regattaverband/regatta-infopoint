@@ -1,15 +1,18 @@
+pub(crate) mod config;
 pub(crate) mod cost;
 pub(crate) mod heap_size;
 
 use crate::aquarius::model::Notification;
 use crate::aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
+use crate::cache::config::CacheConfig;
+use crate::cache::config::CachesConfig;
 use crate::cache::cost::CacheCost;
 use crate::error::DbError;
 use ::futures::future::Future;
 use ::std::any::type_name;
 use ::std::fmt::Display;
 use ::std::hash::Hash;
-use ::std::mem;
+
 use ::std::sync::atomic::{AtomicU64, Ordering};
 use ::std::time::Duration;
 use ::stretto::AsyncCache;
@@ -267,78 +270,6 @@ impl Caches {
             },
         }
     }
-}
-
-/// Configuration for all caches in the system with optimized defaults
-#[derive(Debug, Clone)]
-struct CachesConfig {
-    regattas: CacheConfig,
-    races: CacheConfig,
-    heats: CacheConfig,
-    clubs: CacheConfig,
-    athletes: CacheConfig,
-    notifications: CacheConfig,
-}
-
-impl CachesConfig {
-    /// Creates cache configurations with optimized settings for each data type
-    ///
-    /// # Arguments
-    /// * `base_ttl` - Base time-to-live applied to all caches
-    ///
-    /// # Returns
-    /// Configured cache settings optimized for regatta data patterns
-    pub(crate) fn new(base_ttl: Duration) -> Self {
-        // Constants based on typical regatta sizes and usage patterns
-        const MAX_REGATTAS_COUNT: usize = 3;
-        const MAX_RACES_COUNT: usize = 200;
-        const MAX_HEATS_COUNT: usize = 350;
-        const MAX_CLUBS_COUNT: usize = 100;
-        const MAX_NOTIFICATIONS_COUNT: usize = 10;
-        Self {
-            regattas: CacheConfig {
-                max_entries: MAX_REGATTAS_COUNT,
-                ttl: base_ttl,
-                max_cost: mem::size_of::<Regatta>() * MAX_REGATTAS_COUNT,
-            },
-            races: CacheConfig {
-                max_entries: MAX_RACES_COUNT,
-                ttl: base_ttl,
-                max_cost: mem::size_of::<Race>() * MAX_RACES_COUNT,
-            },
-            heats: CacheConfig {
-                max_entries: MAX_HEATS_COUNT,
-                ttl: base_ttl,
-                max_cost: mem::size_of::<Heat>() * MAX_HEATS_COUNT,
-            },
-            clubs: CacheConfig {
-                max_entries: MAX_CLUBS_COUNT,
-                ttl: base_ttl,
-                max_cost: mem::size_of::<Club>() * MAX_CLUBS_COUNT,
-            },
-            athletes: CacheConfig {
-                max_entries: MAX_RACES_COUNT,
-                ttl: base_ttl,
-                max_cost: mem::size_of::<Athlete>() * MAX_RACES_COUNT,
-            },
-            notifications: CacheConfig {
-                max_entries: MAX_NOTIFICATIONS_COUNT,
-                ttl: base_ttl,
-                max_cost: mem::size_of::<Notification>() * MAX_NOTIFICATIONS_COUNT,
-            },
-        }
-    }
-}
-
-/// Cache configuration with builder pattern support
-#[derive(Debug, Clone)]
-struct CacheConfig {
-    /// Maximum number of entries in the cache
-    max_entries: usize,
-    /// Time-to-live for cache entries
-    ttl: Duration,
-    /// Maximum cost for the cache (memory limit)
-    max_cost: usize,
 }
 
 /// Cache statistics for monitoring and debugging with actual tracking capabilities
