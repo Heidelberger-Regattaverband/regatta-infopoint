@@ -83,7 +83,7 @@ The `infoportal` crate is an actix-web HTTP/HTTPS server serving a regatta infor
     These WebSocket constants are defined in the REST API root module but only used by the WebSocket sub-modules. They should live closer to their usage or in a shared `ws` module.
 
 16. **Repetitive error handling pattern across handlers**
-    Every handler repeats `.map_err(|err| { error!("{err}"); ErrorInternalServerError(err) })`. Consider an `Into<actix_web::Error>` impl for `DbError` or a helper function to reduce boilerplate.
+    Every handler repeats `.map_err(|err| { error!("{err}"); ErrorInternalServerError(err) })`. Consider an `Into<actix_web::Error>` impl for `DbError` or a helper function to reduce boilerplate. ✅ Fixed – added `into_internal_error()` helper and applied across all handlers.
 
 17. **`notification.rs` – Inconsistent auth guard pattern**
     Some endpoints use `match identity { Some/None }` while others use `if identity.is_some()`. Pick one pattern for consistency. Consider an extractor or middleware for auth-required endpoints.
@@ -94,10 +94,6 @@ The `infoportal` crate is an actix-web HTTP/HTTPS server serving a regatta infor
 ### Minor / Cosmetic
 
 19. **`config.rs:15` – Stale doc comment** mentions `Config::get()` which doesn't exist.
-
-20. **`server.rs:194` – Typo** `get_prometeus` → `get_prometheus`. ✅ Fixed.
-
-21. **`api_doc.rs` – Missing `notification_read` endpoint** in OpenAPI paths list, though it's registered as a service. ✅ Fixed.
 
 22. **`build.rs`** not reviewed but uses `built` crate — standard pattern, no concerns.
 

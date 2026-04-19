@@ -1,5 +1,3 @@
-use super::CLIENT_TIMEOUT;
-use super::HEARTBEAT_INTERVAL;
 use crate::config::CONFIG;
 use crate::http::rest_api::get_user_pool;
 use ::actix::ActorFutureExt;
@@ -36,6 +34,7 @@ use ::std::sync::RwLock;
 use ::std::sync::mpsc;
 use ::std::sync::mpsc::Receiver;
 use ::std::thread;
+use ::std::time::Duration;
 use ::std::time::Instant;
 use ::tracing::debug;
 use ::tracing::error;
@@ -135,6 +134,11 @@ struct GetTimestrip;
 #[derive(ActixMessage)]
 #[rtype(result = "()")]
 struct GetHeatsReadyToStart;
+
+/// How often heartbeat pings are sent
+const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(2);
+/// How long before lack of client response causes a timeout
+const CLIENT_TIMEOUT: Duration = Duration::from_secs(5);
 
 struct TimekeepingActor {
     heart_beat: Instant,

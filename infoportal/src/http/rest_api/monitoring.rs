@@ -1,5 +1,3 @@
-use super::CLIENT_TIMEOUT;
-use super::HEARTBEAT_INTERVAL;
 use crate::http::monitoring::Monitoring;
 use ::actix::Actor;
 use ::actix::ActorContext;
@@ -14,9 +12,15 @@ use ::actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
 use ::db::aquarius::Aquarius;
 use ::db::tiberius::TiberiusPool;
 use ::serde::Serialize;
+use ::std::time::Duration;
 use ::std::time::Instant;
 use ::tracing::trace;
 use ::tracing::warn;
+
+/// How often heartbeat pings are sent
+const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(2);
+/// How long before lack of client response causes a timeout
+const CLIENT_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// Actor for monitoring.
 struct MonitoringActor {

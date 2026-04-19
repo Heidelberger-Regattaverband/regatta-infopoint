@@ -1,16 +1,15 @@
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
+use crate::http::rest_api::into_internal_error;
 use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::Responder;
-use ::actix_web::error::ErrorInternalServerError;
 use ::actix_web::error::ErrorUnauthorized;
 use ::actix_web::get;
 use ::actix_web::web::Data;
 use ::actix_web::web::Json;
 use ::actix_web::web::Path;
 use ::db::aquarius::Aquarius;
-use ::tracing::error;
 
 // Misc Endpoints
 
@@ -33,10 +32,7 @@ async fn get_statistics(
         let stats = aquarius
             .query_statistics(regatta_id.into_inner())
             .await
-            .map_err(|err| {
-                error!(%err, "Failed to query statistics");
-                ErrorInternalServerError(err)
-            })?;
+            .map_err(into_internal_error)?;
         Ok(Json(stats))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
@@ -62,10 +58,7 @@ async fn calculate_scoring(
         let scoring = aquarius
             .calculate_scoring(regatta_id.into_inner())
             .await
-            .map_err(|err| {
-                error!(%err, "Failed to calculate scoring");
-                ErrorInternalServerError(err)
-            })?;
+            .map_err(into_internal_error)?;
         Ok(Json(scoring))
     } else {
         Err(ErrorUnauthorized("Unauthorized"))
@@ -89,9 +82,6 @@ async fn get_schedule(
     let schedule = aquarius
         .query_schedule(regatta_id.into_inner(), identity.is_some())
         .await
-        .map_err(|err| {
-            error!(%err, "Failed to query schedule");
-            ErrorInternalServerError(err)
-        })?;
+        .map_err(into_internal_error)?;
     Ok(Json(schedule))
 }

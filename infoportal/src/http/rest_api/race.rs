@@ -1,16 +1,15 @@
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
+use crate::http::rest_api::into_internal_error;
 use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::Responder;
-use ::actix_web::error::ErrorInternalServerError;
 use ::actix_web::get;
 use ::actix_web::web::Data;
 use ::actix_web::web::Json;
 use ::actix_web::web::Path;
 use ::db::aquarius::Aquarius;
 use ::db::aquarius::model::Race;
-use ::tracing::error;
 
 #[utoipa::path(
     description = "Get all races of a regatta.",
@@ -29,10 +28,7 @@ async fn get_races(
     let races = aquarius
         .get_races(regatta_id.into_inner(), identity.is_some())
         .await
-        .map_err(|err| {
-            error!("{err}");
-            ErrorInternalServerError(err)
-        })?;
+        .map_err(into_internal_error)?;
     Ok(Json(races))
 }
 
@@ -53,9 +49,6 @@ async fn get_race(
     let race = aquarius
         .get_race_heats_entries(race_id.into_inner(), identity.is_some())
         .await
-        .map_err(|err| {
-            error!("{err}");
-            ErrorInternalServerError(err)
-        })?;
+        .map_err(into_internal_error)?;
     Ok(Json(race))
 }

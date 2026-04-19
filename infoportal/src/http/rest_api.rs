@@ -16,20 +16,21 @@ use ::actix_web::{
 };
 use ::db::aquarius::Aquarius;
 use ::db::aquarius::model::{Filters, Heat, Regatta};
+use ::db::error::DbError;
 use ::db::tiberius::TiberiusPool;
 use ::db::tiberius::user_pool::UserPoolManager;
 use ::std::sync::Arc;
-use ::std::time::Duration;
 use ::tracing::error;
 
 /// Path to REST API
 pub(crate) const PATH: &str = "/api";
 const INTERNAL_SERVER_ERROR: &str = "Internal server error";
 
-/// How often heartbeat pings are sent
-const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(2);
-/// How long before lack of client response causes a timeout
-const CLIENT_TIMEOUT: Duration = Duration::from_secs(5);
+/// Logs a `DbError` and converts it into an actix-web `Error` (500 Internal Server Error).
+pub(crate) fn into_internal_error(err: DbError) -> Error {
+    error!("{err}");
+    ErrorInternalServerError(err)
+}
 
 // Filters Endpoints
 #[utoipa::path(
@@ -49,10 +50,7 @@ async fn get_filters(
     let filters = aquarius
         .get_filters(regatta_id.into_inner(), identity.is_some())
         .await
-        .map_err(|err| {
-            error!("{err}");
-            ErrorInternalServerError(err)
-        })?;
+        .map_err(into_internal_error)?;
     Ok(Json(filters))
 }
 
@@ -68,10 +66,10 @@ async fn get_filters(
 )]
 #[get("/active_regatta")]
 async fn get_active_regatta(aquarius: Data<Aquarius>, identity: Option<Identity>) -> Result<impl Responder, Error> {
-    let regatta = aquarius.get_active_regatta(identity.is_some()).await.map_err(|err| {
-        error!("{err}");
-        ErrorInternalServerError(err)
-    })?;
+    let regatta = aquarius
+        .get_active_regatta(identity.is_some())
+        .await
+        .map_err(into_internal_error)?;
     if regatta.is_none() {
         return Err(ErrorNotFound("No active regatta found"));
     }
@@ -97,10 +95,7 @@ async fn get_heats(
     let heats = aquarius
         .get_heats(regatta_id.into_inner(), identity.is_some())
         .await
-        .map_err(|err| {
-            error!("{err}");
-            ErrorInternalServerError(err)
-        })?;
+        .map_err(into_internal_error)?;
     Ok(Json(heats))
 }
 
@@ -121,10 +116,7 @@ async fn get_heat(
     let heat = aquarius
         .get_heat(heat_id.into_inner(), identity.is_some())
         .await
-        .map_err(|err| {
-            error!("{err}");
-            ErrorInternalServerError(err)
-        })?;
+        .map_err(into_internal_error)?;
     Ok(Json(heat))
 }
 

@@ -1,13 +1,13 @@
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
 use crate::http::rest_api::get_user_pool;
+use crate::http::rest_api::into_internal_error;
 use ::actix_identity::Identity;
 use ::actix_session::Session;
 use ::actix_web::Error;
 use ::actix_web::HttpResponse;
 use ::actix_web::Responder;
 use ::actix_web::delete;
-use ::actix_web::error::ErrorInternalServerError;
 use ::actix_web::error::ErrorUnauthorized;
 use ::actix_web::get;
 use ::actix_web::post;
@@ -21,7 +21,6 @@ use ::db::tiberius::user_pool::UserPoolManager;
 use ::db::tiberius_client::time::chrono::DateTime;
 use ::db::tiberius_client::time::chrono::Utc;
 use ::serde_json::json;
-use ::tracing::error;
 
 #[utoipa::path(
     description = "Get visible notifications for a regatta.",
@@ -40,10 +39,7 @@ async fn get_visible_notifications(
     let visible_notifications = aquarius
         .get_visible_notifications(regatta_id.into_inner())
         .await
-        .map_err(|err| {
-            error!(%err, "Failed to get visible notifications");
-            ErrorInternalServerError(err)
-        })?;
+        .map_err(into_internal_error)?;
 
     let notifications: Vec<Notification> = visible_notifications
         .into_iter()
@@ -80,10 +76,7 @@ async fn get_all_notifications(
             let all_notifications = aquarius
                 .get_all_notifications(regatta_id.into_inner(), &user_pool)
                 .await
-                .map_err(|err| {
-                    error!(%err, "Failed to get all notifications");
-                    ErrorInternalServerError(err)
-                })?;
+                .map_err(into_internal_error)?;
             Ok(Json(all_notifications))
         }
         None => Err(ErrorUnauthorized("Unauthorized")),
@@ -122,10 +115,7 @@ async fn create_notification(
             let notification = aquarius
                 .create_notification(regatta_id.into_inner(), &request.into_inner(), &user_pool)
                 .await
-                .map_err(|err| {
-                    error!(%err, "Failed to create notification");
-                    ErrorInternalServerError(err)
-                })?;
+                .map_err(into_internal_error)?;
             Ok(HttpResponse::Created().json(notification))
         }
         None => Err(ErrorUnauthorized("Unauthorized")),
@@ -168,10 +158,7 @@ async fn update_notification(
             let notification = aquarius
                 .update_notification(notification_id.into_inner(), &request.into_inner(), &user_pool)
                 .await
-                .map_err(|err| {
-                    error!(%err, "Failed to update notification");
-                    ErrorInternalServerError(err)
-                })?;
+                .map_err(into_internal_error)?;
 
             match notification {
                 Some(notification) => Ok(HttpResponse::Ok().json(notification)),
@@ -206,10 +193,7 @@ async fn delete_notification(
             let deleted = aquarius
                 .delete_notification(notification_id.into_inner(), &user_pool)
                 .await
-                .map_err(|err| {
-                    error!(%err, "Failed to delete notification:");
-                    ErrorInternalServerError(err)
-                })?;
+                .map_err(into_internal_error)?;
 
             if deleted {
                 Ok(HttpResponse::NoContent().finish())
