@@ -71,7 +71,7 @@ impl User {
     /// * `Ok(User)` - The authenticated user.
     /// * `Err(HttpResponse)` - The error response.
     pub async fn authenticate(credentials: &Credentials) -> Result<Self, HttpResponse> {
-        let username = credentials.username.trim().to_string();
+        let username = credentials.username.trim().to_lowercase().to_string();
 
         // get database config with given credentials
         let db_cfg = CONFIG.get_db_config_for_user(&username, credentials.password.value());
@@ -88,15 +88,8 @@ impl User {
         // ... and connect with credentials
         if let Ok(client) = Client::connect(db_cfg, tcp.compat_write()).await {
             let _ = client.close().await;
-            let scope: Scope = if &credentials.username == "sa" {
-                Scope::Admin
-            } else {
-                Scope::User
-            };
-            Ok(User {
-                username: credentials.username.clone(),
-                scope,
-            })
+            let scope: Scope = if username == "sa" { Scope::Admin } else { Scope::User };
+            Ok(User { username, scope })
         } else {
             Err(HttpResponse::Unauthorized().json(User::new_guest()))
         }

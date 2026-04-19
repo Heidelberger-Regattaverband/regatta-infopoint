@@ -2,6 +2,7 @@ use crate::auth::Credentials;
 use crate::auth::Scope as UserScope;
 use crate::auth::User;
 use crate::http::rest_api::PATH;
+use crate::http::rest_api::into_internal_error;
 use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::HttpMessage;
@@ -42,12 +43,9 @@ async fn login(
                 return Err(ErrorInternalServerError("Failed to create session"));
             }
             user_pool_manager
-                .create_pool(&credentials.username, credentials.password.value())
+                .create_pool(&user.username, credentials.password.value())
                 .await
-                .map_err(|err| {
-                    error!(%err, user = user.username, "Failed to create user pool");
-                    ErrorInternalServerError("Failed to create user pool")
-                })?;
+                .map_err(into_internal_error)?;
             Ok(Json(user))
         }
         // authentication failed

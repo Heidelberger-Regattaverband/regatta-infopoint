@@ -29,9 +29,6 @@ The `infoportal` crate is an actix-web HTTP/HTTPS server serving a regatta infor
 3. **`auth.rs:92` – Hardcoded admin check against `"sa"`**
    The admin role is determined by comparing the username to `"sa"`. This is duplicated in `authentication.rs:85` where `"sa" | "admin"` is checked. These should be consistent and ideally configurable.
 
-4. **`auth.rs:98` – Uses untrimmed username for the `User` struct**
-   Line 75 trims the username into a local variable, but line 98 uses `credentials.username.clone()` (untrimmed). Should use the trimmed `username` variable instead.
-
 5. **`server.rs:157-163` – Dead wrap_fn middleware**
    The `wrap_fn` closure contains only commented-out print statements. It should be removed as it adds overhead for no purpose.
 
