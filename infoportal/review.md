@@ -60,12 +60,6 @@ The `infoportal` crate is an actix-web HTTP/HTTPS server serving a regatta infor
 15. **`rest_api.rs:30-32` – Constants `HEARTBEAT_INTERVAL` and `CLIENT_TIMEOUT` in wrong module**
     These WebSocket constants are defined in the REST API root module but only used by the WebSocket sub-modules. They should live closer to their usage or in a shared `ws` module.
 
-16. **Repetitive error handling pattern across handlers**
-    Every handler repeats `.map_err(|err| { error!("{err}"); ErrorInternalServerError(err) })`. Consider an `Into<actix_web::Error>` impl for `DbError` or a helper function to reduce boilerplate. ✅ Fixed – added `into_internal_error()` helper and applied across all handlers.
-
-17. **`notification.rs` – Inconsistent auth guard pattern**
-    Some endpoints use `match identity { Some/None }` while others use `if identity.is_some()`. Pick one pattern for consistency. Consider an extractor or middleware for auth-required endpoints.
-
 18. **Integration tests in `main.rs` require a live database**
     Tests (`test_get_regattas`, `test_get_heats`) connect to a real DB, making them integration tests that can't run in CI without infrastructure. Consider separating unit and integration tests.
 
