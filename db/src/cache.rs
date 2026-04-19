@@ -229,25 +229,22 @@ impl Caches {
     }
 
     pub fn get_summary_stats(&self) -> CacheStats {
-        let all_stats = {
-            let this = &self;
-            vec![
-                this.regattas.stats(),
-                this.races.stats(),
-                this.heats.stats(),
-                this.clubs.stats(),
-                this.athletes.stats(),
-                this.filters.stats(),
-                this.schedule.stats(),
-                this.club_with_aggregations.stats(),
-                this.club_entries.stats(),
-                this.athlete_entries.stats(),
-                this.race_heats_entries.stats(),
-                this.athlete.stats(),
-                this.heat.stats(),
-                this.notifications.stats(),
-            ]
-        };
+        let all_stats = vec![
+            self.regattas.stats(),
+            self.races.stats(),
+            self.heats.stats(),
+            self.clubs.stats(),
+            self.athletes.stats(),
+            self.filters.stats(),
+            self.schedule.stats(),
+            self.club_with_aggregations.stats(),
+            self.club_entries.stats(),
+            self.athlete_entries.stats(),
+            self.race_heats_entries.stats(),
+            self.athlete.stats(),
+            self.heat.stats(),
+            self.notifications.stats(),
+        ];
 
         let mut total_hits = 0;
         let mut total_misses = 0;
