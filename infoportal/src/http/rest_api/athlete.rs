@@ -1,6 +1,6 @@
+use crate::http::rest_api::ApiError;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
-use crate::http::rest_api::into_internal_error;
 use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::Responder;
@@ -29,7 +29,7 @@ async fn get_participating_athletes(
     let athletes = aquarius
         .get_participating_athletes(regatta_id.into_inner(), identity.is_some())
         .await
-        .map_err(into_internal_error)?;
+        .map_err(ApiError::from)?;
     Ok(Json(athletes))
 }
 
@@ -51,7 +51,7 @@ async fn get_athlete(
     let athletes = aquarius
         .get_athlete(regatta_id, athlete_id, identity.is_some())
         .await
-        .map_err(into_internal_error)?;
+        .map_err(ApiError::from)?;
     Ok(Json(athletes))
 }
 
@@ -73,6 +73,6 @@ async fn get_athlete_entries(
     let entries = aquarius
         .get_athlete_entries(regatta_id, athlete_id, identity.is_some())
         .await
-        .map_err(into_internal_error)?;
+        .map_err(ApiError::from)?;
     Ok(Json(entries))
 }

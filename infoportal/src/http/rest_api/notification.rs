@@ -1,14 +1,13 @@
+use crate::http::rest_api::ApiError;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
 use crate::http::rest_api::get_user_pool;
-use crate::http::rest_api::into_internal_error;
 use ::actix_identity::Identity;
 use ::actix_session::Session;
 use ::actix_web::Error;
 use ::actix_web::HttpResponse;
 use ::actix_web::Responder;
 use ::actix_web::delete;
-use ::actix_web::error::ErrorUnauthorized;
 use ::actix_web::get;
 use ::actix_web::post;
 use ::actix_web::put;
@@ -39,7 +38,7 @@ async fn get_visible_notifications(
     let visible_notifications = aquarius
         .get_visible_notifications(regatta_id.into_inner())
         .await
-        .map_err(into_internal_error)?;
+        .map_err(ApiError::from)?;
 
     let notifications: Vec<Notification> = visible_notifications
         .into_iter()
@@ -66,21 +65,16 @@ async fn get_visible_notifications(
 #[get("/regattas/{regatta_id}/notifications")]
 async fn get_all_notifications(
     regatta_id: Path<i32>,
-    identity: Option<Identity>,
+    identity: Identity,
     aquarius: Data<Aquarius>,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
-    match identity {
-        Some(identity) => {
-            let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
-            let all_notifications = aquarius
-                .get_all_notifications(regatta_id.into_inner(), &user_pool)
-                .await
-                .map_err(into_internal_error)?;
-            Ok(Json(all_notifications))
-        }
-        None => Err(ErrorUnauthorized("Unauthorized")),
-    }
+    let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
+    let all_notifications = aquarius
+        .get_all_notifications(regatta_id.into_inner(), &user_pool)
+        .await
+        .map_err(ApiError::from)?;
+    Ok(Json(all_notifications))
 }
 
 #[utoipa::path(
@@ -98,28 +92,23 @@ async fn get_all_notifications(
 async fn create_notification(
     regatta_id: Path<i32>,
     request: Json<CreateNotificationRequest>,
-    identity: Option<Identity>,
+    identity: Identity,
     aquarius: Data<Aquarius>,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
-    match identity {
-        Some(identity) => {
-            // Basic validation
-            if request.title.trim().is_empty() {
-                return Ok(HttpResponse::BadRequest().json(json!({
-                    "error": "Title cannot be empty"
-                })));
-            }
-
-            let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
-            let notification = aquarius
-                .create_notification(regatta_id.into_inner(), &request.into_inner(), &user_pool)
-                .await
-                .map_err(into_internal_error)?;
-            Ok(HttpResponse::Created().json(notification))
-        }
-        None => Err(ErrorUnauthorized("Unauthorized")),
+    // Basic validation
+    if request.title.trim().is_empty() {
+        return Ok(HttpResponse::BadRequest().json(json!({
+            "error": "Title cannot be empty"
+        })));
     }
+
+    let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
+    let notification = aquarius
+        .create_notification(regatta_id.into_inner(), &request.into_inner(), &user_pool)
+        .await
+        .map_err(ApiError::from)?;
+    Ok(HttpResponse::Created().json(notification))
 }
 
 #[utoipa::path(
@@ -138,36 +127,31 @@ async fn create_notification(
 async fn update_notification(
     notification_id: Path<i32>,
     request: Json<UpdateNotificationRequest>,
-    identity: Option<Identity>,
+    identity: Identity,
     aquarius: Data<Aquarius>,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
-    match identity {
-        Some(identity) => {
-            // Basic validation
-            if let Some(ref title) = request.title
-                && title.trim().is_empty()
-            {
-                return Ok(HttpResponse::BadRequest().json(json!({
-                    "error": "Title cannot be empty"
-                })));
-            }
+    // Basic validation
+    if let Some(ref title) = request.title
+        && title.trim().is_empty()
+    {
+        return Ok(HttpResponse::BadRequest().json(json!({
+            "error": "Title cannot be empty"
+        })));
+    }
 
-            let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
+    let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
 
-            let notification = aquarius
-                .update_notification(notification_id.into_inner(), &request.into_inner(), &user_pool)
-                .await
-                .map_err(into_internal_error)?;
+    let notification = aquarius
+        .update_notification(notification_id.into_inner(), &request.into_inner(), &user_pool)
+        .await
+        .map_err(ApiError::from)?;
 
-            match notification {
-                Some(notification) => Ok(HttpResponse::Ok().json(notification)),
-                None => Ok(HttpResponse::NotFound().json(json!({
-                    "error": "Notification not found"
-                }))),
-            }
-        }
-        None => Err(ErrorUnauthorized("Unauthorized")),
+    match notification {
+        Some(notification) => Ok(HttpResponse::Ok().json(notification)),
+        None => Ok(HttpResponse::NotFound().json(json!({
+            "error": "Notification not found"
+        }))),
     }
 }
 
@@ -183,27 +167,22 @@ async fn update_notification(
 #[delete("/notifications/{notification_id}")]
 async fn delete_notification(
     notification_id: Path<i32>,
-    identity: Option<Identity>,
+    identity: Identity,
     aquarius: Data<Aquarius>,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
-    match identity {
-        Some(identity) => {
-            let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
-            let deleted = aquarius
-                .delete_notification(notification_id.into_inner(), &user_pool)
-                .await
-                .map_err(into_internal_error)?;
+    let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
+    let deleted = aquarius
+        .delete_notification(notification_id.into_inner(), &user_pool)
+        .await
+        .map_err(ApiError::from)?;
 
-            if deleted {
-                Ok(HttpResponse::NoContent().finish())
-            } else {
-                Ok(HttpResponse::NotFound().json(json!({
-                    "error": "Notification not found"
-                })))
-            }
-        }
-        None => Err(ErrorUnauthorized("Unauthorized")),
+    if deleted {
+        Ok(HttpResponse::NoContent().finish())
+    } else {
+        Ok(HttpResponse::NotFound().json(json!({
+            "error": "Notification not found"
+        })))
     }
 }
 

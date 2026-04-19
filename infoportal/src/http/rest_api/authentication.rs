@@ -1,8 +1,8 @@
 use crate::auth::Credentials;
 use crate::auth::Scope;
 use crate::auth::User;
+use crate::http::rest_api::ApiError;
 use crate::http::rest_api::PATH;
-use crate::http::rest_api::into_internal_error;
 use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::HttpMessage;
@@ -45,7 +45,7 @@ async fn login(
             user_pool_manager
                 .create_pool(&user.username, credentials.password.value())
                 .await
-                .map_err(into_internal_error)?;
+                .map_err(ApiError::from)?;
             Ok(Json(user))
         }
         // authentication failed

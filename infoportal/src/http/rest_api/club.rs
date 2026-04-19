@@ -1,6 +1,6 @@
+use crate::http::rest_api::ApiError;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
-use crate::http::rest_api::into_internal_error;
 use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::Responder;
@@ -29,7 +29,7 @@ async fn get_participating_clubs(
     let clubs = aquarius
         .get_participating_clubs(regatta_id.into_inner(), identity.is_some())
         .await
-        .map_err(into_internal_error)?;
+        .map_err(ApiError::from)?;
     Ok(Json(clubs))
 }
 
@@ -51,7 +51,7 @@ async fn get_club_entries(
     let entries = aquarius
         .get_club_entries(regatta_id, club_id, identity.is_some())
         .await
-        .map_err(into_internal_error)?;
+        .map_err(ApiError::from)?;
     Ok(Json(entries))
 }
 
@@ -73,6 +73,6 @@ async fn get_regatta_club(
     let club = aquarius
         .get_regatta_club(regatta_id, club_id, identity.is_some())
         .await
-        .map_err(into_internal_error)?;
+        .map_err(ApiError::from)?;
     Ok(Json(club))
 }

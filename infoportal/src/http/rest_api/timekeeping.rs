@@ -8,7 +8,6 @@ use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::HttpRequest;
 use ::actix_web::HttpResponse;
-use ::actix_web::error::ErrorUnauthorized;
 use ::actix_web::get;
 use ::actix_web::web::Data;
 use ::actix_web::web::Payload;
@@ -406,17 +405,13 @@ impl Actor for TimekeepingActor {
 async fn get_timekeeping_ws(
     request: HttpRequest,
     stream: Payload,
-    identity: Option<Identity>,
+    identity: Identity,
     aquarius_db: Data<Aquarius>,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<HttpResponse, Error> {
-    if let Some(ref identity) = identity {
-        let pool = get_user_pool(identity, &user_pool_manager).await?;
-        let actor = TimekeepingActor::new(pool, aquarius_db.clone()).await;
-        ws::start(actor, &request, stream)
-    } else {
-        Err(ErrorUnauthorized("Unauthorized"))
-    }
+    let pool = get_user_pool(&identity, &user_pool_manager).await?;
+    let actor = TimekeepingActor::new(pool, aquarius_db.clone()).await;
+    ws::start(actor, &request, stream)
 }
 
 fn receive_aquarius_events(

@@ -7,7 +7,7 @@ use ::actix::Message as ActixMessage;
 use ::actix::StreamHandler;
 use ::actix_identity::Identity;
 use ::actix_web::web::{Data, Payload};
-use ::actix_web::{Error, HttpRequest, HttpResponse, error::ErrorUnauthorized, get};
+use ::actix_web::{Error, HttpRequest, HttpResponse, get};
 use ::actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
 use ::db::aquarius::Aquarius;
 use ::db::tiberius::TiberiusPool;
@@ -117,12 +117,8 @@ async fn index(
     request: HttpRequest,
     stream: Payload,
     aquarius: Data<Aquarius>,
-    identity: Option<Identity>,
+    _identity: Identity,
 ) -> Result<HttpResponse, Error> {
-    if identity.is_some() {
-        let monitoring_actor = MonitoringActor::new(aquarius);
-        start(monitoring_actor, &request, stream)
-    } else {
-        Err(ErrorUnauthorized("Unauthorized"))
-    }
+    let monitoring_actor = MonitoringActor::new(aquarius);
+    start(monitoring_actor, &request, stream)
 }

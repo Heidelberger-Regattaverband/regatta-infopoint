@@ -1,6 +1,6 @@
+use crate::http::rest_api::ApiError;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
-use crate::http::rest_api::into_internal_error;
 use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::Responder;
@@ -28,7 +28,7 @@ async fn get_races(
     let races = aquarius
         .get_races(regatta_id.into_inner(), identity.is_some())
         .await
-        .map_err(into_internal_error)?;
+        .map_err(ApiError::from)?;
     Ok(Json(races))
 }
 
@@ -49,6 +49,6 @@ async fn get_race(
     let race = aquarius
         .get_race_heats_entries(race_id.into_inner(), identity.is_some())
         .await
-        .map_err(into_internal_error)?;
+        .map_err(ApiError::from)?;
     Ok(Json(race))
 }
