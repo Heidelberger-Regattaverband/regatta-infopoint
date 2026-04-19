@@ -66,7 +66,7 @@ impl Server {
         let http_app_content_path = CONFIG.http_app_content_path.clone();
 
         let worker_count = Arc::new(Mutex::new(0));
-        let prometheus = Self::get_prometeus();
+        let prometheus = Self::get_prometheus();
 
         let user_pool_manager = Data::new(UserPoolManager::new(CONFIG.get_db_config()));
 
@@ -191,7 +191,7 @@ impl Server {
     /// `Arc<PrometheusMetrics>` - The prometheus metrics.
     /// # Panics
     /// If the prometheus metrics can't be created.
-    fn get_prometeus() -> Arc<PrometheusMetrics> {
+    fn get_prometheus() -> Arc<PrometheusMetrics> {
         Arc::new(
             PrometheusMetricsBuilder::new("api")
                 .registry(Registry::new())

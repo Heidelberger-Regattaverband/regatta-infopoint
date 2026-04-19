@@ -29,6 +29,7 @@ use ::utoipa_swagger_ui::SwaggerUi;
         rest_api::notification::create_notification,
         rest_api::notification::update_notification,
         rest_api::notification::delete_notification,
+        rest_api::notification::notification_read,
     ),
     tags(
         (name = "regatta-infopoint", description = "Regatta Infopoint REST Endpoints.")
