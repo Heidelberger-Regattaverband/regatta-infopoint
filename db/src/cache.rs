@@ -1,5 +1,9 @@
+pub(crate) mod cost;
+pub(crate) mod heap_size;
+
 use crate::aquarius::model::Notification;
 use crate::aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
+use crate::cache::cost::CacheCost;
 use crate::error::DbError;
 use ::futures::future::Future;
 use ::std::any::type_name;
@@ -70,17 +74,17 @@ where
         }
     }
 
-    async fn get(&self, key: &K) -> Result<Option<V>, DbError> {
+    async fn get(&self, key: &K) -> Option<V> {
         match self.cache.get(key).await {
             Some(value_ref) => {
                 let value = value_ref.value().clone();
                 value_ref.release();
                 self.hits.fetch_add(1, Ordering::Relaxed);
-                Ok(Some(value))
+                Some(value)
             }
             None => {
                 self.misses.fetch_add(1, Ordering::Relaxed);
-                Ok(None)
+                None
             }
         }
     }
@@ -112,7 +116,7 @@ where
             self.set(key, &value).await?;
             Ok(value)
         } else {
-            match self.get(key).await? {
+            match self.get(key).await {
                 Some(value) => Ok(value),
                 None => {
                     let value = f()
@@ -146,7 +150,7 @@ where
             }
             Ok(value)
         } else {
-            match self.get(key).await? {
+            match self.get(key).await {
                 Some(value) => Ok(Some(value)),
                 None => {
                     let value = f()
@@ -166,51 +170,6 @@ where
         self.cache.try_remove(key).await.map_err(DbError::CacheError)
     }
 }
-
-/// Trait for estimating the memory cost of a cached value.
-///
-/// Used by the cache to assign a meaningful cost for admission and eviction policies.
-/// Implementations should estimate the total memory footprint including heap allocations.
-pub(crate) trait CacheCost {
-    /// Returns the estimated memory cost in bytes.
-    fn cache_cost(&self) -> i64;
-}
-
-/// Blanket implementation for `Vec<T>` that accounts for heap-allocated elements.
-/// The cost includes the `Vec` stack overhead plus the estimated cost of each element.
-impl<T: CacheCost> CacheCost for Vec<T> {
-    fn cache_cost(&self) -> i64 {
-        let stack = mem::size_of::<Vec<T>>() as i64;
-        let heap: i64 = self.iter().map(|item| item.cache_cost()).sum();
-        stack + heap
-    }
-}
-
-/// Implements `CacheCost` for types where `mem::size_of` is a reasonable approximation.
-/// This covers model structs whose heap-allocated fields (e.g. `String`) are relatively small.
-macro_rules! impl_cache_cost {
-    ($($ty:ty),*) => {
-        $(
-            impl CacheCost for $ty {
-                fn cache_cost(&self) -> i64 {
-                    mem::size_of::<$ty>() as i64
-                }
-            }
-        )*
-    };
-}
-
-impl_cache_cost!(
-    Regatta,
-    Race,
-    Heat,
-    Club,
-    Athlete,
-    Entry,
-    Notification,
-    Filters,
-    Schedule
-);
 
 /// Container for all caches with improved organization, better error handling, and type safety
 ///
@@ -270,25 +229,22 @@ impl Caches {
     }
 
     pub fn get_summary_stats(&self) -> CacheStats {
-        let all_stats = {
-            let this = &self;
-            vec![
-                this.regattas.stats(),
-                this.races.stats(),
-                this.heats.stats(),
-                this.clubs.stats(),
-                this.athletes.stats(),
-                this.filters.stats(),
-                this.schedule.stats(),
-                this.club_with_aggregations.stats(),
-                this.club_entries.stats(),
-                this.athlete_entries.stats(),
-                this.race_heats_entries.stats(),
-                this.athlete.stats(),
-                this.heat.stats(),
-                this.notifications.stats(),
-            ]
-        };
+        let all_stats = vec![
+            self.regattas.stats(),
+            self.races.stats(),
+            self.heats.stats(),
+            self.clubs.stats(),
+            self.athletes.stats(),
+            self.filters.stats(),
+            self.schedule.stats(),
+            self.club_with_aggregations.stats(),
+            self.club_entries.stats(),
+            self.athlete_entries.stats(),
+            self.race_heats_entries.stats(),
+            self.athlete.stats(),
+            self.heat.stats(),
+            self.notifications.stats(),
+        ];
 
         let mut total_hits = 0;
         let mut total_misses = 0;

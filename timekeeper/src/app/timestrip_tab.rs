@@ -65,12 +65,11 @@ impl TimeStripTab {
             KeyCode::Home => self.state.select_first(),
             KeyCode::End => self.state.select_last(),
             KeyCode::Char('h') => self.state.select(None),
-            KeyCode::Enter => {
+            KeyCode::Enter
                 // open popup if a time stamp is selected
-                if self.state.selected().is_some() {
+                if self.state.selected().is_some() => {
                     *self.show_time_strip_popup.borrow_mut() = true;
                 }
-            }
             KeyCode::Delete => {
                 // delete the selected time stamp
                 if let Some(timestamp) = self.selected_time_stamp.borrow_mut().take() {

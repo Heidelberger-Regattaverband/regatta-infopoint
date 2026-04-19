@@ -1,4 +1,5 @@
 use super::get_rows;
+use crate::cache::heap_size::HeapSize;
 use crate::tiberius::TiberiusClient;
 use crate::{
     error::DbError,
@@ -46,6 +47,18 @@ pub struct ScheduleEntry {
     /// The date and time when the forerun starts
     #[serde(skip_serializing_if = "Option::is_none")]
     forerun_start: Option<DateTime<Utc>>,
+}
+
+impl HeapSize for Schedule {
+    fn heap_size(&self) -> i64 {
+        self.entries.iter().map(|e| e.heap_size()).sum::<i64>()
+    }
+}
+
+impl HeapSize for ScheduleEntry {
+    fn heap_size(&self) -> i64 {
+        self.race_number.heap_size() + self.race_short_label.heap_size()
+    }
 }
 
 impl From<&Row> for ScheduleEntry {

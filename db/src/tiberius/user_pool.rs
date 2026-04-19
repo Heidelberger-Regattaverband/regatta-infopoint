@@ -54,7 +54,7 @@ impl UserPoolManager {
 
     /// Remove a user's connection pool (e.g., on logout)
     #[allow(dead_code)]
-    pub async fn remove_pool(&self, username: &String) {
+    pub async fn remove_pool(&self, username: &str) {
         let mut pools = self.pools.write().await;
         pools.remove(username);
     }

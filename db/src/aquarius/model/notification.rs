@@ -1,5 +1,6 @@
 use super::get_row;
 use super::get_rows;
+use crate::cache::heap_size::HeapSize;
 use crate::error::DbError;
 use crate::tiberius::RowColumn;
 use crate::tiberius::TiberiusClient;
@@ -45,6 +46,12 @@ pub struct Notification {
 
     /// The identifier of the associated event.
     pub event_id: i32,
+}
+
+impl HeapSize for Notification {
+    fn heap_size(&self) -> i64 {
+        self.title.heap_size() + self.text.heap_size()
+    }
 }
 
 /// Request structure for creating a new notification.
