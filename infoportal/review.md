@@ -82,7 +82,7 @@ The `infoportal` crate is an actix-web HTTP/HTTPS server serving a regatta infor
     `get_filters`, `get_active_regatta`, `get_heats`, `get_heat` live in the root `rest_api.rs` while similar handlers are in sub-modules. Consider moving them to dedicated sub-modules (e.g., `regatta.rs`, `heat.rs`) for consistency.
 
 16. **`monitoring.rs` (actor) – Local `HEARTBEAT_INTERVAL` and `CLIENT_TIMEOUT` constants**
-    Both `monitoring.rs` and `timekeeping.rs` define their own heartbeat/timeout constants with the same names but different values. Consider extracting shared defaults or documenting the intentional differences.
+    Both `monitoring.rs` and `timekeeping.rs` define their own heartbeat/timeout constants with the same names but different values. Consider extracting shared defaults or documenting the intentional differences. ✅ Fixed – extracted `WS_HEARTBEAT_INTERVAL` and `WS_CLIENT_TIMEOUT` into `rest_api.rs` and both modules now reference them.
 
 ## Summary
 The module is well-organized with good separation of concerns. Previous review items have been addressed: error handling uses `ApiError`, admin checks are centralized, auth guards are consistent, `INFOPORTAL_V2` string is fixed, `db_password` uses `SecretString`, and username trimming is correct. Remaining areas for improvement are: removing dead code (`wrap_fn`), avoiding blocking calls in async contexts (monitoring sleep, `std::sync::mpsc`), handling `unwrap()` panics in actor initialization, and the session key generation strategy.

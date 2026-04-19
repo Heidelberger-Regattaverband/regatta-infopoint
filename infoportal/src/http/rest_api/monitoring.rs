@@ -12,15 +12,11 @@ use ::actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
 use ::db::aquarius::Aquarius;
 use ::db::tiberius::TiberiusPool;
 use ::serde::Serialize;
-use ::std::time::Duration;
 use ::std::time::Instant;
 use ::tracing::trace;
 use ::tracing::warn;
 
-/// How often heartbeat pings are sent
-const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(2);
-/// How long before lack of client response causes a timeout
-const CLIENT_TIMEOUT: Duration = Duration::from_secs(5);
+use super::{WS_CLIENT_TIMEOUT, WS_HEARTBEAT_INTERVAL};
 
 /// Actor for monitoring.
 struct MonitoringActor {
@@ -39,8 +35,8 @@ impl MonitoringActor {
     }
 
     fn start_heart_beat(&self, ctx: &mut <Self as Actor>::Context) {
-        ctx.run_interval(HEARTBEAT_INTERVAL, move |act, ctx| {
-            if Instant::now().duration_since(act.heart_beat) > CLIENT_TIMEOUT {
+        ctx.run_interval(WS_HEARTBEAT_INTERVAL, move |act, ctx| {
+            if Instant::now().duration_since(act.heart_beat) > WS_CLIENT_TIMEOUT {
                 warn!("Monitoring websocket heartbeat failed, disconnecting!");
                 ctx.stop();
             } else {

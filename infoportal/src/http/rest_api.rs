@@ -25,9 +25,16 @@ use ::std::fmt::Formatter;
 use ::std::sync::Arc;
 use ::tracing::error;
 
+use ::std::time::Duration;
+
 /// Path to REST API
 pub(crate) const PATH: &str = "/api";
 const INTERNAL_SERVER_ERROR: &str = "Internal server error";
+
+/// How often WebSocket heartbeat pings are sent (shared by monitoring and timekeeping actors).
+pub(crate) const WS_HEARTBEAT_INTERVAL: Duration = Duration::from_secs(2);
+/// How long before lack of client response causes a WebSocket timeout (shared by monitoring and timekeeping actors).
+pub(crate) const WS_CLIENT_TIMEOUT: Duration = Duration::from_secs(5);
 
 /// A newtype around [`DbError`] implementing [`actix_web::ResponseError`].
 /// Logs the error and returns a 500 Internal Server Error response.

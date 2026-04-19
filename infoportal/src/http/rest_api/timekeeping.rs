@@ -33,12 +33,13 @@ use ::std::sync::RwLock;
 use ::std::sync::mpsc;
 use ::std::sync::mpsc::Receiver;
 use ::std::thread;
-use ::std::time::Duration;
 use ::std::time::Instant;
 use ::tracing::debug;
 use ::tracing::error;
 use ::tracing::trace;
 use ::tracing::warn;
+
+use super::{WS_CLIENT_TIMEOUT, WS_HEARTBEAT_INTERVAL};
 
 /// A timekeeping command sent from the client to trigger timekeeping actions on the server.
 /// Direction: Client -> Server
@@ -134,11 +135,6 @@ struct GetTimestrip;
 #[rtype(result = "()")]
 struct GetHeatsReadyToStart;
 
-/// How often heartbeat pings are sent
-const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(2);
-/// How long before lack of client response causes a timeout
-const CLIENT_TIMEOUT: Duration = Duration::from_secs(5);
-
 struct TimekeepingActor {
     heart_beat: Instant,
     aquarius_client: Arc<AquariusClient>,
@@ -171,8 +167,8 @@ impl TimekeepingActor {
     }
 
     fn start_heart_beat(&self, ctx: &mut <Self as Actor>::Context) {
-        ctx.run_interval(HEARTBEAT_INTERVAL, move |act, ctx| {
-            if Instant::now().duration_since(act.heart_beat) > CLIENT_TIMEOUT {
+        ctx.run_interval(WS_HEARTBEAT_INTERVAL, move |act, ctx| {
+            if Instant::now().duration_since(act.heart_beat) > WS_CLIENT_TIMEOUT {
                 warn!("Timekeeping websocket heartbeat failed, disconnecting!");
                 ctx.stop();
             } else {
