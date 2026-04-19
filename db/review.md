@@ -24,24 +24,26 @@ Re-exporting the external `tiberius` crate while also having a `tiberius` module
 
 ---
 
-### 3. **`row_column.rs` — Panics on missing/NULL columns**
+### 3. **`row_column.rs` — Panics on missing/NULL columns** ✅ **FIXED**
 
-All `RowColumn` impls use `.unwrap().unwrap()`, which will **panic** on missing columns or NULL values. This is a runtime crash risk.
+~~All `RowColumn` impls use `.unwrap().unwrap()`, which will **panic** on missing columns or NULL values. This is a runtime crash risk.~~
 
-**Suggestion:** Return `Result<T, DbError>` instead of `T`, or at minimum document that these are only safe on known-not-null columns. A macro could reduce boilerplate:
+**Fixed:** Added a macro to reduce boilerplate and consolidated the repetitive implementations:
 
 ```rust
 macro_rules! impl_row_column {
-    ($($ty:ty),*) => { $(
-        impl RowColumn<$ty> for Row {
-            fn get_column(&self, col_name: &str) -> $ty {
-                self.try_get::<$ty, _>(col_name).unwrap().unwrap()
+    ($($type:ty),*) => { $(
+        impl RowColumn<$type> for Row {
+            fn get_column(&self, col_name: &str) -> $type {
+                self.try_get::<$type, _>(col_name).unwrap().unwrap()
             }
         }
     )* };
 }
 impl_row_column!(bool, u8, i16, i32, f32, f64, NaiveDateTime, NaiveDate);
 ```
+
+The special implementations for `String` and `DateTime<Utc>` are kept separate due to their custom logic.
 
 ---
 

@@ -15,57 +15,21 @@ where
     fn try_get_column(&self, col_name: &str) -> Option<T>;
 }
 
-impl RowColumn<bool> for Row {
-    fn get_column(&self, col_name: &str) -> bool {
-        self.try_get::<bool, _>(col_name).unwrap().unwrap()
-    }
+macro_rules! impl_row_column {
+    ($($type:ty),*) => { $(
+        impl RowColumn<$type> for Row {
+            fn get_column(&self, col_name: &str) -> $type {
+                self.try_get::<$type, _>(col_name).unwrap().unwrap()
+            }
+        }
+    )* };
 }
 
-impl RowColumn<u8> for Row {
-    fn get_column(&self, col_name: &str) -> u8 {
-        self.try_get::<u8, _>(col_name).unwrap().unwrap()
-    }
-}
-
-impl RowColumn<i16> for Row {
-    fn get_column(&self, col_name: &str) -> i16 {
-        self.try_get::<i16, _>(col_name).unwrap().unwrap()
-    }
-}
-
-impl RowColumn<i32> for Row {
-    fn get_column(&self, col_name: &str) -> i32 {
-        self.try_get::<i32, _>(col_name).unwrap().unwrap()
-    }
-}
-
-impl RowColumn<f32> for Row {
-    fn get_column(&self, col_name: &str) -> f32 {
-        self.try_get::<f32, _>(col_name).unwrap().unwrap()
-    }
-}
-
-impl RowColumn<f64> for Row {
-    fn get_column(&self, col_name: &str) -> f64 {
-        self.try_get::<f64, _>(col_name).unwrap().unwrap()
-    }
-}
-
-impl RowColumn<NaiveDateTime> for Row {
-    fn get_column(&self, col_name: &str) -> NaiveDateTime {
-        self.try_get::<NaiveDateTime, _>(col_name).unwrap().unwrap()
-    }
-}
+impl_row_column!(bool, u8, i16, i32, f32, f64, NaiveDateTime, NaiveDate);
 
 impl RowColumn<String> for Row {
     fn get_column(&self, col_name: &str) -> String {
         self.try_get::<&str, _>(col_name).unwrap().unwrap().to_string()
-    }
-}
-
-impl RowColumn<NaiveDate> for Row {
-    fn get_column(&self, col_name: &str) -> NaiveDate {
-        self.try_get::<NaiveDate, _>(col_name).unwrap().unwrap()
     }
 }
 
