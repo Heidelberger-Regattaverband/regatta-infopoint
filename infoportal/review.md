@@ -50,9 +50,6 @@ The `infoportal` crate is an actix-web HTTP/HTTPS server serving a regatta infor
 7. **`server.rs:65` – Session secret key generated at startup**
    `Key::generate()` means all sessions are invalidated on every restart. For production, consider persisting the key or deriving it from a stable secret.
 
-8. **`db_password` stored as plain `String` in `Config`**
-   The `Credentials` struct correctly uses `SecretString` for passwords, but `Config.db_password` is a plain `String`. It should use `SecretString` for consistency and to prevent accidental logging.
-
 ### Design / Maintainability
 
 9. **`server.rs:63` – `unwrap()` on `create_app_data()`**

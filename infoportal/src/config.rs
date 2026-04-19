@@ -1,6 +1,7 @@
 use crate::built_info;
 use ::db::tiberius_client::{AuthMethod, Config as TiberiusConfig, EncryptionLevel};
 use ::dotenv::dotenv;
+use ::secret_string::SecretString;
 use ::std::sync::LazyLock;
 use ::std::{env, fmt::Display, str::FromStr};
 use ::thiserror::Error;
@@ -51,7 +52,7 @@ pub struct Config {
     /// The database user. The database user can be set by setting the environment variable `DB_USER`.
     pub db_user: String,
     /// The database password. The database password can be set by setting the environment variable `DB_PASSWORD`.
-    pub db_password: String,
+    pub db_password: SecretString<String>,
     /// Whether the database connection should be encrypted. Defaults to `false`.
     /// The database encryption can be set by setting the environment variable `DB_ENCRYPTION`.
     pub db_encryption: bool,
@@ -92,7 +93,7 @@ impl Config {
 
     /// Returns the database configuration required by the tiberius client.
     pub fn get_db_config(&self) -> TiberiusConfig {
-        self.get_db_config_for_user(&self.db_user, &self.db_password)
+        self.get_db_config_for_user(&self.db_user, self.db_password.value())
     }
 
     /// Returns the database configuration required by the tiberius client.
@@ -145,7 +146,7 @@ impl Config {
             db_port: Self::parse_env_var(consts::DB_PORT, consts::DEFAULT_DB_PORT)?,
             db_name: Self::get_required_env_var(consts::DB_NAME)?,
             db_user: Self::get_required_env_var(consts::DB_USER)?,
-            db_password: Self::get_required_env_var(consts::DB_PASSWORD)?,
+            db_password: SecretString::from(Self::get_required_env_var(consts::DB_PASSWORD)?),
             db_encryption: Self::parse_env_var(consts::DB_ENCRYPTION, consts::DEFAULT_DB_ENCRYPTION)?,
             db_pool_max_size: Self::parse_env_var(consts::DB_POOL_MAX_SIZE, consts::DEFAULT_DB_POOL_MAX_SIZE)?,
             db_pool_min_idle: Self::parse_env_var(consts::DB_POOL_MIN_IDLE, consts::DEFAULT_DB_POOL_MIN_IDLE)?,
