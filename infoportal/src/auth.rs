@@ -71,8 +71,7 @@ impl User {
     /// * `Ok(User)` - The authenticated user.
     /// * `Err(HttpResponse)` - The error response.
     pub async fn authenticate(credentials: &Credentials) -> Result<Self, HttpResponse> {
-        let mut username: String = Default::default();
-        credentials.username.trim().clone_into(&mut username);
+        let username = credentials.username.trim().to_string();
 
         // get database config with given credentials
         let db_cfg = CONFIG.get_db_config_for_user(&username, credentials.password.value());

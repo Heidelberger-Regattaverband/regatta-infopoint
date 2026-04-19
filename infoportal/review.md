@@ -26,13 +26,6 @@ The `infoportal` crate is an actix-web HTTP/HTTPS server serving a regatta infor
 
 ### Bugs / Correctness
 
-2. **`auth.rs:74-75` – Unnecessary mutable default + clone_into**
-   ```rust
-   let mut username: String = Default::default();
-   credentials.username.trim().clone_into(&mut username);
-   ```
-   Simpler: `let username = credentials.username.trim().to_string();`
-
 3. **`auth.rs:92` – Hardcoded admin check against `"sa"`**
    The admin role is determined by comparing the username to `"sa"`. This is duplicated in `authentication.rs:85` where `"sa" | "admin"` is checked. These should be consistent and ideally configurable.
 
