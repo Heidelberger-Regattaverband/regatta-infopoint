@@ -22,6 +22,22 @@ use ::futures::future::join3;
 use ::std::time::{Duration, Instant};
 use ::tracing::debug;
 
+/// Executes an async expression, measures its elapsed time, and logs it via `debug!`.
+///
+/// Usage:
+/// ```ignore
+/// timed_query!("label", async_expr)
+/// timed_query!("label", async_expr, key1 = val1, key2)
+/// ```
+macro_rules! timed_query {
+    ($label:expr, $query:expr $(, $($key:ident $(= $val:expr)?),+)?) => {{
+        let start = Instant::now();
+        let result = $query;
+        debug!($($($key $(= $val)?,)+)? elapsed = ?start.elapsed(), $label);
+        result
+    }};
+}
+
 /// The `Aquarius` struct is the main interface to the database. It is used to query data from the database.
 pub struct Aquarius {
     /// The caches for the database queries.
@@ -55,32 +71,19 @@ impl Aquarius {
     }
 
     /// Returns the active regatta.
-    /// # Arguments
-    /// * `force_cache` - Whether to force cache refresh.
-    /// # Returns
-    /// The active regatta.
-    /// # Errors
-    /// Returns a `DbError` if the query fails.
     pub async fn get_active_regatta(&self, force_cache: bool) -> Result<Option<Regatta>, DbError> {
         self.get_regatta(self.active_regatta_id, force_cache).await
     }
 
     /// Returns filters for the given regatta.
-    /// # Arguments
-    /// * `regatta_id` - The regatta identifier
-    /// * `force_cache` - Whether to force cache refresh.
-    /// # Returns
-    /// The filters for the given regatta.  
-    /// # Errors
-    /// Returns a `DbError` if the query fails.
     pub async fn get_filters(&self, regatta_id: i32, force_cache: bool) -> Result<Filters, DbError> {
         self.caches
             .filters
             .compute_if_missing(&regatta_id, force_cache, || async move {
-                let start = Instant::now();
-                let filters = Filters::query(regatta_id, TiberiusPool::instance()).await?;
-                debug!(elapsed = ?start.elapsed(), "Query filters from DB:");
-                Ok::<Filters, DbError>(filters)
+                timed_query!(
+                    "Query filters from DB:",
+                    Filters::query(regatta_id, TiberiusPool::instance()).await
+                )
             })
             .await
     }
@@ -89,10 +92,11 @@ impl Aquarius {
         self.caches
             .regattas
             .compute_if_missing_opt(&regatta_id, force_cache, || async move {
-                let start = Instant::now();
-                let regatta = Regatta::query_by_id(regatta_id, &mut *TiberiusPool::instance().get().await?).await?;
-                debug!(regatta_id, elapsed = ?start.elapsed(), "Query regatta from DB:");
-                Ok::<Option<Regatta>, DbError>(regatta)
+                timed_query!(
+                    "Query regatta from DB:",
+                    Regatta::query_by_id(regatta_id, &mut *TiberiusPool::instance().get().await?).await,
+                    regatta_id
+                )
             })
             .await
     }
@@ -101,11 +105,11 @@ impl Aquarius {
         self.caches
             .races
             .compute_if_missing(&regatta_id, force_cache, || async move {
-                let start = Instant::now();
-                let races =
-                    Race::query_races_of_regatta(regatta_id, &mut *TiberiusPool::instance().get().await?).await?;
-                debug!(regatta_id, elapsed = ?start.elapsed(), "Query races from DB:");
-                Ok::<Vec<Race>, DbError>(races)
+                timed_query!(
+                    "Query races from DB:",
+                    Race::query_races_of_regatta(regatta_id, &mut *TiberiusPool::instance().get().await?).await,
+                    regatta_id
+                )
             })
             .await
     }
@@ -121,15 +125,17 @@ impl Aquarius {
         self.caches
             .club_with_aggregations
             .compute_if_missing(&(regatta_id, club_id), force_cache, || async move {
-                let start = Instant::now();
-                let club = Club::query_club_with_aggregations(
+                timed_query!(
+                    "Query club from DB:",
+                    Club::query_club_with_aggregations(
+                        regatta_id,
+                        club_id,
+                        &mut *TiberiusPool::instance().get().await?
+                    )
+                    .await,
                     regatta_id,
-                    club_id,
-                    &mut *TiberiusPool::instance().get().await?,
+                    club_id
                 )
-                .await?;
-                debug!(regatta_id, club_id, elapsed = ?start.elapsed(), "Query club from DB:");
-                Ok::<Club, DbError>(club)
             })
             .await
     }
@@ -138,27 +144,27 @@ impl Aquarius {
         self.caches
             .heats
             .compute_if_missing(&regatta_id, force_cache, || async move {
-                let start = Instant::now();
-                let heats: Vec<Heat> = Heat::query_heats_of_regatta(regatta_id, TiberiusPool::instance()).await?;
-                debug!(regatta_id, elapsed = ?start.elapsed(), "Query heats from DB:");
-                Ok::<Vec<Heat>, DbError>(heats)
+                timed_query!(
+                    "Query heats from DB:",
+                    Heat::query_heats_of_regatta(regatta_id, TiberiusPool::instance()).await,
+                    regatta_id
+                )
             })
             .await
     }
 
     pub async fn get_heats_ready_to_start(&self) -> Result<Vec<Heat>, DbError> {
-        let start = Instant::now();
-        let heats: Vec<Heat> =
-            Heat::query_heats_ready_to_start(self.active_regatta_id, TiberiusPool::instance()).await?;
-        debug!(elapsed = ?start.elapsed(), "Query heats ready to start from DB:");
-        Ok(heats)
+        timed_query!(
+            "Query heats ready to start from DB:",
+            Heat::query_heats_ready_to_start(self.active_regatta_id, TiberiusPool::instance()).await
+        )
     }
 
     pub async fn get_heats_started(&self) -> Result<Vec<Heat>, DbError> {
-        let start = Instant::now();
-        let heats: Vec<Heat> = Heat::query_heats_started(self.active_regatta_id, TiberiusPool::instance()).await?;
-        debug!(elapsed = ?start.elapsed(), "Query heats started from DB:");
-        Ok(heats)
+        timed_query!(
+            "Query heats started from DB:",
+            Heat::query_heats_started(self.active_regatta_id, TiberiusPool::instance()).await
+        )
     }
 
     /// Returns heat details for the given identifier.
@@ -166,10 +172,11 @@ impl Aquarius {
         self.caches
             .heat
             .compute_if_missing(&heat_id, force_cache, || async move {
-                let start = Instant::now();
-                let heat = Heat::query_single(heat_id, TiberiusPool::instance()).await?;
-                debug!(heat_id, elapsed = ?start.elapsed(), "Query heat with entries from DB:");
-                Ok::<Heat, DbError>(heat)
+                timed_query!(
+                    "Query heat with entries from DB:",
+                    Heat::query_single(heat_id, TiberiusPool::instance()).await,
+                    heat_id
+                )
             })
             .await
     }
@@ -178,12 +185,12 @@ impl Aquarius {
         self.caches
             .clubs
             .compute_if_missing(&regatta_id, force_cache, || async move {
-                let start = Instant::now();
-                let clubs =
+                timed_query!(
+                    "Query participating clubs from DB:",
                     Club::query_clubs_participating_regatta(regatta_id, &mut *TiberiusPool::instance().get().await?)
-                        .await?;
-                debug!(regatta_id, elapsed = ?start.elapsed(), "Query participating clubs from DB:");
-                Ok::<Vec<Club>, DbError>(clubs)
+                        .await,
+                    regatta_id
+                )
             })
             .await
     }
@@ -197,10 +204,12 @@ impl Aquarius {
         self.caches
             .club_entries
             .compute_if_missing(&(regatta_id, club_id), force_cache, || async move {
-                let start = Instant::now();
-                let entries = Entry::query_entries_of_club(regatta_id, club_id, TiberiusPool::instance()).await?;
-                debug!(regatta_id, club_id, elapsed = ?start.elapsed(), "Query entries of club from DB:");
-                Ok::<Vec<Entry>, DbError>(entries)
+                timed_query!(
+                    "Query entries of club from DB:",
+                    Entry::query_entries_of_club(regatta_id, club_id, TiberiusPool::instance()).await,
+                    regatta_id,
+                    club_id
+                )
             })
             .await
     }
@@ -213,12 +222,12 @@ impl Aquarius {
         self.caches
             .athletes
             .compute_if_missing(&regatta_id, force_cache, || async move {
-                let start = Instant::now();
-                let athletes =
+                timed_query!(
+                    "Query athletes from DB:",
                     Athlete::query_participating_athletes(regatta_id, &mut *TiberiusPool::instance().get().await?)
-                        .await?;
-                debug!(regatta_id, elapsed = ?start.elapsed(), "Query athletes from DB:");
-                Ok::<Vec<Athlete>, DbError>(athletes)
+                        .await,
+                    regatta_id
+                )
             })
             .await
     }
@@ -232,10 +241,12 @@ impl Aquarius {
         self.caches
             .athlete_entries
             .compute_if_missing(&(regatta_id, athlete_id), force_cache, || async move {
-                let start = Instant::now();
-                let entries = Entry::query_entries_of_athlete(regatta_id, athlete_id, TiberiusPool::instance()).await?;
-                debug!(athlete_id, regatta_id, elapsed = ?start.elapsed(), "Query entries of athlete from DB:");
-                Ok::<Vec<Entry>, DbError>(entries)
+                timed_query!(
+                    "Query entries of athlete from DB:",
+                    Entry::query_entries_of_athlete(regatta_id, athlete_id, TiberiusPool::instance()).await,
+                    athlete_id,
+                    regatta_id
+                )
             })
             .await
     }
@@ -244,39 +255,40 @@ impl Aquarius {
         self.caches
             .athlete
             .compute_if_missing(&athlete_id, force_cache, || async move {
-                let start = Instant::now();
-                let athlete =
-                    Athlete::query_athlete(regatta_id, athlete_id, &mut *TiberiusPool::instance().get().await?).await?;
-                debug!(athlete_id, elapsed = ?start.elapsed(), "Query athlete from DB:");
-                Ok::<Athlete, DbError>(athlete)
+                timed_query!(
+                    "Query athlete from DB:",
+                    Athlete::query_athlete(regatta_id, athlete_id, &mut *TiberiusPool::instance().get().await?).await,
+                    athlete_id
+                )
             })
             .await
     }
 
     pub async fn calculate_scoring(&self, regatta_id: i32) -> Result<Vec<Score>, DbError> {
-        let start = Instant::now();
-        let scores = Score::calculate(regatta_id, &mut *TiberiusPool::instance().get().await?).await;
-        debug!(regatta_id, elapsed = ?start.elapsed(), "Calculate scoring from DB:");
-        scores
+        timed_query!(
+            "Calculate scoring from DB:",
+            Score::calculate(regatta_id, &mut *TiberiusPool::instance().get().await?).await,
+            regatta_id
+        )
     }
 
     pub async fn query_statistics(&self, regatta_id: i32) -> Result<Statistics, DbError> {
-        let start = Instant::now();
-        let stats = Statistics::query(regatta_id, TiberiusPool::instance()).await;
-        debug!(regatta_id, elapsed = ?start.elapsed(), "Query statistics from DB:");
-        stats
+        timed_query!(
+            "Query statistics from DB:",
+            Statistics::query(regatta_id, TiberiusPool::instance()).await,
+            regatta_id
+        )
     }
 
     pub async fn query_schedule(&self, regatta_id: i32, force_cache: bool) -> Result<Schedule, DbError> {
         self.caches
             .schedule
             .compute_if_missing(&regatta_id, force_cache, || async move {
-                let start = Instant::now();
-                let schedule =
-                    Schedule::query_schedule_for_regatta(regatta_id, &mut *TiberiusPool::instance().get().await?)
-                        .await?;
-                debug!(regatta_id, elapsed = ?start.elapsed(), "Query schedule from DB:");
-                Ok::<Schedule, DbError>(schedule)
+                timed_query!(
+                    "Query schedule from DB:",
+                    Schedule::query_schedule_for_regatta(regatta_id, &mut *TiberiusPool::instance().get().await?).await,
+                    regatta_id
+                )
             })
             .await
     }
@@ -285,14 +297,15 @@ impl Aquarius {
         self.caches
             .notifications
             .compute_if_missing(&regatta_id, false, || async move {
-                let start = Instant::now();
-                let notifications = Notification::query_visible_notifications_for_regatta(
-                    regatta_id,
-                    &mut *TiberiusPool::instance().get().await?,
+                timed_query!(
+                    "Query notifications from DB:",
+                    Notification::query_visible_notifications_for_regatta(
+                        regatta_id,
+                        &mut *TiberiusPool::instance().get().await?
+                    )
+                    .await,
+                    regatta_id
                 )
-                .await?;
-                debug!(regatta_id, elapsed = ?start.elapsed(), "Query notifications from DB:");
-                Ok::<Vec<Notification>, DbError>(notifications)
             })
             .await
     }
@@ -302,12 +315,15 @@ impl Aquarius {
         regatta_id: i32,
         user_pool: &TiberiusPool,
     ) -> Result<Vec<Notification>, DbError> {
-        // Don't cache admin queries to ensure fresh data
-        let start = Instant::now();
-        let notifications =
-            Notification::query_all_notifications_for_regatta(regatta_id, &mut *user_pool.get().await?).await?;
-        debug!(regatta_id, elapsed = ?start.elapsed(), "Query all notifications from DB:");
-        Ok(notifications)
+        timed_query!(
+            "Query all notifications from DB:",
+            {
+                let notifications =
+                    Notification::query_all_notifications_for_regatta(regatta_id, &mut *user_pool.get().await?).await?;
+                Ok(notifications)
+            },
+            regatta_id
+        )
     }
 
     pub async fn create_notification(
