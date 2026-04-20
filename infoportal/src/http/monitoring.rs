@@ -1,7 +1,9 @@
 use crate::peak_alloc::PeakAlloc;
 use ::db::{cache::CacheStats, tiberius::TiberiusPool};
 use ::serde::Serialize;
-use ::std::time::Duration;
+use ::std::sync::Mutex;
+use ::std::thread;
+use ::std::time::{Duration, Instant};
 use ::sysinfo::{CpuRefreshKind, Disks, MemoryRefreshKind, RefreshKind, System};
 use ::utoipa::ToSchema;
 
@@ -23,7 +25,7 @@ impl Monitoring {
     /// # Returns
     /// `Monitoring` - The monitoring struct.
     pub(crate) fn new(pool: &TiberiusPool, caches: &CacheStats) -> Self {
-        let sys = get_system();
+        let (cpus, mem) = get_cpu_and_memory();
         let state = pool.state();
         let stats = state.statistics;
         Monitoring {
@@ -40,13 +42,8 @@ impl Monitoring {
                 caches: Caches::from(caches.clone()),
             },
             sys: SysInfo {
-                cpus: sys.cpus().iter().map(Cpu::from).collect(),
-                mem: Memory {
-                    free: sys.free_memory(),
-                    used: sys.used_memory(),
-                    available: sys.available_memory(),
-                    total: sys.total_memory(),
-                },
+                cpus,
+                mem,
                 disks: Disks::new_with_refreshed_list().iter().map(Disk::from).collect(),
                 uptime: uptime_lib::get().unwrap_or_default(),
             },
@@ -58,16 +55,48 @@ impl Monitoring {
     }
 }
 
-fn get_system() -> System {
-    let mut sys = System::new_with_specifics(
-        RefreshKind::nothing()
-            .with_cpu(CpuRefreshKind::everything())
-            .with_memory(MemoryRefreshKind::everything()),
-    );
-    // Wait a bit because CPU usage is based on diff.
-    std::thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
-    sys.refresh_cpu_all();
-    sys
+/// Returns cached CPU and memory info without blocking.
+///
+/// A `System` instance is kept in a static `Mutex` and refreshed only when
+/// enough time has elapsed (`MINIMUM_CPU_UPDATE_INTERVAL`). The first call
+/// still sleeps once to establish a baseline for CPU diff calculations, but
+/// all subsequent calls are non-blocking as long as the monitoring heartbeat
+/// interval (2 s) exceeds `MINIMUM_CPU_UPDATE_INTERVAL`.
+fn get_cpu_and_memory() -> (Vec<Cpu>, Memory) {
+    static CACHED: Mutex<Option<(System, Instant)>> = Mutex::new(None);
+
+    let mut guard = CACHED.lock().unwrap_or_else(|e| e.into_inner());
+
+    let sys = if let Some((ref mut sys, ref mut last_refresh)) = *guard {
+        if last_refresh.elapsed() >= sysinfo::MINIMUM_CPU_UPDATE_INTERVAL {
+            sys.refresh_cpu_all();
+            sys.refresh_memory();
+            *last_refresh = Instant::now();
+        }
+        sys
+    } else {
+        // First call: create the system, sleep once, then refresh.
+        let mut sys = System::new_with_specifics(
+            RefreshKind::nothing()
+                .with_cpu(CpuRefreshKind::everything())
+                .with_memory(MemoryRefreshKind::everything()),
+        );
+        thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
+        sys.refresh_cpu_all();
+        *guard = Some((sys, Instant::now()));
+        // unwrap is safe: we just assigned Some
+        let (sys, _) = guard.as_mut().unwrap();
+        sys
+    };
+
+    let cpus = sys.cpus().iter().map(Cpu::from).collect();
+    let mem = Memory {
+        free: sys.free_memory(),
+        used: sys.used_memory(),
+        available: sys.available_memory(),
+        total: sys.total_memory(),
+    };
+    (cpus, mem)
 }
 
 /// The sysinfo struct contains the cpus and memory information.

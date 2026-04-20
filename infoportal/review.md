@@ -62,9 +62,6 @@ The `infoportal` crate is an actix-web HTTP/HTTPS server serving a regatta infor
 9. **`timekeeping.rs:168` – `unwrap()` on `TimeStrip::load`**
    Same issue — panics if the timestrip can't be loaded from the DB.
 
-10. **`monitoring.rs:68` – `std::thread::sleep` in monitoring data collection**
-    `get_system()` calls `std::thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL)` which blocks the current thread. In the monitoring WebSocket actor this runs on every heartbeat interval (2 seconds), blocking an actix worker thread. Consider collecting CPU metrics asynchronously or caching them.
-
 11. **`rest_api.rs:25` – Unused import `Arc`**
     `use ::std::sync::Arc;` may be unused in `rest_api.rs` itself (it's used in `get_user_pool` return type). Verify with `cargo clippy`.
 
