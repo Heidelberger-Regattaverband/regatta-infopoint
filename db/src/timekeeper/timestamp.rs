@@ -102,10 +102,9 @@ impl Timestamp {
 
     pub(crate) async fn persist(&mut self, regatta_id: i32, client: &mut TiberiusClient) -> Result<(), DbError> {
         if !self.persisted {
-            let mut query = Query::new(
-                format!("INSERT INTO HRV_Timestamp ({TIMESTAMP}, {EVENT_ID}, {SPLIT_NR}, {HEAT_NR}, {BIB}) VALUES (@P1, @P2, @P3, @P4, @P5)")
-                    .to_string(),
-            );
+            let mut query = Query::new(format!(
+                "INSERT INTO HRV_Timestamp ({TIMESTAMP}, {EVENT_ID}, {SPLIT_NR}, {HEAT_NR}, {BIB}) VALUES (@P1, @P2, @P3, @P4, @P5)"
+            ));
             query.bind(self.time);
             query.bind(regatta_id);
             query.bind(u8::from(&self.split));
