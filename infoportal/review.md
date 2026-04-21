@@ -38,9 +38,9 @@ The `infoportal` crate is a well-organized Actix-Web application serving as the 
   };
   ```
 
-### 3. SSL setup uses `.unwrap()` without context
+### 3. ~~SSL setup uses `.unwrap()` without context~~ ✅ FIXED
 
-- **File:** `infoportal/src/http/server.rs`, lines 23–25
+- **File:** `infoportal/src/http/erver.rs`s, lines 23–25
 - **Problem:** `SslAcceptor::mozilla_intermediate(...)`, `set_private_key_file(...)`, and `set_certificate_chain_file(...)` all use `.unwrap()`. If the SSL certificate files are missing or malformed, the error message will be unhelpful.
 - **Suggested fix:** Use `.expect("descriptive message")` to provide context on failure, e.g., `.expect("Failed to load SSL private key from ssl/key.pem")`.
 

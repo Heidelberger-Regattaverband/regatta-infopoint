@@ -254,12 +254,15 @@ impl Server {
                     "TLS config loaded:"
                 );
                 let cert_reader = &mut BufReader::new(cert_file);
-                let cert_chain = certs(cert_reader).map(|cert| cert.unwrap()).collect();
+                let cert_chain = certs(cert_reader)
+                    .map(|cert| cert.expect("Failed to parse certificate from cert.pem"))
+                    .collect();
 
                 let key_reader = &mut BufReader::new(key_file);
                 // convert files to key/cert objects
-                let mut keys: Vec<PrivatePkcs8KeyDer> =
-                    pkcs8_private_keys(key_reader).map(|cert| cert.unwrap()).collect();
+                let mut keys: Vec<PrivatePkcs8KeyDer> = pkcs8_private_keys(key_reader)
+                    .map(|key| key.expect("Failed to parse PKCS8 private key from key.pem"))
+                    .collect();
 
                 // no keys could be parsed for each variant
                 if keys.is_empty() {
@@ -271,7 +274,7 @@ impl Server {
                 let config = ServerConfig::builder()
                     .with_no_client_auth()
                     .with_single_cert(cert_chain, PrivateKeyDer::Pkcs8(keys.remove(0)))
-                    .unwrap();
+                    .expect("Failed to build TLS ServerConfig with provided cert/key");
                 Some(config)
             } else {
                 warn!(
