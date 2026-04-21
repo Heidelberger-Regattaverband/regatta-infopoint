@@ -31,11 +31,10 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 - **Problem:** Several `TryRowColumn` implementations (e.g., for `i32`, `i16`, `u8`, `bool`, `f64`, etc.) use `unwrap_or_default()` on the outer `Result`, which means a column type mismatch error is silently treated as `None`. Only column-not-found and NULL should return `None`.
 - **Suggested fix:** Distinguish between "column not found" (return `None`) and "type conversion error" (propagate or log).
 
-### 4. `TryRowColumn<String>` treats empty strings as `None`
+### 4. ~~`TryRowColumn<String>` treats empty strings as `None`~~ ✅ FIXED
 
 - **File:** `db/src/tiberius/row_column.rs`, lines 47–59
-- **Problem:** The `TryRowColumn<String>` implementation returns `None` for empty strings. This conflates "no value" with "empty value", which may cause data loss if an empty string is a valid value.
-- **Suggested fix:** Return `Some("".to_string())` for empty strings, or document this as intentional behavior.
+- **Fix:** Removed the empty-string check so that empty strings are now returned as `Some("".to_string())` instead of being conflated with `None`.
 
 ### 5. ~~`Timestamp::persist` redundantly calls `.to_string()` on `format!()`~~ ✅ FIXED
 
@@ -48,11 +47,10 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 - **Problem:** `join!` is used with `query.query(&mut client)` alongside `Statistics::query_oldest(...)` calls that also acquire their own pool connections. The main query holds a mutable borrow on `client`. While this compiles (the other queries get separate connections), it means the main statistics query and the oldest-athlete queries cannot share a connection, using 3 connections total for one logical operation.
 - **Suggested fix:** This is a minor efficiency concern, not a bug. Consider sequencing the main query before the concurrent oldest-athlete queries to release the connection earlier.
 
-### 7. `Score::calculate` uses manual rank counter instead of `enumerate`
+### 7. ~~`Score::calculate` uses manual rank counter instead of `enumerate`~~ ✅ FIXED
 
 - **File:** `db/src/aquarius/model/score.rs`, lines 61–70
-- **Problem:** A manual `index` counter is used instead of idiomatic `.enumerate()`. This is a minor style issue.
-- **Suggested fix:** Use `.enumerate()` and set `score.rank = Some((index + 1) as i16)`.
+- **Fix:** Replaced manual `index` counter with idiomatic `.enumerate()`.
 
 ### 8. `HeatResult::points` can overflow for large boats
 

@@ -58,13 +58,12 @@ impl Score {
         query.bind(regatta_id);
 
         let scores = get_rows(query.query(client).await?).await?;
-        let mut index = 0;
         Ok(scores
             .into_iter()
-            .map(|row| {
-                index += 1;
+            .enumerate()
+            .map(|(index, row)| {
                 let mut score = Score::from(&row);
-                score.rank = Some(index);
+                score.rank = Some((index + 1) as i16);
                 score
             })
             .collect())
