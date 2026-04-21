@@ -38,12 +38,6 @@ The `infoportal` crate is a well-organized Actix-Web application serving as the 
   };
   ```
 
-### 3. ~~SSL setup uses `.unwrap()` without context~~ ✅ FIXED
-
-- **File:** `infoportal/src/http/erver.rs`s, lines 23–25
-- **Problem:** `SslAcceptor::mozilla_intermediate(...)`, `set_private_key_file(...)`, and `set_certificate_chain_file(...)` all use `.unwrap()`. If the SSL certificate files are missing or malformed, the error message will be unhelpful.
-- **Suggested fix:** Use `.expect("descriptive message")` to provide context on failure, e.g., `.expect("Failed to load SSL private key from ssl/key.pem")`.
-
 ### 4. Error responses leak internal details
 
 - **File:** Multiple REST API handlers (e.g., `misc.rs`, `race.rs`, `club.rs`, etc.)
@@ -79,12 +73,6 @@ The `infoportal` crate is a well-organized Actix-Web application serving as the 
 - **File:** `notification.rs`, `timekeeping.rs`, `authentication.rs`
 - **Problem:** Each protected endpoint manually calls `auth::authenticate(&req).await` and returns 401. This is repetitive and error-prone — it's easy to forget the check when adding new endpoints.
 - **Suggested fix:** Consider implementing an Actix-Web middleware or extractor for authentication that can be applied to a scope, e.g., wrap the protected routes in a scope with an auth middleware.
-
-### 9. `FORCE_CACHE` constant is defined but unused
-
-- **File:** `infoportal/src/http/rest_api.rs`, line 12
-- **Problem:** `const FORCE_CACHE: &str = "force"` is defined but never referenced. The `force` parameter is handled via `CacheQueryParams` deserialization instead.
-- **Suggested fix:** Remove the unused constant.
 
 ### 10. No unit or integration tests
 
