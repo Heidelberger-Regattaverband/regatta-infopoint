@@ -1,17 +1,14 @@
 use ::chrono::{DateTime, NaiveDate, Utc};
 use ::tiberius::{Row, numeric::Decimal, time::chrono::NaiveDateTime};
 
-pub trait RowColumn<T>
-where
-    T: Default,
-{
+/// Extension traits for `Row` to provide convenient methods for retrieving column values by name.
+pub trait RowColumn<T: Default> {
+    /// Retrieves the value of the specified column as type `T`. If the column is not found or cannot be converted to `T`, it will panic.
     fn get_column(&self, col_name: &str) -> T;
 }
 
-pub trait TryRowColumn<T>
-where
-    T: Default,
-{
+pub trait TryRowColumn<T: Default> {
+    /// Attempts to retrieve the value of the specified column as type `T`. Returns `None` if the column is not found or cannot be converted to `T`.
     fn try_get_column(&self, col_name: &str) -> Option<T>;
 }
 

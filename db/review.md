@@ -31,7 +31,7 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 - **Problem:** Several `TryRowColumn` implementations (e.g., for `i32`, `i16`, `u8`, `bool`, `f64`, etc.) use `unwrap_or_default()` on the outer `Result`, which means a column type mismatch error is silently treated as `None`. Only column-not-found and NULL should return `None`.
 - **Suggested fix:** Distinguish between "column not found" (return `None`) and "type conversion error" (propagate or log).
 
-### 4. ~~`TryRowColumn<String>` treats empty strings as `None`~~ ✅ FIXED
+### 4. `TryRowColumn<String>` treats empty strings as `None`
 
 - **File:** `db/src/tiberius/row_column.rs`, lines 47–59
 - **Fix:** Removed the empty-string check so that empty strings are now returned as `Some("".to_string())` instead of being conflated with `None`.
