@@ -42,4 +42,5 @@ cd static && npm run ts-typecheck
 - Consider the overall architecture and how components interact.
 - Look for patterns of code duplication or inconsistency.
 - Consider Rust best practices and idiomatic usage.
-- Store the review feedback in a `review.md` file for reference and tracking.
+- Store the review feedback in a `review.md` file in the corresponding crate for reference and tracking.
+- Prioritize issues based on severity: critical bugs > security issues > design flaws > minor improvements.
