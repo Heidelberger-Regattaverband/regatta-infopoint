@@ -1,3 +1,4 @@
+use super::entry::ID as entry_ID;
 use super::get_row;
 use super::get_rows;
 use crate::cache::heap_size::HeapSize;
@@ -97,7 +98,7 @@ impl Club {
                     SELECT DISTINCT Entry_ID FROM Club
                     JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
                     JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
-                    JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
+                    JOIN Entry      ON Crew_Entry_ID_FK   = {entry_ID}
                     WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
                         AND Crew_RoundTo = 64
                 ) AS Participations_Count) AS Participations_Count,
@@ -106,7 +107,7 @@ impl Club {
                     FROM Club
                     JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
                     JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
-                    JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
+                    JOIN Entry      ON Crew_Entry_ID_FK   = {entry_ID}
                     WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
                         AND Crew_RoundTo = 64 AND Athlet_Gender = 'W'
                 ) AS Athletes_Female_Count) AS Athletes_Female_Count,
@@ -115,14 +116,14 @@ impl Club {
                     FROM Club
                     JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
                     JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
-                    JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
+                    JOIN Entry      ON Crew_Entry_ID_FK   = {entry_ID}
                     WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
                         AND Crew_RoundTo = 64 AND Athlet_Gender = 'M'
                 ) AS Athletes_Male_Count) AS Athletes_Male_Count
             FROM Club c
             JOIN Athlet  a ON a.Athlet_Club_ID_FK   = c.{ID}
             JOIN Crew   cr ON cr.Crew_Athlete_ID_FK = a.Athlet_ID
-            JOIN Entry   e ON cr.Crew_Entry_ID_FK   = e.Entry_ID
+            JOIN Entry   e ON cr.Crew_Entry_ID_FK   = e.{entry_ID}
             WHERE Entry_Event_ID_FK = @P1 AND Crew_RoundTo = 64
             ORDER BY {CITY} ASC",
             Club::select_all_columns("c")

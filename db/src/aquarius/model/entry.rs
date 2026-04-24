@@ -14,7 +14,7 @@ use ::serde::Serialize;
 use ::tiberius::{Query, Row};
 use ::utoipa::ToSchema;
 
-const ID: &str = "Entry_ID";
+pub(crate) const ID: &str = "Entry_ID";
 const BIB: &str = "Entry_Bib";
 const COMMENT: &str = "Entry_Comment";
 const BOAT_NUMBER: &str = "Entry_BoatNumber";

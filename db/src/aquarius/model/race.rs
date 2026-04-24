@@ -94,7 +94,7 @@ impl From<&Row> for Race {
             lightweight: row.get_column("Offer_IsLightweight"),
             cancelled: row.get_column("Offer_Cancelled"),
             entries_count: row.try_get_column("Entries_Count").unwrap_or_default(),
-            heats_count: row.try_get_column("Heats_Count").unwrap_or_default(),
+            heats_count: row.get_column("Heats_Count"),
             seeded: seeded.unwrap_or_default(),
             age_class: row.try_to_entity(),
             boat_class: row.try_to_entity(),
@@ -128,7 +128,8 @@ impl Race {
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
             "{alias}.Offer_ID, {alias}.Offer_RaceNumber, {alias}.Offer_Distance, {alias}.Offer_IsLightweight, {alias}.Offer_Cancelled, {alias}.Offer_ShortLabel, \
-            {alias}.Offer_LongLabel, {alias}.Offer_Comment, {alias}.Offer_GroupMode, {alias}.Offer_SortValue, {alias}.Offer_HRV_Seeded"
+            {alias}.Offer_LongLabel, {alias}.Offer_Comment, {alias}.Offer_GroupMode, {alias}.Offer_SortValue, {alias}.Offer_HRV_Seeded, \
+            (SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.Offer_ID AND c.Comp_Cancelled = 0) as Heats_Count"
         )
     }
     pub(crate) fn select_columns_with_analytical(alias: &str) -> String {
