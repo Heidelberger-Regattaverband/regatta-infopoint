@@ -38,6 +38,7 @@ cd static && npm run ts-typecheck
   - A clear description of the problem
   - The file and line number(s) where it occurs
   - A suggested fix or improvement
+  - The severity level (critical, high, medium, low)
 - Avoid nitpicks unless they impact readability or consistency.
 - Consider the overall architecture and how components interact.
 - Look for patterns of code duplication or inconsistency.

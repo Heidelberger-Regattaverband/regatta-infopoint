@@ -1,84 +1,124 @@
 # Code Review: `db` Crate
 
-**Date:** 2026-04-20  
-**Scope:** All source files in `db/src/`
+**Date:** 2026-04-24  
+**Scope:** All source files in `db/src/`  
+**Clippy:** ✅ Clean (no warnings)
 
 ---
 
 ## Summary
 
-The `db` crate is well-structured with consistent patterns, good use of parameterized queries, and clean separation between connection management, caching, and domain models. After thorough review, the codebase is in good shape with only minor observations.
+The `db` crate is well-structured with consistent patterns, good use of parameterized queries, and clean separation between connection management, caching, and domain models. The codebase is mature and in good shape. This review builds on the previous review (2026-04-20) and re-evaluates all findings.
 
 ---
 
 ## Issues
 
-### 1. `RowColumn::get_column` panics on missing columns or NULL values
+### 1. `RowColumn::get_column` panics on missing columns or NULL values — **Design Flaw** ⚠️
 
 - **File:** `db/src/tiberius/row_column.rs`, lines 20–23
 - **Problem:** The `get_column` implementations use `.unwrap().unwrap()`, which will panic if a column is missing or contains a SQL NULL. While this is acceptable for columns known to be NOT NULL, a schema change or unexpected NULL will cause a runtime panic with no context about which column failed.
-- **Suggested fix:** Consider using `.expect("column_name")` or returning `Result` to provide better diagnostics on failure.
+- **Suggested fix:** Use `.expect("column <name>")` or a helper that includes the column name in the panic message to aid debugging.
 
-### 2. `RowColumn<DateTime<Utc>>` silently returns epoch on error
+### 2. `RowColumn<DateTime<Utc>>` silently returns epoch on error — **Design Flaw** ⚠️
 
-- **File:** `db/src/tiberius/row_column.rs`, lines 36–45
+- **File:** `db/src/tiberius/row_column.rs`, lines 48–57
 - **Problem:** The `RowColumn<DateTime<Utc>>` implementation returns `DateTime::from_timestamp(0, 0).unwrap()` (Unix epoch) when `try_get` fails. This silently masks errors — the caller receives a valid-looking timestamp instead of an error.
 - **Suggested fix:** Either panic with context (consistent with other `get_column` impls) or propagate the error.
 
-### 3. `TryRowColumn` implementations silently swallow errors
+### 3. `TryRowColumn` implementations silently swallow type conversion errors — **Design Flaw** ⚠️
 
-- **File:** `db/src/tiberius/row_column.rs`, lines 62–116
-- **Problem:** Several `TryRowColumn` implementations (e.g., for `i32`, `i16`, `u8`, `bool`, `f64`, etc.) use `unwrap_or_default()` on the outer `Result`, which means a column type mismatch error is silently treated as `None`. Only column-not-found and NULL should return `None`.
-- **Suggested fix:** Distinguish between "column not found" (return `None`) and "type conversion error" (propagate or log).
+- **File:** `db/src/tiberius/row_column.rs`, lines 28–36
+- **Problem:** The macro-generated `TryRowColumn` implementations use `unwrap_or_default()` on the outer `Result`, meaning a column type mismatch error is silently treated as `None`. Only column-not-found and NULL should return `None`.
+- **Suggested fix:** Distinguish between "column not found / NULL" (return `None`) and "type conversion error" (log a warning or propagate).
 
-### 4. `TryRowColumn<String>` treats empty strings as `None`
+### 4. `TryRowColumn<String>` treats empty strings as `None` — **Minor**
 
-- **File:** `db/src/tiberius/row_column.rs`, lines 47–59
-- **Fix:** Removed the empty-string check so that empty strings are now returned as `Some("".to_string())` instead of being conflated with `None`.
+- **File:** `db/src/tiberius/row_column.rs`, lines 59–72
+- **Problem:** Empty strings are returned as `None` rather than `Some("")`. This conflates "no value" with "empty value", which may cause subtle bugs if the distinction matters.
+- **Suggested fix:** Return `Some("".to_string())` for empty strings, or document this behavior prominently.
 
-### 5. ~~`Timestamp::persist` redundantly calls `.to_string()` on `format!()`~~ ✅ FIXED
-
-- **File:** `db/src/timekeeper/timestamp.rs`, lines 105–108
-- **Fix:** Removed the redundant `.to_string()` call on `format!()`.
-
-### 6. `Statistics::query` borrows `client` mutably while concurrently querying
-
-- **File:** `db/src/aquarius/model/statistics.rs`, lines 184–189
-- **Problem:** `join!` is used with `query.query(&mut client)` alongside `Statistics::query_oldest(...)` calls that also acquire their own pool connections. The main query holds a mutable borrow on `client`. While this compiles (the other queries get separate connections), it means the main statistics query and the oldest-athlete queries cannot share a connection, using 3 connections total for one logical operation.
-- **Suggested fix:** This is a minor efficiency concern, not a bug. Consider sequencing the main query before the concurrent oldest-athlete queries to release the connection earlier.
-
-### 7. ~~`Score::calculate` uses manual rank counter instead of `enumerate`~~ ✅ FIXED
-
-- **File:** `db/src/aquarius/model/score.rs`, lines 61–70
-- **Fix:** Replaced manual `index` counter with idiomatic `.enumerate()`.
-
-### 8. `HeatResult::points` can overflow for large boats
+### 5. `HeatResult::points` can underflow for `rank > 5` — **Bug** 🐛
 
 - **File:** `db/src/aquarius/model/heat_result.rs`, line 38
-- **Problem:** `num_rowers + (5 - rank)` uses `u8` arithmetic. If `rank > 5`, the expression `5 - rank` underflows (wraps in release mode). While ranks > 5 are unlikely in rowing, this is undefined-adjacent behavior.
-- **Suggested fix:** Use saturating arithmetic: `num_rowers.saturating_add(5u8.saturating_sub(rank))`.
+- **Problem:** `num_rowers + (5 - rank)` uses `u8` arithmetic. If `rank > 5`, the expression `5 - rank` underflows (panics in debug mode, wraps in release mode). While ranks > 5 may be uncommon, they are possible if there are more than 5 boats in a heat.
+- **Suggested fix:** Use saturating arithmetic: `num_rowers.saturating_add(5u8.saturating_sub(rank))`, or handle the case where `rank > 5` explicitly (e.g., return 0 points).
 
-### 9. Duplicated SQL aggregation subqueries in `Club`
+### 6. `Statistics::query` holds mutable borrow on `client` across `join!` — **Minor Efficiency** 💡
+
+- **File:** `db/src/aquarius/model/statistics.rs`, lines 184–189
+- **Problem:** `join!` is used with `query.query(&mut client)` alongside `Statistics::query_oldest(...)` calls that also acquire their own pool connections. This means 3 connections are held simultaneously for one logical operation.
+- **Suggested fix:** Sequence the main query before the concurrent oldest-athlete queries to release the connection earlier, reducing pool pressure.
+
+### 7. Duplicated SQL aggregation subqueries in `Club` — **Code Duplication** 📋
 
 - **File:** `db/src/aquarius/model/club.rs`, lines 90–183
-- **Problem:** `query_clubs_participating_regatta` and `query_club_with_aggregations` contain nearly identical complex subqueries for counting participations, female athletes, and male athletes. This is code duplication that increases maintenance burden.
-- **Suggested fix:** Extract the common subquery logic into a shared helper method or SQL fragment builder.
+- **Problem:** `query_clubs_participating_regatta` and `query_club_with_aggregations` contain nearly identical complex subqueries for counting participations, female athletes, and male athletes. This duplication increases maintenance burden and risk of divergence.
+- **Suggested fix:** Extract the common aggregation subquery logic into a shared helper method or SQL fragment builder.
 
-### 10. `TimeStrip::add_start` and `add_finish` are nearly identical
+### 8. `TimeStrip::add_start` and `add_finish` are nearly identical — **Code Duplication** 📋
 
 - **File:** `db/src/timekeeper/timestrip.rs`, lines 41–63
 - **Problem:** `add_start` and `add_finish` differ only in the `Split` variant passed. This is code duplication.
 - **Suggested fix:** Extract a private `add_timestamp(split: Split, time: Option<DateTime<Utc>>)` method.
 
+### 9. `DbError` has two overlapping cache error variants — **Design** 💡
+
+- **File:** `db/src/error.rs`, lines 17–20
+- **Problem:** `DbError::Cache(String)` and `DbError::CacheError(#[from] CacheError)` serve similar purposes. The `Cache(String)` variant is used in `cache.rs` to wrap computation errors via `format!("Computation failed: {}", e)`, losing the original error type. Having two cache variants with identical display messages (`"Cache error: {0}"`) is confusing.
+- **Suggested fix:** Consider unifying into a single variant, or rename them to distinguish their purpose clearly (e.g., `CacheComputation(String)` vs `CacheDriver(CacheError)`).
+
+### 10. `compute_if_missing` loses original error type information — **Minor** 💡
+
+- **File:** `db/src/cache.rs`, lines 116–118
+- **Problem:** The `compute_if_missing` and `compute_if_missing_opt` methods convert computation errors to strings via `DbError::Cache(format!("Computation failed: {}", e))`. This loses the original error type (which is typically already a `DbError`), making it harder to match on specific error variants upstream.
+- **Suggested fix:** Since `F`'s error type is bounded by `Display` rather than `Into<DbError>`, consider tightening the bound to `Into<DbError>` so the original error is preserved, or keep the current approach and document that error context is intentionally simplified at the cache boundary.
+
+### 11. `get_visible_notifications` hardcodes `force_cache: false` — **Minor** 💡
+
+- **File:** `db/src/aquarius.rs`, line 299
+- **Problem:** `get_visible_notifications` always passes `false` for `force`, unlike other methods that accept `force_cache` from the caller. This means the caller cannot force a cache refresh for visible notifications.
+- **Suggested fix:** Add a `force_cache: bool` parameter to be consistent with other methods.
+
+### 12. Cache `max_cost` calculation uses `mem::size_of` (stack size only) — **Minor Inaccuracy** 💡
+
+- **File:** `db/src/cache/config.rs`, lines 38–68
+- **Problem:** `max_cost` is calculated as `mem::size_of::<T>() * MAX_COUNT`, but `mem::size_of` only accounts for stack size, not heap allocations (e.g., `String` fields). Meanwhile, `CacheCost` implementations correctly include heap size. This mismatch means the configured `max_cost` may be significantly smaller than the actual memory usage of cached entries, potentially causing premature eviction.
+- **Suggested fix:** Use a more realistic estimate that accounts for typical heap allocations per entry, or make `max_cost` configurable/tunable.
+
+### 13. `Aquarius::get_athlete` cache key ignores `regatta_id` — **Potential Bug** 🐛
+
+- **File:** `db/src/aquarius.rs`, lines 254–265
+- **Problem:** The `athlete` cache uses only `athlete_id` as the key (line 257: `compute_if_missing(&athlete_id, ...)`), but the query takes `regatta_id` as a parameter that affects the result (it filters entries by regatta). If the same athlete is queried for different regattas, the cached result from the first regatta would be returned for the second.
+- **Suggested fix:** Use a composite key `(regatta_id, athlete_id)` for the `athlete` cache, consistent with other composite-key caches like `athlete_entries`.
+
+### 14. Magic number `64` used throughout for "final round" — **Maintainability** 💡
+
+- **Files:** Multiple model files (`entry.rs` line 114, `athlete.rs` line 63, `crew.rs` implicit, `heat_entry.rs`, `statistics.rs`)
+- **Problem:** The value `64` appears repeatedly as a magic number representing the "final round". While consistent, it lacks documentation and a named constant.
+- **Suggested fix:** Define a named constant (e.g., `const ROUND_FINAL: i16 = 64;`) in the model module and use it throughout.
+
+---
+
+## Previously Fixed Issues ✅
+
+- ~~`Timestamp::persist` redundantly calls `.to_string()` on `format!()`~~ — FIXED
+- ~~`Score::calculate` uses manual rank counter instead of `enumerate`~~ — FIXED
+
 ---
 
 ## Positive Observations
 
-- **Parameterized queries throughout:** All SQL queries use `Query::new()` with `.bind()` for parameters — no string interpolation of user input.
-- **Consistent patterns:** All model types follow `From<&Row>` + `HeapSize`/`CacheCost`, making the codebase predictable.
-- **Good use of concurrent queries:** `join!`, `join3`, and `join_all` are used effectively to parallelize independent DB queries.
-- **Well-designed cache layer:** The `Cache<K, V>` abstraction with `compute_if_missing` provides a clean cache-aside pattern with TTL and cost-based eviction.
-- **Clean error type:** `DbError` using `thiserror` with `#[from]` conversions is idiomatic.
-- **Column name constants:** Model files define column names as `const` strings, reducing typo risk.
-- **Existing test coverage:** `flags_scraper` has a unit test validating the HTML parsing logic.
-- **`OnceLock` for lazy globals:** `ClubFlag` and `TiberiusPool` use `OnceLock` for safe lazy initialization.
+- **Parameterized queries throughout:** All SQL queries use `Query::new()` with `.bind()` for parameters — no string interpolation of user input. ✅
+- **Consistent patterns:** All model types follow `From<&Row>` + `HeapSize`/`CacheCost`, making the codebase predictable. ✅
+- **Good use of concurrent queries:** `join!`, `join3`, and `join_all` are used effectively to parallelize independent DB queries. ✅
+- **Well-designed cache layer:** The `Cache<K, V>` abstraction with `compute_if_missing` provides a clean cache-aside pattern with TTL and cost-based eviction. ✅
+- **Clean error type:** `DbError` using `thiserror` with `#[from]` conversions is idiomatic. ✅
+- **Column name constants:** Model files define column names as `const` strings, reducing typo risk. ✅
+- **Existing test coverage:** `flags_scraper` has a unit test validating the HTML parsing logic. ✅
+- **`OnceLock` for lazy globals:** `ClubFlag` and `TiberiusPool` use `OnceLock` for safe lazy initialization. ✅
+- **Clean clippy output:** No warnings from `cargo clippy`. ✅
+- **Thread-safe pool initialization:** `TiberiusPool::init` uses a double-check locking pattern with `OnceLock` + `Mutex` to ensure exactly-once initialization. ✅
+- **Effective user pool management:** `UserPoolManager` uses `RwLock` with double-checked locking for per-user connection pool caching. ✅
+- **Good cache invalidation strategy:** Write operations (create/update/delete notification) properly invalidate the corresponding cache entries. ✅
+- **`TryToEntity` trait:** Clean abstraction for optional entity construction from rows where the entity's columns may not be present. ✅
