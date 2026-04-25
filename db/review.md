@@ -38,11 +38,10 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 - **Problem:** Empty strings are returned as `None` rather than `Some("")`. This conflates "no value" with "empty value", which may cause subtle bugs if the distinction matters.
 - **Suggested fix:** Return `Some("".to_string())` for empty strings, or document this behavior prominently.
 
-### 5. `HeatResult::points` can underflow for `rank > 5` — **Bug** 🐛
+### 5. ~~`HeatResult::points` can underflow for `rank > 5`~~ ✅ FIXED
 
 - **File:** `db/src/aquarius/model/heat_result.rs`, line 38
-- **Problem:** `num_rowers + (5 - rank)` uses `u8` arithmetic. If `rank > 5`, the expression `5 - rank` underflows (panics in debug mode, wraps in release mode). While ranks > 5 may be uncommon, they are possible if there are more than 5 boats in a heat.
-- **Suggested fix:** Use saturating arithmetic: `num_rowers.saturating_add(5u8.saturating_sub(rank))`, or handle the case where `rank > 5` explicitly (e.g., return 0 points).
+- **Fix:** Added a guard `rank > 0 && rank <= 5` so the subtraction `5 - rank` only executes when it is safe. Ranks above 5 (or rank 0) now correctly yield 0 points instead of underflowing.
 
 ### 6. `Statistics::query` holds mutable borrow on `client` across `join!` — **Minor Efficiency** 💡
 
@@ -50,11 +49,10 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 - **Problem:** `join!` is used with `query.query(&mut client)` alongside `Statistics::query_oldest(...)` calls that also acquire their own pool connections. This means 3 connections are held simultaneously for one logical operation.
 - **Suggested fix:** Sequence the main query before the concurrent oldest-athlete queries to release the connection earlier, reducing pool pressure.
 
-### 7. Duplicated SQL aggregation subqueries in `Club` — **Code Duplication** 📋
+### 7. ~~Duplicated SQL aggregation subqueries in `Club`~~ ✅ FIXED
 
-- **File:** `db/src/aquarius/model/club.rs`, lines 90–183
-- **Problem:** `query_clubs_participating_regatta` and `query_club_with_aggregations` contain nearly identical complex subqueries for counting participations, female athletes, and male athletes. This duplication increases maintenance burden and risk of divergence.
-- **Suggested fix:** Extract the common aggregation subquery logic into a shared helper method or SQL fragment builder.
+- **File:** `db/src/aquarius/model/club.rs`
+- **Fix:** Extracted the three duplicated aggregation subqueries (Participations_Count, Athletes_Female_Count, Athletes_Male_Count) into a shared `Club::aggregation_subqueries(alias)` helper method, called by both `query_clubs_participating_regatta` and `query_club_with_aggregations`.
 
 ### 8. `TimeStrip::add_start` and `add_finish` are nearly identical — **Code Duplication** 📋
 

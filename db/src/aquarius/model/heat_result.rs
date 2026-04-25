@@ -5,6 +5,11 @@ use ::serde::Serialize;
 use ::tiberius::Row;
 use ::utoipa::ToSchema;
 
+const RANK: &str = "Result_Rank";
+const DELTA: &str = "Result_Delta";
+const DISPLAY_VALUE: &str = "Result_DisplayValue";
+const NET_TIME: &str = "Result_NetTime";
+
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct HeatResult {
@@ -27,15 +32,19 @@ pub struct HeatResult {
 
 impl HeatResult {
     pub(crate) fn select_columns(alias: &str) -> String {
-        format!(" {alias}.Result_Rank, {alias}.Result_Delta, {alias}.Result_DisplayValue, {alias}.Result_NetTime ")
+        format!(" {alias}.{RANK}, {alias}.{DELTA}, {alias}.{DISPLAY_VALUE}, {alias}.{NET_TIME} ")
     }
 }
 
 impl TryToEntity<HeatResult> for Row {
     fn try_to_entity(&self) -> Option<HeatResult> {
-        if let Some(rank) = <Row as TryRowColumn<u8>>::try_get_column(self, "Result_Rank") {
+        if let Some(rank) = <Row as TryRowColumn<u8>>::try_get_column(self, RANK) {
             let num_rowers: u8 = self.get_column(NUM_ROWERS);
-            let points: u8 = if rank > 0 { num_rowers + (5 - rank) } else { 0 };
+            let points: u8 = if rank > 0 && rank <= 5 {
+                num_rowers + (5 - rank)
+            } else {
+                0
+            };
 
             Some(HeatResult {
                 delta: None,
@@ -45,8 +54,8 @@ impl TryToEntity<HeatResult> for Row {
                     rank.to_string()
                 },
                 rank_sort: if rank == 0 { u8::MAX } else { rank },
-                net_time: self.get_column("Result_NetTime"),
-                result: self.get_column("Result_DisplayValue"),
+                net_time: self.get_column(NET_TIME),
+                result: self.get_column(DISPLAY_VALUE),
                 points,
             })
         } else {
