@@ -254,10 +254,11 @@ impl Aquarius {
     pub async fn get_athlete(&self, regatta_id: i32, athlete_id: i32, force_cache: bool) -> Result<Athlete, DbError> {
         self.caches
             .athlete
-            .compute_if_missing(&athlete_id, force_cache, || async move {
+            .compute_if_missing(&(regatta_id, athlete_id), force_cache, || async move {
                 timed_query!(
                     "Query athlete from DB:",
                     Athlete::query_athlete(regatta_id, athlete_id, &mut *TiberiusPool::instance().get().await?).await,
+                    regatta_id,
                     athlete_id
                 )
             })

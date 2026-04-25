@@ -84,11 +84,10 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 - **Problem:** `max_cost` is calculated as `mem::size_of::<T>() * MAX_COUNT`, but `mem::size_of` only accounts for stack size, not heap allocations (e.g., `String` fields). Meanwhile, `CacheCost` implementations correctly include heap size. This mismatch means the configured `max_cost` may be significantly smaller than the actual memory usage of cached entries, potentially causing premature eviction.
 - **Suggested fix:** Use a more realistic estimate that accounts for typical heap allocations per entry, or make `max_cost` configurable/tunable.
 
-### 13. `Aquarius::get_athlete` cache key ignores `regatta_id` — **Potential Bug** 🐛
+### 13. ~~`Aquarius::get_athlete` cache key ignores `regatta_id`~~ ✅ FIXED
 
-- **File:** `db/src/aquarius.rs`, lines 254–265
-- **Problem:** The `athlete` cache uses only `athlete_id` as the key (line 257: `compute_if_missing(&athlete_id, ...)`), but the query takes `regatta_id` as a parameter that affects the result (it filters entries by regatta). If the same athlete is queried for different regattas, the cached result from the first regatta would be returned for the second.
-- **Suggested fix:** Use a composite key `(regatta_id, athlete_id)` for the `athlete` cache, consistent with other composite-key caches like `athlete_entries`.
+- **Files:** `db/src/aquarius.rs`, `db/src/cache.rs`
+- **Fix:** Changed the `athlete` cache from `Cache<i32, Athlete>` to `Cache<(i32, i32), Athlete>` and updated `get_athlete` to use the composite key `(regatta_id, athlete_id)`, consistent with other composite-key caches like `athlete_entries`.
 
 ### 14. Magic number `64` used throughout for "final round" — **Maintainability** 💡
 

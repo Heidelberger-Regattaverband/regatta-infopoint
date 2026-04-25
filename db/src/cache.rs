@@ -197,7 +197,7 @@ pub(crate) struct Caches {
 
     // Caches with entries per race/heat/athlete
     pub(crate) race_heats_entries: Cache<i32, Race>,
-    pub(crate) athlete: Cache<i32, Athlete>,
+    pub(crate) athlete: Cache<(i32, i32), Athlete>,
     pub(crate) heat: Cache<i32, Heat>,
 
     pub(crate) notifications: Cache<i32, Vec<Notification>>,
