@@ -43,7 +43,7 @@ where
         let cache = AsyncCache::builder((max_entries * 1000) as usize, max_entries as i64)
             .set_ignore_internal_cost(true)
             .finalize(tokio::spawn)?;
-        debug!(type = type_name::<V>(), max_entries, max_cost = max_entries, ttl = ?ttl,
+        debug!(type = type_name::<V>(), max_entries, ttl = ?ttl,
             "New Cache:"
         );
         Ok(Cache {
