@@ -8,7 +8,7 @@ use ::std::hash::Hash;
 use ::std::sync::atomic::{AtomicU64, Ordering};
 use ::std::time::Duration;
 use ::stretto::AsyncCache;
-use ::tracing::info;
+use ::tracing::debug;
 
 /// A high-performance cache that uses `stretto` as the underlying cache with comprehensive features
 ///
@@ -26,11 +26,12 @@ where
 {
     /// The underlying stretto cache
     cache: AsyncCache<K, V>,
+    /// Time-to-live for cache entries
+    ttl: Duration,
     /// Atomic counter for cache hits
     hits: AtomicU64,
     /// Atomic counter for cache misses
     misses: AtomicU64,
-    ttl: Duration,
 }
 
 impl<K, V> Cache<K, V>
@@ -42,14 +43,14 @@ where
         let cache = AsyncCache::builder((max_entries * 1000) as usize, max_entries as i64)
             .set_ignore_internal_cost(true)
             .finalize(tokio::spawn)?;
-        info!(type = type_name::<V>(), max_entries, max_cost = max_entries, ttl = ?ttl,
+        debug!(type = type_name::<V>(), max_entries, max_cost = max_entries, ttl = ?ttl,
             "New Cache:"
         );
         Ok(Cache {
             cache,
+            ttl,
             hits: AtomicU64::new(0),
             misses: AtomicU64::new(0),
-            ttl,
         })
     }
 
