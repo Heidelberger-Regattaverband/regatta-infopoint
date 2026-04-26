@@ -13,7 +13,7 @@
       </headerContent>
 
       <content>
-        <NotificationList id="notificationList" items="{notifications>/}" showNoData="false">
+        <NotificationList items="{notifications>/}" showNoData="false">
           <items>
             <!-- ui5lint-disable no-deprecated-api -->
             <NotificationListItem title="{notifications>title}" description="{notifications>text}" unread="true"
@@ -142,6 +142,17 @@
               </tileContent>
             </GenericTile>
           </layout:content>
+
+          <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>problems.title}"
+            visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}" press=".onNavToProblems">
+            <tileContent>
+              <TileContent>
+                <content>
+                  <ImageContent src="sap-icon://alert" />
+                </content>
+              </TileContent>
+            </tileContent>
+          </GenericTile>
 
           <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>admin.notificationsTitle}"
             visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}" press=".navToAdmin">

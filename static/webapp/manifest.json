@@ -146,6 +146,11 @@
           "target": "timekeeping"
         },
         {
+          "pattern": "problems",
+          "name": "problems",
+          "target": "problems"
+        },
+        {
           "pattern": "admin",
           "name": "admin",
           "target": "admin"
@@ -239,6 +244,12 @@
         "timekeeping": {
           "type": "View",
           "name": "Timekeeping",
+          "level": 1,
+          "viewType": "XML"
+        },
+        "problems": {
+          "type": "View",
+          "name": "Problems",
           "level": 1,
           "viewType": "XML"
         },
