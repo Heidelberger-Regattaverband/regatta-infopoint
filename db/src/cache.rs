@@ -1,12 +1,9 @@
 pub(crate) mod config;
-pub(crate) mod cost;
-pub(crate) mod heap_size;
 
 use crate::aquarius::model::Notification;
 use crate::aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
 use crate::cache::config::CacheConfig;
 use crate::cache::config::CachesConfig;
-use crate::cache::cost::CacheCost;
 use crate::error::DbError;
 use ::futures::future::Future;
 use ::std::any::type_name;
@@ -31,7 +28,7 @@ use ::tracing::debug;
 pub(crate) struct Cache<K, V>
 where
     K: Hash + Eq + Send + Sync + Copy + 'static,
-    V: Send + Sync + Clone + CacheCost + 'static,
+    V: Send + Sync + Clone + 'static,
 {
     /// The underlying stretto cache
     cache: AsyncCache<K, V>,
@@ -46,11 +43,11 @@ where
 impl<K, V> Cache<K, V>
 where
     K: Hash + Eq + Send + Sync + Copy + 'static,
-    V: Send + Sync + Clone + CacheCost + 'static,
+    V: Send + Sync + Clone + 'static,
 {
     fn try_new(config: CacheConfig) -> Result<Self, DbError> {
-        let cache = AsyncCache::new(config.max_entries, config.max_cost as i64, task::spawn)?;
-        debug!(type = type_name::<V>(), max_entries = config.max_entries, max_cost = config.max_cost, ttl = ?config.ttl,
+        let cache = AsyncCache::new(config.max_entries, config.max_entries as i64, task::spawn)?;
+        debug!(type = type_name::<V>(), max_entries = config.max_entries, max_cost = config.max_entries, ttl = ?config.ttl,
             "New Cache:"
         );
         Ok(Cache {
@@ -93,15 +90,10 @@ where
     }
 
     async fn set(&self, key: &K, value: &V) -> Result<bool, DbError> {
-        let cost = value.cache_cost();
-        self.set_with_cost(key, value, cost).await
-    }
-
-    async fn set_with_cost(&self, key: &K, value: &V, cost: i64) -> Result<bool, DbError> {
         // Insert with TTL and specified cost
         let result = self
             .cache
-            .try_insert_with_ttl(*key, value.clone(), cost, self.config.ttl)
+            .try_insert_with_ttl(*key, value.clone(), 1, self.config.ttl)
             .await?;
         Ok(result)
     }

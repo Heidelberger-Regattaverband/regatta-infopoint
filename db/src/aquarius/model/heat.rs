@@ -8,7 +8,6 @@ use super::age_class::ID as AGE_CLASS_ID;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::get_row;
 use super::get_rows;
-use crate::cache::heap_size::HeapSize;
 use crate::{
     error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
@@ -73,12 +72,6 @@ pub struct Heat {
 
     /// The round of this heat: 64 - final, 4 - Vorlauf
     pub(crate) round: i16,
-}
-
-impl HeapSize for Heat {
-    fn heap_size(&self) -> i64 {
-        self.round_code.heap_size() + self.label.heap_size()
-    }
 }
 
 impl Heat {

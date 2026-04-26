@@ -2,7 +2,6 @@ use super::age_class::ID as AGE_CLASS_ID;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::get_row;
 use super::get_rows;
-use crate::cache::heap_size::HeapSize;
 use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::model::{AgeClass, BoatClass, Entry, Heat, TryToEntity},
@@ -110,17 +109,6 @@ impl From<&Row> for Race {
 impl TryToEntity<Race> for Row {
     fn try_to_entity(&self) -> Option<Race> {
         <Row as TryRowColumn<i32>>::try_get_column(self, "Offer_ID").map(|_id| Race::from(self))
-    }
-}
-
-impl HeapSize for Race {
-    fn heap_size(&self) -> i64 {
-        self.number.heap_size()
-            + self.short_label.heap_size()
-            + self.long_label.heap_size()
-            + self.comment.heap_size()
-            + self.entries.heap_size()
-            + self.heats.heap_size()
     }
 }
 
