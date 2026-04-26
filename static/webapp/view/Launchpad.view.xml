@@ -13,7 +13,7 @@
       </headerContent>
 
       <content>
-        <NotificationList id="notificationList" items="{notifications>/}" showNoData="false">
+        <NotificationList items="{notifications>/}" showNoData="false">
           <items>
             <!-- ui5lint-disable no-deprecated-api -->
             <NotificationListItem title="{notifications>title}" description="{notifications>text}" unread="true"
