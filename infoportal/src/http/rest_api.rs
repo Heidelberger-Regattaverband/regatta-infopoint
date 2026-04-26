@@ -155,6 +155,7 @@ pub(crate) fn config(cfg: &mut ServiceConfig) {
             .service(athlete::get_athlete_entries)
             .service(athlete::get_participating_athletes)
             .service(get_active_regatta)
+            .service(race::get_club_conflict_races)
             .service(race::get_race)
             .service(race::get_races)
             .service(get_heats)

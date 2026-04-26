@@ -3,6 +3,7 @@ pub mod model;
 
 use crate::aquarius::model::Athlete;
 use crate::aquarius::model::Club;
+use crate::aquarius::model::ClubConflictRace;
 use crate::aquarius::model::CreateNotificationRequest;
 use crate::aquarius::model::Entry;
 use crate::aquarius::model::Filters;
@@ -263,6 +264,14 @@ impl Aquarius {
                 )
             })
             .await
+    }
+
+    pub async fn get_club_conflict_races(&self, regatta_id: i32) -> Result<Vec<ClubConflictRace>, DbError> {
+        timed_query!(
+            "Query club conflict races from DB:",
+            ClubConflictRace::query_club_conflicts(regatta_id, TiberiusPool::instance()).await,
+            regatta_id
+        )
     }
 
     pub async fn calculate_scoring(&self, regatta_id: i32) -> Result<Vec<Score>, DbError> {
