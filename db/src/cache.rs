@@ -1,22 +1,13 @@
-pub(crate) mod config;
-pub(crate) mod cost;
-pub(crate) mod heap_size;
-
 use crate::aquarius::model::Notification;
 use crate::aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
-use crate::cache::config::CacheConfig;
-use crate::cache::config::CachesConfig;
-use crate::cache::cost::CacheCost;
 use crate::error::DbError;
 use ::futures::future::Future;
 use ::std::any::type_name;
 use ::std::fmt::Display;
 use ::std::hash::Hash;
-
 use ::std::sync::atomic::{AtomicU64, Ordering};
 use ::std::time::Duration;
 use ::stretto::AsyncCache;
-use ::tokio::task;
 use ::tracing::debug;
 
 /// A high-performance cache that uses `stretto` as the underlying cache with comprehensive features
@@ -31,12 +22,12 @@ use ::tracing::debug;
 pub(crate) struct Cache<K, V>
 where
     K: Hash + Eq + Send + Sync + Copy + 'static,
-    V: Send + Sync + Clone + CacheCost + 'static,
+    V: Send + Sync + Clone + 'static,
 {
     /// The underlying stretto cache
     cache: AsyncCache<K, V>,
-    /// Cache configuration
-    config: CacheConfig,
+    /// Time-to-live for cache entries
+    ttl: Duration,
     /// Atomic counter for cache hits
     hits: AtomicU64,
     /// Atomic counter for cache misses
@@ -46,16 +37,18 @@ where
 impl<K, V> Cache<K, V>
 where
     K: Hash + Eq + Send + Sync + Copy + 'static,
-    V: Send + Sync + Clone + CacheCost + 'static,
+    V: Send + Sync + Clone + 'static,
 {
-    fn try_new(config: CacheConfig) -> Result<Self, DbError> {
-        let cache = AsyncCache::new(config.max_entries, config.max_cost as i64, task::spawn)?;
-        debug!(type = type_name::<V>(), max_entries = config.max_entries, max_cost = config.max_cost, ttl = ?config.ttl,
+    fn new(ttl: Duration, max_entries: u32) -> Result<Self, DbError> {
+        let cache = AsyncCache::builder((max_entries * 1000) as usize, max_entries as i64)
+            .set_ignore_internal_cost(true)
+            .finalize(tokio::spawn)?;
+        debug!(type = type_name::<V>(), max_entries, ?ttl,
             "New Cache:"
         );
         Ok(Cache {
             cache,
-            config,
+            ttl,
             hits: AtomicU64::new(0),
             misses: AtomicU64::new(0),
         })
@@ -93,16 +86,8 @@ where
     }
 
     async fn set(&self, key: &K, value: &V) -> Result<bool, DbError> {
-        let cost = value.cache_cost();
-        self.set_with_cost(key, value, cost).await
-    }
-
-    async fn set_with_cost(&self, key: &K, value: &V, cost: i64) -> Result<bool, DbError> {
         // Insert with TTL and specified cost
-        let result = self
-            .cache
-            .try_insert_with_ttl(*key, value.clone(), cost, self.config.ttl)
-            .await?;
+        let result = self.cache.try_insert_with_ttl(*key, value.clone(), 1, self.ttl).await?;
         Ok(result)
     }
 
@@ -205,29 +190,27 @@ pub(crate) struct Caches {
 
 impl Caches {
     pub(crate) fn try_new(ttl: Duration) -> Result<Self, DbError> {
-        let config = CachesConfig::new(ttl);
-
         Ok(Caches {
             // Caches with entries per regatta - using regatta config for all regatta-scoped data
-            regattas: Cache::try_new(config.regattas.clone())?,
-            races: Cache::try_new(config.races.clone())?,
-            heats: Cache::try_new(config.heats.clone())?,
-            clubs: Cache::try_new(config.clubs.clone())?,
-            athletes: Cache::try_new(config.athletes.clone())?,
-            filters: Cache::try_new(config.regattas.clone())?,
-            schedule: Cache::try_new(config.regattas)?,
+            regattas: Cache::new(ttl, 5)?,
+            races: Cache::new(ttl, 5)?,
+            heats: Cache::new(ttl, 5)?,
+            clubs: Cache::new(ttl, 5)?,
+            athletes: Cache::new(ttl, 5)?,
+            filters: Cache::new(ttl, 5)?,
+            schedule: Cache::new(ttl, 5)?,
 
             // Caches with composite keys
-            club_with_aggregations: Cache::try_new(config.clubs.clone())?,
-            club_entries: Cache::try_new(config.clubs)?,
-            athlete_entries: Cache::try_new(config.athletes.clone())?,
+            club_with_aggregations: Cache::new(ttl, 100)?,
+            club_entries: Cache::new(ttl, 100)?,
+            athlete_entries: Cache::new(ttl, 100)?,
 
             // Caches with entries per race/heat/athlete
-            race_heats_entries: Cache::try_new(config.races)?,
-            athlete: Cache::try_new(config.athletes)?,
-            heat: Cache::try_new(config.heats)?,
+            race_heats_entries: Cache::new(ttl, 300)?,
+            heat: Cache::new(ttl, 350)?,
+            athlete: Cache::new(ttl, 700)?,
 
-            notifications: Cache::try_new(config.notifications)?,
+            notifications: Cache::new(ttl, 10)?,
         })
     }
 

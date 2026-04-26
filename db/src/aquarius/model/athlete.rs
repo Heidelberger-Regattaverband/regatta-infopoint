@@ -2,7 +2,6 @@ use super::Club;
 use super::TryToEntity;
 use super::get_row;
 use super::get_rows;
-use crate::cache::heap_size::HeapSize;
 use crate::tiberius::TiberiusClient;
 use crate::{
     error::DbError,
@@ -43,16 +42,6 @@ pub struct Athlete {
     /// The number of entries the athlete has.
     #[serde(skip_serializing_if = "Option::is_none")]
     entries_count: Option<i32>,
-}
-
-impl HeapSize for Athlete {
-    fn heap_size(&self) -> i64 {
-        self.first_name.heap_size()
-            + self.last_name.heap_size()
-            + self.gender.heap_size()
-            + self.year.heap_size()
-            + self.club.heap_size()
-    }
 }
 
 impl Athlete {

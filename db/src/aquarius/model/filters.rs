@@ -8,7 +8,6 @@ use super::boat_class::COXED;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;
 use super::get_rows;
-use crate::cache::heap_size::HeapSize;
 use crate::{
     error::DbError,
     tiberius::{RowColumn, TiberiusPool},
@@ -53,19 +52,6 @@ struct Round {
 
     /// The code: V - Vorlauf, H - Hoffnungslauf
     code: String,
-}
-
-impl HeapSize for Filters {
-    fn heap_size(&self) -> i64 {
-        // Filters contains Vecs of small items; estimate via count * avg size
-        (self.distances.len() * std::mem::size_of::<i16>()) as i64
-            + (self.dates.len() * std::mem::size_of::<NaiveDate>()) as i64
-            + (self.age_classes.len() * std::mem::size_of::<AgeClass>()) as i64
-            + (self.boat_classes.len() * std::mem::size_of::<BoatClass>()) as i64
-            + (self.rounds.len() * std::mem::size_of::<Round>()) as i64
-            + (self.lightweight.len() * std::mem::size_of::<bool>()) as i64
-            + (self.blocks.len() * std::mem::size_of::<Block>()) as i64
-    }
 }
 
 impl Filters {

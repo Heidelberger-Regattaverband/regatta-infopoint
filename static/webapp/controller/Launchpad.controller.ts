@@ -25,7 +25,6 @@ export default class LaunchpadController extends BaseController {
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.credentialsModel, "credentials");
-    super.getComponentJSONModel("messages");
     this.getIdentity();
   }
 
@@ -74,7 +73,7 @@ export default class LaunchpadController extends BaseController {
       url: `/api/notifications/${notificationId}/read`,
       success: (result: any) => {
         // refresh notifications model
-        super.getComponentJSONModel("messages")?.refresh();
+        super.getComponentJSONModel("notifications")?.refresh();
       }
     });
   }

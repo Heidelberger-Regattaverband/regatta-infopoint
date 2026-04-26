@@ -14,7 +14,7 @@ export default class Component extends UIComponent {
 
     private regattaModel?: JSONModel;
     private filtersModel?: JSONModel;
-    private readonly messagesModel: JSONModel = new JSONModel();
+    private readonly notificationsModel: JSONModel = new JSONModel();
     private regattaModelPromise?: Promise<JSONModel>;
     private filtersModelPromise?: Promise<JSONModel>;
 
@@ -150,9 +150,9 @@ export default class Component extends UIComponent {
     private async loadNotifications(): Promise<JSONModel> {
         console.debug("Loading notifications");
         const regattaId = this.regattaModel?.getData().id ?? -1;
-        await this.messagesModel.loadData(`/api/regattas/${regattaId}/visible_notifications`);
-        this.messagesModel.refresh();
+        await this.notificationsModel.loadData(`/api/regattas/${regattaId}/visible_notifications`);
+        this.notificationsModel.refresh();
         console.debug("Notifications loaded");
-        return this.messagesModel;
+        return this.notificationsModel;
     }
 }
