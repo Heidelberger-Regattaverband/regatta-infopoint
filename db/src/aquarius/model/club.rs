@@ -1,7 +1,6 @@
 use super::entry::ID as entry_ID;
 use super::get_row;
 use super::get_rows;
-use crate::cache::heap_size::HeapSize;
 use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::flags_scraper::ClubFlag,
@@ -69,16 +68,6 @@ pub struct Club {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     longitude: Option<Decimal>,
-}
-
-impl HeapSize for Club {
-    fn heap_size(&self) -> i64 {
-        self.short_name.heap_size()
-            + self.long_name.heap_size()
-            + self.abbreviation.heap_size()
-            + self.city.heap_size()
-            + self.flag_url.heap_size()
-    }
 }
 
 impl Club {
