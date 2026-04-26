@@ -8,7 +8,6 @@ use ::std::hash::Hash;
 use ::std::sync::atomic::{AtomicU64, Ordering};
 use ::std::time::Duration;
 use ::stretto::AsyncCache;
-use ::tokio::task;
 use ::tracing::info;
 
 /// A high-performance cache that uses `stretto` as the underlying cache with comprehensive features
@@ -40,7 +39,9 @@ where
     V: Send + Sync + Clone + 'static,
 {
     fn new(ttl: Duration, max_entries: u32) -> Result<Self, DbError> {
-        let cache = AsyncCache::new((max_entries * 1000) as usize, (max_entries * 10) as i64, task::spawn)?;
+        let cache = AsyncCache::builder((max_entries * 1000) as usize, max_entries as i64)
+            .set_ignore_internal_cost(true)
+            .finalize(tokio::spawn)?;
         info!(type = type_name::<V>(), max_entries, max_cost = max_entries, ttl = ?ttl,
             "New Cache:"
         );
@@ -190,13 +191,13 @@ impl Caches {
     pub(crate) fn try_new(ttl: Duration) -> Result<Self, DbError> {
         Ok(Caches {
             // Caches with entries per regatta - using regatta config for all regatta-scoped data
-            regattas: Cache::new(ttl, 10)?,
-            races: Cache::new(ttl, 10)?,
-            heats: Cache::new(ttl, 10)?,
-            clubs: Cache::new(ttl, 10)?,
-            athletes: Cache::new(ttl, 10)?,
-            filters: Cache::new(ttl, 10)?,
-            schedule: Cache::new(ttl, 10)?,
+            regattas: Cache::new(ttl, 5)?,
+            races: Cache::new(ttl, 5)?,
+            heats: Cache::new(ttl, 5)?,
+            clubs: Cache::new(ttl, 5)?,
+            athletes: Cache::new(ttl, 5)?,
+            filters: Cache::new(ttl, 5)?,
+            schedule: Cache::new(ttl, 5)?,
 
             // Caches with composite keys
             club_with_aggregations: Cache::new(ttl, 100)?,
