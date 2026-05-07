@@ -318,12 +318,12 @@ export default class Formatter {
       if (entry.groupValue !== undefined) {
         label += ` - ${Formatter.groupValueLabel(entry.groupValue)}`;
       }
-      if (entry.boatNumber) {
-        label += ` - Boot ${entry.boatNumber}`;
-      }
       if (entry.comment) {
         label += `  (${entry.comment})`;
       }
+    }
+    if (entry.boatNumber) {
+      label += ` - Boot ${entry.boatNumber}`;
     }
 
     return label;
