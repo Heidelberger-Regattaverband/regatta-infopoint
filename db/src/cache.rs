@@ -7,8 +7,9 @@ use ::std::fmt::Display;
 use ::std::hash::Hash;
 use ::std::sync::atomic::{AtomicU64, Ordering};
 use ::std::time::Duration;
-use ::stretto::AsyncCache;
+use ::stretto::TokioCache;
 use ::tracing::debug;
+use stretto::AsyncCacheBuilder;
 
 /// A high-performance cache that uses `stretto` as the underlying cache with comprehensive features
 ///
@@ -25,7 +26,7 @@ where
     V: Send + Sync + Clone + 'static,
 {
     /// The underlying stretto cache
-    cache: AsyncCache<K, V>,
+    cache: TokioCache<K, V>,
     /// Time-to-live for cache entries
     ttl: Duration,
     /// Atomic counter for cache hits
@@ -40,9 +41,9 @@ where
     V: Send + Sync + Clone + 'static,
 {
     fn new(ttl: Duration, max_entries: u32) -> Result<Self, DbError> {
-        let cache = AsyncCache::builder((max_entries * 1000) as usize, max_entries as i64)
+        let cache = AsyncCacheBuilder::new((max_entries * 1000) as usize, max_entries as i64)
             .set_ignore_internal_cost(true)
-            .finalize(tokio::spawn)?;
+            .build()?;
         debug!(type = type_name::<V>(), max_entries, ?ttl,
             "New Cache:"
         );
