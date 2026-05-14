@@ -17,6 +17,7 @@ export default class Component extends UIComponent {
     private regattaModel?: JSONModel;
     private filtersModel?: JSONModel;
     private readonly notificationsModel: JSONModel = new JSONModel();
+    // Memoised promises ensure concurrent callers share a single in-flight request and the cached model thereafter
     private regattaModelPromise?: Promise<JSONModel>;
     private filtersModelPromise?: Promise<JSONModel>;
 
@@ -26,26 +27,16 @@ export default class Component extends UIComponent {
     };
 
     async getActiveRegatta(): Promise<JSONModel> {
-        if (this.regattaModelPromise) {
-            return this.regattaModelPromise;
-        }
-        if (!this.regattaModel) {
-            this.regattaModelPromise = this.loadActiveRegatta();
-            this.regattaModel = await this.regattaModelPromise;
-            delete this.regattaModelPromise;
-        }
+        // Use a single memoised promise: concurrent callers receive the same
+        // in-flight request, later callers receive the resolved value.
+        this.regattaModelPromise ??= this.loadActiveRegatta();
+        this.regattaModel = await this.regattaModelPromise;
         return this.regattaModel;
     }
 
     async getFilters(): Promise<JSONModel> {
-        if (this.filtersModelPromise) {
-            return this.filtersModelPromise;
-        }
-        if (!this.filtersModel) {
-            this.filtersModelPromise = this.loadFilters();
-            this.filtersModel = await this.filtersModelPromise;
-            delete this.filtersModelPromise;
-        }
+        this.filtersModelPromise ??= this.loadFilters();
+        this.filtersModel = await this.filtersModelPromise;
         return this.filtersModel;
     }
 
