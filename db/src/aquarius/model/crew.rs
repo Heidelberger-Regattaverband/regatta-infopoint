@@ -13,9 +13,9 @@ use ::utoipa::ToSchema;
 
 const ID: &str = "Crew_ID";
 const POS: &str = "Crew_Pos";
-const IS_COX: &str = "Crew_IsCox";
+pub(super) const IS_COX: &str = "Crew_IsCox";
 const ROUND_FROM: &str = "Crew_RoundFrom";
-const ROUND_TO: &str = "Crew_RoundTo";
+pub(super) const ROUND_TO: &str = "Crew_RoundTo";
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]

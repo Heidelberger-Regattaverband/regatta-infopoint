@@ -3,6 +3,8 @@ use super::athlete::ID as ATHLETE_ID;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;
 use super::club::ID as CLUB_ID;
+use super::crew::IS_COX as CREW_IS_COX;
+use super::crew::ROUND_TO as CREW_ROUND_TO;
 use super::entry::ID as ENTRY_ID;
 use super::get_rows;
 use super::heat::ID as HEAT_ID;
@@ -56,7 +58,7 @@ impl Score {
               JOIN Offer       ON       {RACE_ID} = Comp_Race_ID_FK
               JOIN BoatClass   ON {BOAT_CLASS_ID} = Offer_BoatClass_ID_FK
               JOIN RaceMode    ON     RaceMode_ID = Offer_RaceMode_ID_FK
-              WHERE Offer_Event_ID_FK = @P1 AND Crew_IsCox = 0 AND Result_SplitNr = 64 AND Crew_RoundTo = 64 AND Result_Rank > 0 AND {HEAT_ROUND} = 64 AND Comp_State = 4
+              WHERE Offer_Event_ID_FK = @P1 AND {CREW_IS_COX} = 0 AND Result_SplitNr = 64 AND {CREW_ROUND_TO} = 64 AND Result_Rank > 0 AND {HEAT_ROUND} = 64 AND Comp_State = 4
             ) as t
             GROUP BY {CLUB_ID}, Club_City, Club_Name, Club_Abbr, Club_UltraAbbr, Club_ExternID
             ORDER BY points DESC",

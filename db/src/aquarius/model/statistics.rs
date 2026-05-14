@@ -5,6 +5,7 @@ use super::boat_class::COXED;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;
 use super::club::ID as CLUB_ID;
+use super::crew::IS_COX as CREW_IS_COX;
 use super::entry::CANCELLED as ENTRY_CANCELLED;
 use super::entry::ID as ENTRY_ID;
 use super::get_row;
@@ -210,7 +211,7 @@ impl Statistics {
             JOIN  Crew   ON Crew_Entry_ID_FK   = {ENTRY_ID}
             JOIN  Athlet ON Crew_Athlete_ID_FK = {ATHLETE_ID}
             JOIN  Club   ON Athlet_Club_ID_FK  = {CLUB_ID}
-            WHERE Entry_Event_ID_FK = @P1 AND {ENTRY_CANCELLED} = 0 AND Athlet_Gender = @P2 AND Crew_IsCox = 0
+            WHERE Entry_Event_ID_FK = @P1 AND {ENTRY_CANCELLED} = 0 AND Athlet_Gender = @P2 AND {CREW_IS_COX} = 0
             ORDER BY Athlet_DOB"
         ));
         query.bind(regatta_id);

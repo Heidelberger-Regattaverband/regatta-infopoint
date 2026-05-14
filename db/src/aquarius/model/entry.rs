@@ -5,6 +5,7 @@ use super::Race;
 use super::TryToEntity;
 use super::athlete::ID as ATHLETE_ID;
 use super::club::ID as CLUB_ID;
+use super::crew::ROUND_TO as CREW_ROUND_TO;
 use super::get_rows;
 use super::race::ID as RACE_ID;
 use crate::{
@@ -119,7 +120,7 @@ impl Entry {
             JOIN Label       l ON     l.Label_ID = el.EL_Label_ID_FK
             JOIN Offer       o ON    o.{RACE_ID} = e.Entry_Race_ID_FK
             WHERE e.Entry_Event_ID_FK = @P1 AND ac.{CLUB_ID} = @P2
-                AND el.EL_RoundFrom <= @P3 AND @P3 <= el.EL_RoundTo AND cr.Crew_RoundTo = @P3
+                AND el.EL_RoundFrom <= @P3 AND @P3 <= el.EL_RoundTo AND cr.{CREW_ROUND_TO} = @P3
             ORDER BY o.{RACE_ID} ASC",
             Entry::select_columns("e"),
             Club::select_all_columns("oc"),
@@ -155,7 +156,7 @@ impl Entry {
             JOIN Label       l ON     l.Label_ID = el.EL_Label_ID_FK
             JOIN Offer       o ON   o.{RACE_ID} = e.Entry_Race_ID_FK
             WHERE e.Entry_Event_ID_FK = @P1 AND a.{ATHLETE_ID} = @P2
-                AND el.EL_RoundFrom <= @P3 AND @P3 <= el.EL_RoundTo AND cr.Crew_RoundTo = @P3
+                AND el.EL_RoundFrom <= @P3 AND @P3 <= el.EL_RoundTo AND cr.{CREW_ROUND_TO} = @P3
             ORDER BY o.{RACE_ID} ASC",
             Entry::select_columns("e"),
             Club::select_all_columns("oc"),
