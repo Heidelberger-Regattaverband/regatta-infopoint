@@ -8,6 +8,7 @@ use super::age_class::ID as AGE_CLASS_ID;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::get_row;
 use super::get_rows;
+use super::race::ID as RACE_ID;
 use crate::{
     error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
@@ -124,7 +125,7 @@ impl Heat {
     pub async fn query_heats_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2}, {3} FROM Comp c
-            JOIN Offer     o ON o.Offer_ID              = c.Comp_Race_ID_FK
+            JOIN Offer     o ON o.{RACE_ID}             = c.Comp_Race_ID_FK
             JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
             WHERE c.Comp_Event_ID_FK = @P1 AND c.{DATE_TIME} IS NOT NULL
@@ -197,7 +198,7 @@ impl Heat {
     pub async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2}, {3} FROM Comp c
-            JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
+            JOIN Offer o     ON o.{RACE_ID}             = c.Comp_Race_ID_FK
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
             WHERE {ID} = @P1",

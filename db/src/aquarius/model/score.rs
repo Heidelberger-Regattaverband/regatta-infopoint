@@ -2,6 +2,7 @@ use super::Club;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;
 use super::get_rows;
+use super::race::ID as RACE_ID;
 use crate::tiberius::TiberiusClient;
 use crate::{
     error::DbError,
@@ -47,7 +48,7 @@ impl Score {
               JOIN Crew        ON Entry_ID     = Crew_Entry_ID_FK
               JOIN Athlet      ON Athlet_ID    = Crew_Athlete_ID_FK
               JOIN Club        ON Club_ID      = Athlet_Club_ID_FK
-              JOIN Offer       ON Offer_ID     = Comp_Race_ID_FK
+              JOIN Offer       ON {RACE_ID}    = Comp_Race_ID_FK
               JOIN BoatClass   ON {BOAT_CLASS_ID} = Offer_BoatClass_ID_FK
               JOIN RaceMode    ON RaceMode_ID  = Offer_RaceMode_ID_FK
               WHERE Offer_Event_ID_FK = @P1 AND Crew_IsCox = 0 AND Result_SplitNr = 64 AND Crew_RoundTo = 64 AND Result_Rank > 0 AND Comp_Round = 64 AND Comp_State = 4

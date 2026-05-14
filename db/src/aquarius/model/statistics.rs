@@ -4,6 +4,7 @@ use super::boat_class::COXED;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;
 use super::get_row;
+use super::race::ID as RACE_ID;
 use super::try_get_row;
 use crate::{
     error::DbError,
@@ -154,26 +155,26 @@ impl Statistics {
           (SELECT COALESCE(SUM({NUM_ROWERS}), 0) FROM (
             SELECT {NUM_ROWERS}
             FROM  Entry
-            JOIN  Offer     ON Offer_ID = Entry_Race_ID_FK
+            JOIN  Offer     ON {RACE_ID} = Entry_Race_ID_FK
             JOIN  BoatClass ON {BOAT_CLASS_ID} = Offer_BoatClass_ID_FK
             WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) as seats) AS entries_seats,
           (SELECT COALESCE(SUM({COXED}), 0) FROM (
             SELECT {COXED}
             FROM  Entry      e
-            JOIN  Offer      o ON o.Offer_ID         = e.Entry_Race_ID_FK
+            JOIN  Offer      o ON o.{RACE_ID}        = e.Entry_Race_ID_FK
             JOIN  BoatClass bc ON bc.{BOAT_CLASS_ID} = o.Offer_BoatClass_ID_FK
             WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue = 0) as seats) AS entries_seats_cox,
           (SELECT COALESCE(SUM(bc.BoatClass_NumRowers), 0) FROM (
             SELECT bc.BoatClass_NumRowers
             FROM Comp       c
-            JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.Offer_ID
+            JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.{RACE_ID}
             JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
             WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_Cancelled = 0
             ) as bc) as medals_rowers,
           (SELECT COALESCE(SUM(bc.BoatClass_Coxed), 0) FROM (
             SELECT bc.BoatClass_Coxed
             FROM Comp       c
-            JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.Offer_ID
+            JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.{RACE_ID}
             JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
             WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_Cancelled = 0
             ) as bc) as medals_coxes

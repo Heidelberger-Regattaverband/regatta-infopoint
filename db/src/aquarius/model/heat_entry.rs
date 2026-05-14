@@ -7,6 +7,7 @@ use super::entry::Entry;
 use super::get_rows;
 use super::heat::Heat;
 use super::heat_result::HeatResult;
+use super::race::ID as RACE_ID;
 use super::race::Race;
 use crate::{
     error::DbError,
@@ -58,7 +59,7 @@ impl HeatEntry {
         let sql = format!("SELECT DISTINCT ce.CE_ID, ce.CE_Lane, {0}, Label_Short, {NUM_ROWERS}, {1}, {2}, {3}
             FROM CompEntries ce
             JOIN Comp                  ON CE_Comp_ID_FK     = Comp_ID
-            JOIN Offer o               ON o.Offer_ID        = Comp_Race_ID_FK
+            JOIN Offer o               ON o.{RACE_ID}       = Comp_Race_ID_FK
             JOIN BoatClass             ON o.Offer_BoatClass_ID_FK = {BOAT_CLASS_ID}
             FULL OUTER JOIN Entry e    ON CE_Entry_ID_FK    = e.Entry_ID
             FULL OUTER JOIN EntryLabel ON EL_Entry_ID_FK    = e.Entry_ID

@@ -1,4 +1,5 @@
 use super::get_rows;
+use super::race::ID as RACE_ID;
 use crate::tiberius::TiberiusClient;
 use crate::{
     error::DbError,
@@ -65,19 +66,21 @@ impl From<&Row> for ScheduleEntry {
 
 impl Schedule {
     pub async fn query_schedule_for_regatta(regatta_id: i32, client: &mut TiberiusClient) -> Result<Self, DbError> {
-        let sql = "SELECT o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_Distance,
-            (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.Offer_ID AND e.Entry_CancelValue = 0) as Boats,
-            (SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0 
+        let sql = format!(
+            "SELECT o.Offer_RaceNumber, o.Offer_ShortLabel, o.Offer_Distance,
+            (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = o.{RACE_ID} AND e.Entry_CancelValue = 0) as Boats,
+            (SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = o.{RACE_ID} AND c.Comp_Cancelled = 0 
                 AND c.Comp_RoundCode IN ('R', 'A', 'F')) as Final_Heats,
-            (SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0 
+            (SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = o.{RACE_ID} AND c.Comp_Cancelled = 0 
                 AND c.Comp_RoundCode IN ('V')) as Forerun_Heats,
-            (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0 
+            (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = o.{RACE_ID} AND c.Comp_Cancelled = 0 
                 AND c.Comp_RoundCode IN ('R', 'A', 'F')) as Final_Start,
-            (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = o.Offer_ID AND c.Comp_Cancelled = 0 
+            (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = o.{RACE_ID} AND c.Comp_Cancelled = 0 
                 AND c.Comp_RoundCode IN ('V')) as Forerun_Start
             FROM Offer o
             WHERE o.Offer_Event_ID_FK = @P1 AND o.Offer_Cancelled = 0 
-            ORDER BY Final_Start";
+            ORDER BY Final_Start"
+        );
 
         let mut query: Query = Query::new(sql);
         query.bind(regatta_id);

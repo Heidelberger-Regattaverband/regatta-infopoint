@@ -13,7 +13,7 @@ use ::serde::Serialize;
 use ::tiberius::{Query, Row};
 use ::utoipa::ToSchema;
 
-const ID: &str = "Offer_ID";
+pub(super) const ID: &str = "Offer_ID";
 const RACE_NUMBER: &str = "Offer_RaceNumber";
 const SHORT_LABEL: &str = "Offer_ShortLabel";
 const LONG_LABEL: &str = "Offer_LongLabel";
@@ -180,7 +180,7 @@ impl Race {
             "SELECT {0}, {1}, {2} FROM Offer o
             JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
-            WHERE o.Offer_ID = @P1",
+            WHERE o.{ID} = @P1",
             Race::select_columns_with_analytical("o"),
             AgeClass::select_minimal_columns("a"),
             BoatClass::select_columns("b")
