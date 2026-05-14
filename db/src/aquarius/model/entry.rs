@@ -20,7 +20,7 @@ const BIB: &str = "Entry_Bib";
 const COMMENT: &str = "Entry_Comment";
 const BOAT_NUMBER: &str = "Entry_BoatNumber";
 const GROUP_VALUE: &str = "Entry_GroupValue";
-const CANCEL_VALUE: &str = "Entry_CancelValue";
+pub(crate) const CANCELLED: &str = "Entry_CancelValue";
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -69,7 +69,7 @@ pub struct Entry {
 
 impl From<&Row> for Entry {
     fn from(value: &Row) -> Self {
-        let cancel_value: u8 = value.get_column(CANCEL_VALUE);
+        let cancel_value: u8 = value.get_column(CANCELLED);
 
         Entry {
             id: value.get_column(ID),
@@ -90,7 +90,7 @@ impl From<&Row> for Entry {
 impl Entry {
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
-            "{alias}.{ID}, {alias}.{BIB}, {alias}.{COMMENT}, {alias}.{BOAT_NUMBER}, {alias}.{GROUP_VALUE}, {alias}.{CANCEL_VALUE}"
+            "{alias}.{ID}, {alias}.{BIB}, {alias}.{COMMENT}, {alias}.{BOAT_NUMBER}, {alias}.{GROUP_VALUE}, {alias}.{CANCELLED}"
         )
     }
 

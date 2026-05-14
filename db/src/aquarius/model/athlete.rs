@@ -1,6 +1,7 @@
 use super::Club;
 use super::TryToEntity;
 use super::club::ID as CLUB_ID;
+use super::entry::CANCELLED as ENTRY_CANCELLED;
 use super::entry::ID as ENTRY_ID;
 use super::get_row;
 use super::get_rows;
@@ -59,13 +60,13 @@ impl Athlete {
                     SELECT {ID} FROM Athlet
                     JOIN Crew  ON Crew_Athlete_ID_FK = {ID}
                     JOIN Entry ON Crew_Entry_ID_FK   = {ENTRY_ID}
-                    WHERE {ID} = a.{ID} AND Entry_CancelValue = 0 AND Crew_RoundTo = @P2
+                    WHERE {ID} = a.{ID} AND {ENTRY_CANCELLED} = 0 AND Crew_RoundTo = @P2
                 ) AS {ENTRIES_COUNT} ) AS {ENTRIES_COUNT}
                 FROM Athlet a
                 JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.{CLUB_ID}
                 JOIN Crew  cr ON a.{ID}              = cr.Crew_Athlete_ID_FK
                 JOIN Entry  e ON cr.Crew_Entry_ID_FK = e.{ENTRY_ID}
-                WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue = 0 AND cr.Crew_RoundTo = @P2",
+                WHERE e.Entry_Event_ID_FK = @P1 AND e.{ENTRY_CANCELLED} = 0 AND cr.Crew_RoundTo = @P2",
             Athlete::select_columns("a"),
             Club::select_min_columns("cl")
         ));
@@ -89,7 +90,7 @@ impl Athlete {
                     SELECT {ID} FROM Athlet
                     JOIN Crew  ON Crew_Athlete_ID_FK = {ID}
                     JOIN Entry ON Crew_Entry_ID_FK   = {ENTRY_ID}
-                    WHERE e.Entry_Event_ID_FK = @P1 AND {ID} = a.{ID} AND Entry_CancelValue = 0 AND Crew_RoundTo = @P3
+                    WHERE e.Entry_Event_ID_FK = @P1 AND {ID} = a.{ID} AND {ENTRY_CANCELLED} = 0 AND Crew_RoundTo = @P3
                 ) AS {ENTRIES_COUNT} ) AS {ENTRIES_COUNT}
                 FROM Athlet a
                 JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.{CLUB_ID}

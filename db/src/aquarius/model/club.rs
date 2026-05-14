@@ -1,3 +1,4 @@
+use super::entry::CANCELLED as ENTRY_CANCELLED;
 use super::entry::ID as ENTRY_ID;
 use super::get_row;
 use super::get_rows;
@@ -88,7 +89,7 @@ impl Club {
                     JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
                     JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
                     JOIN Entry      ON Crew_Entry_ID_FK   = {ENTRY_ID}
-                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND {ENTRY_CANCELLED} = 0
                         AND Crew_RoundTo = 64
                 ) AS Participations_Count) AS Participations_Count,
                 (SELECT COUNT(*) FROM (
@@ -97,7 +98,7 @@ impl Club {
                     JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
                     JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
                     JOIN Entry      ON Crew_Entry_ID_FK   = {ENTRY_ID}
-                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND {ENTRY_CANCELLED} = 0
                         AND Crew_RoundTo = 64 AND Athlet_Gender = 'W'
                 ) AS Athletes_Female_Count) AS Athletes_Female_Count,
                 (SELECT COUNT(*) FROM (
@@ -106,7 +107,7 @@ impl Club {
                     JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
                     JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
                     JOIN Entry      ON Crew_Entry_ID_FK   = {ENTRY_ID}
-                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND {ENTRY_CANCELLED} = 0
                         AND Crew_RoundTo = 64 AND Athlet_Gender = 'M'
                 ) AS Athletes_Male_Count) AS Athletes_Male_Count
             FROM Club c
@@ -143,7 +144,7 @@ impl Club {
                     JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
                     JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
                     JOIN Entry      ON Crew_Entry_ID_FK   = {ENTRY_ID}
-                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND {ENTRY_CANCELLED} = 0
                         AND Crew_RoundTo = 64
                 ) AS Participations_Count) AS Participations_Count,
                 (SELECT COUNT(*) FROM (
@@ -151,7 +152,7 @@ impl Club {
                     JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
                     JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
                     JOIN Entry      ON Crew_Entry_ID_FK   = {ENTRY_ID}
-                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND {ENTRY_CANCELLED} = 0
                         AND Crew_RoundTo = 64 AND Athlet_Gender = 'W'
                 ) AS Athletes_Female_Count) AS Athletes_Female_Count,
                 (SELECT COUNT(*) FROM (
@@ -159,7 +160,7 @@ impl Club {
                     JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
                     JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
                     JOIN Entry      ON Crew_Entry_ID_FK   = {ENTRY_ID}
-                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND {ENTRY_CANCELLED} = 0
                         AND Crew_RoundTo = 64 AND Athlet_Gender = 'M'
                 ) AS Athletes_Male_Count) AS Athletes_Male_Count
             FROM Club c

@@ -4,6 +4,7 @@ use super::boat_class::COXED;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;
 use super::club::ID as CLUB_ID;
+use super::entry::CANCELLED as ENTRY_CANCELLED;
 use super::entry::ID as ENTRY_ID;
 use super::get_row;
 use super::race::ID as RACE_ID;
@@ -131,41 +132,41 @@ impl Statistics {
           (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 1 AND Comp_Cancelled = 0 ) AS heats_seeded,
           (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 0 AND Comp_Cancelled = 0 ) AS heats_scheduled,
           (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1) AS entries_all,
-          (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue > 0) AS entries_cancelled,
+          (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1 AND {ENTRY_CANCELLED} > 0) AS entries_cancelled,
           (SELECT COUNT(*) FROM (
             SELECT DISTINCT {CLUB_ID}
             FROM  Club
             JOIN  Entry ON Entry_OwnerClub_ID_FK = {CLUB_ID}
-            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) AS entries_owner_clubs,
+            WHERE Entry_Event_ID_FK = @P1 AND {ENTRY_CANCELLED} = 0) AS count) AS entries_owner_clubs,
           (SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Athlete_ID_FK
             FROM  Entry
             JOIN  Crew   ON Crew_Entry_ID_FK = {ENTRY_ID}
             JOIN  Athlet ON Athlet_ID        = Crew_Athlete_ID_FK
-            WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'M' AND Entry_CancelValue = 0) AS count) AS entries_athletes_male,
+            WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'M' AND {ENTRY_CANCELLED} = 0) AS count) AS entries_athletes_male,
           (SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Athlete_ID_FK
             FROM  Entry
             JOIN  Crew   ON Crew_Entry_ID_FK = {ENTRY_ID}
             JOIN  Athlet ON Athlet_ID        = Crew_Athlete_ID_FK
-            WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'W' AND Entry_CancelValue = 0) AS count) AS entries_athletes_female,
+            WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'W' AND {ENTRY_CANCELLED} = 0) AS count) AS entries_athletes_female,
           (SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Club_ID_FK
             FROM  Entry
             JOIN  Crew ON Crew_Entry_ID_FK = {ENTRY_ID}
-            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) AS entries_clubs,
+            WHERE Entry_Event_ID_FK = @P1 AND {ENTRY_CANCELLED} = 0) AS count) AS entries_clubs,
           (SELECT COALESCE(SUM({NUM_ROWERS}), 0) FROM (
             SELECT {NUM_ROWERS}
             FROM  Entry
             JOIN  Offer     ON {RACE_ID} = Entry_Race_ID_FK
             JOIN  BoatClass ON {BOAT_CLASS_ID} = Offer_BoatClass_ID_FK
-            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) as seats) AS entries_seats,
+            WHERE Entry_Event_ID_FK = @P1 AND {ENTRY_CANCELLED} = 0) as seats) AS entries_seats,
           (SELECT COALESCE(SUM({COXED}), 0) FROM (
             SELECT {COXED}
             FROM  Entry      e
             JOIN  Offer      o ON o.{RACE_ID}        = e.Entry_Race_ID_FK
             JOIN  BoatClass bc ON bc.{BOAT_CLASS_ID} = o.Offer_BoatClass_ID_FK
-            WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue = 0) as seats) AS entries_seats_cox,
+            WHERE e.Entry_Event_ID_FK = @P1 AND e.{ENTRY_CANCELLED} = 0) as seats) AS entries_seats_cox,
           (SELECT COALESCE(SUM(bc.BoatClass_NumRowers), 0) FROM (
             SELECT bc.BoatClass_NumRowers
             FROM Comp       c
@@ -207,7 +208,7 @@ impl Statistics {
             JOIN  Crew   ON Crew_Entry_ID_FK   = {ENTRY_ID}
             JOIN  Athlet ON Crew_Athlete_ID_FK = Athlet_ID
             JOIN  Club   ON Athlet_Club_ID_FK  = {CLUB_ID}
-            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0 AND Athlet_Gender = @P2 AND Crew_IsCox = 0
+            WHERE Entry_Event_ID_FK = @P1 AND {ENTRY_CANCELLED} = 0 AND Athlet_Gender = @P2 AND Crew_IsCox = 0
             ORDER BY Athlet_DOB"
         ));
         query.bind(regatta_id);
