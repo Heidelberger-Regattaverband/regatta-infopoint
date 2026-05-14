@@ -13,6 +13,23 @@ use ::serde::Serialize;
 use ::tiberius::{Query, Row};
 use ::utoipa::ToSchema;
 
+const ID: &str = "Offer_ID";
+const RACE_NUMBER: &str = "Offer_RaceNumber";
+const SHORT_LABEL: &str = "Offer_ShortLabel";
+const LONG_LABEL: &str = "Offer_LongLabel";
+const COMMENT: &str = "Offer_Comment";
+const DISTANCE: &str = "Offer_Distance";
+const IS_LIGHTWEIGHT: &str = "Offer_IsLightweight";
+const CANCELLED: &str = "Offer_Cancelled";
+const DRIVEN: &str = "Offer_Driven";
+const GROUP_MODE: &str = "Offer_GroupMode";
+const SORT_VALUE: &str = "Offer_SortValue";
+const HRV_SEEDED: &str = "Offer_HRV_Seeded";
+const ENTRIES_COUNT: &str = "Entries_Count";
+const HEATS_COUNT: &str = "Heats_Count";
+const RACE_STATE: &str = "Race_State";
+const RACE_DATE_TIME: &str = "Race_DateTime";
+
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Race {
@@ -78,28 +95,29 @@ pub struct Race {
 
 impl From<&Row> for Race {
     fn from(row: &Row) -> Self {
-        let short_label: String = row.get_column("Offer_ShortLabel");
-        let long_label: String = row.get_column("Offer_LongLabel");
-        let comment: String = row.try_get_column("Offer_Comment").unwrap_or_default();
-        let seeded: Option<bool> = row.try_get_column("Offer_HRV_Seeded");
-
+        let short_label: String = row.get_column(SHORT_LABEL);
+        let long_label: String = row.get_column(LONG_LABEL);
+        let comment: String = row.try_get_column(COMMENT).unwrap_or_default();
+        let seeded: Option<bool> = row.try_get_column(HRV_SEEDED);
+        let cancelled = row.get_column(CANCELLED);
+        let driven: bool = row.get_column(DRIVEN);
         Race {
-            id: row.get_column("Offer_ID"),
+            id: row.get_column(ID),
             comment: comment.trim().to_owned(),
-            number: row.get_column("Offer_RaceNumber"),
+            number: row.get_column(RACE_NUMBER),
             short_label: short_label.trim().to_owned(),
             long_label: long_label.trim().to_owned(),
-            distance: row.get_column("Offer_Distance"),
-            lightweight: row.get_column("Offer_IsLightweight"),
-            cancelled: row.get_column("Offer_Cancelled"),
-            entries_count: row.try_get_column("Entries_Count").unwrap_or_default(),
-            heats_count: row.get_column("Heats_Count"),
+            distance: row.get_column(DISTANCE),
+            lightweight: row.get_column(IS_LIGHTWEIGHT),
+            cancelled: cancelled || !driven,
+            entries_count: row.try_get_column(ENTRIES_COUNT).unwrap_or_default(),
+            heats_count: row.get_column(HEATS_COUNT),
             seeded: seeded.unwrap_or_default(),
             age_class: row.try_to_entity(),
             boat_class: row.try_to_entity(),
-            state: row.try_get_column("Race_State").unwrap_or_default(),
-            group_mode: row.get_column("Offer_GroupMode"),
-            date_time: row.try_get_column("Race_DateTime"),
+            state: row.try_get_column(RACE_STATE).unwrap_or_default(),
+            group_mode: row.get_column(GROUP_MODE),
+            date_time: row.try_get_column(RACE_DATE_TIME),
             entries: None,
             heats: None,
         }
@@ -108,26 +126,26 @@ impl From<&Row> for Race {
 
 impl TryToEntity<Race> for Row {
     fn try_to_entity(&self) -> Option<Race> {
-        <Row as TryRowColumn<i32>>::try_get_column(self, "Offer_ID").map(|_id| Race::from(self))
+        <Row as TryRowColumn<i32>>::try_get_column(self, ID).map(|_id| Race::from(self))
     }
 }
 
 impl Race {
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
-            "{alias}.Offer_ID, {alias}.Offer_RaceNumber, {alias}.Offer_Distance, {alias}.Offer_IsLightweight, {alias}.Offer_Cancelled, {alias}.Offer_ShortLabel, \
-            {alias}.Offer_LongLabel, {alias}.Offer_Comment, {alias}.Offer_GroupMode, {alias}.Offer_SortValue, {alias}.Offer_HRV_Seeded, \
-            (SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.Offer_ID AND c.Comp_Cancelled = 0) as Heats_Count"
+            "{alias}.{ID}, {alias}.{RACE_NUMBER}, {alias}.{DISTANCE}, {alias}.{IS_LIGHTWEIGHT}, {alias}.{CANCELLED}, {alias}.{DRIVEN}, {alias}.{SHORT_LABEL}, \
+            {alias}.{LONG_LABEL}, {alias}.{COMMENT}, {alias}.{GROUP_MODE}, {alias}.{SORT_VALUE}, {alias}.{HRV_SEEDED}, \
+            (SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.Comp_Cancelled = 0) as {HEATS_COUNT}"
         )
     }
     pub(crate) fn select_columns_with_analytical(alias: &str) -> String {
         format!(
-            " {alias}.Offer_ID, {alias}.Offer_RaceNumber, {alias}.Offer_Distance, {alias}.Offer_IsLightweight, {alias}.Offer_Cancelled, {alias}.Offer_ShortLabel, \
-            {alias}.Offer_LongLabel, {alias}.Offer_Comment, {alias}.Offer_GroupMode, {alias}.Offer_SortValue, {alias}.Offer_HRV_Seeded, \
-            (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = {alias}.Offer_ID AND e.Entry_CancelValue = 0) as Entries_Count, \
-            (SELECT Count(*) FROM Comp  c WHERE c.Comp_Race_ID_FK = {alias}.Offer_ID AND c.Comp_Cancelled = 0) as Heats_Count, \
-            (SELECT AVG(Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.Offer_ID AND c.Comp_Cancelled = 0) as Race_State, \
-            (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.Offer_ID AND c.Comp_Cancelled = 0) as Race_DateTime \
+            " {alias}.{ID}, {alias}.{RACE_NUMBER}, {alias}.{DISTANCE}, {alias}.{IS_LIGHTWEIGHT}, {alias}.{CANCELLED}, {alias}.{DRIVEN}, {alias}.{SHORT_LABEL}, \
+            {alias}.{LONG_LABEL}, {alias}.{COMMENT}, {alias}.{GROUP_MODE}, {alias}.{SORT_VALUE}, {alias}.{HRV_SEEDED}, \
+            (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = {alias}.{ID} AND e.Entry_CancelValue = 0) as {ENTRIES_COUNT}, \
+            (SELECT Count(*) FROM Comp  c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.Comp_Cancelled = 0) as {HEATS_COUNT}, \
+            (SELECT AVG(Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.Comp_Cancelled = 0) as {RACE_STATE}, \
+            (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.Comp_Cancelled = 0) as {RACE_DATE_TIME} \
         "
         )
     }
