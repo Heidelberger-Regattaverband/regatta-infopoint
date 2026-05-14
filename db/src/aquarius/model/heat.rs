@@ -20,7 +20,7 @@ use ::serde::Serialize;
 use ::tiberius::{Query, Row};
 use ::utoipa::ToSchema;
 
-const ID: &str = "Comp_ID";
+pub(crate) const ID: &str = "Comp_ID";
 const NUMBER: &str = "Comp_Number";
 const ROUND_CODE: &str = "Comp_RoundCode";
 const LABEL: &str = "Comp_Label";

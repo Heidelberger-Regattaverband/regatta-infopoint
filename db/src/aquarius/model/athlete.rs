@@ -14,7 +14,7 @@ use ::serde::Serialize;
 use ::tiberius::{Query, Row, time::chrono::NaiveDateTime};
 use ::utoipa::ToSchema;
 
-const ID: &str = "Athlet_ID";
+pub(crate) const ID: &str = "Athlet_ID";
 const FIRST_NAME: &str = "Athlet_FirstName";
 const LAST_NAME: &str = "Athlet_LastName";
 const GENDER: &str = "Athlet_Gender";

@@ -8,6 +8,7 @@ use super::entry::Entry;
 use super::entry::ID as ENTRY_ID;
 use super::get_rows;
 use super::heat::Heat;
+use super::heat::ID as HEAT_ID;
 use super::heat_result::HeatResult;
 use super::race::ID as RACE_ID;
 use super::race::Race;
@@ -60,7 +61,7 @@ impl HeatEntry {
     pub(crate) async fn query_entries_of_heat(heat: &Heat, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!("SELECT DISTINCT ce.CE_ID, ce.CE_Lane, {0}, Label_Short, {NUM_ROWERS}, {1}, {2}, {3}
             FROM CompEntries ce
-            JOIN Comp                  ON           CE_Comp_ID_FK = Comp_ID
+            JOIN Comp                  ON           CE_Comp_ID_FK = {HEAT_ID}
             JOIN Offer o               ON             o.{RACE_ID} = Comp_Race_ID_FK
             JOIN BoatClass             ON o.Offer_BoatClass_ID_FK = {BOAT_CLASS_ID}
             FULL OUTER JOIN Entry e    ON          CE_Entry_ID_FK = e.{ENTRY_ID}

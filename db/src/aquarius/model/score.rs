@@ -1,9 +1,11 @@
 use super::Club;
+use super::athlete::ID as ATHLETE_ID;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;
 use super::club::ID as CLUB_ID;
 use super::entry::ID as ENTRY_ID;
 use super::get_rows;
+use super::heat::ID as HEAT_ID;
 use super::race::ID as RACE_ID;
 use crate::tiberius::TiberiusClient;
 use crate::{
@@ -45,10 +47,10 @@ impl Score {
                 ) as Points_Crew
               FROM Result
               JOIN CompEntries ON           CE_ID = Result_CE_ID_FK
-              JOIN Comp        ON         Comp_ID = CE_Comp_ID_FK
+              JOIN Comp        ON       {HEAT_ID} = CE_Comp_ID_FK
               JOIN Entry       ON      {ENTRY_ID} = CE_Entry_ID_FK
               JOIN Crew        ON      {ENTRY_ID} = Crew_Entry_ID_FK
-              JOIN Athlet      ON       Athlet_ID = Crew_Athlete_ID_FK
+              JOIN Athlet      ON    {ATHLETE_ID} = Crew_Athlete_ID_FK
               JOIN Club        ON       {CLUB_ID} = Athlet_Club_ID_FK
               JOIN Offer       ON       {RACE_ID} = Comp_Race_ID_FK
               JOIN BoatClass   ON {BOAT_CLASS_ID} = Offer_BoatClass_ID_FK

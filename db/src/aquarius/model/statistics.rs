@@ -1,5 +1,6 @@
 use super::Athlete;
 use super::TryToEntity;
+use super::athlete::ID as ATHLETE_ID;
 use super::boat_class::COXED;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;
@@ -143,13 +144,13 @@ impl Statistics {
             SELECT DISTINCT Crew_Athlete_ID_FK
             FROM  Entry
             JOIN  Crew   ON Crew_Entry_ID_FK = {ENTRY_ID}
-            JOIN  Athlet ON Athlet_ID        = Crew_Athlete_ID_FK
+            JOIN  Athlet ON     {ATHLETE_ID} = Crew_Athlete_ID_FK
             WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'M' AND {ENTRY_CANCELLED} = 0) AS count) AS entries_athletes_male,
           (SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Athlete_ID_FK
             FROM  Entry
             JOIN  Crew   ON Crew_Entry_ID_FK = {ENTRY_ID}
-            JOIN  Athlet ON Athlet_ID        = Crew_Athlete_ID_FK
+            JOIN  Athlet ON     {ATHLETE_ID} = Crew_Athlete_ID_FK
             WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'W' AND {ENTRY_CANCELLED} = 0) AS count) AS entries_athletes_female,
           (SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Club_ID_FK
@@ -165,7 +166,7 @@ impl Statistics {
           (SELECT COALESCE(SUM({COXED}), 0) FROM (
             SELECT {COXED}
             FROM  Entry      e
-            JOIN  Offer      o ON o.{RACE_ID}        = e.Entry_Race_ID_FK
+            JOIN  Offer      o ON        o.{RACE_ID} = e.Entry_Race_ID_FK
             JOIN  BoatClass bc ON bc.{BOAT_CLASS_ID} = o.Offer_BoatClass_ID_FK
             WHERE e.Entry_Event_ID_FK = @P1 AND e.{ENTRY_CANCELLED} = 0) as seats) AS entries_seats_cox,
           (SELECT COALESCE(SUM(bc.BoatClass_NumRowers), 0) FROM (
@@ -207,7 +208,7 @@ impl Statistics {
             "SELECT DISTINCT TOP 1 Athlet.*, Club.*
             FROM  Entry
             JOIN  Crew   ON Crew_Entry_ID_FK   = {ENTRY_ID}
-            JOIN  Athlet ON Crew_Athlete_ID_FK = Athlet_ID
+            JOIN  Athlet ON Crew_Athlete_ID_FK = {ATHLETE_ID}
             JOIN  Club   ON Athlet_Club_ID_FK  = {CLUB_ID}
             WHERE Entry_Event_ID_FK = @P1 AND {ENTRY_CANCELLED} = 0 AND Athlet_Gender = @P2 AND Crew_IsCox = 0
             ORDER BY Athlet_DOB"
