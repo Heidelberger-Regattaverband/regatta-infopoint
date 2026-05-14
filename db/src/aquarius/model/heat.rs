@@ -22,13 +22,13 @@ use ::utoipa::ToSchema;
 
 pub(crate) const ID: &str = "Comp_ID";
 const NUMBER: &str = "Comp_Number";
-const ROUND_CODE: &str = "Comp_RoundCode";
+pub(crate) const ROUND_CODE: &str = "Comp_RoundCode";
 const LABEL: &str = "Comp_Label";
 const GROUP_VALUE: &str = "Comp_GroupValue";
 const STATE: &str = "Comp_State";
 pub(crate) const CANCELLED: &str = "Comp_Cancelled";
 const DATE_TIME: &str = "Comp_DateTime";
-const ROUND: &str = "Comp_Round";
+pub(crate) const ROUND: &str = "Comp_Round";
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]

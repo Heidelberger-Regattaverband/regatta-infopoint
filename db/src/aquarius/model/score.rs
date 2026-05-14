@@ -6,6 +6,7 @@ use super::club::ID as CLUB_ID;
 use super::entry::ID as ENTRY_ID;
 use super::get_rows;
 use super::heat::ID as HEAT_ID;
+use super::heat::ROUND as HEAT_ROUND;
 use super::race::ID as RACE_ID;
 use crate::tiberius::TiberiusClient;
 use crate::{
@@ -55,7 +56,7 @@ impl Score {
               JOIN Offer       ON       {RACE_ID} = Comp_Race_ID_FK
               JOIN BoatClass   ON {BOAT_CLASS_ID} = Offer_BoatClass_ID_FK
               JOIN RaceMode    ON     RaceMode_ID = Offer_RaceMode_ID_FK
-              WHERE Offer_Event_ID_FK = @P1 AND Crew_IsCox = 0 AND Result_SplitNr = 64 AND Crew_RoundTo = 64 AND Result_Rank > 0 AND Comp_Round = 64 AND Comp_State = 4
+              WHERE Offer_Event_ID_FK = @P1 AND Crew_IsCox = 0 AND Result_SplitNr = 64 AND Crew_RoundTo = 64 AND Result_Rank > 0 AND {HEAT_ROUND} = 64 AND Comp_State = 4
             ) as t
             GROUP BY {CLUB_ID}, Club_City, Club_Name, Club_Abbr, Club_UltraAbbr, Club_ExternID
             ORDER BY points DESC",

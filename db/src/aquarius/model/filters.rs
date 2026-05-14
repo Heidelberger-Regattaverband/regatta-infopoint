@@ -8,6 +8,8 @@ use super::boat_class::COXED;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;
 use super::get_rows;
+use super::heat::ROUND as HEAT_ROUND;
+use super::heat::ROUND_CODE as HEAT_ROUND_CODE;
 use crate::{
     error::DbError,
     tiberius::{RowColumn, TiberiusPool},
@@ -149,12 +151,11 @@ async fn query_lightweight(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<b
 }
 
 async fn query_rounds(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Round>, DbError> {
-    let mut query: Query<'_> = Query::new(
-        "SELECT DISTINCT
-        c.Comp_Round, c.Comp_RoundCode
+    let mut query: Query<'_> = Query::new(format!(
+        "SELECT DISTINCT c.{HEAT_ROUND}, c.{HEAT_ROUND_CODE}
         FROM Comp c WHERE c.Comp_Event_ID_FK = @P1
-        ORDER BY c.Comp_Round ASC",
-    );
+        ORDER BY c.{HEAT_ROUND} ASC",
+    ));
     query.bind(regatta_id);
 
     let mut client = pool.get().await?;
@@ -162,8 +163,8 @@ async fn query_rounds(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Round>
     Ok(rows
         .into_iter()
         .map(|row| Round {
-            id: row.get_column("Comp_Round"),
-            code: row.get_column("Comp_RoundCode"),
+            id: row.get_column(HEAT_ROUND),
+            code: row.get_column(HEAT_ROUND_CODE),
         })
         .collect())
 }
