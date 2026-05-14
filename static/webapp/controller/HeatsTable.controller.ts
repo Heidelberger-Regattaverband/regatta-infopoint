@@ -105,7 +105,7 @@ export default class HeatsTableController extends BaseTableController {
       const index: number = this.table.indexOfItem(selectedItem);
       const count = this.table.getItems().length;
       // store navigation meta information in selected item
-      heat._nav = { isFirst: index == 0, isLast: index == count - 1 };
+      heat._nav = { isFirst: index === 0, isLast: index === count - 1 };
 
       this.onItemChanged(heat);
       super.navToHeatDetails(heat.id);

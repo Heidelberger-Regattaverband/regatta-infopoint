@@ -77,7 +77,7 @@ export default class RacesTableController extends BaseTableController {
       const index: number = this.table.indexOfItem(selectedItem);
       const count: number = this.table.getItems().length;
       // store navigation meta information in selected item
-      race._nav = { isFirst: index == 0, isLast: index == count - 1 };
+      race._nav = { isFirst: index === 0, isLast: index === count - 1 };
 
       this.onItemChanged(race);
       super.navToRaceDetails(race.id);

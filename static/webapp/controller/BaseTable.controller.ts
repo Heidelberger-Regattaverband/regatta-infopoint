@@ -44,7 +44,7 @@ export default abstract class BaseTableController extends BaseController {
 
   private onFirstItemEvent(channelId: string, eventId: string, parametersMap: any): void {
     const index: number = this.table.indexOfItem(this.table.getSelectedItem());
-    if (index != 0) {
+    if (index !== 0) {
       this.setCurrentItem(0);
     }
   }
@@ -53,7 +53,7 @@ export default abstract class BaseTableController extends BaseController {
     this.growTable(400);
     const index: number = this.table.indexOfItem(this.table.getSelectedItem());
     const lastIndex: number = this.table.getItems().length - 1;
-    if (index != lastIndex) {
+    if (index !== lastIndex) {
       this.setCurrentItem(lastIndex);
     }
   }
@@ -61,7 +61,7 @@ export default abstract class BaseTableController extends BaseController {
   private onPreviousItemEvent(channelId: string, eventId: string, parametersMap: any): void {
     const index: number = this.table.indexOfItem(this.table.getSelectedItem());
     const previousIndex: number = index > 1 ? index - 1 : 0;
-    if (index != previousIndex) {
+    if (index !== previousIndex) {
       this.setCurrentItem(previousIndex);
     }
   }
@@ -70,7 +70,7 @@ export default abstract class BaseTableController extends BaseController {
     const index: number = this.table.indexOfItem(this.table.getSelectedItem());
     const items: ListItemBase[] = this.table.getItems();
     const nextIndex: number = index < items.length - 1 ? index + 1 : index;
-    if (index != nextIndex) {
+    if (index !== nextIndex) {
       this.growTable(nextIndex);
       this.setCurrentItem(nextIndex);
     }
@@ -95,7 +95,7 @@ export default abstract class BaseTableController extends BaseController {
       const customData: CustomData[] = filterItem.getCustomData();
       if (customData) {
         customData.forEach((data: CustomData) => {
-          if (data.getKey() == "filter") {
+          if (data.getKey() === "filter") {
             const filter = this.createFilter(data.getValue());
             this.filters.push(filter);
           }
@@ -180,7 +180,7 @@ export default abstract class BaseTableController extends BaseController {
     const item: any = this.table.getSelectedItem()?.getBindingContext(this.bindingModel)?.getObject();
 
     // store navigation meta information in selected item
-    item._nav = { isFirst: index == 0, isLast: index == items.length - 1 };
+    item._nav = { isFirst: index === 0, isLast: index === items.length - 1 };
 
     this.onItemChanged(item);
   }
