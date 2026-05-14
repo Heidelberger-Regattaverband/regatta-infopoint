@@ -3,6 +3,7 @@ use super::Crew;
 use super::Heat;
 use super::Race;
 use super::TryToEntity;
+use super::club::ID as CLUB_ID;
 use super::get_rows;
 use super::race::ID as RACE_ID;
 use crate::{
@@ -109,14 +110,14 @@ impl Entry {
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, {2}, l.Label_Short
             FROM Club AS ac
-            JOIN Athlet      a ON ac.Club_ID  = a.Athlet_Club_ID_FK
+            JOIN Athlet      a ON ac.{CLUB_ID}  = a.Athlet_Club_ID_FK
             JOIN Crew       cr ON a.Athlet_ID = cr.Crew_Athlete_ID_FK
             JOIN Entry       e ON e.{ID}  = cr.Crew_Entry_ID_FK 
-            JOIN Club       oc ON oc.Club_ID  = e.Entry_OwnerClub_ID_FK
+            JOIN Club       oc ON oc.{CLUB_ID}  = e.Entry_OwnerClub_ID_FK
             JOIN EntryLabel el ON e.{ID} = el.EL_Entry_ID_FK
             JOIN Label       l ON l.Label_ID  = el.EL_Label_ID_FK
             JOIN Offer       o ON o.{RACE_ID}  = e.Entry_Race_ID_FK
-            WHERE e.Entry_Event_ID_FK = @P1 AND ac.Club_ID = @P2
+            WHERE e.Entry_Event_ID_FK = @P1 AND ac.{CLUB_ID} = @P2
                 AND el.EL_RoundFrom <= @P3 AND @P3 <= el.EL_RoundTo AND cr.Crew_RoundTo = @P3
             ORDER BY o.{RACE_ID} ASC",
             Entry::select_columns("e"),
@@ -146,12 +147,12 @@ impl Entry {
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, {2}, l.Label_Short
             FROM Athlet      a
-            JOIN Crew       cr ON a.Athlet_ID = cr.Crew_Athlete_ID_FK
-            JOIN Entry       e ON e.{ID}      = cr.Crew_Entry_ID_FK 
-            JOIN Club       oc ON oc.Club_ID  = e.Entry_OwnerClub_ID_FK
-            JOIN EntryLabel el ON e.{ID}      = el.EL_Entry_ID_FK
-            JOIN Label       l ON l.Label_ID  = el.EL_Label_ID_FK
-            JOIN Offer       o ON o.{RACE_ID} = e.Entry_Race_ID_FK
+            JOIN Crew       cr ON  a.Athlet_ID = cr.Crew_Athlete_ID_FK
+            JOIN Entry       e ON       e.{ID} = cr.Crew_Entry_ID_FK 
+            JOIN Club       oc ON oc.{CLUB_ID} = e.Entry_OwnerClub_ID_FK
+            JOIN EntryLabel el ON       e.{ID} = el.EL_Entry_ID_FK
+            JOIN Label       l ON   l.Label_ID = el.EL_Label_ID_FK
+            JOIN Offer       o ON  o.{RACE_ID} = e.Entry_Race_ID_FK
             WHERE e.Entry_Event_ID_FK = @P1 AND a.Athlet_ID = @P2
                 AND el.EL_RoundFrom <= @P3 AND @P3 <= el.EL_RoundTo AND cr.Crew_RoundTo = @P3
             ORDER BY o.{RACE_ID} ASC",
@@ -179,7 +180,7 @@ impl Entry {
             FROM Entry       e
             JOIN EntryLabel el ON el.EL_Entry_ID_FK = e.{ID}
             JOIN Label       l ON el.EL_Label_ID_FK = l.Label_ID
-            JOIN Club        c ON c.Club_ID         = e.Entry_OwnerClub_ID_FK
+            JOIN Club        c ON       c.{CLUB_ID} = e.Entry_OwnerClub_ID_FK
             WHERE e.Entry_Race_ID_FK = @P1 AND el.EL_RoundFrom <= @P2 AND @P2 <= el.EL_RoundTo
             ORDER BY e.{BIB} ASC",
             Entry::select_columns("e"),

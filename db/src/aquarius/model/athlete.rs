@@ -1,5 +1,6 @@
 use super::Club;
 use super::TryToEntity;
+use super::club::ID as CLUB_ID;
 use super::entry::ID as ENTRY_ID;
 use super::get_row;
 use super::get_rows;
@@ -17,6 +18,7 @@ const FIRST_NAME: &str = "Athlet_FirstName";
 const LAST_NAME: &str = "Athlet_LastName";
 const GENDER: &str = "Athlet_Gender";
 const DOB: &str = "Athlet_DOB";
+const ENTRIES_COUNT: &str = "Athlet_Entries_Count";
 
 /// An athlete is a person who participates in a regatta.
 #[derive(Debug, Serialize, Clone, ToSchema)]
@@ -58,9 +60,9 @@ impl Athlete {
                     JOIN Crew  ON Crew_Athlete_ID_FK = {ID}
                     JOIN Entry ON Crew_Entry_ID_FK   = {ENTRY_ID}
                     WHERE {ID} = a.{ID} AND Entry_CancelValue = 0 AND Crew_RoundTo = @P2
-                ) AS Athlet_Entries_Count ) AS Athlet_Entries_Count
+                ) AS {ENTRIES_COUNT} ) AS {ENTRIES_COUNT}
                 FROM Athlet a
-                JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.Club_ID
+                JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.{CLUB_ID}
                 JOIN Crew  cr ON a.{ID}              = cr.Crew_Athlete_ID_FK
                 JOIN Entry  e ON cr.Crew_Entry_ID_FK = e.{ENTRY_ID}
                 WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue = 0 AND cr.Crew_RoundTo = @P2",
@@ -88,9 +90,9 @@ impl Athlete {
                     JOIN Crew  ON Crew_Athlete_ID_FK = {ID}
                     JOIN Entry ON Crew_Entry_ID_FK   = {ENTRY_ID}
                     WHERE e.Entry_Event_ID_FK = @P1 AND {ID} = a.{ID} AND Entry_CancelValue = 0 AND Crew_RoundTo = @P3
-                ) AS Athlet_Entries_Count ) AS Athlet_Entries_Count
+                ) AS {ENTRIES_COUNT} ) AS {ENTRIES_COUNT}
                 FROM Athlet a
-                JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.Club_ID
+                JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.{CLUB_ID}
                 JOIN Crew  cr ON a.{ID}              = cr.Crew_Athlete_ID_FK
                 JOIN Entry  e ON cr.Crew_Entry_ID_FK = e.{ENTRY_ID}
                 WHERE e.Entry_Event_ID_FK = @P1 AND a.{ID} = @P2 AND cr.Crew_RoundTo = @P3",
@@ -123,7 +125,7 @@ impl From<&Row> for Athlete {
                 .format("%Y")
                 .to_string(),
             club: Club::from(row),
-            entries_count: row.try_get_column("Athlet_Entries_Count"),
+            entries_count: row.try_get_column(ENTRIES_COUNT),
         }
     }
 }

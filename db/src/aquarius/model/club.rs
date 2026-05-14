@@ -11,7 +11,7 @@ use ::serde::Serialize;
 use ::tiberius::{Query, Row, numeric::Decimal};
 use ::utoipa::ToSchema;
 
-const ID: &str = "Club_ID";
+pub(crate) const ID: &str = "Club_ID";
 const EXTERN_ID: &str = "Club_ExternID";
 const SHORT_NAME: &str = "Club_Abbr";
 const LONG_NAME: &str = "Club_Name";

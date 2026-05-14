@@ -3,6 +3,7 @@ use super::TryToEntity;
 use super::boat_class::COXED;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;
+use super::club::ID as CLUB_ID;
 use super::entry::ID as ENTRY_ID;
 use super::get_row;
 use super::race::ID as RACE_ID;
@@ -132,9 +133,9 @@ impl Statistics {
           (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1) AS entries_all,
           (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue > 0) AS entries_cancelled,
           (SELECT COUNT(*) FROM (
-            SELECT DISTINCT Club_ID
+            SELECT DISTINCT {CLUB_ID}
             FROM  Club
-            JOIN  Entry ON Entry_OwnerClub_ID_FK = Club_ID
+            JOIN  Entry ON Entry_OwnerClub_ID_FK = {CLUB_ID}
             WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) AS entries_owner_clubs,
           (SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Athlete_ID_FK
@@ -205,7 +206,7 @@ impl Statistics {
             FROM  Entry
             JOIN  Crew   ON Crew_Entry_ID_FK   = {ENTRY_ID}
             JOIN  Athlet ON Crew_Athlete_ID_FK = Athlet_ID
-            JOIN  Club   ON Athlet_Club_ID_FK  = Club_ID
+            JOIN  Club   ON Athlet_Club_ID_FK  = {CLUB_ID}
             WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0 AND Athlet_Gender = @P2 AND Crew_IsCox = 0
             ORDER BY Athlet_DOB"
         ));
