@@ -6,6 +6,7 @@ use super::Referee;
 use super::TryToEntity;
 use super::age_class::ID as AGE_CLASS_ID;
 use super::boat_class::ID as BOAT_CLASS_ID;
+use super::entry::ID as ENTRY_ID;
 use super::get_row;
 use super::get_rows;
 use super::race::ID as RACE_ID;
@@ -176,9 +177,9 @@ impl Heat {
     pub(crate) async fn query_heats_of_entry(entry_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0} FROM Comp c
-            JOIN CompEntries ce ON c.{ID}  = ce.CE_Comp_ID_FK
-            JOIN Entry        e ON e.Entry_ID = ce.CE_Entry_ID_FK
-            WHERE e.Entry_ID = @P1
+            JOIN CompEntries ce ON c.{ID}       = ce.CE_Comp_ID_FK
+            JOIN Entry        e ON e.{ENTRY_ID} = ce.CE_Entry_ID_FK
+            WHERE e.{ENTRY_ID} = @P1
             ORDER BY c.{ROUND} ASC",
             Heat::select_columns("c")
         );

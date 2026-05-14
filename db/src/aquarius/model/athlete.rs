@@ -1,5 +1,6 @@
 use super::Club;
 use super::TryToEntity;
+use super::entry::ID as ENTRY_ID;
 use super::get_row;
 use super::get_rows;
 use crate::tiberius::TiberiusClient;
@@ -55,13 +56,13 @@ impl Athlete {
                 (SELECT COUNT(*) FROM (
                     SELECT {ID} FROM Athlet
                     JOIN Crew  ON Crew_Athlete_ID_FK = {ID}
-                    JOIN Entry ON Crew_Entry_ID_FK   = Entry_ID
+                    JOIN Entry ON Crew_Entry_ID_FK   = {ENTRY_ID}
                     WHERE {ID} = a.{ID} AND Entry_CancelValue = 0 AND Crew_RoundTo = @P2
                 ) AS Athlet_Entries_Count ) AS Athlet_Entries_Count
                 FROM Athlet a
                 JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.Club_ID
                 JOIN Crew  cr ON a.{ID}              = cr.Crew_Athlete_ID_FK
-                JOIN Entry  e ON cr.Crew_Entry_ID_FK = e.Entry_ID
+                JOIN Entry  e ON cr.Crew_Entry_ID_FK = e.{ENTRY_ID}
                 WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue = 0 AND cr.Crew_RoundTo = @P2",
             Athlete::select_columns("a"),
             Club::select_min_columns("cl")
@@ -85,13 +86,13 @@ impl Athlete {
                 (SELECT COUNT(*) FROM (
                     SELECT {ID} FROM Athlet
                     JOIN Crew  ON Crew_Athlete_ID_FK = {ID}
-                    JOIN Entry ON Crew_Entry_ID_FK   = Entry_ID
+                    JOIN Entry ON Crew_Entry_ID_FK   = {ENTRY_ID}
                     WHERE e.Entry_Event_ID_FK = @P1 AND {ID} = a.{ID} AND Entry_CancelValue = 0 AND Crew_RoundTo = @P3
                 ) AS Athlet_Entries_Count ) AS Athlet_Entries_Count
-                FROM Athlet  a
-                JOIN Club   cl ON a.Athlet_Club_ID_FK = cl.Club_ID
-                JOIN Crew   cr ON a.{ID}              = cr.Crew_Athlete_ID_FK
-                JOIN Entry   e ON cr.Crew_Entry_ID_FK = e.Entry_ID
+                FROM Athlet a
+                JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.Club_ID
+                JOIN Crew  cr ON a.{ID}              = cr.Crew_Athlete_ID_FK
+                JOIN Entry  e ON cr.Crew_Entry_ID_FK = e.{ENTRY_ID}
                 WHERE e.Entry_Event_ID_FK = @P1 AND a.{ID} = @P2 AND cr.Crew_RoundTo = @P3",
             Athlete::select_columns("a"),
             Club::select_all_columns("cl")

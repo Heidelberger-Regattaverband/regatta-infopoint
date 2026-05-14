@@ -4,6 +4,7 @@ use super::boat_class::NUM_ROWERS;
 use super::club::Club;
 use super::crew::Crew;
 use super::entry::Entry;
+use super::entry::ID as ENTRY_ID;
 use super::get_rows;
 use super::heat::Heat;
 use super::heat_result::HeatResult;
@@ -61,8 +62,8 @@ impl HeatEntry {
             JOIN Comp                  ON CE_Comp_ID_FK     = Comp_ID
             JOIN Offer o               ON o.{RACE_ID}       = Comp_Race_ID_FK
             JOIN BoatClass             ON o.Offer_BoatClass_ID_FK = {BOAT_CLASS_ID}
-            FULL OUTER JOIN Entry e    ON CE_Entry_ID_FK    = e.Entry_ID
-            FULL OUTER JOIN EntryLabel ON EL_Entry_ID_FK    = e.Entry_ID
+            FULL OUTER JOIN Entry e    ON CE_Entry_ID_FK    = e.{ENTRY_ID}
+            FULL OUTER JOIN EntryLabel ON EL_Entry_ID_FK    = e.{ENTRY_ID}
             FULL OUTER JOIN Label      ON EL_Label_ID_FK    = Label_ID
             FULL OUTER JOIN Result r   ON r.Result_CE_ID_FK = ce.CE_ID
             JOIN Club c                ON c.Club_ID = Entry_OwnerClub_ID_FK

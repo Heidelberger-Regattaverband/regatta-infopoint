@@ -3,6 +3,7 @@ use super::TryToEntity;
 use super::boat_class::COXED;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;
+use super::entry::ID as ENTRY_ID;
 use super::get_row;
 use super::race::ID as RACE_ID;
 use super::try_get_row;
@@ -138,19 +139,19 @@ impl Statistics {
           (SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Athlete_ID_FK
             FROM  Entry
-            JOIN  Crew   ON Crew_Entry_ID_FK = Entry_ID
+            JOIN  Crew   ON Crew_Entry_ID_FK = {ENTRY_ID}
             JOIN  Athlet ON Athlet_ID        = Crew_Athlete_ID_FK
             WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'M' AND Entry_CancelValue = 0) AS count) AS entries_athletes_male,
           (SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Athlete_ID_FK
             FROM  Entry
-            JOIN  Crew   ON Crew_Entry_ID_FK = Entry_ID
+            JOIN  Crew   ON Crew_Entry_ID_FK = {ENTRY_ID}
             JOIN  Athlet ON Athlet_ID        = Crew_Athlete_ID_FK
             WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'W' AND Entry_CancelValue = 0) AS count) AS entries_athletes_female,
           (SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Club_ID_FK
             FROM  Entry
-            JOIN  Crew ON Crew_Entry_ID_FK = Entry_ID
+            JOIN  Crew ON Crew_Entry_ID_FK = {ENTRY_ID}
             WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) AS entries_clubs,
           (SELECT COALESCE(SUM({NUM_ROWERS}), 0) FROM (
             SELECT {NUM_ROWERS}
@@ -199,15 +200,15 @@ impl Statistics {
     }
 
     async fn query_oldest(regatta_id: i32, gender: &str, pool: &TiberiusPool) -> Result<Option<Athlete>, DbError> {
-        let mut query = Query::new(
+        let mut query = Query::new(format!(
             "SELECT DISTINCT TOP 1 Athlet.*, Club.*
             FROM  Entry
-            JOIN  Crew   ON Crew_Entry_ID_FK   = Entry_ID
+            JOIN  Crew   ON Crew_Entry_ID_FK   = {ENTRY_ID}
             JOIN  Athlet ON Crew_Athlete_ID_FK = Athlet_ID
             JOIN  Club   ON Athlet_Club_ID_FK  = Club_ID
             WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0 AND Athlet_Gender = @P2 AND Crew_IsCox = 0
-            ORDER BY Athlet_DOB",
-        );
+            ORDER BY Athlet_DOB"
+        ));
         query.bind(regatta_id);
         query.bind(gender);
 
