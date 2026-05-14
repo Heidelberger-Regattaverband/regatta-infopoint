@@ -56,7 +56,7 @@ impl Athlete {
                     SELECT {ID} FROM Athlet
                     JOIN Crew  ON Crew_Athlete_ID_FK = {ID}
                     JOIN Entry ON Crew_Entry_ID_FK   = Entry_ID
-                    WHERE {ID} = a.{ID} AND Crew_RoundTo = @P2
+                    WHERE {ID} = a.{ID} AND Entry_CancelValue = 0 AND Crew_RoundTo = @P2
                 ) AS Athlet_Entries_Count ) AS Athlet_Entries_Count
                 FROM Athlet a
                 JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.Club_ID
@@ -86,7 +86,7 @@ impl Athlete {
                     SELECT {ID} FROM Athlet
                     JOIN Crew  ON Crew_Athlete_ID_FK = {ID}
                     JOIN Entry ON Crew_Entry_ID_FK   = Entry_ID
-                    WHERE e.Entry_Event_ID_FK = @P1 AND {ID} = a.{ID} AND Crew_RoundTo = @P3
+                    WHERE e.Entry_Event_ID_FK = @P1 AND {ID} = a.{ID} AND Entry_CancelValue = 0 AND Crew_RoundTo = @P3
                 ) AS Athlet_Entries_Count ) AS Athlet_Entries_Count
                 FROM Athlet  a
                 JOIN Club   cl ON a.Athlet_Club_ID_FK = cl.Club_ID
