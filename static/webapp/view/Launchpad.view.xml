@@ -25,7 +25,7 @@
         </NotificationList>
         <layout:HorizontalLayout allowWrapping="true">
           <layout:content>
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>common.offerAndEntries}" press=".navToRaces">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop sapUiTinyMarginBottom" header="{i18n>common.offerAndEntries}" press=".navToRaces">
               <tileContent>
                 <TileContent>
                   <content>
@@ -35,7 +35,7 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.heatsTile.header}" press=".navToHeats">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop sapUiTinyMarginBottom" header="{i18n>launchpad.heatsTile.header}" press=".navToHeats">
               <tileContent>
                 <TileContent>
                   <content>
@@ -45,7 +45,7 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>statistics.participatingClubs}" press=".navToClubs">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop sapUiTinyMarginBottom" header="{i18n>statistics.participatingClubs}" press=".navToClubs">
               <tileContent>
                 <TileContent>
                   <content>
@@ -55,7 +55,7 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>common.athletes}" press=".navToAthletes">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop sapUiTinyMarginBottom" header="{i18n>common.athletes}" press=".navToAthletes">
               <tileContent>
                 <TileContent>
                   <content>
@@ -65,7 +65,7 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.map.header}" press=".navToMap">
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop sapUiTinyMarginBottom" header="{i18n>launchpad.map.header}" press=".navToMap">
               <tileContent>
                 <TileContent>
                   <content>
@@ -75,7 +75,7 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.scheduleTile.header}"
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop sapUiTinyMarginBottom" header="{i18n>launchpad.scheduleTile.header}"
               press=".onNavToSchedule">
               <tileContent>
                 <TileContent>
@@ -92,7 +92,7 @@
               </contentLeft>
             </Bar>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.scoringTile.header}"
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop sapUiTinyMarginBottom" header="{i18n>launchpad.scoringTile.header}"
               visible="{identity>/authenticated}" press=".onNavToScoring">
               <tileContent>
                 <TileContent>
@@ -103,7 +103,7 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.statistics.header}"
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop sapUiTinyMarginBottom" header="{i18n>launchpad.statistics.header}"
               visible="{identity>/authenticated}" press=".onNavToStatistics">
               <tileContent>
                 <TileContent>
@@ -120,7 +120,7 @@
               </contentLeft>
             </Bar>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>monitoring.title}"
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop sapUiTinyMarginBottom" header="{i18n>monitoring.title}"
               visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}" press=".onNavToMonitoring">
               <tileContent>
                 <TileContent>
@@ -131,7 +131,7 @@
               </tileContent>
             </GenericTile>
 
-            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>launchpad.timekeeping.header}"
+            <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop sapUiTinyMarginBottom" header="{i18n>launchpad.timekeeping.header}"
               visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}" press=".onNavToTimekeeping">
               <tileContent>
                 <TileContent>
@@ -143,7 +143,7 @@
             </GenericTile>
           </layout:content>
 
-          <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop" header="{i18n>admin.notificationsTitle}"
+          <GenericTile class="sapUiTinyMarginBegin sapUiTinyMarginTop sapUiTinyMarginBottom" header="{i18n>admin.notificationsTitle}"
             visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}" press=".navToAdmin">
             <tileContent>
               <TileContent>
