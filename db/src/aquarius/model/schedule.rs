@@ -1,6 +1,7 @@
 use super::entry::CANCELLED as ENTRY_CANCELLED;
 use super::get_rows;
 use super::heat::CANCELLED as HEAT_CANCELLED;
+use super::heat::DATE_TIME as HEAT_DATE_TIME;
 use super::heat::ROUND_CODE as HEAT_ROUND_CODE;
 use super::race::ID as RACE_ID;
 use crate::tiberius::TiberiusClient;
@@ -76,9 +77,9 @@ impl Schedule {
                 AND c.{HEAT_ROUND_CODE} IN ('R', 'A', 'F')) as Final_Heats,
             (SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = o.{RACE_ID} AND c.{HEAT_CANCELLED} = 0 
                 AND c.{HEAT_ROUND_CODE} IN ('V')) as Forerun_Heats,
-            (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = o.{RACE_ID} AND c.{HEAT_CANCELLED} = 0 
+            (SELECT MIN({HEAT_DATE_TIME}) FROM Comp c WHERE c.Comp_Race_ID_FK = o.{RACE_ID} AND c.{HEAT_CANCELLED} = 0 
                 AND c.{HEAT_ROUND_CODE} IN ('R', 'A', 'F')) as Final_Start,
-            (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = o.{RACE_ID} AND c.{HEAT_CANCELLED} = 0 
+            (SELECT MIN({HEAT_DATE_TIME}) FROM Comp c WHERE c.Comp_Race_ID_FK = o.{RACE_ID} AND c.{HEAT_CANCELLED} = 0 
                 AND c.{HEAT_ROUND_CODE} IN ('V')) as Forerun_Start
             FROM Offer o
             WHERE o.Offer_Event_ID_FK = @P1 AND o.Offer_Cancelled = 0 

@@ -20,15 +20,15 @@ use ::serde::Serialize;
 use ::tiberius::{Query, Row};
 use ::utoipa::ToSchema;
 
-pub(crate) const ID: &str = "Comp_ID";
+pub(super) const ID: &str = "Comp_ID";
 const NUMBER: &str = "Comp_Number";
-pub(crate) const ROUND_CODE: &str = "Comp_RoundCode";
+pub(super) const ROUND_CODE: &str = "Comp_RoundCode";
 const LABEL: &str = "Comp_Label";
 const GROUP_VALUE: &str = "Comp_GroupValue";
 const STATE: &str = "Comp_State";
-pub(crate) const CANCELLED: &str = "Comp_Cancelled";
-const DATE_TIME: &str = "Comp_DateTime";
-pub(crate) const ROUND: &str = "Comp_Round";
+pub(super) const CANCELLED: &str = "Comp_Cancelled";
+pub(super) const DATE_TIME: &str = "Comp_DateTime";
+pub(super) const ROUND: &str = "Comp_Round";
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]

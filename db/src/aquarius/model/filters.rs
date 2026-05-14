@@ -8,6 +8,7 @@ use super::boat_class::COXED;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;
 use super::get_rows;
+use super::heat::DATE_TIME as HEAT_DATE_TIME;
 use super::heat::ROUND as HEAT_ROUND;
 use super::heat::ROUND_CODE as HEAT_ROUND_CODE;
 use crate::{
@@ -117,11 +118,11 @@ async fn query_age_classes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<A
 }
 
 async fn query_dates(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<NaiveDate>, DbError> {
-    let mut query = Query::new(
-        "SELECT DISTINCT CAST (c.Comp_Datetime as date) AS Comp_Date
+    let mut query = Query::new(format!(
+        "SELECT DISTINCT CAST (c.{HEAT_DATE_TIME} as date) AS Comp_Date
         FROM Comp c
-        WHERE c.Comp_DateTime IS NOT NULL AND c.Comp_Event_ID_FK = @P1",
-    );
+        WHERE c.{HEAT_DATE_TIME} IS NOT NULL AND c.Comp_Event_ID_FK = @P1",
+    ));
     query.bind(regatta_id);
 
     let mut client = pool.get().await?;

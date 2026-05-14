@@ -4,6 +4,7 @@ use super::entry::CANCELLED as ENTRY_CANCELLED;
 use super::get_row;
 use super::get_rows;
 use super::heat::CANCELLED as HEAT_CANCELLED;
+use super::heat::DATE_TIME as HEAT_DATE_TIME;
 use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::model::{AgeClass, BoatClass, Entry, Heat, TryToEntity},
@@ -147,7 +148,7 @@ impl Race {
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = {alias}.{ID} AND e.{ENTRY_CANCELLED} = 0) as {ENTRIES_COUNT}, \
             (SELECT Count(*) FROM Comp  c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.{HEAT_CANCELLED} = 0) as {HEATS_COUNT}, \
             (SELECT AVG(Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.{HEAT_CANCELLED} = 0) as {RACE_STATE}, \
-            (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.{HEAT_CANCELLED} = 0) as {RACE_DATE_TIME} \
+            (SELECT MIN({HEAT_DATE_TIME}) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.{HEAT_CANCELLED} = 0) as {RACE_DATE_TIME} \
         "
         )
     }
