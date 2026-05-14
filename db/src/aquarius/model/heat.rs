@@ -26,7 +26,7 @@ const ROUND_CODE: &str = "Comp_RoundCode";
 const LABEL: &str = "Comp_Label";
 const GROUP_VALUE: &str = "Comp_GroupValue";
 const STATE: &str = "Comp_State";
-const CANCELLED: &str = "Comp_Cancelled";
+pub(crate) const CANCELLED: &str = "Comp_Cancelled";
 const DATE_TIME: &str = "Comp_DateTime";
 const ROUND: &str = "Comp_Round";
 

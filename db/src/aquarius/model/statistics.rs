@@ -7,6 +7,7 @@ use super::club::ID as CLUB_ID;
 use super::entry::CANCELLED as ENTRY_CANCELLED;
 use super::entry::ID as ENTRY_ID;
 use super::get_row;
+use super::heat::CANCELLED as HEAT_CANCELLED;
 use super::race::ID as RACE_ID;
 use super::try_get_row;
 use crate::{
@@ -125,12 +126,12 @@ impl Statistics {
           (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1) AS races_all,
           (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1 AND Offer_Cancelled > 0) AS races_cancelled,
           (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1) AS heats_all,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_Cancelled > 0 ) AS heats_cancelled,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 4 AND Comp_Cancelled = 0 ) AS heats_official,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND {HEAT_CANCELLED} > 0 ) AS heats_cancelled,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 4 AND {HEAT_CANCELLED} = 0 ) AS heats_official,
           (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND (Comp_State = 5 OR  Comp_State = 6) ) AS heats_finished,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 2 AND Comp_Cancelled = 0 ) AS heats_started,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 1 AND Comp_Cancelled = 0 ) AS heats_seeded,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 0 AND Comp_Cancelled = 0 ) AS heats_scheduled,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 2 AND {HEAT_CANCELLED} = 0 ) AS heats_started,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 1 AND {HEAT_CANCELLED} = 0 ) AS heats_seeded,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 0 AND {HEAT_CANCELLED} = 0 ) AS heats_scheduled,
           (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1) AS entries_all,
           (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1 AND {ENTRY_CANCELLED} > 0) AS entries_cancelled,
           (SELECT COUNT(*) FROM (
@@ -172,14 +173,14 @@ impl Statistics {
             FROM Comp       c
             JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.{RACE_ID}
             JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
-            WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_Cancelled = 0
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.{HEAT_CANCELLED} = 0
             ) as bc) as medals_rowers,
           (SELECT COALESCE(SUM(bc.BoatClass_Coxed), 0) FROM (
             SELECT bc.BoatClass_Coxed
             FROM Comp       c
             JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.{RACE_ID}
             JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
-            WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_Cancelled = 0
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.{HEAT_CANCELLED} = 0
             ) as bc) as medals_coxes
           "
         ));

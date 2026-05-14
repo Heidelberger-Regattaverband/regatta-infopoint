@@ -3,6 +3,7 @@ use super::boat_class::ID as BOAT_CLASS_ID;
 use super::entry::CANCELLED as ENTRY_CANCELLED;
 use super::get_row;
 use super::get_rows;
+use super::heat::CANCELLED as HEAT_CANCELLED;
 use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::model::{AgeClass, BoatClass, Entry, Heat, TryToEntity},
@@ -136,7 +137,7 @@ impl Race {
         format!(
             "{alias}.{ID}, {alias}.{RACE_NUMBER}, {alias}.{DISTANCE}, {alias}.{IS_LIGHTWEIGHT}, {alias}.{CANCELLED}, {alias}.{DRIVEN}, {alias}.{SHORT_LABEL}, \
             {alias}.{LONG_LABEL}, {alias}.{COMMENT}, {alias}.{GROUP_MODE}, {alias}.{SORT_VALUE}, {alias}.{HRV_SEEDED}, \
-            (SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.Comp_Cancelled = 0) as {HEATS_COUNT}"
+            (SELECT Count(*) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.{HEAT_CANCELLED} = 0) as {HEATS_COUNT}"
         )
     }
     pub(crate) fn select_columns_with_analytical(alias: &str) -> String {
@@ -144,9 +145,9 @@ impl Race {
             " {alias}.{ID}, {alias}.{RACE_NUMBER}, {alias}.{DISTANCE}, {alias}.{IS_LIGHTWEIGHT}, {alias}.{CANCELLED}, {alias}.{DRIVEN}, {alias}.{SHORT_LABEL}, \
             {alias}.{LONG_LABEL}, {alias}.{COMMENT}, {alias}.{GROUP_MODE}, {alias}.{SORT_VALUE}, {alias}.{HRV_SEEDED}, \
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = {alias}.{ID} AND e.{ENTRY_CANCELLED} = 0) as {ENTRIES_COUNT}, \
-            (SELECT Count(*) FROM Comp  c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.Comp_Cancelled = 0) as {HEATS_COUNT}, \
-            (SELECT AVG(Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.Comp_Cancelled = 0) as {RACE_STATE}, \
-            (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.Comp_Cancelled = 0) as {RACE_DATE_TIME} \
+            (SELECT Count(*) FROM Comp  c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.{HEAT_CANCELLED} = 0) as {HEATS_COUNT}, \
+            (SELECT AVG(Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.{HEAT_CANCELLED} = 0) as {RACE_STATE}, \
+            (SELECT MIN(Comp_DateTime) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.{HEAT_CANCELLED} = 0) as {RACE_DATE_TIME} \
         "
         )
     }
