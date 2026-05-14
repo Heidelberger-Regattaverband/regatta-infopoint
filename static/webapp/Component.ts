@@ -9,6 +9,8 @@ import ResourceModel from "sap/ui/model/resource/ResourceModel";
  */
 export default class Component extends UIComponent {
 
+    private notificationsTimer?: number;
+
     private contentDensityClass: string;
     private resourceBundle: ResourceBundle;
 
@@ -65,7 +67,7 @@ export default class Component extends UIComponent {
                 super.setModel(model, "notifications");
             });
 
-            setInterval(async () => {
+            this.notificationsTimer = globalThis.setInterval(async () => {
                 await this.loadNotifications();
             }, 60000);
         })
@@ -83,7 +85,7 @@ export default class Component extends UIComponent {
         // set initial race model, required for navigation over races
         super.setModel(new JSONModel(), "race");
 
-        window.addEventListener('beforeunload', (event: BeforeUnloadEvent) => {
+        globalThis.addEventListener('beforeunload', (event: BeforeUnloadEvent) => {
             // Cancel the event as stated by the standard.
             event.preventDefault();
         });
@@ -96,6 +98,14 @@ export default class Component extends UIComponent {
                 this.resourceBundle = bundle;
             });
         }
+    }
+
+    exit(): void {
+        if (this.notificationsTimer !== undefined) {
+            globalThis.clearInterval(this.notificationsTimer);
+            delete this.notificationsTimer;
+        }
+        super.exit();
     }
 
     /**
