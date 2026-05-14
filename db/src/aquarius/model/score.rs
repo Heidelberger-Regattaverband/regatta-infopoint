@@ -2,7 +2,12 @@ use super::Club;
 use super::athlete::ID as ATHLETE_ID;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;
+use super::club::ABBREVIATION as CLUB_ABBREVIATION;
+use super::club::CITY as CLUB_CITY;
+use super::club::EXTERN_ID as CLUB_EXTERN_ID;
 use super::club::ID as CLUB_ID;
+use super::club::LONG_NAME as CLUB_LONG_NAME;
+use super::club::SHORT_NAME as CLUB_SHORT_NAME;
 use super::crew::IS_COX as CREW_IS_COX;
 use super::crew::ROUND_TO as CREW_ROUND_TO;
 use super::entry::ID as ENTRY_ID;
@@ -39,8 +44,8 @@ impl From<&Row> for Score {
 impl Score {
     pub async fn calculate(regatta_id: i32, client: &mut TiberiusClient) -> Result<Vec<Self>, DbError> {
         let mut query = Query::new(format!(
-            "SELECT {CLUB_ID}, SUM(Points_Crew) as points, Club_Name, Club_City, Club_Abbr, Club_UltraAbbr, Club_ExternID FROM
-              (SELECT {CLUB_ID}, Club_Name, Club_City, Club_Abbr, Club_UltraAbbr, Club_ExternID,
+            "SELECT {CLUB_ID}, SUM(Points_Crew) as points, {CLUB_LONG_NAME}, {CLUB_CITY}, {CLUB_SHORT_NAME}, {CLUB_ABBREVIATION}, {CLUB_EXTERN_ID} FROM
+              (SELECT {CLUB_ID}, {CLUB_LONG_NAME}, {CLUB_CITY}, {CLUB_SHORT_NAME}, {CLUB_ABBREVIATION}, {CLUB_EXTERN_ID},
                 (SELECT CASE WHEN Offer_HRV_Seeded = 1 AND Comp_HeatNumber = 1
                   THEN
                     ((RaceMode_LaneCount + 1 - CAST(Result_Rank AS float) + {NUM_ROWERS}) / {NUM_ROWERS}) * 2
@@ -60,7 +65,7 @@ impl Score {
               JOIN RaceMode    ON     RaceMode_ID = Offer_RaceMode_ID_FK
               WHERE Offer_Event_ID_FK = @P1 AND {CREW_IS_COX} = 0 AND Result_SplitNr = 64 AND {CREW_ROUND_TO} = 64 AND Result_Rank > 0 AND {HEAT_ROUND} = 64 AND Comp_State = 4
             ) as t
-            GROUP BY {CLUB_ID}, Club_City, Club_Name, Club_Abbr, Club_UltraAbbr, Club_ExternID
+            GROUP BY {CLUB_ID}, {CLUB_CITY}, {CLUB_LONG_NAME}, {CLUB_SHORT_NAME}, {CLUB_ABBREVIATION}, {CLUB_EXTERN_ID}
             ORDER BY points DESC",
         ));
         query.bind(regatta_id);

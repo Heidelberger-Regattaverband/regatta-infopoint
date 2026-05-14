@@ -15,11 +15,11 @@ use ::tiberius::{Query, Row, numeric::Decimal};
 use ::utoipa::ToSchema;
 
 pub(crate) const ID: &str = "Club_ID";
-const EXTERN_ID: &str = "Club_ExternID";
-const SHORT_NAME: &str = "Club_Abbr";
-const LONG_NAME: &str = "Club_Name";
-const ABBREVIATION: &str = "Club_UltraAbbr";
-const CITY: &str = "Club_City";
+pub(super) const EXTERN_ID: &str = "Club_ExternID";
+pub(super) const SHORT_NAME: &str = "Club_Abbr";
+pub(super) const LONG_NAME: &str = "Club_Name";
+pub(super) const ABBREVIATION: &str = "Club_UltraAbbr";
+pub(super) const CITY: &str = "Club_City";
 const LATITUDE: &str = "Club_HRV_Latitude";
 const LONGITUDE: &str = "Club_HRV_Longitude";
 
