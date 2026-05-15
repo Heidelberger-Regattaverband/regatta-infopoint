@@ -40,55 +40,99 @@ export default class Component extends UIComponent {
         return this.filtersModel;
     }
 
+    /**
+     * Polling interval for notifications, in milliseconds.
+     */
+    private static readonly NOTIFICATIONS_POLL_INTERVAL_MS: number = 60_000;
+
     init(): void {
         super.init();
 
-        // create the views based on the url/hash
-        super.getRouter().initialize();
-
-        // set regatta and filters model
-        this.getActiveRegatta().then((model: JSONModel) => {
-            super.setModel(model, "regatta");
-
-            this.getFilters().then((model: JSONModel) => {
-                super.setModel(model, "filters");
-            });
-
-            this.loadNotifications().then((model: JSONModel) => {
-                super.setModel(model, "notifications");
-            });
-
-            this.notificationsTimer = globalThis.setInterval(async () => {
-                await this.loadNotifications();
-            }, 60000);
-        })
-
-        // set device model
+        // 1. Set the static, synchronous models first so any view that renders
+        //    immediately after router.initialize() finds them in place.
         super.setModel(new JSONModel(Device).setDefaultBindingMode("OneWay"), "device");
 
-        // set identity model
         const identityModel: JSONModel = new JSONModel({ authenticated: false, username: "anonymous", roles: [] }).setDefaultBindingMode("OneWay");
         super.setModel(identityModel, "identity");
 
-        // set initial heat model, required for navigation over heats
+        // initial heat / race models, required for navigation over heats and races
         super.setModel(new JSONModel(), "heat");
-
-        // set initial race model, required for navigation over races
         super.setModel(new JSONModel(), "race");
+
+        // 2. Resolve the i18n resource bundle (sync or async, depending on UI5 config).
+        const bundle: ResourceBundle | Promise<ResourceBundle> = (super.getModel("i18n") as ResourceModel).getResourceBundle();
+        if (bundle instanceof ResourceBundle) {
+            this.resourceBundle = bundle;
+        } else {
+            bundle.then((resolved: ResourceBundle) => {
+                this.resourceBundle = resolved;
+            }, (err: unknown) => {
+                console.error("Failed to load i18n resource bundle", err as Error);
+            });
+        }
 
         globalThis.addEventListener('beforeunload', (event: BeforeUnloadEvent) => {
             // Cancel the event as stated by the standard.
             event.preventDefault();
         });
 
-        const bundle: ResourceBundle | Promise<ResourceBundle> = (super.getModel("i18n") as ResourceModel).getResourceBundle();
-        if (bundle instanceof ResourceBundle) {
-            this.resourceBundle = bundle;
-        } else {
-            bundle.then((bundle: ResourceBundle) => {
-                this.resourceBundle = bundle;
-            });
+        // 3. Bootstrap async data, then initialize the router. We deliberately
+        //    do NOT await this in `init()` (which is `void`), but we collect the
+        //    initialization promise so consumers (and tests) could observe it.
+        void this.bootstrap();
+    }
+
+    /**
+     * Performs the asynchronous component bootstrap:
+     * 1. loads regatta + filters in parallel,
+     * 2. loads the initial notifications,
+     * 3. starts the notifications polling timer,
+     * 4. initializes the router.
+     *
+     * Errors at any step are logged but do not prevent the router from starting,
+     * so the user always gets a navigable shell.
+     */
+    private async bootstrap(): Promise<void> {
+        try {
+            const [regattaModel, filtersModel]: [JSONModel, JSONModel] = await Promise.all([
+                this.getActiveRegatta(),
+                this.getFilters(),
+            ]);
+            super.setModel(regattaModel, "regatta");
+            super.setModel(filtersModel, "filters");
+
+            try {
+                const notificationsModel: JSONModel = await this.loadNotifications();
+                super.setModel(notificationsModel, "notifications");
+            } catch (err: unknown) {
+                console.error("Failed to load initial notifications", err as Error);
+                // Still register the model so views can bind without errors.
+                super.setModel(this.notificationsModel, "notifications");
+            }
+
+            this.startNotificationsPolling();
+        } catch (err: unknown) {
+            console.error("Component bootstrap failed", err as Error);
+        } finally {
+            // Always initialize the router so the app remains navigable
+            // even if data calls failed.
+            super.getRouter().initialize();
         }
+    }
+
+    /**
+     * Starts the notifications polling timer. Idempotent: if a timer is already
+     * running it will not be replaced.
+     */
+    private startNotificationsPolling(): void {
+        if (this.notificationsTimer !== undefined) {
+            return;
+        }
+        this.notificationsTimer = globalThis.setInterval(() => {
+            this.loadNotifications().catch((err: unknown) => {
+                console.error("Failed to refresh notifications", err as Error);
+            });
+        }, Component.NOTIFICATIONS_POLL_INTERVAL_MS);
     }
 
     exit(): void {
