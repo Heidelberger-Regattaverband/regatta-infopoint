@@ -1,16 +1,17 @@
 import * as $ from "jquery";
+import Log from "sap/base/Log";
 import { Button$PressEvent } from "sap/m/Button";
 import { Input$SubmitEvent } from "sap/m/Input";
 import MessageToast from "sap/m/MessageToast";
+import NotificationList from "sap/m/NotificationList";
+import NotificationListItem from "sap/m/NotificationListItem";
 import ResponsivePopover from "sap/m/ResponsivePopover";
+import Event from "sap/ui/base/Event";
 import Control from "sap/ui/core/Control";
 import Fragment from "sap/ui/core/Fragment";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import BaseController from "./Base.controller";
 import Formatter from "../model/Formatter";
-import NotificationListItem from "sap/m/NotificationListItem";
-import Event from "sap/ui/base/Event";
-import NotificationList from "sap/m/NotificationList";
+import BaseController from "./Base.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -107,10 +108,17 @@ export default class LaunchpadController extends BaseController {
         return popover;
       });
 
-      // finish loading of fragment and open it
+      // finish loading of fragment and open it. We swallow rejections explicitly
+      // (logging only) — without a `.catch` an unhandled promise rejection would
+      // surface in the browser console for every fragment-load failure.
       this.popoverPromise.then((popover: ResponsivePopover) => {
         this.popover = popover;
         popover.openBy(eventSource);
+      }, (err: unknown) => {
+        // Reset the cached promise so a future click can retry.
+        delete this.popoverPromise;
+        Log.error("Failed to load login popover fragment", err as Error);
+        super.showErrorMessageToast(super.i18n("msg.loginFailed"));
       });
     }
   }

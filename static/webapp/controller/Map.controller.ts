@@ -1,8 +1,9 @@
-import BaseController from "./Base.controller";
-import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
-import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds, icon, layerGroup, Marker, TileLayer, LayerGroup, control, latLngBounds, FitBoundsOptions, circle, Circle } from "leaflet";
-import JSONModel from "sap/ui/model/json/JSONModel";
+import { Circle, FitBoundsOptions, LatLng, LatLngBounds, LayerGroup, Map, MapOptions, Marker, TileLayer, circle, control, icon, latLng, latLngBounds, layerGroup, map, marker, popup, tileLayer } from "leaflet";
+import Log from "sap/base/Log";
 import Button, { Button$PressEvent } from "sap/m/Button";
+import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import BaseController from "./Base.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -20,7 +21,17 @@ export default class MapController extends BaseController {
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getRouter()?.getRoute("map")?.attachMatched((_: Route$MatchedEvent) => {
-      this.loadModel().then(() => this.loadMap());
+      // Initialize the map only after the participating-clubs model is loaded.
+      // Errors are logged so a network failure does not leave a stuck route
+      // and the user can still see the regatta layer (loadMap() is a no-op
+      // on subsequent calls because the map is created only once).
+      this.loadModel()
+        .then(() => this.loadMap())
+        .catch((err: unknown) => {
+          Log.error("Failed to load map data", err as Error);
+          // Still try to render the static regatta layer so the page is not blank.
+          this.loadMap();
+        });
     }, this);
     this.centerClubsButton = this.byId("centerClubsButton") as Button;
     this.centerRegattaButton = this.byId("centerRegattaButton") as Button;
