@@ -3,6 +3,7 @@ import Device from "sap/ui/Device";
 import UIComponent from "sap/ui/core/UIComponent";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ResourceModel from "sap/ui/model/resource/ResourceModel";
+import Formatter from "./model/Formatter";
 
 /**
  * @namespace de.regatta_hd.infoportal
@@ -59,13 +60,17 @@ export default class Component extends UIComponent {
         super.setModel(new JSONModel(), "heat");
         super.setModel(new JSONModel(), "race");
 
-        // 2. Resolve the i18n resource bundle (sync or async, depending on UI5 config).
+        // 2. Resolve the i18n resource bundle (sync or async, depending on UI5 config),
+        //    cache it and inject it into the Formatter so static formatter methods
+        //    can localise without performing a second (synchronous!) bundle load.
         const bundle: ResourceBundle | Promise<ResourceBundle> = (super.getModel("i18n") as ResourceModel).getResourceBundle();
         if (bundle instanceof ResourceBundle) {
             this.resourceBundle = bundle;
+            Formatter.init(bundle);
         } else {
             bundle.then((resolved: ResourceBundle) => {
                 this.resourceBundle = resolved;
+                Formatter.init(resolved);
             }, (err: unknown) => {
                 console.error("Failed to load i18n resource bundle", err as Error);
             });

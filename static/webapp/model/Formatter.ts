@@ -1,3 +1,4 @@
+import Log from "sap/base/Log";
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import { IndicationColor } from "sap/ui/core/library";
 import {
@@ -22,16 +23,24 @@ import { Priority } from "sap/m/library";
  * @namespace de.regatta_hd.infoportal.model
  */
 export default class Formatter {
-  private static bundle: ResourceBundle;
+  /**
+   * The shared i18n {@link ResourceBundle}, injected by `Component#init` via
+   * {@link Formatter.init}. Optional so the class can be instantiated/loaded
+   * before the component is fully initialised (the `i18n` method falls back
+   * to returning the raw key in that case).
+   */
+  private static bundle?: ResourceBundle;
 
-  static {
-    Formatter.bundle = ResourceBundle.create({
-      // specify url of the base .properties file
-      url: "i18n/i18n.properties",
-      async: false,
-      supportedLocales: ["de", "en"],
-      fallbackLocale: "de",
-    }) as ResourceBundle;
+  /**
+   * Injects the shared i18n {@link ResourceBundle} (typically obtained from
+   * `Component#getModel("i18n").getResourceBundle()`). Idempotent — subsequent
+   * calls overwrite the reference, which lets tests provide a stub bundle.
+   *
+   * Replaces the previous static initializer block that performed a deprecated
+   * synchronous XHR via `ResourceBundle.create({ async: false, ... })`.
+   */
+  static init(bundle: ResourceBundle): void {
+    Formatter.bundle = bundle;
   }
 
   static priority(priority?: number): Priority {
@@ -569,11 +578,21 @@ export default class Formatter {
 
   /**
    * Gets a localized text from the resource bundle.
+   *
+   * If the bundle has not been initialised yet (e.g., a formatter is invoked
+   * before `Component#init` finished), returns the i18n key itself rather than
+   * throwing — matching the behaviour of UI5's `{i18n>...}` bindings before
+   * the bundle is available.
+   *
    * @param key The i18n key
    * @param args Optional arguments for text interpolation
    * @returns The localized text or the key if not found
    */
   private static i18n(key: string, args?: any[]): string {
+    if (!Formatter.bundle) {
+      Log.warning(`Formatter.i18n("${key}") called before Formatter.init() — returning key as-is.`);
+      return key;
+    }
     return Formatter.bundle.getText(key, args) || key;
   }
 }
