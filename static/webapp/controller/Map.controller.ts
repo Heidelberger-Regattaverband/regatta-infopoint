@@ -125,8 +125,7 @@ export default class MapController extends BaseController {
     this.participatingClubsModel.getData().forEach((club: any) => {
       if (club.latitude && club.longitude) {
         const pos: LatLng = latLng(club.latitude, club.longitude);
-        const content: string = `<a href="#/clubDetails/${club.id}">${club.longName}<br>${club.city}</a>`;
-        const mark: Marker = marker(pos).bindPopup(popup().setContent(content));
+        const mark: Marker = marker(pos).bindPopup(popup().setContent(this.buildClubPopup(club)));
         if (club.flagUrl) {
           const iconClub = icon({
             iconUrl: club.flagUrl,
@@ -138,5 +137,24 @@ export default class MapController extends BaseController {
       }
     });
     return [layerGroup(marks), latLngBounds(marks.map(mark => mark.getLatLng()))];
+  }
+
+  /**
+   * Builds the popup content for a club marker as a DOM tree (rather than an
+   * HTML string) to prevent XSS via `club.longName` / `club.city` (review item 1.1).
+   *
+   * Leaflet's `Popup.setContent` accepts an `HTMLElement`, which inserts text
+   * nodes verbatim — no parser, no script execution.
+   */
+  private buildClubPopup(club: { id: number | string; longName?: string; city?: string }): HTMLElement {
+    const link: HTMLAnchorElement = document.createElement("a");
+    // The id is interpolated as a string but only into a hash-route, so it
+    // cannot break out of the `href` attribute; still, force a numeric/string
+    // representation rather than rich content.
+    link.href = `#/clubDetails/${encodeURIComponent(String(club.id))}`;
+    link.appendChild(document.createTextNode(club.longName ?? ""));
+    link.appendChild(document.createElement("br"));
+    link.appendChild(document.createTextNode(club.city ?? ""));
+    return link;
   }
 }
