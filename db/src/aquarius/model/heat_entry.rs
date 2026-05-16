@@ -71,7 +71,8 @@ impl HeatEntry {
             FULL OUTER JOIN Result r   ON       r.Result_CE_ID_FK = ce.CE_ID
             JOIN Club c                ON             c.{CLUB_ID} = Entry_OwnerClub_ID_FK
             WHERE CE_Comp_ID_FK = @P1 AND ((Result_SplitNr = 64 AND Comp_State >=4) OR (Result_SplitNr = 0 AND Comp_State < 3) OR (Comp_State < 2 AND Result_SplitNr IS NULL))
-            AND EL_RoundFrom <= {HEAT_ROUND} AND {HEAT_ROUND} <= EL_RoundTo", 
+            AND EL_RoundFrom <= {HEAT_ROUND} AND {HEAT_ROUND} <= EL_RoundTo
+            ORDER BY CE_Lane ASC",
             Entry::select_columns("e"), Club::select_all_columns("c"), Race::select_columns("o"), HeatResult::select_columns("r"));
         let mut query = Query::new(sql);
         query.bind(heat.id);
@@ -97,8 +98,10 @@ impl HeatEntry {
             if let (Some(result_a), Some(result_b)) = (a.result.as_ref(), b.result.as_ref()) {
                 if result_a.rank_sort > result_b.rank_sort {
                     Ordering::Greater
-                } else {
+                } else if result_a.rank_sort < result_b.rank_sort {
                     Ordering::Less
+                } else {
+                    Ordering::Equal
                 }
             } else {
                 Ordering::Equal
