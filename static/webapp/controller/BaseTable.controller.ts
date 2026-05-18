@@ -1,3 +1,4 @@
+import Log from "sap/base/Log";
 import Column from "sap/m/Column";
 import ListItemBase from "sap/m/ListItemBase";
 import Table from "sap/m/Table";
@@ -6,6 +7,7 @@ import Toolbar from "sap/m/Toolbar";
 import ViewSettingsDialog, { ViewSettingsDialog$ConfirmEvent, ViewSettingsDialog$ConfirmEventParameters } from "sap/m/ViewSettingsDialog";
 import ViewSettingsItem from "sap/m/ViewSettingsItem";
 import CustomData from "sap/ui/core/CustomData";
+import EventBus from "sap/ui/core/EventBus";
 import Fragment from "sap/ui/core/Fragment";
 import { SortOrder } from "sap/ui/core/library";
 import Filter from "sap/ui/model/Filter";
@@ -23,23 +25,46 @@ export default abstract class BaseTableController extends BaseController {
   private filters: Filter[] = [];
   private searchFilters: Filter[] = [];
   private bindingModel: string;
-  private viewSettingsDialogs: Map<string, ViewSettingsDialog>;
+  private readonly viewSettingsDialogs: Map<string, ViewSettingsDialog> = new Map<string, ViewSettingsDialog>();
+  /**
+   * Identifier of the event-bus channel this controller subscribed to in {@link init}.
+   * Stored so {@link onExit} can unsubscribe symmetrically and avoid memory leaks
+   * across view destroy/recreate cycles.
+   */
+  private channelId?: string;
 
   init(table: Table, channelId?: string): void {
-    // Keeps reference to any of the created sap.m.ViewSettingsDialog-s in this sample
-    this.viewSettingsDialogs = new Map<string, ViewSettingsDialog>();
-
     this.table = table;
 
     // return the path of the model that is bound to the items, e.g. races or heats
     this.bindingModel = this.table.getBindingInfo("items").model ?? "";
 
     if (channelId) {
-      super.getEventBus()?.subscribe(channelId, "first", this.onFirstItemEvent, this);
-      super.getEventBus()?.subscribe(channelId, "previous", this.onPreviousItemEvent, this);
-      super.getEventBus()?.subscribe(channelId, "next", this.onNextItemEvent, this);
-      super.getEventBus()?.subscribe(channelId, "last", this.onLastItemEvent, this);
+      this.channelId = channelId;
+      const bus: EventBus | undefined = super.getEventBus();
+      bus?.subscribe(channelId, "first", this.onFirstItemEvent, this);
+      bus?.subscribe(channelId, "previous", this.onPreviousItemEvent, this);
+      bus?.subscribe(channelId, "next", this.onNextItemEvent, this);
+      bus?.subscribe(channelId, "last", this.onLastItemEvent, this);
     }
+  }
+
+  /**
+   * Unsubscribes from the event-bus channel registered in {@link init} so that
+   * the controller (and the `Table` it references) can be garbage-collected
+   * when the view is destroyed.
+   */
+  onExit(): void {
+    Log.debug(`BaseTableController.onExit: unsubscribing from event bus channel ${this.channelId}`);
+    if (this.channelId) {
+      const bus: EventBus | undefined = super.getEventBus();
+      bus?.unsubscribe(this.channelId, "first", this.onFirstItemEvent, this);
+      bus?.unsubscribe(this.channelId, "previous", this.onPreviousItemEvent, this);
+      bus?.unsubscribe(this.channelId, "next", this.onNextItemEvent, this);
+      bus?.unsubscribe(this.channelId, "last", this.onLastItemEvent, this);
+      this.channelId = undefined;
+    }
+    super.onExit();
   }
 
   private onFirstItemEvent(channelId: string, eventId: string, parametersMap: any): void {
