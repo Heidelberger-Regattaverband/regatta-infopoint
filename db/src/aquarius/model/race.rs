@@ -143,13 +143,12 @@ impl Race {
     }
     pub(crate) fn select_columns_with_analytical(alias: &str) -> String {
         format!(
-            " {alias}.{ID}, {alias}.{RACE_NUMBER}, {alias}.{DISTANCE}, {alias}.{IS_LIGHTWEIGHT}, {alias}.{CANCELLED}, {alias}.{DRIVEN}, {alias}.{SHORT_LABEL}, \
+            "{alias}.{ID}, {alias}.{RACE_NUMBER}, {alias}.{DISTANCE}, {alias}.{IS_LIGHTWEIGHT}, {alias}.{CANCELLED}, {alias}.{DRIVEN}, {alias}.{SHORT_LABEL}, \
             {alias}.{LONG_LABEL}, {alias}.{COMMENT}, {alias}.{GROUP_MODE}, {alias}.{SORT_VALUE}, {alias}.{HRV_SEEDED}, \
             (SELECT Count(*) FROM Entry e WHERE e.Entry_Race_ID_FK = {alias}.{ID} AND e.{ENTRY_CANCELLED} = 0) as {ENTRIES_COUNT}, \
             (SELECT Count(*) FROM Comp  c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.{HEAT_CANCELLED} = 0) as {HEATS_COUNT}, \
-            (SELECT AVG(Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.{HEAT_CANCELLED} = 0) as {RACE_STATE}, \
-            (SELECT MIN({HEAT_DATE_TIME}) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.{HEAT_CANCELLED} = 0) as {RACE_DATE_TIME} \
-        "
+            (SELECT AVG(Comp_State) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.{HEAT_DATE_TIME} IS NOT NULL AND c.{HEAT_CANCELLED} = 0) as {RACE_STATE}, \
+            (SELECT MIN({HEAT_DATE_TIME}) FROM Comp c WHERE c.Comp_Race_ID_FK = {alias}.{ID} AND c.{HEAT_DATE_TIME} IS NOT NULL AND c.{HEAT_CANCELLED} = 0) as {RACE_DATE_TIME}"
         )
     }
 
