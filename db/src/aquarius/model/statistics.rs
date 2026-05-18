@@ -13,6 +13,7 @@ use super::heat::CANCELLED as HEAT_CANCELLED;
 use super::heat::DATE_TIME as HEAT_DATE_TIME;
 use super::heat::STATE as HEAT_STATE;
 use super::race::CANCELLED as RACE_CANCELLED;
+use super::race::DRIVEN as RACE_DRIVEN;
 use super::race::ID as RACE_ID;
 use super::try_get_row;
 use crate::{
@@ -26,6 +27,7 @@ use ::tiberius::{Query, Row};
 #[derive(Debug, Serialize, Clone)]
 struct RacesStatistics {
     all: i32,
+    driven: i32,
     cancelled: i32,
 }
 
@@ -76,6 +78,7 @@ impl From<&Row> for Statistics {
     fn from(value: &Row) -> Self {
         let races = RacesStatistics {
             all: value.get_column("races_all"),
+            driven: value.get_column("races_driven"),
             cancelled: value.get_column("races_cancelled"),
         };
         let heats = HeatsStatistics {
@@ -129,7 +132,8 @@ impl Statistics {
         let mut query = Query::new(
         format!("SELECT
           (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1) AS races_all,
-          (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1 AND {RACE_CANCELLED} > 0) AS races_cancelled,
+          (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1 AND {RACE_CANCELLED} = 0 AND {RACE_DRIVEN} = 1) AS races_driven,
+          (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1 AND ({RACE_CANCELLED} > 0 OR {RACE_DRIVEN} = 0)) AS races_cancelled,
           (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1) AS heats_all,
           (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND {HEAT_CANCELLED} > 0 ) AS heats_cancelled,
           (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND {HEAT_STATE} = 4 AND {HEAT_DATE_TIME} IS NOT NULL AND {HEAT_CANCELLED} = 0) AS heats_official,
