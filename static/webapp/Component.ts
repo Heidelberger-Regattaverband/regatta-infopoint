@@ -27,16 +27,37 @@ export default class Component extends UIComponent {
         interfaces: ["sap.ui.core.IAsyncContentCreation"]
     };
 
+    /**
+     * Returns the active-regatta {@link JSONModel}.
+     *
+     * Concurrent callers share the same in-flight request via a memoised
+     * promise; later callers receive the resolved value immediately.
+     *
+     * On failure (e.g. transient backend outage during bootstrap) the cached
+     * promise is **invalidated** so the next call retries the network request,
+     * rather than handing every subsequent caller the same rejected promise.
+     */
     async getActiveRegatta(): Promise<JSONModel> {
-        // Use a single memoised promise: concurrent callers receive the same
-        // in-flight request, later callers receive the resolved value.
-        this.regattaModelPromise ??= this.loadActiveRegatta();
+        this.regattaModelPromise ??= this.loadActiveRegatta().catch((err: unknown) => {
+            // Reset the cache so the next caller can retry with a fresh request.
+            delete this.regattaModelPromise;
+            throw err;
+        });
         this.regattaModel = await this.regattaModelPromise;
         return this.regattaModel;
     }
 
+    /**
+     * Returns the filters {@link JSONModel} for the active regatta.
+     *
+     * Same memoisation + failure-invalidation contract as {@link getActiveRegatta}.
+     */
     async getFilters(): Promise<JSONModel> {
-        this.filtersModelPromise ??= this.loadFilters();
+        this.filtersModelPromise ??= this.loadFilters().catch((err: unknown) => {
+            // Reset the cache so the next caller can retry with a fresh request.
+            delete this.filtersModelPromise;
+            throw err;
+        });
         this.filtersModel = await this.filtersModelPromise;
         return this.filtersModel;
     }
