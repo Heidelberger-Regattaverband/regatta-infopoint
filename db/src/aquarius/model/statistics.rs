@@ -10,6 +10,9 @@ use super::entry::CANCELLED as ENTRY_CANCELLED;
 use super::entry::ID as ENTRY_ID;
 use super::get_row;
 use super::heat::CANCELLED as HEAT_CANCELLED;
+use super::heat::DATE_TIME as HEAT_DATE_TIME;
+use super::heat::STATE as HEAT_STATE;
+use super::race::CANCELLED as RACE_CANCELLED;
 use super::race::ID as RACE_ID;
 use super::try_get_row;
 use crate::{
@@ -126,14 +129,14 @@ impl Statistics {
         let mut query = Query::new(
         format!("SELECT
           (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1) AS races_all,
-          (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1 AND Offer_Cancelled > 0) AS races_cancelled,
+          (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1 AND {RACE_CANCELLED} > 0) AS races_cancelled,
           (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1) AS heats_all,
           (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND {HEAT_CANCELLED} > 0 ) AS heats_cancelled,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 4 AND {HEAT_CANCELLED} = 0 ) AS heats_official,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND (Comp_State = 5 OR  Comp_State = 6) ) AS heats_finished,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 2 AND {HEAT_CANCELLED} = 0 ) AS heats_started,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 1 AND {HEAT_CANCELLED} = 0 ) AS heats_seeded,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 0 AND {HEAT_CANCELLED} = 0 ) AS heats_scheduled,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND {HEAT_STATE} = 4 AND {HEAT_DATE_TIME} IS NOT NULL AND {HEAT_CANCELLED} = 0) AS heats_official,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND ({HEAT_STATE} = 5 OR {HEAT_STATE} = 6) AND {HEAT_DATE_TIME} IS NOT NULL AND {HEAT_CANCELLED} = 0) AS heats_finished,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND {HEAT_STATE} = 2 AND {HEAT_DATE_TIME} IS NOT NULL AND {HEAT_CANCELLED} = 0) AS heats_started,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND {HEAT_STATE} = 1 AND {HEAT_DATE_TIME} IS NOT NULL AND {HEAT_CANCELLED} = 0) AS heats_seeded,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND {HEAT_STATE} = 0 AND {HEAT_DATE_TIME} IS NOT NULL AND {HEAT_CANCELLED} = 0) AS heats_scheduled,
           (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1) AS entries_all,
           (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1 AND {ENTRY_CANCELLED} > 0) AS entries_cancelled,
           (SELECT COUNT(*) FROM (
@@ -161,7 +164,7 @@ impl Statistics {
           (SELECT COALESCE(SUM({NUM_ROWERS}), 0) FROM (
             SELECT {NUM_ROWERS}
             FROM  Entry
-            JOIN  Offer     ON {RACE_ID} = Entry_Race_ID_FK
+            JOIN  Offer     ON       {RACE_ID} = Entry_Race_ID_FK
             JOIN  BoatClass ON {BOAT_CLASS_ID} = Offer_BoatClass_ID_FK
             WHERE Entry_Event_ID_FK = @P1 AND {ENTRY_CANCELLED} = 0) as seats) AS entries_seats,
           (SELECT COALESCE(SUM({COXED}), 0) FROM (
@@ -173,15 +176,15 @@ impl Statistics {
           (SELECT COALESCE(SUM(bc.BoatClass_NumRowers), 0) FROM (
             SELECT bc.BoatClass_NumRowers
             FROM Comp       c
-            JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.{RACE_ID}
-            JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
+            JOIN Offer      o ON       c.Comp_Race_ID_FK = o.{RACE_ID}
+            JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.{BOAT_CLASS_ID}
             WHERE c.Comp_Event_ID_FK = @P1 AND c.{HEAT_CANCELLED} = 0
             ) as bc) as medals_rowers,
           (SELECT COALESCE(SUM(bc.BoatClass_Coxed), 0) FROM (
             SELECT bc.BoatClass_Coxed
             FROM Comp       c
-            JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.{RACE_ID}
-            JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
+            JOIN Offer      o ON c.Comp_Race_ID_FK       = o.{RACE_ID}
+            JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.{BOAT_CLASS_ID}
             WHERE c.Comp_Event_ID_FK = @P1 AND c.{HEAT_CANCELLED} = 0
             ) as bc) as medals_coxes
           "
