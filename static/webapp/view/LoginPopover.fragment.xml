@@ -1,6 +1,6 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
 
-  <ResponsivePopover id="loginPopover" title="{i18n>common.login}" class="sapUiContentPadding" placement="Bottom" initialFocus="user">
+  <ResponsivePopover id="loginPopover" title="{i18n>common.login}" class="sapUiContentPadding" placement="Bottom" initialFocus="user" afterClose=".onLoginPopoverAfterClose">
     <content>
       <VBox>
         <Input id="user" placeholder="{i18n>common.user}" value="{credentials>/username}" submit=".onUserSubmit" />

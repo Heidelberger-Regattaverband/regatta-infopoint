@@ -1,7 +1,9 @@
+import Log from "sap/base/Log";
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import Device from "sap/ui/Device";
 import UIComponent from "sap/ui/core/UIComponent";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import Model, { Model$RequestFailedEvent, Model$RequestFailedEventParameters } from "sap/ui/model/Model";
 import ResourceModel from "sap/ui/model/resource/ResourceModel";
 import Formatter from "./model/Formatter";
 
@@ -78,8 +80,12 @@ export default class Component extends UIComponent {
         super.setModel(identityModel, "identity");
 
         // initial heat / race models, required for navigation over heats and races
-        super.setModel(new JSONModel(), "heat");
-        super.setModel(new JSONModel(), "race");
+        super.setModel(this.attachUnauthorizedHandler(new JSONModel()), "heat");
+        super.setModel(this.attachUnauthorizedHandler(new JSONModel()), "race");
+
+        // Notifications model is created as a class field; install the 401 handler
+        // here, before bootstrap kicks off the first `loadData` call.
+        this.attachUnauthorizedHandler(this.notificationsModel);
 
         // 2. Resolve the i18n resource bundle (sync or async, depending on UI5 config),
         //    cache it and inject it into the Formatter so static formatter methods
@@ -198,7 +204,7 @@ export default class Component extends UIComponent {
      */
     private async loadActiveRegatta(): Promise<JSONModel> {
         console.debug("Loading active regatta");
-        const model: JSONModel = new JSONModel();
+        const model: JSONModel = this.attachUnauthorizedHandler(new JSONModel());
         await model.loadData("/api/active_regatta");
         console.debug("Active regatta loaded");
         return model;
@@ -211,7 +217,7 @@ export default class Component extends UIComponent {
     private async loadFilters(): Promise<JSONModel> {
         await this.getActiveRegatta();
         console.debug("Loading filters");
-        const model: JSONModel = new JSONModel();
+        const model: JSONModel = this.attachUnauthorizedHandler(new JSONModel());
         const regattaId = this.regattaModel?.getData().id ?? -1;
         await model.loadData(`/api/regattas/${regattaId}/filters`);
         console.debug("Filters loaded");
@@ -225,5 +231,50 @@ export default class Component extends UIComponent {
         this.notificationsModel.refresh();
         console.debug("Notifications loaded");
         return this.notificationsModel;
+    }
+
+    /**
+     * Attaches a global `requestFailed` listener to a {@link JSONModel} that
+     * funnels HTTP `401 Unauthorized` responses into {@link handleUnauthorized}.
+     *
+     * Centralising this here means any in-flight `loadData` call (regardless of
+     * which controller issued it) consistently reverts the UI to the
+     * unauthenticated state when the server-side session expires, instead of
+     * each controller having to reimplement the check.
+     *
+     * The listener is intentionally narrow — non-401 errors are left for the
+     * caller's local handler so transient 5xx errors do not log the user out.
+     *
+     * @returns the same model, for fluent chaining.
+     */
+    attachUnauthorizedHandler<T extends Model>(model: T): T {
+        model.attachRequestFailed((event: Model$RequestFailedEvent) => {
+            const params: Model$RequestFailedEventParameters = event.getParameters();
+            if (params.statusCode === 401) {
+                this.handleUnauthorized();
+            }
+        });
+        return model;
+    }
+
+    /**
+     * Reverts the UI to the unauthenticated state. Invoked from the global 401
+     * handler installed by {@link attachUnauthorizedHandler}, so that *any*
+     * model load returning 401 — not only the explicit `/api/identity` probe —
+     * causes the launchpad to display the anonymous header.
+     */
+    private handleUnauthorized(): void {
+        const identityModel: JSONModel | undefined = super.getModel("identity") as JSONModel | undefined;
+        if (!identityModel) {
+            return;
+        }
+        if (identityModel.getProperty("/authenticated") === false) {
+            // Already in the anonymous state — avoid log spam.
+            return;
+        }
+        Log.info("Server session expired (401); reverting to anonymous identity");
+        identityModel.setProperty("/authenticated", false);
+        identityModel.setProperty("/username", "anonymous");
+        identityModel.setProperty("/scope", "");
     }
 }
