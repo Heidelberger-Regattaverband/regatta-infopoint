@@ -53,22 +53,22 @@
           <columns>
             <Column hAlign="Begin" width="6rem" importance="High" popinDisplay="Inline">
               <header>
-                <Text text="{i18n>common.race}" class="bold" />
+                <Text text="{i18n>common.race}" />
               </header>
             </Column>
             <Column hAlign="Begin" width="14rem" importance="High" popinDisplay="Inline">
               <header>
-                <Text text="{i18n>common.bib} / {i18n>common.boat}" class="bold" />
+                <Text text="{i18n>common.bib} / {i18n>common.boat}" />
               </header>
             </Column>
             <Column hAlign="Begin" width="4rem" importance="Low" popinDisplay="Inline">
               <header>
-                <Text text="{i18n>common.heats}" class="bold" />
+                <Text text="{i18n>common.heats}" />
               </header>
             </Column>
             <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
               <header>
-                <Text text="{i18n>common.clubRegistration}" class="bold" />
+                <Text text="{i18n>common.clubRegistration}" />
               </header>
             </Column>
           </columns>
@@ -87,7 +87,7 @@
                 <VBox>
                   <Text text="{parts:[{path:'entries>race/groupMode'},{path:'entries>'}],formatter:'.formatter.bibBoatLabel'}"
                     class="boldCancelled" visible="{=${entries>cancelled} || ${entries>race/cancelled}}" />
-                  <Text text="{parts:[{path:'entries>race/groupMode'},{path:'entries>'}],formatter:'.formatter.bibBoatLabel'}" class="bold"
+                  <Text text="{parts:[{path:'entries>race/groupMode'},{path:'entries>'}],formatter:'.formatter.bibBoatLabel'}"
                     visible="{=!${entries>cancelled} &amp;&amp; !${entries>race/cancelled}}" />
 
                   <Text text="{path:'entries>crew',formatter:'.formatter.crewLabel'}" class="cancelled"
