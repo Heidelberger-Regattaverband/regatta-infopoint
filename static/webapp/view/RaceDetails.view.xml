@@ -25,14 +25,14 @@
                   <Title text="{path:'raceEntries>/',formatter:'.formatter.nrRaceLabel'}" wrapping="true" />
                   <Label text="{raceEntries>/longLabel} {raceEntries>/comment}" />
                   <ObjectStatus title="{i18n>common.state}" text="{path:'raceEntries>/',formatter:'.formatter.raceStateLabel'}"
-                    state="{path:'raceEntries>/',formatter:'.formatter.raceStateHighlight'}" class="bold" />
+                    state="{path:'raceEntries>/',formatter:'.formatter.raceStateHighlight'}" />
                 </VBox>
               </f:expandedHeading>
               <f:snappedHeading>
                 <VBox>
                   <Title text="{path:'raceEntries>/',formatter:'.formatter.nrRaceLabel'}" wrapping="true" />
                   <ObjectStatus title="{i18n>common.state}" text="{path:'raceEntries>/',formatter:'.formatter.raceStateLabel'}"
-                    state="{path:'raceEntries>/',formatter:'.formatter.raceStateHighlight'}" class="bold" />
+                    state="{path:'raceEntries>/',formatter:'.formatter.raceStateHighlight'}" />
                 </VBox>
               </f:snappedHeading>
               <f:actions>
@@ -67,22 +67,22 @@
               <columns>
                 <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
                   <header>
-                    <Text text="{i18n>common.bib}" class="bold" />
+                    <Text text="{i18n>common.bib}" />
                   </header>
                 </Column>
                 <Column hAlign="Begin" width="14rem" importance="High" popinDisplay="Inline">
                   <header>
-                    <Text text="{i18n>common.boat}" class="bold" />
+                    <Text text="{i18n>common.boat}" />
                   </header>
                 </Column>
                 <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
                   <header>
-                    <Text text="{i18n>common.clubRegistration}" class="bold" />
+                    <Text text="{i18n>common.clubRegistration}" />
                   </header>
                 </Column>
                 <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline" visible="{=${raceEntries>/heatsCount}>0}">
                   <header>
-                    <Text text="{i18n>common.heat}" class="bold" />
+                    <Text text="{i18n>common.heat}" />
                   </header>
                 </Column>
               </columns>

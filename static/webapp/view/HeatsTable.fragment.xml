@@ -36,32 +36,32 @@
     <columns>
       <Column id="heatDateTime" hAlign="Center" width="5rem" importance="High" popinDisplay="Inline">
         <header>
-          <Text text="{i18n>common.time}" class="bold" />
+          <Text text="{i18n>common.time}" />
         </header>
       </Column>
       <Column id="heat" width="auto" importance="High" popinDisplay="Inline">
         <header>
-          <Text text="{i18n>common.heat}" class="bold" />
+          <Text text="{i18n>common.heat}" />
         </header>
       </Column>
       <Column id="heatDistance" hAlign="Center" width="6rem" importance="Medium" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
         <header>
-          <Text text="{i18n>common.distance}" class="bold" />
+          <Text text="{i18n>common.distance}" />
         </header>
       </Column>
       <Column id="heatNr" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
         <header>
-          <Text text="{i18n>common.heatNr}" class="bold" />
+          <Text text="{i18n>common.heatNr}" />
         </header>
       </Column>
       <Column hAlign="Center" width="6rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
         <header>
-          <Text text="{i18n>common.seeded}" class="bold" />
+          <Text text="{i18n>common.seeded}" />
         </header>
       </Column>
       <Column id="heatState" hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">
         <header>
-          <Text text="{i18n>common.state}" class="bold" />
+          <Text text="{i18n>common.state}" />
         </header>
       </Column>
     </columns>
