@@ -12,6 +12,11 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
 
+interface Credentials {
+  username: string;
+  password: string;
+}
+
 interface Identity {
   username: string;
   scope: string;
@@ -22,7 +27,7 @@ interface Identity {
  */
 export default class LaunchpadController extends BaseController {
 
-  private static readonly EMPTY_CREDENTIALS: { username: string; password: string } = { username: "", password: "" };
+  private static readonly EMPTY_CREDENTIALS: Credentials = { username: "", password: "" };
 
   readonly formatter: Formatter = Formatter;
   private readonly credentialsModel: JSONModel = new JSONModel({ ...LaunchpadController.EMPTY_CREDENTIALS });
