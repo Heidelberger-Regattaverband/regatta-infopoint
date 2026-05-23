@@ -19,7 +19,7 @@ export default class Component extends UIComponent {
 
     private regattaModel?: JSONModel;
     private filtersModel?: JSONModel;
-    private readonly notificationsModel: JSONModel = new JSONModel();
+    private notificationsModel: JSONModel;
     // Memoised promises ensure concurrent callers share a single in-flight request and the cached model thereafter
     private regattaModelPromise?: Promise<JSONModel>;
     private filtersModelPromise?: Promise<JSONModel>;
@@ -83,8 +83,10 @@ export default class Component extends UIComponent {
         super.setModel(this.attachUnauthorizedHandler(new JSONModel()), "heat");
         super.setModel(this.attachUnauthorizedHandler(new JSONModel()), "race");
 
-        // Notifications model is created as a class field; install the 401 handler
-        // here, before bootstrap kicks off the first `loadData` call.
+        // Create the notifications model here (see field declaration for why
+        // it cannot be a class-field initializer) and install the 401 handler
+        // before bootstrap kicks off the first `loadData` call.
+        this.notificationsModel = new JSONModel();
         this.attachUnauthorizedHandler(this.notificationsModel);
 
         // 2. Resolve the i18n resource bundle (sync or async, depending on UI5 config),
