@@ -196,6 +196,15 @@ export default class BaseController extends Controller {
     return (await this.getComponent().getActiveRegatta()).getData();
   }
 
+  /**
+   * Attaches an unauthorized handler to the given model.
+   * @param model The JSON model to attach the handler to
+   * @returns The JSON model with the unauthorized handler attached
+   */
+  attachUnauthorizedHandler(model: JSONModel): JSONModel {
+    return this.getComponent().attachUnauthorizedHandler(model);
+  }
+
   private getComponent(): MyComponent {
     return super.getOwnerComponent() as MyComponent;
   }
