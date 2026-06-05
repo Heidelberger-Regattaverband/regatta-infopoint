@@ -1,5 +1,6 @@
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import Device from "sap/ui/Device";
+import IconPool from "sap/ui/core/IconPool";
 import UIComponent from "sap/ui/core/UIComponent";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ResourceModel from "sap/ui/model/resource/ResourceModel";
@@ -69,6 +70,10 @@ export default class Component extends UIComponent {
 
     init(): void {
         super.init();
+
+        // Register the SAP TNT icon font once, at component start-up.
+        // (Was previously done by the Timekeeping controller on every instantiation.)
+        Component.registerIconFonts();
 
         // 1. Set the static, synchronous models first so any view that renders
         //    immediately after router.initialize() finds them in place.
@@ -225,5 +230,18 @@ export default class Component extends UIComponent {
         this.notificationsModel.refresh();
         console.debug("Notifications loaded");
         return this.notificationsModel;
+    }
+
+    /**
+     * Registers icon fonts used by the application. `IconPool.registerFont` is
+     * idempotent, but calling it once at component start-up — instead of in
+     * every controller's `onInit` — is cheaper and keeps the side-effect in a
+     * single, discoverable place.
+     */
+    private static registerIconFonts(): void {
+        IconPool.registerFont({
+            fontFamily: "SAP-icons-TNT",
+            fontURI: sap.ui.require.toUrl("sap/tnt/themes/base/fonts/"),
+        });
     }
 }
