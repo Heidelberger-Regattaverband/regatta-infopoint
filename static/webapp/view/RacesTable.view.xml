@@ -77,8 +77,8 @@
                 </VBox>
 
                 <VBox>
-                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=${races>cancelled}}" class="boldCancelled" />
-                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=!${races>cancelled}}" class="bold" />
+                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=${races>cancelled}}" class="cancelled" />
+                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=!${races>cancelled}}" />
 
                   <Text text="{races>longLabel} {races>comment}" visible="{=${races>cancelled} &amp;&amp; !${device>/system/phone}}"
                     class="cancelled" />
@@ -101,7 +101,7 @@
                 </VBox>
 
                 <ObjectStatus text="{path:'races>',formatter:'.formatter.raceStateLabel'}"
-                  state="{path:'races>',formatter:'.formatter.raceStateHighlight'}" class="bold" />
+                  state="{path:'races>',formatter:'.formatter.raceStateHighlight'}" />
               </cells>
             </ColumnListItem>
           </items>

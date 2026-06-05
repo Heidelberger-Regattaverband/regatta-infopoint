@@ -86,7 +86,7 @@
 
                 <VBox>
                   <Text text="{parts:[{path:'entries>race/groupMode'},{path:'entries>'}],formatter:'.formatter.bibBoatLabel'}"
-                    class="boldCancelled" visible="{=${entries>cancelled} || ${entries>race/cancelled}}" />
+                    class="cancelled" visible="{=${entries>cancelled} || ${entries>race/cancelled}}" />
                   <Text text="{parts:[{path:'entries>race/groupMode'},{path:'entries>'}],formatter:'.formatter.bibBoatLabel'}"
                     visible="{=!${entries>cancelled} &amp;&amp; !${entries>race/cancelled}}" />
 

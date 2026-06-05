@@ -98,8 +98,8 @@
 
                     <VBox>
                       <Text text="{parts:[{path:'race>/groupMode'},{path:'raceEntries>'}],formatter:'.formatter.boatLabel'}"
-                        class="boldCancelled" visible="{=${raceEntries>cancelled}}" />
-                      <Text text="{parts:[{path:'race>/groupMode'},{path:'raceEntries>'}],formatter:'.formatter.boatLabel'}" class="bold"
+                        class="cancelled" visible="{=${raceEntries>cancelled}}" />
+                      <Text text="{parts:[{path:'race>/groupMode'},{path:'raceEntries>'}],formatter:'.formatter.boatLabel'}"
                         visible="{=!${raceEntries>cancelled}}" />
 
                       <Text text="{path:'raceEntries>crew',formatter: '.formatter.crewLabel'}" visible="{= ${raceEntries>cancelled}}"
