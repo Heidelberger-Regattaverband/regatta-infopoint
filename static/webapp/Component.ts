@@ -4,6 +4,8 @@ import IconPool from "sap/ui/core/IconPool";
 import UIComponent from "sap/ui/core/UIComponent";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ResourceModel from "sap/ui/model/resource/ResourceModel";
+import HeatsTableController from "./controller/HeatsTable.controller";
+import RacesTableController from "./controller/RacesTable.controller";
 import Formatter from "./model/Formatter";
 import { NavigationData } from "./model/types";
 
@@ -84,8 +86,8 @@ export default class Component extends UIComponent {
         super.setModel(identityModel, "identity");
 
         // initial heat / race models, required for navigation over heats and races
-        super.setModel(new JSONModel(), "heat");
-        super.setModel(new JSONModel(), "race");
+        super.setModel(new JSONModel(), HeatsTableController.HEAT_MODEL);
+        super.setModel(new JSONModel(), RacesTableController.RACE_MODEL);
 
         // Dedicated navigation-state models for the race/heat detail views.
         // The state ({@link NavigationData}) is intentionally kept *separate*
@@ -93,8 +95,8 @@ export default class Component extends UIComponent {
         // mutated with UI metadata (cf. review issue #4). The shape matches
         // the bindings in RaceDetails.view.xml / HeatDetails.view.xml.
         const initialNavigationData: NavigationData = { isFirst: false, isLast: false, disabled: false, back: undefined };
-        super.setModel(new JSONModel({ ...initialNavigationData }), "raceNav");
-        super.setModel(new JSONModel({ ...initialNavigationData }), "heatNav");
+        super.setModel(new JSONModel({ ...initialNavigationData }), RacesTableController.RACE_NAV_MODEL);
+        super.setModel(new JSONModel({ ...initialNavigationData }), HeatsTableController.HEAT_NAV_MODEL);
 
         // 2. Resolve the i18n resource bundle (sync or async, depending on UI5 config),
         //    cache it and inject it into the Formatter so static formatter methods
