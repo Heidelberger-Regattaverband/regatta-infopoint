@@ -2,6 +2,7 @@ import Button, { Button$PressEvent } from "sap/m/Button";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
+import { NavigationData } from "../model/types";
 import BaseController from "./Base.controller";
 import HeatsTableController from "./HeatsTable.controller";
 
@@ -24,18 +25,44 @@ export default class HeatDetailsController extends BaseController {
     super.setViewModel(new JSONModel(), HeatDetailsController.ENTRIES_MODEL);
 
     super.getRouter()?.getRoute("heatDetails")?.attachPatternMatched(
-      (event: Route$PatternMatchedEvent) => this.onPatternMatched(event), this);
+      async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
   }
 
-  private onPatternMatched(event: Route$PatternMatchedEvent): void {
+  /**
+   * Captures the {@code heatId} from the route pattern *and* triggers the
+   * initial data load. Doing the load here (rather than in {@link onBeforeShow})
+   * guarantees `this.heatId` is set before `loadHeatModel` builds the URL —
+   * otherwise on a deep-link navigation `onBeforeShow` fires *before* the
+   * pattern handler, producing `/api/heats/undefined`.
+   *
+   * On a *deep-link* navigation (URL typed/bookmarked, no preceding heats list)
+   * the prev/next/first/last buttons cannot work because there is no list to
+   * traverse. Detect this by checking whether the component-level `heat` model
+   * carries a matching id from a previous `HeatsTable` selection; if not, mark
+   * the nav model as `disabled` so the view hides those buttons.
+   */
+  private async onPatternMatched(event: Route$PatternMatchedEvent): Promise<void> {
     this.heatId = (event.getParameter("arguments") as any)?.heatId;
+    this.updateNavOnPatternMatched();
+    await this.loadHeatModel();
+  }
+
+  /**
+   * Hides the prev/next/first/last buttons when the user reaches the detail
+   * view via a deep link instead of via the heats list — see {@link onPatternMatched}.
+   */
+  private updateNavOnPatternMatched(): void {
+    const heat: any = super.getComponentJSONModel(HeatsTableController.HEAT_MODEL).getData();
+    const cameFromList: boolean = heat?.id != null && String(heat.id) === String(this.heatId);
+    if (!cameFromList) {
+      const navData: NavigationData = { isFirst: false, isLast: false, disabled: true, back: undefined };
+      super.getComponentJSONModel(HeatsTableController.HEAT_NAV_MODEL).setData(navData);
+    }
   }
 
   private onBeforeShow(): void {
-    this.loadHeatModel().then(() => {
-      super.getEventBus()?.subscribe("heat", "itemChanged", this.onItemChanged, this);
-      window.addEventListener("keydown", this.keyListener);
-    });
+    super.getEventBus()?.subscribe("heat", "itemChanged", this.onItemChanged, this);
+    window.addEventListener("keydown", this.keyListener);
   }
 
   private onBeforeHide(): void {
@@ -45,9 +72,11 @@ export default class HeatDetailsController extends BaseController {
   }
 
   onNavBack(): void {
-    const heat: any = super.getComponentJSONModel(HeatsTableController.HEAT_MODEL).getData();
-    if (heat._nav?.back) {
-      super.navBack(heat._nav.back);
+    // Read the back-target from the dedicated heatNav model (cf. review issue #4),
+    // not from the bound heat data object.
+    const navData: NavigationData | undefined = super.getComponentJSONModel(HeatsTableController.HEAT_NAV_MODEL).getData();
+    if (navData?.back) {
+      super.navBack(navData.back);
     } else {
       super.navBack("heats");
     }

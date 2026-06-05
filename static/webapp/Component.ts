@@ -5,6 +5,7 @@ import UIComponent from "sap/ui/core/UIComponent";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ResourceModel from "sap/ui/model/resource/ResourceModel";
 import Formatter from "./model/Formatter";
+import { NavigationData } from "./model/types";
 
 /**
  * @namespace de.regatta_hd.infoportal
@@ -85,6 +86,15 @@ export default class Component extends UIComponent {
         // initial heat / race models, required for navigation over heats and races
         super.setModel(new JSONModel(), "heat");
         super.setModel(new JSONModel(), "race");
+
+        // Dedicated navigation-state models for the race/heat detail views.
+        // The state ({@link NavigationData}) is intentionally kept *separate*
+        // from the bound data models so that backend payloads are never
+        // mutated with UI metadata (cf. review issue #4). The shape matches
+        // the bindings in RaceDetails.view.xml / HeatDetails.view.xml.
+        const initialNavigationData: NavigationData = { isFirst: false, isLast: false, disabled: false, back: undefined };
+        super.setModel(new JSONModel({ ...initialNavigationData }), "raceNav");
+        super.setModel(new JSONModel({ ...initialNavigationData }), "heatNav");
 
         // 2. Resolve the i18n resource bundle (sync or async, depending on UI5 config),
         //    cache it and inject it into the Formatter so static formatter methods

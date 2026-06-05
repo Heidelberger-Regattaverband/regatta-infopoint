@@ -6,7 +6,9 @@ import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
+import { NavigationData } from "../model/types";
 import BaseController from "./Base.controller";
+import RacesTableController from "./RacesTable.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -43,9 +45,12 @@ export default class AthleteDetailsController extends BaseController {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(AthleteDetailsController.ENTRIES_MODEL);
       const entry: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
 
-      entry.race._nav = { disabled: true, back: "athletes" };
+      // Drive nav-button visibility/back-target through the dedicated raceNav
+      // model so we never mutate the race data object (cf. review issue #4).
+      const navData: NavigationData = { isFirst: false, isLast: false, disabled: true, back: "athletes" };
+      super.getComponentJSONModel(RacesTableController.RACE_NAV_MODEL).setData(navData);
 
-      super.getComponentJSONModel("race").setData(entry.race);
+      super.getComponentJSONModel(RacesTableController.RACE_MODEL).setData(entry.race);
       super.navToRaceDetails(entry.race.id);
     }
   }
