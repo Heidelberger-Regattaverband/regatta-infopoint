@@ -72,8 +72,6 @@ export default class HeatDetailsController extends BaseController {
   }
 
   onNavBack(): void {
-    // Read the back-target from the dedicated heatNav model (cf. review issue #4),
-    // not from the bound heat data object.
     const navData: NavigationData | undefined = super.getComponentJSONModel(HeatsTableController.HEAT_NAV_MODEL).getData();
     if (navData?.back) {
       super.navBack(navData.back);

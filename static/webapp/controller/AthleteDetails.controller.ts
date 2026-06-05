@@ -44,13 +44,11 @@ export default class AthleteDetailsController extends BaseController {
     if (selectedItem) {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(AthleteDetailsController.ENTRIES_MODEL);
       const entry: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
+      super.getComponentJSONModel(RacesTableController.RACE_MODEL).setData(entry.race);
 
-      // Drive nav-button visibility/back-target through the dedicated raceNav
-      // model so we never mutate the race data object (cf. review issue #4).
       const navData: NavigationData = { isFirst: false, isLast: false, disabled: true, back: "athletes" };
       super.getComponentJSONModel(RacesTableController.RACE_NAV_MODEL).setData(navData);
 
-      super.getComponentJSONModel(RacesTableController.RACE_MODEL).setData(entry.race);
       super.navToRaceDetails(entry.race.id);
     }
   }

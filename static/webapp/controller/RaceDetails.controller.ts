@@ -76,8 +76,6 @@ export default class RaceDetailsController extends BaseController {
   }
 
   onNavBack(): void {
-    // Read the back-target from the dedicated nav model (cf. review issue #4),
-    // not from the bound race data object.
     const navData: NavigationData | undefined = super.getComponentJSONModel(RacesTableController.RACE_NAV_MODEL).getData();
     if (navData?.back) {
       super.navBack(navData.back);
@@ -119,8 +117,6 @@ export default class RaceDetailsController extends BaseController {
       if (entry?.heats?.length > 0) {
         const heat: any = entry.heats[0];
 
-        // Drive nav-button visibility/back-target through the dedicated heatNav
-        // model so we never mutate the heat data object (cf. review issue #4).
         const heatNavData: NavigationData = { isFirst: false, isLast: false, disabled: true, back: "raceDetails" };
         super.getComponentJSONModel(HeatsTableController.HEAT_NAV_MODEL).setData(heatNavData);
 
