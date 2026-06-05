@@ -21,11 +21,25 @@ import BaseController from "./Base.controller";
  */
 export default abstract class BaseTableController extends BaseController {
 
+  /**
+   * Cache of already-loaded {@link ViewSettingsDialog} instances keyed by fragment
+   * name. Declared as a `static` class field so all derived controllers share the
+   * same cache — a fragment loaded by one table view is reused everywhere else.
+   */
+  private static readonly viewSettingsDialogs: Map<string, ViewSettingsDialog> = new Map<string, ViewSettingsDialog>();
+
+  /**
+   * Memoises in-flight {@link Fragment.load} promises per fragment name so that
+   * concurrent callers of {@link getViewSettingsDialog} share the same load and
+   * do not each create a duplicate dialog (cf. review issue #9). Declared as a
+   * `static` class field for the same sharing reason as {@link viewSettingsDialogs}.
+   */
+  private static readonly viewSettingsDialogPromises: Map<string, Promise<ViewSettingsDialog>> = new Map<string, Promise<ViewSettingsDialog>>();
+
   protected table: Table;
   private filters: Filter[] = [];
   private searchFilters: Filter[] = [];
   private bindingModel: string;
-  private readonly viewSettingsDialogs: Map<string, ViewSettingsDialog> = new Map<string, ViewSettingsDialog>();
   /**
    * Identifier of the event-bus channel this controller subscribed to in {@link init}.
    * Stored so {@link onExit} can unsubscribe symmetrically and avoid memory leaks
@@ -102,15 +116,32 @@ export default abstract class BaseTableController extends BaseController {
   }
 
   async getViewSettingsDialog(dialogFragmentName: string): Promise<ViewSettingsDialog> {
-    let dialog: ViewSettingsDialog = this.viewSettingsDialogs.get(dialogFragmentName)!;
-
-    if (!dialog) {
-      dialog = await Fragment.load({ id: this.getView()?.getId(), name: dialogFragmentName, controller: this }) as ViewSettingsDialog;
-      dialog.addStyleClass(super.getContentDensityClass());
-      this.getView()?.addDependent(dialog);
-      this.viewSettingsDialogs.set(dialogFragmentName, dialog);
+    // Fast path: dialog already loaded and cached.
+    const cached: ViewSettingsDialog | undefined = BaseTableController.viewSettingsDialogs.get(dialogFragmentName);
+    if (cached) {
+      return cached;
     }
-    return dialog;
+
+    // Memoise the in-flight load so concurrent callers share the same promise
+    // instead of each kicking off a duplicate Fragment.load (cf. review issue #9).
+    let pending: Promise<ViewSettingsDialog> | undefined = BaseTableController.viewSettingsDialogPromises.get(dialogFragmentName);
+    if (!pending) {
+      pending = Fragment.load({ id: this.getView()?.getId(), name: dialogFragmentName, controller: this })
+        .then((loaded) => {
+          const dialog: ViewSettingsDialog = loaded as ViewSettingsDialog;
+          dialog.addStyleClass(super.getContentDensityClass());
+          this.getView()?.addDependent(dialog);
+          BaseTableController.viewSettingsDialogs.set(dialogFragmentName, dialog);
+          return dialog;
+        })
+        .catch((error) => {
+          // Drop the rejected promise so a future call can retry the load.
+          BaseTableController.viewSettingsDialogPromises.delete(dialogFragmentName);
+          throw error;
+        });
+      BaseTableController.viewSettingsDialogPromises.set(dialogFragmentName, pending);
+    }
+    return pending;
   }
 
   onHandleFilterDialogConfirm(event: ViewSettingsDialog$ConfirmEvent): void {
