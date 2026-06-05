@@ -106,8 +106,6 @@ export default class HeatsTableController extends BaseTableController {
 
       const index: number = this.table.indexOfItem(selectedItem);
       const count = this.table.getItems().length;
-      // Store navigation state in the dedicated nav model — never on the
-      // backend data object (cf. review issue #4).
       const navData: NavigationData = { isFirst: index === 0, isLast: index === count - 1, disabled: false, back: undefined };
       super.updateNavModel(navData);
 
