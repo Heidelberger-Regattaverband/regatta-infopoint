@@ -17,3 +17,4 @@ Component-preload.js
 dist
 tsconfig.tsbuildinfo
 codecov.json
+review.md
