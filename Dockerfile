@@ -1,7 +1,7 @@
 # build image: docker build -t infoportal .
 # run container: docker run -it --rm --name infoportal -p 8080:8080 -p 8443:8443 --env DB_HOST= --env DB_NAME= --env DB_USER= --env DB_PASSWORD= infoportal
 
-ARG RUST_VERSION=1.95.0
+ARG RUST_VERSION=1.96.0
 
 #################
 ## build stage ##
@@ -36,7 +36,7 @@ RUN npm ci && npx ui5 build --clean-dest
 ###############
 ## run stage ##
 ###############
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 RUN apt-get update && apt-get upgrade -y \
   && apt-get install -y --no-install-recommends iputils-ping \
   && apt-get clean \
