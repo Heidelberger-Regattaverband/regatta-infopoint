@@ -74,12 +74,10 @@ export default class Component extends UIComponent {
     init(): void {
         super.init();
 
-        // Register the SAP TNT icon font once, at component start-up.
-        // (Was previously done by the Timekeeping controller on every instantiation.)
-        Component.registerIconFonts();
-
-        // 1. Set the static, synchronous models first so any view that renders
-        //    immediately after router.initialize() finds them in place.
+        // 1. Register all synchronous, view-bindable models *before* the router
+        //    starts. The router's `initialize()` triggers route matching, which
+        //    instantiates the matched view and its controller; that view may
+        //    bind against any of these models on its first render.
         super.setModel(new JSONModel(Device).setDefaultBindingMode("OneWay"), "device");
 
         const identityModel: JSONModel = new JSONModel({ authenticated: false, username: "anonymous", roles: [] }).setDefaultBindingMode("OneWay");
@@ -97,9 +95,32 @@ export default class Component extends UIComponent {
         super.setModel(new JSONModel({ ...initialNavigationData }), RacesTableController.RACE_NAV_MODEL);
         super.setModel(new JSONModel({ ...initialNavigationData }), HeatsTableController.HEAT_NAV_MODEL);
 
-        // 2. Resolve the i18n resource bundle (sync or async, depending on UI5 config),
-        //    cache it and inject it into the Formatter so static formatter methods
-        //    can localise without performing a second (synchronous!) bundle load.
+        // Register an (initially empty) notifications model upfront so any view
+        // that binds against `notifications>` finds it in place even before the
+        // initial fetch completes. `loadNotifications` mutates this same
+        // instance in-place, so no later `setModel` call is required.
+        super.setModel(this.notificationsModel, "notifications");
+
+        // 2. Initialize the router as early as possible — *immediately* after
+        //    all view-bindable models are registered. This is the earliest
+        //    correct point: the static models above are needed by the first
+        //    matched view, while everything below (icon-font registration,
+        //    i18n bundle resolution, the `beforeunload` listener, and the async
+        //    backend fetches in `bootstrap()`) is independent of routing and
+        //    can run concurrently with — or after — the first paint.
+        super.getRouter().initialize();
+
+        // 3. Side-effects that do not need to precede the first route match.
+
+        // Register the SAP TNT icon font once, at component start-up.
+        Component.registerIconFonts();
+
+        // Resolve the i18n resource bundle (sync or async, depending on UI5
+        // config), cache it and inject it into the Formatter so static
+        // formatter methods can localise without performing a second
+        // (synchronous!) bundle load. Until the bundle is available, the
+        // Formatter falls back to returning the i18n key — matching the
+        // behaviour of UI5's `{i18n>...}` bindings before bundle resolution.
         const bundle: ResourceBundle | Promise<ResourceBundle> = (super.getModel("i18n") as ResourceModel).getResourceBundle();
         if (bundle instanceof ResourceBundle) {
             this.resourceBundle = bundle;
@@ -118,21 +139,22 @@ export default class Component extends UIComponent {
             event.preventDefault();
         });
 
-        // 3. Bootstrap async data, then initialize the router. We deliberately
-        //    do NOT await this in `init()` (which is `void`), but we collect the
-        //    initialization promise so consumers (and tests) could observe it.
+        // 4. Bootstrap async data in the background. Errors are logged but
+        //    cannot block the navigable shell from rendering.
         void this.bootstrap();
     }
 
     /**
-     * Performs the asynchronous component bootstrap:
-     * 1. loads regatta + filters in parallel,
+     * Performs the asynchronous component bootstrap (runs in the background
+     * after the router is already initialized):
+     * 1. loads regatta + filters in parallel and registers them as
+     *    component-scoped models,
      * 2. loads the initial notifications,
-     * 3. starts the notifications polling timer,
-     * 4. initializes the router.
+     * 3. starts the notifications polling timer.
      *
-     * Errors at any step are logged but do not prevent the router from starting,
-     * so the user always gets a navigable shell.
+     * Errors at any step are logged. The router is **not** started here — it
+     * was already initialized synchronously by {@link init}, so the user gets
+     * a navigable shell regardless of backend availability.
      */
     private async bootstrap(): Promise<void> {
         try {
@@ -142,24 +164,20 @@ export default class Component extends UIComponent {
             ]);
             super.setModel(regattaModel, "regatta");
             super.setModel(filtersModel, "filters");
-
-            try {
-                const notificationsModel: JSONModel = await this.loadNotifications();
-                super.setModel(notificationsModel, "notifications");
-            } catch (err: unknown) {
-                console.error("Failed to load initial notifications", err as Error);
-                // Still register the model so views can bind without errors.
-                super.setModel(this.notificationsModel, "notifications");
-            }
-
-            this.startNotificationsPolling();
         } catch (err: unknown) {
-            console.error("Component bootstrap failed", err as Error);
-        } finally {
-            // Always initialize the router so the app remains navigable
-            // even if data calls failed.
-            super.getRouter().initialize();
+            console.error("Failed to load regatta/filters during bootstrap", err as Error);
+            // Continue — notifications and polling still need to be attempted.
         }
+
+        try {
+            await this.loadNotifications();
+            // `notificationsModel` is the same instance already registered in
+            // `init`, so no further `setModel` call is necessary.
+        } catch (err: unknown) {
+            console.error("Failed to load initial notifications", err as Error);
+        }
+
+        this.startNotificationsPolling();
     }
 
     /**
