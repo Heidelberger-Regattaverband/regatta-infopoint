@@ -3,6 +3,37 @@
  * @namespace de.regatta_hd.infoportal.model.types
  */
 
+/**
+ * Navigation state shared between a list controller (`RacesTable` /
+ * `HeatsTable`) and the corresponding detail view (`RaceDetails` /
+ * `HeatDetails`). Lives in the dedicated `raceNav` / `heatNav` JSONModels on
+ * the Component so backend payloads are never mutated
+ * with UI metadata.
+ *
+ * The XML bindings consume the fields like so:
+ * ```
+ * enabled="{=!${raceNav>/isFirst}}" visible="{=!${raceNav>/disabled}}"
+ * ```
+ *
+ * @property isFirst  `true` when the current item is the first in the list —
+ *                    used to disable the *first* and *previous* buttons.
+ * @property isLast   `true` when the current item is the last in the list —
+ *                    used to disable the *next* and *last* buttons.
+ * @property disabled Hides all four nav buttons (e.g. on a deep-link
+ *                    navigation where there is no list to traverse, or when
+ *                    the detail view was opened from an unrelated context such
+ *                    as the athletes / clubs detail screens).
+ * @property back     Optional route name to navigate to when the user presses
+ *                    *back*. When unset, the controller falls back to the
+ *                    canonical list route (`races` / `heats`).
+ */
+export interface NavigationData {
+    isFirst: boolean;
+    isLast: boolean;
+    disabled: boolean;
+    back?: string;
+}
+
 export interface Race {
     number?: number;
     shortLabel?: string;

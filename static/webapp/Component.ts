@@ -4,7 +4,10 @@ import IconPool from "sap/ui/core/IconPool";
 import UIComponent from "sap/ui/core/UIComponent";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ResourceModel from "sap/ui/model/resource/ResourceModel";
+import HeatsTableController from "./controller/HeatsTable.controller";
+import RacesTableController from "./controller/RacesTable.controller";
 import Formatter from "./model/Formatter";
+import { NavigationData } from "./model/types";
 
 /**
  * @namespace de.regatta_hd.infoportal
@@ -41,7 +44,7 @@ export default class Component extends UIComponent {
     async getActiveRegatta(): Promise<JSONModel> {
         this.regattaModelPromise ??= this.loadActiveRegatta().catch((err: unknown) => {
             // Reset the cache so the next caller can retry with a fresh request.
-            delete this.regattaModelPromise;
+            this.regattaModelPromise = undefined;
             throw err;
         });
         this.regattaModel = await this.regattaModelPromise;
@@ -56,7 +59,7 @@ export default class Component extends UIComponent {
     async getFilters(): Promise<JSONModel> {
         this.filtersModelPromise ??= this.loadFilters().catch((err: unknown) => {
             // Reset the cache so the next caller can retry with a fresh request.
-            delete this.filtersModelPromise;
+            this.filtersModelPromise = undefined;
             throw err;
         });
         this.filtersModel = await this.filtersModelPromise;
@@ -83,8 +86,16 @@ export default class Component extends UIComponent {
         super.setModel(identityModel, "identity");
 
         // initial heat / race models, required for navigation over heats and races
-        super.setModel(new JSONModel(), "heat");
-        super.setModel(new JSONModel(), "race");
+        super.setModel(new JSONModel(), HeatsTableController.HEAT_MODEL);
+        super.setModel(new JSONModel(), RacesTableController.RACE_MODEL);
+
+        // Dedicated navigation-state models for the race/heat detail views.
+        // The state ({@link NavigationData}) is intentionally kept *separate*
+        // from the bound data models so that backend payloads are never
+        // mutated with UI metadata.
+        const initialNavigationData: NavigationData = { isFirst: false, isLast: false, disabled: false, back: undefined };
+        super.setModel(new JSONModel({ ...initialNavigationData }), RacesTableController.RACE_NAV_MODEL);
+        super.setModel(new JSONModel({ ...initialNavigationData }), HeatsTableController.HEAT_NAV_MODEL);
 
         // 2. Resolve the i18n resource bundle (sync or async, depending on UI5 config),
         //    cache it and inject it into the Formatter so static formatter methods
