@@ -52,7 +52,7 @@ export default abstract class BaseTableController extends BaseController {
    * that {@link setCurrentItem} updates with `{ isFirst, isLast }`. Keeping the
    * navigation state in a dedicated model — rather than mutating the bound data
    * objects with a {@code _nav} property — avoids leaking UI metadata into the
-   * backend payload (cf. review issue #4).
+   * backend payload.
    */
   private navModelName?: string;
 

@@ -7,7 +7,7 @@
  * Navigation state shared between a list controller (`RacesTable` /
  * `HeatsTable`) and the corresponding detail view (`RaceDetails` /
  * `HeatDetails`). Lives in the dedicated `raceNav` / `heatNav` JSONModels on
- * the Component (cf. review issue #4) so backend payloads are never mutated
+ * the Component so backend payloads are never mutated
  * with UI metadata.
  *
  * The XML bindings consume the fields like so:
