@@ -24,18 +24,25 @@ export default abstract class BaseTableController extends BaseController {
 
   /**
    * Cache of already-loaded {@link ViewSettingsDialog} instances keyed by fragment
-   * name. Declared as a `static` class field so all derived controllers share the
-   * same cache — a fragment loaded by one table view is reused everywhere else.
+   * name.
+   *
+   * Declared as a *per-instance* field — **not** `static`. The dialog is parented
+   * to this controller's view via `addDependent` (see {@link getViewSettingsDialog})
+   * so when that view is destroyed, UI5 automatically destroys the dialog. A
+   * static (cross-controller) cache would still hold a reference to the now-
+   * destroyed dialog and the next caller would receive a useless instance whose
+   * `open()` either silently no-ops or throws. Per-instance caching means the
+   * map dies with the controller it belongs to, eliminating the leak.
    */
-  private static readonly viewSettingsDialogs: Map<string, ViewSettingsDialog> = new Map<string, ViewSettingsDialog>();
+  private readonly viewSettingsDialogs: Map<string, ViewSettingsDialog> = new Map<string, ViewSettingsDialog>();
 
   /**
    * Memoises in-flight {@link Fragment.load} promises per fragment name so that
    * concurrent callers of {@link getViewSettingsDialog} share the same load and
-   * do not each create a duplicate dialog (cf. review issue #9). Declared as a
-   * `static` class field for the same sharing reason as {@link viewSettingsDialogs}.
+   * do not each create a duplicate dialog. Per-instance for the same lifetime
+   * reasons as {@link viewSettingsDialogs}.
    */
-  private static readonly viewSettingsDialogPromises: Map<string, Promise<ViewSettingsDialog>> = new Map<string, Promise<ViewSettingsDialog>>();
+  private readonly viewSettingsDialogPromises: Map<string, Promise<ViewSettingsDialog>> = new Map<string, Promise<ViewSettingsDialog>>();
 
   protected table: Table;
   private filters: Filter[] = [];
@@ -127,30 +134,33 @@ export default abstract class BaseTableController extends BaseController {
   }
 
   async getViewSettingsDialog(dialogFragmentName: string): Promise<ViewSettingsDialog> {
-    // Fast path: dialog already loaded and cached.
-    const cached: ViewSettingsDialog | undefined = BaseTableController.viewSettingsDialogs.get(dialogFragmentName);
+    // Fast path: dialog already loaded and cached on this controller instance.
+    const cached: ViewSettingsDialog | undefined = this.viewSettingsDialogs.get(dialogFragmentName);
     if (cached) {
       return cached;
     }
 
     // Memoise the in-flight load so concurrent callers share the same promise
-    // instead of each kicking off a duplicate Fragment.load (cf. review issue #9).
-    let pending: Promise<ViewSettingsDialog> | undefined = BaseTableController.viewSettingsDialogPromises.get(dialogFragmentName);
+    // instead of each kicking off a duplicate Fragment.load.
+    let pending: Promise<ViewSettingsDialog> | undefined = this.viewSettingsDialogPromises.get(dialogFragmentName);
     if (!pending) {
       pending = Fragment.load({ id: this.getView()?.getId(), name: dialogFragmentName, controller: this })
         .then((loaded) => {
           const dialog: ViewSettingsDialog = loaded as ViewSettingsDialog;
           dialog.addStyleClass(super.getContentDensityClass());
+          // Parenting via addDependent ensures UI5 disposes the dialog when
+          // this view is destroyed — and because the cache is per-instance,
+          // both the dialog and its cache entry vanish together.
           this.getView()?.addDependent(dialog);
-          BaseTableController.viewSettingsDialogs.set(dialogFragmentName, dialog);
+          this.viewSettingsDialogs.set(dialogFragmentName, dialog);
           return dialog;
         })
-        .catch((error) => {
+        .catch((error: any) => {
           // Drop the rejected promise so a future call can retry the load.
-          BaseTableController.viewSettingsDialogPromises.delete(dialogFragmentName);
+          this.viewSettingsDialogPromises.delete(dialogFragmentName);
           throw error;
         });
-      BaseTableController.viewSettingsDialogPromises.set(dialogFragmentName, pending);
+      this.viewSettingsDialogPromises.set(dialogFragmentName, pending);
     }
     return pending;
   }
