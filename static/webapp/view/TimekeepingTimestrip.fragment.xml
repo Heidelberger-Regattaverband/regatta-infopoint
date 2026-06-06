@@ -18,22 +18,22 @@
 
     <columns>
       <Column id="timestampTime" hAlign="Center" width="11rem" importance="High" popinDisplay="Inline">
-        <Text text="{i18n>common.time}" class="bold" />
+        <Text text="{i18n>common.time}" />
       </Column>
       <Column id="timestampSplit" hAlign="Center" width="5rem" importance="High" popinDisplay="Inline">
-        <Text text="{i18n>common.split}" class="bold" />
+        <Text text="{i18n>common.split}" />
       </Column>
       <Column id="timestampHeatNr" hAlign="Center" width="4rem" importance="Medium" popinDisplay="Inline">
-        <Text text="{i18n>common.heatNr}" class="bold" />
+        <Text text="{i18n>common.heatNr}" />
       </Column>
       <Column id="timestampBib" hAlign="Center" width="4rem" importance="Medium" popinDisplay="Inline">
-        <Text text="{i18n>common.bib}" class="bold" />
+        <Text text="{i18n>common.bib}" />
       </Column>
       <Column id="timestampStatus" hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">
-        <Text text="{i18n>common.state}" class="bold" />
+        <Text text="{i18n>common.state}" />
       </Column>
       <Column id="timestampDelete" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
-        <Text text="{i18n>admin.column.actions}" class="bold" />
+        <Text text="{i18n>admin.column.actions}" />
       </Column>
     </columns>
 
