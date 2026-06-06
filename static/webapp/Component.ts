@@ -44,7 +44,7 @@ export default class Component extends UIComponent {
     async getActiveRegatta(): Promise<JSONModel> {
         this.regattaModelPromise ??= this.loadActiveRegatta().catch((err: unknown) => {
             // Reset the cache so the next caller can retry with a fresh request.
-            delete this.regattaModelPromise;
+            this.regattaModelPromise = undefined;
             throw err;
         });
         this.regattaModel = await this.regattaModelPromise;
@@ -59,7 +59,7 @@ export default class Component extends UIComponent {
     async getFilters(): Promise<JSONModel> {
         this.filtersModelPromise ??= this.loadFilters().catch((err: unknown) => {
             // Reset the cache so the next caller can retry with a fresh request.
-            delete this.filtersModelPromise;
+            this.filtersModelPromise = undefined;
             throw err;
         });
         this.filtersModel = await this.filtersModelPromise;
@@ -92,8 +92,7 @@ export default class Component extends UIComponent {
         // Dedicated navigation-state models for the race/heat detail views.
         // The state ({@link NavigationData}) is intentionally kept *separate*
         // from the bound data models so that backend payloads are never
-        // mutated with UI metadata (cf. review issue #4). The shape matches
-        // the bindings in RaceDetails.view.xml / HeatDetails.view.xml.
+        // mutated with UI metadata.
         const initialNavigationData: NavigationData = { isFirst: false, isLast: false, disabled: false, back: undefined };
         super.setModel(new JSONModel({ ...initialNavigationData }), RacesTableController.RACE_NAV_MODEL);
         super.setModel(new JSONModel({ ...initialNavigationData }), HeatsTableController.HEAT_NAV_MODEL);
