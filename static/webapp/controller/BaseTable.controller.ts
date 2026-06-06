@@ -246,7 +246,7 @@ export default abstract class BaseTableController extends BaseController {
     // gets the selected item in a generic way
     const item: any = this.table.getSelectedItem()?.getBindingContext(this.bindingModel)?.getObject();
 
-    // Store navigation meta-information in the dedicated nav model (cf. review #4),
+    // Store navigation meta-information in the dedicated nav model,
     // not on the data object. The disabled/back fields are reset because navigating
     // through the table always re-enables the nav buttons in the detail view.
     this.updateNavModel({ isFirst: index === 0, isLast: index === items.length - 1, disabled: false, back: undefined });
