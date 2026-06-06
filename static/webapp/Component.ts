@@ -19,8 +19,6 @@ export default class Component extends UIComponent {
     private contentDensityClass: string;
     private resourceBundle: ResourceBundle;
 
-    private regattaModel?: JSONModel;
-    private filtersModel?: JSONModel;
     private readonly notificationsModel: JSONModel = new JSONModel();
     // Memoised promises ensure concurrent callers share a single in-flight request and the cached model thereafter
     private regattaModelPromise?: Promise<JSONModel>;
@@ -47,8 +45,7 @@ export default class Component extends UIComponent {
             this.regattaModelPromise = undefined;
             throw err;
         });
-        this.regattaModel = await this.regattaModelPromise;
-        return this.regattaModel;
+        return await this.regattaModelPromise;
     }
 
     /**
@@ -62,8 +59,7 @@ export default class Component extends UIComponent {
             this.filtersModelPromise = undefined;
             throw err;
         });
-        this.filtersModel = await this.filtersModelPromise;
-        return this.filtersModel;
+        return await this.filtersModelPromise;
     }
 
     /**
@@ -240,21 +236,36 @@ export default class Component extends UIComponent {
 
     /**
      * Loads the filters into a JSONModel for the active regatta from the server and returns it as a Promise.
+     *
+     * Reads the regatta id from the resolved JSONModel directly rather than
+     * from the side-channel `this.regattaModel` field, so the call cannot
+     * silently fall through to `/api/regattas/-1/filters` if the field
+     * assignment in {@link getActiveRegatta} is ever decoupled from the
+     * promise resolution.
+     *
      * @returns {Promise<sap.ui.model.json.JSONModel>} the filters model as a Promise
      */
     private async loadFilters(): Promise<JSONModel> {
-        await this.getActiveRegatta();
+        const regattaModel: JSONModel = await this.getActiveRegatta();
         console.debug("Loading filters");
-        const model: JSONModel = new JSONModel();
-        const regattaId = this.regattaModel?.getData().id ?? -1;
-        await model.loadData(`/api/regattas/${regattaId}/filters`);
+        const filtersModel: JSONModel = new JSONModel();
+        const regattaId = regattaModel.getData().id;
+        await filtersModel.loadData(`/api/regattas/${regattaId}/filters`);
         console.debug("Filters loaded");
-        return model
+        return filtersModel;
     }
 
+    /**
+     * Loads the visible notifications for the active regatta into the shared
+     * `notificationsModel`. Awaits {@link getActiveRegatta} explicitly and
+     * reads the regatta id from the resolved model — *not* from the
+     * `this.regattaModel` side-channel — so the URL is well-defined even when
+     * called before {@link bootstrap} has run.
+     */
     private async loadNotifications(): Promise<JSONModel> {
+        const regattaModel: JSONModel = await this.getActiveRegatta();
         console.debug("Loading notifications");
-        const regattaId = this.regattaModel?.getData().id ?? -1;
+        const regattaId = regattaModel.getData().id;
         await this.notificationsModel.loadData(`/api/regattas/${regattaId}/visible_notifications`);
         this.notificationsModel.refresh();
         console.debug("Notifications loaded");
