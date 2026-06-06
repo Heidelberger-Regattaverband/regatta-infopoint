@@ -61,7 +61,7 @@
           </f:header>
 
           <f:content>
-            <Table headerText="" id="raceDetailsTable" autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
+            <Table headerText="" autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
               items="{path:'raceEntries>/entries/',sorter:[{path:'result/rankSort',descending:false},{path:'bib',descending:false}]}"
               sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding" itemPress=".onEntriesItemPress">
               <columns>

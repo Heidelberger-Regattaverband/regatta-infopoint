@@ -98,7 +98,7 @@ export default class HeatsTableController extends BaseTableController {
     });
   }
 
-  onSelectionChange(event: ListBase$SelectionChangeEvent): void {
+  onItemPress(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("heats");
