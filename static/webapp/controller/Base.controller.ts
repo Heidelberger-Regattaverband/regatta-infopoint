@@ -1,5 +1,5 @@
 import MyComponent from "de/regatta_hd/infoportal/Component";
-import * as $ from "jquery";
+import $ from "jquery";
 import { LatLng } from "leaflet";
 import Button from "sap/m/Button";
 import MessageToast from "sap/m/MessageToast";

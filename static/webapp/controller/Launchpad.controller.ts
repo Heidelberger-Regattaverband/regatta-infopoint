@@ -1,4 +1,4 @@
-import * as $ from "jquery";
+import $ from "jquery";
 import Log from "sap/base/Log";
 import { Button$PressEvent } from "sap/m/Button";
 import { Input$SubmitEvent } from "sap/m/Input";

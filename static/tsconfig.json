@@ -2,7 +2,13 @@
   "compilerOptions": {
     "target": "es2022",
     "module": "es2022",
-    "moduleResolution": "node",
+    // "bundler" resolution mirrors the way the UI5 toolchain (ui5-tooling /
+    // @ui5/cli) actually resolves modules at build time — it honours
+    // `package.json` `exports`/`imports` maps and does not fall back to the
+    // legacy CommonJS lookup that the deprecated `node`/`node10` strategy
+    // implies. This silences TypeScript's TS5107 deprecation warning while
+    // staying forward-compatible with TypeScript 7.
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
     "allowJs": true,
     "strict": true,
