@@ -11,7 +11,7 @@ sudo -i
 Install required packages:
 ```bash
 apt-get update && apt-get upgrade
-apt-get install certbot git docker.io docker-compose-v2 htop deborphan sshpass
+apt-get install certbot git docker.io docker-compose-v2 htop sshpass
 ```
 
 Request letsencrypt certificates for all hostnames:
