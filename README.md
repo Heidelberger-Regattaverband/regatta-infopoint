@@ -89,7 +89,7 @@ docker compose up -d && docker logs watchtower -f
 ## Add MS-SQL User
 Add a new mssql user:
 ```bash
-adduser mssql -u 10001
+adduser mssql -u 10001 --disabled-login
 ```
 
 ## Enable password-less ssh login
