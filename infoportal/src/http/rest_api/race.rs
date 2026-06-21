@@ -9,6 +9,7 @@ use ::actix_web::web::Data;
 use ::actix_web::web::Json;
 use ::actix_web::web::Path;
 use ::db::aquarius::Aquarius;
+use ::db::aquarius::model::ClubConflictRace;
 use ::db::aquarius::model::Race;
 
 #[utoipa::path(
@@ -51,4 +52,25 @@ async fn get_race(
         .await
         .map_err(ApiError::from)?;
     Ok(Json(race))
+}
+
+#[utoipa::path(
+    description = "Get races where boats from the same club would be assigned to the same heat. \
+        Boats are assigned sequentially by bib number into heats of max 4 boats (lanes).",
+    context_path = PATH,
+    responses(
+        (status = 200, description = "Races with club conflicts in heat assignments", body = Vec<ClubConflictRace>),
+        (status = 500, description = INTERNAL_SERVER_ERROR)
+    )
+)]
+#[get("/regattas/{regatta_id}/races/club-conflicts")]
+pub(crate) async fn get_club_conflict_races(
+    regatta_id: Path<i32>,
+    aquarius: Data<Aquarius>,
+) -> Result<impl Responder, Error> {
+    let conflicts = aquarius
+        .get_club_conflict_races(regatta_id.into_inner())
+        .await
+        .map_err(ApiError::from)?;
+    Ok(Json(conflicts))
 }

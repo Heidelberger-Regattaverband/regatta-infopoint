@@ -1,0 +1,61 @@
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.Problems" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
+  <mvc:content>
+
+    <Page title="{i18n>problems.title}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
+      <headerContent>
+        <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
+          press=".onRefreshButtonPress" />
+      </headerContent>
+
+      <content>
+        <Table id="problemsTable" items="{problems>/}" growing="true" growingScrollToLoad="true" growingThreshold="50"
+          sticky="ColumnHeaders" class="sapUiNoContentPadding" noDataText="{i18n>problems.noData}">
+
+          <columns>
+            <Column hAlign="Center" width="4rem">
+              <header>
+                <Text text="{i18n>common.numberAbbr}" class="bold" />
+              </header>
+            </Column>
+            <Column hAlign="Begin" width="auto">
+              <header>
+                <Text text="{i18n>common.race}" class="bold" />
+              </header>
+            </Column>
+            <Column hAlign="Center" width="5rem">
+              <header>
+                <Text text="{i18n>common.heat}" class="bold" />
+              </header>
+            </Column>
+            <Column hAlign="Begin" width="auto">
+              <header>
+                <Text text="{i18n>common.club}" class="bold" />
+              </header>
+            </Column>
+            <Column hAlign="Center" width="8rem">
+              <header>
+                <Text text="{i18n>common.bib}" class="bold" />
+              </header>
+            </Column>
+          </columns>
+
+          <items>
+            <ColumnListItem>
+              <cells>
+                <Text text="{problems>raceNumber}" />
+                <VBox>
+                  <Text text="{problems>raceShortLabel}" class="bold" />
+                  <Text text="{problems>raceLongLabel}" visible="{=!${device>/system/phone}}" />
+                </VBox>
+                <Text text="{problems>heatNumber}" />
+                <Text text="{problems>clubName}" />
+                <Text text="{problems>bibs}" />
+              </cells>
+            </ColumnListItem>
+          </items>
+        </Table>
+      </content>
+    </Page>
+
+  </mvc:content>
+</mvc:View>
