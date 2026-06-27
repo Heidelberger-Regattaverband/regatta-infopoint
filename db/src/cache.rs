@@ -238,25 +238,25 @@ impl Caches {
             self.notifications.stats(),
         ];
 
-        let mut total_hits = 0;
-        let mut total_misses = 0;
-        let mut total_entries = 0;
-        let mut total_accesses = 0;
+        let mut hits = 0;
+        let mut misses = 0;
+        let mut entries = 0;
+        let mut accesses = 0;
 
         for stat in all_stats {
-            total_accesses += stat.accesses;
-            total_hits += stat.hits;
-            total_misses += stat.misses;
-            total_entries += stat.entries;
+            accesses += stat.accesses;
+            hits += stat.hits;
+            misses += stat.misses;
+            entries += stat.entries;
         }
 
         CacheStats {
-            accesses: total_accesses,
-            hits: total_hits,
-            misses: total_misses,
-            entries: total_entries,
-            hit_rate: if total_hits + total_misses > 0 {
-                (total_hits as f64 / (total_accesses) as f64) * 100.0
+            accesses,
+            hits,
+            misses,
+            entries,
+            hit_rate: if accesses > 0 {
+                (hits as f64 / (accesses) as f64) * 100.0
             } else {
                 0.0
             },
