@@ -39,7 +39,7 @@ impl Monitoring {
                     closed_max_lifetime: stats.connections_closed_max_lifetime,
                     closed_error: stats.connections_closed_broken + stats.connections_closed_invalid,
                 },
-                caches: Caches::from(caches.clone()),
+                caches: Caches::from(caches),
             },
             sys: SysInfo {
                 cpus,
@@ -221,8 +221,8 @@ struct Caches {
     pub hit_rate: f64,
 }
 
-impl From<CacheStats> for Caches {
-    fn from(stats: CacheStats) -> Self {
+impl From<&CacheStats> for Caches {
+    fn from(stats: &CacheStats) -> Self {
         Caches {
             accesses: stats.accesses,
             hits: stats.hits,
