@@ -214,6 +214,7 @@ pub(crate) struct Db {
 #[derive(Serialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 struct Caches {
+    pub accesses: u64,
     pub hits: u64,
     pub misses: u64,
     pub entries: usize,
@@ -223,6 +224,7 @@ struct Caches {
 impl From<CacheStats> for Caches {
     fn from(stats: CacheStats) -> Self {
         Caches {
+            accesses: stats.accesses,
             hits: stats.hits,
             misses: stats.misses,
             entries: stats.entries,
