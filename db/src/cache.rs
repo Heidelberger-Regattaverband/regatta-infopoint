@@ -33,6 +33,8 @@ where
     hits: AtomicU64,
     /// Atomic counter for cache misses
     misses: AtomicU64,
+    /// Atomic counter for cache accesses (hits + misses)
+    accesses: AtomicU64,
 }
 
 impl<K, V> Cache<K, V>
@@ -52,14 +54,16 @@ where
             ttl,
             hits: AtomicU64::new(0),
             misses: AtomicU64::new(0),
+            accesses: AtomicU64::new(0),
         })
     }
 
     fn stats(&self) -> CacheStats {
         let hits = self.hits.load(Ordering::Relaxed);
         let misses = self.misses.load(Ordering::Relaxed);
-
+        let accesses = self.accesses.load(Ordering::Relaxed);
         CacheStats {
+            accesses,
             hits,
             misses,
             entries: self.cache.len(),
@@ -72,6 +76,7 @@ where
     }
 
     async fn get(&self, key: &K) -> Option<V> {
+        self.accesses.fetch_add(1, Ordering::Relaxed);
         match self.cache.get(key).await {
             Some(value_ref) => {
                 let value = value_ref.value().clone();
@@ -233,22 +238,25 @@ impl Caches {
             self.notifications.stats(),
         ];
 
-        let mut total_hits = 0;
-        let mut total_misses = 0;
-        let mut total_entries = 0;
+        let mut hits = 0;
+        let mut misses = 0;
+        let mut entries = 0;
+        let mut accesses = 0;
 
         for stat in all_stats {
-            total_hits += stat.hits;
-            total_misses += stat.misses;
-            total_entries += stat.entries;
+            accesses += stat.accesses;
+            hits += stat.hits;
+            misses += stat.misses;
+            entries += stat.entries;
         }
 
         CacheStats {
-            hits: total_hits,
-            misses: total_misses,
-            entries: total_entries,
-            hit_rate: if total_hits + total_misses > 0 {
-                (total_hits as f64 / (total_hits + total_misses) as f64) * 100.0
+            accesses,
+            hits,
+            misses,
+            entries,
+            hit_rate: if accesses > 0 {
+                (hits as f64 / (accesses) as f64) * 100.0
             } else {
                 0.0
             },
@@ -259,6 +267,8 @@ impl Caches {
 /// Cache statistics for monitoring and debugging with actual tracking capabilities
 #[derive(Debug, Clone)]
 pub struct CacheStats {
+    /// Total number of cache accesses (hits + misses)
+    pub accesses: u64,
     /// Total number of cache hits
     pub hits: u64,
     /// Total number of cache misses
