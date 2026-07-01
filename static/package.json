@@ -21,5 +21,9 @@
     "ui5-tooling-transpile": "^3.11.3",
     "watch": "^1.0.2"
   },
-  "private": true
+  "private": true,
+  "allowScripts": {
+    "ui5-tooling-modules@3.37.7": true,
+    "ui5-tooling-transpile@3.11.3": true
+  }
 }
