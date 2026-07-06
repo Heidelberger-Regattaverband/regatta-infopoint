@@ -1,0 +1,442 @@
+/* ============================================================================
+ * HRV (Heidelberger Regatta-Verband) Theme for OpenUI5
+ * ----------------------------------------------------------------------------
+ * A custom theme inspired by the homepage of the
+ * Heidelberger Regatta-Verband 1923 e.V. (https://www.regatta-hd.de/).
+ *
+ * Design language:
+ *   - Primary color: dark forest green  rgb(28, 60, 45)   #1c3c2d
+ *   - Accent / hover: a slightly lighter green            #2e5a44
+ *   - Highlight (links, focus): warm gold                 #c8a24b
+ *   - Backgrounds: near-white / very light stone          #f7f6f2
+ *   - Text on dark: white                                 #ffffff
+ *   - Fonts: Montserrat (headings, navigation),
+ *            Open Sans (body copy)
+ *
+ * This theme is layered on top of the "sap_horizon" / "sap_fiori_3" base
+ * theme by overriding the UI5 CSS custom properties and a curated set of
+ * specific selectors, so that it works with any OpenUI5 control library
+ * without requiring the (server-side) UI5 Theme Designer.
+ * ==========================================================================*/
+
+/* ---------- Web fonts ---------------------------------------------------- */
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Open+Sans:wght@300;400;600;700&display=swap");
+
+/* ---------- Theme variables --------------------------------------------- */
+:root {
+    /* -------- Brand palette -------- */
+    --hrv-green-dark:  #1c3c2d;
+    --hrv-green:       #2e5a44;
+    --hrv-green-light: #3f7a5c;
+    --hrv-gold:        #c8a24b;
+    --hrv-gold-dark:   #a68533;
+    --hrv-stone:       #f7f6f2;
+    --hrv-stone-dark:  #e7e5df;
+    --hrv-text-dark:   #1c2b23;
+    --hrv-text-light:  #ffffff;
+
+    /* -------- Typography -------- */
+    --hrv-font-heading: "Montserrat", "Segoe UI", Arial, sans-serif;
+    --hrv-font-body:    "Open Sans", "Segoe UI", Arial, sans-serif;
+
+    /* -------- Override UI5 CSS variables (sap_horizon / sap_fiori_3) ---- */
+    --sapBrandColor:       var(--hrv-green-dark);
+    --sapHighlightColor:   var(--hrv-green-dark);
+    --sapActiveColor:      var(--hrv-green);
+    --sapSelectedColor:    var(--hrv-green);
+    --sapHoverColor:       var(--hrv-green);
+
+    --sapLinkColor:          var(--hrv-green-dark);
+    --sapLink_Hover_Color:   var(--hrv-gold-dark);
+    --sapLink_Active_Color:  var(--hrv-gold-dark);
+    --sapLink_Visited_Color: var(--hrv-green);
+
+    --sapBackgroundColor:         var(--hrv-stone);
+    --sapGroup_ContentBackground: #ffffff;
+    --sapObjectHeader_Background: #ffffff;
+    --sapTile_Background:         #ffffff;
+    --sapPageHeader_Background:   #ffffff;
+    --sapPageFooter_Background:   var(--hrv-green-dark);
+
+    --sapTextColor:          var(--hrv-text-dark);
+    --sapTitleColor:         var(--hrv-green-dark);
+    --sapContent_LabelColor: var(--hrv-green);
+
+    --sapButton_Emphasized_Background:        var(--hrv-green-dark);
+    --sapButton_Emphasized_BorderColor:       var(--hrv-green-dark);
+    --sapButton_Emphasized_TextColor:         #ffffff;
+    --sapButton_Emphasized_Hover_Background:  var(--hrv-green);
+    --sapButton_Emphasized_Hover_BorderColor: var(--hrv-green);
+    --sapButton_Emphasized_Active_Background: var(--hrv-green-light);
+
+    --sapButton_Background:        #ffffff;
+    --sapButton_BorderColor:       var(--hrv-green-dark);
+    --sapButton_TextColor:         var(--hrv-green-dark);
+    --sapButton_Hover_Background:  var(--hrv-green-dark);
+    --sapButton_Hover_BorderColor: var(--hrv-green-dark);
+    --sapButton_Hover_TextColor:   #ffffff;
+
+    --sapShellColor:                       var(--hrv-green-dark);
+    --sapShell_Background:                 var(--hrv-green-dark);
+    --sapShell_BackgroundImage:            none;
+    --sapShell_TextColor:                  #ffffff;
+    --sapShell_InteractiveTextColor:       #ffffff;
+    --sapShell_InteractiveTextColor_Hover: var(--hrv-gold);
+    --sapShell_BorderColor:                var(--hrv-green-dark);
+
+    --sapList_HeaderBackground:         var(--hrv-green-dark);
+    --sapList_HeaderTextColor:          #ffffff;
+    --sapList_HeaderBorderColor:        var(--hrv-green);
+    --sapList_HighlightColor:           var(--hrv-gold);
+    --sapList_SelectionBackgroundColor: #e2ede6;
+    --sapList_Hover_Background:         #eef5f1;
+
+    --sapObjectHeader_BorderColor:      var(--hrv-green);
+    --sapObjectHeader_Hover_Background: #eef5f1;
+
+    --sapContent_FocusColor:         var(--hrv-gold);
+    --sapContent_ContrastFocusColor: var(--hrv-gold);
+    --sapContent_IconColor:          var(--hrv-green-dark);
+    --sapContent_MarkerIconColor:    var(--hrv-gold-dark);
+    --sapContent_BadgeBackground:    var(--hrv-gold);
+
+    --sapAccentColor1: var(--hrv-green-dark);
+    --sapAccentColor2: var(--hrv-green);
+    --sapAccentColor3: var(--hrv-gold);
+    --sapAccentColor4: var(--hrv-gold-dark);
+
+    --sapTitle_TextColor:  var(--hrv-green-dark);
+    --sapFontFamily:       var(--hrv-font-body);
+    --sapFontHeaderFamily: var(--hrv-font-heading);
+}
+
+/* ---------- Global typography ------------------------------------------- */
+html, body,
+.sapUiBody,
+.sapMApp,
+.sapMPage,
+.sapMShell,
+.sapMShellCentralBox {
+    font-family: var(--hrv-font-body) !important;
+    background-color: var(--hrv-stone);
+    color: var(--hrv-text-dark);
+}
+
+.sapMTitle,
+.sapMTitleStyleH1,
+.sapMTitleStyleH2,
+.sapMTitleStyleH3,
+.sapMTitleStyleH4,
+.sapMTitleStyleH5,
+.sapMTitleStyleH6,
+.sapMOHTitle,
+.sapMGTHdrTxt,
+.sapMPageHeader .sapMBarChild,
+.sapMDialogTitle {
+    font-family: var(--hrv-font-heading) !important;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+/* ---------- Shell (top bar) --------------------------------------------- */
+.sapMShellHeader,
+.sapMShell {
+    background: var(--hrv-green-dark) !important;
+    background-image: none !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.sapMShellHeader .sapMShellAppTitle,
+.sapMShellHeader .sapMShellHeaderText,
+.sapMShellCentralBox,
+.sapMShellCentralBox .sapMTitle {
+    color: var(--hrv-text-light) !important;
+    font-family: var(--hrv-font-heading) !important;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+.sapMShellLogo {
+    border-radius: 4px;
+    box-shadow: 0 0 0 2px rgba(200, 162, 75, 0.5);
+}
+
+/* ---------- Page headers / IBars ---------------------------------------- */
+.sapMPageHeader,
+.sapMIBar-CTX,
+.sapMHeader-CTX {
+    background: #ffffff !important;
+    border-bottom: 2px solid var(--hrv-green-dark) !important;
+    box-shadow: 0 1px 0 rgba(28, 60, 45, 0.08);
+}
+
+.sapMPageHeader .sapMTitle,
+.sapMIBar-CTX .sapMTitle {
+    color: var(--hrv-green-dark) !important;
+}
+
+/* ---------- Buttons ----------------------------------------------------- */
+.sapMBtn .sapMBtnInner {
+    border-radius: 4px;
+    font-family: var(--hrv-font-body) !important;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    transition: background-color 0.2s ease,
+                color 0.2s ease,
+                border-color 0.2s ease;
+}
+
+.sapMBtn .sapMBtnInner.sapMBtnEmphasized {
+    background: var(--hrv-green-dark);
+    border-color: var(--hrv-green-dark);
+    color: #ffffff;
+}
+.sapMBtn:hover .sapMBtnInner.sapMBtnEmphasized {
+    background: var(--hrv-green);
+    border-color: var(--hrv-green);
+    color: #ffffff;
+}
+.sapMBtn .sapMBtnInner.sapMBtnEmphasized:active {
+    background: var(--hrv-green-light);
+    border-color: var(--hrv-green-light);
+}
+
+.sapMBtn .sapMBtnInner.sapMBtnDefault,
+.sapMBtn .sapMBtnInner.sapMBtnTransparent {
+    color: var(--hrv-green-dark);
+}
+.sapMBtn:hover .sapMBtnInner.sapMBtnDefault {
+    background: var(--hrv-green-dark);
+    color: #ffffff;
+    border-color: var(--hrv-green-dark);
+}
+.sapMBtn:hover .sapMBtnInner.sapMBtnTransparent {
+    background: rgba(28, 60, 45, 0.08);
+    color: var(--hrv-green-dark);
+}
+
+.sapMBtn .sapMBtnInner.sapMBtnAccept {
+    background: var(--hrv-gold);
+    border-color: var(--hrv-gold-dark);
+    color: var(--hrv-green-dark);
+}
+.sapMBtn:hover .sapMBtnInner.sapMBtnAccept {
+    background: var(--hrv-gold-dark);
+    color: #ffffff;
+}
+
+/* ---------- Links ------------------------------------------------------- */
+.sapMLnk {
+    color: var(--hrv-green-dark);
+    font-family: var(--hrv-font-body) !important;
+}
+.sapMLnk:hover,
+.sapMLnk:focus {
+    color: var(--hrv-gold-dark);
+    text-decoration: underline;
+}
+
+/* ---------- Tables (sap.m + sap.ui.table) ------------------------------- */
+.sapMListTblHeader,
+.sapMListTblHeaderCell,
+.sapUiTableColHdr,
+.sapUiTableColHdrCnt,
+.sapUiTableCol {
+    background: var(--hrv-green-dark) !important;
+    color: var(--hrv-text-light) !important;
+    font-family: var(--hrv-font-heading) !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.3px;
+    border-bottom: 2px solid var(--hrv-gold) !important;
+}
+
+.sapMListTblHeader .sapMLabel,
+.sapMListTblHeaderCell .sapMLabel,
+.sapMListTblHeaderCell .sapMText,
+.sapUiTableCol .sapUiTableColCell,
+.sapUiTableCol span {
+    color: var(--hrv-text-light) !important;
+    font-family: var(--hrv-font-heading) !important;
+    font-weight: 600 !important;
+}
+
+.sapMListTbl tr.sapMListTblRow:hover,
+.sapMListTblRow:hover,
+.sapUiTableRowHvr,
+.sapUiTableTr:hover {
+    background: #eef5f1 !important;
+}
+
+.sapMListTblRow.sapMLIBSelected,
+.sapUiTableRowSel {
+    background: #e2ede6 !important;
+}
+
+/* Row-highlight indicator (list items) uses the brand gold */
+.sapMLIBHighlight[data-sap-ui-highlight="Information"],
+.sapMLIBHighlight[data-sap-ui-highlight="Warning"] {
+    background-color: var(--hrv-gold) !important;
+}
+
+/* ---------- Object headers / details pages ------------------------------ */
+.sapMObjectHeader,
+.sapMOHBg,
+.sapFDynamicPageTitle,
+.sapFDynamicPageHeader {
+    background: #ffffff !important;
+    border-bottom: 3px solid var(--hrv-green-dark) !important;
+}
+
+.sapMObjectHeader .sapMOHTitle,
+.sapFDynamicPageTitle .sapMTitle {
+    color: var(--hrv-green-dark) !important;
+    font-family: var(--hrv-font-heading) !important;
+    font-weight: 600;
+}
+
+/* ---------- Tiles (Launchpad-style overview) ---------------------------- */
+.sapMGT,
+.sapMGTOneByOne,
+.sapMGT.sapMPointer {
+    background: #ffffff !important;
+    border: 1px solid var(--hrv-stone-dark) !important;
+    border-radius: 6px !important;
+    box-shadow: 0 2px 6px rgba(28, 60, 45, 0.08);
+    transition: transform 0.2s ease,
+                box-shadow 0.2s ease,
+                border-color 0.2s ease;
+}
+
+.sapMGT:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(28, 60, 45, 0.18);
+    border-color: var(--hrv-green-dark) !important;
+}
+
+.sapMGT .sapMGTHdrTxt,
+.sapMGT .sapMGTHdrContent .sapMTitle {
+    color: var(--hrv-green-dark) !important;
+    font-family: var(--hrv-font-heading) !important;
+    font-weight: 600;
+}
+
+.sapMGT .sapMGTSubHdrTxt {
+    color: var(--hrv-green) !important;
+    font-family: var(--hrv-font-body) !important;
+}
+
+.sapMGT .sapUiIcon {
+    color: var(--hrv-green-dark) !important;
+}
+
+/* ---------- Tab strip / icon-tab bar ------------------------------------ */
+.sapMITBFilter.sapMITBSelected .sapMITBText,
+.sapMITBFilter.sapMITBSelected .sapMITBCount {
+    color: var(--hrv-green-dark) !important;
+}
+.sapMITBFilter.sapMITBSelected .sapMITBTab {
+    border-color: var(--hrv-gold) !important;
+}
+
+/* ---------- Inputs, selects, date pickers ------------------------------- */
+.sapMInputBaseInner,
+.sapMComboBoxTextArea {
+    font-family: var(--hrv-font-body) !important;
+}
+
+.sapMInputBaseContentWrapper:focus-within,
+.sapMInputBaseContentWrapperState:focus-within {
+    border-color: var(--hrv-green-dark) !important;
+    box-shadow: 0 0 0 1px var(--hrv-green-dark);
+}
+
+/* ---------- Message toast / message strip ------------------------------- */
+.sapMMsgStrip {
+    border-radius: 4px;
+    font-family: var(--hrv-font-body) !important;
+}
+
+/* ---------- Footer / bars on green ------------------------------------- */
+.sapMFooter-CTX,
+.sapMPageFooter {
+    background: var(--hrv-green-dark) !important;
+    color: var(--hrv-text-light) !important;
+    border-top: 2px solid var(--hrv-gold);
+}
+
+.sapMFooter-CTX .sapMBtn .sapMBtnInner.sapMBtnTransparent {
+    color: var(--hrv-text-light) !important;
+}
+.sapMFooter-CTX .sapMBtn:hover .sapMBtnInner.sapMBtnTransparent {
+    background: rgba(255, 255, 255, 0.12) !important;
+    color: var(--hrv-gold) !important;
+}
+
+/* ---------- Selection highlights & focus ring --------------------------- */
+:focus-visible {
+    outline-color: var(--hrv-gold) !important;
+}
+
+/* ---------- Application-specific classes (from style.css) --------------- */
+.infoportal .bold {
+    font-weight: 700;
+}
+
+.infoportal .cancelled {
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    color: #8b8b8b;
+}
+
+.infoportal .boldCancelled {
+    font-weight: 700;
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    color: #8b8b8b;
+}
+
+/* ---------- Message toasts (extends existing style.css) ----------------- */
+.sapMMessageToastSuccess {
+    color: #ffffff !important;
+    background-color: var(--hrv-green) !important;
+    border: 1px solid var(--hrv-green-dark) !important;
+    border-left: 7px solid var(--hrv-gold) !important;
+    font-family: var(--hrv-font-body) !important;
+}
+
+.sapMMessageToastInfo {
+    color: #ffffff !important;
+    background-color: var(--hrv-green-dark) !important;
+    border: 1px solid var(--hrv-green-dark) !important;
+    border-left: 7px solid var(--hrv-gold) !important;
+    font-family: var(--hrv-font-body) !important;
+}
+
+.sapMMessageToastWarning {
+    color: var(--hrv-green-dark) !important;
+    background-color: #fdefc9 !important;
+    border: 1px solid var(--hrv-gold-dark) !important;
+    border-left: 7px solid var(--hrv-gold-dark) !important;
+    font-family: var(--hrv-font-body) !important;
+}
+
+.sapMMessageToastDanger {
+    color: #ffffff !important;
+    background-color: #a12525 !important;
+    border: 1px solid #7a1a1a !important;
+    border-left: 7px solid #7a1a1a !important;
+    font-family: var(--hrv-font-body) !important;
+}
+
+.sapMMessageToastNote {
+    color: #ffffff !important;
+    background-color: var(--hrv-green) !important;
+    border: 1px solid var(--hrv-green-dark) !important;
+    border-left: 7px solid var(--hrv-green-dark) !important;
+    font-family: var(--hrv-font-body) !important;
+}
+
+/* ---------- Map (leaflet) --------------------------------------------- */
+#map {
+    height: 100%;
+}

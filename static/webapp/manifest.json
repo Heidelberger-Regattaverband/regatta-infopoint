@@ -253,6 +253,10 @@
     "resources": {
       "css": [
         {
+          "uri": "css/theme-hrv.css",
+          "id": "hrvTheme"
+        },
+        {
           "uri": "css/style.css"
         },
         {
