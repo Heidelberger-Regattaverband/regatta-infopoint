@@ -1,6 +1,7 @@
 use crate::auth::Credentials;
-use crate::auth::Scope as UserScope;
+use crate::auth::Scope;
 use crate::auth::User;
+use crate::http::rest_api::ApiError;
 use crate::http::rest_api::PATH;
 use ::actix_identity::Identity;
 use ::actix_web::Error;
@@ -42,12 +43,9 @@ async fn login(
                 return Err(ErrorInternalServerError("Failed to create session"));
             }
             user_pool_manager
-                .create_pool(&credentials.username, credentials.password.value())
+                .create_pool(&user.username, credentials.password.value())
                 .await
-                .map_err(|err| {
-                    error!(%err, user = user.username, "Failed to create user pool");
-                    ErrorInternalServerError("Failed to create user pool")
-                })?;
+                .map_err(ApiError::from)?;
             Ok(Json(user))
         }
         // authentication failed
@@ -82,10 +80,7 @@ async fn identity(identity: Option<Identity>) -> Result<impl Responder, Error> {
     if let Some(identity) = identity {
         match identity.id() {
             Ok(id) => {
-                let scope = match id.as_str() {
-                    "sa" | "admin" => UserScope::Admin,
-                    _ => UserScope::User,
-                };
+                let scope = Scope::from_username(&id);
                 Ok(Json(User::new(id, scope)))
             }
             Err(err) => {

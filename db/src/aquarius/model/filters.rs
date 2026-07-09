@@ -8,7 +8,9 @@ use super::boat_class::COXED;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;
 use super::get_rows;
-use crate::cache::heap_size::HeapSize;
+use super::heat::DATE_TIME as HEAT_DATE_TIME;
+use super::heat::ROUND as HEAT_ROUND;
+use super::heat::ROUND_CODE as HEAT_ROUND_CODE;
 use crate::{
     error::DbError,
     tiberius::{RowColumn, TiberiusPool},
@@ -53,19 +55,6 @@ struct Round {
 
     /// The code: V - Vorlauf, H - Hoffnungslauf
     code: String,
-}
-
-impl HeapSize for Filters {
-    fn heap_size(&self) -> i64 {
-        // Filters contains Vecs of small items; estimate via count * avg size
-        (self.distances.len() * std::mem::size_of::<i16>()) as i64
-            + (self.dates.len() * std::mem::size_of::<NaiveDate>()) as i64
-            + (self.age_classes.len() * std::mem::size_of::<AgeClass>()) as i64
-            + (self.boat_classes.len() * std::mem::size_of::<BoatClass>()) as i64
-            + (self.rounds.len() * std::mem::size_of::<Round>()) as i64
-            + (self.lightweight.len() * std::mem::size_of::<bool>()) as i64
-            + (self.blocks.len() * std::mem::size_of::<Block>()) as i64
-    }
 }
 
 impl Filters {
@@ -129,11 +118,11 @@ async fn query_age_classes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<A
 }
 
 async fn query_dates(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<NaiveDate>, DbError> {
-    let mut query = Query::new(
-        "SELECT DISTINCT CAST (c.Comp_Datetime as date) AS Comp_Date
+    let mut query = Query::new(format!(
+        "SELECT DISTINCT CAST (c.{HEAT_DATE_TIME} as date) AS Comp_Date
         FROM Comp c
-        WHERE c.Comp_DateTime IS NOT NULL AND c.Comp_Event_ID_FK = @P1",
-    );
+        WHERE c.{HEAT_DATE_TIME} IS NOT NULL AND c.Comp_Event_ID_FK = @P1",
+    ));
     query.bind(regatta_id);
 
     let mut client = pool.get().await?;
@@ -163,12 +152,11 @@ async fn query_lightweight(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<b
 }
 
 async fn query_rounds(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Round>, DbError> {
-    let mut query: Query<'_> = Query::new(
-        "SELECT DISTINCT
-        c.Comp_Round, c.Comp_RoundCode
+    let mut query: Query<'_> = Query::new(format!(
+        "SELECT DISTINCT c.{HEAT_ROUND}, c.{HEAT_ROUND_CODE}
         FROM Comp c WHERE c.Comp_Event_ID_FK = @P1
-        ORDER BY c.Comp_Round ASC",
-    );
+        ORDER BY c.{HEAT_ROUND} ASC",
+    ));
     query.bind(regatta_id);
 
     let mut client = pool.get().await?;
@@ -176,8 +164,8 @@ async fn query_rounds(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Round>
     Ok(rows
         .into_iter()
         .map(|row| Round {
-            id: row.get_column("Comp_Round"),
-            code: row.get_column("Comp_RoundCode"),
+            id: row.get_column(HEAT_ROUND),
+            code: row.get_column(HEAT_ROUND_CODE),
         })
         .collect())
 }

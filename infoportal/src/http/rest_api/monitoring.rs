@@ -1,5 +1,3 @@
-use super::CLIENT_TIMEOUT;
-use super::HEARTBEAT_INTERVAL;
 use crate::http::monitoring::Monitoring;
 use ::actix::Actor;
 use ::actix::ActorContext;
@@ -9,7 +7,7 @@ use ::actix::Message as ActixMessage;
 use ::actix::StreamHandler;
 use ::actix_identity::Identity;
 use ::actix_web::web::{Data, Payload};
-use ::actix_web::{Error, HttpRequest, HttpResponse, error::ErrorUnauthorized, get};
+use ::actix_web::{Error, HttpRequest, HttpResponse, get};
 use ::actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
 use ::db::aquarius::Aquarius;
 use ::db::tiberius::TiberiusPool;
@@ -17,6 +15,8 @@ use ::serde::Serialize;
 use ::std::time::Instant;
 use ::tracing::trace;
 use ::tracing::warn;
+
+use super::{WS_CLIENT_TIMEOUT, WS_HEARTBEAT_INTERVAL};
 
 /// Actor for monitoring.
 struct MonitoringActor {
@@ -35,8 +35,8 @@ impl MonitoringActor {
     }
 
     fn start_heart_beat(&self, ctx: &mut <Self as Actor>::Context) {
-        ctx.run_interval(HEARTBEAT_INTERVAL, move |act, ctx| {
-            if Instant::now().duration_since(act.heart_beat) > CLIENT_TIMEOUT {
+        ctx.run_interval(WS_HEARTBEAT_INTERVAL, move |act, ctx| {
+            if Instant::now().duration_since(act.heart_beat) > WS_CLIENT_TIMEOUT {
                 warn!("Monitoring websocket heartbeat failed, disconnecting!");
                 ctx.stop();
             } else {
@@ -113,12 +113,8 @@ async fn index(
     request: HttpRequest,
     stream: Payload,
     aquarius: Data<Aquarius>,
-    identity: Option<Identity>,
+    _identity: Identity,
 ) -> Result<HttpResponse, Error> {
-    if identity.is_some() {
-        let monitoring_actor = MonitoringActor::new(aquarius);
-        start(monitoring_actor, &request, stream)
-    } else {
-        Err(ErrorUnauthorized("Unauthorized"))
-    }
+    let monitoring_actor = MonitoringActor::new(aquarius);
+    start(monitoring_actor, &request, stream)
 }

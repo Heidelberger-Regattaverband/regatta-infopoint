@@ -1,16 +1,14 @@
+use crate::http::rest_api::ApiError;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
 use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::Responder;
-use ::actix_web::error::ErrorInternalServerError;
-use ::actix_web::error::ErrorUnauthorized;
 use ::actix_web::get;
 use ::actix_web::web::Data;
 use ::actix_web::web::Json;
 use ::actix_web::web::Path;
 use ::db::aquarius::Aquarius;
-use ::tracing::error;
 
 // Misc Endpoints
 
@@ -27,20 +25,13 @@ use ::tracing::error;
 async fn get_statistics(
     regatta_id: Path<i32>,
     aquarius: Data<Aquarius>,
-    identity: Option<Identity>,
+    _identity: Identity,
 ) -> Result<impl Responder, Error> {
-    if identity.is_some() {
-        let stats = aquarius
-            .query_statistics(regatta_id.into_inner())
-            .await
-            .map_err(|err| {
-                error!(%err, "Failed to query statistics");
-                ErrorInternalServerError(err)
-            })?;
-        Ok(Json(stats))
-    } else {
-        Err(ErrorUnauthorized("Unauthorized"))
-    }
+    let stats = aquarius
+        .query_statistics(regatta_id.into_inner())
+        .await
+        .map_err(ApiError::from)?;
+    Ok(Json(stats))
 }
 
 #[utoipa::path(
@@ -56,20 +47,13 @@ async fn get_statistics(
 async fn calculate_scoring(
     regatta_id: Path<i32>,
     aquarius: Data<Aquarius>,
-    identity: Option<Identity>,
+    _identity: Identity,
 ) -> Result<impl Responder, Error> {
-    if identity.is_some() {
-        let scoring = aquarius
-            .calculate_scoring(regatta_id.into_inner())
-            .await
-            .map_err(|err| {
-                error!(%err, "Failed to calculate scoring");
-                ErrorInternalServerError(err)
-            })?;
-        Ok(Json(scoring))
-    } else {
-        Err(ErrorUnauthorized("Unauthorized"))
-    }
+    let scoring = aquarius
+        .calculate_scoring(regatta_id.into_inner())
+        .await
+        .map_err(ApiError::from)?;
+    Ok(Json(scoring))
 }
 
 #[utoipa::path(
@@ -89,9 +73,6 @@ async fn get_schedule(
     let schedule = aquarius
         .query_schedule(regatta_id.into_inner(), identity.is_some())
         .await
-        .map_err(|err| {
-            error!(%err, "Failed to query schedule");
-            ErrorInternalServerError(err)
-        })?;
+        .map_err(ApiError::from)?;
     Ok(Json(schedule))
 }

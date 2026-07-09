@@ -1,5 +1,7 @@
 use super::Club;
 use super::athlete::Athlete;
+use super::athlete::ID as ATHLETE_ID;
+use super::club::ID as CLUB_ID;
 use super::get_rows;
 use crate::{
     error::DbError,
@@ -11,9 +13,9 @@ use ::utoipa::ToSchema;
 
 const ID: &str = "Crew_ID";
 const POS: &str = "Crew_Pos";
-const IS_COX: &str = "Crew_IsCox";
+pub(super) const IS_COX: &str = "Crew_IsCox";
 const ROUND_FROM: &str = "Crew_RoundFrom";
-const ROUND_TO: &str = "Crew_RoundTo";
+pub(super) const ROUND_TO: &str = "Crew_RoundTo";
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -55,8 +57,8 @@ impl Crew {
     ) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Crew cr
-            JOIN Athlet  a ON cr.Crew_Athlete_ID_FK = a.Athlet_ID
-            JOIN Club   cl ON a.Athlet_Club_ID_FK   = cl.Club_ID
+            JOIN Athlet  a ON cr.Crew_Athlete_ID_FK = a.{ATHLETE_ID}
+            JOIN Club   cl ON a.Athlet_Club_ID_FK   = cl.{CLUB_ID}
             WHERE Crew_Entry_ID_FK = @P1 AND cr.{ROUND_FROM} <= @P2 AND @P2 <= cr.{ROUND_TO}
             ORDER BY cr.{POS} ASC",
             Crew::select_columns("cr"),

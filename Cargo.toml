@@ -6,7 +6,7 @@ members = ["aquarius", "db", "infoportal", "timekeeper"]
 version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
-rust-version = "1.95.0"
+rust-version = "1.96.1"
 authors = ["Markus Ofterdinger <markus@ofterdinger.de>"]
 repository = "https://github.com/Heidelberger-Regattaverband/regatta-infopoint.git"
 
@@ -21,7 +21,7 @@ tiberius = { version = "0.12", features = [
 ], default-features = false }
 bb8 = { version = "0.9" }
 chrono = { version = "0.4", features = ["serde"] }
-stretto = { version = "0.8", features = ["async"] }
+stretto = { version = "0.9", features = ["tokio"] }
 
 # async stuff
 futures = { version = "0.3" }
@@ -47,15 +47,15 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # utils
 dotenv = { version = "0.15" }
-scraper = { version = "0.26" }
+scraper = { version = "0.27" }
 clap = { version = "4.6", features = ["derive"] }
 secret-string = { version = "0.0", features = ["serde"] }
-sysinfo = { version = "0.38" }
+sysinfo = { version = "0.39" }
 thiserror = { version = "2.0" }
 uptime_lib = { version = "0.3" }
 
 # HTTP
-utoipa = { version = "5.4", features = ["actix_extras", "chrono", "decimal"] }
+utoipa = { version = "5.5", features = ["actix_extras", "chrono", "decimal"] }
 
 [profile.release]
 # https://nnethercote.github.io/perf-book/build-configuration.html#codegen-units

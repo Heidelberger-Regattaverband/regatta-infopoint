@@ -16,20 +16,45 @@ use ::actix_web::{
 };
 use ::db::aquarius::Aquarius;
 use ::db::aquarius::model::{Filters, Heat, Regatta};
+use ::db::error::DbError;
 use ::db::tiberius::TiberiusPool;
 use ::db::tiberius::user_pool::UserPoolManager;
+use ::std::fmt;
+use ::std::fmt::Display;
+use ::std::fmt::Formatter;
 use ::std::sync::Arc;
-use ::std::time::Duration;
 use ::tracing::error;
+
+use ::std::time::Duration;
 
 /// Path to REST API
 pub(crate) const PATH: &str = "/api";
 const INTERNAL_SERVER_ERROR: &str = "Internal server error";
 
-/// How often heartbeat pings are sent
-const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(2);
-/// How long before lack of client response causes a timeout
-const CLIENT_TIMEOUT: Duration = Duration::from_secs(5);
+/// How often WebSocket heartbeat pings are sent (shared by monitoring and timekeeping actors).
+pub(crate) const WS_HEARTBEAT_INTERVAL: Duration = Duration::from_secs(2);
+/// How long before lack of client response causes a WebSocket timeout (shared by monitoring and timekeeping actors).
+pub(crate) const WS_CLIENT_TIMEOUT: Duration = Duration::from_secs(5);
+
+/// A newtype around [`DbError`] implementing [`actix_web::ResponseError`].
+/// Logs the error and returns a 500 Internal Server Error response.
+#[derive(Debug)]
+pub(crate) struct ApiError(DbError);
+
+impl Display for ApiError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl actix_web::ResponseError for ApiError {}
+
+impl From<DbError> for ApiError {
+    fn from(err: DbError) -> Self {
+        error!("{err}");
+        ApiError(err)
+    }
+}
 
 // Filters Endpoints
 #[utoipa::path(
@@ -49,10 +74,7 @@ async fn get_filters(
     let filters = aquarius
         .get_filters(regatta_id.into_inner(), identity.is_some())
         .await
-        .map_err(|err| {
-            error!("{err}");
-            ErrorInternalServerError(err)
-        })?;
+        .map_err(ApiError::from)?;
     Ok(Json(filters))
 }
 
@@ -68,10 +90,10 @@ async fn get_filters(
 )]
 #[get("/active_regatta")]
 async fn get_active_regatta(aquarius: Data<Aquarius>, identity: Option<Identity>) -> Result<impl Responder, Error> {
-    let regatta = aquarius.get_active_regatta(identity.is_some()).await.map_err(|err| {
-        error!("{err}");
-        ErrorInternalServerError(err)
-    })?;
+    let regatta = aquarius
+        .get_active_regatta(identity.is_some())
+        .await
+        .map_err(ApiError::from)?;
     if regatta.is_none() {
         return Err(ErrorNotFound("No active regatta found"));
     }
@@ -97,10 +119,7 @@ async fn get_heats(
     let heats = aquarius
         .get_heats(regatta_id.into_inner(), identity.is_some())
         .await
-        .map_err(|err| {
-            error!("{err}");
-            ErrorInternalServerError(err)
-        })?;
+        .map_err(ApiError::from)?;
     Ok(Json(heats))
 }
 
@@ -121,10 +140,7 @@ async fn get_heat(
     let heat = aquarius
         .get_heat(heat_id.into_inner(), identity.is_some())
         .await
-        .map_err(|err| {
-            error!("{err}");
-            ErrorInternalServerError(err)
-        })?;
+        .map_err(ApiError::from)?;
     Ok(Json(heat))
 }
 

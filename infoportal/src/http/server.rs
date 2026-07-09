@@ -38,7 +38,7 @@ use ::tracing::{debug, info, warn};
 
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
-const INFOPORTAL_V2: &str = "{INFOPORTAL}2";
+const INFOPORTAL_V2: &str = "infoportal2";
 
 /// The server struct contains the configuration of the server.
 pub struct Server {}
@@ -66,7 +66,7 @@ impl Server {
         let http_app_content_path = CONFIG.http_app_content_path.clone();
 
         let worker_count = Arc::new(Mutex::new(0));
-        let prometheus = Self::get_prometeus();
+        let prometheus = Self::get_prometheus();
 
         let user_pool_manager = Data::new(UserPoolManager::new(CONFIG.get_db_config()));
 
@@ -191,7 +191,7 @@ impl Server {
     /// `Arc<PrometheusMetrics>` - The prometheus metrics.
     /// # Panics
     /// If the prometheus metrics can't be created.
-    fn get_prometeus() -> Arc<PrometheusMetrics> {
+    fn get_prometheus() -> Arc<PrometheusMetrics> {
         Arc::new(
             PrometheusMetricsBuilder::new("api")
                 .registry(Registry::new())
@@ -254,12 +254,15 @@ impl Server {
                     "TLS config loaded:"
                 );
                 let cert_reader = &mut BufReader::new(cert_file);
-                let cert_chain = certs(cert_reader).map(|cert| cert.unwrap()).collect();
+                let cert_chain = certs(cert_reader)
+                    .map(|cert| cert.expect("Failed to parse certificate from cert.pem"))
+                    .collect();
 
                 let key_reader = &mut BufReader::new(key_file);
                 // convert files to key/cert objects
-                let mut keys: Vec<PrivatePkcs8KeyDer> =
-                    pkcs8_private_keys(key_reader).map(|cert| cert.unwrap()).collect();
+                let mut keys: Vec<PrivatePkcs8KeyDer> = pkcs8_private_keys(key_reader)
+                    .map(|key| key.expect("Failed to parse PKCS8 private key from key.pem"))
+                    .collect();
 
                 // no keys could be parsed for each variant
                 if keys.is_empty() {
@@ -271,7 +274,7 @@ impl Server {
                 let config = ServerConfig::builder()
                     .with_no_client_auth()
                     .with_single_cert(cert_chain, PrivateKeyDer::Pkcs8(keys.remove(0)))
-                    .unwrap();
+                    .expect("Failed to build TLS ServerConfig with provided cert/key");
                 Some(config)
             } else {
                 warn!(

@@ -1,6 +1,5 @@
 use super::get_row;
 use super::try_get_row;
-use crate::cache::heap_size::HeapSize;
 use crate::tiberius::TiberiusClient;
 use crate::{
     error::DbError,
@@ -57,17 +56,6 @@ impl From<&Row> for Regatta {
             end_date: end_date.date().to_string(),
             url: value.try_get_column(URL).unwrap_or_default(),
         }
-    }
-}
-
-impl HeapSize for Regatta {
-    fn heap_size(&self) -> i64 {
-        self.title.heap_size()
-            + self.sub_title.heap_size()
-            + self.venue.heap_size()
-            + self.start_date.heap_size()
-            + self.end_date.heap_size()
-            + self.url.heap_size()
     }
 }
 

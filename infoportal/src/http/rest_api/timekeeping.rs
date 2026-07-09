@@ -1,5 +1,3 @@
-use super::CLIENT_TIMEOUT;
-use super::HEARTBEAT_INTERVAL;
 use crate::config::CONFIG;
 use crate::http::rest_api::get_user_pool;
 use ::actix::ActorFutureExt;
@@ -10,7 +8,6 @@ use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::HttpRequest;
 use ::actix_web::HttpResponse;
-use ::actix_web::error::ErrorUnauthorized;
 use ::actix_web::get;
 use ::actix_web::web::Data;
 use ::actix_web::web::Payload;
@@ -41,6 +38,8 @@ use ::tracing::debug;
 use ::tracing::error;
 use ::tracing::trace;
 use ::tracing::warn;
+
+use super::{WS_CLIENT_TIMEOUT, WS_HEARTBEAT_INTERVAL};
 
 /// A timekeeping command sent from the client to trigger timekeeping actions on the server.
 /// Direction: Client -> Server
@@ -138,7 +137,7 @@ struct GetHeatsReadyToStart;
 
 struct TimekeepingActor {
     heart_beat: Instant,
-    aquarius_client: Arc<AquariusClient>,
+    aquarius_client: Option<Arc<AquariusClient>>,
     aquarius_db: Data<Aquarius>,
     heats: Arc<RwLock<Vec<AquariusHeat>>>,
     event_receiver: Option<Receiver<AquariusEvent>>,
@@ -148,18 +147,20 @@ struct TimekeepingActor {
 impl TimekeepingActor {
     async fn new(pool: Arc<TiberiusPool>, aquarius_db: Data<Aquarius>) -> Self {
         let (event_sender, event_receiver) = mpsc::channel();
+        let client = AquariusClient::new(
+            &CONFIG.aquarius_host,
+            CONFIG.aquarius_port,
+            CONFIG.aquarius_timeout,
+            event_sender,
+        );
+        let aquarius_client = match client {
+            Ok(aquarius) => Some(Arc::new(aquarius)),
+            Err(_) => None,
+        };
 
         Self {
             heart_beat: Instant::now(),
-            aquarius_client: Arc::new(
-                AquariusClient::new(
-                    &CONFIG.aquarius_host,
-                    CONFIG.aquarius_port,
-                    CONFIG.aquarius_timeout,
-                    event_sender,
-                )
-                .unwrap(),
-            ),
+            aquarius_client,
             heats: Arc::new(RwLock::new(Vec::new())),
             event_receiver: Some(event_receiver),
             time_strip: Arc::new(::tokio::sync::RwLock::new(TimeStrip::load(pool.clone()).await.unwrap())),
@@ -168,8 +169,8 @@ impl TimekeepingActor {
     }
 
     fn start_heart_beat(&self, ctx: &mut <Self as Actor>::Context) {
-        ctx.run_interval(HEARTBEAT_INTERVAL, move |act, ctx| {
-            if Instant::now().duration_since(act.heart_beat) > CLIENT_TIMEOUT {
+        ctx.run_interval(WS_HEARTBEAT_INTERVAL, move |act, ctx| {
+            if Instant::now().duration_since(act.heart_beat) > WS_CLIENT_TIMEOUT {
                 warn!("Timekeeping websocket heartbeat failed, disconnecting!");
                 ctx.stop();
             } else {
@@ -381,8 +382,9 @@ impl Actor for TimekeepingActor {
         trace!("Timekeeping websocket actor started");
         self.start_heart_beat(ctx);
 
-        if let Some(event_receiver) = self.event_receiver.take() {
-            let aquarius_client = self.aquarius_client.clone();
+        if let Some(event_receiver) = self.event_receiver.take()
+            && let Some(aquarius_client) = self.aquarius_client.clone()
+        {
             let heats = self.heats.clone();
             let address = ctx.address();
             thread::spawn(move || receive_aquarius_events(event_receiver, aquarius_client, heats, address));
@@ -394,7 +396,9 @@ impl Actor for TimekeepingActor {
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
         trace!("Timekeeping websocket actor stopped");
-        self.aquarius_client.shutdown();
+        if let Some(aquarius_client) = self.aquarius_client.take() {
+            aquarius_client.shutdown();
+        }
     }
 }
 
@@ -402,17 +406,13 @@ impl Actor for TimekeepingActor {
 async fn get_timekeeping_ws(
     request: HttpRequest,
     stream: Payload,
-    identity: Option<Identity>,
+    identity: Identity,
     aquarius_db: Data<Aquarius>,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<HttpResponse, Error> {
-    if let Some(ref identity) = identity {
-        let pool = get_user_pool(identity, &user_pool_manager).await?;
-        let actor = TimekeepingActor::new(pool, aquarius_db.clone()).await;
-        ws::start(actor, &request, stream)
-    } else {
-        Err(ErrorUnauthorized("Unauthorized"))
-    }
+    let pool = get_user_pool(&identity, &user_pool_manager).await?;
+    let actor = TimekeepingActor::new(pool, aquarius_db.clone()).await;
+    ws::start(actor, &request, stream)
 }
 
 fn receive_aquarius_events(

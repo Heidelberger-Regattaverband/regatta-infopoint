@@ -1,9 +1,9 @@
+use crate::http::rest_api::ApiError;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
 use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::Responder;
-use ::actix_web::error::ErrorInternalServerError;
 use ::actix_web::get;
 use ::actix_web::web::Data;
 use ::actix_web::web::Json;
@@ -11,7 +11,6 @@ use ::actix_web::web::Path;
 use ::db::aquarius::Aquarius;
 use ::db::aquarius::model::Club;
 use ::db::aquarius::model::Entry;
-use ::tracing::error;
 
 #[utoipa::path(
     description = "Get all participating clubs of a regatta.",
@@ -30,10 +29,7 @@ async fn get_participating_clubs(
     let clubs = aquarius
         .get_participating_clubs(regatta_id.into_inner(), identity.is_some())
         .await
-        .map_err(|err| {
-            error!(%err, "Failed to get participating clubs");
-            ErrorInternalServerError(err)
-        })?;
+        .map_err(ApiError::from)?;
     Ok(Json(clubs))
 }
 
@@ -55,10 +51,7 @@ async fn get_club_entries(
     let entries = aquarius
         .get_club_entries(regatta_id, club_id, identity.is_some())
         .await
-        .map_err(|err| {
-            error!(%err, regatta_id, club_id,"Failed to get club entries");
-            ErrorInternalServerError(err)
-        })?;
+        .map_err(ApiError::from)?;
     Ok(Json(entries))
 }
 
@@ -80,9 +73,6 @@ async fn get_regatta_club(
     let club = aquarius
         .get_regatta_club(regatta_id, club_id, identity.is_some())
         .await
-        .map_err(|err| {
-            error!(%err, regatta_id, club_id, "Failed to get club");
-            ErrorInternalServerError(err)
-        })?;
+        .map_err(ApiError::from)?;
     Ok(Json(club))
 }

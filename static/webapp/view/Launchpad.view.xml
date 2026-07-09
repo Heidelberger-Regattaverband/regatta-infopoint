@@ -13,7 +13,7 @@
       </headerContent>
 
       <content>
-        <NotificationList id="notificationList" items="{notifications>/}" showNoData="false">
+        <NotificationList items="{notifications>/}" showNoData="false">
           <items>
             <!-- ui5lint-disable no-deprecated-api -->
             <NotificationListItem title="{notifications>title}" description="{notifications>text}" unread="true"
@@ -86,7 +86,7 @@
               </tileContent>
             </GenericTile>
 
-            <Bar visible="{identity>/authenticated}">
+            <Bar visible="{identity>/authenticated}" class="sapUiTinyMarginTop">
               <contentLeft>
                 <Text text="{i18n>common.analytics}" class="bold" />
               </contentLeft>
@@ -114,7 +114,7 @@
               </tileContent>
             </GenericTile>
 
-            <Bar visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}">
+            <Bar visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}" class="sapUiTinyMarginTop">
               <contentLeft>
                 <Text text="{i18n>admin.title}" class="bold" />
               </contentLeft>
