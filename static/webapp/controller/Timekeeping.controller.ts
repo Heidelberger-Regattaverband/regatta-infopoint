@@ -1,17 +1,16 @@
 import Button, { Button$PressEvent } from "sap/m/Button";
+import { ComboBox$ChangeEvent } from "sap/m/ComboBox";
 import { ComboBoxBase$LoadItemsEvent } from "sap/m/ComboBoxBase";
 import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
 import MessageBox from "sap/m/MessageBox";
 import Table from "sap/m/Table";
-import IconPool from "sap/ui/core/IconPool";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import ListBinding from "sap/ui/model/ListBinding";
 import Formatter from "../model/Formatter";
 import BaseTableController from "./BaseTable.controller";
-import ListBinding from "sap/ui/model/ListBinding";
-import { ComboBox$ChangeEvent } from "sap/m/ComboBox";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -21,6 +20,7 @@ export default class TimekeepingController extends BaseTableController {
   private static readonly TIMESTRIP_MODEL: string = "timestrip";
   private static readonly AQUARIUS_HEATS_MODEL: string = "aquariusHeats";
   private static readonly HEATS_MODEL: string = "heats";
+  private static readonly BIBS_MODEL: string = "bibs";
 
   readonly formatter: Formatter = Formatter;
   private socket?: WebSocket;
@@ -36,22 +36,10 @@ export default class TimekeepingController extends BaseTableController {
     super.setViewModel(new JSONModel(), TimekeepingController.TIMESTRIP_MODEL);
     super.setViewModel(new JSONModel(), TimekeepingController.AQUARIUS_HEATS_MODEL);
     super.setViewModel(new JSONModel(), TimekeepingController.HEATS_MODEL);
+    super.setViewModel(new JSONModel(), TimekeepingController.BIBS_MODEL);
     super.getRouter()?.getRoute("timekeeping")?.attachMatched((_: Route$MatchedEvent) => {
       this.connect();
     }, this);
-    this._loadIcons();
-  }
-
-  private _loadIcons(): void {
-    const fonts: any[] = [
-      {
-        fontFamily: "SAP-icons-TNT",
-        fontURI: sap.ui.require.toUrl("sap/tnt/themes/base/fonts/")
-      }
-    ];
-    fonts.forEach((font: any) => {
-      IconPool.registerFont(font);
-    });
   }
 
   private onBeforeShow(): void {

@@ -17,22 +17,22 @@
     </headerToolbar>
 
     <columns>
-      <Column id="timestampTime" hAlign="Center" width="11rem" importance="High" popinDisplay="Inline">
+      <Column hAlign="Center" width="11rem" importance="High" popinDisplay="Inline">
         <Text text="{i18n>common.time}" class="bold" />
       </Column>
-      <Column id="timestampSplit" hAlign="Center" width="5rem" importance="High" popinDisplay="Inline">
+      <Column hAlign="Center" width="5rem" importance="High" popinDisplay="Inline">
         <Text text="{i18n>common.split}" class="bold" />
       </Column>
-      <Column id="timestampHeatNr" hAlign="Center" width="4rem" importance="Medium" popinDisplay="Inline">
+      <Column hAlign="Center" width="4rem" importance="Medium" popinDisplay="Inline">
         <Text text="{i18n>common.heatNr}" class="bold" />
       </Column>
-      <Column id="timestampBib" hAlign="Center" width="4rem" importance="Medium" popinDisplay="Inline">
+      <Column hAlign="Center" width="4rem" importance="Medium" popinDisplay="Inline">
         <Text text="{i18n>common.bib}" class="bold" />
       </Column>
-      <Column id="timestampStatus" hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">
+      <Column hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">
         <Text text="{i18n>common.state}" class="bold" />
       </Column>
-      <Column id="timestampDelete" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
+      <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
         <Text text="{i18n>admin.column.actions}" class="bold" />
       </Column>
     </columns>
@@ -45,7 +45,9 @@
           <ComboBox value="{timestrip>heat_nr}" items="{heats>/}" loadItems=".onLoadHeats" change=".onHeatChange">
             <core:ListItem key="{heats>number}" text="{heats>number}" />
           </ComboBox>
-          <Text text="{timestrip>bib}" />
+          <ComboBox value="{timestrip>bib}" items="{bibs>/}" loadItems=".onLoadBibs" change=".onBibChange">
+            <core:ListItem key="{bibs>number}" text="{bibs>number}" />
+          </ComboBox>
           <core:Icon src="{=${timestrip>persisted}?'sap-icon://SAP-icons-TNT/data-store':''}" tooltip="{i18n>common.persisted}" />
           <Button icon="sap-icon://delete" tooltip="{i18n>common.delete}" type="Reject" press=".onDeleteTimestamp" />
         </cells>

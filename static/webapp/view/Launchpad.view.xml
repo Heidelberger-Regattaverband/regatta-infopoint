@@ -86,7 +86,7 @@
               </tileContent>
             </GenericTile>
 
-            <Bar visible="{identity>/authenticated}">
+            <Bar visible="{identity>/authenticated}" class="sapUiTinyMarginTop">
               <contentLeft>
                 <Text text="{i18n>common.analytics}" class="bold" />
               </contentLeft>
@@ -114,7 +114,7 @@
               </tileContent>
             </GenericTile>
 
-            <Bar visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}">
+            <Bar visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}" class="sapUiTinyMarginTop">
               <contentLeft>
                 <Text text="{i18n>admin.title}" class="bold" />
               </contentLeft>

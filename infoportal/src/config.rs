@@ -359,9 +359,9 @@ mod consts {
     pub(super) const DEFAULT_HTTP_RL_INTERVAL: u64 = 600;
     pub(super) const DEFAULT_DB_PORT: u16 = 1433;
     pub(super) const DEFAULT_DB_ENCRYPTION: bool = false;
-    pub(super) const DEFAULT_DB_POOL_MAX_SIZE: u32 = 100;
+    pub(super) const DEFAULT_DB_POOL_MAX_SIZE: u32 = 80;
     pub(super) const DEFAULT_DB_POOL_MIN_IDLE: u32 = 30;
-    pub(super) const DEFAULT_CACHE_TTL: u64 = 30;
+    pub(super) const DEFAULT_CACHE_TTL: u64 = 60;
     pub(super) const DEFAULT_AQUARIUS_HOST: &str = "aquarius";
     pub(super) const DEFAULT_AQUARIUS_PORT: u16 = 2048;
     pub(super) const DEFAULT_AQUARIUS_TIMEOUT: u16 = 500;

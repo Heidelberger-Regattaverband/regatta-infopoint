@@ -1,9 +1,20 @@
 use super::Athlete;
 use super::TryToEntity;
+use super::athlete::ID as ATHLETE_ID;
 use super::boat_class::COXED;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;
+use super::club::ID as CLUB_ID;
+use super::crew::IS_COX as CREW_IS_COX;
+use super::entry::CANCELLED as ENTRY_CANCELLED;
+use super::entry::ID as ENTRY_ID;
 use super::get_row;
+use super::heat::CANCELLED as HEAT_CANCELLED;
+use super::heat::DATE_TIME as HEAT_DATE_TIME;
+use super::heat::STATE as HEAT_STATE;
+use super::race::CANCELLED as RACE_CANCELLED;
+use super::race::DRIVEN as RACE_DRIVEN;
+use super::race::ID as RACE_ID;
 use super::try_get_row;
 use crate::{
     error::DbError,
@@ -16,6 +27,7 @@ use ::tiberius::{Query, Row};
 #[derive(Debug, Serialize, Clone)]
 struct RacesStatistics {
     all: i32,
+    driven: i32,
     cancelled: i32,
 }
 
@@ -66,6 +78,7 @@ impl From<&Row> for Statistics {
     fn from(value: &Row) -> Self {
         let races = RacesStatistics {
             all: value.get_column("races_all"),
+            driven: value.get_column("races_driven"),
             cancelled: value.get_column("races_cancelled"),
         };
         let heats = HeatsStatistics {
@@ -119,63 +132,64 @@ impl Statistics {
         let mut query = Query::new(
         format!("SELECT
           (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1) AS races_all,
-          (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1 AND Offer_Cancelled > 0) AS races_cancelled,
+          (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1 AND {RACE_CANCELLED} = 0 AND {RACE_DRIVEN} = 1) AS races_driven,
+          (SELECT COUNT(*) FROM Offer WHERE Offer_Event_ID_FK = @P1 AND ({RACE_CANCELLED} > 0 OR {RACE_DRIVEN} = 0)) AS races_cancelled,
           (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1) AS heats_all,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_Cancelled > 0 ) AS heats_cancelled,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 4 AND Comp_Cancelled = 0 ) AS heats_official,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND (Comp_State = 5 OR  Comp_State = 6) ) AS heats_finished,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 2 AND Comp_Cancelled = 0 ) AS heats_started,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 1 AND Comp_Cancelled = 0 ) AS heats_seeded,
-          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND Comp_State = 0 AND Comp_Cancelled = 0 ) AS heats_scheduled,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND {HEAT_CANCELLED} > 0 ) AS heats_cancelled,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND {HEAT_STATE} = 4 AND {HEAT_DATE_TIME} IS NOT NULL AND {HEAT_CANCELLED} = 0) AS heats_official,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND ({HEAT_STATE} = 5 OR {HEAT_STATE} = 6) AND {HEAT_DATE_TIME} IS NOT NULL AND {HEAT_CANCELLED} = 0) AS heats_finished,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND {HEAT_STATE} = 2 AND {HEAT_DATE_TIME} IS NOT NULL AND {HEAT_CANCELLED} = 0) AS heats_started,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND {HEAT_STATE} = 1 AND {HEAT_DATE_TIME} IS NOT NULL AND {HEAT_CANCELLED} = 0) AS heats_seeded,
+          (SELECT COUNT(*) FROM Comp  WHERE Comp_Event_ID_FK  = @P1 AND {HEAT_STATE} = 0 AND {HEAT_DATE_TIME} IS NOT NULL AND {HEAT_CANCELLED} = 0) AS heats_scheduled,
           (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1) AS entries_all,
-          (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue > 0) AS entries_cancelled,
+          (SELECT COUNT(*) FROM Entry WHERE Entry_Event_ID_FK = @P1 AND {ENTRY_CANCELLED} > 0) AS entries_cancelled,
           (SELECT COUNT(*) FROM (
-            SELECT DISTINCT Club_ID
+            SELECT DISTINCT {CLUB_ID}
             FROM  Club
-            JOIN  Entry ON Entry_OwnerClub_ID_FK = Club_ID
-            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) AS entries_owner_clubs,
+            JOIN  Entry ON Entry_OwnerClub_ID_FK = {CLUB_ID}
+            WHERE Entry_Event_ID_FK = @P1 AND {ENTRY_CANCELLED} = 0) AS count) AS entries_owner_clubs,
           (SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Athlete_ID_FK
             FROM  Entry
-            JOIN  Crew   ON Crew_Entry_ID_FK = Entry_ID
-            JOIN  Athlet ON Athlet_ID        = Crew_Athlete_ID_FK
-            WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'M' AND Entry_CancelValue = 0) AS count) AS entries_athletes_male,
+            JOIN  Crew   ON Crew_Entry_ID_FK = {ENTRY_ID}
+            JOIN  Athlet ON     {ATHLETE_ID} = Crew_Athlete_ID_FK
+            WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'M' AND {ENTRY_CANCELLED} = 0) AS count) AS entries_athletes_male,
           (SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Athlete_ID_FK
             FROM  Entry
-            JOIN  Crew   ON Crew_Entry_ID_FK = Entry_ID
-            JOIN  Athlet ON Athlet_ID        = Crew_Athlete_ID_FK
-            WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'W' AND Entry_CancelValue = 0) AS count) AS entries_athletes_female,
+            JOIN  Crew   ON Crew_Entry_ID_FK = {ENTRY_ID}
+            JOIN  Athlet ON     {ATHLETE_ID} = Crew_Athlete_ID_FK
+            WHERE Entry_Event_ID_FK = @P1 AND Athlet_Gender = 'W' AND {ENTRY_CANCELLED} = 0) AS count) AS entries_athletes_female,
           (SELECT COUNT(*) FROM (
             SELECT DISTINCT Crew_Club_ID_FK
             FROM  Entry
-            JOIN  Crew ON Crew_Entry_ID_FK = Entry_ID
-            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) AS count) AS entries_clubs,
+            JOIN  Crew ON Crew_Entry_ID_FK = {ENTRY_ID}
+            WHERE Entry_Event_ID_FK = @P1 AND {ENTRY_CANCELLED} = 0) AS count) AS entries_clubs,
           (SELECT COALESCE(SUM({NUM_ROWERS}), 0) FROM (
             SELECT {NUM_ROWERS}
             FROM  Entry
-            JOIN  Offer     ON Offer_ID = Entry_Race_ID_FK
+            JOIN  Offer     ON       {RACE_ID} = Entry_Race_ID_FK
             JOIN  BoatClass ON {BOAT_CLASS_ID} = Offer_BoatClass_ID_FK
-            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0) as seats) AS entries_seats,
+            WHERE Entry_Event_ID_FK = @P1 AND {ENTRY_CANCELLED} = 0) as seats) AS entries_seats,
           (SELECT COALESCE(SUM({COXED}), 0) FROM (
             SELECT {COXED}
             FROM  Entry      e
-            JOIN  Offer      o ON o.Offer_ID         = e.Entry_Race_ID_FK
+            JOIN  Offer      o ON        o.{RACE_ID} = e.Entry_Race_ID_FK
             JOIN  BoatClass bc ON bc.{BOAT_CLASS_ID} = o.Offer_BoatClass_ID_FK
-            WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue = 0) as seats) AS entries_seats_cox,
+            WHERE e.Entry_Event_ID_FK = @P1 AND e.{ENTRY_CANCELLED} = 0) as seats) AS entries_seats_cox,
           (SELECT COALESCE(SUM(bc.BoatClass_NumRowers), 0) FROM (
             SELECT bc.BoatClass_NumRowers
             FROM Comp       c
-            JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.Offer_ID
-            JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
-            WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_Cancelled = 0
+            JOIN Offer      o ON       c.Comp_Race_ID_FK = o.{RACE_ID}
+            JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.{BOAT_CLASS_ID}
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.{HEAT_CANCELLED} = 0
             ) as bc) as medals_rowers,
           (SELECT COALESCE(SUM(bc.BoatClass_Coxed), 0) FROM (
             SELECT bc.BoatClass_Coxed
             FROM Comp       c
-            JOIN Offer      o ON c.Comp_Race_ID_FK       =  o.Offer_ID
-            JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.BoatClass_ID
-            WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_Cancelled = 0
+            JOIN Offer      o ON c.Comp_Race_ID_FK       = o.{RACE_ID}
+            JOIN BoatClass bc ON o.Offer_BoatClass_ID_FK = bc.{BOAT_CLASS_ID}
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.{HEAT_CANCELLED} = 0
             ) as bc) as medals_coxes
           "
         ));
@@ -198,15 +212,15 @@ impl Statistics {
     }
 
     async fn query_oldest(regatta_id: i32, gender: &str, pool: &TiberiusPool) -> Result<Option<Athlete>, DbError> {
-        let mut query = Query::new(
+        let mut query = Query::new(format!(
             "SELECT DISTINCT TOP 1 Athlet.*, Club.*
             FROM  Entry
-            JOIN  Crew   ON Crew_Entry_ID_FK   = Entry_ID
-            JOIN  Athlet ON Crew_Athlete_ID_FK = Athlet_ID
-            JOIN  Club   ON Athlet_Club_ID_FK  = Club_ID
-            WHERE Entry_Event_ID_FK = @P1 AND Entry_CancelValue = 0 AND Athlet_Gender = @P2 AND Crew_IsCox = 0
-            ORDER BY Athlet_DOB",
-        );
+            JOIN  Crew   ON Crew_Entry_ID_FK   = {ENTRY_ID}
+            JOIN  Athlet ON Crew_Athlete_ID_FK = {ATHLETE_ID}
+            JOIN  Club   ON Athlet_Club_ID_FK  = {CLUB_ID}
+            WHERE Entry_Event_ID_FK = @P1 AND {ENTRY_CANCELLED} = 0 AND Athlet_Gender = @P2 AND {CREW_IS_COX} = 0
+            ORDER BY Athlet_DOB"
+        ));
         query.bind(regatta_id);
         query.bind(gender);
 

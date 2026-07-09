@@ -12,6 +12,7 @@ import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
+import { NavigationData } from "../model/types";
 import BaseTableController from "./BaseTable.controller";
 
 /**
@@ -22,12 +23,13 @@ export default class RacesTableController extends BaseTableController {
   private static readonly FILTER_DIALOG: string = "de.regatta_hd.infoportal.view.RacesFilterDialog";
   private static readonly SORT_DIALOG: string = "de.regatta_hd.infoportal.view.RacesSortDialog";
   static readonly RACE_MODEL: string = "race";
+  static readonly RACE_NAV_MODEL: string = "raceNav";
   private static readonly RACES_MODEL: string = "races";
 
   readonly formatter: Formatter = Formatter;
 
   onInit(): void {
-    super.init(super.getView()?.byId("racesTable") as Table, "race" /* eventBus channel */);
+    super.init(super.getView()?.byId("racesTable") as Table, "race" /* eventBus channel */, RacesTableController.RACE_NAV_MODEL);
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(new JSONModel(), RacesTableController.RACES_MODEL);
@@ -76,8 +78,8 @@ export default class RacesTableController extends BaseTableController {
 
       const index: number = this.table.indexOfItem(selectedItem);
       const count: number = this.table.getItems().length;
-      // store navigation meta information in selected item
-      race._nav = { isFirst: index == 0, isLast: index == count - 1 };
+      const navData: NavigationData = { isFirst: index === 0, isLast: index === count - 1, disabled: false, back: undefined };
+      super.updateNavModel(navData);
 
       this.onItemChanged(race);
       super.navToRaceDetails(race.id);

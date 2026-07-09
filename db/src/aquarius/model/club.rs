@@ -1,4 +1,7 @@
-use super::entry::ID as entry_ID;
+use super::athlete::ID as ATHLETE_ID;
+use super::crew::ROUND_TO as CREW_ROUND_TO;
+use super::entry::CANCELLED as ENTRY_CANCELLED;
+use super::entry::ID as ENTRY_ID;
 use super::get_row;
 use super::get_rows;
 use crate::tiberius::TiberiusClient;
@@ -11,12 +14,12 @@ use ::serde::Serialize;
 use ::tiberius::{Query, Row, numeric::Decimal};
 use ::utoipa::ToSchema;
 
-const ID: &str = "Club_ID";
-const EXTERN_ID: &str = "Club_ExternID";
-const SHORT_NAME: &str = "Club_Abbr";
-const LONG_NAME: &str = "Club_Name";
-const ABBREVIATION: &str = "Club_UltraAbbr";
-const CITY: &str = "Club_City";
+pub(crate) const ID: &str = "Club_ID";
+pub(super) const EXTERN_ID: &str = "Club_ExternID";
+pub(super) const SHORT_NAME: &str = "Club_Abbr";
+pub(super) const LONG_NAME: &str = "Club_Name";
+pub(super) const ABBREVIATION: &str = "Club_UltraAbbr";
+pub(super) const CITY: &str = "Club_City";
 const LATITUDE: &str = "Club_HRV_Latitude";
 const LONGITUDE: &str = "Club_HRV_Longitude";
 
@@ -84,36 +87,36 @@ impl Club {
         let sql = format!(
             "SELECT DISTINCT {0},
                 (SELECT COUNT(*) FROM (
-                    SELECT DISTINCT Entry_ID FROM Club
+                    SELECT DISTINCT {ENTRY_ID} FROM Club
                     JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
-                    JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
-                    JOIN Entry      ON Crew_Entry_ID_FK   = {entry_ID}
-                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
-                        AND Crew_RoundTo = 64
+                    JOIN Crew       ON Crew_Athlete_ID_FK = {ATHLETE_ID}
+                    JOIN Entry      ON Crew_Entry_ID_FK   = {ENTRY_ID}
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND {ENTRY_CANCELLED} = 0
+                        AND {CREW_ROUND_TO} = 64
                 ) AS Participations_Count) AS Participations_Count,
                 (SELECT COUNT(*) FROM (
-                    SELECT DISTINCT Athlet_ID
+                    SELECT DISTINCT {ATHLETE_ID}
                     FROM Club
                     JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
-                    JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
-                    JOIN Entry      ON Crew_Entry_ID_FK   = {entry_ID}
-                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
-                        AND Crew_RoundTo = 64 AND Athlet_Gender = 'W'
+                    JOIN Crew       ON Crew_Athlete_ID_FK = {ATHLETE_ID}
+                    JOIN Entry      ON Crew_Entry_ID_FK   = {ENTRY_ID}
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND {ENTRY_CANCELLED} = 0
+                        AND {CREW_ROUND_TO} = 64 AND Athlet_Gender = 'W'
                 ) AS Athletes_Female_Count) AS Athletes_Female_Count,
                 (SELECT COUNT(*) FROM (
-                    SELECT DISTINCT Athlet_ID
+                    SELECT DISTINCT {ATHLETE_ID}
                     FROM Club
                     JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
-                    JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
-                    JOIN Entry      ON Crew_Entry_ID_FK   = {entry_ID}
-                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
-                        AND Crew_RoundTo = 64 AND Athlet_Gender = 'M'
+                    JOIN Crew       ON Crew_Athlete_ID_FK = {ATHLETE_ID}
+                    JOIN Entry      ON Crew_Entry_ID_FK   = {ENTRY_ID}
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND {ENTRY_CANCELLED} = 0
+                        AND {CREW_ROUND_TO} = 64 AND Athlet_Gender = 'M'
                 ) AS Athletes_Male_Count) AS Athletes_Male_Count
             FROM Club c
             JOIN Athlet  a ON a.Athlet_Club_ID_FK   = c.{ID}
-            JOIN Crew   cr ON cr.Crew_Athlete_ID_FK = a.Athlet_ID
-            JOIN Entry   e ON cr.Crew_Entry_ID_FK   = e.{entry_ID}
-            WHERE Entry_Event_ID_FK = @P1 AND Crew_RoundTo = 64
+            JOIN Crew   cr ON cr.Crew_Athlete_ID_FK = a.{ATHLETE_ID}
+            JOIN Entry   e ON cr.Crew_Entry_ID_FK   = e.{ENTRY_ID}
+            WHERE Entry_Event_ID_FK = @P1 AND {CREW_ROUND_TO} = 64
             ORDER BY {CITY} ASC",
             Club::select_all_columns("c")
         );
@@ -139,28 +142,28 @@ impl Club {
         let mut query = Query::new(format!(
             "SELECT {0},
                 (SELECT COUNT(*) FROM (
-                    SELECT DISTINCT Entry_ID FROM Club
+                    SELECT DISTINCT {ENTRY_ID} FROM Club
                     JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
-                    JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
-                    JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
-                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
-                        AND Crew_RoundTo = 64
+                    JOIN Crew       ON Crew_Athlete_ID_FK = {ATHLETE_ID}
+                    JOIN Entry      ON Crew_Entry_ID_FK   = {ENTRY_ID}
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND {ENTRY_CANCELLED} = 0
+                        AND {CREW_ROUND_TO} = 64
                 ) AS Participations_Count) AS Participations_Count,
                 (SELECT COUNT(*) FROM (
-                    SELECT DISTINCT Athlet_ID FROM Club
+                    SELECT DISTINCT {ATHLETE_ID} FROM Club
                     JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
-                    JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
-                    JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
-                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
-                        AND Crew_RoundTo = 64 AND Athlet_Gender = 'W'
+                    JOIN Crew       ON Crew_Athlete_ID_FK = {ATHLETE_ID}
+                    JOIN Entry      ON Crew_Entry_ID_FK   = {ENTRY_ID}
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND {ENTRY_CANCELLED} = 0
+                        AND {CREW_ROUND_TO} = 64 AND Athlet_Gender = 'W'
                 ) AS Athletes_Female_Count) AS Athletes_Female_Count,
                 (SELECT COUNT(*) FROM (
-                    SELECT DISTINCT Athlet_ID FROM Club
+                    SELECT DISTINCT {ATHLETE_ID} FROM Club
                     JOIN Athlet     ON Athlet_Club_ID_FK  = {ID}
-                    JOIN Crew       ON Crew_Athlete_ID_FK = Athlet_ID
-                    JOIN Entry      ON Crew_Entry_ID_FK   = Entry_ID
-                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND Entry_CancelValue = 0
-                        AND Crew_RoundTo = 64 AND Athlet_Gender = 'M'
+                    JOIN Crew       ON Crew_Athlete_ID_FK = {ATHLETE_ID}
+                    JOIN Entry      ON Crew_Entry_ID_FK   = {ENTRY_ID}
+                    WHERE Entry_Event_ID_FK = @P1 AND c.{ID} = {ID} AND {ENTRY_CANCELLED} = 0
+                        AND {CREW_ROUND_TO} = 64 AND Athlet_Gender = 'M'
                 ) AS Athletes_Male_Count) AS Athletes_Male_Count
             FROM Club c
             WHERE c.{ID} = @P2",

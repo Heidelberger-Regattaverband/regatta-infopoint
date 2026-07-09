@@ -1,5 +1,9 @@
 use super::Club;
 use super::TryToEntity;
+use super::club::ID as CLUB_ID;
+use super::crew::ROUND_TO as CREW_ROUND_TO;
+use super::entry::CANCELLED as ENTRY_CANCELLED;
+use super::entry::ID as ENTRY_ID;
 use super::get_row;
 use super::get_rows;
 use crate::tiberius::TiberiusClient;
@@ -11,11 +15,12 @@ use ::serde::Serialize;
 use ::tiberius::{Query, Row, time::chrono::NaiveDateTime};
 use ::utoipa::ToSchema;
 
-const ID: &str = "Athlet_ID";
+pub(crate) const ID: &str = "Athlet_ID";
 const FIRST_NAME: &str = "Athlet_FirstName";
 const LAST_NAME: &str = "Athlet_LastName";
 const GENDER: &str = "Athlet_Gender";
 const DOB: &str = "Athlet_DOB";
+const ENTRIES_COUNT: &str = "Athlet_Entries_Count";
 
 /// An athlete is a person who participates in a regatta.
 #[derive(Debug, Serialize, Clone, ToSchema)]
@@ -55,14 +60,14 @@ impl Athlete {
                 (SELECT COUNT(*) FROM (
                     SELECT {ID} FROM Athlet
                     JOIN Crew  ON Crew_Athlete_ID_FK = {ID}
-                    JOIN Entry ON Crew_Entry_ID_FK   = Entry_ID
-                    WHERE {ID} = a.{ID} AND Crew_RoundTo = @P2
-                ) AS Athlet_Entries_Count ) AS Athlet_Entries_Count
+                    JOIN Entry ON Crew_Entry_ID_FK   = {ENTRY_ID}
+                    WHERE {ID} = a.{ID} AND {ENTRY_CANCELLED} = 0 AND {CREW_ROUND_TO} = @P2
+                ) AS {ENTRIES_COUNT} ) AS {ENTRIES_COUNT}
                 FROM Athlet a
-                JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.Club_ID
+                JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.{CLUB_ID}
                 JOIN Crew  cr ON a.{ID}              = cr.Crew_Athlete_ID_FK
-                JOIN Entry  e ON cr.Crew_Entry_ID_FK = e.Entry_ID
-                WHERE e.Entry_Event_ID_FK = @P1 AND e.Entry_CancelValue = 0 AND cr.Crew_RoundTo = @P2",
+                JOIN Entry  e ON cr.Crew_Entry_ID_FK = e.{ENTRY_ID}
+                WHERE e.Entry_Event_ID_FK = @P1 AND e.{ENTRY_CANCELLED} = 0 AND cr.{CREW_ROUND_TO} = @P2",
             Athlete::select_columns("a"),
             Club::select_min_columns("cl")
         ));
@@ -85,14 +90,14 @@ impl Athlete {
                 (SELECT COUNT(*) FROM (
                     SELECT {ID} FROM Athlet
                     JOIN Crew  ON Crew_Athlete_ID_FK = {ID}
-                    JOIN Entry ON Crew_Entry_ID_FK   = Entry_ID
-                    WHERE e.Entry_Event_ID_FK = @P1 AND {ID} = a.{ID} AND Crew_RoundTo = @P3
-                ) AS Athlet_Entries_Count ) AS Athlet_Entries_Count
-                FROM Athlet  a
-                JOIN Club   cl ON a.Athlet_Club_ID_FK = cl.Club_ID
-                JOIN Crew   cr ON a.{ID}              = cr.Crew_Athlete_ID_FK
-                JOIN Entry   e ON cr.Crew_Entry_ID_FK = e.Entry_ID
-                WHERE e.Entry_Event_ID_FK = @P1 AND a.{ID} = @P2 AND cr.Crew_RoundTo = @P3",
+                    JOIN Entry ON Crew_Entry_ID_FK   = {ENTRY_ID}
+                    WHERE e.Entry_Event_ID_FK = @P1 AND {ID} = a.{ID} AND {ENTRY_CANCELLED} = 0 AND {CREW_ROUND_TO} = @P3
+                ) AS {ENTRIES_COUNT} ) AS {ENTRIES_COUNT}
+                FROM Athlet a
+                JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.{CLUB_ID}
+                JOIN Crew  cr ON a.{ID}              = cr.Crew_Athlete_ID_FK
+                JOIN Entry  e ON cr.Crew_Entry_ID_FK = e.{ENTRY_ID}
+                WHERE e.Entry_Event_ID_FK = @P1 AND a.{ID} = @P2 AND cr.{CREW_ROUND_TO} = @P3",
             Athlete::select_columns("a"),
             Club::select_all_columns("cl")
         ));
@@ -122,7 +127,7 @@ impl From<&Row> for Athlete {
                 .format("%Y")
                 .to_string(),
             club: Club::from(row),
-            entries_count: row.try_get_column("Athlet_Entries_Count"),
+            entries_count: row.try_get_column(ENTRIES_COUNT),
         }
     }
 }

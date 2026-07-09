@@ -1,8 +1,9 @@
-import BaseController from "./Base.controller";
-import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
-import { map, latLng, tileLayer, MapOptions, Map, LatLng, marker, popup, LatLngBounds, icon, layerGroup, Marker, TileLayer, LayerGroup, control, latLngBounds, FitBoundsOptions, circle, Circle } from "leaflet";
-import JSONModel from "sap/ui/model/json/JSONModel";
+import { Circle, FitBoundsOptions, LatLng, LatLngBounds, LayerGroup, Map, MapOptions, Marker, TileLayer, circle, control, icon, latLng, latLngBounds, layerGroup, map, marker, popup, tileLayer } from "leaflet";
+import Log from "sap/base/Log";
 import Button, { Button$PressEvent } from "sap/m/Button";
+import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import BaseController from "./Base.controller";
 
 /**
  * @namespace de.regatta_hd.infoportal.controller
@@ -20,7 +21,17 @@ export default class MapController extends BaseController {
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getRouter()?.getRoute("map")?.attachMatched((_: Route$MatchedEvent) => {
-      this.loadModel().then(() => this.loadMap());
+      // Initialize the map only after the participating-clubs model is loaded.
+      // Errors are logged so a network failure does not leave a stuck route
+      // and the user can still see the regatta layer (loadMap() is a no-op
+      // on subsequent calls because the map is created only once).
+      this.loadModel()
+        .then(() => this.loadMap())
+        .catch((err: unknown) => {
+          Log.error("Failed to load map data", err as Error);
+          // Still try to render the static regatta layer so the page is not blank.
+          this.loadMap();
+        });
     }, this);
     this.centerClubsButton = this.byId("centerClubsButton") as Button;
     this.centerRegattaButton = this.byId("centerRegattaButton") as Button;
@@ -114,8 +125,7 @@ export default class MapController extends BaseController {
     this.participatingClubsModel.getData().forEach((club: any) => {
       if (club.latitude && club.longitude) {
         const pos: LatLng = latLng(club.latitude, club.longitude);
-        const content: string = `<a href="#/clubDetails/${club.id}">${club.longName}<br>${club.city}</a>`;
-        const mark: Marker = marker(pos).bindPopup(popup().setContent(content));
+        const mark: Marker = marker(pos).bindPopup(popup().setContent(this.buildClubPopup(club)));
         if (club.flagUrl) {
           const iconClub = icon({
             iconUrl: club.flagUrl,
@@ -127,5 +137,24 @@ export default class MapController extends BaseController {
       }
     });
     return [layerGroup(marks), latLngBounds(marks.map(mark => mark.getLatLng()))];
+  }
+
+  /**
+   * Builds the popup content for a club marker as a DOM tree (rather than an
+   * HTML string) to prevent XSS via `club.longName` / `club.city` (review item 1.1).
+   *
+   * Leaflet's `Popup.setContent` accepts an `HTMLElement`, which inserts text
+   * nodes verbatim — no parser, no script execution.
+   */
+  private buildClubPopup(club: { id: number | string; longName?: string; city?: string }): HTMLElement {
+    const link: HTMLAnchorElement = document.createElement("a");
+    // The id is interpolated as a string but only into a hash-route, so it
+    // cannot break out of the `href` attribute; still, force a numeric/string
+    // representation rather than rich content.
+    link.href = `#/clubDetails/${encodeURIComponent(String(club.id))}`;
+    link.appendChild(document.createTextNode(club.longName ?? ""));
+    link.appendChild(document.createElement("br"));
+    link.appendChild(document.createTextNode(club.city ?? ""));
+    return link;
   }
 }

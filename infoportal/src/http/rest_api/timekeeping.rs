@@ -137,7 +137,7 @@ struct GetHeatsReadyToStart;
 
 struct TimekeepingActor {
     heart_beat: Instant,
-    aquarius_client: Arc<AquariusClient>,
+    aquarius_client: Option<Arc<AquariusClient>>,
     aquarius_db: Data<Aquarius>,
     heats: Arc<RwLock<Vec<AquariusHeat>>>,
     event_receiver: Option<Receiver<AquariusEvent>>,
@@ -147,18 +147,20 @@ struct TimekeepingActor {
 impl TimekeepingActor {
     async fn new(pool: Arc<TiberiusPool>, aquarius_db: Data<Aquarius>) -> Self {
         let (event_sender, event_receiver) = mpsc::channel();
+        let client = AquariusClient::new(
+            &CONFIG.aquarius_host,
+            CONFIG.aquarius_port,
+            CONFIG.aquarius_timeout,
+            event_sender,
+        );
+        let aquarius_client = match client {
+            Ok(aquarius) => Some(Arc::new(aquarius)),
+            Err(_) => None,
+        };
 
         Self {
             heart_beat: Instant::now(),
-            aquarius_client: Arc::new(
-                AquariusClient::new(
-                    &CONFIG.aquarius_host,
-                    CONFIG.aquarius_port,
-                    CONFIG.aquarius_timeout,
-                    event_sender,
-                )
-                .unwrap(),
-            ),
+            aquarius_client,
             heats: Arc::new(RwLock::new(Vec::new())),
             event_receiver: Some(event_receiver),
             time_strip: Arc::new(::tokio::sync::RwLock::new(TimeStrip::load(pool.clone()).await.unwrap())),
@@ -380,8 +382,9 @@ impl Actor for TimekeepingActor {
         trace!("Timekeeping websocket actor started");
         self.start_heart_beat(ctx);
 
-        if let Some(event_receiver) = self.event_receiver.take() {
-            let aquarius_client = self.aquarius_client.clone();
+        if let Some(event_receiver) = self.event_receiver.take()
+            && let Some(aquarius_client) = self.aquarius_client.clone()
+        {
             let heats = self.heats.clone();
             let address = ctx.address();
             thread::spawn(move || receive_aquarius_events(event_receiver, aquarius_client, heats, address));
@@ -393,7 +396,9 @@ impl Actor for TimekeepingActor {
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
         trace!("Timekeeping websocket actor stopped");
-        self.aquarius_client.shutdown();
+        if let Some(aquarius_client) = self.aquarius_client.take() {
+            aquarius_client.shutdown();
+        }
     }
 }
 

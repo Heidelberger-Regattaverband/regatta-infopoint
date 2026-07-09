@@ -1,3 +1,4 @@
+use super::heat::DATE_TIME as HEAT_DATE_TIME;
 use crate::{error::DbError, tiberius::TiberiusPool};
 use ::chrono::{DateTime, NaiveDateTime, Utc};
 use ::serde::Serialize;
@@ -27,11 +28,11 @@ impl Block {
     /// # Errors
     /// Returns an error if the query fails or if there are issues with the database connection.
     pub async fn query_blocks(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
-        let mut query = Query::new(
-            "SELECT c.Comp_DateTime FROM Comp c
-            WHERE c.Comp_Event_ID_FK = @P1 AND c.Comp_DateTime IS NOT NULL
-            ORDER BY c.Comp_DateTime ASC",
-        );
+        let mut query = Query::new(format!(
+            "SELECT c.{HEAT_DATE_TIME} FROM Comp c
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.{HEAT_DATE_TIME} IS NOT NULL
+            ORDER BY c.{HEAT_DATE_TIME} ASC",
+        ));
         query.bind(regatta_id);
 
         let mut client = pool.get().await?;

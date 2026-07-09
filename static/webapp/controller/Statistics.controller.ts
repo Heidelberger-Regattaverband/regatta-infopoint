@@ -67,6 +67,7 @@ export default class StatisticsController extends BaseController {
 
     if (statistics?.races) {
       all.push({ name: this.i18n("common.overall"), value: statistics.races.all, group: "3" },
+        { name: this.i18n("statistics.races.driven"), value: statistics.races.driven, group: "3" },
         { name: this.i18n("common.cancelled"), value: statistics.races.cancelled, group: "3" });
     }
 

@@ -6,8 +6,10 @@ use super::Referee;
 use super::TryToEntity;
 use super::age_class::ID as AGE_CLASS_ID;
 use super::boat_class::ID as BOAT_CLASS_ID;
+use super::entry::ID as ENTRY_ID;
 use super::get_row;
 use super::get_rows;
+use super::race::ID as RACE_ID;
 use crate::{
     error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
@@ -18,15 +20,15 @@ use ::serde::Serialize;
 use ::tiberius::{Query, Row};
 use ::utoipa::ToSchema;
 
-const ID: &str = "Comp_ID";
+pub(super) const ID: &str = "Comp_ID";
 const NUMBER: &str = "Comp_Number";
-const ROUND_CODE: &str = "Comp_RoundCode";
+pub(super) const ROUND_CODE: &str = "Comp_RoundCode";
 const LABEL: &str = "Comp_Label";
 const GROUP_VALUE: &str = "Comp_GroupValue";
-const STATE: &str = "Comp_State";
-const CANCELLED: &str = "Comp_Cancelled";
-const DATE_TIME: &str = "Comp_DateTime";
-const ROUND: &str = "Comp_Round";
+pub(super) const STATE: &str = "Comp_State";
+pub(super) const CANCELLED: &str = "Comp_Cancelled";
+pub(super) const DATE_TIME: &str = "Comp_DateTime";
+pub(super) const ROUND: &str = "Comp_Round";
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -124,7 +126,7 @@ impl Heat {
     pub async fn query_heats_of_regatta(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2}, {3} FROM Comp c
-            JOIN Offer     o ON o.Offer_ID              = c.Comp_Race_ID_FK
+            JOIN Offer     o ON o.{RACE_ID}             = c.Comp_Race_ID_FK
             JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
             WHERE c.Comp_Event_ID_FK = @P1 AND c.{DATE_TIME} IS NOT NULL
@@ -175,9 +177,9 @@ impl Heat {
     pub(crate) async fn query_heats_of_entry(entry_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0} FROM Comp c
-            JOIN CompEntries ce ON c.{ID}  = ce.CE_Comp_ID_FK
-            JOIN Entry        e ON e.Entry_ID = ce.CE_Entry_ID_FK
-            WHERE e.Entry_ID = @P1
+            JOIN CompEntries ce ON c.{ID}       = ce.CE_Comp_ID_FK
+            JOIN Entry        e ON e.{ENTRY_ID} = ce.CE_Entry_ID_FK
+            WHERE e.{ENTRY_ID} = @P1
             ORDER BY c.{ROUND} ASC",
             Heat::select_columns("c")
         );
@@ -197,7 +199,7 @@ impl Heat {
     pub async fn query_single(heat_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2}, {3} FROM Comp c
-            JOIN Offer o     ON o.Offer_ID              = c.Comp_Race_ID_FK
+            JOIN Offer o     ON o.{RACE_ID}             = c.Comp_Race_ID_FK
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
             WHERE {ID} = @P1",

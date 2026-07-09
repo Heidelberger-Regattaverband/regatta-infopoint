@@ -11,7 +11,7 @@ sudo -i
 Install required packages:
 ```bash
 apt-get update && apt-get upgrade
-apt-get install certbot git docker.io docker-compose-v2 htop deborphan sshpass
+apt-get install certbot git docker.io docker-compose-v2 htop sshpass
 ```
 
 Request letsencrypt certificates for all hostnames:
@@ -89,7 +89,7 @@ docker compose up -d && docker logs watchtower -f
 ## Add MS-SQL User
 Add a new mssql user:
 ```bash
-adduser mssql -u 10001
+adduser mssql -u 10001 --disabled-login
 ```
 
 ## Enable password-less ssh login

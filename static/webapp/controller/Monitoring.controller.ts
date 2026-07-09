@@ -50,7 +50,8 @@ export default class MonitoringController extends BaseController {
     }
 
     if (monitoring?.db?.caches) {
-      all.push({ name: this.i18n("monitoring.caches.hits"), value: monitoring.db.caches.hits, group: "2" },
+      all.push({ name: this.i18n("monitoring.caches.accesses"), value: monitoring.db.caches.accesses, group: "2" },
+        { name: this.i18n("monitoring.caches.hits"), value: monitoring.db.caches.hits, group: "2" },
         { name: this.i18n("monitoring.caches.misses"), value: monitoring.db.caches.misses, group: "2" },
         { name: this.i18n("monitoring.caches.entries"), value: monitoring.db.caches.entries, group: "2" },
         { name: this.i18n("monitoring.caches.hitRate"), value: this.nicePercent(monitoring.db.caches.hitRate), group: "2" });
