@@ -72,3 +72,6 @@ Content-Type: application/json
 POST {{baseUrl}}/api/logout HTTP/1.1
 ###
 GET {{baseUrl}}/api/identity HTTP/1.1
+
+###
+GET {{baseUrl}}/api/regattas/{{activeRegatta}}/races/club-conflicts HTTP/1.1
