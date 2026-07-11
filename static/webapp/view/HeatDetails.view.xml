@@ -113,9 +113,9 @@
                     </VBox>
 
                     <VBox>
-                      <Text class="cancelled" visible="{=${heatEntries>entry/cancelled}}"
+                      <Text visible="{=${heatEntries>entry/cancelled}}" class="boldCancelled"
                         text="{parts:[{path:'heat>/race/groupMode'},{path:'heatEntries>entry'}],formatter:'.formatter.boatLabel'}" />
-                      <Text visible="{=!${heatEntries>entry/cancelled}}"
+                      <Text visible="{=!${heatEntries>entry/cancelled}}" class="bold"
                         text="{parts:[{path:'heat>/race/groupMode'},{path:'heatEntries>entry'}],formatter:'.formatter.boatLabel'}" />
 
                       <Text text="{path:'heatEntries>entry/crew',formatter:'.formatter.crewLabel'}"

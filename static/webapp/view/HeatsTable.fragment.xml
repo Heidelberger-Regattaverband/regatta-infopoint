@@ -76,9 +76,9 @@
 
           <VBox>
             <Text text="{path:'heats>race',formatter:'.formatter.nrRaceLabel'}, {path:'heats>',formatter:'.formatter.heatLabel'}"
-              visible="{=${heats>cancelled}}" class="cancelled" />
+              visible="{=${heats>cancelled}}" class="boldCancelled" />
             <Text text="{path:'heats>race',formatter:'.formatter.nrRaceLabel'}, {path:'heats>',formatter:'.formatter.heatLabel'}"
-              visible="{=!${heats>cancelled}}" />
+              visible="{=!${heats>cancelled}}" class="bold" />
 
             <Text text="{heats>race/longLabel} {heats>race/comment}" visible="{=${heats>cancelled} &amp;&amp; !${device>/system/phone}}"
               class="cancelled" />

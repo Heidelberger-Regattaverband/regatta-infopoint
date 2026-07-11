@@ -92,15 +92,15 @@
                   vAlign="{=${device>/system/phone}?'Top':'Inherit'}" type="{=${raceEntries>/heatsCount}>0?'Navigation':'Inactive'}">
                   <cells>
                     <VBox alignItems="Center">
-                      <Text text="{raceEntries>bib}" visible="{=${raceEntries>cancelled}}" class="cancelled" />
-                      <Text text="{raceEntries>bib}" visible="{=!${raceEntries>cancelled}}" />
+                      <Text text="{raceEntries>bib}" visible="{=${raceEntries>cancelled}}" class="boldCancelled" />
+                      <Text text="{raceEntries>bib}" visible="{=!${raceEntries>cancelled}}" class="bold" />
                     </VBox>
 
                     <VBox>
                       <Text text="{parts:[{path:'race>/groupMode'},{path:'raceEntries>'}],formatter:'.formatter.boatLabel'}"
-                        class="cancelled" visible="{=${raceEntries>cancelled}}" />
+                        visible="{=${raceEntries>cancelled}}" class="boldCancelled" />
                       <Text text="{parts:[{path:'race>/groupMode'},{path:'raceEntries>'}],formatter:'.formatter.boatLabel'}"
-                        visible="{=!${raceEntries>cancelled}}" />
+                        visible="{=!${raceEntries>cancelled}}" class="bold" />
 
                       <Text text="{path:'raceEntries>crew',formatter: '.formatter.crewLabel'}" visible="{= ${raceEntries>cancelled}}"
                         class="cancelled" />

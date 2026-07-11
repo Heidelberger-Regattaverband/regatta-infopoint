@@ -72,13 +72,13 @@
             <ColumnListItem type="Navigation" highlight="{path:'races>',formatter:'.formatter.raceStateHighlight'}">
               <cells>
                 <VBox>
-                  <Text text="{races>number}" visible="{=${races>cancelled}}" class="cancelled" />
-                  <Text text="{races>number}" visible="{=!${races>cancelled}}" />
+                  <Text text="{races>number}" visible="{=${races>cancelled}}" class="boldCancelled" />
+                  <Text text="{races>number}" visible="{=!${races>cancelled}}" class="bold" />
                 </VBox>
 
                 <VBox>
-                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=${races>cancelled}}" class="cancelled" />
-                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=!${races>cancelled}}" />
+                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=${races>cancelled}}" class="boldCancelled" />
+                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=!${races>cancelled}}" class="bold" />
 
                   <Text text="{races>longLabel} {races>comment}" visible="{=${races>cancelled} &amp;&amp; !${device>/system/phone}}"
                     class="cancelled" />
