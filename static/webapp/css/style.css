@@ -13,3 +13,21 @@
 #map {
     height: 100%;
 }
+
+/* ---------- Application-specific classes (from style.css) --------------- */
+.infoportal .bold {
+    font-weight: 700;
+}
+
+.infoportal .cancelled {
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    color: #8b8b8b;
+}
+
+.infoportal .boldCancelled {
+    font-weight: 700;
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    color: #8b8b8b;
+}
