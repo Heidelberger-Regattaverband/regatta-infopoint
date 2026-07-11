@@ -92,8 +92,8 @@
                   vAlign="{=${device>/system/phone}?'Top':'Inherit'}" type="{=${raceEntries>/heatsCount}>0?'Navigation':'Inactive'}">
                   <cells>
                     <VBox alignItems="Center">
-                      <Text text="{raceEntries>bib}" visible="{=${raceEntries>cancelled}}" class="boldCancelled" />
-                      <Text text="{raceEntries>bib}" visible="{=!${raceEntries>cancelled}}" class="bold" />
+                      <Text text="{raceEntries>bib}" visible="{=${raceEntries>cancelled}}" class="cancelled" />
+                      <Text text="{raceEntries>bib}" visible="{=!${raceEntries>cancelled}}" />
                     </VBox>
 
                     <VBox>
