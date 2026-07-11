@@ -24,22 +24,22 @@
           <columns>
             <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
               <header>
-                <Text text="{i18n>common.rankAbr}" class="bold" wrapping="false" />
+                <Text text="{i18n>common.rankAbr}" wrapping="false" />
               </header>
             </Column>
             <Column hAlign="End" width="5rem" importance="Low" popinDisplay="Inline">
               <header>
-                <Text text="{i18n>common.points}" class="bold" wrapping="false" />
+                <Text text="{i18n>common.points}" wrapping="false" />
               </header>
             </Column>
             <Column hAlign="Begin" width="auto" importance="High" popinDisplay="Inline">
               <header>
-                <Text text="{i18n>common.club}" class="bold" wrapping="false" />
+                <Text text="{i18n>common.club}" wrapping="false" />
               </header>
             </Column>
             <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
               <header>
-                <Text text="{i18n>common.abbreviation}" class="bold" wrapping="false" />
+                <Text text="{i18n>common.abbreviation}" wrapping="false" />
               </header>
             </Column>
           </columns>
