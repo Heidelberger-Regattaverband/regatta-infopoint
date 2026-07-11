@@ -35,6 +35,8 @@ export default class RacesTableController extends BaseTableController {
     super.setViewModel(new JSONModel(), RacesTableController.RACES_MODEL);
     super.getRouter()?.getRoute("races")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadRacesModel(), this);
 
+    super.sortTable("raceNumber", false, "number");
+
     super.getFilters().then((filters) => {
       super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG).then((viewSettingsDialog: ViewSettingsDialog) => {
         if (filters.boatClasses && filters.boatClasses.length > 1) {

@@ -101,7 +101,7 @@
           </VBox>
 
           <ObjectStatus text="{path:'heats>',formatter:'.formatter.heatStateLabel'}" 
-            state="{path:'heats>',formatter:'.formatter.heatStateHighlight'}" />
+            state="{path:'heats>',formatter:'.formatter.heatStateHighlight'}" class="bold" />
         </cells>
       </ColumnListItem>
     </items>
