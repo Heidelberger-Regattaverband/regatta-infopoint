@@ -72,8 +72,8 @@
             <ColumnListItem type="Navigation" highlight="{path:'races>',formatter:'.formatter.raceStateHighlight'}">
               <cells>
                 <VBox>
-                  <Text text="{races>number}" visible="{=${races>cancelled}}" class="boldCancelled" />
-                  <Text text="{races>number}" visible="{=!${races>cancelled}}" class="bold" />
+                  <Text text="{races>number}" visible="{=${races>cancelled}}" class="cancelled" />
+                  <Text text="{races>number}" visible="{=!${races>cancelled}}" />
                 </VBox>
 
                 <VBox>
@@ -101,7 +101,7 @@
                 </VBox>
 
                 <ObjectStatus text="{path:'races>',formatter:'.formatter.raceStateLabel'}"
-                  state="{path:'races>',formatter:'.formatter.raceStateHighlight'}" />
+                  state="{path:'races>',formatter:'.formatter.raceStateHighlight'}" class="bold" />
               </cells>
             </ColumnListItem>
           </items>
