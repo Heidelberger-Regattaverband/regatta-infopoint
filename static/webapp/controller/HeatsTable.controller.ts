@@ -12,6 +12,7 @@ import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
+import { NavigationData } from "../model/types";
 import BaseTableController from "./BaseTable.controller";
 
 /**
@@ -22,12 +23,13 @@ export default class HeatsTableController extends BaseTableController {
   private static readonly FILTER_DIALOG: string = "de.regatta_hd.infoportal.view.HeatsFilterDialog";
   private static readonly SORT_DIALOG: string = "de.regatta_hd.infoportal.view.HeatsSortDialog";
   static readonly HEAT_MODEL: string = "heat";
+  static readonly HEAT_NAV_MODEL: string = "heatNav";
   private static readonly HEATS_MODEL: string = "heats";
 
   readonly formatter: Formatter = Formatter;
 
   onInit(): void {
-    super.init(super.getView()?.byId("heatsTable") as Table, "heat" /* eventBus channel */);
+    super.init(super.getView()?.byId("heatsTable") as Table, "heat" /* eventBus channel */, HeatsTableController.HEAT_NAV_MODEL);
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(new JSONModel(), HeatsTableController.HEATS_MODEL);
@@ -96,7 +98,7 @@ export default class HeatsTableController extends BaseTableController {
     });
   }
 
-  onSelectionChange(event: ListBase$SelectionChangeEvent): void {
+  onItemPress(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
       const bindingCtx: Context | null | undefined = selectedItem.getBindingContext("heats");
@@ -104,8 +106,8 @@ export default class HeatsTableController extends BaseTableController {
 
       const index: number = this.table.indexOfItem(selectedItem);
       const count = this.table.getItems().length;
-      // store navigation meta information in selected item
-      heat._nav = { isFirst: index === 0, isLast: index === count - 1 };
+      const navData: NavigationData = { isFirst: index === 0, isLast: index === count - 1, disabled: false, back: undefined };
+      super.updateNavModel(navData);
 
       this.onItemChanged(heat);
       super.navToHeatDetails(heat.id);

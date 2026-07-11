@@ -1,9 +1,13 @@
 import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import Device from "sap/ui/Device";
+import IconPool from "sap/ui/core/IconPool";
 import UIComponent from "sap/ui/core/UIComponent";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ResourceModel from "sap/ui/model/resource/ResourceModel";
+import HeatsTableController from "./controller/HeatsTable.controller";
+import RacesTableController from "./controller/RacesTable.controller";
 import Formatter from "./model/Formatter";
+import { NavigationData } from "./model/types";
 
 /**
  * @namespace de.regatta_hd.infoportal
@@ -15,8 +19,6 @@ export default class Component extends UIComponent {
     private contentDensityClass: string;
     private resourceBundle: ResourceBundle;
 
-    private regattaModel?: JSONModel;
-    private filtersModel?: JSONModel;
     private readonly notificationsModel: JSONModel = new JSONModel();
     // Memoised promises ensure concurrent callers share a single in-flight request and the cached model thereafter
     private regattaModelPromise?: Promise<JSONModel>;
@@ -40,11 +42,10 @@ export default class Component extends UIComponent {
     async getActiveRegatta(): Promise<JSONModel> {
         this.regattaModelPromise ??= this.loadActiveRegatta().catch((err: unknown) => {
             // Reset the cache so the next caller can retry with a fresh request.
-            delete this.regattaModelPromise;
+            this.regattaModelPromise = undefined;
             throw err;
         });
-        this.regattaModel = await this.regattaModelPromise;
-        return this.regattaModel;
+        return await this.regattaModelPromise;
     }
 
     /**
@@ -55,11 +56,10 @@ export default class Component extends UIComponent {
     async getFilters(): Promise<JSONModel> {
         this.filtersModelPromise ??= this.loadFilters().catch((err: unknown) => {
             // Reset the cache so the next caller can retry with a fresh request.
-            delete this.filtersModelPromise;
+            this.filtersModelPromise = undefined;
             throw err;
         });
-        this.filtersModel = await this.filtersModelPromise;
-        return this.filtersModel;
+        return await this.filtersModelPromise;
     }
 
     /**
@@ -70,20 +70,53 @@ export default class Component extends UIComponent {
     init(): void {
         super.init();
 
-        // 1. Set the static, synchronous models first so any view that renders
-        //    immediately after router.initialize() finds them in place.
+        // 1. Register all synchronous, view-bindable models *before* the router
+        //    starts. The router's `initialize()` triggers route matching, which
+        //    instantiates the matched view and its controller; that view may
+        //    bind against any of these models on its first render.
         super.setModel(new JSONModel(Device).setDefaultBindingMode("OneWay"), "device");
 
         const identityModel: JSONModel = new JSONModel({ authenticated: false, username: "anonymous", roles: [] }).setDefaultBindingMode("OneWay");
         super.setModel(identityModel, "identity");
 
         // initial heat / race models, required for navigation over heats and races
-        super.setModel(new JSONModel(), "heat");
-        super.setModel(new JSONModel(), "race");
+        super.setModel(new JSONModel(), HeatsTableController.HEAT_MODEL);
+        super.setModel(new JSONModel(), RacesTableController.RACE_MODEL);
 
-        // 2. Resolve the i18n resource bundle (sync or async, depending on UI5 config),
-        //    cache it and inject it into the Formatter so static formatter methods
-        //    can localise without performing a second (synchronous!) bundle load.
+        // Dedicated navigation-state models for the race/heat detail views.
+        // The state ({@link NavigationData}) is intentionally kept *separate*
+        // from the bound data models so that backend payloads are never
+        // mutated with UI metadata.
+        const initialNavigationData: NavigationData = { isFirst: false, isLast: false, disabled: false, back: undefined };
+        super.setModel(new JSONModel({ ...initialNavigationData }), RacesTableController.RACE_NAV_MODEL);
+        super.setModel(new JSONModel({ ...initialNavigationData }), HeatsTableController.HEAT_NAV_MODEL);
+
+        // Register an (initially empty) notifications model upfront so any view
+        // that binds against `notifications>` finds it in place even before the
+        // initial fetch completes. `loadNotifications` mutates this same
+        // instance in-place, so no later `setModel` call is required.
+        super.setModel(this.notificationsModel, "notifications");
+
+        // 2. Initialize the router as early as possible — *immediately* after
+        //    all view-bindable models are registered. This is the earliest
+        //    correct point: the static models above are needed by the first
+        //    matched view, while everything below (icon-font registration,
+        //    i18n bundle resolution, the `beforeunload` listener, and the async
+        //    backend fetches in `bootstrap()`) is independent of routing and
+        //    can run concurrently with — or after — the first paint.
+        super.getRouter().initialize();
+
+        // 3. Side-effects that do not need to precede the first route match.
+
+        // Register the SAP TNT icon font once, at component start-up.
+        Component.registerIconFonts();
+
+        // Resolve the i18n resource bundle (sync or async, depending on UI5
+        // config), cache it and inject it into the Formatter so static
+        // formatter methods can localise without performing a second
+        // (synchronous!) bundle load. Until the bundle is available, the
+        // Formatter falls back to returning the i18n key — matching the
+        // behaviour of UI5's `{i18n>...}` bindings before bundle resolution.
         const bundle: ResourceBundle | Promise<ResourceBundle> = (super.getModel("i18n") as ResourceModel).getResourceBundle();
         if (bundle instanceof ResourceBundle) {
             this.resourceBundle = bundle;
@@ -102,21 +135,22 @@ export default class Component extends UIComponent {
             event.preventDefault();
         });
 
-        // 3. Bootstrap async data, then initialize the router. We deliberately
-        //    do NOT await this in `init()` (which is `void`), but we collect the
-        //    initialization promise so consumers (and tests) could observe it.
+        // 4. Bootstrap async data in the background. Errors are logged but
+        //    cannot block the navigable shell from rendering.
         void this.bootstrap();
     }
 
     /**
-     * Performs the asynchronous component bootstrap:
-     * 1. loads regatta + filters in parallel,
+     * Performs the asynchronous component bootstrap (runs in the background
+     * after the router is already initialized):
+     * 1. loads regatta + filters in parallel and registers them as
+     *    component-scoped models,
      * 2. loads the initial notifications,
-     * 3. starts the notifications polling timer,
-     * 4. initializes the router.
+     * 3. starts the notifications polling timer.
      *
-     * Errors at any step are logged but do not prevent the router from starting,
-     * so the user always gets a navigable shell.
+     * Errors at any step are logged. The router is **not** started here — it
+     * was already initialized synchronously by {@link init}, so the user gets
+     * a navigable shell regardless of backend availability.
      */
     private async bootstrap(): Promise<void> {
         try {
@@ -126,24 +160,20 @@ export default class Component extends UIComponent {
             ]);
             super.setModel(regattaModel, "regatta");
             super.setModel(filtersModel, "filters");
-
-            try {
-                const notificationsModel: JSONModel = await this.loadNotifications();
-                super.setModel(notificationsModel, "notifications");
-            } catch (err: unknown) {
-                console.error("Failed to load initial notifications", err as Error);
-                // Still register the model so views can bind without errors.
-                super.setModel(this.notificationsModel, "notifications");
-            }
-
-            this.startNotificationsPolling();
         } catch (err: unknown) {
-            console.error("Component bootstrap failed", err as Error);
-        } finally {
-            // Always initialize the router so the app remains navigable
-            // even if data calls failed.
-            super.getRouter().initialize();
+            console.error("Failed to load regatta/filters during bootstrap", err as Error);
+            // Continue — notifications and polling still need to be attempted.
         }
+
+        try {
+            await this.loadNotifications();
+            // `notificationsModel` is the same instance already registered in
+            // `init`, so no further `setModel` call is necessary.
+        } catch (err: unknown) {
+            console.error("Failed to load initial notifications", err as Error);
+        }
+
+        this.startNotificationsPolling();
     }
 
     /**
@@ -206,24 +236,52 @@ export default class Component extends UIComponent {
 
     /**
      * Loads the filters into a JSONModel for the active regatta from the server and returns it as a Promise.
+     *
+     * Reads the regatta id from the resolved JSONModel directly rather than
+     * from the side-channel `this.regattaModel` field, so the call cannot
+     * silently fall through to `/api/regattas/-1/filters` if the field
+     * assignment in {@link getActiveRegatta} is ever decoupled from the
+     * promise resolution.
+     *
      * @returns {Promise<sap.ui.model.json.JSONModel>} the filters model as a Promise
      */
     private async loadFilters(): Promise<JSONModel> {
-        await this.getActiveRegatta();
+        const regattaModel: JSONModel = await this.getActiveRegatta();
         console.debug("Loading filters");
-        const model: JSONModel = new JSONModel();
-        const regattaId = this.regattaModel?.getData().id ?? -1;
-        await model.loadData(`/api/regattas/${regattaId}/filters`);
+        const filtersModel: JSONModel = new JSONModel();
+        const regattaId = regattaModel.getData().id;
+        await filtersModel.loadData(`/api/regattas/${regattaId}/filters`);
         console.debug("Filters loaded");
-        return model
+        return filtersModel;
     }
 
+    /**
+     * Loads the visible notifications for the active regatta into the shared
+     * `notificationsModel`. Awaits {@link getActiveRegatta} explicitly and
+     * reads the regatta id from the resolved model — *not* from the
+     * `this.regattaModel` side-channel — so the URL is well-defined even when
+     * called before {@link bootstrap} has run.
+     */
     private async loadNotifications(): Promise<JSONModel> {
+        const regattaModel: JSONModel = await this.getActiveRegatta();
         console.debug("Loading notifications");
-        const regattaId = this.regattaModel?.getData().id ?? -1;
+        const regattaId = regattaModel.getData().id;
         await this.notificationsModel.loadData(`/api/regattas/${regattaId}/visible_notifications`);
         this.notificationsModel.refresh();
         console.debug("Notifications loaded");
         return this.notificationsModel;
+    }
+
+    /**
+     * Registers icon fonts used by the application. `IconPool.registerFont` is
+     * idempotent, but calling it once at component start-up — instead of in
+     * every controller's `onInit` — is cheaper and keeps the side-effect in a
+     * single, discoverable place.
+     */
+    private static registerIconFonts(): void {
+        IconPool.registerFont({
+            fontFamily: "SAP-icons-TNT",
+            fontURI: sap.ui.require.toUrl("sap/tnt/themes/base/fonts/"),
+        });
     }
 }

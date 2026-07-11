@@ -89,25 +89,21 @@ impl Connection {
         let mut buf = Vec::new();
         loop {
             // Read until a newline character is found and blocks until data is available.
-            match self.reader.read_until(b'\n', &mut buf) {
-                Ok(count) => {
-                    if count == 0 {
-                        // If no data is read, the connection is closed.
-                        return Err(io::Error::new(ErrorKind::UnexpectedEof, "Connection closed"));
-                    } else {
-                        // Decode the buffer to a string. Aquarius uses Windows-1252 encoding.
-                        let line = WINDOWS_1252.decode(&buf).0;
-                        trace!(line = utils::print_whitespaces(&line), count, "Received line:");
-                        // If the line is empty, break the loop. Aquarius sends \r\n at the end of the message.
-                        if count <= 2 {
-                            break;
-                        }
-                        // Append the line to the result string.
-                        result.push_str(&line);
-                        buf.clear();
-                    }
+            let count = self.reader.read_until(b'\n', &mut buf)?;
+            if count == 0 {
+                // If no data is read, the connection is closed.
+                return Err(io::Error::new(ErrorKind::UnexpectedEof, "Connection closed"));
+            } else {
+                // Decode the buffer to a string. Aquarius uses Windows-1252 encoding.
+                let line = WINDOWS_1252.decode(&buf).0;
+                trace!(line = utils::print_whitespaces(&line), count, "Received line:");
+                // If the line is empty, break the loop. Aquarius sends \r\n at the end of the message.
+                if count <= 2 {
+                    break;
                 }
-                Err(err) => return Err(err),
+                // Append the line to the result string.
+                result.push_str(&line);
+                buf.clear();
             }
         }
         trace!(

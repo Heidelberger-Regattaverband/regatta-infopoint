@@ -14,6 +14,7 @@ import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import ListBinding from "sap/ui/model/ListBinding";
 import Sorter from "sap/ui/model/Sorter";
+import { NavigationData } from "../model/types";
 import BaseController from "./Base.controller";
 
 /**
@@ -21,19 +22,34 @@ import BaseController from "./Base.controller";
  */
 export default abstract class BaseTableController extends BaseController {
 
+  /**
+   * Memoises in-flight {@link Fragment.load} promises per fragment name so that
+   * concurrent callers of {@link getViewSettingsDialog} share the same load and
+   * do not each create a duplicate dialog. Per-instance for the same lifetime
+   * reasons as {@link viewSettingsDialogs}.
+   */
+  private readonly viewSettingsDialogPromises: Map<string, Promise<ViewSettingsDialog>> = new Map<string, Promise<ViewSettingsDialog>>();
+
   protected table: Table;
   private filters: Filter[] = [];
   private searchFilters: Filter[] = [];
   private bindingModel: string;
-  private readonly viewSettingsDialogs: Map<string, ViewSettingsDialog> = new Map<string, ViewSettingsDialog>();
   /**
    * Identifier of the event-bus channel this controller subscribed to in {@link init}.
    * Stored so {@link onExit} can unsubscribe symmetrically and avoid memory leaks
    * across view destroy/recreate cycles.
    */
   private channelId?: string;
+  /**
+   * Name of the component-level navigation `JSONModel` ({@code raceNav} / {@code heatNav})
+   * that {@link setCurrentItem} updates with `{ isFirst, isLast }`. Keeping the
+   * navigation state in a dedicated model — rather than mutating the bound data
+   * objects with a {@code _nav} property — avoids leaking UI metadata into the
+   * backend payload.
+   */
+  private navModelName?: string;
 
-  init(table: Table, channelId?: string): void {
+  init(table: Table, channelId?: string, navModelName?: string): void {
     this.table = table;
 
     // return the path of the model that is bound to the items, e.g. races or heats
@@ -47,6 +63,8 @@ export default abstract class BaseTableController extends BaseController {
       bus?.subscribe(channelId, "next", this.onNextItemEvent, this);
       bus?.subscribe(channelId, "last", this.onLastItemEvent, this);
     }
+
+    this.navModelName = navModelName;
   }
 
   /**
@@ -102,15 +120,25 @@ export default abstract class BaseTableController extends BaseController {
   }
 
   async getViewSettingsDialog(dialogFragmentName: string): Promise<ViewSettingsDialog> {
-    let dialog: ViewSettingsDialog = this.viewSettingsDialogs.get(dialogFragmentName)!;
-
-    if (!dialog) {
-      dialog = await Fragment.load({ id: this.getView()?.getId(), name: dialogFragmentName, controller: this }) as ViewSettingsDialog;
-      dialog.addStyleClass(super.getContentDensityClass());
-      this.getView()?.addDependent(dialog);
-      this.viewSettingsDialogs.set(dialogFragmentName, dialog);
+    // Memoise the in-flight load so concurrent callers share the same promise
+    // instead of each kicking off a duplicate Fragment.load.
+    let pending: Promise<ViewSettingsDialog> | undefined = this.viewSettingsDialogPromises.get(dialogFragmentName);
+    if (!pending) {
+      pending = Fragment.load({ id: this.getView()?.getId(), name: dialogFragmentName, controller: this })
+        .then((loaded) => {
+          const dialog: ViewSettingsDialog = loaded as ViewSettingsDialog;
+          dialog.addStyleClass(super.getContentDensityClass());
+          this.getView()?.addDependent(dialog);
+          return dialog;
+        })
+        .catch((error: any) => {
+          // Drop the rejected promise so a future call can retry the load.
+          this.viewSettingsDialogPromises.delete(dialogFragmentName);
+          throw error;
+        });
+      this.viewSettingsDialogPromises.set(dialogFragmentName, pending);
     }
-    return dialog;
+    return pending;
   }
 
   onHandleFilterDialogConfirm(event: ViewSettingsDialog$ConfirmEvent): void {
@@ -204,10 +232,23 @@ export default abstract class BaseTableController extends BaseController {
     // gets the selected item in a generic way
     const item: any = this.table.getSelectedItem()?.getBindingContext(this.bindingModel)?.getObject();
 
-    // store navigation meta information in selected item
-    item._nav = { isFirst: index === 0, isLast: index === items.length - 1 };
+    // Store navigation meta-information in the dedicated nav model,
+    // not on the data object. The disabled/back fields are reset because navigating
+    // through the table always re-enables the nav buttons in the detail view.
+    this.updateNavModel({ isFirst: index === 0, isLast: index === items.length - 1, disabled: false, back: undefined });
 
     this.onItemChanged(item);
+  }
+
+  /**
+   * Writes the navigation state to the configured nav `JSONModel` (e.g. {@code raceNav}
+   * or {@code heatNav}). No-op when no nav model name was passed to {@link init}.
+   */
+  protected updateNavModel(state: NavigationData): void {
+    if (!this.navModelName) {
+      return;
+    }
+    super.getComponentJSONModel(this.navModelName).setData(state);
   }
 
   abstract onItemChanged(item: any): void;

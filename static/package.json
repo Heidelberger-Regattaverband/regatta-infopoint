@@ -12,14 +12,18 @@
     "leaflet": "^1.9.4"
   },
   "devDependencies": {
-    "@openui5/types": "^1.148.0",
+    "@openui5/types": "^1.150.0",
     "@types/leaflet": "^1.9.21",
-    "@ui5/cli": "^4.0.55",
-    "@ui5/linter": "^1.21.2",
+    "@ui5/cli": "^4.0.57",
+    "@ui5/linter": "^1.23.1",
     "typescript": "^6.0.3",
-    "ui5-tooling-modules": "^3.37.1",
-    "ui5-tooling-transpile": "^3.11.2",
+    "ui5-tooling-modules": "^3.37.7",
+    "ui5-tooling-transpile": "^3.11.3",
     "watch": "^1.0.2"
   },
-  "private": true
+  "private": true,
+  "allowScripts": {
+    "ui5-tooling-modules@3.37.7": true,
+    "ui5-tooling-transpile@3.11.3": true
+  }
 }
