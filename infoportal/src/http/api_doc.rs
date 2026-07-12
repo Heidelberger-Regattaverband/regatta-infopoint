@@ -13,6 +13,7 @@ use ::utoipa_swagger_ui::SwaggerUi;
         rest_api::get_active_regatta,
         rest_api::race::get_races,
         rest_api::race::get_race,
+        rest_api::race::get_club_conflict_races,
         rest_api::get_heats,
         rest_api::get_heat,
         rest_api::club::get_participating_clubs,
