@@ -25,7 +25,7 @@
                   <Title text="{path:'raceEntries>/',formatter:'.formatter.nrRaceLabel'}" wrapping="true" />
                   <Label text="{raceEntries>/longLabel} {raceEntries>/comment}" />
                   <ObjectStatus title="{i18n>common.state}" text="{path:'raceEntries>/',formatter:'.formatter.raceStateLabel'}"
-                    state="{path:'raceEntries>/',formatter:'.formatter.raceStateHighlight'}" />
+                    state="{path:'raceEntries>/',formatter:'.formatter.raceStateHighlight'}" class="bold" />
                 </VBox>
               </f:expandedHeading>
               <f:snappedHeading>
