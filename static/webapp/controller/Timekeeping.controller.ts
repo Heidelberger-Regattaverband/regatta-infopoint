@@ -111,6 +111,10 @@ export default class TimekeepingController extends BaseTableController {
     }
   }
 
+  onLoadBibs(event: ComboBoxBase$LoadItemsEvent): void {
+    // TODO: Implement loading bibs for timestrip item
+  }
+
   onHeatChange(event: ComboBox$ChangeEvent): void {
     const heatNr: string = event.getParameter("value") || "";
     const bindingCtx: Context | null | undefined = event.getSource().getBindingContext(TimekeepingController.TIMESTRIP_MODEL);
