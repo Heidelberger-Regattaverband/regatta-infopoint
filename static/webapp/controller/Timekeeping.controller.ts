@@ -111,6 +111,10 @@ export default class TimekeepingController extends BaseTableController {
     }
   }
 
+  onLoadBibs(event: ComboBoxBase$LoadItemsEvent): void {
+    // TODO: Implement loading bibs for timestrip item
+  }
+
   onHeatChange(event: ComboBox$ChangeEvent): void {
     const heatNr: string = event.getParameter("value") || "";
     const bindingCtx: Context | null | undefined = event.getSource().getBindingContext(TimekeepingController.TIMESTRIP_MODEL);
@@ -119,6 +123,18 @@ export default class TimekeepingController extends BaseTableController {
       if (timestamp) {
         timestamp.heat_nr = heatNr;
         this.sendCommand({ UpdateTimestamp: { time: timestamp.time, heat_nr: Number.parseInt(heatNr, 10) } });
+      }
+    }
+  }
+
+  onBibChange(event: ComboBox$ChangeEvent): void {
+    const bibNr: string = event.getParameter("value") || "";
+    const bindingCtx: Context | null | undefined = event.getSource().getBindingContext(TimekeepingController.TIMESTRIP_MODEL);
+    if (bindingCtx) {
+      const timestamp: any = bindingCtx.getModel().getProperty(bindingCtx.getPath());
+      if (timestamp) {
+        timestamp.bib_nr = bibNr;
+        this.sendCommand({ UpdateTimestamp: { time: timestamp.time, bib_nr: Number.parseInt(bibNr, 10) } });
       }
     }
   }

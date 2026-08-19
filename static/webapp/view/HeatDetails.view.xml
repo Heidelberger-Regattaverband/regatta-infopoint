@@ -24,7 +24,7 @@
                     text="{path:'heatEntries>/race',formatter:'.formatter.nrRaceLabel'}, {path:'heatEntries>/',formatter:'.formatter.heatLabel'}" />
                   <Label text="{heatEntries>/race/longLabel} {heatEntries>/race/comment}" />
                   <ObjectStatus title="{i18n>common.state}" text="{path:'heatEntries>/',formatter:'.formatter.heatStateLabel'}"
-                    state="{path:'heatEntries>/',formatter:'.formatter.heatStateHighlight'}" />
+                    state="{path:'heatEntries>/',formatter:'.formatter.heatStateHighlight'}" class="bold" />
                 </VBox>
               </f:expandedHeading>
               <f:snappedHeading>

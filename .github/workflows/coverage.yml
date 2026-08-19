@@ -36,7 +36,7 @@ jobs:
           toolchain: stable
 
       - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@v2
+        uses: taiki-e/install-action@v2.85.13
         with:
           tool: cargo-llvm-cov
 
