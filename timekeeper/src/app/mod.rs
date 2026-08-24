@@ -68,7 +68,7 @@ impl App<'_> {
         let args = Args::parse();
 
         let db_config = Self::get_db_config(&args);
-        let pool = Arc::new(TiberiusPool::new(db_config, 1, 1).await);
+        let pool = Arc::new(TiberiusPool::new(db_config, 1, 1).await?);
         let timestrip = TimeStrip::load(pool.clone()).await?;
 
         let (aquarius_event_sender, aquarius_event_receiver) = mpsc::channel();

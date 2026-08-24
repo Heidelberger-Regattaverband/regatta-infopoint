@@ -47,7 +47,7 @@ impl UserPoolManager {
         let mut config = self.config.clone();
         config.authentication(AuthMethod::sql_server(username, password));
 
-        let pool = Arc::new(TiberiusPool::new(config, 5, 1).await);
+        let pool = Arc::new(TiberiusPool::new(config, 5, 1).await?);
         pools.insert(username.to_string(), pool.clone());
         Ok(pool)
     }
