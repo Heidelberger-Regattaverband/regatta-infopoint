@@ -35,6 +35,10 @@ impl TiberiusPool {
     /// * `config` - The configuration for the Tiberius connection manager.
     /// * `max_size` - The maximum size of the pool.
     /// * `min_idle` - The minimum number of idle connections in the pool.
+    ///
+    /// # Panics
+    /// Panics if the pool cannot be created (e.g., the database is unreachable at startup)
+    /// or if the global pool has already been set.
     pub async fn init(config: Config, max_size: u32, min_idle: u32) {
         if POOL.get().is_none() {
             let init_mutex = POOL_INITIALIZED.get_or_init(|| Mutex::new(false));
@@ -55,8 +59,10 @@ impl TiberiusPool {
     /// * `config` - The configuration for the Tiberius connection manager.
     /// * `max_size` - The maximum size of the pool.
     /// * `min_idle` - The minimum number of idle connections in the pool.
-    /// # Returns
-    /// A new instance of `TiberiusPool`.
+    ///
+    /// # Errors
+    /// Returns [`DbError::Tiberius`] if the pool cannot be built, e.g. due to invalid
+    /// credentials or an unreachable database host.
     pub async fn new(config: Config, max_size: u32, min_idle: u32) -> Result<Self, DbError> {
         let manager = TiberiusConnectionManager::new(config);
         let inner = Pool::builder()

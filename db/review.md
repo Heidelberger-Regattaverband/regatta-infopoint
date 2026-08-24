@@ -126,13 +126,9 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 
 ## New Issues (2026-08-24)
 
-### N1. `TiberiusPool::new` panics inside `UserPoolManager::create_pool` — **HIGH**
+### N1. ~~`TiberiusPool::new` panics inside `UserPoolManager::create_pool`~~ — **FIXED** ✅
 
-**File:** `db/src/tiberius/pool.rs`, line 66; `db/src/tiberius/user_pool.rs`, line 50
-
-`TiberiusPool::new` is `async fn` returning `Self` (not `Result`). It calls `.expect("Failed to create Tiberius connection pool")` on `bb8::PoolBuilder::build()`, which eagerly creates idle connections. If the user-supplied credentials are wrong or the DB is unreachable, `build()` returns `Err` and `.expect()` panics inside the request handler path (`UserPoolManager::create_pool`), crashing the request task instead of returning a proper 401/503.
-
-**Suggested fix:** Change `TiberiusPool::new` to return `Result<Self, DbError>` and propagate via `?`. Update `UserPoolManager::create_pool` to return `Result<Arc<TiberiusPool>, DbError>`.
+`TiberiusPool::new` now returns `Result<Self, DbError>`. Startup (`TiberiusPool::init`) still panics with a clear message via `.expect(...)`. `UserPoolManager::create_pool` and `timekeeper/src/app/mod.rs` both propagate the error with `?`.
 
 ---
 
