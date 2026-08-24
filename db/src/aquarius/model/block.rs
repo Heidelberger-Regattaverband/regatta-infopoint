@@ -1,8 +1,12 @@
+use super::get_rows;
 use super::heat::DATE_TIME as HEAT_DATE_TIME;
-use crate::{error::DbError, tiberius::TiberiusPool};
-use ::chrono::{DateTime, NaiveDateTime, Utc};
+use crate::{
+    error::DbError,
+    tiberius::{TiberiusPool, TryRowColumn},
+};
+use ::chrono::{DateTime, Utc};
 use ::serde::Serialize;
-use ::tiberius::Query;
+use ::tiberius::{Query, Row};
 use ::utoipa::ToSchema;
 
 /// A block of heats.
@@ -37,26 +41,28 @@ impl Block {
 
         let mut client = pool.get().await?;
         let stream = query.query(&mut client).await?;
-        let rows = stream.into_first_result().await?;
+        let rows = get_rows(stream).await?;
 
         let mut blocks = Vec::new();
         if !rows.is_empty()
-            && let Some(mut start) = rows[0].get::<NaiveDateTime, usize>(0)
+            && let Some(mut start) = <Row as TryRowColumn<DateTime<Utc>>>::try_get_column(&rows[0], HEAT_DATE_TIME)
         {
             let mut end = start;
             let mut heats: i32 = 0;
 
             if rows.len() >= 2 {
                 for i in 0..rows.len() - 1 {
-                    if let Some(current) = rows[i].get::<NaiveDateTime, usize>(0)
-                        && let Some(next) = rows[i + 1].get::<NaiveDateTime, usize>(0)
+                    if let Some(current) =
+                        <Row as TryRowColumn<DateTime<Utc>>>::try_get_column(&rows[i], HEAT_DATE_TIME)
+                        && let Some(next) =
+                            <Row as TryRowColumn<DateTime<Utc>>>::try_get_column(&rows[i + 1], HEAT_DATE_TIME)
                     {
                         heats += 1;
 
                         if next.signed_duration_since(current).num_minutes() > 15 {
                             blocks.push(Block {
-                                begin: start.and_utc(),
-                                end: end.and_utc(),
+                                begin: start,
+                                end,
                                 heats,
                             });
                             start = next;
@@ -67,8 +73,8 @@ impl Block {
                 }
                 heats += 1;
                 blocks.push(Block {
-                    begin: start.and_utc(),
-                    end: end.and_utc(),
+                    begin: start,
+                    end,
                     heats,
                 });
             }

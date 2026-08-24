@@ -74,17 +74,13 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 - **Problem:** The value `64` appears repeatedly as a magic number representing the "final round". While consistent, it lacks documentation and a named constant.
 - **Suggested fix:** Define a named constant (e.g., `const ROUND_FINAL: i16 = 64;`) in the model module and use it throughout.
 
-### 11. `Block::query_blocks` bypasses the `get_rows` helper — **Inconsistency** 📋
+### 11. ~~`Block::query_blocks` bypasses the `get_rows` helper~~ — **FIXED** ✅
 
-- **File:** `db/src/aquarius/model/block.rs`, line 39
-- **Problem:** `Block::query_blocks` uses `stream.into_first_result().await?` directly instead of the `get_rows()` helper function used everywhere else. This is a minor inconsistency in the codebase.
-- **Suggested fix:** Use `get_rows(stream)` for consistency with all other query methods.
+Now uses `get_rows(stream).await?` consistently with all other query methods.
 
-### 12. `Block::query_blocks` uses index-based row access instead of `RowColumn` — **Inconsistency** 📋
+### 12. ~~`Block::query_blocks` uses index-based row access instead of `RowColumn`~~ — **FIXED** ✅
 
-- **File:** `db/src/aquarius/model/block.rs`, lines 43–64
-- **Problem:** Block parsing accesses rows via positional index (`rows[i].get::<NaiveDateTime, usize>(0)`) rather than the `RowColumn` trait used everywhere else. This is fragile — if the column order changes or additional columns are added, the code will silently break.
-- **Suggested fix:** Use `RowColumn::get_column` or `TryRowColumn::try_get_column` with the column name `"Comp_DateTime"`.
+Now uses `<Row as TryRowColumn<DateTime<Utc>>>::try_get_column(&row, DATE_TIME)` with the named column constant. `NaiveDateTime` + `.and_utc()` conversion eliminated.
 
 ### 13. `Regatta::query_active_regatta` returns first regatta, not necessarily "active" — **Semantic** 💡
 
