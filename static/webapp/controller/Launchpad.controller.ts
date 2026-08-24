@@ -13,6 +13,8 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
 
+const NOTIFICATIONS_POLL_INTERVAL_MS = 60_000;
+
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
@@ -20,13 +22,26 @@ export default class LaunchpadController extends BaseController {
 
   readonly formatter: Formatter = Formatter;
   private readonly credentialsModel: JSONModel = new JSONModel({ username: "", password: "" });
+  private readonly notificationsModel: JSONModel = new JSONModel([]);
+  private notificationsTimer?: number;
   private popover?: ResponsivePopover;
   private popoverPromise?: Promise<ResponsivePopover>;
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.credentialsModel, "credentials");
+    super.setViewModel(this.notificationsModel, "notifications");
     this.getIdentity();
+    this.loadNotifications();
+    this.notificationsTimer = globalThis.setInterval(() => {
+      this.loadNotifications();
+    }, NOTIFICATIONS_POLL_INTERVAL_MS);
+  }
+
+  onExit(): void {
+    if (this.notificationsTimer !== undefined) {
+      globalThis.clearInterval(this.notificationsTimer);
+    }
   }
 
   onNavToScoring(): void {
@@ -76,10 +91,26 @@ export default class LaunchpadController extends BaseController {
     $.ajax({
       type: "POST",
       url: `/api/notifications/${notificationId}/read`,
-      success: (result: any) => {
-        // refresh notifications model
-        super.getComponentJSONModel("notifications")?.refresh();
+      success: () => {
+        this.loadNotifications();
       }
+    });
+  }
+
+  private loadNotifications(): void {
+    super.getActiveRegatta().then((regatta: any) => {
+      $.ajax({
+        type: "GET",
+        url: `/api/regattas/${regatta.id}/visible_notifications`,
+        success: (notifications: any[]) => {
+          this.notificationsModel.setData(notifications);
+        },
+        error: (xhr: any) => {
+          Log.error(`Failed to load notifications: ${xhr.status} ${xhr.statusText}`);
+        }
+      });
+    }).catch((err: unknown) => {
+      Log.error("Failed to get active regatta for notifications", err as Error);
     });
   }
 
@@ -119,7 +150,6 @@ export default class LaunchpadController extends BaseController {
         this.popover = popover;
         popover.openBy(eventSource);
       }, (err: unknown) => {
-        // Reset the cached promise so a future click can retry.
         delete this.popoverPromise;
         Log.error("Failed to load login popover fragment", err as Error);
         super.showErrorMessageToast(super.i18n("msg.loginFailed"));
@@ -134,7 +164,6 @@ export default class LaunchpadController extends BaseController {
     $.ajax({
       type: "POST",
       data: JSON.stringify(credentials),
-      url: "/api/login",
       contentType: "application/json",
       success: (result: { username: string, scope: string }) => {
         this.updateIdentity(true, result.username, result.scope);
