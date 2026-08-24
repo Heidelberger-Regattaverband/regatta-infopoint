@@ -63,13 +63,7 @@ impl RowColumn<DateTime<Utc>> for Row {
 impl TryRowColumn<String> for Row {
     fn try_get_column(&self, col_name: &str) -> Option<String> {
         match self.try_get::<&str, _>(col_name) {
-            Ok(Some(value)) => {
-                if value.is_empty() {
-                    None
-                } else {
-                    Some(value.to_string())
-                }
-            }
+            Ok(Some(value)) => Some(value.to_string()),
             _ => None,
         }
     }
