@@ -65,7 +65,7 @@ impl TimeStrip {
             timestamp.update(&mut client).await?;
             return Ok(timestamp.clone());
         }
-        Ok(timestamp.clone())
+        Err(DbError::Custom(format!("Timestamp not found: {:?}", timestamp.time)))
     }
 
     pub async fn set_bib(&mut self, timestamp: &Timestamp, bib: u8) -> Result<Timestamp, DbError> {
@@ -75,7 +75,7 @@ impl TimeStrip {
             timestamp.update(&mut client).await?;
             return Ok(timestamp.clone());
         }
-        Ok(timestamp.clone())
+        Err(DbError::Custom(format!("Timestamp not found: {:?}", timestamp.time)))
     }
 
     pub async fn delete(&mut self, time: &DateTime<Utc>) -> Result<Timestamp, DbError> {

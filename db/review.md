@@ -66,16 +66,11 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 
 ## New Issues (2026-08-24)
 
-### N2. `set_heat_nr` and `set_bib` silently succeed when timestamp is not found — **MEDIUM**
+### N2. `set_heat_nr` and `set_bib` silently succeed when timestamp is not found — **FIXED** ✅
 
-**File:** `db/src/timekeeper/timestrip.rs`, lines 65–83
+**File:** `db/src/timekeeper/timestrip.rs`
 
-When the timestamp is absent from the deque, both methods return `Ok(timestamp.clone())` (the original unmodified input), making the caller believe the update succeeded. `delete()` correctly returns `Err(DbError::Custom("Timestamp not found"))` — `set_heat_nr` and `set_bib` should do the same.
-
-**Suggested fix:**
-```rust
-Err(DbError::Custom(format!("Timestamp not found: {:?}", timestamp.time)))
-```
+**Fix:** Replaced trailing `Ok(timestamp.clone())` in both methods with `Err(DbError::Custom(format!("Timestamp not found: {:?}", timestamp.time)))`, consistent with `delete()`.
 
 ---
 
