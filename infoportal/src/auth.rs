@@ -80,6 +80,7 @@ impl User {
     /// # Returns
     /// * `Ok(User)` - The authenticated user.
     /// * `Err(HttpResponse)` - The error response.
+    #[allow(clippy::result_large_err)]
     pub async fn authenticate(credentials: &Credentials) -> Result<Self, HttpResponse> {
         let username = credentials.username.trim().to_lowercase();
 
