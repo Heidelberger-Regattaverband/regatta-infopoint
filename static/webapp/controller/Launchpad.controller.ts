@@ -13,6 +13,8 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import BaseController from "./Base.controller";
 
+const NOTIFICATIONS_POLL_INTERVAL_MS = 60_000;
+
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
@@ -20,13 +22,27 @@ export default class LaunchpadController extends BaseController {
 
   readonly formatter: Formatter = Formatter;
   private readonly credentialsModel: JSONModel = new JSONModel({ username: "", password: "" });
+  private readonly notificationsModel: JSONModel = new JSONModel([]);
+  private notificationsTimer?: number;
   private popover?: ResponsivePopover;
   private popoverPromise?: Promise<ResponsivePopover>;
 
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.credentialsModel, "credentials");
+    super.setViewModel(this.notificationsModel, "notifications");
     this.getIdentity();
+    void this.loadNotifications();
+    this.notificationsTimer = globalThis.setInterval(() => {
+      void this.loadNotifications();
+    }, NOTIFICATIONS_POLL_INTERVAL_MS);
+  }
+
+  onExit(): void {
+    if (this.notificationsTimer) {
+      globalThis.clearInterval(this.notificationsTimer);
+      delete this.notificationsTimer;
+    }
   }
 
   onNavToScoring(): void {
@@ -76,11 +92,19 @@ export default class LaunchpadController extends BaseController {
     $.ajax({
       type: "POST",
       url: `/api/notifications/${notificationId}/read`,
-      success: (result: any) => {
-        // refresh notifications model
-        super.getComponentJSONModel("notifications")?.refresh();
+      success: () => {
+        void this.loadNotifications();
       }
     });
+  }
+
+  private async loadNotifications(): Promise<void> {
+    try {
+      const regatta = await super.getActiveRegatta();
+      await this.notificationsModel.loadData(`/api/regattas/${regatta.id}/visible_notifications`);
+    } catch (err: unknown) {
+      Log.error("Failed to load notifications", err as Error);
+    }
   }
 
   private performLogin() {
@@ -119,7 +143,6 @@ export default class LaunchpadController extends BaseController {
         this.popover = popover;
         popover.openBy(eventSource);
       }, (err: unknown) => {
-        // Reset the cached promise so a future click can retry.
         delete this.popoverPromise;
         Log.error("Failed to load login popover fragment", err as Error);
         super.showErrorMessageToast(super.i18n("msg.loginFailed"));
@@ -134,7 +157,6 @@ export default class LaunchpadController extends BaseController {
     $.ajax({
       type: "POST",
       data: JSON.stringify(credentials),
-      url: "/api/login",
       contentType: "application/json",
       success: (result: { username: string, scope: string }) => {
         this.updateIdentity(true, result.username, result.scope);
