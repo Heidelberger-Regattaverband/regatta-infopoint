@@ -26,12 +26,6 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 - **Problem:** `join!` is used with `query.query(&mut client)` alongside `Statistics::query_oldest(...)` calls that also acquire their own pool connections. This means 3 connections are held simultaneously for one logical operation.
 - **Suggested fix:** Sequence the main query before the concurrent oldest-athlete queries to release the connection earlier, reducing pool pressure.
 
-### 6. `TimeStrip::add_start` and `add_finish` are nearly identical — **Code Duplication** 📋
-
-- **File:** `db/src/timekeeper/timestrip.rs`, lines 41–63
-- **Problem:** `add_start` and `add_finish` differ only in the `Split` variant passed. This is code duplication.
-- **Suggested fix:** Extract a private `add_timestamp(split: Split, time: Option<DateTime<Utc>>)` method.
-
 ### 9. `get_visible_notifications` hardcodes `force_cache: false` — **Minor** 💡
 
 - **File:** `db/src/aquarius.rs`, line 300
