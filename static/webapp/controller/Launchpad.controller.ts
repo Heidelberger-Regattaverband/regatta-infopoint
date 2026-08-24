@@ -156,6 +156,7 @@ export default class LaunchpadController extends BaseController {
     // see: https://api.jquery.com/jquery.ajax/
     $.ajax({
       type: "POST",
+      url: "/api/login",
       data: JSON.stringify(credentials),
       contentType: "application/json",
       success: (result: { username: string, scope: string }) => {
