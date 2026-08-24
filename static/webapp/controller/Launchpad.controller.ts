@@ -39,8 +39,9 @@ export default class LaunchpadController extends BaseController {
   }
 
   onExit(): void {
-    if (this.notificationsTimer !== undefined) {
+    if (this.notificationsTimer) {
       globalThis.clearInterval(this.notificationsTimer);
+      delete this.notificationsTimer;
     }
   }
 
