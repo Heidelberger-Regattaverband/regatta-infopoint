@@ -1,92 +1,251 @@
 # Code Review: `infoportal` Crate
 
-**Date:** 2026-04-20  
+**Updated:** 2026-08-24 (original: 2026-04-20)
 **Scope:** All source files in `infoportal/src/`
 
 ---
 
-## Summary
+## Open Issues
 
-The `infoportal` crate is a well-organized Actix-Web application serving as the HTTP frontend for the regatta system. It follows consistent patterns for REST endpoints, has good OpenAPI documentation via utoipa, and properly separates concerns between routing, authentication, and business logic. A few security and robustness issues were identified.
+### HIGH-1 — `/metrics` endpoint publicly accessible without authentication
+
+**File:** `infoportal/src/http/server.rs`, lines 196–200
+
+The Prometheus metrics endpoint is registered on the same public router with no auth wrapper. Any unauthenticated client can learn request rates, endpoint paths, latencies, and process metrics.
+
+**Suggested fix:** Bind metrics on a separate internal-only port, or guard with an auth extractor. Simplest:
+```rust
+PrometheusMetricsBuilder::new("api")
+    .endpoint("/metrics")  // only on internal-only server binding
+```
 
 ---
 
-## Issues
+### HIGH-2 — Rate limiter IP key is spoofable via `X-Forwarded-For`
 
-### 1. `extract_credentials` is called twice in `authenticate`
+**File:** `infoportal/src/http/server.rs`, lines 215–222
 
-- **File:** `infoportal/src/auth.rs`, lines 36–44
-- **Problem:** `extract_credentials(req)` is called once to check for an existing pool (line 36), and if that fails, called again (line 43) to authenticate. The `Authorization` header is parsed and Base64-decoded twice for every new authentication.
-- **Suggested fix:** Call `extract_credentials` once at the top and reuse the result:
-  ```rust
-  let (username, password) = extract_credentials(req)?;
-  if let Some(pool) = pool_manager.get_pool(&username).await {
-      return Some(pool);
-  }
-  pool_manager.create_pool(&username, &password).await.ok()
-  ```
+`real_ip_key()` uses the `X-Forwarded-For` header as the rate-limit key. Without a trusted-proxy whitelist any client can set an arbitrary IP on every request, bypassing rate limiting entirely. Additionally, each actix worker maintains its own in-memory counter, making the effective limit `http_workers × rl_max_requests`.
 
-### 2. `get_timestamps` uses `.unwrap()` on pool connection
+**Suggested fix:** Use `peer_ip_key()` (actual TCP socket address) unless a known reverse proxy is explicitly trusted. Use a shared backend (e.g., Redis) if multi-worker rate limits must be accurate.
 
-- **File:** `infoportal/src/http/rest_api/timekeeping.rs`, line 40
-- **Problem:** `TiberiusPool::instance().get().await.unwrap()` will panic if the pool cannot provide a connection (e.g., pool exhausted, DB down). All other endpoints properly propagate errors via `match`.
-- **Suggested fix:** Replace `.unwrap()` with proper error handling:
-  ```rust
-  let mut client = match TiberiusPool::instance().get().await {
-      Ok(c) => c,
-      Err(e) => return HttpResponse::InternalServerError().body(e.to_string()),
-  };
-  ```
+---
 
-### 4. Error responses leak internal details
+### HIGH-3 — No HTTP security response headers
 
-- **File:** Multiple REST API handlers (e.g., `misc.rs`, `race.rs`, `club.rs`, etc.)
-- **Problem:** All error handlers return `HttpResponse::InternalServerError().body(e.to_string())`, which exposes raw database error messages (including SQL details, connection strings, etc.) to API consumers. This is a security concern.
-- **Suggested fix:** Log the full error server-side and return a generic error message to the client:
-  ```rust
-  Err(e) => {
-      tracing::error!("Query failed: {e}");
-      HttpResponse::InternalServerError().json(serde_json::json!({"error": "Internal server error"}))
-  }
-  ```
+**File:** `infoportal/src/http/server.rs`, `get_app` function (lines 132–164)
 
-### 5. `CacheQueryParams` is duplicated across multiple files
+No middleware adds `X-Frame-Options`, `X-Content-Type-Options`, `Content-Security-Policy`, `Strict-Transport-Security`, or `Referrer-Policy` headers. The existing `wrap_fn` placeholder on lines 157–163 is the natural insertion point.
 
-- **File:** `misc.rs`, `race.rs`, `club.rs`, `athlete.rs` — each defines its own `CacheQueryParams`
-- **Problem:** The same struct with identical fields and derives is defined 4 times. This is unnecessary duplication.
-- **Suggested fix:** Define `CacheQueryParams` once in `rest_api/mod.rs` (or a shared module) and import it in each handler file.
+**Suggested fix:**
+```rust
+.wrap_fn(|req, srv| {
+    srv.call(req).map(|res| res.map(|mut r| {
+        let h = r.headers_mut();
+        h.insert(header::X_FRAME_OPTIONS, HeaderValue::from_static("DENY"));
+        h.insert(header::X_CONTENT_TYPE_OPTIONS, HeaderValue::from_static("nosniff"));
+        h.insert(HeaderName::from_static("referrer-policy"),
+            HeaderValue::from_static("strict-origin-when-cross-origin"));
+        r
+    }))
+})
+```
 
-### 6. TLS encryption is disabled in `Config::db_config()`
+---
 
-- **File:** `infoportal/src/config.rs`, lines 55–56
-- **Problem:** `EncryptionLevel::NotSupported` and `trust_cert()` are hardcoded, disabling TLS for database connections. This is a security concern for production deployments.
-- **Suggested fix:** Make encryption configurable via CLI args / env vars, defaulting to encrypted connections. At minimum, add a `--db-no-tls` flag to explicitly opt out.
+### HIGH-4 — DB TLS enabled but certificate validation bypassed
 
-### 7. `get_timestamps` accesses `regatta.id` directly (pub field)
+**File:** `infoportal/src/config.rs`, lines 106–109
 
-- **File:** `infoportal/src/http/rest_api/timekeeping.rs`, line 41
-- **Problem:** The handler accesses `regatta.id` as a public field. While this works, it couples the handler to the internal structure of `Regatta`. Other endpoints use `regatta_id` from path parameters.
-- **Suggested fix:** Minor concern. Consider whether the active regatta ID should be available via a method on `Aquarius` to avoid this coupling.
+```rust
+if self.db_encryption {
+    config.encryption(EncryptionLevel::Required);
+    config.trust_cert();  // ← disables cert validation
+```
 
-### 8. No authentication middleware — auth checks are manual in each handler
+`trust_cert()` accepts any certificate, including adversarially crafted ones. Enabling TLS while calling `trust_cert()` provides no MITM protection.
 
-- **File:** `notification.rs`, `timekeeping.rs`, `authentication.rs`
-- **Problem:** Each protected endpoint manually calls `auth::authenticate(&req).await` and returns 401. This is repetitive and error-prone — it's easy to forget the check when adding new endpoints.
-- **Suggested fix:** Consider implementing an Actix-Web middleware or extractor for authentication that can be applied to a scope, e.g., wrap the protected routes in a scope with an auth middleware.
+**Suggested fix:** Remove the unconditional `trust_cert()` call. Introduce a separate `DB_TRUST_CERT=false` env var for development self-signed certs, documented as unsafe for production.
 
-### 10. No unit or integration tests
+---
 
-- **File:** Entire crate
-- **Problem:** There are no `#[cfg(test)]` modules or test files. The HTTP handlers, authentication logic, and configuration parsing could all benefit from tests.
-- **Suggested fix:** Add tests for `extract_credentials` (pure function, easy to test), `Config` parsing, and integration tests for the API endpoints using Actix-Web's test utilities.
+### MEDIUM-1 — WebSocket timekeeping errors expose internal details
+
+**File:** `infoportal/src/http/rest_api/timekeeping.rs`, lines 245, 252, 281, 309, 313, 363
+
+Raw tiberius/SQL errors are formatted into `ServerEvent::Error` and sent to the WebSocket client, potentially leaking table names, column names, or connection details.
+
+**Suggested fix:**
+```rust
+.map_err(|err| {
+    error!(?err, "Failed to add start timestamp");
+    "Failed to add start timestamp".to_string()
+})?
+```
+
+---
+
+### MEDIUM-2 — `thread::sleep` inside a global `Mutex` lock in async context
+
+**File:** `infoportal/src/http/monitoring.rs`, lines 78–89
+
+On the first call to `get_cpu_and_memory()`, `thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL)` (200 ms) is called while holding the global `CACHED` mutex. All concurrent callers block for 200 ms.
+
+**Suggested fix:** Release the lock before sleeping, then re-acquire to store the result. Or pre-initialize the cache on server startup.
+
+---
+
+### MEDIUM-3 — Session secret key is ephemeral — all sessions invalidated on restart
+
+**File:** `infoportal/src/http/server.rs`, line 65
+
+```rust
+let secret_key = Key::generate();
+```
+
+Every restart invalidates all active sessions. For rolling restarts or auto-scaling this silently logs out all users.
+
+**Suggested fix:** Load the key from a stable env var `SESSION_SECRET`, falling back to `Key::generate()` with a warning in development only.
+
+---
+
+### MEDIUM-4 — Admin scope determined by hardcoded username list
+
+**File:** `infoportal/src/auth.rs`, lines 38–43
+
+```rust
+"sa" | "admin" => Scope::Admin,
+_ => Scope::User,
+```
+
+Any SQL Server account named `sa` or `admin` gets web-app admin access, regardless of actual DB permissions. Any other name gets `Scope::User` regardless of intent.
+
+**Suggested fix:** Use a DB role or configurable env var `ADMIN_USERNAMES` rather than matching on account names.
+
+---
+
+### MEDIUM-5 — `create_app_data().await.unwrap()` panics on startup DB failure
+
+**File:** `infoportal/src/http/server.rs`, line 63
+
+The `start()` function returns `IoResult<()>`, so propagating with `?` is idiomatic and correct. Also `TimeStrip::load(...).await.unwrap()` on line 166 of `timekeeping.rs` panics when the DB is unavailable at WebSocket connection time.
+
+**Suggested fix:**
+```rust
+let aquarius = create_app_data().await
+    .map_err(|e| std::io::Error::other(e.to_string()))?;
+```
+
+---
+
+### MEDIUM-6 — `TtlExtensionPolicy::OnEveryRequest` effectively disables session expiry for active users
+
+**File:** `infoportal/src/http/server.rs`, lines 178–182
+
+Every HTTP request (including static asset requests) refreshes the session TTL, making the 2-day TTL meaningless for any browser tab left open.
+
+**Suggested fix:** Use `TtlExtensionPolicy::OnStateChanges` or apply the session middleware only to API routes.
+
+---
+
+### MEDIUM-7 — `notification_read` can bloat session cookie without bound
+
+**File:** `infoportal/src/http/rest_api/notification.rs`, lines 198–202
+
+`POST /api/notifications/{id}/read` requires no authentication and inserts a new session entry per notification ID. A client can call this with thousands of IDs, exceeding the ~4 KB cookie limit and breaking the session.
+
+**Suggested fix:** Cap the number of read markers per session, or periodically prune markers for no-longer-visible notifications.
+
+---
+
+### LOW-1 — `_identity: Identity` is a fragile implicit auth pattern (still open from #8)
+
+**Files:** `infoportal/src/http/rest_api/misc.rs`, lines 29, 51; `infoportal/src/http/rest_api/monitoring.rs`, line 116
+
+The underscore prefix signals "unused" to readers and linters, obscuring the security contract. A future developer might change it to `Option<Identity>` and inadvertently remove the auth guard.
+
+**Suggested fix:** Introduce a typed `AuthenticatedUser` extractor that returns 401 when unauthenticated, or apply auth at the scope level. At minimum add a comment: `// Auth guard: returns 401 if no active session`.
+
+---
+
+### LOW-2 — `serde_json::to_string(...).unwrap_or_default()` silently swallows serialization errors
+
+**Files:** `infoportal/src/http/rest_api/timekeeping.rs`, line 226; `infoportal/src/http/rest_api/monitoring.rs`, line 106
+
+Serialization failures send an empty string to the WebSocket client with no log entry.
+
+**Suggested fix:**
+```rust
+match serde_json::to_string(&event) {
+    Ok(json) => ctx.text(json),
+    Err(err) => error!(?err, "Failed to serialize WebSocket event"),
+}
+```
+
+---
+
+### LOW-3 — `worker_count.lock().unwrap()` panics on mutex poisoning
+
+**File:** `infoportal/src/http/server.rs`, line 74
+
+**Suggested fix:** Use `.unwrap_or_else(|e| e.into_inner())` for poison recovery.
+
+---
+
+### LOW-4 — TLS falls back to HTTP-only silently
+
+**File:** `infoportal/src/http/server.rs`, lines 109–113
+
+Missing or unreadable cert/key files cause the server to start HTTP-only with only a `warn!` log.
+
+**Suggested fix:** Consider making TLS mandatory by default and requiring an explicit `HTTP_ONLY=true` env var to allow plain HTTP.
+
+---
+
+### LOW-5 — Swagger UI publicly accessible
+
+**File:** `infoportal/src/http/api_doc.rs`, lines 42–46
+
+`/swagger-ui/` and `/api-docs/openapi.json` expose the full API schema to unauthenticated clients. Low risk for an internal system but aids reconnaissance if internet-facing.
+
+**Suggested fix:** Remove from production builds (`#[cfg(debug_assertions)]`) or restrict to authenticated scope.
+
+---
+
+### LOW-6 — Notification content has no length validation
+
+**File:** `infoportal/src/http/rest_api/notification.rs`, lines 99–111
+
+`title` is validated for non-empty but has no max-length constraint. An authenticated user could store arbitrarily large strings.
+
+**Suggested fix:** Add explicit length limits matching the DB column constraints.
+
+---
+
+## Resolved Issues from Previous Review
+
+| Old # | Status | Notes |
+|---|---|---|
+| #1 `extract_credentials` called twice | Resolved | `extract_credentials` refactored; pattern no longer present |
+| #2 `get_timestamps` `.unwrap()` on pool | Resolved | Pattern no longer present |
+| #4 Error responses leak internal details | Largely resolved | `ApiError` wraps errors; WebSocket paths still affected (MEDIUM-1) |
+| #5 `CacheQueryParams` duplication | Resolved | No duplicate structs found |
+| #6 TLS disabled for DB | Partially resolved | `DB_ENCRYPTION` env var added; `trust_cert()` still unconditional (HIGH-4) |
+| #7 `regatta.id` direct access | Resolved | Pattern no longer present |
+| #8 No auth middleware | Still open | Tracked as LOW-1 above |
+| #10 No tests | Partially resolved | Two integration tests added (`test_get_regattas`, `test_get_heats`) |
 
 ---
 
 ## Positive Observations
 
-- **Clean REST API design:** Consistent URL patterns following RESTful conventions (`/regattas/{id}/clubs/{id}/entries`).
-- **OpenAPI documentation:** All endpoints have `#[utoipa::path]` annotations with proper tags, response types, and parameter descriptions.
-- **Proper use of Actix-Web extractors:** `Data`, `Path`, `Query`, and `Json` extractors are used idiomatically throughout.
-- **Health endpoint:** Comprehensive monitoring endpoint exposing version, pool state, memory usage, and cache statistics.
-- **Configuration via clap:** All settings are configurable via CLI args or environment variables with sensible defaults.
-- **Build info:** `built` crate provides compile-time metadata (version, git hash, build time) exposed in the health endpoint.
+- **DB-delegated authentication:** Credentials are validated by attempting an actual SQL Server connection; the app never stores or compares passwords itself. `SecretString` prevents the password appearing in `Debug` output or logs.
+- **`SameSite::Strict` on session cookie:** Strongest CSRF protection via cookies; correctly configured.
+- **`HttpOnly` + `Secure` on session cookie:** Prevents JavaScript access and plain-HTTP transmission.
+- **`unsafe_code = "forbid"` workspace lint:** Prevents unsafe except the correctly isolated `PeakAlloc` impl.
+- **`ApiError` pattern:** Full error logged server-side via `error!`, generic message returned to client.
+- **Config validation at startup:** `validate_db_config` and `validate_cache_ttl` catch misconfigured values before the server accepts connections.
+- **OpenAPI coverage:** Every REST endpoint has `#[utoipa::path]` annotations with response types, status codes, and descriptions.
+- **WebSocket heartbeat:** Both `MonitoringActor` and `TimekeepingActor` implement ping/pong with configurable `WS_HEARTBEAT_INTERVAL` / `WS_CLIENT_TIMEOUT`.
+- **Rate limit headers exposed:** `X-Ratelimit-*` response headers inform clients of their quota.
+- **`PeakAlloc` global allocator:** Clean, minimal peak-memory tracking without unsafe beyond the required `GlobalAlloc` impl.

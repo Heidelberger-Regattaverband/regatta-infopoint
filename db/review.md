@@ -122,6 +122,131 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 
 ---
 
+---
+
+## New Issues (2026-08-24)
+
+### N1. `TiberiusPool::new` panics inside `UserPoolManager::create_pool` — **HIGH**
+
+**File:** `db/src/tiberius/pool.rs`, line 66; `db/src/tiberius/user_pool.rs`, line 50
+
+`TiberiusPool::new` is `async fn` returning `Self` (not `Result`). It calls `.expect("Failed to create Tiberius connection pool")` on `bb8::PoolBuilder::build()`, which eagerly creates idle connections. If the user-supplied credentials are wrong or the DB is unreachable, `build()` returns `Err` and `.expect()` panics inside the request handler path (`UserPoolManager::create_pool`), crashing the request task instead of returning a proper 401/503.
+
+**Suggested fix:** Change `TiberiusPool::new` to return `Result<Self, DbError>` and propagate via `?`. Update `UserPoolManager::create_pool` to return `Result<Arc<TiberiusPool>, DbError>`.
+
+---
+
+### N2. `set_heat_nr` and `set_bib` silently succeed when timestamp is not found — **MEDIUM**
+
+**File:** `db/src/timekeeper/timestrip.rs`, lines 65–83
+
+When the timestamp is absent from the deque, both methods return `Ok(timestamp.clone())` (the original unmodified input), making the caller believe the update succeeded. `delete()` correctly returns `Err(DbError::Custom("Timestamp not found"))` — `set_heat_nr` and `set_bib` should do the same.
+
+**Suggested fix:**
+```rust
+Err(DbError::Custom(format!("Timestamp not found: {:?}", timestamp.time)))
+```
+
+---
+
+### N3. `Timestamp.bib` typed as `Option<u8>` — overflow for large regattas — **MEDIUM**
+
+**File:** `db/src/timekeeper/timestamp.rs`, line 32
+
+`Timestamp.bib: Option<u8>` can represent bibs 0–255 only. `Entry.bib` is correctly `Option<i16>`. Regattas with more than 255 participants will silently lose bib assignments on read (the `TryRowColumn<u8>` call will fail for values > 255) and send truncated values on write.
+
+**Suggested fix:** Change `bib: Option<u8>` to `bib: Option<i16>` and update related `TryRowColumn` accesses.
+
+---
+
+### N4. `UserPoolManager` pools are never reclaimed — unbounded memory and credential retention — **MEDIUM**
+
+**File:** `db/src/tiberius/user_pool.rs`, lines 56–74
+
+`remove_pool`, `clear_all`, and `pool_count` are all `#[allow(dead_code)]`, meaning every authenticated user gets a persistent `TiberiusPool` that holds live DB connections and plaintext credentials indefinitely. Memory and connection count grow without bound as users authenticate.
+
+**Suggested fix:** Wire `remove_pool` to the logout/session-expiry path. Consider a background eviction task for idle pools.
+
+---
+
+### N5. `Debug` derive on pool types risks credential exposure in logs — **MEDIUM**
+
+**File:** `db/src/tiberius/connection.rs`, line 12; `db/src/tiberius/pool.rs`, line 16
+
+`TiberiusConnectionManager` (which contains `tiberius::Config` with auth credentials) and `TiberiusPool` both derive `Debug`. Any `{:?}` log of these types may expose passwords if tiberius's `Config` does not redact them.
+
+**Suggested fix:** Implement `Debug` manually for `TiberiusConnectionManager`, printing only the host and omitting credentials:
+```rust
+impl fmt::Debug for TiberiusConnectionManager {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("TiberiusConnectionManager")
+            .field("host", &self.config.get_addr())
+            .finish_non_exhaustive()
+    }
+}
+```
+
+---
+
+### N6. `Split::from(u8)` silently defaults unknown values to `Split::Start` — **LOW/MEDIUM**
+
+**File:** `db/src/timekeeper/timestamp.rs`, lines 163–170
+
+Unknown split codes (e.g., a 500m intermediate split) are silently classified as `Start`, potentially corrupting timestrip calculations.
+
+**Suggested fix:** Add a `tracing::warn!` for the fallback case, or return `Option<Split>` and handle `None` explicitly.
+
+---
+
+### N7. Integer underflow if `bib == 0` in `ClubConflictRace::query_club_conflicts` — **LOW**
+
+**File:** `db/src/aquarius/model/problems.rs`, line 151
+
+```rust
+let heat_number = ((entry.bib as usize - 1) / LANES) + 1;
+```
+
+If `entry.bib == 0`, this underflows to `usize::MAX` in release builds.
+
+**Suggested fix:** Add `AND e.Entry_Bib > 0` to the SQL, or guard: `if entry.bib == 0 { continue; }`.
+
+---
+
+### N8. N+1 parallel queries in `execute_query` can saturate the connection pool — **LOW**
+
+**File:** `db/src/aquarius/model/entry.rs`, lines 198–233
+
+For a 200-entry result, up to 400 simultaneous pool connections are requested via `join_all`. Under concurrent API requests this multiplies.
+
+**Suggested fix:** Chunk `join_all` into batches, or restructure into a single JOIN query.
+
+---
+
+### N9. Negative delta underflow in `HeatEntry::query_entries_of_heat` — **LOW**
+
+**File:** `db/src/aquarius/model/heat_entry.rs`, lines 123–128
+
+```rust
+let delta = result.net_time - first_net_time;
+let duration = Duration::from_millis(delta as u64);
+```
+
+If `result.net_time < first_net_time`, casting a negative `i32` to `u64` wraps to a huge value, producing a nonsensical delta string.
+
+**Suggested fix:** Guard with `if delta > 0 { ... }`.
+
+---
+
+### N10. `UserPoolManager::create_pool` hardcodes pool sizes — **LOW**
+
+**File:** `db/src/tiberius/user_pool.rs`, line 50
+
+`TiberiusPool::new(config, 5, 1)` is hardcoded. With many authenticated admin users, total connections grow unbounded at 5× per user.
+
+**Suggested fix:** Accept `max_size` and `min_idle` as parameters to `UserPoolManager::new`.
+
+---
+
 ## Positive Observations
 
 - **Parameterized queries throughout:** All SQL queries use `Query::new()` with `.bind()` for parameters — no string interpolation of user input. ✅
