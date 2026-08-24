@@ -1,12 +1,13 @@
 use super::get_rows;
 use super::heat::DATE_TIME as HEAT_DATE_TIME;
-use crate::{
-    error::DbError,
-    tiberius::{TiberiusPool, TryRowColumn},
-};
-use ::chrono::{DateTime, Utc};
+use crate::error::DbError;
+use crate::tiberius::TiberiusPool;
+use crate::tiberius::TryRowColumn;
+use ::chrono::DateTime;
+use ::chrono::Utc;
 use ::serde::Serialize;
-use ::tiberius::{Query, Row};
+use ::tiberius::Query;
+use ::tiberius::Row;
 use ::utoipa::ToSchema;
 
 /// A block of heats.
