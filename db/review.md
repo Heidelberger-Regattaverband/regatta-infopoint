@@ -14,12 +14,6 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 
 ## Issues
 
-### 1. `RowColumn::get_column` panics on missing columns or NULL values — **Design Flaw** ⚠️
-
-- **File:** `db/src/tiberius/row_column.rs`, lines 20–23
-- **Problem:** The `get_column` implementations use `.unwrap().unwrap()`, which will panic if a column is missing or contains a SQL NULL. While this is acceptable for columns known to be NOT NULL, a schema change or unexpected NULL will cause a runtime panic with no context about which column failed.
-- **Suggested fix:** Use `.expect("column <name>")` or a helper that includes the column name in the panic message to aid debugging.
-
 ### 2. `RowColumn<DateTime<Utc>>` silently returns epoch on error — **Design Flaw** ⚠️
 
 - **File:** `db/src/tiberius/row_column.rs`, lines 48–57
@@ -74,14 +68,6 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 - **Problem:** The value `64` appears repeatedly as a magic number representing the "final round". While consistent, it lacks documentation and a named constant.
 - **Suggested fix:** Define a named constant (e.g., `const ROUND_FINAL: i16 = 64;`) in the model module and use it throughout.
 
-### 11. ~~`Block::query_blocks` bypasses the `get_rows` helper~~ — **FIXED** ✅
-
-Now uses `get_rows(stream).await?` consistently with all other query methods.
-
-### 12. ~~`Block::query_blocks` uses index-based row access instead of `RowColumn`~~ — **FIXED** ✅
-
-Now uses `<Row as TryRowColumn<DateTime<Utc>>>::try_get_column(&row, DATE_TIME)` with the named column constant. `NaiveDateTime` + `.and_utc()` conversion eliminated.
-
 ### 13. `Regatta::query_active_regatta` returns first regatta, not necessarily "active" — **Semantic** 💡
 
 - **File:** `db/src/aquarius/model/regatta.rs`, lines 63–71
@@ -108,25 +94,7 @@ Now uses `<Row as TryRowColumn<DateTime<Utc>>>::try_get_column(&row, DATE_TIME)`
 
 ---
 
-## Previously Fixed Issues ✅
-
-- ~~`Timestamp::persist` redundantly calls `.to_string()` on `format!()`~~ — FIXED
-- ~~`Score::calculate` uses manual rank counter instead of `enumerate`~~ — FIXED
-- ~~`HeatResult::points` can underflow for `rank > 5`~~ — FIXED
-- ~~`Aquarius::get_athlete` cache key ignores `regatta_id`~~ — FIXED
-- ~~Duplicated SQL aggregation subqueries in `Club`~~ — ACKNOWLEDGED (dedup would require careful refactoring)
-
----
-
----
-
 ## New Issues (2026-08-24)
-
-### N1. ~~`TiberiusPool::new` panics inside `UserPoolManager::create_pool`~~ — **FIXED** ✅
-
-`TiberiusPool::new` now returns `Result<Self, DbError>`. Startup (`TiberiusPool::init`) still panics with a clear message via `.expect(...)`. `UserPoolManager::create_pool` and `timekeeper/src/app/mod.rs` both propagate the error with `?`.
-
----
 
 ### N2. `set_heat_nr` and `set_bib` silently succeed when timestamp is not found — **MEDIUM**
 

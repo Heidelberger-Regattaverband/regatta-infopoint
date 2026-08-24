@@ -18,7 +18,9 @@ macro_rules! impl_row_column {
     ($($type:ty),*) => { $(
         impl RowColumn<$type> for Row {
             fn get_column(&self, col_name: &str) -> $type {
-                self.try_get::<$type, _>(col_name).unwrap().unwrap()
+                self.try_get::<$type, _>(col_name)
+                    .unwrap_or_else(|e| panic!("column '{col_name}' type error: {e}"))
+                    .unwrap_or_else(|| panic!("column '{col_name}' is NULL"))
             }
         }
     )* };
@@ -41,7 +43,10 @@ impl_try_row_column!(bool, u8, i16, i32, f32, f64, Decimal, NaiveDateTime, Naive
 
 impl RowColumn<String> for Row {
     fn get_column(&self, col_name: &str) -> String {
-        self.try_get::<&str, _>(col_name).unwrap().unwrap().to_string()
+        self.try_get::<&str, _>(col_name)
+            .unwrap_or_else(|e| panic!("column '{col_name}' type error: {e}"))
+            .unwrap_or_else(|| panic!("column '{col_name}' is NULL"))
+            .to_string()
     }
 }
 
@@ -50,7 +55,7 @@ impl RowColumn<DateTime<Utc>> for Row {
         match self.try_get::<NaiveDateTime, _>(col_name) {
             Ok(value) => value
                 .map(|date_time| DateTime::from_naive_utc_and_offset(date_time, Utc))
-                .unwrap(),
+                .unwrap_or_else(|| panic!("column '{col_name}' is NULL")),
             _ => DateTime::from_timestamp(0, 0).unwrap(),
         }
     }
