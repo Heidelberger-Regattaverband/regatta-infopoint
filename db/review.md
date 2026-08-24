@@ -66,14 +66,6 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 
 ## New Issues (2026-08-24)
 
-### N2. `set_heat_nr` and `set_bib` silently succeed when timestamp is not found — **FIXED** ✅
-
-**File:** `db/src/timekeeper/timestrip.rs`
-
-**Fix:** Replaced trailing `Ok(timestamp.clone())` in both methods with `Err(DbError::Custom(format!("Timestamp not found: {:?}", timestamp.time)))`, consistent with `delete()`.
-
----
-
 ### N3. `Timestamp.bib` typed as `Option<u8>` — overflow for large regattas — **MEDIUM**
 
 **File:** `db/src/timekeeper/timestamp.rs`, line 32
