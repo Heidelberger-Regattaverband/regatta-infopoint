@@ -32,9 +32,9 @@ export default class LaunchpadController extends BaseController {
     super.setViewModel(this.credentialsModel, "credentials");
     super.setViewModel(this.notificationsModel, "notifications");
     this.getIdentity();
-    this.loadNotifications();
+    void this.loadNotifications();
     this.notificationsTimer = globalThis.setInterval(() => {
-      this.loadNotifications();
+      void this.loadNotifications();
     }, NOTIFICATIONS_POLL_INTERVAL_MS);
   }
 
@@ -92,26 +92,18 @@ export default class LaunchpadController extends BaseController {
       type: "POST",
       url: `/api/notifications/${notificationId}/read`,
       success: () => {
-        this.loadNotifications();
+        void this.loadNotifications();
       }
     });
   }
 
-  private loadNotifications(): void {
-    super.getActiveRegatta().then((regatta: any) => {
-      $.ajax({
-        type: "GET",
-        url: `/api/regattas/${regatta.id}/visible_notifications`,
-        success: (notifications: any[]) => {
-          this.notificationsModel.setData(notifications);
-        },
-        error: (xhr: any) => {
-          Log.error(`Failed to load notifications: ${xhr.status} ${xhr.statusText}`);
-        }
-      });
-    }).catch((err: unknown) => {
-      Log.error("Failed to get active regatta for notifications", err as Error);
-    });
+  private async loadNotifications(): Promise<void> {
+    try {
+      const regatta = await super.getActiveRegatta();
+      await this.notificationsModel.loadData(`/api/regattas/${regatta.id}/visible_notifications`);
+    } catch (err: unknown) {
+      Log.error("Failed to load notifications", err as Error);
+    }
   }
 
   private performLogin() {
