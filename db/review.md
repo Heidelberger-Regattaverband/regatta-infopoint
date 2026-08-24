@@ -38,12 +38,6 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 - **Problem:** `DbError::Cache(String)` and `DbError::CacheError(#[from] CacheError)` serve similar purposes. The `Cache(String)` variant is used in `cache.rs` to wrap computation errors via `format!("Computation failed: {}", e)`, losing the original error type. Having two cache variants with identical display messages (`"Cache error: {0}"`) is confusing.
 - **Suggested fix:** Consider unifying into a single variant, or rename them to distinguish their purpose clearly (e.g., `CacheComputation(String)` vs `CacheDriver(CacheError)`).
 
-### 8. `compute_if_missing` loses original error type information — **Minor** 💡
-
-- **File:** `db/src/cache.rs`, lines 116–118
-- **Problem:** The `compute_if_missing` and `compute_if_missing_opt` methods convert computation errors to strings via `DbError::Cache(format!("Computation failed: {}", e))`. This loses the original error type (which is typically already a `DbError`), making it harder to match on specific error variants upstream.
-- **Suggested fix:** Since `F`'s error type is bounded by `Display` rather than `Into<DbError>`, consider tightening the bound to `Into<DbError>` so the original error is preserved, or keep the current approach and document that error context is intentionally simplified at the cache boundary.
-
 ### 9. `get_visible_notifications` hardcodes `force_cache: false` — **Minor** 💡
 
 - **File:** `db/src/aquarius.rs`, line 300

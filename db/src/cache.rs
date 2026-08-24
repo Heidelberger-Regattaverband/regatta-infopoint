@@ -3,7 +3,6 @@ use crate::aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta,
 use crate::error::DbError;
 use ::futures::future::Future;
 use ::std::any::type_name;
-use ::std::fmt::Display;
 use ::std::hash::Hash;
 use ::std::sync::atomic::{AtomicU64, Ordering};
 use ::std::time::Duration;
@@ -101,21 +100,17 @@ where
     where
         F: FnOnce() -> Fut,
         Fut: Future<Output = Result<V, E>>,
-        E: Display,
+        E: Into<DbError>,
     {
         if force {
-            let value = f()
-                .await
-                .map_err(|e| DbError::Cache(format!("Computation failed: {}", e)))?;
+            let value = f().await.map_err(Into::into)?;
             self.set(key, &value).await?;
             Ok(value)
         } else {
             match self.get(key).await {
                 Some(value) => Ok(value),
                 None => {
-                    let value = f()
-                        .await
-                        .map_err(|e| DbError::Cache(format!("Computation failed: {}", e)))?;
+                    let value = f().await.map_err(Into::into)?;
                     self.set(key, &value).await?;
                     Ok(value)
                 }
@@ -132,12 +127,10 @@ where
     where
         F: FnOnce() -> Fut,
         Fut: Future<Output = Result<Option<V>, E>>,
-        E: Display,
+        E: Into<DbError>,
     {
         if force {
-            let value = f()
-                .await
-                .map_err(|e| DbError::Cache(format!("Computation failed: {}", e)))?;
+            let value = f().await.map_err(Into::into)?;
             // Only cache non-None values
             if let Some(ref v) = value {
                 self.set(key, v).await?;
@@ -147,9 +140,7 @@ where
             match self.get(key).await {
                 Some(value) => Ok(Some(value)),
                 None => {
-                    let value = f()
-                        .await
-                        .map_err(|e| DbError::Cache(format!("Computation failed: {}", e)))?;
+                    let value = f().await.map_err(Into::into)?;
                     // Only cache non-None values
                     if let Some(ref v) = value {
                         self.set(key, v).await?;
