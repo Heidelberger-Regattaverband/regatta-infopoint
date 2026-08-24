@@ -14,12 +14,6 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 
 ## Issues
 
-### 2. `RowColumn<DateTime<Utc>>` silently returns epoch on error — **Design Flaw** ⚠️
-
-- **File:** `db/src/tiberius/row_column.rs`, lines 48–57
-- **Problem:** The `RowColumn<DateTime<Utc>>` implementation returns `DateTime::from_timestamp(0, 0).unwrap()` (Unix epoch) when `try_get` fails. This silently masks errors — the caller receives a valid-looking timestamp instead of an error.
-- **Suggested fix:** Either panic with context (consistent with other `get_column` impls) or propagate the error.
-
 ### 3. `TryRowColumn` implementations silently swallow type conversion errors — **Design Flaw** ⚠️
 
 - **File:** `db/src/tiberius/row_column.rs`, lines 28–36
