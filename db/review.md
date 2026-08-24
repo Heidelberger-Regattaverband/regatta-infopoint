@@ -20,10 +20,6 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 - **Problem:** The macro-generated `TryRowColumn` implementations use `unwrap_or_default()` on the outer `Result`, meaning a column type mismatch error is silently treated as `None`. Only column-not-found and NULL should return `None`.
 - **Suggested fix:** Distinguish between "column not found / NULL" (return `None`) and "type conversion error" (log a warning or propagate).
 
-### 4. ~~`TryRowColumn<String>` treats empty strings as `None`~~ — **FIXED** ✅
-
-`TryRowColumn<String>` now returns `Some(value.to_string())` for all non-NULL values, including empty strings. `None` is reserved for SQL NULL only.
-
 ### 5. `Statistics::query` holds mutable borrow on `client` across `join!` — **Minor Efficiency** 💡
 
 - **File:** `db/src/aquarius/model/statistics.rs`, lines 184–189

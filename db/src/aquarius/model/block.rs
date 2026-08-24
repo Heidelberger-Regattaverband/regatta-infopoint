@@ -45,9 +45,9 @@ impl Block {
 
         let mut blocks = Vec::new();
         if !rows.is_empty()
-            && let Some(mut start) = <Row as TryRowColumn<DateTime<Utc>>>::try_get_column(&rows[0], HEAT_DATE_TIME)
+            && let Some(mut begin) = <Row as TryRowColumn<DateTime<Utc>>>::try_get_column(&rows[0], HEAT_DATE_TIME)
         {
-            let mut end = start;
+            let mut end = begin;
             let mut heats: i32 = 0;
 
             if rows.len() >= 2 {
@@ -60,23 +60,15 @@ impl Block {
                         heats += 1;
 
                         if next.signed_duration_since(current).num_minutes() > 15 {
-                            blocks.push(Block {
-                                begin: start,
-                                end,
-                                heats,
-                            });
-                            start = next;
+                            blocks.push(Block { begin, end, heats });
+                            begin = next;
                             heats = 0;
                         }
                         end = next;
                     }
                 }
                 heats += 1;
-                blocks.push(Block {
-                    begin: start,
-                    end,
-                    heats,
-                });
+                blocks.push(Block { begin, end, heats });
             }
         }
         Ok(blocks)
