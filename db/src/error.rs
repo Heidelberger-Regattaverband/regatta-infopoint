@@ -12,12 +12,12 @@ pub enum DbError {
     /// Connection pool error.
     #[error("Connection pool error: {0}")]
     Pool(#[from] RunError<TiberiusError>),
-    /// Cache-related error.
+    /// Cache error with a descriptive message.
     #[error("Cache error: {0}")]
-    Cache(String),
-    /// Cache-related error.
-    #[error("Cache error: {0}")]
-    CacheError(#[from] CacheError),
+    CacheMessage(String),
+    /// Cache driver error from the underlying stretto cache.
+    #[error("Cache driver error: {0}")]
+    CacheDriver(#[from] CacheError),
     /// Custom error with message.
     #[error("Database error: {0}")]
     Custom(String),

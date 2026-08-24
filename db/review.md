@@ -32,12 +32,6 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 - **Problem:** `add_start` and `add_finish` differ only in the `Split` variant passed. This is code duplication.
 - **Suggested fix:** Extract a private `add_timestamp(split: Split, time: Option<DateTime<Utc>>)` method.
 
-### 7. `DbError` has two overlapping cache error variants — **Design** 💡
-
-- **File:** `db/src/error.rs`, lines 17–20
-- **Problem:** `DbError::Cache(String)` and `DbError::CacheError(#[from] CacheError)` serve similar purposes. The `Cache(String)` variant is used in `cache.rs` to wrap computation errors via `format!("Computation failed: {}", e)`, losing the original error type. Having two cache variants with identical display messages (`"Cache error: {0}"`) is confusing.
-- **Suggested fix:** Consider unifying into a single variant, or rename them to distinguish their purpose clearly (e.g., `CacheComputation(String)` vs `CacheDriver(CacheError)`).
-
 ### 9. `get_visible_notifications` hardcodes `force_cache: false` — **Minor** 💡
 
 - **File:** `db/src/aquarius.rs`, line 300

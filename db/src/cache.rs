@@ -152,7 +152,7 @@ where
     }
 
     pub(crate) async fn invalidate(&self, key: &K) -> Result<(), DbError> {
-        self.cache.try_remove(key).await.map_err(DbError::CacheError)
+        self.cache.try_remove(key).await.map_err(DbError::CacheDriver)
     }
 }
 
