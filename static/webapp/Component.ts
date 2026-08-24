@@ -262,14 +262,13 @@ export default class Component extends UIComponent {
      * `this.regattaModel` side-channel — so the URL is well-defined even when
      * called before {@link bootstrap} has run.
      */
-    private async loadNotifications(): Promise<JSONModel> {
+    private async loadNotifications(): Promise<void> {
         const regattaModel: JSONModel = await this.getActiveRegatta();
         console.debug("Loading notifications");
         const regattaId = regattaModel.getData().id;
         await this.notificationsModel.loadData(`/api/regattas/${regattaId}/visible_notifications`);
-        this.notificationsModel.refresh();
+        this.notificationsModel.refresh(true);
         console.debug("Notifications loaded");
-        return this.notificationsModel;
     }
 
     /**
