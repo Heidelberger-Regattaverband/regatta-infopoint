@@ -195,33 +195,3 @@ Missing or unreadable cert/key files cause the server to start HTTP-only with on
 `title` is validated for non-empty but has no max-length constraint. An authenticated user could store arbitrarily large strings.
 
 **Suggested fix:** Add explicit length limits matching the DB column constraints.
-
----
-
-## Resolved Issues from Previous Review
-
-| Old # | Status | Notes |
-|---|---|---|
-| #1 `extract_credentials` called twice | Resolved | `extract_credentials` refactored; pattern no longer present |
-| #2 `get_timestamps` `.unwrap()` on pool | Resolved | Pattern no longer present |
-| #4 Error responses leak internal details | Largely resolved | `ApiError` wraps errors; WebSocket paths still affected (MEDIUM-1) |
-| #5 `CacheQueryParams` duplication | Resolved | No duplicate structs found |
-| #6 TLS disabled for DB | Partially resolved | `DB_ENCRYPTION` env var added; `trust_cert()` still unconditional (HIGH-4) |
-| #7 `regatta.id` direct access | Resolved | Pattern no longer present |
-| #8 No auth middleware | Still open | Tracked as LOW-1 above |
-| #10 No tests | Partially resolved | Two integration tests added (`test_get_regattas`, `test_get_heats`) |
-
----
-
-## Positive Observations
-
-- **DB-delegated authentication:** Credentials are validated by attempting an actual SQL Server connection; the app never stores or compares passwords itself. `SecretString` prevents the password appearing in `Debug` output or logs.
-- **`SameSite::Strict` on session cookie:** Strongest CSRF protection via cookies; correctly configured.
-- **`HttpOnly` + `Secure` on session cookie:** Prevents JavaScript access and plain-HTTP transmission.
-- **`unsafe_code = "forbid"` workspace lint:** Prevents unsafe except the correctly isolated `PeakAlloc` impl.
-- **`ApiError` pattern:** Full error logged server-side via `error!`, generic message returned to client.
-- **Config validation at startup:** `validate_db_config` and `validate_cache_ttl` catch misconfigured values before the server accepts connections.
-- **OpenAPI coverage:** Every REST endpoint has `#[utoipa::path]` annotations with response types, status codes, and descriptions.
-- **WebSocket heartbeat:** Both `MonitoringActor` and `TimekeepingActor` implement ping/pong with configurable `WS_HEARTBEAT_INTERVAL` / `WS_CLIENT_TIMEOUT`.
-- **Rate limit headers exposed:** `X-Ratelimit-*` response headers inform clients of their quota.
-- **`PeakAlloc` global allocator:** Clean, minimal peak-memory tracking without unsafe beyond the required `GlobalAlloc` impl.
