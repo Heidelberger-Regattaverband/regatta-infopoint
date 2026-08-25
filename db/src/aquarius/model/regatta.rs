@@ -1,12 +1,13 @@
 use super::get_row;
 use super::try_get_row;
+use crate::error::DbError;
+use crate::tiberius::RowColumn;
 use crate::tiberius::TiberiusClient;
-use crate::{
-    error::DbError,
-    tiberius::{RowColumn, TryRowColumn},
-};
+use crate::tiberius::TryRowColumn;
 use ::serde::Serialize;
-use ::tiberius::{Query, Row, time::chrono::NaiveDateTime};
+use ::tiberius::Query;
+use ::tiberius::Row;
+use ::tiberius::time::chrono::NaiveDateTime;
 use ::utoipa::ToSchema;
 
 const ID: &str = "Event_ID";

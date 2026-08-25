@@ -1,4 +1,5 @@
 use super::Club;
+use super::ROUND_FINAL;
 use super::TryToEntity;
 use super::club::ID as CLUB_ID;
 use super::crew::ROUND_TO as CREW_ROUND_TO;
@@ -6,13 +7,14 @@ use super::entry::CANCELLED as ENTRY_CANCELLED;
 use super::entry::ID as ENTRY_ID;
 use super::get_row;
 use super::get_rows;
+use crate::error::DbError;
+use crate::tiberius::RowColumn;
 use crate::tiberius::TiberiusClient;
-use crate::{
-    error::DbError,
-    tiberius::{RowColumn, TryRowColumn},
-};
+use crate::tiberius::TryRowColumn;
 use ::serde::Serialize;
-use ::tiberius::{Query, Row, time::chrono::NaiveDateTime};
+use ::tiberius::Query;
+use ::tiberius::Row;
+use ::tiberius::time::chrono::NaiveDateTime;
 use ::utoipa::ToSchema;
 
 pub(crate) const ID: &str = "Athlet_ID";
@@ -54,7 +56,6 @@ impl Athlete {
         regatta_id: i32,
         client: &mut TiberiusClient,
     ) -> Result<Vec<Athlete>, DbError> {
-        let round = 64;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1},
                 (SELECT COUNT(*) FROM (
@@ -72,7 +73,7 @@ impl Athlete {
             Club::select_min_columns("cl")
         ));
         query.bind(regatta_id);
-        query.bind(round);
+        query.bind(ROUND_FINAL);
 
         let stream = query.query(client).await?;
         let athletes = get_rows(stream).await?;
@@ -84,7 +85,6 @@ impl Athlete {
         athlete_id: i32,
         client: &mut TiberiusClient,
     ) -> Result<Athlete, DbError> {
-        let round = 64;
         let mut query = Query::new(format!(
             "SELECT {0}, {1},
                 (SELECT COUNT(*) FROM (
@@ -103,7 +103,7 @@ impl Athlete {
         ));
         query.bind(regatta_id);
         query.bind(athlete_id);
-        query.bind(round);
+        query.bind(ROUND_FINAL);
 
         let stream = query.query(client).await?;
         let row = get_row(stream).await?;

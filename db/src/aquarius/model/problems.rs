@@ -1,5 +1,6 @@
 use super::get_rows;
-use crate::{error::DbError, tiberius::TiberiusPool};
+use crate::error::DbError;
+use crate::tiberius::TiberiusPool;
 use ::serde::Serialize;
 use ::std::collections::HashMap;
 use ::tiberius::Query;

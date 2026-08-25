@@ -1,15 +1,22 @@
+use crate::aquarius::model::Athlete;
+use crate::aquarius::model::Club;
+use crate::aquarius::model::Entry;
+use crate::aquarius::model::Filters;
+use crate::aquarius::model::Heat;
 use crate::aquarius::model::Notification;
-use crate::aquarius::model::{Athlete, Club, Entry, Filters, Heat, Race, Regatta, Schedule};
+use crate::aquarius::model::Race;
+use crate::aquarius::model::Regatta;
+use crate::aquarius::model::Schedule;
 use crate::error::DbError;
 use ::futures::future::Future;
 use ::std::any::type_name;
-use ::std::fmt::Display;
 use ::std::hash::Hash;
-use ::std::sync::atomic::{AtomicU64, Ordering};
+use ::std::sync::atomic::AtomicU64;
+use ::std::sync::atomic::Ordering;
 use ::std::time::Duration;
+use ::stretto::AsyncCacheBuilder;
 use ::stretto::TokioCache;
 use ::tracing::debug;
-use stretto::AsyncCacheBuilder;
 
 /// A high-performance cache that uses `stretto` as the underlying cache with comprehensive features
 ///
@@ -101,21 +108,17 @@ where
     where
         F: FnOnce() -> Fut,
         Fut: Future<Output = Result<V, E>>,
-        E: Display,
+        E: Into<DbError>,
     {
         if force {
-            let value = f()
-                .await
-                .map_err(|e| DbError::Cache(format!("Computation failed: {}", e)))?;
+            let value = f().await.map_err(Into::into)?;
             self.set(key, &value).await?;
             Ok(value)
         } else {
             match self.get(key).await {
                 Some(value) => Ok(value),
                 None => {
-                    let value = f()
-                        .await
-                        .map_err(|e| DbError::Cache(format!("Computation failed: {}", e)))?;
+                    let value = f().await.map_err(Into::into)?;
                     self.set(key, &value).await?;
                     Ok(value)
                 }
@@ -132,12 +135,10 @@ where
     where
         F: FnOnce() -> Fut,
         Fut: Future<Output = Result<Option<V>, E>>,
-        E: Display,
+        E: Into<DbError>,
     {
         if force {
-            let value = f()
-                .await
-                .map_err(|e| DbError::Cache(format!("Computation failed: {}", e)))?;
+            let value = f().await.map_err(Into::into)?;
             // Only cache non-None values
             if let Some(ref v) = value {
                 self.set(key, v).await?;
@@ -147,9 +148,7 @@ where
             match self.get(key).await {
                 Some(value) => Ok(Some(value)),
                 None => {
-                    let value = f()
-                        .await
-                        .map_err(|e| DbError::Cache(format!("Computation failed: {}", e)))?;
+                    let value = f().await.map_err(Into::into)?;
                     // Only cache non-None values
                     if let Some(ref v) = value {
                         self.set(key, v).await?;
@@ -161,7 +160,7 @@ where
     }
 
     pub(crate) async fn invalidate(&self, key: &K) -> Result<(), DbError> {
-        self.cache.try_remove(key).await.map_err(DbError::CacheError)
+        self.cache.try_remove(key).await.map_err(DbError::CacheDriver)
     }
 }
 

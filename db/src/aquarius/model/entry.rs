@@ -1,6 +1,7 @@
 use super::Club;
 use super::Crew;
 use super::Heat;
+use super::ROUND_FINAL;
 use super::Race;
 use super::TryToEntity;
 use super::athlete::ID as ATHLETE_ID;
@@ -8,13 +9,14 @@ use super::club::ID as CLUB_ID;
 use super::crew::ROUND_TO as CREW_ROUND_TO;
 use super::get_rows;
 use super::race::ID as RACE_ID;
-use crate::{
-    error::DbError,
-    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
-};
-use ::futures::future::{BoxFuture, join_all};
+use crate::error::DbError;
+use crate::tiberius::RowColumn;
+use crate::tiberius::TiberiusPool;
+use crate::tiberius::TryRowColumn;
+use ::futures::join;
 use ::serde::Serialize;
-use ::tiberius::{Query, Row};
+use ::tiberius::Query;
+use ::tiberius::Row;
 use ::utoipa::ToSchema;
 
 pub(crate) const ID: &str = "Entry_ID";
@@ -108,7 +110,7 @@ impl Entry {
         club_id: i32,
         pool: &TiberiusPool,
     ) -> Result<Vec<Self>, DbError> {
-        let round = 64;
+        let round = ROUND_FINAL;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, {2}, l.Label_Short
             FROM Club AS ac
@@ -145,7 +147,7 @@ impl Entry {
         athlete_id: i32,
         pool: &TiberiusPool,
     ) -> Result<Vec<Self>, DbError> {
-        let round = 64;
+        let round = ROUND_FINAL;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, {2}, l.Label_Short
             FROM Athlet      a
@@ -176,7 +178,7 @@ impl Entry {
     /// # Returns
     /// A vector of entries for the given race
     pub async fn query_entries_for_race(race_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
-        let round = 64;
+        let round = ROUND_FINAL;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, l.Label_Short
             FROM Entry       e
@@ -198,35 +200,35 @@ impl Entry {
 async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Result<Vec<Entry>, DbError> {
     let mut client = pool.get().await?;
     let stream = query.query(&mut client).await?;
-
-    let mut crew_futures: Vec<BoxFuture<Result<Vec<Crew>, DbError>>> = Vec::new();
-    let mut heats_futures: Vec<BoxFuture<Result<Vec<Heat>, DbError>>> = Vec::new();
     let mut entries: Vec<Entry> = get_rows(stream)
         .await?
         .into_iter()
-        .map(|row| {
-            let entry = Entry::from(&row);
-            crew_futures.push(Box::pin(Crew::query_crew_of_entry(entry.id, round, pool)));
-            heats_futures.push(Box::pin(Heat::query_heats_of_entry(entry.id, pool)));
-            entry
-        })
+        .map(|row| Entry::from(&row))
         .collect();
+    drop(client);
 
-    let crews = join_all(crew_futures).await;
-    let heats = join_all(heats_futures).await;
+    if entries.is_empty() {
+        return Ok(entries);
+    }
 
-    for (pos, entry) in entries.iter_mut().enumerate() {
-        if let Some(crews) = crews.get(pos)
-            && let Ok(crews) = crews.as_deref()
-            && !crews.is_empty()
+    let entry_ids: Vec<i32> = entries.iter().map(|e| e.id).collect();
+    let (crews_result, heats_result) = join!(
+        Crew::query_crews_for_entries(&entry_ids, round, pool),
+        Heat::query_heats_for_entries(&entry_ids, pool)
+    );
+    let mut crews_map = crews_result?;
+    let mut heats_map = heats_result?;
+
+    for entry in entries.iter_mut() {
+        if let Some(crew) = crews_map.remove(&entry.id)
+            && !crew.is_empty()
         {
-            entry.crew = Some(crews.to_vec());
+            entry.crew = Some(crew);
         }
-        if let Some(heats) = heats.get(pos)
-            && let Ok(heats) = heats.as_deref()
+        if let Some(heats) = heats_map.remove(&entry.id)
             && !heats.is_empty()
         {
-            entry.heats = Some(heats.to_vec());
+            entry.heats = Some(heats);
         }
     }
     Ok(entries)

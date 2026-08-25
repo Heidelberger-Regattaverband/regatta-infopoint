@@ -1,11 +1,12 @@
 use super::TryToEntity;
 use super::get_rows;
-use crate::{
-    error::DbError,
-    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
-};
+use crate::error::DbError;
+use crate::tiberius::RowColumn;
+use crate::tiberius::TiberiusPool;
+use crate::tiberius::TryRowColumn;
 use ::serde::Serialize;
-use ::tiberius::{Query, Row};
+use ::tiberius::Query;
+use ::tiberius::Row;
 use ::utoipa::ToSchema;
 
 const ID: &str = "Referee_ID";

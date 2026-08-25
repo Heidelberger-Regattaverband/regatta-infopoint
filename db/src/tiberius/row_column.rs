@@ -1,5 +1,9 @@
-use ::chrono::{DateTime, NaiveDate, Utc};
-use ::tiberius::{Row, numeric::Decimal, time::chrono::NaiveDateTime};
+use ::chrono::DateTime;
+use ::chrono::NaiveDate;
+use ::chrono::Utc;
+use ::tiberius::Row;
+use ::tiberius::numeric::Decimal;
+use ::tiberius::time::chrono::NaiveDateTime;
 
 /// Extension traits for `Row` to provide convenient methods for retrieving column values by name.
 pub trait RowColumn<T: Default> {
@@ -18,7 +22,9 @@ macro_rules! impl_row_column {
     ($($type:ty),*) => { $(
         impl RowColumn<$type> for Row {
             fn get_column(&self, col_name: &str) -> $type {
-                self.try_get::<$type, _>(col_name).unwrap().unwrap()
+                self.try_get::<$type, _>(col_name)
+                    .unwrap_or_else(|e| panic!("column '{col_name}' type error: {e}"))
+                    .unwrap_or_else(|| panic!("column '{col_name}' is NULL"))
             }
         }
     )* };
@@ -41,31 +47,27 @@ impl_try_row_column!(bool, u8, i16, i32, f32, f64, Decimal, NaiveDateTime, Naive
 
 impl RowColumn<String> for Row {
     fn get_column(&self, col_name: &str) -> String {
-        self.try_get::<&str, _>(col_name).unwrap().unwrap().to_string()
+        self.try_get::<&str, _>(col_name)
+            .unwrap_or_else(|e| panic!("column '{col_name}' type error: {e}"))
+            .unwrap_or_else(|| panic!("column '{col_name}' is NULL"))
+            .to_string()
     }
 }
 
 impl RowColumn<DateTime<Utc>> for Row {
     fn get_column(&self, col_name: &str) -> DateTime<Utc> {
-        match self.try_get::<NaiveDateTime, _>(col_name) {
-            Ok(value) => value
-                .map(|date_time| DateTime::from_naive_utc_and_offset(date_time, Utc))
-                .unwrap(),
-            _ => DateTime::from_timestamp(0, 0).unwrap(),
-        }
+        let naive = self
+            .try_get::<NaiveDateTime, _>(col_name)
+            .unwrap_or_else(|e| panic!("column '{col_name}' type error: {e}"))
+            .unwrap_or_else(|| panic!("column '{col_name}' is NULL"));
+        DateTime::from_naive_utc_and_offset(naive, Utc)
     }
 }
 
 impl TryRowColumn<String> for Row {
     fn try_get_column(&self, col_name: &str) -> Option<String> {
         match self.try_get::<&str, _>(col_name) {
-            Ok(Some(value)) => {
-                if value.is_empty() {
-                    None
-                } else {
-                    Some(value.to_string())
-                }
-            }
+            Ok(Some(value)) => Some(value.to_string()),
             _ => None,
         }
     }

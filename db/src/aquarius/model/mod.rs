@@ -33,14 +33,20 @@ pub use filters::Filters;
 pub use heat::Heat;
 pub use heat_entry::HeatEntry;
 pub use heat_result::HeatResult;
-pub use notification::{CreateNotificationRequest, Notification, UpdateNotificationRequest};
+pub use notification::CreateNotificationRequest;
+pub use notification::Notification;
+pub use notification::UpdateNotificationRequest;
 pub use problems::ClubConflictRace;
 pub use race::Race;
 pub use referee::Referee;
 pub use regatta::Regatta;
-pub use schedule::{Schedule, ScheduleEntry};
+pub use schedule::Schedule;
+pub use schedule::ScheduleEntry;
 pub use score::Score;
 pub use statistics::Statistics;
+
+/// Round number identifying the final round in all race formats.
+pub(crate) const ROUND_FINAL: i16 = 64;
 
 pub trait TryToEntity<T> {
     fn try_to_entity(&self) -> Option<T>;

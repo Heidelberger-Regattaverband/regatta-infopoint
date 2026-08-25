@@ -6,7 +6,8 @@ use crate::tiberius::TiberiusClient;
 use crate::tiberius::TryRowColumn;
 use ::chrono::DateTime;
 use ::chrono::Utc;
-use ::serde::{Deserialize, Serialize};
+use ::serde::Deserialize;
+use ::serde::Serialize;
 use ::tiberius::Query;
 use ::tiberius::Row;
 use ::utoipa::ToSchema;
@@ -154,55 +155,52 @@ impl Notification {
         client: &mut TiberiusClient,
     ) -> Result<Option<Notification>, DbError> {
         let now = Utc::now();
-        // Build dynamic SQL based on provided fields
-        let mut set_clauses = Vec::new();
-        let mut param_count = 1;
 
-        if request.priority.is_some() {
-            set_clauses.push(format!("{PRIORITY} = @P{param_count}"));
-            param_count += 1;
+        // Each entry atomically pairs its SQL SET clause with its bound value,
+        // preventing the ordering mismatch that two separate if-blocks could introduce.
+        enum FieldParam<'a> {
+            U8(u8),
+            Bool(bool),
+            Str(&'a str),
         }
-        if request.title.is_some() {
-            set_clauses.push(format!("{TITLE} = @P{param_count}"));
-            param_count += 1;
+        let mut fields: Vec<(String, FieldParam<'_>)> = Vec::new();
+        let mut pos = 1u8;
+
+        if let Some(v) = request.priority {
+            fields.push((format!("{PRIORITY} = @P{pos}"), FieldParam::U8(v)));
+            pos += 1;
         }
-        if request.text.is_some() {
-            set_clauses.push(format!("{TEXT} = @P{param_count}"));
-            param_count += 1;
+        if let Some(v) = request.title.as_deref() {
+            fields.push((format!("{TITLE} = @P{pos}"), FieldParam::Str(v)));
+            pos += 1;
         }
-        if request.visible.is_some() {
-            set_clauses.push(format!("{VISIBLE} = @P{param_count}"));
-            param_count += 1;
+        if let Some(v) = request.text.as_deref() {
+            fields.push((format!("{TEXT} = @P{pos}"), FieldParam::Str(v)));
+            pos += 1;
+        }
+        if let Some(v) = request.visible {
+            fields.push((format!("{VISIBLE} = @P{pos}"), FieldParam::Bool(v)));
+            pos += 1;
         }
 
-        // If no fields are provided, return the existing notification without updating
-        if set_clauses.is_empty() {
+        if fields.is_empty() {
             return Self::query_notification_by_id(notification_id, client).await;
         }
 
-        // Always update the modified_at timestamp
-        set_clauses.push(format!("{MODIFIED_AT} = @P{param_count}"));
-
+        let set_sql = fields.iter().map(|(c, _)| c.as_str()).collect::<Vec<_>>().join(", ");
+        let id_param = pos + 1;
         let sql = format!(
-            "UPDATE HRV_Notification SET {} \
+            "UPDATE HRV_Notification SET {set_sql}, {MODIFIED_AT} = @P{pos} \
             OUTPUT INSERTED.{ID}, INSERTED.{PRIORITY}, INSERTED.{TITLE}, INSERTED.{TEXT}, INSERTED.{VISIBLE}, INSERTED.{MODIFIED_AT}, INSERTED.{EVENT_ID} \
-            WHERE {ID} = @P{}",
-            set_clauses.join(", "),
-            param_count + 1
+            WHERE {ID} = @P{id_param}"
         );
         let mut query = Query::new(&sql);
-        // Bind parameters in the same order as set_clauses
-        if let Some(priority) = request.priority {
-            query.bind(priority);
-        }
-        if let Some(ref title) = request.title {
-            query.bind(title);
-        }
-        if let Some(ref text) = request.text {
-            query.bind(text);
-        }
-        if let Some(visible) = request.visible {
-            query.bind(visible);
+        for (_, param) in &fields {
+            match param {
+                FieldParam::U8(v) => query.bind(*v),
+                FieldParam::Bool(v) => query.bind(*v),
+                FieldParam::Str(v) => query.bind(*v),
+            }
         }
         query.bind(now);
         query.bind(notification_id);

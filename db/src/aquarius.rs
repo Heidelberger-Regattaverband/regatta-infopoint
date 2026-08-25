@@ -20,7 +20,8 @@ use crate::cache::Caches;
 use crate::error::DbError;
 use crate::tiberius::TiberiusPool;
 use ::futures::future::join3;
-use ::std::time::{Duration, Instant};
+use ::std::time::Duration;
+use ::std::time::Instant;
 use ::tracing::debug;
 
 /// Executes an async expression, measures its elapsed time, and logs it via `debug!`.

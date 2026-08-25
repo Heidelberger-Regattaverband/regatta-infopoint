@@ -35,12 +35,18 @@ impl TiberiusPool {
     /// * `config` - The configuration for the Tiberius connection manager.
     /// * `max_size` - The maximum size of the pool.
     /// * `min_idle` - The minimum number of idle connections in the pool.
+    ///
+    /// # Panics
+    /// Panics if the pool cannot be created (e.g., the database is unreachable at startup)
+    /// or if the global pool has already been set.
     pub async fn init(config: Config, max_size: u32, min_idle: u32) {
         if POOL.get().is_none() {
             let init_mutex = POOL_INITIALIZED.get_or_init(|| Mutex::new(false));
             let mut initialized = init_mutex.lock().await;
             if !*initialized {
-                let pool = TiberiusPool::new(config, max_size, min_idle).await;
+                let pool = TiberiusPool::new(config, max_size, min_idle)
+                    .await
+                    .expect("Failed to create Tiberius connection pool");
                 POOL.set(pool).expect("TiberiusPool shouldn't be set");
                 *initialized = true;
             }
@@ -53,18 +59,18 @@ impl TiberiusPool {
     /// * `config` - The configuration for the Tiberius connection manager.
     /// * `max_size` - The maximum size of the pool.
     /// * `min_idle` - The minimum number of idle connections in the pool.
-    /// # Returns
-    /// A new instance of `TiberiusPool`.
-    pub async fn new(config: Config, max_size: u32, min_idle: u32) -> Self {
+    ///
+    /// # Errors
+    /// Returns [`DbError::Tiberius`] if the pool cannot be built, e.g. due to invalid
+    /// credentials or an unreachable database host.
+    pub async fn new(config: Config, max_size: u32, min_idle: u32) -> Result<Self, DbError> {
         let manager = TiberiusConnectionManager::new(config);
-
         let inner = Pool::builder()
             .max_size(max_size)
             .min_idle(Some(min_idle))
             .build(manager)
-            .await
-            .expect("Failed to create Tiberius connection pool");
-        TiberiusPool { inner }
+            .await?;
+        Ok(TiberiusPool { inner })
     }
 
     /// Returns a connection from the global `TiberiusPool`. The connection is automatically returned to the pool when it goes out of scope.

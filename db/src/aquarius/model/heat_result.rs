@@ -1,6 +1,7 @@
 use super::TryToEntity;
-use super::boat_class::NUM_ROWERS;
-use crate::tiberius::{RowColumn, TryRowColumn};
+use super::boat_class::BC_NUM_ROWERS;
+use crate::tiberius::RowColumn;
+use crate::tiberius::TryRowColumn;
 use ::serde::Serialize;
 use ::tiberius::Row;
 use ::utoipa::ToSchema;
@@ -39,7 +40,7 @@ impl HeatResult {
 impl TryToEntity<HeatResult> for Row {
     fn try_to_entity(&self) -> Option<HeatResult> {
         if let Some(rank) = <Row as TryRowColumn<u8>>::try_get_column(self, RANK) {
-            let num_rowers: u8 = self.get_column(NUM_ROWERS);
+            let num_rowers: u8 = self.get_column(BC_NUM_ROWERS);
             let points: u8 = if rank > 0 && rank <= 5 {
                 num_rowers + (5 - rank)
             } else {

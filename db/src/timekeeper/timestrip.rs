@@ -39,19 +39,15 @@ impl TimeStrip {
     }
 
     pub async fn add_start(&mut self, time: Option<DateTime<Utc>>) -> Result<Timestamp, DbError> {
-        let timestamp = Timestamp::from_time(time.unwrap_or_else(Utc::now), Split::Start);
-        self.time_stamps.push_front(timestamp.clone());
-        if let Some(timestamp) = self.time_stamps.front_mut() {
-            let mut client = self.pool.get().await?;
-            timestamp.persist(self.regatta_id, &mut client).await?;
-            Ok(timestamp.clone())
-        } else {
-            Ok(timestamp)
-        }
+        self.add_timestamp(Split::Start, time).await
     }
 
     pub async fn add_finish(&mut self, time: Option<DateTime<Utc>>) -> Result<Timestamp, DbError> {
-        let timestamp = Timestamp::from_time(time.unwrap_or_else(Utc::now), Split::Finish);
+        self.add_timestamp(Split::Finish, time).await
+    }
+
+    async fn add_timestamp(&mut self, split: Split, time: Option<DateTime<Utc>>) -> Result<Timestamp, DbError> {
+        let timestamp = Timestamp::from_time(time.unwrap_or_else(Utc::now), split);
         self.time_stamps.push_front(timestamp.clone());
         if let Some(timestamp) = self.time_stamps.front_mut() {
             let mut client = self.pool.get().await?;
@@ -69,7 +65,7 @@ impl TimeStrip {
             timestamp.update(&mut client).await?;
             return Ok(timestamp.clone());
         }
-        Ok(timestamp.clone())
+        Err(DbError::Custom(format!("Timestamp not found: {:?}", timestamp.time)))
     }
 
     pub async fn set_bib(&mut self, timestamp: &Timestamp, bib: u8) -> Result<Timestamp, DbError> {
@@ -79,7 +75,7 @@ impl TimeStrip {
             timestamp.update(&mut client).await?;
             return Ok(timestamp.clone());
         }
-        Ok(timestamp.clone())
+        Err(DbError::Custom(format!("Timestamp not found: {:?}", timestamp.time)))
     }
 
     pub async fn delete(&mut self, time: &DateTime<Utc>) -> Result<Timestamp, DbError> {

@@ -1,26 +1,29 @@
+use super::ROUND_FINAL;
 use super::TryToEntity;
-use super::boat_class::ID as BOAT_CLASS_ID;
-use super::boat_class::NUM_ROWERS;
+use super::boat_class::BC_ID;
+use super::boat_class::BC_NUM_ROWERS;
 use super::club::Club;
 use super::club::ID as CLUB_ID;
 use super::crew::Crew;
 use super::entry::Entry;
 use super::entry::ID as ENTRY_ID;
 use super::get_rows;
+use super::heat::HEAT_ID;
+use super::heat::HEAT_ROUND;
 use super::heat::Heat;
-use super::heat::ID as HEAT_ID;
-use super::heat::ROUND as HEAT_ROUND;
 use super::heat_result::HeatResult;
 use super::race::ID as RACE_ID;
 use super::race::Race;
-use crate::{
-    error::DbError,
-    tiberius::{RowColumn, TiberiusPool},
-};
-use ::futures::future::{BoxFuture, join_all};
+use crate::error::DbError;
+use crate::tiberius::RowColumn;
+use crate::tiberius::TiberiusPool;
+use ::futures::future::BoxFuture;
+use ::futures::future::join_all;
 use ::serde::Serialize;
-use ::std::{cmp::Ordering, time::Duration};
-use ::tiberius::{Query, Row};
+use ::std::cmp::Ordering;
+use ::std::time::Duration;
+use ::tiberius::Query;
+use ::tiberius::Row;
 use ::utoipa::ToSchema;
 
 /// A entry of a boat in a heat.
@@ -60,17 +63,17 @@ impl HeatEntry {
     /// # Returns
     /// A list of entries of the heat
     pub(crate) async fn query_entries_of_heat(heat: &Heat, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
-        let sql = format!("SELECT DISTINCT ce.CE_ID, ce.CE_Lane, {0}, Label_Short, {NUM_ROWERS}, {1}, {2}, {3}
+        let sql = format!("SELECT DISTINCT ce.CE_ID, ce.CE_Lane, {0}, Label_Short, {BC_NUM_ROWERS}, {1}, {2}, {3}
             FROM CompEntries ce
             JOIN Comp                  ON           CE_Comp_ID_FK = {HEAT_ID}
             JOIN Offer o               ON             o.{RACE_ID} = Comp_Race_ID_FK
-            JOIN BoatClass             ON o.Offer_BoatClass_ID_FK = {BOAT_CLASS_ID}
+            JOIN BoatClass             ON o.Offer_BoatClass_ID_FK = {BC_ID}
             FULL OUTER JOIN Entry e    ON          CE_Entry_ID_FK = e.{ENTRY_ID}
             FULL OUTER JOIN EntryLabel ON          EL_Entry_ID_FK = e.{ENTRY_ID}
             FULL OUTER JOIN Label      ON          EL_Label_ID_FK = Label_ID
             FULL OUTER JOIN Result r   ON       r.Result_CE_ID_FK = ce.CE_ID
             JOIN Club c                ON             c.{CLUB_ID} = Entry_OwnerClub_ID_FK
-            WHERE CE_Comp_ID_FK = @P1 AND ((Result_SplitNr = 64 AND Comp_State >=4) OR (Result_SplitNr = 0 AND Comp_State < 3) OR (Comp_State < 2 AND Result_SplitNr IS NULL))
+            WHERE CE_Comp_ID_FK = @P1 AND ((Result_SplitNr = {ROUND_FINAL} AND Comp_State >=4) OR (Result_SplitNr = 0 AND Comp_State < 3) OR (Comp_State < 2 AND Result_SplitNr IS NULL))
             AND EL_RoundFrom <= {HEAT_ROUND} AND {HEAT_ROUND} <= EL_RoundTo
             ORDER BY CE_Lane ASC",
             Entry::select_columns("e"), Club::select_all_columns("c"), Race::select_columns("o"), HeatResult::select_columns("r"));
