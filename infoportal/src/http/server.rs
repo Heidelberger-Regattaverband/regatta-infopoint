@@ -1,41 +1,59 @@
 use crate::config::CONFIG;
-use crate::http::{api_doc, rest_api};
-use ::actix_extensible_rate_limit::{
-    RateLimiter,
-    backend::{SimpleInput, SimpleInputFunctionBuilder, SimpleOutput, memory::InMemoryBackend},
-};
+use crate::http::api_doc;
+use crate::http::rest_api;
+use ::actix_extensible_rate_limit::RateLimiter;
+use ::actix_extensible_rate_limit::backend::SimpleInput;
+use ::actix_extensible_rate_limit::backend::SimpleInputFunctionBuilder;
+use ::actix_extensible_rate_limit::backend::SimpleOutput;
+use ::actix_extensible_rate_limit::backend::memory::InMemoryBackend;
 use ::actix_files::Files;
 use ::actix_identity::IdentityMiddleware;
 use ::actix_identity::config::LogoutBehavior;
+use ::actix_session::SessionMiddleware;
+use ::actix_session::config::PersistentSession;
 use ::actix_session::config::TtlExtensionPolicy;
-use ::actix_session::{SessionMiddleware, config::PersistentSession, storage::CookieSessionStore};
-use ::actix_web::{
-    App, Error, HttpResponse, HttpServer,
-    body::{BoxBody, EitherBody},
-    cookie::{Key, SameSite},
-    dev::{Service, ServiceFactory, ServiceRequest, ServiceResponse},
-    web::{self, Data},
-};
-use ::actix_web_prom::{PrometheusMetrics, PrometheusMetricsBuilder};
+use ::actix_session::storage::CookieSessionStore;
+use ::actix_web::App;
+use ::actix_web::Error;
+use ::actix_web::HttpResponse;
+use ::actix_web::HttpServer;
+use ::actix_web::body::BoxBody;
+use ::actix_web::body::EitherBody;
+use ::actix_web::cookie::Key;
+use ::actix_web::cookie::SameSite;
+use ::actix_web::dev::Service;
+use ::actix_web::dev::ServiceFactory;
+use ::actix_web::dev::ServiceRequest;
+use ::actix_web::dev::ServiceResponse;
+use ::actix_web::web::Data;
+use ::actix_web::web::{self};
+use ::actix_web_prom::PrometheusMetrics;
+use ::actix_web_prom::PrometheusMetricsBuilder;
 use ::db::aquarius::Aquarius;
 use ::db::error::DbError;
 use ::db::tiberius::user_pool::UserPoolManager;
 use ::futures::FutureExt;
 use ::futures::try_join;
-use ::prometheus::{Encoder, Registry, TextEncoder};
+use ::prometheus::Encoder;
+use ::prometheus::Registry;
+use ::prometheus::TextEncoder;
 use ::rustls::ServerConfig;
-use ::rustls_pemfile::{certs, pkcs8_private_keys};
-use ::rustls_pki_types::{PrivateKeyDer, PrivatePkcs8KeyDer};
+use ::rustls_pemfile::certs;
+use ::rustls_pemfile::pkcs8_private_keys;
+use ::rustls_pki_types::PrivateKeyDer;
+use ::rustls_pki_types::PrivatePkcs8KeyDer;
 use ::std::fs::File;
-use ::std::sync::{Arc, Mutex};
+use ::std::future::Ready;
+use ::std::io::BufReader;
+use ::std::io::Result as IoResult;
+use ::std::path::Path;
+use ::std::sync::Arc;
+use ::std::sync::Mutex;
 use ::std::time::Duration;
-use ::std::{
-    future::Ready,
-    io::{BufReader, Result as IoResult},
-    path::Path,
-    time::Instant,
-};
-use ::tracing::{debug, info, warn};
+use ::std::time::Instant;
+use ::tracing::debug;
+use ::tracing::info;
+use ::tracing::warn;
 
 /// Serves Prometheus metrics for the internal-only metrics server.
 async fn metrics_handler(prometheus: Data<Arc<PrometheusMetrics>>) -> HttpResponse {

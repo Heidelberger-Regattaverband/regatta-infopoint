@@ -25,16 +25,15 @@ async fn main() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use crate::config::CONFIG;
-    use crate::http::{
-        rest_api::{self, PATH},
-        server::create_app_data,
-    };
+    use crate::http::rest_api::PATH;
+    use crate::http::rest_api::{self};
+    use crate::http::server::create_app_data;
     use actix_identity::IdentityMiddleware;
-    use actix_web::{
-        App, test,
-        test::TestRequest,
-        web::{Data, scope},
-    };
+    use actix_web::App;
+    use actix_web::test;
+    use actix_web::test::TestRequest;
+    use actix_web::web::Data;
+    use actix_web::web::scope;
     use db::tiberius::TiberiusPool;
     use dotenv::dotenv;
 

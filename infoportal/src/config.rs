@@ -1,9 +1,13 @@
 use crate::built_info;
-use ::db::tiberius_client::{AuthMethod, Config as TiberiusConfig, EncryptionLevel};
+use ::db::tiberius_client::AuthMethod;
+use ::db::tiberius_client::Config as TiberiusConfig;
+use ::db::tiberius_client::EncryptionLevel;
 use ::dotenv::dotenv;
 use ::secret_string::SecretString;
+use ::std::env;
+use ::std::fmt::Display;
+use ::std::str::FromStr;
 use ::std::sync::LazyLock;
-use ::std::{env, fmt::Display, str::FromStr};
 use ::thiserror::Error;
 use ::tracing::info;
 use ::tracing_subscriber::EnvFilter;

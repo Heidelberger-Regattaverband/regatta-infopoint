@@ -1,9 +1,13 @@
 use crate::config::CONFIG;
 use crate::http::rest_api::get_user_pool;
+use ::actix::Actor;
+use ::actix::ActorContext;
 use ::actix::ActorFutureExt;
+use ::actix::Addr;
+use ::actix::AsyncContext;
+use ::actix::Handler;
 use ::actix::Message as ActixMessage;
 use ::actix::StreamHandler;
-use ::actix::{Actor, ActorContext, Addr, AsyncContext, Handler};
 use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::HttpRequest;
@@ -39,7 +43,8 @@ use ::tracing::error;
 use ::tracing::trace;
 use ::tracing::warn;
 
-use super::{WS_CLIENT_TIMEOUT, WS_HEARTBEAT_INTERVAL};
+use super::WS_CLIENT_TIMEOUT;
+use super::WS_HEARTBEAT_INTERVAL;
 
 /// A timekeeping command sent from the client to trigger timekeeping actions on the server.
 /// Direction: Client -> Server
