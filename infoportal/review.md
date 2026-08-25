@@ -7,28 +7,6 @@
 
 ## Open Issues
 
-### HIGH-3 — No HTTP security response headers
-
-**File:** `infoportal/src/http/server.rs`, `get_app` function (lines 132–164)
-
-No middleware adds `X-Frame-Options`, `X-Content-Type-Options`, `Content-Security-Policy`, `Strict-Transport-Security`, or `Referrer-Policy` headers. The existing `wrap_fn` placeholder on lines 157–163 is the natural insertion point.
-
-**Suggested fix:**
-```rust
-.wrap_fn(|req, srv| {
-    srv.call(req).map(|res| res.map(|mut r| {
-        let h = r.headers_mut();
-        h.insert(header::X_FRAME_OPTIONS, HeaderValue::from_static("DENY"));
-        h.insert(header::X_CONTENT_TYPE_OPTIONS, HeaderValue::from_static("nosniff"));
-        h.insert(HeaderName::from_static("referrer-policy"),
-            HeaderValue::from_static("strict-origin-when-cross-origin"));
-        r
-    }))
-})
-```
-
----
-
 ### HIGH-4 — DB TLS enabled but certificate validation bypassed
 
 **File:** `infoportal/src/config.rs`, lines 106–109

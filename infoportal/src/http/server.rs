@@ -25,6 +25,8 @@ use ::actix_web::dev::Service;
 use ::actix_web::dev::ServiceFactory;
 use ::actix_web::dev::ServiceRequest;
 use ::actix_web::dev::ServiceResponse;
+use ::actix_web::http::header::HeaderName;
+use ::actix_web::http::header::HeaderValue;
 use ::actix_web::web::Data;
 use ::actix_web::web::{self};
 use ::actix_web_prom::PrometheusMetrics;
@@ -194,10 +196,29 @@ impl Server {
             // adds support for rate limiting of HTTP requests
             .wrap(Self::get_rate_limiter(rl_max_requests, rl_interval))
             .wrap_fn(|req, srv| {
-                // println!("Hi from start. You requested: {}", req.path());
                 srv.call(req).map(|res| {
-                    // println!("Hi from response");
-                    res
+                    res.map(|mut response| {
+                        let headers = response.headers_mut();
+                        headers.insert(
+                            HeaderName::from_static("x-frame-options"),
+                            HeaderValue::from_static("DENY"),
+                        );
+                        headers.insert(
+                            HeaderName::from_static("x-content-type-options"),
+                            HeaderValue::from_static("nosniff"),
+                        );
+                        headers.insert(
+                            HeaderName::from_static("referrer-policy"),
+                            HeaderValue::from_static("strict-origin-when-cross-origin"),
+                        );
+                        headers.insert(
+                            HeaderName::from_static("content-security-policy"),
+                            HeaderValue::from_static(
+                                "default-src 'self'; script-src 'self' sdk.openui5.org; style-src 'self' 'unsafe-inline' sdk.openui5.org; img-src 'self' data: https:; connect-src 'self' sdk.openui5.org; font-src 'self' sdk.openui5.org",
+                            ),
+                        );
+                        response
+                    })
                 })
             })
     }
