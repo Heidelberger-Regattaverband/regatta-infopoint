@@ -1,12 +1,12 @@
 use super::AgeClass;
 use super::BoatClass;
-use super::age_class::ID as AGE_CLASS_ID;
-use super::age_class::MAX_AGE;
-use super::age_class::MIN_AGE;
+use super::age_class::AC_ID;
+use super::age_class::AC_MAX_AGE;
+use super::age_class::AC_MIN_AGE;
 use super::block::Block;
-use super::boat_class::COXED;
-use super::boat_class::ID as BOAT_CLASS_ID;
-use super::boat_class::NUM_ROWERS;
+use super::boat_class::BC_COXED;
+use super::boat_class::BC_ID;
+use super::boat_class::BC_NUM_ROWERS;
 use super::get_rows;
 use super::heat::DATE_TIME as HEAT_DATE_TIME;
 use super::heat::ROUND as HEAT_ROUND;
@@ -90,9 +90,9 @@ impl Filters {
 async fn query_boat_classes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<BoatClass>, DbError> {
     let mut query = Query::new(format!(
         "SELECT DISTINCT {0} FROM BoatClass b
-        JOIN Offer o ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID} 
+        JOIN Offer o ON o.Offer_BoatClass_ID_FK = b.{BC_ID}
         WHERE o.Offer_Event_ID_FK = @P1
-        ORDER BY b.{NUM_ROWERS} ASC, b.{COXED} ASC",
+        ORDER BY b.{BC_NUM_ROWERS} ASC, b.{BC_COXED} ASC",
         BoatClass::select_columns("b")
     ));
     query.bind(regatta_id);
@@ -105,9 +105,9 @@ async fn query_boat_classes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<
 async fn query_age_classes(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<AgeClass>, DbError> {
     let mut query = Query::new(format!(
         "SELECT DISTINCT {0} FROM AgeClass a
-        JOIN Offer o ON o.Offer_AgeClass_ID_FK = a.{AGE_CLASS_ID}
+        JOIN Offer o ON o.Offer_AgeClass_ID_FK = a.{AC_ID}
         WHERE o.Offer_Event_ID_FK = @P1
-        ORDER BY a.{MIN_AGE} DESC, a.{MAX_AGE} DESC",
+        ORDER BY a.{AC_MIN_AGE} DESC, a.{AC_MAX_AGE} DESC",
         AgeClass::select_all_columns("a")
     ));
     query.bind(regatta_id);

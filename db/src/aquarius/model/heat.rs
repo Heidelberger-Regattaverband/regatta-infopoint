@@ -4,8 +4,8 @@ use super::HeatEntry;
 use super::Race;
 use super::Referee;
 use super::TryToEntity;
-use super::age_class::ID as AGE_CLASS_ID;
-use super::boat_class::ID as BOAT_CLASS_ID;
+use super::age_class::AC_ID;
+use super::boat_class::BC_ID;
 use super::get_row;
 use super::get_rows;
 use super::race::ID as RACE_ID;
@@ -128,8 +128,8 @@ impl Heat {
         let sql = format!(
             "SELECT {0}, {1}, {2}, {3} FROM Comp c
             JOIN Offer     o ON o.{RACE_ID}             = c.Comp_Race_ID_FK
-            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
-            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
+            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AC_ID}
+            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BC_ID}
             WHERE c.Comp_Event_ID_FK = @P1 AND c.{DATE_TIME} IS NOT NULL
             ORDER BY c.{DATE_TIME} ASC",
             Heat::select_columns("c"),
@@ -210,8 +210,8 @@ impl Heat {
         let sql = format!(
             "SELECT {0}, {1}, {2}, {3} FROM Comp c
             JOIN Offer o     ON o.{RACE_ID}             = c.Comp_Race_ID_FK
-            JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
-            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
+            JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.{AC_ID}
+            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BC_ID}
             WHERE {ID} = @P1",
             Heat::select_columns("c"),
             AgeClass::select_minimal_columns("a"),

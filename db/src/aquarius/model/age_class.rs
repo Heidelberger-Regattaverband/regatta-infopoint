@@ -4,14 +4,14 @@ use ::serde::Serialize;
 use ::tiberius::Row;
 use ::utoipa::ToSchema;
 
-pub(super) const ID: &str = "AgeClass_ID";
+pub(super) const AC_ID: &str = "AgeClass_ID";
 const CAPTION: &str = "AgeClass_Caption";
 const ABBREVIATION: &str = "AgeClass_Abbr";
 const SUFFIX: &str = "AgeClass_Suffix";
 const GENDER: &str = "AgeClass_Gender";
 const NUM_SUB_CLASSES: &str = "AgeClass_NumSubClasses";
-pub(super) const MIN_AGE: &str = "AgeClass_MinAge";
-pub(super) const MAX_AGE: &str = "AgeClass_MaxAge";
+pub(super) const AC_MIN_AGE: &str = "AgeClass_MinAge";
+pub(super) const AC_MAX_AGE: &str = "AgeClass_MaxAge";
 
 /// An age class defines the age range of athletes.
 #[derive(Debug, Serialize, Clone, ToSchema)]
@@ -47,13 +47,13 @@ pub struct AgeClass {
 impl AgeClass {
     pub(crate) fn select_all_columns(alias: &str) -> String {
         format!(
-            "{alias}.{ID}, {alias}.{CAPTION}, {alias}.{ABBREVIATION}, {alias}.{SUFFIX}, {alias}.{GENDER}, \
-            {alias}.{NUM_SUB_CLASSES}, {alias}.{MIN_AGE}, {alias}.{MAX_AGE}"
+            "{alias}.{AC_ID}, {alias}.{CAPTION}, {alias}.{ABBREVIATION}, {alias}.{SUFFIX}, {alias}.{GENDER}, \
+            {alias}.{NUM_SUB_CLASSES}, {alias}.{AC_MIN_AGE}, {alias}.{AC_MAX_AGE}"
         )
     }
     pub(crate) fn select_minimal_columns(alias: &str) -> String {
         format!(
-            "{alias}.{ID}, {alias}.{CAPTION}, {alias}.{ABBREVIATION}, {alias}.{SUFFIX}, {alias}.{GENDER}, \
+            "{alias}.{AC_ID}, {alias}.{CAPTION}, {alias}.{ABBREVIATION}, {alias}.{SUFFIX}, {alias}.{GENDER}, \
             {alias}.{NUM_SUB_CLASSES}"
         )
     }
@@ -62,20 +62,20 @@ impl AgeClass {
 impl From<&Row> for AgeClass {
     fn from(row: &Row) -> Self {
         AgeClass {
-            id: row.get_column(ID),
+            id: row.get_column(AC_ID),
             caption: row.get_column(CAPTION),
             abbreviation: row.get_column(ABBREVIATION),
             suffix: row.try_get_column(SUFFIX).unwrap_or_default(),
             gender: row.get_column(GENDER),
             num_sub_classes: row.get_column(NUM_SUB_CLASSES),
-            min_age: row.try_get_column(MIN_AGE),
-            max_age: row.try_get_column(MAX_AGE),
+            min_age: row.try_get_column(AC_MIN_AGE),
+            max_age: row.try_get_column(AC_MAX_AGE),
         }
     }
 }
 
 impl TryToEntity<AgeClass> for Row {
     fn try_to_entity(&self) -> Option<AgeClass> {
-        <Row as TryRowColumn<i32>>::try_get_column(self, ID).map(|_id| AgeClass::from(self))
+        <Row as TryRowColumn<i32>>::try_get_column(self, AC_ID).map(|_id| AgeClass::from(self))
     }
 }

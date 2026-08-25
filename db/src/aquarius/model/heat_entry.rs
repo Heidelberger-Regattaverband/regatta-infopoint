@@ -1,7 +1,7 @@
 use super::ROUND_FINAL;
 use super::TryToEntity;
-use super::boat_class::ID as BOAT_CLASS_ID;
-use super::boat_class::NUM_ROWERS;
+use super::boat_class::BC_ID;
+use super::boat_class::BC_NUM_ROWERS;
 use super::club::Club;
 use super::club::ID as CLUB_ID;
 use super::crew::Crew;
@@ -61,11 +61,11 @@ impl HeatEntry {
     /// # Returns
     /// A list of entries of the heat
     pub(crate) async fn query_entries_of_heat(heat: &Heat, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
-        let sql = format!("SELECT DISTINCT ce.CE_ID, ce.CE_Lane, {0}, Label_Short, {NUM_ROWERS}, {1}, {2}, {3}
+        let sql = format!("SELECT DISTINCT ce.CE_ID, ce.CE_Lane, {0}, Label_Short, {BC_NUM_ROWERS}, {1}, {2}, {3}
             FROM CompEntries ce
             JOIN Comp                  ON           CE_Comp_ID_FK = {HEAT_ID}
             JOIN Offer o               ON             o.{RACE_ID} = Comp_Race_ID_FK
-            JOIN BoatClass             ON o.Offer_BoatClass_ID_FK = {BOAT_CLASS_ID}
+            JOIN BoatClass             ON o.Offer_BoatClass_ID_FK = {BC_ID}
             FULL OUTER JOIN Entry e    ON          CE_Entry_ID_FK = e.{ENTRY_ID}
             FULL OUTER JOIN EntryLabel ON          EL_Entry_ID_FK = e.{ENTRY_ID}
             FULL OUTER JOIN Label      ON          EL_Label_ID_FK = Label_ID

@@ -1,5 +1,5 @@
-use super::age_class::ID as AGE_CLASS_ID;
-use super::boat_class::ID as BOAT_CLASS_ID;
+use super::age_class::AC_ID;
+use super::boat_class::BC_ID;
 use super::entry::CANCELLED as ENTRY_CANCELLED;
 use super::get_row;
 use super::get_rows;
@@ -161,8 +161,8 @@ impl Race {
     pub async fn query_races_of_regatta(regatta_id: i32, client: &mut TiberiusClient) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
-            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
-            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
+            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AC_ID}
+            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BC_ID}
             WHERE o.Offer_Event_ID_FK = @P1
             ORDER BY o.Offer_SortValue ASC",
             Race::select_columns_with_analytical("o"),
@@ -180,8 +180,8 @@ impl Race {
     pub async fn query_race_by_id(race_id: i32, client: &mut TiberiusClient) -> Result<Self, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
-            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AGE_CLASS_ID}
-            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BOAT_CLASS_ID}
+            JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AC_ID}
+            JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BC_ID}
             WHERE o.{ID} = @P1",
             Race::select_columns_with_analytical("o"),
             AgeClass::select_minimal_columns("a"),
