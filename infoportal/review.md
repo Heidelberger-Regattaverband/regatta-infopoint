@@ -21,16 +21,6 @@ PrometheusMetricsBuilder::new("api")
 
 ---
 
-### HIGH-2 — Rate limiter IP key is spoofable via `X-Forwarded-For`
-
-**File:** `infoportal/src/http/server.rs`, lines 215–222
-
-`real_ip_key()` uses the `X-Forwarded-For` header as the rate-limit key. Without a trusted-proxy whitelist any client can set an arbitrary IP on every request, bypassing rate limiting entirely. Additionally, each actix worker maintains its own in-memory counter, making the effective limit `http_workers × rl_max_requests`.
-
-**Suggested fix:** Use `peer_ip_key()` (actual TCP socket address) unless a known reverse proxy is explicitly trusted. Use a shared backend (e.g., Redis) if multi-worker rate limits must be accurate.
-
----
-
 ### HIGH-3 — No HTTP security response headers
 
 **File:** `infoportal/src/http/server.rs`, `get_app` function (lines 132–164)

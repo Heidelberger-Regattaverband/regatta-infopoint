@@ -214,7 +214,7 @@ impl Server {
         interval: u64,
     ) -> RateLimiter<InMemoryBackend, SimpleOutput, impl Fn(&ServiceRequest) -> Ready<Result<SimpleInput, Error>>> {
         let input = SimpleInputFunctionBuilder::new(Duration::from_secs(interval), max_requests)
-            .real_ip_key()
+            .peer_ip_key()
             .build();
 
         RateLimiter::builder(InMemoryBackend::builder().build(), input)
