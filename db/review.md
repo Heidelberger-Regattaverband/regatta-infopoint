@@ -26,12 +26,6 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 - **Problem:** `get_visible_notifications` always passes `false` for `force`, unlike other methods that accept `force_cache` from the caller. This means the caller cannot force a cache refresh for visible notifications.
 - **Suggested fix:** Add a `force_cache: bool` parameter to be consistent with other methods.
 
-### 10. Magic number `64` used throughout for "final round" — **Maintainability** 💡
-
-- **Files:** Multiple model files (`entry.rs` line 107, `athlete.rs` line 52, `crew.rs` implicit, `heat_entry.rs`, `statistics.rs`, `score.rs` line 53)
-- **Problem:** The value `64` appears repeatedly as a magic number representing the "final round". While consistent, it lacks documentation and a named constant.
-- **Suggested fix:** Define a named constant (e.g., `const ROUND_FINAL: i16 = 64;`) in the model module and use it throughout.
-
 ### 13. `Regatta::query_active_regatta` returns first regatta, not necessarily "active" — **Semantic** 💡
 
 - **File:** `db/src/aquarius/model/regatta.rs`, lines 63–71

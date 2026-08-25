@@ -1,3 +1,4 @@
+use super::ROUND_FINAL;
 use super::TryToEntity;
 use super::boat_class::ID as BOAT_CLASS_ID;
 use super::boat_class::NUM_ROWERS;
@@ -70,7 +71,7 @@ impl HeatEntry {
             FULL OUTER JOIN Label      ON          EL_Label_ID_FK = Label_ID
             FULL OUTER JOIN Result r   ON       r.Result_CE_ID_FK = ce.CE_ID
             JOIN Club c                ON             c.{CLUB_ID} = Entry_OwnerClub_ID_FK
-            WHERE CE_Comp_ID_FK = @P1 AND ((Result_SplitNr = 64 AND Comp_State >=4) OR (Result_SplitNr = 0 AND Comp_State < 3) OR (Comp_State < 2 AND Result_SplitNr IS NULL))
+            WHERE CE_Comp_ID_FK = @P1 AND ((Result_SplitNr = {ROUND_FINAL} AND Comp_State >=4) OR (Result_SplitNr = 0 AND Comp_State < 3) OR (Comp_State < 2 AND Result_SplitNr IS NULL))
             AND EL_RoundFrom <= {HEAT_ROUND} AND {HEAT_ROUND} <= EL_RoundTo
             ORDER BY CE_Lane ASC",
             Entry::select_columns("e"), Club::select_all_columns("c"), Race::select_columns("o"), HeatResult::select_columns("r"));

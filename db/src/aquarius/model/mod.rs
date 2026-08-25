@@ -42,6 +42,9 @@ pub use schedule::{Schedule, ScheduleEntry};
 pub use score::Score;
 pub use statistics::Statistics;
 
+/// Round number identifying the final round in all race formats.
+pub(crate) const ROUND_FINAL: i16 = 64;
+
 pub trait TryToEntity<T> {
     fn try_to_entity(&self) -> Option<T>;
 }

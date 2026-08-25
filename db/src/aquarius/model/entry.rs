@@ -1,6 +1,7 @@
 use super::Club;
 use super::Crew;
 use super::Heat;
+use super::ROUND_FINAL;
 use super::Race;
 use super::TryToEntity;
 use super::athlete::ID as ATHLETE_ID;
@@ -108,7 +109,7 @@ impl Entry {
         club_id: i32,
         pool: &TiberiusPool,
     ) -> Result<Vec<Self>, DbError> {
-        let round = 64;
+        let round = ROUND_FINAL;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, {2}, l.Label_Short
             FROM Club AS ac
@@ -145,7 +146,7 @@ impl Entry {
         athlete_id: i32,
         pool: &TiberiusPool,
     ) -> Result<Vec<Self>, DbError> {
-        let round = 64;
+        let round = ROUND_FINAL;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, {2}, l.Label_Short
             FROM Athlet      a
@@ -176,7 +177,7 @@ impl Entry {
     /// # Returns
     /// A vector of entries for the given race
     pub async fn query_entries_for_race(race_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
-        let round = 64;
+        let round = ROUND_FINAL;
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1}, l.Label_Short
             FROM Entry       e
