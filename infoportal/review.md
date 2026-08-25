@@ -23,22 +23,6 @@ if self.db_encryption {
 
 ---
 
-### MEDIUM-1 — WebSocket timekeeping errors expose internal details ✅ FIXED
-
-**File:** `infoportal/src/http/rest_api/timekeeping.rs`, lines 245, 252, 281, 309, 313, 363
-
-Raw tiberius/SQL errors are formatted into `ServerEvent::Error` and sent to the WebSocket client, potentially leaking table names, column names, or connection details.
-
-**Suggested fix:**
-```rust
-.map_err(|err| {
-    error!(?err, "Failed to add start timestamp");
-    "Failed to add start timestamp".to_string()
-})?
-```
-
----
-
 ### MEDIUM-2 — `thread::sleep` inside a global `Mutex` lock in async context
 
 **File:** `infoportal/src/http/monitoring.rs`, lines 78–89
