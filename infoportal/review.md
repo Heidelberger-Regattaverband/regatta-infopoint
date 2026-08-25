@@ -23,7 +23,7 @@ if self.db_encryption {
 
 ---
 
-### MEDIUM-1 — WebSocket timekeeping errors expose internal details
+### MEDIUM-1 — WebSocket timekeeping errors expose internal details ✅ FIXED
 
 **File:** `infoportal/src/http/rest_api/timekeeping.rs`, lines 245, 252, 281, 309, 313, 363
 

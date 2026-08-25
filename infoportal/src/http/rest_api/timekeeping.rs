@@ -244,14 +244,14 @@ impl Handler<AddTimestamp> for TimekeepingActor {
             actix::fut::wrap_future(async move {
                 let mut time_strip = time_strip.write().await;
                 let timestamp = match split {
-                    0 => time_strip
-                        .add_start(msg.time)
-                        .await
-                        .map_err(|err| format!("Failed to add start timestamp: {err}"))?,
-                    64 => time_strip
-                        .add_finish(msg.time)
-                        .await
-                        .map_err(|err| format!("Failed to add finish timestamp: {err}"))?,
+                    0 => time_strip.add_start(msg.time).await.map_err(|err| {
+                        error!(?err, "Failed to add start timestamp");
+                        "Failed to add start timestamp".to_string()
+                    })?,
+                    64 => time_strip.add_finish(msg.time).await.map_err(|err| {
+                        error!(?err, "Failed to add finish timestamp");
+                        "Failed to add finish timestamp".to_string()
+                    })?,
                     _ => {
                         return Err(format!("Invalid split number: {split}"));
                     }
@@ -280,10 +280,10 @@ impl Handler<DeleteTimestamp> for TimekeepingActor {
         ctx.wait(
             actix::fut::wrap_future(async move {
                 let mut time_strip = time_strip.write().await;
-                let timestamp = time_strip
-                    .delete(&msg.time)
-                    .await
-                    .map_err(|err| format!("Failed to delete timestamp: {err}"))?;
+                let timestamp = time_strip.delete(&msg.time).await.map_err(|err| {
+                    error!(?err, "Failed to delete timestamp");
+                    "Failed to delete timestamp".to_string()
+                })?;
                 Ok(timestamp)
             })
             .map(
@@ -308,10 +308,10 @@ impl Handler<UpdateTimestamp> for TimekeepingActor {
                 let mut time_strip = time_strip.write().await;
                 let timestamp = time_strip.get_by_time(&msg.time).cloned();
                 if let Some(timestamp) = timestamp {
-                    let timestamp = time_strip
-                        .set_heat_nr(&timestamp, msg.heat_nr)
-                        .await
-                        .map_err(|err| format!("Failed to update timestamp heat number: {err}"))?;
+                    let timestamp = time_strip.set_heat_nr(&timestamp, msg.heat_nr).await.map_err(|err| {
+                        error!(?err, "Failed to update timestamp heat number");
+                        "Failed to update timestamp heat number".to_string()
+                    })?;
                     Ok(timestamp)
                 } else {
                     Err(format!("Timestamp with time {} not found", msg.time))
@@ -362,10 +362,10 @@ impl Handler<GetHeatsReadyToStart> for TimekeepingActor {
 
         ctx.wait(
             actix::fut::wrap_future(async move {
-                aquarius_db
-                    .get_heats_ready_to_start()
-                    .await
-                    .map_err(|err| format!("Failed to read heats ready to start from Aquarius DB: {err}"))
+                aquarius_db.get_heats_ready_to_start().await.map_err(|err| {
+                    error!(?err, "Failed to read heats ready to start");
+                    "Failed to read heats ready to start".to_string()
+                })
             })
             .map(
                 |result: Result<Vec<DbHeat>, String>, _actor, ctx: &mut WebsocketContext<TimekeepingActor>| {
