@@ -57,15 +57,6 @@ use ::tracing::debug;
 use ::tracing::info;
 use ::tracing::warn;
 
-/// Serves Prometheus metrics for the internal-only metrics server.
-async fn metrics_handler(prometheus: Data<Arc<PrometheusMetrics>>) -> HttpResponse {
-    let encoder = TextEncoder::new();
-    let mut buffer = Vec::new();
-    encoder.encode(&prometheus.registry.gather(), &mut buffer).ok();
-    encoder.encode(&::prometheus::gather(), &mut buffer).ok();
-    HttpResponse::Ok().content_type(encoder.format_type()).body(buffer)
-}
-
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
 const INFOPORTAL_V2: &str = "infoportal2";
@@ -101,10 +92,10 @@ impl Server {
 
         let user_pool_manager = Data::new(UserPoolManager::new(CONFIG.get_db_config()));
 
-        let factory_closure = move || {
+        let app_factory = move || {
             let mut count = worker_count.lock().unwrap();
             *count += 1;
-            debug!(count = *count, "Created HTTP worker:");
+            debug!(count = *count, "Created application HTTP worker:");
 
             // get app with some middlewares initialized
             Self::get_app(secret_key.clone(), rl_max_requests, rl_interval)
@@ -132,34 +123,35 @@ impl Server {
                 .service(web::redirect("/", INFOPORTAL))
         };
 
-        let mut http_server = HttpServer::new(factory_closure)
+        let mut app_http_server = HttpServer::new(app_factory)
             // always bind to http
             .bind(CONFIG.get_http_bind())?;
 
         // also bind to https if config is available
         if let Some(rustls_cfg) = Self::get_rustls_config() {
             let https_bind = CONFIG.get_https_bind();
-            http_server = http_server.bind_rustls_0_23(https_bind, rustls_cfg)?;
+            app_http_server = app_http_server.bind_rustls_0_23(https_bind, rustls_cfg)?;
         }
 
         // configure number of workers if env. variable is set
         if let Some(workers) = CONFIG.http_workers {
-            http_server = http_server.workers(workers);
+            app_http_server = app_http_server.workers(workers);
         }
+        let app_server = app_http_server.run();
 
-        // finally run http server
-        let server = http_server.run();
-
+        // start a separate server for prometheus metrics
         let prometheus_data = Data::new(prometheus_for_metrics);
         let metrics_server = HttpServer::new(move || {
+            debug!("Created metrics HTTP worker");
             App::new()
                 .app_data(prometheus_data.clone())
                 .route("/metrics", web::get().to(metrics_handler))
         })
         .bind(CONFIG.get_metrics_bind())?;
+        let metrics_server = metrics_server.workers(1).run();
 
         info!(elapsed = ?start.elapsed(), "Infoportal started:");
-        try_join!(server, metrics_server.run())?;
+        try_join!(app_server, metrics_server)?;
         Ok(())
     }
 
@@ -352,6 +344,15 @@ impl Server {
             None
         }
     }
+}
+
+/// Serves Prometheus metrics for the internal-only metrics server.
+async fn metrics_handler(prometheus: Data<Arc<PrometheusMetrics>>) -> HttpResponse {
+    let encoder = TextEncoder::new();
+    let mut buffer = Vec::new();
+    encoder.encode(&prometheus.registry.gather(), &mut buffer).ok();
+    encoder.encode(&::prometheus::gather(), &mut buffer).ok();
+    HttpResponse::Ok().content_type(encoder.format_type()).body(buffer)
 }
 
 pub async fn create_app_data() -> Result<Data<Aquarius>, DbError> {

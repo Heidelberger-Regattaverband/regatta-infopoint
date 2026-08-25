@@ -215,7 +215,11 @@ impl Config {
             timeout_in_ms = config.aquarius_timeout,
             "Aquarius Client:"
         );
-        info!(port = config.metrics_port, "Metrics server (127.0.0.1):");
+        info!(
+            http_bind = "127.0.0.1",
+            http_port = config.metrics_port,
+            "Metrics server is listening on:"
+        );
 
         Ok(config)
     }
