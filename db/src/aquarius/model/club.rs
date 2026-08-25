@@ -5,14 +5,15 @@ use super::entry::CANCELLED as ENTRY_CANCELLED;
 use super::entry::ID as ENTRY_ID;
 use super::get_row;
 use super::get_rows;
+use crate::aquarius::flags_scraper::ClubFlag;
+use crate::error::DbError;
+use crate::tiberius::RowColumn;
 use crate::tiberius::TiberiusClient;
-use crate::{
-    aquarius::flags_scraper::ClubFlag,
-    error::DbError,
-    tiberius::{RowColumn, TryRowColumn},
-};
+use crate::tiberius::TryRowColumn;
 use ::serde::Serialize;
-use ::tiberius::{Query, Row, numeric::Decimal};
+use ::tiberius::Query;
+use ::tiberius::Row;
+use ::tiberius::numeric::Decimal;
 use ::utoipa::ToSchema;
 
 pub(crate) const ID: &str = "Club_ID";

@@ -9,15 +9,17 @@ use super::boat_class::BC_ID;
 use super::get_row;
 use super::get_rows;
 use super::race::ID as RACE_ID;
-use crate::{
-    error::DbError,
-    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
-};
-use ::chrono::{DateTime, Utc};
+use crate::error::DbError;
+use crate::tiberius::RowColumn;
+use crate::tiberius::TiberiusPool;
+use crate::tiberius::TryRowColumn;
+use ::chrono::DateTime;
+use ::chrono::Utc;
 use ::futures::future::join;
 use ::serde::Serialize;
 use ::std::collections::HashMap;
-use ::tiberius::{Query, Row};
+use ::tiberius::Query;
+use ::tiberius::Row;
 use ::utoipa::ToSchema;
 
 pub(super) const HEAT_ID: &str = "Comp_ID";

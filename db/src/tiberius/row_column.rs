@@ -1,5 +1,9 @@
-use ::chrono::{DateTime, NaiveDate, Utc};
-use ::tiberius::{Row, numeric::Decimal, time::chrono::NaiveDateTime};
+use ::chrono::DateTime;
+use ::chrono::NaiveDate;
+use ::chrono::Utc;
+use ::tiberius::Row;
+use ::tiberius::numeric::Decimal;
+use ::tiberius::time::chrono::NaiveDateTime;
 
 /// Extension traits for `Row` to provide convenient methods for retrieving column values by name.
 pub trait RowColumn<T: Default> {

@@ -11,10 +11,9 @@ use super::get_rows;
 use super::heat::HEAT_DATE_TIME;
 use super::heat::HEAT_ROUND;
 use super::heat::HEAT_ROUND_CODE;
-use crate::{
-    error::DbError,
-    tiberius::{RowColumn, TiberiusPool},
-};
+use crate::error::DbError;
+use crate::tiberius::RowColumn;
+use crate::tiberius::TiberiusPool;
 use ::chrono::NaiveDate;
 use ::futures::join;
 use ::serde::Serialize;

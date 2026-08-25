@@ -1,5 +1,7 @@
-use ::scraper::{Html, Selector};
-use ::std::{collections::HashMap, sync::OnceLock};
+use ::scraper::Html;
+use ::scraper::Selector;
+use ::std::collections::HashMap;
+use ::std::sync::OnceLock;
 use ::tracing::warn;
 
 const BASE_URL: &str = "https://verwaltung.rudern.de";

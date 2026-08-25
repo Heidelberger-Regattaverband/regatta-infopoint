@@ -3,13 +3,13 @@ use super::athlete::Athlete;
 use super::athlete::ID as ATHLETE_ID;
 use super::club::ID as CLUB_ID;
 use super::get_rows;
-use crate::{
-    error::DbError,
-    tiberius::{RowColumn, TiberiusPool},
-};
+use crate::error::DbError;
+use crate::tiberius::RowColumn;
+use crate::tiberius::TiberiusPool;
 use ::serde::Serialize;
 use ::std::collections::HashMap;
-use ::tiberius::{Query, Row};
+use ::tiberius::Query;
+use ::tiberius::Row;
 use ::utoipa::ToSchema;
 
 const ID: &str = "Crew_ID";

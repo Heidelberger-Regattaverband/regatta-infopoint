@@ -1,13 +1,14 @@
 use crate::aquarius::model::get_rows;
+use crate::error::DbError;
+use crate::tiberius::RowColumn;
 use crate::tiberius::TiberiusClient;
-use crate::{
-    error::DbError,
-    tiberius::{RowColumn, TryRowColumn},
-};
-use ::chrono::{DateTime, Utc};
+use crate::tiberius::TryRowColumn;
+use ::chrono::DateTime;
+use ::chrono::Utc;
 use ::serde::Serialize;
 use ::strum_macros::Display;
-use ::tiberius::{Query, Row};
+use ::tiberius::Query;
+use ::tiberius::Row;
 use ::utoipa::ToSchema;
 
 const TIMESTAMP: &str = "timestamp";

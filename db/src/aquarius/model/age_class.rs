@@ -1,5 +1,6 @@
 use super::TryToEntity;
-use crate::tiberius::{RowColumn, TryRowColumn};
+use crate::tiberius::RowColumn;
+use crate::tiberius::TryRowColumn;
 use ::serde::Serialize;
 use ::tiberius::Row;
 use ::utoipa::ToSchema;

@@ -14,14 +14,16 @@ use super::heat::Heat;
 use super::heat_result::HeatResult;
 use super::race::ID as RACE_ID;
 use super::race::Race;
-use crate::{
-    error::DbError,
-    tiberius::{RowColumn, TiberiusPool},
-};
-use ::futures::future::{BoxFuture, join_all};
+use crate::error::DbError;
+use crate::tiberius::RowColumn;
+use crate::tiberius::TiberiusPool;
+use ::futures::future::BoxFuture;
+use ::futures::future::join_all;
 use ::serde::Serialize;
-use ::std::{cmp::Ordering, time::Duration};
-use ::tiberius::{Query, Row};
+use ::std::cmp::Ordering;
+use ::std::time::Duration;
+use ::tiberius::Query;
+use ::tiberius::Row;
 use ::utoipa::ToSchema;
 
 /// A entry of a boat in a heat.

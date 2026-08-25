@@ -16,13 +16,13 @@ use super::get_rows;
 use super::heat::HEAT_ID;
 use super::heat::HEAT_ROUND;
 use super::race::ID as RACE_ID;
+use crate::error::DbError;
+use crate::tiberius::RowColumn;
 use crate::tiberius::TiberiusClient;
-use crate::{
-    error::DbError,
-    tiberius::{RowColumn, TryRowColumn},
-};
+use crate::tiberius::TryRowColumn;
 use ::serde::Serialize;
-use ::tiberius::{Query, Row};
+use ::tiberius::Query;
+use ::tiberius::Row;
 
 #[derive(Debug, Serialize, Clone)]
 #[serde(rename_all = "camelCase")]

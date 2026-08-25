@@ -16,13 +16,13 @@ use super::race::CANCELLED as RACE_CANCELLED;
 use super::race::DRIVEN as RACE_DRIVEN;
 use super::race::ID as RACE_ID;
 use super::try_get_row;
-use crate::{
-    error::DbError,
-    tiberius::{RowColumn, TiberiusPool},
-};
+use crate::error::DbError;
+use crate::tiberius::RowColumn;
+use crate::tiberius::TiberiusPool;
 use ::futures::join;
 use ::serde::Serialize;
-use ::tiberius::{Query, Row};
+use ::tiberius::Query;
+use ::tiberius::Row;
 
 #[derive(Debug, Serialize, Clone)]
 struct RacesStatistics {

@@ -9,13 +9,14 @@ use super::club::ID as CLUB_ID;
 use super::crew::ROUND_TO as CREW_ROUND_TO;
 use super::get_rows;
 use super::race::ID as RACE_ID;
-use crate::{
-    error::DbError,
-    tiberius::{RowColumn, TiberiusPool, TryRowColumn},
-};
+use crate::error::DbError;
+use crate::tiberius::RowColumn;
+use crate::tiberius::TiberiusPool;
+use crate::tiberius::TryRowColumn;
 use ::futures::join;
 use ::serde::Serialize;
-use ::tiberius::{Query, Row};
+use ::tiberius::Query;
+use ::tiberius::Row;
 use ::utoipa::ToSchema;
 
 pub(crate) const ID: &str = "Entry_ID";
