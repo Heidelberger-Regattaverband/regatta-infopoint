@@ -92,16 +92,6 @@ If `entry.bib == 0`, this underflows to `usize::MAX` in release builds.
 
 ---
 
-### N8. N+1 parallel queries in `execute_query` can saturate the connection pool — **LOW** ✅ FIXED
-
-**File:** `db/src/aquarius/model/entry.rs`, lines 198–233
-
-For a 200-entry result, up to 400 simultaneous pool connections are requested via `join_all`. Under concurrent API requests this multiplies.
-
-**Suggested fix:** Chunk `join_all` into batches, or restructure into a single JOIN query.
-
----
-
 ### N9. Negative delta underflow in `HeatEntry::query_entries_of_heat` — **LOW**
 
 **File:** `db/src/aquarius/model/heat_entry.rs`, lines 123–128
