@@ -7,7 +7,7 @@
 
 ## Open Issues
 
-### HIGH-4 — DB TLS enabled but certificate validation bypassed
+### HIGH-4 — DB TLS enabled but certificate validation bypassed ✅ NOT AN ISSUE
 
 **File:** `infoportal/src/config.rs`, lines 106–109
 
