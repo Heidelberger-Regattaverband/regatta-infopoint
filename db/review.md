@@ -20,12 +20,6 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 - **Problem:** The macro-generated `TryRowColumn` implementations use `unwrap_or_default()` on the outer `Result`, meaning a column type mismatch error is silently treated as `None`. Only column-not-found and NULL should return `None`.
 - **Suggested fix:** Distinguish between "column not found / NULL" (return `None`) and "type conversion error" (log a warning or propagate).
 
-### 5. `Statistics::query` holds mutable borrow on `client` across `join!` — **Minor Efficiency** 💡
-
-- **File:** `db/src/aquarius/model/statistics.rs`, lines 184–189
-- **Problem:** `join!` is used with `query.query(&mut client)` alongside `Statistics::query_oldest(...)` calls that also acquire their own pool connections. This means 3 connections are held simultaneously for one logical operation.
-- **Suggested fix:** Sequence the main query before the concurrent oldest-athlete queries to release the connection earlier, reducing pool pressure.
-
 ### 9. `get_visible_notifications` hardcodes `force_cache: false` — **Minor** 💡
 
 - **File:** `db/src/aquarius.rs`, line 300
@@ -163,20 +157,3 @@ If `result.net_time < first_net_time`, casting a negative `i32` to `u64` wraps t
 **Suggested fix:** Accept `max_size` and `min_idle` as parameters to `UserPoolManager::new`.
 
 ---
-
-## Positive Observations
-
-- **Parameterized queries throughout:** All SQL queries use `Query::new()` with `.bind()` for parameters — no string interpolation of user input. ✅
-- **Consistent patterns:** All model types follow `From<&Row>` + column constants, making the codebase predictable. ✅
-- **Good use of concurrent queries:** `join!`, `join3`, and `join_all` are used effectively to parallelize independent DB queries. ✅
-- **Well-designed cache layer:** The `Cache<K, V>` abstraction with `compute_if_missing` provides a clean cache-aside pattern with TTL and cost-based eviction. ✅
-- **Clean error type:** `DbError` using `thiserror` with `#[from]` conversions is idiomatic. ✅
-- **Column name constants:** Model files define column names as `const` strings, reducing typo risk. ✅
-- **Existing test coverage:** `flags_scraper` has a unit test validating the HTML parsing logic. ✅
-- **`OnceLock` for lazy globals:** `ClubFlag` and `TiberiusPool` use `OnceLock` for safe lazy initialization. ✅
-- **Clean clippy output:** No warnings from `cargo clippy`. ✅
-- **Thread-safe pool initialization:** `TiberiusPool::init` uses a double-check locking pattern with `OnceLock` + `Mutex` to ensure exactly-once initialization. ✅
-- **Effective user pool management:** `UserPoolManager` uses `RwLock` with double-checked locking for per-user connection pool caching. ✅
-- **Good cache invalidation strategy:** Write operations (create/update/delete notification) properly invalidate the corresponding cache entries. ✅
-- **`TryToEntity` trait:** Clean abstraction for optional entity construction from rows where the entity's columns may not be present. ✅
-- **New query well-integrated:** The `query_heats_with_multiple_club_entries` query follows established patterns — uses a subquery with `HAVING COUNT(*) > 1`, properly filters cancelled entries and heats, and is backed by cache and REST endpoint. ✅
