@@ -24,6 +24,7 @@
   "private": true,
   "allowScripts": {
     "ui5-tooling-modules@3.38.1": true,
-    "ui5-tooling-transpile@3.13.0": true
+    "ui5-tooling-transpile@3.13.0": true,
+    "fsevents@2.3.3": true
   }
 }
