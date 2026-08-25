@@ -73,6 +73,9 @@ pub struct Config {
     /// The connection timeout for the Aquarius client in milliseconds. The timeout can be set by setting the environment variable `AQUARIUS_TIMEOUT`.
     /// Defaults to `500`.
     pub aquarius_timeout: u16,
+    /// The port for the internal metrics server, bound to 127.0.0.1. Defaults to `9090`.
+    /// The port can be set by setting the environment variable `METRICS_PORT`.
+    metrics_port: u16,
 }
 
 impl Config {
@@ -84,6 +87,11 @@ impl Config {
     /// Returns the HTTPS binding configuration of the server.
     pub fn get_https_bind(&self) -> (String, u16) {
         (self.https_bind.clone(), self.https_port)
+    }
+
+    /// Returns the binding for the internal-only metrics server (always 127.0.0.1).
+    pub fn get_metrics_bind(&self) -> (&str, u16) {
+        ("127.0.0.1", self.metrics_port)
     }
 
     /// Returns the rate limiter configuration taken from the environment.
@@ -158,6 +166,7 @@ impl Config {
                 .unwrap_or_else(|_| consts::DEFAULT_AQUARIUS_HOST.to_string()),
             aquarius_port: Self::parse_env_var(consts::AQUARIUS_PORT, consts::DEFAULT_AQUARIUS_PORT)?,
             aquarius_timeout: Self::parse_env_var(consts::AQUARIUS_TIMEOUT, consts::DEFAULT_AQUARIUS_TIMEOUT)?,
+            metrics_port: Self::parse_env_var(consts::METRICS_PORT, consts::DEFAULT_METRICS_PORT)?,
         };
         // Validate database configuration values
         Self::validate_db_config(
@@ -202,6 +211,7 @@ impl Config {
             timeout_in_ms = config.aquarius_timeout,
             "Aquarius Client:"
         );
+        info!(port = config.metrics_port, "Metrics server (127.0.0.1):");
 
         Ok(config)
     }
@@ -347,6 +357,7 @@ mod consts {
     pub(super) const AQUARIUS_HOST: &str = "AQUARIUS_HOST";
     pub(super) const AQUARIUS_PORT: &str = "AQUARIUS_PORT";
     pub(super) const AQUARIUS_TIMEOUT: &str = "AQUARIUS_TIMEOUT";
+    pub(super) const METRICS_PORT: &str = "METRICS_PORT";
 
     // Default values
     pub(super) const DEFAULT_BIND_ADDRESS: &str = "0.0.0.0";
@@ -365,6 +376,7 @@ mod consts {
     pub(super) const DEFAULT_AQUARIUS_HOST: &str = "aquarius";
     pub(super) const DEFAULT_AQUARIUS_PORT: u16 = 2048;
     pub(super) const DEFAULT_AQUARIUS_TIMEOUT: u16 = 500;
+    pub(super) const DEFAULT_METRICS_PORT: u16 = 9090;
 
     // Validation limits
     pub(super) const CACHE_TTL_MAX_RECOMMENDED: u64 = 3600;

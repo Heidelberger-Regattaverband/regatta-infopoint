@@ -7,20 +7,6 @@
 
 ## Open Issues
 
-### HIGH-1 — `/metrics` endpoint publicly accessible without authentication
-
-**File:** `infoportal/src/http/server.rs`, lines 196–200
-
-The Prometheus metrics endpoint is registered on the same public router with no auth wrapper. Any unauthenticated client can learn request rates, endpoint paths, latencies, and process metrics.
-
-**Suggested fix:** Bind metrics on a separate internal-only port, or guard with an auth extractor. Simplest:
-```rust
-PrometheusMetricsBuilder::new("api")
-    .endpoint("/metrics")  // only on internal-only server binding
-```
-
----
-
 ### HIGH-3 — No HTTP security response headers
 
 **File:** `infoportal/src/http/server.rs`, `get_app` function (lines 132–164)

@@ -10,7 +10,7 @@ use ::actix_identity::config::LogoutBehavior;
 use ::actix_session::config::TtlExtensionPolicy;
 use ::actix_session::{SessionMiddleware, config::PersistentSession, storage::CookieSessionStore};
 use ::actix_web::{
-    App, Error, HttpServer,
+    App, Error, HttpResponse, HttpServer,
     body::{BoxBody, EitherBody},
     cookie::{Key, SameSite},
     dev::{Service, ServiceFactory, ServiceRequest, ServiceResponse},
@@ -21,7 +21,8 @@ use ::db::aquarius::Aquarius;
 use ::db::error::DbError;
 use ::db::tiberius::user_pool::UserPoolManager;
 use ::futures::FutureExt;
-use ::prometheus::Registry;
+use ::futures::try_join;
+use ::prometheus::{Encoder, Registry, TextEncoder};
 use ::rustls::ServerConfig;
 use ::rustls_pemfile::{certs, pkcs8_private_keys};
 use ::rustls_pki_types::{PrivateKeyDer, PrivatePkcs8KeyDer};
@@ -35,6 +36,15 @@ use ::std::{
     time::Instant,
 };
 use ::tracing::{debug, info, warn};
+
+/// Serves Prometheus metrics for the internal-only metrics server.
+async fn metrics_handler(prometheus: Data<Arc<PrometheusMetrics>>) -> HttpResponse {
+    let encoder = TextEncoder::new();
+    let mut buffer = Vec::new();
+    encoder.encode(&prometheus.registry.gather(), &mut buffer).ok();
+    encoder.encode(&::prometheus::gather(), &mut buffer).ok();
+    HttpResponse::Ok().content_type(encoder.format_type()).body(buffer)
+}
 
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
@@ -67,6 +77,7 @@ impl Server {
 
         let worker_count = Arc::new(Mutex::new(0));
         let prometheus = Self::get_prometheus();
+        let prometheus_for_metrics = prometheus.clone();
 
         let user_pool_manager = Data::new(UserPoolManager::new(CONFIG.get_db_config()));
 
@@ -118,8 +129,18 @@ impl Server {
 
         // finally run http server
         let server = http_server.run();
+
+        let prometheus_data = Data::new(prometheus_for_metrics);
+        let metrics_server = HttpServer::new(move || {
+            App::new()
+                .app_data(prometheus_data.clone())
+                .route("/metrics", web::get().to(metrics_handler))
+        })
+        .bind(CONFIG.get_metrics_bind())?;
+
         info!(elapsed = ?start.elapsed(), "Infoportal started:");
-        server.await
+        try_join!(server, metrics_server.run())?;
+        Ok(())
     }
 
     /// Returns a new App instance with some middlewares initialized.
@@ -195,7 +216,6 @@ impl Server {
         Arc::new(
             PrometheusMetricsBuilder::new("api")
                 .registry(Registry::new())
-                .endpoint("/metrics")
                 .build()
                 .unwrap(),
         )
