@@ -68,25 +68,6 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 
 ---
 
-### N5. `Debug` derive on pool types risks credential exposure in logs — **MEDIUM**
-
-**File:** `db/src/tiberius/connection.rs`, line 12; `db/src/tiberius/pool.rs`, line 16
-
-`TiberiusConnectionManager` (which contains `tiberius::Config` with auth credentials) and `TiberiusPool` both derive `Debug`. Any `{:?}` log of these types may expose passwords if tiberius's `Config` does not redact them.
-
-**Suggested fix:** Implement `Debug` manually for `TiberiusConnectionManager`, printing only the host and omitting credentials:
-```rust
-impl fmt::Debug for TiberiusConnectionManager {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("TiberiusConnectionManager")
-            .field("host", &self.config.get_addr())
-            .finish_non_exhaustive()
-    }
-}
-```
-
----
-
 ### N6. `Split::from(u8)` silently defaults unknown values to `Split::Start` — **LOW/MEDIUM**
 
 **File:** `db/src/timekeeper/timestamp.rs`, lines 163–170
