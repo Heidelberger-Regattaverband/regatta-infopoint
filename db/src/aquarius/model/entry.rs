@@ -13,7 +13,7 @@ use crate::{
     error::DbError,
     tiberius::{RowColumn, TiberiusPool, TryRowColumn},
 };
-use ::futures::future::{BoxFuture, join_all};
+use ::futures::join;
 use ::serde::Serialize;
 use ::tiberius::{Query, Row};
 use ::utoipa::ToSchema;
@@ -199,35 +199,35 @@ impl Entry {
 async fn execute_query(pool: &TiberiusPool, query: Query<'_>, round: i16) -> Result<Vec<Entry>, DbError> {
     let mut client = pool.get().await?;
     let stream = query.query(&mut client).await?;
-
-    let mut crew_futures: Vec<BoxFuture<Result<Vec<Crew>, DbError>>> = Vec::new();
-    let mut heats_futures: Vec<BoxFuture<Result<Vec<Heat>, DbError>>> = Vec::new();
     let mut entries: Vec<Entry> = get_rows(stream)
         .await?
         .into_iter()
-        .map(|row| {
-            let entry = Entry::from(&row);
-            crew_futures.push(Box::pin(Crew::query_crew_of_entry(entry.id, round, pool)));
-            heats_futures.push(Box::pin(Heat::query_heats_of_entry(entry.id, pool)));
-            entry
-        })
+        .map(|row| Entry::from(&row))
         .collect();
+    drop(client);
 
-    let crews = join_all(crew_futures).await;
-    let heats = join_all(heats_futures).await;
+    if entries.is_empty() {
+        return Ok(entries);
+    }
 
-    for (pos, entry) in entries.iter_mut().enumerate() {
-        if let Some(crews) = crews.get(pos)
-            && let Ok(crews) = crews.as_deref()
-            && !crews.is_empty()
+    let entry_ids: Vec<i32> = entries.iter().map(|e| e.id).collect();
+    let (crews_result, heats_result) = join!(
+        Crew::query_crews_for_entries(&entry_ids, round, pool),
+        Heat::query_heats_for_entries(&entry_ids, pool)
+    );
+    let mut crews_map = crews_result?;
+    let mut heats_map = heats_result?;
+
+    for entry in entries.iter_mut() {
+        if let Some(crew) = crews_map.remove(&entry.id)
+            && !crew.is_empty()
         {
-            entry.crew = Some(crews.to_vec());
+            entry.crew = Some(crew);
         }
-        if let Some(heats) = heats.get(pos)
-            && let Ok(heats) = heats.as_deref()
+        if let Some(heats) = heats_map.remove(&entry.id)
             && !heats.is_empty()
         {
-            entry.heats = Some(heats.to_vec());
+            entry.heats = Some(heats);
         }
     }
     Ok(entries)

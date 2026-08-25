@@ -6,7 +6,6 @@ use super::Referee;
 use super::TryToEntity;
 use super::age_class::ID as AGE_CLASS_ID;
 use super::boat_class::ID as BOAT_CLASS_ID;
-use super::entry::ID as ENTRY_ID;
 use super::get_row;
 use super::get_rows;
 use super::race::ID as RACE_ID;
@@ -17,6 +16,7 @@ use crate::{
 use ::chrono::{DateTime, Utc};
 use ::futures::future::join;
 use ::serde::Serialize;
+use ::std::collections::HashMap;
 use ::tiberius::{Query, Row};
 use ::utoipa::ToSchema;
 
@@ -29,6 +29,7 @@ pub(super) const STATE: &str = "Comp_State";
 pub(super) const CANCELLED: &str = "Comp_Cancelled";
 pub(super) const DATE_TIME: &str = "Comp_DateTime";
 pub(super) const ROUND: &str = "Comp_Round";
+const CE_ENTRY_ID_FK: &str = "CE_Entry_ID_FK";
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -167,27 +168,36 @@ impl Heat {
         Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
     }
 
-    /// Query all heats of an entry.
-    ///
-    /// # Arguments
-    /// * `entry_id` - The entry identifier
-    /// * `pool` - The database connection pool
-    /// # Returns
-    /// A list of heats
-    pub(crate) async fn query_heats_of_entry(entry_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
+    pub(crate) async fn query_heats_for_entries(
+        entry_ids: &[i32],
+        pool: &TiberiusPool,
+    ) -> Result<HashMap<i32, Vec<Self>>, DbError> {
+        if entry_ids.is_empty() {
+            return Ok(HashMap::new());
+        }
+        let placeholders: String = (1..=entry_ids.len())
+            .map(|i| format!("@P{i}"))
+            .collect::<Vec<_>>()
+            .join(", ");
         let sql = format!(
-            "SELECT {0} FROM Comp c
-            JOIN CompEntries ce ON c.{ID}       = ce.CE_Comp_ID_FK
-            JOIN Entry        e ON e.{ENTRY_ID} = ce.CE_Entry_ID_FK
-            WHERE e.{ENTRY_ID} = @P1
-            ORDER BY c.{ROUND} ASC",
+            "SELECT ce.{CE_ENTRY_ID_FK}, {0} FROM Comp c
+            JOIN CompEntries ce ON c.{ID} = ce.CE_Comp_ID_FK
+            WHERE ce.{CE_ENTRY_ID_FK} IN ({placeholders})
+            ORDER BY ce.{CE_ENTRY_ID_FK}, c.{ROUND} ASC",
             Heat::select_columns("c")
         );
         let mut query = Query::new(sql);
-        query.bind(entry_id);
+        for &id in entry_ids {
+            query.bind(id);
+        }
         let mut client = pool.get().await?;
-        let heats = get_rows(query.query(&mut client).await?).await?;
-        Ok(heats.into_iter().map(|row| Heat::from(&row)).collect())
+        let rows = get_rows(query.query(&mut client).await?).await?;
+        let mut map: HashMap<i32, Vec<Heat>> = HashMap::new();
+        for row in &rows {
+            let entry_id: i32 = row.get_column(CE_ENTRY_ID_FK);
+            map.entry(entry_id).or_default().push(Heat::from(row));
+        }
+        Ok(map)
     }
 
     /// Query a single heat.

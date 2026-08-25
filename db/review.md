@@ -92,7 +92,7 @@ If `entry.bib == 0`, this underflows to `usize::MAX` in release builds.
 
 ---
 
-### N8. N+1 parallel queries in `execute_query` can saturate the connection pool — **LOW**
+### N8. N+1 parallel queries in `execute_query` can saturate the connection pool — **LOW** ✅ FIXED
 
 **File:** `db/src/aquarius/model/entry.rs`, lines 198–233
 
