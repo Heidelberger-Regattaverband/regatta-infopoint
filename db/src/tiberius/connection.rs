@@ -7,7 +7,6 @@ use ::tokio_util::compat::{Compat, TokioAsyncWriteCompatExt};
 pub type TiberiusClient = Client<Compat<TcpStream>>;
 
 /// A connection manager for Tiberius connections.
-#[derive(Debug)]
 pub struct TiberiusConnectionManager {
     /// The database configuration.
     config: Config,
