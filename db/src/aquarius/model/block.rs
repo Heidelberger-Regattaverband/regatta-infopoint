@@ -1,5 +1,5 @@
 use super::get_rows;
-use super::heat::DATE_TIME as HEAT_DATE_TIME;
+use super::heat::HEAT_DATE_TIME;
 use crate::error::DbError;
 use crate::tiberius::TiberiusPool;
 use crate::tiberius::TryRowColumn;

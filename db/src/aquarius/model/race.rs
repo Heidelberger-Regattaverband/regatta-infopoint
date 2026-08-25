@@ -3,8 +3,8 @@ use super::boat_class::BC_ID;
 use super::entry::CANCELLED as ENTRY_CANCELLED;
 use super::get_row;
 use super::get_rows;
-use super::heat::CANCELLED as HEAT_CANCELLED;
-use super::heat::DATE_TIME as HEAT_DATE_TIME;
+use super::heat::HEAT_CANCELLED;
+use super::heat::HEAT_DATE_TIME;
 use crate::tiberius::TiberiusClient;
 use crate::{
     aquarius::model::{AgeClass, BoatClass, Entry, Heat, TryToEntity},

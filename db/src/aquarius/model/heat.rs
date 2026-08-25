@@ -20,15 +20,15 @@ use ::std::collections::HashMap;
 use ::tiberius::{Query, Row};
 use ::utoipa::ToSchema;
 
-pub(super) const ID: &str = "Comp_ID";
+pub(super) const HEAT_ID: &str = "Comp_ID";
 const NUMBER: &str = "Comp_Number";
-pub(super) const ROUND_CODE: &str = "Comp_RoundCode";
+pub(super) const HEAT_ROUND_CODE: &str = "Comp_RoundCode";
 const LABEL: &str = "Comp_Label";
 const GROUP_VALUE: &str = "Comp_GroupValue";
-pub(super) const STATE: &str = "Comp_State";
-pub(super) const CANCELLED: &str = "Comp_Cancelled";
-pub(super) const DATE_TIME: &str = "Comp_DateTime";
-pub(super) const ROUND: &str = "Comp_Round";
+pub(super) const HEAT_STATE: &str = "Comp_State";
+pub(super) const HEAT_CANCELLED: &str = "Comp_Cancelled";
+pub(super) const HEAT_DATE_TIME: &str = "Comp_DateTime";
+pub(super) const HEAT_ROUND: &str = "Comp_Round";
 const CE_ENTRY_ID_FK: &str = "CE_Entry_ID_FK";
 
 #[derive(Debug, Serialize, Clone, ToSchema)]
@@ -80,15 +80,15 @@ pub struct Heat {
 impl Heat {
     pub(crate) fn select_columns(alias: &str) -> String {
         format!(
-            "{alias}.{ID}, {alias}.{NUMBER}, {alias}.{ROUND_CODE}, {alias}.{LABEL}, {alias}.{GROUP_VALUE}, \
-            {alias}.{STATE}, {alias}.{CANCELLED}, {alias}.{DATE_TIME}, {alias}.{ROUND}"
+            "{alias}.{HEAT_ID}, {alias}.{NUMBER}, {alias}.{HEAT_ROUND_CODE}, {alias}.{LABEL}, {alias}.{GROUP_VALUE}, \
+            {alias}.{HEAT_STATE}, {alias}.{HEAT_CANCELLED}, {alias}.{HEAT_DATE_TIME}, {alias}.{HEAT_ROUND}"
         )
     }
 
     pub async fn query_heats_ready_to_start(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0} FROM Comp c
-            WHERE c.Comp_Event_ID_FK = @P1 AND c.{STATE} = 1
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.{HEAT_STATE} = 1
             ORDER BY c.{NUMBER} ASC",
             Heat::select_columns("c")
         );
@@ -104,7 +104,7 @@ impl Heat {
     pub async fn query_heats_started(regatta_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0} FROM Comp c
-            WHERE c.Comp_Event_ID_FK = @P1 AND c.{STATE} = 2
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.{HEAT_STATE} = 2
             ORDER BY c.{NUMBER} ASC",
             Heat::select_columns("c")
         );
@@ -130,8 +130,8 @@ impl Heat {
             JOIN Offer     o ON o.{RACE_ID}             = c.Comp_Race_ID_FK
             JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AC_ID}
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BC_ID}
-            WHERE c.Comp_Event_ID_FK = @P1 AND c.{DATE_TIME} IS NOT NULL
-            ORDER BY c.{DATE_TIME} ASC",
+            WHERE c.Comp_Event_ID_FK = @P1 AND c.{HEAT_DATE_TIME} IS NOT NULL
+            ORDER BY c.{HEAT_DATE_TIME} ASC",
             Heat::select_columns("c"),
             AgeClass::select_minimal_columns("a"),
             BoatClass::select_columns("b"),
@@ -156,7 +156,7 @@ impl Heat {
     pub async fn query_heats_of_race(race_id: i32, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
         let sql = format!(
             "SELECT {0} FROM Comp c
-            WHERE c.Comp_Race_ID_FK = @P1 AND c.{DATE_TIME} IS NOT NULL
+            WHERE c.Comp_Race_ID_FK = @P1 AND c.{HEAT_DATE_TIME} IS NOT NULL
             ORDER BY c.{NUMBER} ASC",
             Heat::select_columns("c")
         );
@@ -181,9 +181,9 @@ impl Heat {
             .join(", ");
         let sql = format!(
             "SELECT ce.{CE_ENTRY_ID_FK}, {0} FROM Comp c
-            JOIN CompEntries ce ON c.{ID} = ce.CE_Comp_ID_FK
+            JOIN CompEntries ce ON c.{HEAT_ID} = ce.CE_Comp_ID_FK
             WHERE ce.{CE_ENTRY_ID_FK} IN ({placeholders})
-            ORDER BY ce.{CE_ENTRY_ID_FK}, c.{ROUND} ASC",
+            ORDER BY ce.{CE_ENTRY_ID_FK}, c.{HEAT_ROUND} ASC",
             Heat::select_columns("c")
         );
         let mut query = Query::new(sql);
@@ -212,7 +212,7 @@ impl Heat {
             JOIN Offer o     ON o.{RACE_ID}             = c.Comp_Race_ID_FK
             JOIN AgeClass a  ON o.Offer_AgeClass_ID_FK  = a.{AC_ID}
             JOIN BoatClass b ON o.Offer_BoatClass_ID_FK = b.{BC_ID}
-            WHERE {ID} = @P1",
+            WHERE {HEAT_ID} = @P1",
             Heat::select_columns("c"),
             AgeClass::select_minimal_columns("a"),
             BoatClass::select_columns("b"),
@@ -239,24 +239,24 @@ impl Heat {
 impl From<&Row> for Heat {
     fn from(value: &Row) -> Self {
         Heat {
-            id: value.get_column(ID),
+            id: value.get_column(HEAT_ID),
             race: value.try_to_entity(),
             number: value.get_column(NUMBER),
-            round_code: value.get_column(ROUND_CODE),
+            round_code: value.get_column(HEAT_ROUND_CODE),
             label: value.try_get_column(LABEL),
             group_value: value.get_column(GROUP_VALUE),
-            state: value.get_column(STATE),
-            cancelled: value.get_column(CANCELLED),
-            date_time: value.try_get_column(DATE_TIME),
+            state: value.get_column(HEAT_STATE),
+            cancelled: value.get_column(HEAT_CANCELLED),
+            date_time: value.try_get_column(HEAT_DATE_TIME),
             referees: vec![],
             entries: None,
-            round: value.get_column(ROUND),
+            round: value.get_column(HEAT_ROUND),
         }
     }
 }
 
 impl TryToEntity<Heat> for Row {
     fn try_to_entity(&self) -> Option<Heat> {
-        <Row as TryRowColumn<i32>>::try_get_column(self, ID).map(|_id| Heat::from(self))
+        <Row as TryRowColumn<i32>>::try_get_column(self, HEAT_ID).map(|_id| Heat::from(self))
     }
 }

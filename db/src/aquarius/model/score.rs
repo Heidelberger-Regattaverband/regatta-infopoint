@@ -13,8 +13,8 @@ use super::crew::IS_COX as CREW_IS_COX;
 use super::crew::ROUND_TO as CREW_ROUND_TO;
 use super::entry::ID as ENTRY_ID;
 use super::get_rows;
-use super::heat::ID as HEAT_ID;
-use super::heat::ROUND as HEAT_ROUND;
+use super::heat::HEAT_ID;
+use super::heat::HEAT_ROUND;
 use super::race::ID as RACE_ID;
 use crate::tiberius::TiberiusClient;
 use crate::{

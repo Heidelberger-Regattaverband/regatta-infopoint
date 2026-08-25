@@ -8,9 +8,9 @@ use super::boat_class::BC_COXED;
 use super::boat_class::BC_ID;
 use super::boat_class::BC_NUM_ROWERS;
 use super::get_rows;
-use super::heat::DATE_TIME as HEAT_DATE_TIME;
-use super::heat::ROUND as HEAT_ROUND;
-use super::heat::ROUND_CODE as HEAT_ROUND_CODE;
+use super::heat::HEAT_DATE_TIME;
+use super::heat::HEAT_ROUND;
+use super::heat::HEAT_ROUND_CODE;
 use crate::{
     error::DbError,
     tiberius::{RowColumn, TiberiusPool},

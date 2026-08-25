@@ -1,8 +1,8 @@
 use super::entry::CANCELLED as ENTRY_CANCELLED;
 use super::get_rows;
-use super::heat::CANCELLED as HEAT_CANCELLED;
-use super::heat::DATE_TIME as HEAT_DATE_TIME;
-use super::heat::ROUND_CODE as HEAT_ROUND_CODE;
+use super::heat::HEAT_CANCELLED;
+use super::heat::HEAT_DATE_TIME;
+use super::heat::HEAT_ROUND_CODE;
 use super::race::ID as RACE_ID;
 use crate::tiberius::TiberiusClient;
 use crate::{
