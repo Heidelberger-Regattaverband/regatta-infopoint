@@ -1,10 +1,16 @@
 use crate::peak_alloc::PeakAlloc;
-use ::db::{cache::CacheStats, tiberius::TiberiusPool};
+use ::db::cache::CacheStats;
+use ::db::tiberius::TiberiusPool;
 use ::serde::Serialize;
 use ::std::sync::Mutex;
 use ::std::thread;
-use ::std::time::{Duration, Instant};
-use ::sysinfo::{CpuRefreshKind, Disks, MemoryRefreshKind, RefreshKind, System};
+use ::std::time::Duration;
+use ::std::time::Instant;
+use ::sysinfo::CpuRefreshKind;
+use ::sysinfo::Disks;
+use ::sysinfo::MemoryRefreshKind;
+use ::sysinfo::RefreshKind;
+use ::sysinfo::System;
 use ::utoipa::ToSchema;
 
 /// The monitoring struct contains the database state, system information and metrics.

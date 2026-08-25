@@ -6,9 +6,16 @@ use ::actix::Handler;
 use ::actix::Message as ActixMessage;
 use ::actix::StreamHandler;
 use ::actix_identity::Identity;
-use ::actix_web::web::{Data, Payload};
-use ::actix_web::{Error, HttpRequest, HttpResponse, get};
-use ::actix_web_actors::ws::{Message, ProtocolError, WebsocketContext, start};
+use ::actix_web::Error;
+use ::actix_web::HttpRequest;
+use ::actix_web::HttpResponse;
+use ::actix_web::get;
+use ::actix_web::web::Data;
+use ::actix_web::web::Payload;
+use ::actix_web_actors::ws::Message;
+use ::actix_web_actors::ws::ProtocolError;
+use ::actix_web_actors::ws::WebsocketContext;
+use ::actix_web_actors::ws::start;
 use ::db::aquarius::Aquarius;
 use ::db::tiberius::TiberiusPool;
 use ::serde::Serialize;
@@ -16,7 +23,8 @@ use ::std::time::Instant;
 use ::tracing::trace;
 use ::tracing::warn;
 
-use super::{WS_CLIENT_TIMEOUT, WS_HEARTBEAT_INTERVAL};
+use super::WS_CLIENT_TIMEOUT;
+use super::WS_HEARTBEAT_INTERVAL;
 
 /// Actor for monitoring.
 struct MonitoringActor {

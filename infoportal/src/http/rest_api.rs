@@ -8,14 +8,20 @@ pub(crate) mod race;
 pub(crate) mod timekeeping;
 
 use ::actix_identity::Identity;
-use ::actix_web::{
-    Error, Responder, Scope as ActixScope,
-    error::{ErrorInternalServerError, ErrorNotFound},
-    get,
-    web::{Data, Json, Path, ServiceConfig},
-};
+use ::actix_web::Error;
+use ::actix_web::Responder;
+use ::actix_web::Scope as ActixScope;
+use ::actix_web::error::ErrorInternalServerError;
+use ::actix_web::error::ErrorNotFound;
+use ::actix_web::get;
+use ::actix_web::web::Data;
+use ::actix_web::web::Json;
+use ::actix_web::web::Path;
+use ::actix_web::web::ServiceConfig;
 use ::db::aquarius::Aquarius;
-use ::db::aquarius::model::{Filters, Heat, Regatta};
+use ::db::aquarius::model::Filters;
+use ::db::aquarius::model::Heat;
+use ::db::aquarius::model::Regatta;
 use ::db::error::DbError;
 use ::db::tiberius::TiberiusPool;
 use ::db::tiberius::user_pool::UserPoolManager;

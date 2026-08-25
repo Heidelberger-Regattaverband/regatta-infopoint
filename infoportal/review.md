@@ -7,53 +7,7 @@
 
 ## Open Issues
 
-### HIGH-1 — `/metrics` endpoint publicly accessible without authentication
-
-**File:** `infoportal/src/http/server.rs`, lines 196–200
-
-The Prometheus metrics endpoint is registered on the same public router with no auth wrapper. Any unauthenticated client can learn request rates, endpoint paths, latencies, and process metrics.
-
-**Suggested fix:** Bind metrics on a separate internal-only port, or guard with an auth extractor. Simplest:
-```rust
-PrometheusMetricsBuilder::new("api")
-    .endpoint("/metrics")  // only on internal-only server binding
-```
-
----
-
-### HIGH-2 — Rate limiter IP key is spoofable via `X-Forwarded-For`
-
-**File:** `infoportal/src/http/server.rs`, lines 215–222
-
-`real_ip_key()` uses the `X-Forwarded-For` header as the rate-limit key. Without a trusted-proxy whitelist any client can set an arbitrary IP on every request, bypassing rate limiting entirely. Additionally, each actix worker maintains its own in-memory counter, making the effective limit `http_workers × rl_max_requests`.
-
-**Suggested fix:** Use `peer_ip_key()` (actual TCP socket address) unless a known reverse proxy is explicitly trusted. Use a shared backend (e.g., Redis) if multi-worker rate limits must be accurate.
-
----
-
-### HIGH-3 — No HTTP security response headers
-
-**File:** `infoportal/src/http/server.rs`, `get_app` function (lines 132–164)
-
-No middleware adds `X-Frame-Options`, `X-Content-Type-Options`, `Content-Security-Policy`, `Strict-Transport-Security`, or `Referrer-Policy` headers. The existing `wrap_fn` placeholder on lines 157–163 is the natural insertion point.
-
-**Suggested fix:**
-```rust
-.wrap_fn(|req, srv| {
-    srv.call(req).map(|res| res.map(|mut r| {
-        let h = r.headers_mut();
-        h.insert(header::X_FRAME_OPTIONS, HeaderValue::from_static("DENY"));
-        h.insert(header::X_CONTENT_TYPE_OPTIONS, HeaderValue::from_static("nosniff"));
-        h.insert(HeaderName::from_static("referrer-policy"),
-            HeaderValue::from_static("strict-origin-when-cross-origin"));
-        r
-    }))
-})
-```
-
----
-
-### HIGH-4 — DB TLS enabled but certificate validation bypassed
+### HIGH-4 — DB TLS enabled but certificate validation bypassed ✅ NOT AN ISSUE
 
 **File:** `infoportal/src/config.rs`, lines 106–109
 
@@ -69,7 +23,7 @@ if self.db_encryption {
 
 ---
 
-### MEDIUM-1 — WebSocket timekeeping errors expose internal details
+### MEDIUM-1 — WebSocket timekeeping errors expose internal details ✅ FIXED
 
 **File:** `infoportal/src/http/rest_api/timekeeping.rs`, lines 245, 252, 281, 309, 313, 363
 
@@ -219,33 +173,3 @@ Missing or unreadable cert/key files cause the server to start HTTP-only with on
 `title` is validated for non-empty but has no max-length constraint. An authenticated user could store arbitrarily large strings.
 
 **Suggested fix:** Add explicit length limits matching the DB column constraints.
-
----
-
-## Resolved Issues from Previous Review
-
-| Old # | Status | Notes |
-|---|---|---|
-| #1 `extract_credentials` called twice | Resolved | `extract_credentials` refactored; pattern no longer present |
-| #2 `get_timestamps` `.unwrap()` on pool | Resolved | Pattern no longer present |
-| #4 Error responses leak internal details | Largely resolved | `ApiError` wraps errors; WebSocket paths still affected (MEDIUM-1) |
-| #5 `CacheQueryParams` duplication | Resolved | No duplicate structs found |
-| #6 TLS disabled for DB | Partially resolved | `DB_ENCRYPTION` env var added; `trust_cert()` still unconditional (HIGH-4) |
-| #7 `regatta.id` direct access | Resolved | Pattern no longer present |
-| #8 No auth middleware | Still open | Tracked as LOW-1 above |
-| #10 No tests | Partially resolved | Two integration tests added (`test_get_regattas`, `test_get_heats`) |
-
----
-
-## Positive Observations
-
-- **DB-delegated authentication:** Credentials are validated by attempting an actual SQL Server connection; the app never stores or compares passwords itself. `SecretString` prevents the password appearing in `Debug` output or logs.
-- **`SameSite::Strict` on session cookie:** Strongest CSRF protection via cookies; correctly configured.
-- **`HttpOnly` + `Secure` on session cookie:** Prevents JavaScript access and plain-HTTP transmission.
-- **`unsafe_code = "forbid"` workspace lint:** Prevents unsafe except the correctly isolated `PeakAlloc` impl.
-- **`ApiError` pattern:** Full error logged server-side via `error!`, generic message returned to client.
-- **Config validation at startup:** `validate_db_config` and `validate_cache_ttl` catch misconfigured values before the server accepts connections.
-- **OpenAPI coverage:** Every REST endpoint has `#[utoipa::path]` annotations with response types, status codes, and descriptions.
-- **WebSocket heartbeat:** Both `MonitoringActor` and `TimekeepingActor` implement ping/pong with configurable `WS_HEARTBEAT_INTERVAL` / `WS_CLIENT_TIMEOUT`.
-- **Rate limit headers exposed:** `X-Ratelimit-*` response headers inform clients of their quota.
-- **`PeakAlloc` global allocator:** Clean, minimal peak-memory tracking without unsafe beyond the required `GlobalAlloc` impl.
