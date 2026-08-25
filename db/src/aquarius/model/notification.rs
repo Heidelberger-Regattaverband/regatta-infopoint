@@ -163,23 +163,23 @@ impl Notification {
             Str(&'a str),
         }
         let mut fields: Vec<(String, FieldParam<'_>)> = Vec::new();
-        let mut p = 1u8;
+        let mut pos = 1u8;
 
         if let Some(v) = request.priority {
-            fields.push((format!("{PRIORITY} = @P{p}"), FieldParam::U8(v)));
-            p += 1;
+            fields.push((format!("{PRIORITY} = @P{pos}"), FieldParam::U8(v)));
+            pos += 1;
         }
         if let Some(v) = request.title.as_deref() {
-            fields.push((format!("{TITLE} = @P{p}"), FieldParam::Str(v)));
-            p += 1;
+            fields.push((format!("{TITLE} = @P{pos}"), FieldParam::Str(v)));
+            pos += 1;
         }
         if let Some(v) = request.text.as_deref() {
-            fields.push((format!("{TEXT} = @P{p}"), FieldParam::Str(v)));
-            p += 1;
+            fields.push((format!("{TEXT} = @P{pos}"), FieldParam::Str(v)));
+            pos += 1;
         }
         if let Some(v) = request.visible {
-            fields.push((format!("{VISIBLE} = @P{p}"), FieldParam::Bool(v)));
-            p += 1;
+            fields.push((format!("{VISIBLE} = @P{pos}"), FieldParam::Bool(v)));
+            pos += 1;
         }
 
         if fields.is_empty() {
@@ -187,9 +187,9 @@ impl Notification {
         }
 
         let set_sql = fields.iter().map(|(c, _)| c.as_str()).collect::<Vec<_>>().join(", ");
-        let id_param = p + 1;
+        let id_param = pos + 1;
         let sql = format!(
-            "UPDATE HRV_Notification SET {set_sql}, {MODIFIED_AT} = @P{p} \
+            "UPDATE HRV_Notification SET {set_sql}, {MODIFIED_AT} = @P{pos} \
             OUTPUT INSERTED.{ID}, INSERTED.{PRIORITY}, INSERTED.{TITLE}, INSERTED.{TEXT}, INSERTED.{VISIBLE}, INSERTED.{MODIFIED_AT}, INSERTED.{EVENT_ID} \
             WHERE {ID} = @P{id_param}"
         );

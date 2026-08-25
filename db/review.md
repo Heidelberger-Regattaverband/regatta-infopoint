@@ -44,11 +44,6 @@ The `db` crate is well-structured with consistent patterns, good use of paramete
 - **Problem:** The scoring query joins `Club ON Club_ID = Athlet_Club_ID_FK`, which groups scores by the athlete's club. However, entries have their own `Entry_OwnerClub_ID_FK` which represents the registering club. For athletes competing under a racing community (different from their home club), scores might be attributed to the athlete's home club rather than the entry's registering club. This may or may not be intentional.
 - **Suggested fix:** Verify this is the desired scoring semantics. If scores should follow the entry's registering club, use `Entry_OwnerClub_ID_FK` instead.
 
-### 15. `Notification::update_notification` dynamic SQL parameter binding is fragile — **FIXED** ✅
-
-- **File:** `db/src/aquarius/model/notification.rs`
-- **Fix:** Replaced the two separate `if` blocks (one building SQL clauses, one binding values) with a single `Vec<(String, FieldParam)>` where each entry atomically pairs a SET clause with its bound value. A local `enum FieldParam<'a>` holds the heterogeneous types (`U8`, `Bool`, `Str`). The single loop both collects clauses for the SQL and then binds in the same order, making a misalignment structurally impossible.
-
 ### 16. `HeatEntry::query_entries_of_heat` has complex SQL filter with implicit assumptions — **Minor** 💡
 
 - **File:** `db/src/aquarius/model/heat_entry.rs`, lines 58–69
