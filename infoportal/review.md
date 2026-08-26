@@ -106,22 +106,6 @@ The underscore prefix signals "unused" to readers and linters, obscuring the sec
 
 ---
 
-### LOW-2 — `serde_json::to_string(...).unwrap_or_default()` silently swallows serialization errors
-
-**Files:** `infoportal/src/http/rest_api/timekeeping.rs`, line 226; `infoportal/src/http/rest_api/monitoring.rs`, line 106
-
-Serialization failures send an empty string to the WebSocket client with no log entry.
-
-**Suggested fix:**
-```rust
-match serde_json::to_string(&event) {
-    Ok(json) => ctx.text(json),
-    Err(err) => error!(?err, "Failed to serialize WebSocket event"),
-}
-```
-
----
-
 ### LOW-3 — `worker_count.lock().unwrap()` panics on mutex poisoning
 
 **File:** `infoportal/src/http/server.rs`, line 74

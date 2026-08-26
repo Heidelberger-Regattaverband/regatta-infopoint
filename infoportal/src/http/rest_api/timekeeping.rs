@@ -228,8 +228,10 @@ impl Handler<ServerEvent> for TimekeepingActor {
     type Result = ();
 
     fn handle(&mut self, event: ServerEvent, ctx: &mut Self::Context) -> Self::Result {
-        let json = serde_json::to_string(&event).unwrap_or_default();
-        ctx.text(json);
+        match serde_json::to_string(&event) {
+            Ok(json) => ctx.text(json),
+            Err(err) => error!(?err, "Failed to serialize WebSocket event"),
+        }
     }
 }
 

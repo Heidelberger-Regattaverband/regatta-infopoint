@@ -20,6 +20,7 @@ use ::db::aquarius::Aquarius;
 use ::db::tiberius::TiberiusPool;
 use ::serde::Serialize;
 use ::std::time::Instant;
+use ::tracing::error;
 use ::tracing::trace;
 use ::tracing::warn;
 
@@ -111,8 +112,10 @@ impl Handler<MonitoringEvent> for MonitoringActor {
     type Result = ();
 
     fn handle(&mut self, event: MonitoringEvent, ctx: &mut Self::Context) -> Self::Result {
-        let json = serde_json::to_string(&event).unwrap_or_default();
-        ctx.text(json);
+        match serde_json::to_string(&event) {
+            Ok(json) => ctx.text(json),
+            Err(err) => error!(?err, "Failed to serialize WebSocket event"),
+        }
     }
 }
 
