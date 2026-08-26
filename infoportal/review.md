@@ -106,14 +106,6 @@ The underscore prefix signals "unused" to readers and linters, obscuring the sec
 
 ---
 
-### LOW-3 — `worker_count.lock().unwrap()` panics on mutex poisoning
-
-**File:** `infoportal/src/http/server.rs`, line 74
-
-**Suggested fix:** Use `.unwrap_or_else(|e| e.into_inner())` for poison recovery.
-
----
-
 ### LOW-4 — TLS falls back to HTTP-only silently
 
 **File:** `infoportal/src/http/server.rs`, lines 109–113
