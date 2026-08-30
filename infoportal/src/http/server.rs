@@ -93,7 +93,7 @@ impl Server {
         let user_pool_manager = Data::new(UserPoolManager::new(CONFIG.get_db_config()));
 
         let app_factory = move || {
-            let mut count = worker_count.lock().unwrap();
+            let mut count = worker_count.lock().unwrap_or_else(|e| e.into_inner());
             *count += 1;
             debug!(count = *count, "Created application HTTP worker:");
 
