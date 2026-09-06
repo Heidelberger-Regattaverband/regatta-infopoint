@@ -1,3 +1,4 @@
+use crate::auth::AuthenticatedUser;
 use crate::http::rest_api::ApiError;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
@@ -25,7 +26,7 @@ use ::db::aquarius::Aquarius;
 async fn get_statistics(
     regatta_id: Path<i32>,
     aquarius: Data<Aquarius>,
-    _identity: Identity,
+    _auth: AuthenticatedUser,
 ) -> Result<impl Responder, Error> {
     let stats = aquarius
         .query_statistics(regatta_id.into_inner())
@@ -47,7 +48,7 @@ async fn get_statistics(
 async fn calculate_scoring(
     regatta_id: Path<i32>,
     aquarius: Data<Aquarius>,
-    _identity: Identity,
+    _auth: AuthenticatedUser,
 ) -> Result<impl Responder, Error> {
     let scoring = aquarius
         .calculate_scoring(regatta_id.into_inner())

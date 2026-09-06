@@ -1,9 +1,14 @@
 use crate::config::CONFIG;
+use ::actix_identity::Identity;
+use ::actix_web::FromRequest;
 use ::actix_web::HttpResponse;
+use ::actix_web::dev::Payload;
 use ::db::tiberius_client::Client;
 use ::secret_string::SecretString;
 use ::serde::Deserialize;
 use ::serde::Serialize;
+use ::std::future::Future;
+use ::std::pin::Pin;
 use ::tokio::net::TcpStream;
 use ::tokio_util::compat::TokioAsyncWriteCompatExt;
 use ::tracing::warn;
@@ -105,5 +110,27 @@ impl User {
         } else {
             Err(HttpResponse::Unauthorized().json(User::new_guest()))
         }
+    }
+}
+
+/// Extractor that enforces an active session. Returns HTTP 401 if no session is active.
+///
+/// Use this instead of bare `Identity` for handlers that require authentication but
+/// don't need the identity value itself. The explicit type name makes the security
+/// contract obvious and prevents accidental weakening to `Option<AuthenticatedUser>`.
+pub(crate) struct AuthenticatedUser {
+    identity: Identity,
+}
+
+impl FromRequest for AuthenticatedUser {
+    type Error = ::actix_web::Error;
+    type Future = Pin<Box<dyn Future<Output = Result<Self, Self::Error>>>>;
+
+    fn from_request(req: &::actix_web::HttpRequest, payload: &mut Payload) -> Self::Future {
+        let fut = Identity::from_request(req, payload);
+        Box::pin(async move {
+            let identity = fut.await?;
+            Ok(AuthenticatedUser { identity })
+        })
     }
 }

@@ -96,7 +96,7 @@ Every HTTP request (including static asset requests) refreshes the session TTL, 
 
 ---
 
-### LOW-1 — `_identity: Identity` is a fragile implicit auth pattern (still open from #8)
+### LOW-1 — `_identity: Identity` is a fragile implicit auth pattern (still open from #8) ✅ FIXED
 
 **Files:** `infoportal/src/http/rest_api/misc.rs`, lines 29, 51; `infoportal/src/http/rest_api/monitoring.rs`, line 116
 

@@ -1,3 +1,4 @@
+use crate::auth::AuthenticatedUser;
 use crate::http::monitoring::Monitoring;
 use ::actix::Actor;
 use ::actix::ActorContext;
@@ -5,7 +6,6 @@ use ::actix::AsyncContext;
 use ::actix::Handler;
 use ::actix::Message as ActixMessage;
 use ::actix::StreamHandler;
-use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::HttpRequest;
 use ::actix_web::HttpResponse;
@@ -124,7 +124,7 @@ async fn index(
     request: HttpRequest,
     stream: Payload,
     aquarius: Data<Aquarius>,
-    _identity: Identity,
+    _auth: AuthenticatedUser,
 ) -> Result<HttpResponse, Error> {
     let monitoring_actor = MonitoringActor::new(aquarius);
     start(monitoring_actor, &request, stream)
