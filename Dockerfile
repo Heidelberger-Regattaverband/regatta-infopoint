@@ -26,7 +26,7 @@ WORKDIR /code
 COPY . /code/
 
 # build rust application
-RUN cargo fetch && cargo build --release
+RUN git config --global --add safe.directory /code && cargo fetch && cargo build --release
 
 WORKDIR /code/static
 
