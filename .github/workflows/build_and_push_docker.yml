@@ -32,6 +32,11 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v7
         with:
+          # Build from the checked-out workspace (which includes the full `.git`
+          # thanks to fetch-depth: 0 above) instead of the default Git context.
+          # BuildKit strips `.git` from Git contexts, which left libgit2 in the
+          # `built` crate unable to resolve the commit hash / branch.
+          context: .
           platforms: linux/amd64
           push: true
           tags: ofterdinger/regatta-infoportal:latest
