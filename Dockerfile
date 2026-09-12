@@ -26,7 +26,10 @@ WORKDIR /code
 COPY . /code/
 
 # build rust application
-RUN cargo fetch && cargo build --release
+# libgit2 (git2 feature of the `built` crate) rejects the repo when .git is owned by a
+# different user than the build process. Writing safe.directory to the system config
+# (always read by libgit2, independent of $HOME) lets it read the git commit hash.
+RUN git config --system safe.directory '*' && cargo fetch && cargo build --release
 
 WORKDIR /code/static
 
