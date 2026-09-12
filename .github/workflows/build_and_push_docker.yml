@@ -13,8 +13,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          # Full history (not a shallow clone) so libgit2 in the `built` crate
-          # can resolve the commit hash / branch during the Docker build.
+          # Check out the branch (not the detached commit) so libgit2 in the
+          # `built` crate can resolve GIT_HEAD_REF (e.g. refs/heads/main). A
+          # plain checkout leaves a detached HEAD, which reports it as None.
+          ref: ${{ github.ref_name }}
+          # Full history (not a shallow clone) so libgit2 can resolve the
+          # commit hash / branch during the Docker build.
           fetch-depth: 0
 
       - name: Set up QEMU
