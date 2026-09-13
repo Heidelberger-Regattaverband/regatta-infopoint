@@ -13,12 +13,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          # Check out the branch (not the detached commit) so libgit2 in the
-          # `built` crate can resolve GIT_HEAD_REF (e.g. refs/heads/main). A
-          # plain checkout leaves a detached HEAD, which reports it as None.
-          ref: ${{ github.ref_name }}
-          # Full history (not a shallow clone) so libgit2 can resolve the
-          # commit hash / branch during the Docker build.
+          # Full history so libgit2 in the `built` crate can resolve the commit.
           fetch-depth: 0
 
       - name: Set up QEMU
@@ -36,10 +31,8 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v7
         with:
-          # Build from the checked-out workspace (which includes the full `.git`
-          # thanks to fetch-depth: 0 above) instead of the default Git context.
-          # BuildKit strips `.git` from Git contexts, which left libgit2 in the
-          # `built` crate unable to resolve the commit hash / branch.
+          # Build from the workspace so `.git` is present. BuildKit strips it from
+          # the default Git context, which leaves the commit hash empty in the build.
           context: .
           platforms: linux/amd64
           push: true
