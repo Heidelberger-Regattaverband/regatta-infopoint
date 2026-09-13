@@ -25,7 +25,8 @@ cd static && npm run watch          # Watch mode for development
 
 ```
 regatta-infopoint/
-  Cargo.toml        # workspace root (resolver = "3", edition = "2024", rust-version = "1.98.0")
+  Cargo.toml        # workspace root (resolver = "3", edition = "2024", rust-version = "1.98.1")
+  rust-toolchain.toml  # pins toolchain to 1.98.1 (minimal profile + clippy, rustfmt, rust-src, rust-analyzer)
   aquarius/         # Aquarius TCP client library (real-time event streaming from Aquarius)
   db/               # MS-SQL database layer: models, queries, connection pool, cache (library)
   infoportal/       # Main web server / REST API (binary — the deployed service)
@@ -44,14 +45,14 @@ Core database access layer. All domain models, raw SQL queries (tiberius, no ORM
 
 Key modules:
 - `db/src/aquarius.rs` — `Aquarius` struct: high-level query interface with cache-aside (`compute_if_missing`)
-- `db/src/aquarius/model/` — 17 domain model structs (`Regatta`, `Race`, `Heat`, `HeatEntry`, `HeatResult`, `Entry`, `Athlete`, `Crew`, `Club`, `AgeClass`, `BoatClass`, `Block`, `Schedule`, `Score`, `Statistics`, `Notification`, `Referee`), each with `From<&Row>` impl using named column constants
+- `db/src/aquarius/model/` — 19 domain model structs (`Regatta`, `Race`, `Heat`, `HeatEntry`, `HeatResult`, `Entry`, `Athlete`, `Crew`, `Club`, `AgeClass`, `BoatClass`, `Block`, `Schedule`, `Score`, `Statistics`, `Notification`, `Referee`, `Filters`, `Problems`), each with `From<&Row>` impl using named column constants
 - `db/src/tiberius/` — `connection.rs`, `pool.rs` (global pool), `user_pool.rs` (per-user pool for admin writes), `row_column.rs` (typed row deserialization traits)
 - `db/src/cache.rs` — `Cache<K,V>` / `Caches` abstraction
 - `db/src/timekeeper/` — `Timestamp` (persist start/finish times), `TimeStrip` (ordered timestamps)
 - `db/src/aquarius/flags_scraper.rs` — Scrapes athlete flag images
 
 ### `aquarius` (library)
-TCP client for the Aquarius native protocol. Provides real-time event streaming (`event.rs`, `messages.rs`, `client.rs`). Consumed by `infoportal` to drive WebSocket push on heat state changes.
+TCP client for the Aquarius native protocol. Provides real-time event streaming (`event.rs`, `messages.rs`, `client.rs`). Consumed by `infoportal` to drive WebSocket push on heat state changes. Has `aquarius/review.md`.
 
 ### `infoportal` (binary — main web server)
 Actix-Web server. REST API + WebSocket endpoints, static file serving (the UI5 SPA), Swagger UI at `/swagger-ui/`, Prometheus metrics at `/metrics`.
@@ -67,10 +68,10 @@ Key modules:
 Authentication: `Option<Identity>` on read endpoints; `auth::authenticate` → per-user pool for writes. No middleware — per-handler checks.
 
 ### `timekeeper` (binary)
-Standalone ratatui TUI for entering race start/finish timestamps at the finish line. Uses the same `db` library. CLI args via clap. Tabs: heats, timestrip, logs.
+Standalone ratatui TUI for entering race start/finish timestamps at the finish line. Uses the same `db` library. CLI args via clap. Tabs: heats, timestrip, logs. Has `build.rs` (embeds git hash + build timestamp via `built` crate).
 
 ## Frontend (`static/`)
-SAP OpenUI5 TypeScript SPA. 20+ XML views (Launchpad, RacesTable, HeatsTable, HeatDetails, ClubsTable, AthleteDetails, ScoringTable, ScheduleTable, Statistics, Timekeeping, Map, Monitoring, Admin, etc.). One TypeScript controller per view. Leaflet 1.9.x for the map view. i18n: German + English.
+SAP OpenUI5 TypeScript SPA. 18 XML views (App, Launchpad, RacesTable, RaceDetails, HeatsTable, HeatDetails, AthletesTable, AthleteDetails, ClubsTable, ClubDetails, ScoringTable, ScheduleTable, Statistics, Timekeeping, Map, Monitoring, Admin, Problems) + 10 XML fragments (HeatsTable, HeatsFilterDialog, HeatsSortDialog, RacesFilterDialog, RacesSortDialog, AthletesSortDialog, ClubsTableSortDialog, LoginPopover, TimekeepingAquarius, TimekeepingTimestrip). One TypeScript controller per view. Leaflet 1.9.x for the map view. i18n: German + English.
 
 Build: `@ui5/cli` v4 (ui5.yaml, specVersion 4.0) with `ui5-tooling-modules-task` (npm bundle) and `ui5-tooling-transpile-task` (TS → JS). Built assets committed to `static/dist/` and served from Docker.
 
@@ -105,7 +106,10 @@ Base URL: `http://localhost:8080` (local), `https://info.regatta-hd.de` (product
 | `DB_ENCRYPTION` | `false` | — | Enable TLS for DB connection |
 | `DB_POOL_MAX_SIZE` | `80` | — | Max pool connections |
 | `DB_POOL_MIN_IDLE` | `30` | — | Min idle connections |
+| `HTTP_BIND` | `0.0.0.0` | — | HTTP bind address |
 | `HTTP_PORT` | `8080` | — | HTTP port |
+| `HTTP_WORKERS` | (auto) | — | Number of HTTP workers |
+| `HTTPS_BIND` | `0.0.0.0` | — | HTTPS bind address |
 | `HTTPS_PORT` | `8443` | — | HTTPS port |
 | `HTTPS_CERT_PATH` | `./ssl/cert.pem` | — | TLS certificate |
 | `HTTPS_KEY_PATH` | `./ssl/key.pem` | — | TLS private key |
@@ -116,6 +120,8 @@ Base URL: `http://localhost:8080` (local), `https://info.regatta-hd.de` (product
 | `CACHE_TTL` | `60` | — | Cache TTL in seconds (max 3600) |
 | `AQUARIUS_HOST` | `aquarius` | — | Aquarius TCP host |
 | `AQUARIUS_PORT` | `2048` | — | Aquarius TCP port |
+| `AQUARIUS_TIMEOUT` | `500` | — | Aquarius connection timeout (ms) |
+| `METRICS_HTTP_PORT` | `9090` | — | Prometheus metrics port |
 | `RUST_LOG` | — | — | Tracing filter |
 
 Local `.env` example:
@@ -139,7 +145,7 @@ Docker image: multi-stage (`rust:1.98.0` builder with Node.js 24, `ubuntu:26.04`
 
 # Rust Toolchain
 
-- Pinned: **1.98.0** (stable), edition **2024**
+- Pinned: **1.98.1** (stable), edition **2024** (`rust-toolchain.toml`, profile `minimal` + clippy, rustfmt, rust-src, rust-analyzer)
 - `unsafe_code = "forbid"` and `unsafe_op_in_unsafe_fn = "forbid"` enforced workspace-wide
 - All clippy lints set to `warn`
 - Release profile: `lto = "fat"`, `codegen-units = 1`
