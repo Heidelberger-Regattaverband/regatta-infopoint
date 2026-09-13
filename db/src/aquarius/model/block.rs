@@ -70,6 +70,8 @@ impl Block {
                 }
                 heats += 1;
                 blocks.push(Block { begin, end, heats });
+            } else {
+                blocks.push(Block { begin, end, heats: 1 });
             }
         }
         Ok(blocks)
