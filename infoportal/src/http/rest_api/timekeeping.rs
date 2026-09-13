@@ -26,6 +26,7 @@ use ::chrono::DateTime;
 use ::chrono::Utc;
 use ::db::aquarius::Aquarius;
 use ::db::aquarius::model::Heat as DbHeat;
+use ::db::error::DbError;
 use ::db::tiberius::TiberiusPool;
 use ::db::tiberius::user_pool::UserPoolManager;
 use ::db::timekeeper::TimeStrip;
@@ -43,6 +44,7 @@ use ::tracing::error;
 use ::tracing::trace;
 use ::tracing::warn;
 
+use super::ApiError;
 use super::WS_CLIENT_TIMEOUT;
 use super::WS_HEARTBEAT_INTERVAL;
 
@@ -150,7 +152,7 @@ struct TimekeepingActor {
 }
 
 impl TimekeepingActor {
-    async fn new(pool: Arc<TiberiusPool>, aquarius_db: Data<Aquarius>) -> Self {
+    async fn new(pool: Arc<TiberiusPool>, aquarius_db: Data<Aquarius>) -> Result<Self, DbError> {
         let (event_sender, event_receiver) = mpsc::channel();
         let client = AquariusClient::new(
             &CONFIG.aquarius_host,
@@ -163,14 +165,14 @@ impl TimekeepingActor {
             Err(_) => None,
         };
 
-        Self {
+        Ok(Self {
             heart_beat: Instant::now(),
             aquarius_client,
             heats: Arc::new(RwLock::new(Vec::new())),
             event_receiver: Some(event_receiver),
-            time_strip: Arc::new(::tokio::sync::RwLock::new(TimeStrip::load(pool.clone()).await.unwrap())),
+            time_strip: Arc::new(::tokio::sync::RwLock::new(TimeStrip::load(pool.clone()).await?)),
             aquarius_db,
-        }
+        })
     }
 
     fn start_heart_beat(&self, ctx: &mut <Self as Actor>::Context) {
@@ -418,7 +420,9 @@ async fn get_timekeeping_ws(
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<HttpResponse, Error> {
     let pool = get_user_pool(&identity, &user_pool_manager).await?;
-    let actor = TimekeepingActor::new(pool, aquarius_db.clone()).await;
+    let actor = TimekeepingActor::new(pool, aquarius_db.clone())
+        .await
+        .map_err(ApiError::from)?;
     ws::start(actor, &request, stream)
 }
 
