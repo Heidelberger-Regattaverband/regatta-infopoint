@@ -109,23 +109,40 @@ impl AquariusClient {
                     Ok(connection) => {
                         // Spawn a thread to receive events from Aquarius
                         let event_thread_handle = spawn_event_thread(shutdown.clone(), connection, sender.clone());
+                        // Open a second connection used for outgoing commands.
+                        let mut poisoned = false;
                         match connect(&address, timeout) {
-                            Ok(connection) => {
-                                *connection_mutex.lock().unwrap() = Some(connection);
-                                send_connection_status(&sender, true);
-                                // Wait for the thread to finish
-                                let _ = event_thread_handle.join().is_ok();
-                            }
+                            Ok(connection) => match connection_mutex.lock() {
+                                Ok(mut guard) => {
+                                    *guard = Some(connection);
+                                    send_connection_status(&sender, true);
+                                }
+                                Err(_) => poisoned = true,
+                            },
                             Err(err) => warn!(%err, "Error connecting to Aquarius:"),
+                        }
+                        // Always join the event thread before the next iteration, so a failed
+                        // command connection can never leave an orphaned event thread running.
+                        let _ = event_thread_handle.join();
+                        if poisoned {
+                            error!("Connection mutex poisoned, stopping watch dog");
+                            break;
                         }
                     }
                     Err(err) => trace!(%err, "Error connecting to Aquarius:"),
                 }
-                let mut previous_connection = connection_mutex.lock().unwrap();
-                if previous_connection.is_some() {
-                    *previous_connection = None;
-                    send_connection_status(&sender, false);
-                    info!("Disconnected from Aquarius");
+                match connection_mutex.lock() {
+                    Ok(mut guard) => {
+                        if guard.is_some() {
+                            *guard = None;
+                            send_connection_status(&sender, false);
+                            info!("Disconnected from Aquarius");
+                        }
+                    }
+                    Err(_) => {
+                        error!("Connection mutex poisoned, stopping watch dog");
+                        break;
+                    }
                 }
 
                 let elapsed = start.elapsed();
