@@ -12,6 +12,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          # Full history so libgit2 in the `built` crate can resolve the commit.
+          fetch-depth: 0
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v4
@@ -28,6 +31,9 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v7
         with:
+          # Build from the workspace so `.git` is present. BuildKit strips it from
+          # the default Git context, which leaves the commit hash empty in the build.
+          context: .
           platforms: linux/amd64
           push: true
           tags: ofterdinger/regatta-infoportal:latest
