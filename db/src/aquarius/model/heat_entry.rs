@@ -126,9 +126,11 @@ impl HeatEntry {
                     first_net_time = result.net_time;
                 } else if result.rank_sort > 1 && result.rank_sort < u8::MAX {
                     let delta = result.net_time - first_net_time;
-                    let duration = Duration::from_millis(delta as u64);
-                    let millis = duration.subsec_millis() / 10;
-                    result.delta = Some(format!("+{}.{millis:02}", duration.as_secs()));
+                    if delta > 0 {
+                        let duration = Duration::from_millis(delta as u64);
+                        let millis = duration.subsec_millis() / 10;
+                        result.delta = Some(format!("+{}.{millis:02}", duration.as_secs()));
+                    }
                 }
             }
         }
