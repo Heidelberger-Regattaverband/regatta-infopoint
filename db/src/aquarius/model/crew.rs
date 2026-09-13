@@ -45,37 +45,16 @@ impl Crew {
         format!("{alias}.{ID}, {alias}.{POS}, {alias}.{IS_COX}, {alias}.{ROUND_FROM}, {alias}.{ROUND_TO}")
     }
 
-    /// Query all crew members of a entry.
+    /// Query all crew members for multiple entries in a single database round-trip.
     /// # Arguments
-    /// * `entry_id` - The entry identifier
-    /// * `round` - The round of the heat this crew is participating in
+    /// * `entry_ids` - The entry identifiers to fetch crews for
+    /// * `round` - The round of the heat; only crew members active in this round are returned
     /// * `pool` - The database connection pool
     /// # Returns
-    /// A list of crew members of the entry
-    pub(crate) async fn query_crew_of_entry(
-        entry_id: i32,
-        round: i16,
-        pool: &TiberiusPool,
-    ) -> Result<Vec<Self>, DbError> {
-        let sql = format!(
-            "SELECT {0}, {1}, {2} FROM Crew cr
-            JOIN Athlet  a ON cr.Crew_Athlete_ID_FK = a.{ATHLETE_ID}
-            JOIN Club   cl ON a.Athlet_Club_ID_FK   = cl.{CLUB_ID}
-            WHERE Crew_Entry_ID_FK = @P1 AND cr.{ROUND_FROM} <= @P2 AND @P2 <= cr.{ROUND_TO}
-            ORDER BY cr.{POS} ASC",
-            Crew::select_columns("cr"),
-            Athlete::select_columns("a"),
-            Club::select_all_columns("cl")
-        );
-        let mut query = Query::new(sql);
-        query.bind(entry_id);
-        query.bind(round);
-
-        let mut client = pool.get().await?;
-        let crew = get_rows(query.query(&mut client).await?).await?;
-        Ok(crew.into_iter().map(|row| Crew::from(&row)).collect())
-    }
-
+    /// A map from entry ID to its crew members, ordered by position within each entry.
+    /// Entries with no crew members are absent from the map.
+    /// # Errors
+    /// Returns an error if the query fails or if there are issues with the database connection.
     pub(crate) async fn query_crews_for_entries(
         entry_ids: &[i32],
         round: i16,

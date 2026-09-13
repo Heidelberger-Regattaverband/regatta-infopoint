@@ -17,8 +17,6 @@ use super::race::Race;
 use crate::error::DbError;
 use crate::tiberius::RowColumn;
 use crate::tiberius::TiberiusPool;
-use ::futures::future::BoxFuture;
-use ::futures::future::join_all;
 use ::serde::Serialize;
 use ::std::cmp::Ordering;
 use ::std::time::Duration;
@@ -113,14 +111,7 @@ impl HeatEntry {
 
         let mut first_net_time: i32 = 0;
 
-        let mut crew_futures: Vec<BoxFuture<Result<Vec<Crew>, DbError>>> = Vec::new();
         for (pos, heat_entry) in heat_entries.iter_mut().enumerate() {
-            crew_futures.push(Box::pin(Crew::query_crew_of_entry(
-                heat_entry.entry.id,
-                heat.round,
-                pool,
-            )));
-
             if let Some(result) = &mut heat_entry.result {
                 if pos == 0 {
                     first_net_time = result.net_time;
@@ -135,15 +126,15 @@ impl HeatEntry {
             }
         }
 
-        // query the crews of all entries in parallel
-        let crews = join_all(crew_futures).await;
+        // fetch all crews in a single batch query
+        let entry_ids: Vec<i32> = heat_entries.iter().map(|he| he.entry.id).collect();
+        let mut crews_map = Crew::query_crews_for_entries(&entry_ids, heat.round, pool).await?;
 
-        for (pos, heat_entry) in heat_entries.iter_mut().enumerate() {
-            if let Some(crews) = crews.get(pos)
-                && let Ok(crews) = crews.as_deref()
-                && !crews.is_empty()
+        for heat_entry in heat_entries.iter_mut() {
+            if let Some(crew) = crews_map.remove(&heat_entry.entry.id)
+                && !crew.is_empty()
             {
-                heat_entry.entry.crew = Some(crews.to_vec());
+                heat_entry.entry.crew = Some(crew);
             }
         }
 
