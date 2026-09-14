@@ -10,10 +10,12 @@ pub(crate) mod timekeeping;
 use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::Responder;
+use ::actix_web::ResponseError;
 use ::actix_web::Scope as ActixScope;
 use ::actix_web::error::ErrorInternalServerError;
 use ::actix_web::error::ErrorNotFound;
 use ::actix_web::get;
+use ::actix_web::http::StatusCode;
 use ::actix_web::web::Data;
 use ::actix_web::web::Json;
 use ::actix_web::web::Path;
@@ -53,7 +55,14 @@ impl Display for ApiError {
     }
 }
 
-impl actix_web::ResponseError for ApiError {}
+impl ResponseError for ApiError {
+    fn status_code(&self) -> StatusCode {
+        match &self.0 {
+            DbError::NotFound(_) => StatusCode::NOT_FOUND,
+            _ => StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
+}
 
 impl From<DbError> for ApiError {
     fn from(err: DbError) -> Self {
