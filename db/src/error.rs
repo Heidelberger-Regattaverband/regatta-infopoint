@@ -21,4 +21,7 @@ pub enum DbError {
     /// Custom error with message.
     #[error("Database error: {0}")]
     Custom(String),
+    /// A queried row or entity was not found.
+    #[error("Not found: {0}")]
+    NotFound(String),
 }

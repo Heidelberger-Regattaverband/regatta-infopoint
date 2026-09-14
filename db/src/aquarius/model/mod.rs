@@ -21,7 +21,6 @@ mod statistics;
 use crate::error::DbError;
 use ::tiberius::QueryStream;
 use ::tiberius::Row;
-use ::tiberius::error::Error as TiberiusError;
 pub use age_class::AgeClass;
 pub use athlete::Athlete;
 pub use block::Block;
@@ -60,7 +59,7 @@ pub async fn get_row(stream: QueryStream<'_>) -> Result<Row, DbError> {
     stream
         .into_row()
         .await?
-        .ok_or_else(|| DbError::from(TiberiusError::Conversion("No row returned from query".into())))
+        .ok_or_else(|| DbError::NotFound("No row returned from query".into()))
 }
 
 /// Extract an optional row from a query stream.

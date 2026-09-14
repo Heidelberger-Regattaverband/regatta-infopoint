@@ -35,12 +35,11 @@ fn load_club_flags() -> HashMap<i32, ClubFlag> {
             {
                 for img in a.select(&img_selector) {
                     if let Some(src) = img.value().attr("src") {
-                        let club_extern_id: i32 = href
-                            .split('/')
-                            .next_back()
-                            .unwrap_or_default()
-                            .parse()
-                            .unwrap_or_default();
+                        let Some(club_extern_id) = href.split('/').next_back().and_then(|s| s.parse::<i32>().ok())
+                        else {
+                            warn!("Failed to parse club ID from href: {href}");
+                            continue;
+                        };
                         let flag_url = BASE_URL.to_owned() + src;
                         club_flags.insert(
                             club_extern_id,
