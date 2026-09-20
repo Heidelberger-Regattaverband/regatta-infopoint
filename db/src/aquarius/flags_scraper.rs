@@ -4,7 +4,7 @@ use ::std::collections::HashMap;
 use ::std::sync::OnceLock;
 use ::tracing::warn;
 
-const BASE_URL: &str = "https://verwaltung.rudern.de";
+const BASE_URL: &str = "https://www.rudern.de/sites/default/files/styles/club_logo/public/images/vereine/";
 // downloaded from https://verwaltung.rudern.de/flags
 const FLAGS_CONTENT: &str = include_str!("flags.html");
 
@@ -26,30 +26,23 @@ fn load_club_flags() -> HashMap<i32, ClubFlag> {
     let mut club_flags = HashMap::new();
 
     let document = Html::parse_document(FLAGS_CONTENT);
-    if let Ok(a_selector) = Selector::parse(r#"a"#)
-        && let Ok(img_selector) = Selector::parse(r#"img"#)
-    {
+    if let Ok(a_selector) = Selector::parse(r#"a"#) {
         for a in document.select(&a_selector) {
             if let Some(href) = a.value().attr("href")
                 && href.starts_with("/clubs/")
             {
-                for img in a.select(&img_selector) {
-                    if let Some(src) = img.value().attr("src") {
-                        let Some(club_extern_id) = href.split('/').next_back().and_then(|s| s.parse::<i32>().ok())
-                        else {
-                            warn!("Failed to parse club ID from href: {href}");
-                            continue;
-                        };
-                        let flag_url = BASE_URL.to_owned() + src;
-                        club_flags.insert(
-                            club_extern_id,
-                            ClubFlag {
-                                flag_url,
-                                club_extern_id,
-                            },
-                        );
-                    }
-                }
+                let Some(club_extern_id) = href.split('/').next_back().and_then(|s| s.parse::<i32>().ok()) else {
+                    warn!("Failed to parse club ID from href: {href}");
+                    continue;
+                };
+                let flag_url = BASE_URL.to_owned() + club_extern_id.to_string().as_str() + ".png";
+                club_flags.insert(
+                    club_extern_id,
+                    ClubFlag {
+                        flag_url,
+                        club_extern_id,
+                    },
+                );
             }
         }
     } else {
