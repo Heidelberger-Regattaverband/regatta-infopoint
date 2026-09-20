@@ -97,7 +97,10 @@ impl Timestamp {
         let mut query = Query::new(format!("DELETE FROM HRV_Timestamp WHERE {TIMESTAMP} = @P1"));
         query.bind(self.time);
 
-        query.execute(client).await?;
+        let result = query.execute(client).await?;
+        if result.rows_affected().iter().sum::<u64>() == 0 {
+            return Err(DbError::NotFound(format!("Timestamp {} not found", self.time)));
+        }
         Ok(())
     }
 
@@ -126,7 +129,10 @@ impl Timestamp {
             query.bind(self.time);
             query.bind(self.heat_nr);
             query.bind(self.bib);
-            query.execute(client).await?;
+            let result = query.execute(client).await?;
+            if result.rows_affected().iter().sum::<u64>() == 0 {
+                return Err(DbError::NotFound(format!("Timestamp {} not found", self.time)));
+            }
             self.persisted = true;
         }
         Ok(())
