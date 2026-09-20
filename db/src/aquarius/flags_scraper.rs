@@ -57,10 +57,10 @@ mod tests {
 
     #[tokio_shared_rt::test(shared)]
     async fn test_crawler() {
-        let club_flags = ClubFlag::get(&11008);
+        let club_flags = ClubFlag::get(&11102);
         assert_eq!(
             club_flags.unwrap().flag_url,
-            "https://verwaltung.rudern.de/uploads/clubs/fdd52f8c4b5b15538341ea3e9edb11c3_small.png".to_owned()
+            "https://www.rudern.de/sites/default/files/styles/club_logo/public/images/vereine/11102.png".to_owned()
         );
     }
 }
