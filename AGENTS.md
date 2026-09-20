@@ -169,13 +169,6 @@ Docker image: multi-stage (`rust:1.98.0` builder with Node.js 24, `ubuntu:26.04`
 - Store review feedback in a `review.md` file in the corresponding crate.
 - Prioritize: critical bugs > security issues > design flaws > minor improvements.
 
-Known open issues (tracked in `db/review.md` and `infoportal/review.md`):
-- TLS for DB connection disabled by default (`DB_ENCRYPTION=false`)
-- Raw error messages can leak to API consumers
-- `CacheQueryParams` struct duplicated across handlers
-- Magic number `64` used for "final round" in multiple places
-- No auth middleware — authentication is checked per-handler
-
 # MCP Servers
 
 - For UI5 related tasks or questions use MCP `@ui5/mcp-server`
