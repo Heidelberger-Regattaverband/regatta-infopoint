@@ -20,7 +20,7 @@ use ::utoipa::ToSchema;
 pub(crate) const ID: &str = "Athlet_ID";
 const FIRST_NAME: &str = "Athlet_FirstName";
 const LAST_NAME: &str = "Athlet_LastName";
-const GENDER: &str = "Athlet_Gender";
+pub(crate) const GENDER: &str = "Athlet_Gender";
 const DOB: &str = "Athlet_DOB";
 const ENTRIES_COUNT: &str = "Athlet_Entries_Count";
 

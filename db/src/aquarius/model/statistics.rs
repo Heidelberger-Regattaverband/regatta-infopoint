@@ -1,5 +1,7 @@
 use super::Athlete;
+use super::Club;
 use super::TryToEntity;
+use super::athlete::GENDER as ATHLETE_GENDER;
 use super::athlete::ID as ATHLETE_ID;
 use super::boat_class::BC_COXED;
 use super::boat_class::BC_ID;
@@ -214,13 +216,15 @@ impl Statistics {
 
     async fn query_oldest(regatta_id: i32, gender: &str, pool: &TiberiusPool) -> Result<Option<Athlete>, DbError> {
         let mut query = Query::new(format!(
-            "SELECT DISTINCT TOP 1 Athlet.*, Club.*
-            FROM  Entry
-            JOIN  Crew   ON Crew_Entry_ID_FK   = {ENTRY_ID}
-            JOIN  Athlet ON Crew_Athlete_ID_FK = {ATHLETE_ID}
-            JOIN  Club   ON Athlet_Club_ID_FK  = {CLUB_ID}
-            WHERE Entry_Event_ID_FK = @P1 AND {ENTRY_CANCELLED} = 0 AND Athlet_Gender = @P2 AND {CREW_IS_COX} = 0
-            ORDER BY Athlet_DOB"
+            "SELECT DISTINCT TOP 1 {0}, {1}
+            FROM  Entry   e
+            JOIN  Crew   cr ON cr.Crew_Entry_ID_FK   = e.{ENTRY_ID}
+            JOIN  Athlet  a ON cr.Crew_Athlete_ID_FK = a.{ATHLETE_ID}
+            JOIN  Club   cl ON a.Athlet_Club_ID_FK   = cl.{CLUB_ID}
+            WHERE e.Entry_Event_ID_FK = @P1 AND e.{ENTRY_CANCELLED} = 0 AND a.{ATHLETE_GENDER} = @P2 AND cr.{CREW_IS_COX} = 0
+            ORDER BY Athlet_DOB",
+            Athlete::select_columns("a"),
+            Club::select_all_columns("cl")
         ));
         query.bind(regatta_id);
         query.bind(gender);
