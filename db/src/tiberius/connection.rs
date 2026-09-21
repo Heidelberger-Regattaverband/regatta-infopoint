@@ -45,7 +45,9 @@ impl ManageConnection for TiberiusConnectionManager {
         Ok(())
     }
 
-    /// Checks if the connection is broken. This implementation always returns false.
+    /// Checks if the connection is broken. Tiberius does not expose a synchronous
+    /// closed-flag on `Client`, so liveness detection is fully delegated to
+    /// `is_valid`, which sends a probe query before each use.
     fn has_broken(&self, _connection: &mut Self::Connection) -> bool {
         false
     }
