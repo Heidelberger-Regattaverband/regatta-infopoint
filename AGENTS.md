@@ -41,11 +41,12 @@ regatta-infopoint/
 ## Crates
 
 ### `db` (library)
-Core database access layer. All domain models, raw SQL queries (tiberius, no ORM), bb8 connection pool (max 80 / min 30 idle), and stretto in-memory cache (TinyLFU, TTL-based, default 60s).
+Core database access layer. All domain models, raw SQL queries (tiberius, no ORM), bb8 connection pool (max 80 / min 30 idle), and stretto in-memory cache (TinyLFU, TTL-based, default 60s). Has `db/review.md`.
 
 Key modules:
 - `db/src/aquarius.rs` — `Aquarius` struct: high-level query interface with cache-aside (`compute_if_missing`)
 - `db/src/aquarius/model/` — 19 domain model structs (`Regatta`, `Race`, `Heat`, `HeatEntry`, `HeatResult`, `Entry`, `Athlete`, `Crew`, `Club`, `AgeClass`, `BoatClass`, `Block`, `Schedule`, `Score`, `Statistics`, `Notification`, `Referee`, `Filters`, `Problems`), each with `From<&Row>` impl using named column constants
+- `db/src/error.rs` — `DbError` enum (`Tiberius`, `Pool`, `CacheMessage`, `CacheDriver`, `Custom`, `NotFound`); `NotFound` maps to HTTP 404 in `infoportal`
 - `db/src/tiberius/` — `connection.rs`, `pool.rs` (global pool), `user_pool.rs` (per-user pool for admin writes), `row_column.rs` (typed row deserialization traits)
 - `db/src/cache.rs` — `Cache<K,V>` / `Caches` abstraction
 - `db/src/timekeeper/` — `Timestamp` (persist start/finish times), `TimeStrip` (ordered timestamps)
@@ -55,7 +56,7 @@ Key modules:
 TCP client for the Aquarius native protocol. Provides real-time event streaming (`event.rs`, `messages.rs`, `client.rs`). Consumed by `infoportal` to drive WebSocket push on heat state changes. Has `aquarius/review.md`.
 
 ### `infoportal` (binary — main web server)
-Actix-Web server. REST API + WebSocket endpoints, static file serving (the UI5 SPA), Swagger UI at `/swagger-ui/`, Prometheus metrics at `/metrics`.
+Actix-Web server. REST API + WebSocket endpoints, static file serving (the UI5 SPA), Swagger UI at `/swagger-ui/`, Prometheus metrics at `/metrics`. Has `infoportal/review.md`.
 
 Key modules:
 - `infoportal/src/config.rs` — `Config` singleton via `LazyLock`, all env var config with defaults
@@ -68,7 +69,7 @@ Key modules:
 Authentication: `Option<Identity>` on read endpoints; `auth::authenticate` → per-user pool for writes. No middleware — per-handler checks.
 
 ### `timekeeper` (binary)
-Standalone ratatui TUI for entering race start/finish timestamps at the finish line. Uses the same `db` library. CLI args via clap. Tabs: heats, timestrip, logs. Has `build.rs` (embeds git hash + build timestamp via `built` crate).
+Standalone ratatui TUI for entering race start/finish timestamps at the finish line. Uses the same `db` library. CLI args via clap. Tabs: heats, timestrip, logs. Has `build.rs` (embeds git hash + build timestamp via `built` crate). Has `timekeeper/review.md`.
 
 ## Frontend (`static/`)
 SAP OpenUI5 TypeScript SPA. 18 XML views (App, Launchpad, RacesTable, RaceDetails, HeatsTable, HeatDetails, AthletesTable, AthleteDetails, ClubsTable, ClubDetails, ScoringTable, ScheduleTable, Statistics, Timekeeping, Map, Monitoring, Admin, Problems) + 10 XML fragments (HeatsTable, HeatsFilterDialog, HeatsSortDialog, RacesFilterDialog, RacesSortDialog, AthletesSortDialog, ClubsTableSortDialog, LoginPopover, TimekeepingAquarius, TimekeepingTimestrip). One TypeScript controller per view. Leaflet 1.9.x for the map view. i18n: German + English.
@@ -106,10 +107,8 @@ Base URL: `http://localhost:8080` (local), `https://info.regatta-hd.de` (product
 | `DB_ENCRYPTION` | `false` | — | Enable TLS for DB connection |
 | `DB_POOL_MAX_SIZE` | `80` | — | Max pool connections |
 | `DB_POOL_MIN_IDLE` | `30` | — | Min idle connections |
-| `HTTP_BIND` | `0.0.0.0` | — | HTTP bind address |
 | `HTTP_PORT` | `8080` | — | HTTP port |
 | `HTTP_WORKERS` | (auto) | — | Number of HTTP workers |
-| `HTTPS_BIND` | `0.0.0.0` | — | HTTPS bind address |
 | `HTTPS_PORT` | `8443` | — | HTTPS port |
 | `HTTPS_CERT_PATH` | `./ssl/cert.pem` | — | TLS certificate |
 | `HTTPS_KEY_PATH` | `./ssl/key.pem` | — | TLS private key |
@@ -128,8 +127,8 @@ Local `.env` example:
 ```
 DB_HOST=data
 DB_NAME=Regatta_2026
-DB_USER=info
-DB_PASSWORD=portal
+DB_USER=<user>
+DB_PASSWORD=<password>
 RUST_LOG=infoportal=info
 ```
 
