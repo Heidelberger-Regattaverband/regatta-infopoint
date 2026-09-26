@@ -1,4 +1,5 @@
 use crate::built_info;
+use crate::config::consts::DEFAULT_BIND_ADDRESS;
 use ::db::tiberius_client::AuthMethod;
 use ::db::tiberius_client::Config as TiberiusConfig;
 use ::db::tiberius_client::EncryptionLevel;
@@ -19,15 +20,9 @@ pub static CONFIG: LazyLock<Config> = LazyLock::new(|| Config::init().expect("Fa
 /// The configuration of the server. The configuration is read from the environment.
 /// The configuration is a singleton and initialized once. The configuration can be accessed by calling `Config::get()`.
 pub struct Config {
-    /// The IP address the HTTP server is listening on. Defaults to `0.0.0.0`.
-    /// The IP address can be set by setting the environment variable `HTTP_BIND`.
-    http_bind: String,
     /// The port the HTTP server is listening on. Defaults to `8080`.
     /// The port can be set by setting the environment variable `HTTP_PORT`.
     http_port: u16,
-    /// The IP address the HTTPS server is listening on. Defaults to `0.0.0.0`
-    /// The IP address can be set by setting the environment variable `HTTPS_BIND`.
-    https_bind: String,
     /// The port the HTTPS server is listening on. Defaults to `8443`.
     /// The port can be set by setting the environment variable `HTTPS_PORT`.
     https_port: u16,
@@ -84,18 +79,18 @@ pub struct Config {
 
 impl Config {
     /// Returns the HTTP binding configuration of the server.
-    pub fn get_http_bind(&self) -> (String, u16) {
-        (self.http_bind.clone(), self.http_port)
+    pub fn get_http_bind(&self) -> (&str, u16) {
+        (DEFAULT_BIND_ADDRESS, self.http_port)
     }
 
     /// Returns the HTTPS binding configuration of the server.
-    pub fn get_https_bind(&self) -> (String, u16) {
-        (self.https_bind.clone(), self.https_port)
+    pub fn get_https_bind(&self) -> (&str, u16) {
+        (DEFAULT_BIND_ADDRESS, self.https_port)
     }
 
     /// Returns the binding for the internal-only metrics server (always 0.0.0.0).
     pub fn get_metrics_bind(&self) -> (&str, u16) {
-        ("0.0.0.0", self.metrics_http_port)
+        (DEFAULT_BIND_ADDRESS, self.metrics_http_port)
     }
 
     /// Returns the rate limiter configuration taken from the environment.
@@ -140,9 +135,7 @@ impl Config {
         );
 
         let config = Config {
-            http_bind: env::var(consts::HTTP_BIND).unwrap_or_else(|_| consts::DEFAULT_BIND_ADDRESS.to_string()),
             http_port: Self::parse_env_var(consts::HTTP_PORT, consts::DEFAULT_HTTP_PORT)?,
-            https_bind: env::var(consts::HTTPS_BIND).unwrap_or_else(|_| consts::DEFAULT_BIND_ADDRESS.to_string()),
             https_port: Self::parse_env_var(consts::HTTPS_PORT, consts::DEFAULT_HTTPS_PORT)?,
             https_cert_path: env::var(consts::HTTPS_CERT_PATH)
                 .unwrap_or_else(|_| consts::DEFAULT_SSL_CERT_PATH.to_string()),
@@ -197,9 +190,7 @@ impl Config {
             "Aquarius DB:"
         );
         info!(
-            https_bind = config.https_bind,
             https_port = config.https_port,
-            http_bind = config.http_bind,
             http_port = config.http_port,
             "Server is listening on:",
         );
@@ -215,11 +206,7 @@ impl Config {
             timeout_in_ms = config.aquarius_timeout,
             "Aquarius Client:"
         );
-        info!(
-            http_bind = "0.0.0.0",
-            http_port = config.metrics_http_port,
-            "Metrics server is listening on:"
-        );
+        info!(http_port = config.metrics_http_port, "Metrics server is listening on:");
 
         Ok(config)
     }
@@ -342,11 +329,9 @@ enum ConfigError {
 /// Constants module for better organization and maintainability
 mod consts {
     // Environment variable names
-    pub(super) const HTTP_BIND: &str = "HTTP_BIND";
     pub(super) const HTTP_PORT: &str = "HTTP_PORT";
     pub(super) const HTTP_APP_CONTENT_PATH: &str = "HTTP_APP_CONTENT_PATH";
     pub(super) const HTTP_WORKERS: &str = "HTTP_WORKERS";
-    pub(super) const HTTPS_BIND: &str = "HTTPS_BIND";
     pub(super) const HTTPS_PORT: &str = "HTTPS_PORT";
     pub(super) const HTTPS_CERT_PATH: &str = "HTTPS_CERT_PATH";
     pub(super) const HTTPS_KEY_PATH: &str = "HTTPS_KEY_PATH";
