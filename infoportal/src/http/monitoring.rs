@@ -29,27 +29,32 @@ impl Monitoring {
     /// Creates a new monitoring struct.
     /// # Arguments
     /// * `pool` - The tiberius pool.
+    /// * `caches` - The cache statistics.
+    /// * `user_pool_manager` - The user pool manager.
     /// # Returns
     /// `Monitoring` - The monitoring struct.
     pub(crate) fn new(pool: &TiberiusPool, caches: &CacheStats, user_pool_manager: &UserPoolManager) -> Self {
         let (cpus, mem) = get_cpu_and_memory();
-        let state = pool.state();
-        let stats = state.statistics;
+        let pool_state = pool.state();
+        let pool_stats = pool_state.statistics;
         let user_pools = user_pool_manager
             .try_active_sessions()
             .into_iter()
             .map(|(username, sessions)| UserSession { username, sessions })
             .collect();
+        let up = user_pool_manager.try_aggregate_stats().unwrap_or_default();
         Monitoring {
             db: Db {
                 connections: Connections {
-                    total: state.connections,
-                    idle: state.idle_connections,
-                    used: state.connections - state.idle_connections,
-                    created: stats.connections_created,
-                    closed_idle_timeout: stats.connections_closed_idle_timeout,
-                    closed_max_lifetime: stats.connections_closed_max_lifetime,
-                    closed_error: stats.connections_closed_broken + stats.connections_closed_invalid,
+                    total: pool_state.connections + up.total,
+                    idle: pool_state.idle_connections + up.idle,
+                    used: (pool_state.connections - pool_state.idle_connections) + up.used,
+                    created: pool_stats.connections_created + up.created,
+                    closed_idle_timeout: pool_stats.connections_closed_idle_timeout + up.closed_idle_timeout,
+                    closed_max_lifetime: pool_stats.connections_closed_max_lifetime + up.closed_max_lifetime,
+                    closed_error: pool_stats.connections_closed_broken
+                        + pool_stats.connections_closed_invalid
+                        + up.closed_error,
                 },
                 caches: Caches::from(caches),
                 user_pools,
@@ -242,7 +247,7 @@ struct Caches {
     pub accesses: u64,
     pub hits: u64,
     pub misses: u64,
-    pub entries: usize,
+    pub entries: u64,
     pub hit_rate: f64,
 }
 

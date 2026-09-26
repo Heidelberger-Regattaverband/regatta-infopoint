@@ -7,6 +7,18 @@ use ::tiberius::Config as TiberiusConfig;
 use ::tokio::sync::RwLock;
 use ::tracing::debug;
 
+/// Aggregated connection statistics across all active user pools.
+#[derive(Default)]
+pub struct UserPoolStats {
+    pub total: u32,
+    pub idle: u32,
+    pub used: u32,
+    pub created: u64,
+    pub closed_idle_timeout: u64,
+    pub closed_max_lifetime: u64,
+    pub closed_error: u64,
+}
+
 /// Manager for per-user database connection pools.
 ///
 /// Each username maps to a shared pool and a session reference count.
@@ -112,5 +124,29 @@ impl UserPoolManager {
                 .collect(),
             Err(_) => vec![],
         }
+    }
+
+    /// Return aggregated connection statistics across all active user pools.
+    ///
+    /// Returns `None` if no user pools are active or if the lock is contended.
+    /// Uses a non-blocking `try_read` — safe to call from synchronous contexts.
+    pub fn try_aggregate_stats(&self) -> Option<UserPoolStats> {
+        let guard = self.pools.try_read().ok()?;
+        if guard.is_empty() {
+            return None;
+        }
+        let mut stats = UserPoolStats::default();
+        for (pool, _) in guard.values() {
+            let state = pool.state();
+            stats.total += state.connections;
+            stats.idle += state.idle_connections;
+            stats.used += state.connections.saturating_sub(state.idle_connections);
+            stats.created += state.statistics.connections_created;
+            stats.closed_idle_timeout += state.statistics.connections_closed_idle_timeout;
+            stats.closed_max_lifetime += state.statistics.connections_closed_max_lifetime;
+            stats.closed_error +=
+                state.statistics.connections_closed_broken + state.statistics.connections_closed_invalid;
+        }
+        Some(stats)
     }
 }

@@ -73,7 +73,7 @@ where
             accesses,
             hits,
             misses,
-            entries: self.cache.len(),
+            entries: self.cache.len() as u64,
             hit_rate: if hits + misses > 0 {
                 (hits as f64 / (hits + misses) as f64) * 100.0
             } else {
@@ -273,7 +273,7 @@ pub struct CacheStats {
     /// Total number of cache misses
     pub misses: u64,
     /// Current number of entries in the cache
-    pub entries: usize,
+    pub entries: u64,
     /// Cache hit rate as a percentage
     pub hit_rate: f64,
 }
