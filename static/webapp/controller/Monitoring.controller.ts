@@ -175,6 +175,9 @@ export default class MonitoringController extends BaseController {
 
   private disconnect() {
     if (this.socket) {
+      this.socket.onclose = null;
+      this.socket.onmessage = null;
+      this.socket.onopen = null;
       console.debug('Disconnecting Monitoring WebSocket ...');
       this.socket.close();
       delete this.socket;
