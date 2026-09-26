@@ -38,7 +38,7 @@ rustls-pemfile.workspace = true
 
 # OpenAPI
 utoipa.workspace = true
-utoipa-swagger-ui = { version = "9", features = ["actix-web"] }
+utoipa-swagger-ui = { version = "10.0", features = ["actix-web"] }
 
 # Utils
 chrono.workspace = true
