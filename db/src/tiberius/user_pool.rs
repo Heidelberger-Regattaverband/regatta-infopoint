@@ -142,18 +142,18 @@ impl UserPoolManager {
         if guard.is_empty() {
             return None;
         }
-        let mut stats = UserPoolStats::default();
+        let mut user_pool_stats = UserPoolStats::default();
         for (pool, _) in guard.values() {
             let state = pool.state();
-            stats.total += state.connections as u64;
-            stats.idle += state.idle_connections as u64;
-            stats.used += state.connections.saturating_sub(state.idle_connections) as u64;
-            stats.created += state.statistics.connections_created;
-            stats.closed_idle_timeout += state.statistics.connections_closed_idle_timeout;
-            stats.closed_max_lifetime += state.statistics.connections_closed_max_lifetime;
-            stats.closed_error +=
+            user_pool_stats.total += state.connections as u64;
+            user_pool_stats.idle += state.idle_connections as u64;
+            user_pool_stats.used += state.connections.saturating_sub(state.idle_connections) as u64;
+            user_pool_stats.created += state.statistics.connections_created;
+            user_pool_stats.closed_idle_timeout += state.statistics.connections_closed_idle_timeout;
+            user_pool_stats.closed_max_lifetime += state.statistics.connections_closed_max_lifetime;
+            user_pool_stats.closed_error +=
                 state.statistics.connections_closed_broken + state.statistics.connections_closed_invalid;
         }
-        Some(stats)
+        Some(user_pool_stats)
     }
 }
