@@ -7,6 +7,25 @@ use ::tiberius::Config as TiberiusConfig;
 use ::tokio::sync::RwLock;
 use ::tracing::debug;
 
+/// Aggregated connection statistics across all active user pools.
+#[derive(Default)]
+pub struct UserPoolStats {
+    /// Total number of active connections across all user pools.
+    pub total: u64,
+    /// Total number of idle connections across all user pools.
+    pub idle: u64,
+    /// Total number of used connections across all user pools.
+    pub used: u64,
+    /// Total number of connections created across all user pools.
+    pub created: u64,
+    /// Total number of connections closed due to idle timeout across all user pools.
+    pub closed_idle_timeout: u64,
+    /// Total number of connections closed due to reaching max lifetime across all user pools.
+    pub closed_max_lifetime: u64,
+    /// Total number of connections closed due to errors across all user pools.
+    pub closed_error: u64,
+}
+
 /// Manager for per-user database connection pools.
 ///
 /// Each username maps to a shared pool and a session reference count.
@@ -15,7 +34,7 @@ use ::tracing::debug;
 /// interfere with each other.
 pub struct UserPoolManager {
     /// Active pools keyed by username, with their session reference count.
-    pools: RwLock<HashMap<String, (Arc<TiberiusPool>, usize)>>,
+    pools: RwLock<HashMap<String, (Arc<TiberiusPool>, u64)>>,
 
     config: TiberiusConfig,
 }
@@ -99,17 +118,42 @@ impl UserPoolManager {
         }
     }
 
-    /// Clear all connection pools.
-    #[allow(dead_code)]
-    pub async fn clear_all(&self) {
-        let mut pools = self.pools.write().await;
-        pools.clear();
+    /// Return a snapshot of all active sessions keyed by username.
+    ///
+    /// Uses a non-blocking `try_read` so it is safe to call from synchronous
+    /// contexts (e.g. monitoring). Returns an empty vec on the rare occasion
+    /// that a write lock is held concurrently.
+    pub fn try_active_sessions(&self) -> Vec<(String, u64)> {
+        match self.pools.try_read() {
+            Ok(guard) => guard
+                .iter()
+                .map(|(username, (_, count))| (username.clone(), *count))
+                .collect(),
+            Err(_) => vec![],
+        }
     }
 
-    /// Get the number of active connection pools.
-    #[allow(dead_code)]
-    pub async fn pool_count(&self) -> usize {
-        let pools = self.pools.read().await;
-        pools.len()
+    /// Return aggregated connection statistics across all active user pools.
+    ///
+    /// Returns `None` if no user pools are active or if the lock is contended.
+    /// Uses a non-blocking `try_read` — safe to call from synchronous contexts.
+    pub fn try_aggregate_stats(&self) -> Option<UserPoolStats> {
+        let guard = self.pools.try_read().ok()?;
+        if guard.is_empty() {
+            return None;
+        }
+        let mut user_pool_stats = UserPoolStats::default();
+        for (pool, _) in guard.values() {
+            let pool_state = pool.state();
+            user_pool_stats.total += pool_state.connections as u64;
+            user_pool_stats.idle += pool_state.idle_connections as u64;
+            user_pool_stats.used += pool_state.connections.saturating_sub(pool_state.idle_connections) as u64;
+            user_pool_stats.created += pool_state.statistics.connections_created;
+            user_pool_stats.closed_idle_timeout += pool_state.statistics.connections_closed_idle_timeout;
+            user_pool_stats.closed_max_lifetime += pool_state.statistics.connections_closed_max_lifetime;
+            user_pool_stats.closed_error +=
+                pool_state.statistics.connections_closed_broken + pool_state.statistics.connections_closed_invalid;
+        }
+        Some(user_pool_stats)
     }
 }

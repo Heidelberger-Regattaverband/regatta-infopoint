@@ -18,6 +18,7 @@ use ::actix_web_actors::ws::WebsocketContext;
 use ::actix_web_actors::ws::start;
 use ::db::aquarius::Aquarius;
 use ::db::tiberius::TiberiusPool;
+use ::db::tiberius::user_pool::UserPoolManager;
 use ::serde::Serialize;
 use ::std::time::Instant;
 use ::tracing::error;
@@ -33,13 +34,16 @@ struct MonitoringActor {
     heart_beat: Instant,
     /// Reference to the Aquarius database. Used to get the monitoring data.
     aquarius_db: Data<Aquarius>,
+    /// Reference to the user pool manager. Used to report active user sessions.
+    user_pool_manager: Data<UserPoolManager>,
 }
 
 impl MonitoringActor {
-    fn new(aquarius: Data<Aquarius>) -> Self {
+    fn new(aquarius: Data<Aquarius>, user_pool_manager: Data<UserPoolManager>) -> Self {
         Self {
             heart_beat: Instant::now(),
             aquarius_db: aquarius,
+            user_pool_manager,
         }
     }
 
@@ -56,7 +60,11 @@ impl MonitoringActor {
     }
 
     fn send_monitoring(&self, ctx: &mut <Self as Actor>::Context) {
-        let monitoring = Monitoring::new(TiberiusPool::instance(), &self.aquarius_db.get_cache_stats());
+        let monitoring = Monitoring::new(
+            TiberiusPool::instance(),
+            &self.aquarius_db.get_cache_stats(),
+            &self.user_pool_manager,
+        );
         ctx.address().do_send(MonitoringEvent::Update { monitoring });
     }
 }
@@ -124,8 +132,9 @@ async fn index(
     request: HttpRequest,
     stream: Payload,
     aquarius: Data<Aquarius>,
+    user_pool_manager: Data<UserPoolManager>,
     _identity: Identity,
 ) -> Result<HttpResponse, Error> {
-    let monitoring_actor = MonitoringActor::new(aquarius);
+    let monitoring_actor = MonitoringActor::new(aquarius, user_pool_manager);
     start(monitoring_actor, &request, stream)
 }
