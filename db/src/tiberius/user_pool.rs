@@ -15,7 +15,7 @@ use ::tracing::debug;
 /// interfere with each other.
 pub struct UserPoolManager {
     /// Active pools keyed by username, with their session reference count.
-    pools: RwLock<HashMap<String, (Arc<TiberiusPool>, usize)>>,
+    pools: RwLock<HashMap<String, (Arc<TiberiusPool>, u64)>>,
 
     config: TiberiusConfig,
 }
@@ -99,17 +99,18 @@ impl UserPoolManager {
         }
     }
 
-    /// Clear all connection pools.
-    #[allow(dead_code)]
-    pub async fn clear_all(&self) {
-        let mut pools = self.pools.write().await;
-        pools.clear();
-    }
-
-    /// Get the number of active connection pools.
-    #[allow(dead_code)]
-    pub async fn pool_count(&self) -> usize {
-        let pools = self.pools.read().await;
-        pools.len()
+    /// Return a snapshot of all active sessions keyed by username.
+    ///
+    /// Uses a non-blocking `try_read` so it is safe to call from synchronous
+    /// contexts (e.g. monitoring). Returns an empty vec on the rare occasion
+    /// that a write lock is held concurrently.
+    pub fn try_active_sessions(&self) -> Vec<(String, u64)> {
+        match self.pools.try_read() {
+            Ok(guard) => guard
+                .iter()
+                .map(|(username, (_, count))| (username.clone(), *count))
+                .collect(),
+            Err(_) => vec![],
+        }
     }
 }

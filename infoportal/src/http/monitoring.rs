@@ -1,6 +1,7 @@
 use crate::peak_alloc::PeakAlloc;
 use ::db::cache::CacheStats;
 use ::db::tiberius::TiberiusPool;
+use ::db::tiberius::user_pool::UserPoolManager;
 use ::serde::Serialize;
 use ::std::sync::Mutex;
 use ::std::thread;
@@ -30,10 +31,15 @@ impl Monitoring {
     /// * `pool` - The tiberius pool.
     /// # Returns
     /// `Monitoring` - The monitoring struct.
-    pub(crate) fn new(pool: &TiberiusPool, caches: &CacheStats) -> Self {
+    pub(crate) fn new(pool: &TiberiusPool, caches: &CacheStats, user_pool_manager: &UserPoolManager) -> Self {
         let (cpus, mem) = get_cpu_and_memory();
         let state = pool.state();
         let stats = state.statistics;
+        let user_pools = user_pool_manager
+            .try_active_sessions()
+            .into_iter()
+            .map(|(username, sessions)| UserSession { username, sessions })
+            .collect();
         Monitoring {
             db: Db {
                 connections: Connections {
@@ -46,6 +52,7 @@ impl Monitoring {
                     closed_error: stats.connections_closed_broken + stats.connections_closed_invalid,
                 },
                 caches: Caches::from(caches),
+                user_pools,
             },
             sys: SysInfo {
                 cpus,
@@ -215,6 +222,18 @@ pub(crate) struct Db {
     connections: Connections,
     /// The cache statistics.
     caches: Caches,
+    /// Active per-user connection pools with their session counts.
+    user_pools: Vec<UserSession>,
+}
+
+/// An active user session with its pool reference count.
+#[derive(Serialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+struct UserSession {
+    /// The username.
+    username: String,
+    /// Number of concurrent sessions sharing this user's pool.
+    sessions: u64,
 }
 
 #[derive(Serialize, ToSchema)]

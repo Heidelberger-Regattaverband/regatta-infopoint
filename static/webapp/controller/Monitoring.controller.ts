@@ -49,34 +49,40 @@ export default class MonitoringController extends BaseController {
         { name: this.i18n("monitoring.dbConnections.closedError"), value: monitoring.db.connections.closedError, group: "1" });
     }
 
+    if (monitoring?.db?.userPools) {
+      monitoring.db.userPools.forEach((pool: { username: string; sessions: number }) => {
+        all.push({ name: pool.username, value: pool.sessions, group: "2" });
+      });
+    }
+
     if (monitoring?.db?.caches) {
-      all.push({ name: this.i18n("monitoring.caches.accesses"), value: monitoring.db.caches.accesses, group: "2" },
-        { name: this.i18n("monitoring.caches.hits"), value: monitoring.db.caches.hits, group: "2" },
-        { name: this.i18n("monitoring.caches.misses"), value: monitoring.db.caches.misses, group: "2" },
-        { name: this.i18n("monitoring.caches.entries"), value: monitoring.db.caches.entries, group: "2" },
-        { name: this.i18n("monitoring.caches.hitRate"), value: this.nicePercent(monitoring.db.caches.hitRate), group: "2" });
+      all.push({ name: this.i18n("monitoring.caches.accesses"), value: monitoring.db.caches.accesses, group: "3" },
+        { name: this.i18n("monitoring.caches.hits"), value: monitoring.db.caches.hits, group: "3" },
+        { name: this.i18n("monitoring.caches.misses"), value: monitoring.db.caches.misses, group: "3" },
+        { name: this.i18n("monitoring.caches.entries"), value: monitoring.db.caches.entries, group: "3" },
+        { name: this.i18n("monitoring.caches.hitRate"), value: this.nicePercent(monitoring.db.caches.hitRate), group: "3" });
     }
 
     if (monitoring?.app) {
-      all.push({ name: this.i18n("monitoring.app.mem_current"), value: this.niceBytes(monitoring.app.memCurrent), group: "3" },
-        { name: this.i18n("monitoring.app.mem_max"), value: this.niceBytes(monitoring.app.memMax), group: "3" });
+      all.push({ name: this.i18n("monitoring.app.mem_current"), value: this.niceBytes(monitoring.app.memCurrent), group: "4" },
+        { name: this.i18n("monitoring.app.mem_max"), value: this.niceBytes(monitoring.app.memMax), group: "4" });
     }
 
     if (monitoring?.sys?.mem) {
-      all.push({ name: this.i18n("monitoring.mem.total"), value: this.niceBytes(monitoring.sys.mem.total), group: "4" },
-        { name: this.i18n("monitoring.mem.used"), value: this.niceBytes(monitoring.sys.mem.used), group: "4" },
-        { name: this.i18n("monitoring.mem.available"), value: this.niceBytes(monitoring.sys.mem.available), group: "4" },
-        { name: this.i18n("monitoring.mem.free"), value: this.niceBytes(monitoring.sys.mem.free), group: "4" });
+      all.push({ name: this.i18n("monitoring.mem.total"), value: this.niceBytes(monitoring.sys.mem.total), group: "5" },
+        { name: this.i18n("monitoring.mem.used"), value: this.niceBytes(monitoring.sys.mem.used), group: "5" },
+        { name: this.i18n("monitoring.mem.available"), value: this.niceBytes(monitoring.sys.mem.available), group: "5" },
+        { name: this.i18n("monitoring.mem.free"), value: this.niceBytes(monitoring.sys.mem.free), group: "5" });
     }
 
     if (monitoring?.sys?.cpus) {
       monitoring.sys.cpus.forEach((cpu: any, _index: number) => {
-        all.push({ name: cpu.name, value: this.nicePercent(cpu.usage), group: "5" });
+        all.push({ name: cpu.name, value: this.nicePercent(cpu.usage), group: "6" });
       });
     }
 
     if (monitoring?.sys?.uptime) {
-      all.push({ name: this.i18n("monitoring.sys.uptime"), value: this.niceDuration(monitoring.sys.uptime.secs), group: "6" });
+      all.push({ name: this.i18n("monitoring.sys.uptime"), value: this.niceDuration(monitoring.sys.uptime.secs), group: "7" });
     }
 
     this.monitoringModel.setData(all);
@@ -93,18 +99,21 @@ export default class MonitoringController extends BaseController {
         title = this.i18n("monitoring.dbConnections.title");
         break;
       case "2":
-        title = this.i18n("monitoring.caches.title");
+        title = this.i18n("monitoring.userPools.title");
         break;
       case "3":
-        title = this.i18n("monitoring.app.title");
+        title = this.i18n("monitoring.caches.title");
         break;
       case "4":
-        title = this.i18n("monitoring.mem.title");
+        title = this.i18n("monitoring.app.title");
         break;
       case "5":
-        title = this.i18n("monitoring.cpus.title");
+        title = this.i18n("monitoring.mem.title");
         break;
       case "6":
+        title = this.i18n("monitoring.cpus.title");
+        break;
+      case "7":
         title = this.i18n("monitoring.sys.title");
         break;
     }
