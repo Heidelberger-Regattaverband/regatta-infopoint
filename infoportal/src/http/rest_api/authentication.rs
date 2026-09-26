@@ -62,7 +62,10 @@ async fn login(
     )
 )]
 #[post("/logout")]
-async fn logout(ident: Identity) -> impl Responder {
+async fn logout(ident: Identity, user_pool_manager: Data<UserPoolManager>) -> impl Responder {
+    if let Ok(username) = ident.id() {
+        user_pool_manager.remove_pool(&username).await;
+    }
     ident.logout();
     HttpResponse::NoContent()
 }

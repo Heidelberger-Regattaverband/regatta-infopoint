@@ -5,17 +5,23 @@ use ::std::sync::Arc;
 use ::tiberius::AuthMethod;
 use ::tiberius::Config as TiberiusConfig;
 use ::tokio::sync::RwLock;
+use ::tracing::debug;
 
-/// Manager for per-user database connection pools
+/// Manager for per-user database connection pools.
+///
+/// Each username maps to a shared pool and a session reference count.
+/// The pool is created on first login and dropped only when the last session
+/// for that user logs out, so concurrent sessions for the same user do not
+/// interfere with each other.
 pub struct UserPoolManager {
-    /// Cache of connection pools by user credentials
-    pools: RwLock<HashMap<String, Arc<TiberiusPool>>>,
+    /// Active pools keyed by username, with their session reference count.
+    pools: RwLock<HashMap<String, (Arc<TiberiusPool>, usize)>>,
 
     config: TiberiusConfig,
 }
 
 impl UserPoolManager {
-    /// Create a new UserPoolManager with base database configuration
+    /// Create a new UserPoolManager with base database configuration.
     pub fn new(config: TiberiusConfig) -> Self {
         Self {
             pools: RwLock::new(HashMap::new()),
@@ -23,50 +29,84 @@ impl UserPoolManager {
         }
     }
 
+    /// Return the pool for `username` without changing its reference count.
     pub async fn get_pool(&self, username: &str) -> Option<Arc<TiberiusPool>> {
         let pools = self.pools.read().await;
-        pools.get(username).cloned()
+        pools.get(username).map(|(pool, _)| pool.clone())
     }
 
-    /// Get or create a connection pool for the given user credentials
+    /// Get or create a connection pool for the given user credentials.
+    ///
+    /// Increments the session reference count so that a concurrent logout from
+    /// another session of the same user does not destroy this session's pool.
+    /// Call `remove_pool` when the session ends.
     pub async fn create_pool(&self, username: &str, password: &str) -> Result<Arc<TiberiusPool>, DbError> {
-        // First check if pool exists (read lock)
-        if let Some(pool) = self.get_pool(username).await {
-            return Ok(pool);
+        // Fast path: pool already exists — increment session count under write lock.
+        {
+            let mut pools = self.pools.write().await;
+            if let Some((pool, count)) = pools.get_mut(username) {
+                *count += 1;
+                debug!(username, sessions = *count, "User pool session attached:");
+                return Ok(pool.clone());
+            }
         }
 
-        // Pool doesn't exist, create it (write lock)
-        let mut pools = self.pools.write().await;
-
-        // Double-check in case another task created it while we were waiting
-        if let Some(pool) = pools.get(username) {
-            return Ok(pool.clone());
-        }
-
-        // Create new pool with user-specific credentials
+        // Slow path: create the pool outside the lock (`TiberiusPool::new` is async).
         let mut config = self.config.clone();
         config.authentication(AuthMethod::sql_server(username, password));
+        let new_pool = Arc::new(TiberiusPool::new(config, 5, 1).await?);
 
-        let pool = Arc::new(TiberiusPool::new(config, 5, 1).await?);
-        pools.insert(username.to_string(), pool.clone());
-        Ok(pool)
+        // Re-acquire write lock: a concurrent login may have inserted the pool.
+        let mut pools = self.pools.write().await;
+        if let Some((pool, count)) = pools.get_mut(username) {
+            *count += 1;
+            debug!(
+                username,
+                sessions = *count,
+                "User pool session attached (concurrent login):"
+            );
+            Ok(pool.clone())
+        } else {
+            pools.insert(username.to_string(), (new_pool.clone(), 1));
+            debug!(username, sessions = 1, "User pool created:");
+            Ok(new_pool)
+        }
     }
 
-    /// Remove a user's connection pool (e.g., on logout)
-    #[allow(dead_code)]
+    /// Decrement the session reference count for `username`.
+    ///
+    /// The pool is removed only when the last session for that user logs out.
     pub async fn remove_pool(&self, username: &str) {
         let mut pools = self.pools.write().await;
-        pools.remove(username);
+        let remove = if let Some((_, count)) = pools.get_mut(username) {
+            if *count > 1 {
+                *count -= 1;
+                debug!(
+                    username,
+                    sessions = *count,
+                    "User pool session detached, pool still active:"
+                );
+                false
+            } else {
+                true
+            }
+        } else {
+            false
+        };
+        if remove {
+            pools.remove(username);
+            debug!(username, sessions = 0, "User pool removed:");
+        }
     }
 
-    /// Clear all connection pools
+    /// Clear all connection pools.
     #[allow(dead_code)]
     pub async fn clear_all(&self) {
         let mut pools = self.pools.write().await;
         pools.clear();
     }
 
-    /// Get the number of active connection pools
+    /// Get the number of active connection pools.
     #[allow(dead_code)]
     pub async fn pool_count(&self) -> usize {
         let pools = self.pools.read().await;
