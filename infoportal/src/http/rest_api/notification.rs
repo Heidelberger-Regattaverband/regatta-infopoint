@@ -2,6 +2,7 @@ use crate::http::rest_api::ApiError;
 use crate::http::rest_api::INTERNAL_SERVER_ERROR;
 use crate::http::rest_api::PATH;
 use crate::http::rest_api::get_user_pool;
+use crate::http::rest_api::require_admin;
 use ::actix_identity::Identity;
 use ::actix_session::Session;
 use ::actix_web::Error;
@@ -87,6 +88,7 @@ async fn get_all_notifications(
         (status = 201, description = "Notification created successfully", body = Notification),
         (status = 400, description = "Invalid request body"),
         (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden — admin scope required"),
         (status = 500, description = INTERNAL_SERVER_ERROR)
     )
 )]
@@ -98,6 +100,8 @@ async fn create_notification(
     aquarius: Data<Aquarius>,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
+    require_admin(&identity).await?;
+
     // Basic validation
     if request.title.trim().is_empty() {
         return Ok(HttpResponse::BadRequest().json(json!({
@@ -121,6 +125,7 @@ async fn create_notification(
         (status = 200, description = "Notification updated successfully", body = Notification),
         (status = 400, description = "Invalid request body"),
         (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden — admin scope required"),
         (status = 404, description = "Notification not found"),
         (status = 500, description = INTERNAL_SERVER_ERROR)
     )
@@ -133,6 +138,8 @@ async fn update_notification(
     aquarius: Data<Aquarius>,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
+    require_admin(&identity).await?;
+
     // Basic validation
     if let Some(ref title) = request.title
         && title.trim().is_empty()
@@ -162,6 +169,8 @@ async fn update_notification(
     context_path = PATH,
     responses(
         (status = 204, description = "Notification deleted successfully"),
+        (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden — admin scope required"),
         (status = 404, description = "Notification not found"),
         (status = 500, description = INTERNAL_SERVER_ERROR)
     )
@@ -173,6 +182,7 @@ async fn delete_notification(
     aquarius: Data<Aquarius>,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
+    require_admin(&identity).await?;
     let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
     let deleted = aquarius
         .delete_notification(notification_id.into_inner(), &user_pool)
