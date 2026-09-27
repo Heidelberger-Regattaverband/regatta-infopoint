@@ -2207,6 +2207,7 @@ dependencies = [
  "actix-web",
  "actix-web-actors",
  "actix-web-prom",
+ "anyhow",
  "aquarius",
  "built",
  "chrono",
@@ -2222,6 +2223,7 @@ dependencies = [
  "serde_json",
  "sysinfo",
  "thiserror 2.0.21",
+ "tiberius",
  "tokio",
  "tokio-shared-rt",
  "tokio-util",
@@ -2230,6 +2232,7 @@ dependencies = [
  "uptime_lib",
  "utoipa",
  "utoipa-swagger-ui",
+ "uuid",
 ]
 
 [[package]]

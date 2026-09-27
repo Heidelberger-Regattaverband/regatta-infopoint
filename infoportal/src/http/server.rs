@@ -1,6 +1,7 @@
 use crate::config::CONFIG;
 use crate::http::api_doc;
 use crate::http::rest_api;
+use crate::http::session_store::DbSessionStore;
 use ::actix_extensible_rate_limit::RateLimiter;
 use ::actix_extensible_rate_limit::backend::SimpleInput;
 use ::actix_extensible_rate_limit::backend::SimpleInputFunctionBuilder;
@@ -12,7 +13,6 @@ use ::actix_identity::config::LogoutBehavior;
 use ::actix_session::SessionMiddleware;
 use ::actix_session::config::PersistentSession;
 use ::actix_session::config::TtlExtensionPolicy;
-use ::actix_session::storage::CookieSessionStore;
 use ::actix_web::App;
 use ::actix_web::Error;
 use ::actix_web::HttpResponse;
@@ -33,6 +33,7 @@ use ::actix_web_prom::PrometheusMetrics;
 use ::actix_web_prom::PrometheusMetricsBuilder;
 use ::db::aquarius::Aquarius;
 use ::db::error::DbError;
+use ::db::tiberius::TiberiusPool;
 use ::db::tiberius::user_pool::UserPoolManager;
 use ::futures::FutureExt;
 use ::futures::try_join;
@@ -90,7 +91,32 @@ impl Server {
         let prometheus = Self::get_prometheus();
         let prometheus_for_metrics = prometheus.clone();
 
-        let user_pool_manager = Data::new(UserPoolManager::new(CONFIG.get_db_config()));
+        let user_pool_manager = Arc::new(UserPoolManager::new(CONFIG.get_db_config()));
+
+        // Dedicated pool for session operations (small — sessions are low-frequency).
+        let session_pool = Arc::new(
+            TiberiusPool::new(CONFIG.get_db_config(), 5, 1)
+                .await
+                .expect("Failed to create session DB pool"),
+        );
+        let session_store = DbSessionStore::new(session_pool, user_pool_manager.clone());
+        session_store
+            .ensure_table()
+            .await
+            .expect("Failed to create Sessions table");
+
+        // Background task: purge expired sessions every 60 s.
+        let cleanup_store = session_store.clone();
+        ::tokio::spawn(async move {
+            let mut interval = ::tokio::time::interval(Duration::from_secs(60));
+            interval.tick().await; // skip first immediate tick
+            loop {
+                interval.tick().await;
+                cleanup_store.cleanup_expired().await;
+            }
+        });
+
+        let user_pool_manager_data = Data::from(user_pool_manager);
 
         let app_factory = move || {
             let mut count = worker_count.lock().unwrap_or_else(|e| e.into_inner());
@@ -98,11 +124,11 @@ impl Server {
             debug!(count = *count, "Created application HTTP worker:");
 
             // get app with some middlewares initialized
-            Self::get_app(secret_key.clone(), rl_max_requests, rl_interval)
+            Self::get_app(secret_key.clone(), session_store.clone(), rl_max_requests, rl_interval)
                 // collect metrics about requests and responses
                 .wrap(prometheus.clone())
                 .app_data(aquarius.clone())
-                .app_data(user_pool_manager.clone())
+                .app_data(user_pool_manager_data.clone())
                 .configure(rest_api::config)
                 .configure(api_doc::config)
                 .service(
@@ -164,6 +190,7 @@ impl Server {
     /// * `App` - The app.
     fn get_app(
         secret_key: Key,
+        session_store: DbSessionStore,
         rl_max_requests: u64,
         rl_interval: u64,
     ) -> App<
@@ -178,13 +205,13 @@ impl Server {
         let expiration = Duration::from_secs(60 * 60 * 24 * 2); // 2 days
         let identity_mw = IdentityMiddleware::builder()
             .visit_deadline(Some(expiration))
-            .logout_behavior(LogoutBehavior::DeleteIdentityKeys)
+            .logout_behavior(LogoutBehavior::PurgeSession)
             .build();
         App::new()
             // Install the identity framework first.
             .wrap(identity_mw)
             // adds support for HTTPS sessions
-            .wrap(Self::get_session_middleware(secret_key, expiration))
+            .wrap(Self::get_session_middleware(secret_key, session_store, expiration))
             // adds support for rate limiting of HTTP requests
             .wrap(Self::get_rate_limiter(rl_max_requests, rl_interval))
             .wrap_fn(|req, srv| {
@@ -222,8 +249,12 @@ impl Server {
     /// `SessionMiddleware<CookieSessionStore>` - The session middleware.
     /// # Panics
     /// If the session middleware can't be created.
-    fn get_session_middleware(secret_key: Key, expiration: Duration) -> SessionMiddleware<CookieSessionStore> {
-        SessionMiddleware::builder(CookieSessionStore::default(), secret_key)
+    fn get_session_middleware(
+        secret_key: Key,
+        session_store: DbSessionStore,
+        expiration: Duration,
+    ) -> SessionMiddleware<DbSessionStore> {
+        SessionMiddleware::builder(session_store, secret_key)
             .cookie_secure(true)
             .cookie_http_only(true)
             // allow the cookie only from the current domain
