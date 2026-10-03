@@ -39,9 +39,6 @@ pub struct Config {
     http_rl_interval: u64,
     /// The number of HTTP workers. The number of HTTP workers can be set by setting the environment variable `HTTP_WORKERS`.
     pub http_workers: Option<usize>,
-    /// The path to the static application content that is delivered to the browser. Defaults to `./static/dist`.
-    /// The path can be set by setting the environment variable `HTTP_APP_CONTENT_PATH`.
-    pub http_app_content_path: String,
     /// The database host. The database host can be set by setting the environment variable `DB_HOST`.
     pub db_host: String,
     /// The database port. The database port can be set by setting the environment variable `DB_PORT`.
@@ -157,8 +154,6 @@ impl Config {
             db_pool_min_idle: Self::parse_env_var(consts::DB_POOL_MIN_IDLE, consts::DEFAULT_DB_POOL_MIN_IDLE)?,
             active_regatta_id: Self::parse_optional_env_var(consts::ACTIVE_REGATTA_ID),
             cache_ttl: Self::parse_env_var(consts::CACHE_TTL, consts::DEFAULT_CACHE_TTL)?,
-            http_app_content_path: env::var(consts::HTTP_APP_CONTENT_PATH)
-                .unwrap_or_else(|_| consts::DEFAULT_STATIC_CONTENT_PATH.to_owned()),
             aquarius_host: env::var(consts::AQUARIUS_HOST)
                 .unwrap_or_else(|_| consts::DEFAULT_AQUARIUS_HOST.to_string()),
             aquarius_port: Self::parse_env_var(consts::AQUARIUS_PORT, consts::DEFAULT_AQUARIUS_PORT)?,
@@ -199,7 +194,6 @@ impl Config {
             interval_in_secs = config.http_rl_interval,
             "HTTP/S rate limiter:",
         );
-        info!(path = config.http_app_content_path, "Serving static content:");
         info!(
             host = config.aquarius_host,
             port = config.aquarius_port,
@@ -330,7 +324,6 @@ enum ConfigError {
 mod consts {
     // Environment variable names
     pub(super) const HTTP_PORT: &str = "HTTP_PORT";
-    pub(super) const HTTP_APP_CONTENT_PATH: &str = "HTTP_APP_CONTENT_PATH";
     pub(super) const HTTP_WORKERS: &str = "HTTP_WORKERS";
     pub(super) const HTTPS_PORT: &str = "HTTPS_PORT";
     pub(super) const HTTPS_CERT_PATH: &str = "HTTPS_CERT_PATH";
@@ -358,7 +351,6 @@ mod consts {
     pub(super) const DEFAULT_HTTPS_PORT: u16 = 8443;
     pub(super) const DEFAULT_SSL_CERT_PATH: &str = "./ssl/cert.pem";
     pub(super) const DEFAULT_SSL_KEY_PATH: &str = "./ssl/key.pem";
-    pub(super) const DEFAULT_STATIC_CONTENT_PATH: &str = "./static/dist";
     pub(super) const DEFAULT_HTTP_RL_MAX_REQUESTS: u64 = 500;
     pub(super) const DEFAULT_HTTP_RL_INTERVAL: u64 = 600;
     pub(super) const DEFAULT_DB_PORT: u16 = 1433;

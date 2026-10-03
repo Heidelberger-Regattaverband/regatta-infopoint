@@ -60,6 +60,7 @@ use ::tracing::warn;
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
 const INFOPORTAL_V2: &str = "infoportal2";
+const STATIC_CONTENT_PATH: &str = "./static/dist";
 
 /// The server struct contains the configuration of the server.
 pub struct Server {}
@@ -84,7 +85,6 @@ impl Server {
         let aquarius = create_app_data().await.unwrap();
         let (rl_max_requests, rl_interval) = CONFIG.get_rate_limiter_config();
         let secret_key = Key::generate();
-        let http_app_content_path = CONFIG.http_app_content_path.clone();
 
         let worker_count = Arc::new(Mutex::new(0));
         let prometheus = Self::get_prometheus();
@@ -106,14 +106,14 @@ impl Server {
                 .configure(rest_api::config)
                 .configure(api_doc::config)
                 .service(
-                    Files::new(INFOPORTAL, http_app_content_path.clone())
+                    Files::new(INFOPORTAL, STATIC_CONTENT_PATH)
                         .index_file("index.html")
                         .use_last_modified(true)
                         .use_etag(true)
                         .redirect_to_slash_directory(),
                 )
                 .service(
-                    Files::new(INFOPORTAL_V2, http_app_content_path.clone())
+                    Files::new(INFOPORTAL_V2, STATIC_CONTENT_PATH)
                         .index_file("index_v2.html")
                         .use_last_modified(true)
                         .use_etag(true)
