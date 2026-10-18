@@ -7,11 +7,13 @@ pub(crate) mod notification;
 pub(crate) mod race;
 pub(crate) mod timekeeping;
 
+use crate::auth::Scope;
 use ::actix_identity::Identity;
 use ::actix_web::Error;
 use ::actix_web::Responder;
 use ::actix_web::ResponseError;
 use ::actix_web::Scope as ActixScope;
+use ::actix_web::error::ErrorForbidden;
 use ::actix_web::error::ErrorInternalServerError;
 use ::actix_web::error::ErrorNotFound;
 use ::actix_web::get;
@@ -31,9 +33,8 @@ use ::std::fmt;
 use ::std::fmt::Display;
 use ::std::fmt::Formatter;
 use ::std::sync::Arc;
-use ::tracing::error;
-
 use ::std::time::Duration;
+use ::tracing::error;
 
 /// Path to REST API
 pub(crate) const PATH: &str = "/api";
@@ -209,4 +210,13 @@ async fn get_user_pool(
         .get_pool(&identity.id()?)
         .await
         .ok_or_else(|| ErrorInternalServerError("No connection pool found"))
+}
+
+/// Returns `Ok(())` if the authenticated user has `Scope::Admin`, otherwise `Err(403 Forbidden)`.
+async fn require_admin(identity: &Identity) -> Result<(), Error> {
+    let id = identity.id().map_err(|_| ErrorInternalServerError("Session error"))?;
+    match Scope::from_username(&id) {
+        Scope::Admin => Ok(()),
+        _ => Err(ErrorForbidden("Admin access required")),
+    }
 }
