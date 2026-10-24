@@ -48,7 +48,7 @@ impl Monitoring {
                 connections: Connections {
                     total: pool_state.connections as u64 + up.total,
                     idle: pool_state.idle_connections as u64 + up.idle,
-                    used: (pool_state.connections - pool_state.idle_connections) as u64 + up.used,
+                    used: pool_state.connections.saturating_sub(pool_state.idle_connections) as u64 + up.used,
                     created: pool_stats.connections_created + up.created,
                     closed_idle_timeout: pool_stats.connections_closed_idle_timeout + up.closed_idle_timeout,
                     closed_max_lifetime: pool_stats.connections_closed_max_lifetime + up.closed_max_lifetime,
