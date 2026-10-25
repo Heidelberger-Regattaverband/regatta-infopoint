@@ -26,7 +26,7 @@ export default class MapController extends BaseController {
       this.loadModel()
         .then(() => {
           this.loadMap();
-          if (clubId !== undefined) {
+          if (clubId) {
             this.panToClub(clubId);
           }
         })
@@ -52,16 +52,22 @@ export default class MapController extends BaseController {
 
   onCenterButtonPress(event: Button$PressEvent): void {
     if (event.getSource() === this.centerClubsButton) {
-      this.centerMap(true);
+      this.centerClubsMap();
     } else if (event.getSource() === this.centerRegattaButton) {
-      this.centerMap(false);
+      this.centerRegattaMap();
     }
   }
 
-  private centerMap(clubs: boolean): void {
-    if (clubs && this.clubBounds?.isValid()) {
+  private centerClubsMap(): void {
+    if (this.clubBounds?.isValid()) {
       this.map?.fitBounds(this.clubBounds, this.boundsOpts);
     } else if (this.regattaBounds?.isValid()) {
+      this.map?.fitBounds(this.regattaBounds, this.boundsOpts);
+    }
+  }
+
+  private centerRegattaMap(): void {
+    if (this.regattaBounds?.isValid()) {
       this.map?.fitBounds(this.regattaBounds, this.boundsOpts);
     }
   }
@@ -104,7 +110,7 @@ export default class MapController extends BaseController {
       control.layers(baseMaps, overlayMaps).addTo(this.map);
       control.scale({ imperial: false, metric: true }).addTo(this.map);
 
-      this.centerMap(true);
+      this.centerClubsMap();
     }
   }
 
