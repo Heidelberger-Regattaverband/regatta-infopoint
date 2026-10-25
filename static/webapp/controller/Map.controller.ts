@@ -23,6 +23,8 @@ export default class MapController extends BaseController {
     super.getView()?.addStyleClass(super.getContentDensityClass());
 
     const handleRoute = (clubId?: number): void => {
+      // Load clubs model first, then init the map (idempotent) and center/focus.
+      // On model error, still call loadMap() so the static regatta layer is visible.
       this.loadModel()
         .then(() => {
           this.loadMap();
@@ -34,6 +36,7 @@ export default class MapController extends BaseController {
         })
         .catch((err: unknown) => {
           Log.error("Failed to load map data", err as Error);
+          // Still try to render the static regatta layer so the page is not blank.
           this.loadMap();
         });
     };
