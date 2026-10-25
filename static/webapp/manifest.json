@@ -116,6 +116,11 @@
           "target": "athleteDetails"
         },
         {
+          "pattern": "map/{clubId}",
+          "name": "mapClub",
+          "target": "map"
+        },
+        {
           "pattern": "map",
           "name": "map",
           "target": "map"

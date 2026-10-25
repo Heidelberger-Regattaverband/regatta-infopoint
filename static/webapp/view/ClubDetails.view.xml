@@ -13,6 +13,8 @@
             </HBox>
           </f:heading>
           <f:navigationActions>
+            <Button tooltip="{i18n>common.map}" icon="sap-icon://map" press=".onCityPress" type="Transparent"
+              visible="{=!!${club>/latitude}}" />
             <Button tooltip="" icon="sap-icon://decline" press=".onNavBack" type="Transparent" />
           </f:navigationActions>
         </f:DynamicPageTitle>
@@ -22,7 +24,8 @@
         <f:DynamicPageHeader>
           <HBox>
             <VBox class="sapUiTinyMarginEnd">
-              <ObjectAttribute title="{i18n>common.city}" text="{club>/city}" />
+              <ObjectAttribute title="{i18n>common.city}" text="{club>/city}"
+                active="{=!!${club>/latitude}}" press=".onCityPress" />
               <ObjectAttribute title="{i18n>common.abbreviation}" text="{club>/abbreviation}" />
             </VBox>
             <VBox>
