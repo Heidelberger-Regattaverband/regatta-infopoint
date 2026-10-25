@@ -1,6 +1,7 @@
 import Button, { Button$PressEvent } from "sap/m/Button";
 import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
+import ComboBox, { ComboBox$SelectionChangeEvent } from "sap/m/ComboBox";
 import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import Table from "sap/m/Table";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
@@ -8,7 +9,6 @@ import Context from "sap/ui/model/Context";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import ListBinding from "sap/ui/model/ListBinding";
 import BaseTableController from "./BaseTable.controller";
 
 /**
@@ -17,12 +17,17 @@ import BaseTableController from "./BaseTable.controller";
 export default class AthletesTable extends BaseTableController {
 
   private static readonly ATHLETES_MODEL: string = "athletes";
+  private static readonly CLUB_FILTER_MODEL: string = "clubFilter";
+
+  private clubFilter: Filter | undefined;
+  private textSearchFilters: Filter[] = [];
 
   onInit(): void {
     super.init(super.getView()?.byId("athletesTable") as Table);
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(new JSONModel(), AthletesTable.ATHLETES_MODEL);
+    super.setViewModel(new JSONModel([]), AthletesTable.CLUB_FILTER_MODEL);
     super.getRouter()?.getRoute("athletes")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadModel(), this);
 
     super.sortTable("athleteLastNameCol", false, "lastName");
@@ -34,20 +39,24 @@ export default class AthletesTable extends BaseTableController {
 
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
     const query: string | undefined = event.getParameters().newValue?.trim();
-    const searchFilters: Filter[] = query ? this.createSearchFilters(query) : [];
+    this.textSearchFilters = query ? this.createSearchFilters(query) : [];
+    this.applyAllFilters();
+  }
 
-    const binding: ListBinding = this.table.getBinding("items") as ListBinding;
-    binding.filter(searchFilters);
+  onClubSelectionChange(event: ComboBox$SelectionChangeEvent): void {
+    const key: string = event.getParameters().selectedItem?.getKey() ?? "";
+    this.clubFilter = key ? new Filter("club/shortName", FilterOperator.EQ, key) : undefined;
+    this.applyAllFilters();
   }
 
   onSortButtonPress(event: Button$PressEvent): void {
-    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.AthletesSortDialog").then(dialog => dialog.open());
+    void super.getViewSettingsDialog("de.regatta_hd.infoportal.view.AthletesSortDialog").then(dialog => dialog.open());
   }
 
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadModel().then((succeeded: boolean) => {
+    void this.loadModel().then((succeeded: boolean) => {
       super.showDataUpdatedMessage(succeeded);
     }).finally(() => source.setEnabled(true));
   }
@@ -65,6 +74,15 @@ export default class AthletesTable extends BaseTableController {
     // nothing to do yet
   }
 
+  private applyAllFilters(): void {
+    const allFilters: Filter[] = [...this.textSearchFilters];
+    if (this.clubFilter) {
+      allFilters.push(this.clubFilter);
+    }
+    super.setSearchFilters(allFilters);
+    super.applyFilters();
+  }
+
   private createSearchFilters(query: string): Filter[] {
     return [new Filter({
       filters: [
@@ -80,10 +98,41 @@ export default class AthletesTable extends BaseTableController {
     })]
   }
 
+  private populateClubFilterModel(athletesModel: JSONModel): void {
+    const data: any = athletesModel.getData();
+    const athletes: any[] = Array.isArray(data) ? data : [];
+    const seen = new Set<string>();
+    const items: { key: string; text: string }[] = [];
+
+    athletes
+      .map((a: any) => a.club)
+      .filter((club: any) => club?.shortName)
+      .sort((a: any, b: any) => (a.shortName as string).localeCompare(b.shortName as string))
+      .forEach((club: any) => {
+        if (!seen.has(club.shortName as string)) {
+          seen.add(club.shortName as string);
+          items.push({ key: club.shortName as string, text: club.shortName as string });
+        }
+      });
+
+    super.getViewJSONModel(AthletesTable.CLUB_FILTER_MODEL).setData(items);
+  }
+
   private async loadModel(): Promise<boolean> {
+    this.clubFilter = undefined;
+    this.textSearchFilters = [];
+    (super.getView()?.byId("clubComboBox") as ComboBox)?.setValue("");
+    this.applyAllFilters();
+
     const regatta: any = await super.getActiveRegatta();
     const url = `/api/regattas/${regatta.id}/athletes`;
     const athletesModel: JSONModel = super.getViewJSONModel(AthletesTable.ATHLETES_MODEL);
-    return await super.updateJSONModel(athletesModel, url);
+    const succeeded: boolean = await super.updateJSONModel(athletesModel, url);
+
+    if (succeeded) {
+      this.populateClubFilterModel(athletesModel);
+    }
+
+    return succeeded;
   }
 }
