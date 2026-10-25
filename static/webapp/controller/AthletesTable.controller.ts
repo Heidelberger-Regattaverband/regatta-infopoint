@@ -1,5 +1,5 @@
 import Button, { Button$PressEvent } from "sap/m/Button";
-import ComboBox, { ComboBox$SelectionChangeEvent } from "sap/m/ComboBox";
+import { ComboBox$SelectionChangeEvent } from "sap/m/ComboBox";
 import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
 import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
@@ -119,11 +119,6 @@ export default class AthletesTable extends BaseTableController {
   }
 
   private async loadModel(): Promise<boolean> {
-    this.clubFilter = undefined;
-    this.textSearchFilters = [];
-    (super.getView()?.byId("clubComboBox") as ComboBox)?.setValue("");
-    this.applyAllFilters();
-
     const regatta: any = await super.getActiveRegatta();
     const url = `/api/regattas/${regatta.id}/athletes`;
     const athletesModel: JSONModel = super.getViewJSONModel(AthletesTable.ATHLETES_MODEL);
