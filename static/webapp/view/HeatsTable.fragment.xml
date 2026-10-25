@@ -68,39 +68,28 @@
 
     <items>
       <ColumnListItem type="Navigation" highlight="{path:'heats>',formatter:'.formatter.heatStateHighlight'}">
+        <!-- CustomData writes data-cancelled="true/false" as a DOM attribute on the row element.
+             The CSS rule [data-cancelled="true"] .sapMText then applies strikethrough to all Text cells.
+             (The class attribute is not a ManagedObject property so it cannot be bound reactively.) -->
+        <customData>
+          <core:CustomData key="cancelled" value="{=${heats>cancelled}?'true':'false'}" writeToDom="true" />
+        </customData>
         <cells>
-          <VBox>
-            <Text text="{path:'heats>dateTime',formatter:'.formatter.dayTimeIsoLabel'}" visible="{=${heats>cancelled}}" class="cancelled" />
-            <Text text="{path:'heats>dateTime',formatter:'.formatter.dayTimeIsoLabel'}" visible="{=!${heats>cancelled}}" />
-          </VBox>
+          <Text text="{path:'heats>dateTime',formatter:'.formatter.dayTimeIsoLabel'}" />
 
           <VBox>
             <Text text="{path:'heats>race',formatter:'.formatter.nrRaceLabel'}, {path:'heats>',formatter:'.formatter.heatLabel'}"
-              visible="{=${heats>cancelled}}" class="boldCancelled" />
-            <Text text="{path:'heats>race',formatter:'.formatter.nrRaceLabel'}, {path:'heats>',formatter:'.formatter.heatLabel'}"
-              visible="{=!${heats>cancelled}}" class="bold" />
-
-            <Text text="{heats>race/longLabel} {heats>race/comment}" visible="{=${heats>cancelled} &amp;&amp; !${device>/system/phone}}"
-              class="cancelled" />
-            <Text text="{heats>race/longLabel} {heats>race/comment}" visible="{=!${heats>cancelled} &amp;&amp; !${device>/system/phone}}" />
+              class="bold" />
+            <Text text="{heats>race/longLabel} {heats>race/comment}" visible="{=!${device>/system/phone}}" />
           </VBox>
 
-          <VBox>
-            <Text text="{path:'heats>race',formatter:'.formatter.distanceLabel'}" visible="{=${heats>cancelled}}" class="cancelled" />
-            <Text text="{path:'heats>race',formatter:'.formatter.distanceLabel'}" visible="{=!${heats>cancelled}}" />
-          </VBox>
+          <Text text="{path:'heats>race',formatter:'.formatter.distanceLabel'}" />
 
-          <VBox>
-            <Text text="{heats>number}" visible="{=${heats>cancelled}}" class="cancelled" />
-            <Text text="{heats>number}" visible="{=!${heats>cancelled}}" />
-          </VBox>
+          <Text text="{heats>number}" />
 
-          <VBox>
-            <Text text="{=${heats>race/seeded}?${i18n>common.yes}:${i18n>common.no}}" visible="{=${heats>cancelled}}" class="cancelled" />
-            <Text text="{=${heats>race/seeded}?${i18n>common.yes}:${i18n>common.no}}" visible="{=!${heats>cancelled}}" />
-          </VBox>
+          <Text text="{=${heats>race/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
 
-          <ObjectStatus text="{path:'heats>',formatter:'.formatter.heatStateLabel'}" 
+          <ObjectStatus text="{path:'heats>',formatter:'.formatter.heatStateLabel'}"
             state="{path:'heats>',formatter:'.formatter.heatStateHighlight'}" class="bold" />
         </cells>
       </ColumnListItem>

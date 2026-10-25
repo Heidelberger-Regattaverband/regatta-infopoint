@@ -1,4 +1,4 @@
-<mvc:View controllerName="de.regatta_hd.infoportal.controller.HeatDetails" xmlns="sap.m" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.HeatDetails" xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
     <Page title="{= ${heatEntries>/state} >= 4 ? ${i18n>common.result} : ${i18n>common.assignment}}" class="sapUiNoContentPadding"
       showNavButton="true" navButtonPress=".onNavBack">
@@ -104,30 +104,24 @@
 
               <items>
                 <ColumnListItem highlight="{path:'heatEntries>',formatter:'.formatter.heatEntryHighlight'}" vAlign="Top">
+                  <!-- CustomData writes data-cancelled="true/false" as a DOM attribute on the row element.
+                       The CSS rule [data-cancelled="true"] .sapMText then applies strikethrough to all Text cells.
+                       (The class attribute is not a ManagedObject property so it cannot be bound reactively.) -->
+                  <customData>
+                    <core:CustomData key="cancelled" value="{=${heatEntries>entry/cancelled}?'true':'false'}" writeToDom="true" />
+                  </customData>
                   <cells>
                     <Text text="{heatEntries>result/rankLabel}" />
 
-                    <VBox>
-                      <Text text="{heatEntries>entry/bib}" visible="{=${heatEntries>entry/cancelled}}" class="cancelled" />
-                      <Text text="{heatEntries>entry/bib}" visible="{=!${heatEntries>entry/cancelled}}" />
-                    </VBox>
+                    <Text text="{heatEntries>entry/bib}" />
 
                     <VBox>
-                      <Text visible="{=${heatEntries>entry/cancelled}}" class="boldCancelled"
+                      <Text class="bold"
                         text="{parts:[{path:'heat>/race/groupMode'},{path:'heatEntries>entry'}],formatter:'.formatter.boatLabel'}" />
-                      <Text visible="{=!${heatEntries>entry/cancelled}}" class="bold"
-                        text="{parts:[{path:'heat>/race/groupMode'},{path:'heatEntries>entry'}],formatter:'.formatter.boatLabel'}" />
-
-                      <Text text="{path:'heatEntries>entry/crew',formatter:'.formatter.crewLabel'}"
-                        visible="{= ${heatEntries>entry/cancelled}}" class="cancelled" />
-                      <Text text="{path:'heatEntries>entry/crew',formatter:'.formatter.crewLabel'}"
-                        visible="{= !${heatEntries>entry/cancelled}}" />
+                      <Text text="{path:'heatEntries>entry/crew',formatter:'.formatter.crewLabel'}" />
                     </VBox>
 
-                    <VBox>
-                      <Text text="{heatEntries>lane}" visible="{=${heatEntries>entry/cancelled}}" class="cancelled" />
-                      <Text text="{heatEntries>lane}" visible="{=!${heatEntries>entry/cancelled}}" />
-                    </VBox>
+                    <Text text="{heatEntries>lane}" />
 
                     <VBox>
                       <Text text="{heatEntries>result/result}" class="sapUiTinyMarginEnd" />

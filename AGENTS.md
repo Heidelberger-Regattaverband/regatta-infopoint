@@ -114,7 +114,6 @@ Base URL: `http://localhost:8080` (local), `https://info.regatta-hd.de` (product
 | `HTTPS_KEY_PATH` | `./ssl/key.pem` | — | TLS private key |
 | `HTTP_RL_MAX_REQUESTS` | `500` | — | Rate limit requests |
 | `HTTP_RL_INTERVAL` | `600` | — | Rate limit window (seconds) |
-| `HTTP_APP_CONTENT_PATH` | `./static/dist` | — | Static files path |
 | `ACTIVE_REGATTA_ID` | (auto from DB) | — | Override active regatta |
 | `CACHE_TTL` | `60` | — | Cache TTL in seconds (max 3600) |
 | `AQUARIUS_HOST` | `aquarius` | — | Aquarius TCP host |
