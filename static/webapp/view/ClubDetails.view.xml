@@ -22,7 +22,8 @@
         <f:DynamicPageHeader>
           <HBox>
             <VBox class="sapUiTinyMarginEnd">
-              <ObjectAttribute title="{i18n>common.city}" text="{club>/city}" />
+              <ObjectAttribute title="{i18n>common.city}" text="{club>/city}"
+                active="{=!!${club>/latitude}}" press=".onCityPress" />
               <ObjectAttribute title="{i18n>common.abbreviation}" text="{club>/abbreviation}" />
             </VBox>
             <VBox>

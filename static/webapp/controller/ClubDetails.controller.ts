@@ -43,6 +43,10 @@ export default class ClubDetailsController extends BaseController {
     delete this.clubId;
   }
 
+  onCityPress(): void {
+    super.getRouter()?.navTo("mapClub", { clubId: this.clubId });
+  }
+
   onSelectionChange(oEvent: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = oEvent.getParameter("listItem");
     if (selectedItem) {
@@ -60,7 +64,7 @@ export default class ClubDetailsController extends BaseController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadData().then((succeeded: [boolean, boolean]) => {
+    void this.loadData().then((succeeded: [boolean, boolean]) => {
       super.showDataUpdatedMessage(succeeded[0] && succeeded[1]);
     }).finally(() => source.setEnabled(true));
   }
