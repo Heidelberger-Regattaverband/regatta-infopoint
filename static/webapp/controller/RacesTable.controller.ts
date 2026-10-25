@@ -37,8 +37,8 @@ export default class RacesTableController extends BaseTableController {
 
     super.sortTable("raceNumber", false, "number");
 
-    super.getFilters().then((filters) => {
-      super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG).then((viewSettingsDialog: ViewSettingsDialog) => {
+    void super.getFilters().then((filters) => {
+      void super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG).then((viewSettingsDialog: ViewSettingsDialog) => {
         if (filters.boatClasses && filters.boatClasses.length > 1) {
           const boatClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "boatClass", text: "{i18n>common.boatClass}" });
           filters.boatClasses.forEach((boatClass: any) => {
@@ -105,23 +105,23 @@ export default class RacesTableController extends BaseTableController {
   }
 
   onFilterButtonPress(event: Button$PressEvent): void {
-    super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG).then(dialog => dialog.open());
+    void super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG).then(dialog => dialog.open());
   }
 
   onClearFilterPress(event: Button$PressEvent): void {
-    super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG).then(dialog => dialog.clearFilters());
+    void super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG).then(dialog => dialog.clearFilters());
     super.clearFilters();
     super.applyFilters();
   }
 
   onSortButtonPress(event: Button$PressEvent): void {
-    super.getViewSettingsDialog(RacesTableController.SORT_DIALOG).then(dialog => dialog.open());
+    void super.getViewSettingsDialog(RacesTableController.SORT_DIALOG).then(dialog => dialog.open());
   }
 
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadRacesModel().then((succeeded: boolean) => {
+    void this.loadRacesModel().then((succeeded: boolean) => {
       super.showDataUpdatedMessage(succeeded);
     }).finally(() => source.setEnabled(true));
   }

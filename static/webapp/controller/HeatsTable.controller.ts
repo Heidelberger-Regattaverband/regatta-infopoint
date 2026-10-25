@@ -37,8 +37,8 @@ export default class HeatsTableController extends BaseTableController {
 
     super.sortTable("heatDateTime", false, "dateTime");
 
-    super.getFilters().then((filters: any) => {
-      super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG).then((viewSettingsDialog: ViewSettingsDialog) => {
+    void super.getFilters().then((filters: any) => {
+      void super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG).then((viewSettingsDialog: ViewSettingsDialog) => {
         if (filters.dates && filters.dates.length > 1) {
           const datesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "day", text: "{i18n>common.day}" });
           filters.dates.forEach((date: any) => {
@@ -133,7 +133,7 @@ export default class HeatsTableController extends BaseTableController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadHeatsModel().then((succeeded: boolean) => {
+    void this.loadHeatsModel().then((succeeded: boolean) => {
       super.showDataUpdatedMessage(succeeded);
     }).finally(() => source.setEnabled(true));
   }
@@ -144,15 +144,15 @@ export default class HeatsTableController extends BaseTableController {
   }
 
   onSortButtonPress(event: Button$PressEvent): void {
-    super.getViewSettingsDialog(HeatsTableController.SORT_DIALOG).then(dialog => dialog.open());
+    void super.getViewSettingsDialog(HeatsTableController.SORT_DIALOG).then(dialog => dialog.open());
   }
 
   onFilterButtonPress(event: Button$PressEvent): void {
-    super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG).then(dialog => dialog.open());
+    void super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG).then(dialog => dialog.open());
   }
 
   onClearFilterPress(event: Button$PressEvent): void {
-    super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG).then(dialog => dialog.clearFilters());
+    void super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG).then(dialog => dialog.clearFilters());
     super.clearFilters();
     super.applyFilters();
   }
