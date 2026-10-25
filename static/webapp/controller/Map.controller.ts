@@ -28,6 +28,8 @@ export default class MapController extends BaseController {
           this.loadMap();
           if (clubId) {
             this.panToClub(clubId);
+          } else {
+            this.centerClubsMap();
           }
         })
         .catch((err: unknown) => {
