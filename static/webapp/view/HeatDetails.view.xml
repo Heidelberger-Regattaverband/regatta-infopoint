@@ -103,7 +103,7 @@
               </columns>
 
               <items>
-                <ColumnListItem highlight="{path:'heatEntries>',formatter:'.formatter.heatEntryHighlight'}" vAlign="Top">
+                <ColumnListItem highlight="{path:'heatEntries>',formatter:'.formatter.heatEntryHighlight'}" vAlign="{=${device>/system/phone}?'Top':'Inherit'}">
                   <!-- CustomData writes data-cancelled="true/false" as a DOM attribute on the row element.
                        The CSS rule [data-cancelled="true"] .sapMText then applies strikethrough to all Text cells.
                        (The class attribute is not a ManagedObject property so it cannot be bound reactively.) -->
