@@ -1,7 +1,7 @@
 import Button, { Button$PressEvent } from "sap/m/Button";
+import ComboBox, { ComboBox$SelectionChangeEvent } from "sap/m/ComboBox";
 import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
-import ComboBox, { ComboBox$SelectionChangeEvent } from "sap/m/ComboBox";
 import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
 import Table from "sap/m/Table";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
