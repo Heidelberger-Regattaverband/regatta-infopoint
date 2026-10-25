@@ -1,4 +1,4 @@
-<mvc:View controllerName="de.regatta_hd.infoportal.controller.AthleteDetails" xmlns="sap.m" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.AthleteDetails" xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
     <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
@@ -64,27 +64,22 @@
           <items>
             <ColumnListItem type="Navigation"
               highlight="{parts:[{path:'entries>race'},{path:'entries>'}],formatter:'.formatter.raceEntryHighlight'}">
+              <!-- CustomData writes data-cancelled="true/false" as a DOM attribute on the row element.
+                   The CSS rule [data-cancelled="true"] .sapMText then applies strikethrough to all Text cells.
+                   (The class attribute is not a ManagedObject property so it cannot be bound reactively.) -->
+              <customData>
+                <core:CustomData key="cancelled" value="{=${entries>cancelled}||${entries>race/cancelled}?'true':'false'}" writeToDom="true" />
+              </customData>
               <cells>
-                <HBox alignItems="Center">
-                  <Text text="{path:'entries>race',formatter:'.formatter.nrRaceLabel'}"
-                    visible="{=${entries>cancelled} || ${entries>race/cancelled}}" class="cancelled" />
-                  <Text text="{path:'entries>race',formatter:'.formatter.nrRaceLabel'}"
-                    visible="{=!${entries>cancelled} &amp;&amp; !${entries>race/cancelled}}" />
-                </HBox>
+                <Text text="{path:'entries>race',formatter:'.formatter.nrRaceLabel'}" />
 
-                <HBox alignItems="Center">
-                  <Text text="{parts:[{path:'entries>race/groupMode'},{path:'entries>'}],formatter:'.formatter.bibBoatLabel'}"
-                    class="cancelled" visible="{=${entries>cancelled} || ${entries>race/cancelled}}" />
-                  <Text text="{parts:[{path:'entries>race/groupMode'},{path:'entries>'}],formatter:'.formatter.bibBoatLabel'}"
-                    visible="{=!${entries>cancelled} &amp;&amp; !${entries>race/cancelled}}" />
-                </HBox>
+                <Text text="{parts:[{path:'entries>race/groupMode'},{path:'entries>'}],formatter:'.formatter.bibBoatLabel'}" />
 
                 <Text text="{path:'entries>race/dateTime',formatter:'.formatter.dayTimeIsoLabel'} ({entries>race/heatsCount})" />
 
                 <HBox alignItems="Center">
                   <Image src="{entries>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
-                  <Text text="{entries>club/shortName}" visible="{=${entries>cancelled} || ${entries>race/cancelled}}" class="cancelled" />
-                  <Text text="{entries>club/shortName}" visible="{=!${entries>cancelled} &amp;&amp; !${entries>race/cancelled}}" />
+                  <Text text="{entries>club/shortName}" />
                 </HBox>
               </cells>
             </ColumnListItem>

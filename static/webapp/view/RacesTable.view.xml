@@ -70,35 +70,25 @@
 
           <items>
             <ColumnListItem type="Navigation" highlight="{path:'races>',formatter:'.formatter.raceStateHighlight'}">
+              <!-- CustomData writes data-cancelled="true/false" as a DOM attribute on the row element.
+                   The CSS rule [data-cancelled="true"] .sapMText then applies strikethrough to all Text cells.
+                   (The class attribute is not a ManagedObject property so it cannot be bound reactively.) -->
+              <customData>
+                <core:CustomData key="cancelled" value="{=${races>cancelled}?'true':'false'}" writeToDom="true" />
+              </customData>
               <cells>
-                <VBox>
-                  <Text text="{races>number}" visible="{=${races>cancelled}}" class="cancelled" />
-                  <Text text="{races>number}" visible="{=!${races>cancelled}}" />
-                </VBox>
+                <Text text="{races>number}" />
 
                 <VBox>
-                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=${races>cancelled}}" class="boldCancelled" />
-                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" visible="{=!${races>cancelled}}" class="bold" />
-
-                  <Text text="{races>longLabel} {races>comment}" visible="{=${races>cancelled} &amp;&amp; !${device>/system/phone}}"
-                    class="cancelled" />
-                  <Text text="{races>longLabel} {races>comment}" visible="{=!${races>cancelled} &amp;&amp; !${device>/system/phone}}" />
+                  <Text text="{path: 'races>',formatter:'.formatter.raceLabel'}" class="bold" />
+                  <Text text="{races>longLabel} {races>comment}" visible="{=!${device>/system/phone}}" />
                 </VBox>
 
-                <VBox>
-                  <Text text="{path:'races>',formatter:'.formatter.distanceLabel'}" visible="{=${races>cancelled}}" class="cancelled" />
-                  <Text text="{path:'races>',formatter:'.formatter.distanceLabel'}" visible="{=!${races>cancelled}}" />
-                </VBox>
+                <Text text="{path:'races>',formatter:'.formatter.distanceLabel'}" />
 
-                <VBox>
-                  <Text text="{races>entriesCount}" visible="{=${races>cancelled}}" class="cancelled" />
-                  <Text text="{races>entriesCount}" visible="{=!${races>cancelled}}" />
-                </VBox>
+                <Text text="{races>entriesCount}" />
 
-                <VBox>
-                  <Text text="{=${races>seeded}?${i18n>common.yes}:${i18n>common.no}}" visible="{=${races>cancelled}}" class="cancelled" />
-                  <Text text="{=${races>seeded}?${i18n>common.yes}:${i18n>common.no}}" visible="{=!${races>cancelled}}" />
-                </VBox>
+                <Text text="{=${races>seeded}?${i18n>common.yes}:${i18n>common.no}}" />
 
                 <ObjectStatus text="{path:'races>',formatter:'.formatter.raceStateLabel'}"
                   state="{path:'races>',formatter:'.formatter.raceStateHighlight'}" class="bold" />
