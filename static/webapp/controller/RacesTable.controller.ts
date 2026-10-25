@@ -37,39 +37,7 @@ export default class RacesTableController extends BaseTableController {
 
     super.sortTable("raceNumber", false, "number");
 
-    void super.getFilters().then((filters) => {
-      void super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG).then((viewSettingsDialog: ViewSettingsDialog) => {
-        if (filters.boatClasses && filters.boatClasses.length > 1) {
-          const boatClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "boatClass", text: "{i18n>common.boatClass}" });
-          filters.boatClasses.forEach((boatClass: any) => {
-            boatClassFilter.addItem(new ViewSettingsItem({ text: `${boatClass.caption} (${boatClass.abbreviation})`, key: `boatClass/id___EQ___${boatClass.id}` }));
-          });
-          viewSettingsDialog.insertFilterItem(boatClassFilter, 0);
-        }
-        if (filters.ageClasses && filters.ageClasses.length > 1) {
-          const ageClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "ageClass", text: "{i18n>common.ageClass}" });
-          filters.ageClasses.forEach((ageClass: any) => {
-            ageClassFilter.addItem(new ViewSettingsItem({ text: `${ageClass.caption} ${ageClass.suffix}`, key: `ageClass/id___EQ___${ageClass.id}` }));
-          });
-          viewSettingsDialog.insertFilterItem(ageClassFilter, 1);
-        }
-        if (filters.distances && filters.distances.length > 1) {
-          const distancesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "distance", text: "{i18n>common.distance}" });
-          filters.distances.forEach((distance: any) => {
-            distancesFilter.addItem(new ViewSettingsItem({ text: distance + "m", key: `distance___EQ___${distance}` }));
-          });
-          viewSettingsDialog.insertFilterItem(distancesFilter, 2);
-        }
-        if (filters.lightweight && filters.lightweight.length > 1) {
-          const lightweightFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: false, key: "lightweight", text: "{i18n>common.lightweight}" });
-          filters.lightweight.forEach((lightweight: any) => {
-            const text: string = lightweight ? this.i18n("common.yes") : this.i18n("common.no");
-            lightweightFilter.addItem(new ViewSettingsItem({ text: text, key: `lightweight___EQ___${lightweight}` }));
-          });
-          viewSettingsDialog.insertFilterItem(lightweightFilter, 5);
-        }
-      });
-    });
+    void this.initFilterDialog();
   }
 
   onItemPress(event: ListBase$SelectionChangeEvent): void {
@@ -118,12 +86,17 @@ export default class RacesTableController extends BaseTableController {
     void super.getViewSettingsDialog(RacesTableController.SORT_DIALOG).then(dialog => dialog.open());
   }
 
-  onRefreshButtonPress(event: Button$PressEvent): void {
+  async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    void this.loadRacesModel().then((succeeded: boolean) => {
+    try {
+      const succeeded: boolean = await this.loadRacesModel();
       super.showDataUpdatedMessage(succeeded);
-    }).finally(() => source.setEnabled(true));
+    } catch {
+      super.showDataUpdatedMessage(false);
+    } finally {
+      source.setEnabled(true);
+    }
   }
 
   onItemChanged(item: any): void {
@@ -141,6 +114,44 @@ export default class RacesTableController extends BaseTableController {
       ],
       and: false
     })]
+  }
+
+  private async initFilterDialog(): Promise<void> {
+    try {
+      const filters: any = await super.getFilters();
+      const viewSettingsDialog: ViewSettingsDialog = await super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG);
+      if (filters.boatClasses && filters.boatClasses.length > 1) {
+        const boatClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "boatClass", text: "{i18n>common.boatClass}" });
+        filters.boatClasses.forEach((boatClass: any) => {
+          boatClassFilter.addItem(new ViewSettingsItem({ text: `${boatClass.caption} (${boatClass.abbreviation})`, key: `boatClass/id___EQ___${boatClass.id}` }));
+        });
+        viewSettingsDialog.insertFilterItem(boatClassFilter, 0);
+      }
+      if (filters.ageClasses && filters.ageClasses.length > 1) {
+        const ageClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "ageClass", text: "{i18n>common.ageClass}" });
+        filters.ageClasses.forEach((ageClass: any) => {
+          ageClassFilter.addItem(new ViewSettingsItem({ text: `${ageClass.caption} ${ageClass.suffix}`, key: `ageClass/id___EQ___${ageClass.id}` }));
+        });
+        viewSettingsDialog.insertFilterItem(ageClassFilter, 1);
+      }
+      if (filters.distances && filters.distances.length > 1) {
+        const distancesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "distance", text: "{i18n>common.distance}" });
+        filters.distances.forEach((distance: any) => {
+          distancesFilter.addItem(new ViewSettingsItem({ text: distance + "m", key: `distance___EQ___${distance}` }));
+        });
+        viewSettingsDialog.insertFilterItem(distancesFilter, 2);
+      }
+      if (filters.lightweight && filters.lightweight.length > 1) {
+        const lightweightFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: false, key: "lightweight", text: "{i18n>common.lightweight}" });
+        filters.lightweight.forEach((lightweight: any) => {
+          const text: string = lightweight ? this.i18n("common.yes") : this.i18n("common.no");
+          lightweightFilter.addItem(new ViewSettingsItem({ text: text, key: `lightweight___EQ___${lightweight}` }));
+        });
+        viewSettingsDialog.insertFilterItem(lightweightFilter, 5);
+      }
+    } catch (error) {
+      console.error("Failed to initialize race filter dialog:", error);
+    }
   }
 
   private async loadRacesModel(): Promise<boolean> {
