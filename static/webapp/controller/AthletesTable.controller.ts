@@ -19,7 +19,7 @@ export default class AthletesTable extends BaseTableController {
   private static readonly ATHLETES_MODEL: string = "athletes";
   private static readonly CLUB_FILTER_MODEL: string = "clubFilter";
 
-  private clubFilter: Filter | undefined;
+  private clubFilter?: Filter;
   private textSearchFilters: Filter[] = [];
 
   onInit(): void {
