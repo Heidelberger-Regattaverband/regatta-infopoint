@@ -34,18 +34,22 @@ async fn login(
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
     let credentials = credentials.into_inner();
+    // authenticates the user, without creating a pool.
     match User::authenticate(&credentials).await {
         // authentication succeeded
         Ok(user) => {
-            // attach valid user identity to current session
-            if let Err(err) = Identity::login(&request.extensions(), user.username.clone()) {
-                error!(%err, user = user.username, "Failed to attach user identity to session");
-                return Err(ErrorInternalServerError("Failed to create session"));
-            }
+            // create DB pool first — if this fails, no session cookie is set
             user_pool_manager
                 .create_pool(&user.username, credentials.password.value())
                 .await
                 .map_err(ApiError::from)?;
+            // attach valid user identity to current session
+            let login_result = Identity::login(&request.extensions(), user.username.clone());
+            if let Err(err) = login_result {
+                error!(%err, user = user.username, "Failed to attach user identity to session");
+                user_pool_manager.remove_pool(&user.username).await;
+                return Err(ErrorInternalServerError("Failed to create session"));
+            }
             Ok(Json(user))
         }
         // authentication failed
