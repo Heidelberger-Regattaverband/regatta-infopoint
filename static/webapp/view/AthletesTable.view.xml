@@ -1,4 +1,4 @@
-<mvc:View controllerName="de.regatta_hd.infoportal.controller.AthletesTable" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View controllerName="de.regatta_hd.infoportal.controller.AthletesTable" xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
     <Page title="{i18n>common.athletes}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
@@ -12,11 +12,20 @@
               <content>
                 <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false"
                   placeholder="{i18n>search.athletes}" />
+                <ComboBox id="clubComboBox" showClearIcon="true" selectionChange=".onClubSelectionChange"
+                  width="{=${device>/system/phone}?'9rem':'15rem'}" placeholder="{i18n>filter.allClubs}"
+                  items="{path:'clubFilter>/',templateShareable:false}">
+                  <core:Item key="{clubFilter>key}" text="{clubFilter>text}" />
+                </ComboBox>
                 <Button text="{=!${device>/system/phone}?${i18n>common.sorting}:''}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
                   press=".onSortButtonPress" />
                 <ToolbarSpacer />
                 <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}"
-                  icon="sap-icon://refresh" press=".onRefreshButtonPress" />
+                  icon="sap-icon://refresh" press=".onRefreshButtonPress">
+                  <layoutData>
+                    <OverflowToolbarLayoutData priority="NeverOverflow" />
+                  </layoutData>
+                </Button>
               </content>
             </OverflowToolbar>
           </headerToolbar>
