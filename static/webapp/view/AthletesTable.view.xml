@@ -13,15 +13,19 @@
                 <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false"
                   placeholder="{i18n>search.athletes}" />
                 <ComboBox id="clubComboBox" showClearIcon="true" selectionChange=".onClubSelectionChange"
-                  placeholder="{i18n>filter.allClubs}"
-                  items="{path: 'clubFilter>/', templateShareable: false}">
+                  width="{=${device>/system/phone}?'9rem':'15rem'}" placeholder="{i18n>filter.allClubs}"
+                  items="{path:'clubFilter>/',templateShareable:false}">
                   <core:Item key="{clubFilter>key}" text="{clubFilter>text}" />
                 </ComboBox>
                 <Button text="{=!${device>/system/phone}?${i18n>common.sorting}:''}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
                   press=".onSortButtonPress" />
                 <ToolbarSpacer />
                 <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}"
-                  icon="sap-icon://refresh" press=".onRefreshButtonPress" />
+                  icon="sap-icon://refresh" press=".onRefreshButtonPress">
+                  <layoutData>
+                    <OverflowToolbarLayoutData priority="NeverOverflow" />
+                  </layoutData>
+                </Button>
               </content>
             </OverflowToolbar>
           </headerToolbar>
