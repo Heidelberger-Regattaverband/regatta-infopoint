@@ -16,6 +16,7 @@ use ::actix_web::Scope as ActixScope;
 use ::actix_web::error::ErrorForbidden;
 use ::actix_web::error::ErrorInternalServerError;
 use ::actix_web::error::ErrorNotFound;
+use ::actix_web::error::ErrorUnauthorized;
 use ::actix_web::get;
 use ::actix_web::http::StatusCode;
 use ::actix_web::web::Data;
@@ -214,7 +215,7 @@ async fn get_user_pool(
 
 /// Returns `Ok(())` if the authenticated user has `Scope::Admin`, otherwise `Err(403 Forbidden)`.
 async fn require_admin(identity: &Identity) -> Result<(), Error> {
-    let id = identity.id().map_err(|_| ErrorInternalServerError("Session error"))?;
+    let id = identity.id().map_err(|_| ErrorUnauthorized("Session error"))?;
     match Scope::from_username(&id) {
         Scope::Admin => Ok(()),
         _ => Err(ErrorForbidden("Admin access required")),

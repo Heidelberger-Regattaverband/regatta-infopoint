@@ -62,6 +62,7 @@ async fn get_visible_notifications(
     responses(
         (status = 200, description = "All notifications for <regatta_id>", body = Vec<Notification>),
         (status = 401, description = "Unauthorized"),
+        (status = 403, description = "Forbidden — admin scope required"),
         (status = 500, description = INTERNAL_SERVER_ERROR)
     )
 )]
@@ -72,6 +73,7 @@ async fn get_all_notifications(
     aquarius: Data<Aquarius>,
     user_pool_manager: Data<UserPoolManager>,
 ) -> Result<impl Responder, Error> {
+    require_admin(&identity).await?;
     let user_pool = get_user_pool(&identity, &user_pool_manager).await?;
     let all_notifications = aquarius
         .get_all_notifications(regatta_id.into_inner(), &user_pool)

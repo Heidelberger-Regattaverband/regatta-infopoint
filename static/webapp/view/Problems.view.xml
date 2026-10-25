@@ -9,7 +9,8 @@
 
       <content>
         <Table id="problemsTable" items="{problems>/}" growing="true" growingScrollToLoad="true" growingThreshold="50"
-          sticky="ColumnHeaders" class="sapUiNoContentPadding" noDataText="{i18n>problems.noData}">
+          sticky="ColumnHeaders" class="sapUiNoContentPadding" noDataText="{i18n>problems.noData}"
+          popinLayout="GridSmall">
 
           <columns>
             <Column hAlign="Center" width="4rem">
@@ -17,22 +18,22 @@
                 <Text text="{i18n>common.numberAbbr}" class="bold" />
               </header>
             </Column>
-            <Column hAlign="Begin" width="auto">
+            <Column hAlign="Begin">
               <header>
                 <Text text="{i18n>common.race}" class="bold" />
               </header>
             </Column>
-            <Column hAlign="Center" width="5rem">
+            <Column hAlign="Center" width="5rem" demandPopin="true" minScreenWidth="Tablet" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.heat}" class="bold" />
               </header>
             </Column>
-            <Column hAlign="Begin" width="auto">
+            <Column hAlign="Begin" demandPopin="true" minScreenWidth="Tablet" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.club}" class="bold" />
               </header>
             </Column>
-            <Column hAlign="Center" width="8rem">
+            <Column hAlign="Center" width="8rem" demandPopin="true" minScreenWidth="Tablet" popinDisplay="Inline">
               <header>
                 <Text text="{i18n>common.bib}" class="bold" />
               </header>
