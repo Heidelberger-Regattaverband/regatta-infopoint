@@ -77,7 +77,7 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation" vAlign="Top"
+            <ColumnListItem type="Navigation" vAlign="{=${device>/system/phone}?'Top':'Inherit'}"
               highlight="{parts:[{path:'entries>race'},{path:'entries>'}],formatter:'.formatter.raceEntryHighlight'}">
               <!-- CustomData writes data-cancelled="true/false" as a DOM attribute on the row element.
                    The CSS rule [data-cancelled="true"] .sapMText then applies strikethrough to all Text cells.

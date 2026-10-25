@@ -99,7 +99,7 @@ export default class HeatDetailsController extends BaseController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadHeatModel().then((succeeded: boolean) => {
+    void this.loadHeatModel().then((succeeded: boolean) => {
       super.showDataUpdatedMessage(succeeded);
     }).finally(() => source.setEnabled(true));
   }
