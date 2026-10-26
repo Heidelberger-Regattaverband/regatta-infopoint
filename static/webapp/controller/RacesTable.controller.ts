@@ -72,18 +72,27 @@ export default class RacesTableController extends BaseTableController {
     super.applyFilters();
   }
 
-  onFilterButtonPress(event: Button$PressEvent): void {
-    void super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG).then(dialog => dialog.open());
+  async onFilterButtonPress(event: Button$PressEvent): Promise<void> {
+    try {
+      const dialog = await super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG);
+      dialog.open();
+    } catch (error) { console.error("Failed to load filter dialog:", error); }
   }
 
-  onClearFilterPress(event: Button$PressEvent): void {
-    void super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG).then(dialog => dialog.clearFilters());
+  async onClearFilterPress(event: Button$PressEvent): Promise<void> {
+    try {
+      const dialog = await super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG);
+      dialog.clearFilters();
+    } catch (error) { console.error("Failed to load filter dialog:", error); }
     super.clearFilters();
     super.applyFilters();
   }
 
-  onSortButtonPress(event: Button$PressEvent): void {
-    void super.getViewSettingsDialog(RacesTableController.SORT_DIALOG).then(dialog => dialog.open());
+  async onSortButtonPress(event: Button$PressEvent): Promise<void> {
+    try {
+      const dialog = await super.getViewSettingsDialog(RacesTableController.SORT_DIALOG);
+      dialog.open();
+    } catch (error) { console.error("Failed to load sort dialog:", error); }
   }
 
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
@@ -92,7 +101,8 @@ export default class RacesTableController extends BaseTableController {
     try {
       const succeeded: boolean = await this.loadRacesModel();
       super.showDataUpdatedMessage(succeeded);
-    } catch {
+    } catch (error) {
+      console.error("Failed to refresh races:", error);
       super.showDataUpdatedMessage(false);
     } finally {
       source.setEnabled(true);

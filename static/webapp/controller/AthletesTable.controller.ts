@@ -49,16 +49,25 @@ export default class AthletesTable extends BaseTableController {
     this.applyAllFilters();
   }
 
-  onSortButtonPress(event: Button$PressEvent): void {
-    void super.getViewSettingsDialog("de.regatta_hd.infoportal.view.AthletesSortDialog").then(dialog => dialog.open());
+  async onSortButtonPress(event: Button$PressEvent): Promise<void> {
+    try {
+      const dialog = await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.AthletesSortDialog");
+      dialog.open();
+    } catch (error) { console.error("Failed to load sort dialog:", error); }
   }
 
-  onRefreshButtonPress(event: Button$PressEvent): void {
+  async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    void this.loadModel().then((succeeded: boolean) => {
+    try {
+      const succeeded: boolean = await this.loadModel();
       super.showDataUpdatedMessage(succeeded);
-    }).finally(() => source.setEnabled(true));
+    } catch (error) {
+      console.error("Failed to refresh athletes:", error);
+      super.showDataUpdatedMessage(false);
+    } finally {
+      source.setEnabled(true);
+    }
   }
 
   onItemPress(event: ListBase$SelectionChangeEvent): void {

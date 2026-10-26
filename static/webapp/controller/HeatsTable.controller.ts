@@ -78,7 +78,8 @@ export default class HeatsTableController extends BaseTableController {
     try {
       const succeeded: boolean = await this.loadHeatsModel();
       super.showDataUpdatedMessage(succeeded);
-    } catch {
+    } catch (error) {
+      console.error("Failed to refresh heats:", error);
       super.showDataUpdatedMessage(false);
     } finally {
       source.setEnabled(true);
@@ -90,16 +91,25 @@ export default class HeatsTableController extends BaseTableController {
     super.getEventBus()?.publish("heat", "itemChanged", {});
   }
 
-  onSortButtonPress(event: Button$PressEvent): void {
-    void super.getViewSettingsDialog(HeatsTableController.SORT_DIALOG).then(dialog => dialog.open());
+  async onSortButtonPress(event: Button$PressEvent): Promise<void> {
+    try {
+      const dialog = await super.getViewSettingsDialog(HeatsTableController.SORT_DIALOG);
+      dialog.open();
+    } catch (error) { console.error("Failed to load sort dialog:", error); }
   }
 
-  onFilterButtonPress(event: Button$PressEvent): void {
-    void super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG).then(dialog => dialog.open());
+  async onFilterButtonPress(event: Button$PressEvent): Promise<void> {
+    try {
+      const dialog = await super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG);
+      dialog.open();
+    } catch (error) { console.error("Failed to load filter dialog:", error); }
   }
 
-  onClearFilterPress(event: Button$PressEvent): void {
-    void super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG).then(dialog => dialog.clearFilters());
+  async onClearFilterPress(event: Button$PressEvent): Promise<void> {
+    try {
+      const dialog = await super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG);
+      dialog.clearFilters();
+    } catch (error) { console.error("Failed to load filter dialog:", error); }
     super.clearFilters();
     super.applyFilters();
   }

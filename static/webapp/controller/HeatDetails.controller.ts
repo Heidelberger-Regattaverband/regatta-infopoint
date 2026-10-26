@@ -96,12 +96,18 @@ export default class HeatDetailsController extends BaseController {
     super.getEventBus()?.publish("heat", "last", {});
   }
 
-  onRefreshButtonPress(event: Button$PressEvent): void {
+  async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    void this.loadHeatModel().then((succeeded: boolean) => {
+    try {
+      const succeeded: boolean = await this.loadHeatModel();
       super.showDataUpdatedMessage(succeeded);
-    }).finally(() => source.setEnabled(true));
+    } catch (error) {
+      console.error("Failed to refresh heat details:", error);
+      super.showDataUpdatedMessage(false);
+    } finally {
+      source.setEnabled(true);
+    }
   }
 
   private async loadHeatModel(): Promise<boolean> {
