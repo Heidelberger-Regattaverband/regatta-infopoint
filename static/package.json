@@ -17,14 +17,14 @@
     "@ui5/cli": "^4.0.71",
     "@ui5/linter": "^1.23.7",
     "typescript": "^6.0.3",
-    "ui5-tooling-modules": "^3.41.2",
-    "ui5-tooling-transpile": "^3.13.1",
+    "ui5-tooling-modules": "^3.41.3",
+    "ui5-tooling-transpile": "^3.14.0",
     "watch": "^1.0.2"
   },
   "private": true,
   "allowScripts": {
     "fsevents@2.3.3": true,
-    "ui5-tooling-transpile@3.13.1": true,
-    "ui5-tooling-modules@3.40.0": true
+    "ui5-tooling-modules@3.41.3": true,
+    "ui5-tooling-transpile@3.14.0": true
   }
 }
