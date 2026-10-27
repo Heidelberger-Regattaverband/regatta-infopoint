@@ -61,12 +61,18 @@ export default class ClubDetailsController extends BaseController {
     }
   }
 
-  onRefreshButtonPress(event: Button$PressEvent): void {
+  async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    void this.loadData().then((succeeded: [boolean, boolean]) => {
+    try {
+      const succeeded: [boolean, boolean] = await this.loadData();
       super.showDataUpdatedMessage(succeeded[0] && succeeded[1]);
-    }).finally(() => source.setEnabled(true));
+    } catch (error) {
+      console.error("Failed to refresh club details:", error);
+      super.showDataUpdatedMessage(false);
+    } finally {
+      source.setEnabled(true);
+    }
   }
 
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {

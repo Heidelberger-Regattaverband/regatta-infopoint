@@ -117,7 +117,7 @@ export default class AdminController extends BaseController {
     if (this.isEditMode && this.currentNotificationId) {
       this.updateNotification(this.currentNotificationId, dialogData);
     } else {
-      this.createNotification(dialogData);
+      void this.createNotification(dialogData);
     }
   }
 
@@ -153,8 +153,9 @@ export default class AdminController extends BaseController {
     }
   }
 
-  private createNotification(data: any): void {
-    void this.getActiveRegatta().then((regatta) => {
+  private async createNotification(data: any): Promise<void> {
+    try {
+      const regatta = await super.getActiveRegatta();
       const regattaId = regatta.id;
 
       $.ajax({
@@ -179,7 +180,11 @@ export default class AdminController extends BaseController {
           $(".sapMMessageToast").addClass("sapMMessageToastDanger");
         }
       });
-    });
+    } catch (error) {
+      console.error("Failed to get active regatta:", error);
+      MessageToast.show(super.i18n("admin.error.regattaFailed"));
+      $(".sapMMessageToast").addClass("sapMMessageToastDanger");
+    }
   }
 
   private updateNotification(notificationId: number, data: any): void {
@@ -220,12 +225,15 @@ export default class AdminController extends BaseController {
         $(".sapMMessageToast").addClass("sapMMessageToastSuccess");
         void this.loadNotifications();
       },
-      error: (xhr: any) => {
+      error: async (xhr: any) => {
         console.error("Failed to update notification visibility:", xhr);
         MessageToast.show(super.i18n("admin.error.visibilityFailed"));
         $(".sapMMessageToast").addClass("sapMMessageToastDanger");
-        // Revert the switch state
-        void this.loadNotifications();
+        try {
+          await this.loadNotifications();
+        } catch (revertError) {
+          console.error("Failed to revert switch state:", revertError);
+        }
       }
     });
   }
