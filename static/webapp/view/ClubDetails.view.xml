@@ -31,7 +31,8 @@
             <VBox>
               <ObjectAttribute title="{i18n>common.entries}" text="{club>/participationsCount}" />
               <ObjectAttribute title="{i18n>statistics.athletes} (w/m)"
-                text="{club>/athletesCount} ({club>/athletesFemaleCount}/{club>/athletesMaleCount})" />
+                text="{club>/athletesCount} ({club>/athletesFemaleCount}/{club>/athletesMaleCount})"
+                active="true" press=".onAthletesPress" />
             </VBox>
           </HBox>
         </f:DynamicPageHeader>
