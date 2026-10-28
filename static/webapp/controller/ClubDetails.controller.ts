@@ -47,6 +47,10 @@ export default class ClubDetailsController extends BaseController {
     super.getRouter()?.navTo("mapClub", { clubId: this.clubId });
   }
 
+  onAthletesPress(): void {
+    super.navToClubAthletes(this.clubId!);
+  }
+
   onSelectionChange(oEvent: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = oEvent.getParameter("listItem");
     if (selectedItem) {

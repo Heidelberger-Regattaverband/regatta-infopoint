@@ -41,13 +41,13 @@ export default class ClubsTableController extends BaseTableController {
   }
 
   onSortButtonPress(event: Button$PressEvent): void {
-    super.getViewSettingsDialog("de.regatta_hd.infoportal.view.ClubsTableSortDialog").then(dialog => dialog.open());
+    void super.getViewSettingsDialog("de.regatta_hd.infoportal.view.ClubsTableSortDialog").then(dialog => dialog.open());
   }
 
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadModel().then((succeeded: boolean) => {
+    void this.loadModel().then((succeeded: boolean) => {
       super.showDataUpdatedMessage(succeeded);
     }).finally(() => source.setEnabled(true));
   }

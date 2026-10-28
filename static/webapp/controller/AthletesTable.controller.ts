@@ -1,5 +1,5 @@
 import Button, { Button$PressEvent } from "sap/m/Button";
-import { ComboBox$SelectionChangeEvent } from "sap/m/ComboBox";
+import ComboBox, { ComboBox$SelectionChangeEvent } from "sap/m/ComboBox";
 import { ListBase$SelectionChangeEvent } from "sap/m/ListBase";
 import ListItemBase from "sap/m/ListItemBase";
 import { SearchField$LiveChangeEvent } from "sap/m/SearchField";
@@ -28,7 +28,16 @@ export default class AthletesTable extends BaseTableController {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(new JSONModel(), AthletesTable.ATHLETES_MODEL);
     super.setViewModel(new JSONModel([]), AthletesTable.CLUB_FILTER_MODEL);
-    super.getRouter()?.getRoute("athletes")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadModel(), this);
+    super.getRouter()?.getRoute("athletes")?.attachMatched(async (_: Route$MatchedEvent) => {
+      await this.loadModel();
+      this.clearClubFilter();
+    }, this);
+
+    super.getRouter()?.getRoute("clubAthletes")?.attachMatched(async (event: Route$MatchedEvent) => {
+      const clubId: number = Number((event.getParameter("arguments") as any)?.clubId);
+      await this.loadModel();
+      this.applyClubFilter(clubId);
+    }, this);
 
     super.sortTable("athleteLastNameCol", false, "lastName");
   }
@@ -81,6 +90,24 @@ export default class AthletesTable extends BaseTableController {
 
   onItemChanged(item: any): void {
     // nothing to do yet
+  }
+
+  private applyClubFilter(clubId: number): void {
+    const athletes: any[] = super.getViewJSONModel(AthletesTable.ATHLETES_MODEL).getData() ?? [];
+    const shortName: string | undefined = athletes.find((a: any) => a.club?.id === clubId)?.club?.shortName;
+    if (shortName) {
+      this.clubFilter = new Filter("club/shortName", FilterOperator.EQ, shortName);
+      (super.getView()?.byId("clubComboBox") as ComboBox)?.setSelectedKey(shortName);
+      this.applyAllFilters();
+    }
+  }
+
+  private clearClubFilter(): void {
+    if (this.clubFilter) {
+      this.clubFilter = undefined;
+      (super.getView()?.byId("clubComboBox") as ComboBox)?.setSelectedKey("");
+      this.applyAllFilters();
+    }
   }
 
   private applyAllFilters(): void {
