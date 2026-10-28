@@ -48,7 +48,7 @@ export default class ClubDetailsController extends BaseController {
   }
 
   onAthletesPress(): void {
-    super.navToAthletesByClub(this.clubId!);
+    super.navToClubAthletes(this.clubId!);
   }
 
   onSelectionChange(oEvent: ListBase$SelectionChangeEvent): void {

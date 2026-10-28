@@ -111,8 +111,8 @@
           "target": "athletes"
         },
         {
-          "pattern": "athletes/{clubId}",
-          "name": "athletesByClub",
+          "pattern": "clubs/{clubId}/athletes",
+          "name": "clubAthletes",
           "target": "athletes"
         },
         {

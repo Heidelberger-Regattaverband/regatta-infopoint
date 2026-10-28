@@ -33,7 +33,7 @@ export default class AthletesTable extends BaseTableController {
       this.clearClubFilter();
     }, this);
 
-    super.getRouter()?.getRoute("athletesByClub")?.attachMatched(async (event: Route$MatchedEvent) => {
+    super.getRouter()?.getRoute("clubAthletes")?.attachMatched(async (event: Route$MatchedEvent) => {
       const clubId: number = Number((event.getParameter("arguments") as any)?.clubId);
       await this.loadModel();
       this.applyClubFilter(clubId);
