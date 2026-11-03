@@ -96,12 +96,13 @@ fn get_cpu_and_memory() -> (Vec<Cpu>, Memory) {
         sys
     } else {
         // First call: create the system, sleep once, then refresh.
-        let mut sys = System::new_with_specifics(
+        let Ok(mut sys) = System::new_with_specifics(
             RefreshKind::nothing()
                 .with_cpu(CpuRefreshKind::everything())
                 .with_memory(MemoryRefreshKind::everything()),
-        )
-        .expect("failed to initialize sysinfo");
+        ) else {
+            return (vec![], Memory { total: 0, used: 0, free: 0, available: 0 });
+        };
         thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
         sys.refresh_cpu_all();
         *guard = Some((sys, Instant::now()));
