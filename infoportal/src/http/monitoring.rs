@@ -101,7 +101,15 @@ fn get_cpu_and_memory() -> (Vec<Cpu>, Memory) {
                 .with_cpu(CpuRefreshKind::everything())
                 .with_memory(MemoryRefreshKind::everything()),
         ) else {
-            return (vec![], Memory { total: 0, used: 0, free: 0, available: 0 });
+            return (
+                vec![],
+                Memory {
+                    total: 0,
+                    used: 0,
+                    free: 0,
+                    available: 0,
+                },
+            );
         };
         thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
         sys.refresh_cpu_all();
