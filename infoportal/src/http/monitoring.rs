@@ -62,7 +62,9 @@ impl Monitoring {
             sys: SysInfo {
                 cpus,
                 mem,
-                disks: Disks::new_with_refreshed_list().iter().map(Disk::from).collect(),
+                disks: Disks::new_with_refreshed_list()
+                    .map(|d| d.iter().map(Disk::from).collect())
+                    .unwrap_or_default(),
                 uptime: uptime_lib::get().unwrap_or_default(),
             },
             app: AppInfo {
@@ -94,11 +96,21 @@ fn get_cpu_and_memory() -> (Vec<Cpu>, Memory) {
         sys
     } else {
         // First call: create the system, sleep once, then refresh.
-        let mut sys = System::new_with_specifics(
+        let Ok(mut sys) = System::new_with_specifics(
             RefreshKind::nothing()
                 .with_cpu(CpuRefreshKind::everything())
                 .with_memory(MemoryRefreshKind::everything()),
-        );
+        ) else {
+            return (
+                vec![],
+                Memory {
+                    total: 0,
+                    used: 0,
+                    free: 0,
+                    available: 0,
+                },
+            );
+        };
         thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
         sys.refresh_cpu_all();
         *guard = Some((sys, Instant::now()));
@@ -169,7 +181,7 @@ pub(crate) struct Memory {
 impl From<&sysinfo::Cpu> for Cpu {
     fn from(cpu: &sysinfo::Cpu) -> Self {
         Cpu {
-            usage: cpu.cpu_usage(),
+            usage: cpu.usage(),
             name: cpu.name().to_string(),
             frequency: cpu.frequency(),
             brand: cpu.brand().to_string(),
