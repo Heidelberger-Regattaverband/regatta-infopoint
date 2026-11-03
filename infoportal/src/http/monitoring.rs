@@ -62,7 +62,9 @@ impl Monitoring {
             sys: SysInfo {
                 cpus,
                 mem,
-                disks: Disks::new_with_refreshed_list().iter().map(Disk::from).collect(),
+                disks: Disks::new_with_refreshed_list()
+                    .map(|d| d.iter().map(Disk::from).collect())
+                    .unwrap_or_default(),
                 uptime: uptime_lib::get().unwrap_or_default(),
             },
             app: AppInfo {
@@ -98,7 +100,8 @@ fn get_cpu_and_memory() -> (Vec<Cpu>, Memory) {
             RefreshKind::nothing()
                 .with_cpu(CpuRefreshKind::everything())
                 .with_memory(MemoryRefreshKind::everything()),
-        );
+        )
+        .expect("failed to initialize sysinfo");
         thread::sleep(sysinfo::MINIMUM_CPU_UPDATE_INTERVAL);
         sys.refresh_cpu_all();
         *guard = Some((sys, Instant::now()));
@@ -169,7 +172,7 @@ pub(crate) struct Memory {
 impl From<&sysinfo::Cpu> for Cpu {
     fn from(cpu: &sysinfo::Cpu) -> Self {
         Cpu {
-            usage: cpu.cpu_usage(),
+            usage: cpu.usage(),
             name: cpu.name().to_string(),
             frequency: cpu.frequency(),
             brand: cpu.brand().to_string(),
