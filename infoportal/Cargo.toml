@@ -57,3 +57,6 @@ tokio-shared-rt = "0"
 
 [build-dependencies]
 built = { version = "0", features = ["chrono", "git2"] }
+
+[lints]
+workspace = true
