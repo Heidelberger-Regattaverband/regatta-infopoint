@@ -57,3 +57,12 @@ tokio-shared-rt = "0"
 
 [build-dependencies]
 built = { version = "0", features = ["chrono", "git2"] }
+
+[lints.rust]
+# Allow unsafe at Cargo level so the module-level #[allow] in peak_alloc.rs can
+# override the crate-level #[deny] set in main.rs. The workspace "forbid" passes
+# --forbid to rustc which cannot be overridden by source attributes at all.
+unsafe_code = "allow"
+
+[lints.clippy]
+all = "warn"

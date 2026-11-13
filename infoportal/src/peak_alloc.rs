@@ -1,3 +1,4 @@
+#![allow(unsafe_code)]
 use ::std::alloc::GlobalAlloc;
 use ::std::alloc::Layout;
 use ::std::alloc::System;
