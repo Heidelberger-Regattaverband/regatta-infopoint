@@ -1,3 +1,4 @@
+#![deny(unsafe_code)]
 mod auth;
 mod config;
 mod http;
