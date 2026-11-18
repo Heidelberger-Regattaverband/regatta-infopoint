@@ -157,15 +157,9 @@ Docker image: multi-stage (`rust:1.98.0` builder with Node.js 24, `ubuntu:26.04`
 - `doc/rest_api.http` — full REST API reference with example requests
 - `ssl/cert.pem`, `ssl/key.pem` — local TLS certificates
 
-# Code Review Guidelines
+# Skills
 
-- Focus on correctness, security, design, and maintainability.
-- For each issue provide: description, file + line number, suggested fix, severity (critical / high / medium / low).
-- Avoid nitpicks unless they impact readability or consistency.
-- Consider Rust best practices (idiomatic error handling, no unsafe, clippy compliance).
-- Consider SAP OpenUI5 and TypeScript best practices for the `static/` module.
-- Store review feedback in a `review.md` file in the corresponding crate.
-- Prioritize: critical bugs > security issues > design flaws > minor improvements.
+- For repository code reviews, load `review` from `.claude/skills/review/SKILL.md`. It contains the review workflow, project-specific checks, and reporting guidelines.
 
 # MCP Servers
 
