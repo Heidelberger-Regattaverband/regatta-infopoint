@@ -46,7 +46,7 @@ pub struct Athlete {
     /// The athlete's club.
     club: Club,
 
-    /// The number of entries the athlete has.
+    /// The number of non-cancelled entries the athlete has in the requested regatta.
     #[serde(skip_serializing_if = "Option::is_none")]
     entries_count: Option<i32>,
 }
@@ -58,12 +58,11 @@ impl Athlete {
     ) -> Result<Vec<Athlete>, DbError> {
         let mut query = Query::new(format!(
             "SELECT DISTINCT {0}, {1},
-                (SELECT COUNT(*) FROM (
-                    SELECT {ID} FROM Athlet
-                    JOIN Crew  ON Crew_Athlete_ID_FK = {ID}
-                    JOIN Entry ON Crew_Entry_ID_FK   = {ENTRY_ID}
-                    WHERE e.Entry_Event_ID_FK = @P1 AND {ID} = a.{ID} AND {ENTRY_CANCELLED} = 0 AND {CREW_ROUND_TO} = @P2
-                ) AS {ENTRIES_COUNT} ) AS {ENTRIES_COUNT}
+                (SELECT COUNT(DISTINCT ce.{ENTRY_ID})
+                    FROM Entry ce
+                    JOIN Crew cc ON cc.Crew_Entry_ID_FK = ce.{ENTRY_ID}
+                    WHERE ce.Entry_Event_ID_FK = @P1 AND cc.Crew_Athlete_ID_FK = a.{ID}
+                        AND ce.{ENTRY_CANCELLED} = 0 AND cc.{CREW_ROUND_TO} = @P2) AS {ENTRIES_COUNT}
                 FROM Athlet a
                 JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.{CLUB_ID}
                 JOIN Crew  cr ON a.{ID}              = cr.Crew_Athlete_ID_FK
@@ -87,12 +86,11 @@ impl Athlete {
     ) -> Result<Athlete, DbError> {
         let mut query = Query::new(format!(
             "SELECT {0}, {1},
-                (SELECT COUNT(*) FROM (
-                    SELECT {ID} FROM Athlet
-                    JOIN Crew  ON Crew_Athlete_ID_FK = {ID}
-                    JOIN Entry ON Crew_Entry_ID_FK   = {ENTRY_ID}
-                    WHERE e.Entry_Event_ID_FK = @P1 AND {ID} = a.{ID} AND {ENTRY_CANCELLED} = 0 AND {CREW_ROUND_TO} = @P3
-                ) AS {ENTRIES_COUNT} ) AS {ENTRIES_COUNT}
+                (SELECT COUNT(DISTINCT ce.{ENTRY_ID})
+                    FROM Entry ce
+                    JOIN Crew cc ON cc.Crew_Entry_ID_FK = ce.{ENTRY_ID}
+                    WHERE ce.Entry_Event_ID_FK = @P1 AND cc.Crew_Athlete_ID_FK = a.{ID}
+                        AND ce.{ENTRY_CANCELLED} = 0 AND cc.{CREW_ROUND_TO} = @P3) AS {ENTRIES_COUNT}
                 FROM Athlet a
                 JOIN Club  cl ON a.Athlet_Club_ID_FK = cl.{CLUB_ID}
                 JOIN Crew  cr ON a.{ID}              = cr.Crew_Athlete_ID_FK
