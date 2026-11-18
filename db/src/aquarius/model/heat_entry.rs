@@ -10,6 +10,7 @@ use super::entry::ID as ENTRY_ID;
 use super::get_rows;
 use super::heat::HEAT_ID;
 use super::heat::HEAT_ROUND;
+use super::heat::HEAT_STATE;
 use super::heat::Heat;
 use super::heat_result::HeatResult;
 use super::race::ID as RACE_ID;
@@ -18,7 +19,6 @@ use crate::error::DbError;
 use crate::tiberius::RowColumn;
 use crate::tiberius::TiberiusPool;
 use ::serde::Serialize;
-use ::std::cmp::Ordering;
 use ::std::time::Duration;
 use ::tiberius::Query;
 use ::tiberius::Row;
@@ -61,20 +61,28 @@ impl HeatEntry {
     /// # Returns
     /// A list of entries of the heat
     pub(crate) async fn query_entries_of_heat(heat: &Heat, pool: &TiberiusPool) -> Result<Vec<Self>, DbError> {
-        let sql = format!("SELECT DISTINCT ce.CE_ID, ce.CE_Lane, {0}, Label_Short, {BC_NUM_ROWERS}, {1}, {2}, {3}
+        // States 0–3 use optional start results; states >= 4 use final results.
+        let sql = format!(
+            "SELECT DISTINCT ce.CE_ID, ce.CE_Lane, {0},
+            COALESCE(l.Label_Short, c.Club_Abbr, c.Club_Name, '') AS Label_Short, b.{BC_NUM_ROWERS}, {1}, {2}, {3}
             FROM CompEntries ce
-            JOIN Comp                  ON           CE_Comp_ID_FK = {HEAT_ID}
-            JOIN Offer o               ON             o.{RACE_ID} = Comp_Race_ID_FK
-            JOIN BoatClass             ON o.Offer_BoatClass_ID_FK = {BC_ID}
-            FULL OUTER JOIN Entry e    ON          CE_Entry_ID_FK = e.{ENTRY_ID}
-            FULL OUTER JOIN EntryLabel ON          EL_Entry_ID_FK = e.{ENTRY_ID}
-            FULL OUTER JOIN Label      ON          EL_Label_ID_FK = Label_ID
-            FULL OUTER JOIN Result r   ON       r.Result_CE_ID_FK = ce.CE_ID
-            JOIN Club c                ON             c.{CLUB_ID} = Entry_OwnerClub_ID_FK
-            WHERE CE_Comp_ID_FK = @P1 AND ((Result_SplitNr = {ROUND_FINAL} AND Comp_State >=4) OR (Result_SplitNr = 0 AND Comp_State < 3) OR (Comp_State < 2 AND Result_SplitNr IS NULL))
-            AND EL_RoundFrom <= {HEAT_ROUND} AND {HEAT_ROUND} <= EL_RoundTo
-            ORDER BY CE_Lane ASC",
-            Entry::select_columns("e"), Club::select_all_columns("c"), Race::select_columns("o"), HeatResult::select_columns("r"));
+            JOIN Comp h            ON ce.CE_Comp_ID_FK = h.{HEAT_ID}
+            JOIN Offer o           ON o.{RACE_ID} = h.Comp_Race_ID_FK
+            JOIN BoatClass b       ON o.Offer_BoatClass_ID_FK = b.{BC_ID}
+            JOIN Entry e           ON ce.CE_Entry_ID_FK = e.{ENTRY_ID}
+            JOIN Club c            ON c.{CLUB_ID} = e.Entry_OwnerClub_ID_FK
+            LEFT JOIN EntryLabel el ON el.EL_Entry_ID_FK = e.{ENTRY_ID}
+                AND el.EL_RoundFrom <= h.{HEAT_ROUND} AND h.{HEAT_ROUND} <= el.EL_RoundTo
+            LEFT JOIN Label l      ON el.EL_Label_ID_FK = l.Label_ID
+            LEFT JOIN Result r     ON r.Result_CE_ID_FK = ce.CE_ID
+                AND r.Result_SplitNr = CASE WHEN h.{HEAT_STATE} >= 4 THEN {ROUND_FINAL} ELSE 0 END
+            WHERE ce.CE_Comp_ID_FK = @P1
+            ORDER BY ce.CE_Lane ASC",
+            Entry::select_columns("e"),
+            Club::select_all_columns("c"),
+            Race::select_columns("o"),
+            HeatResult::select_columns("r")
+        );
         let mut query = Query::new(sql);
         query.bind(heat.id);
 
@@ -94,20 +102,9 @@ impl HeatEntry {
             })
             .collect();
 
-        // sort heat entries by rank
-        heat_entries.sort_by(|a, b| {
-            if let (Some(result_a), Some(result_b)) = (a.result.as_ref(), b.result.as_ref()) {
-                if result_a.rank_sort > result_b.rank_sort {
-                    Ordering::Greater
-                } else if result_a.rank_sort < result_b.rank_sort {
-                    Ordering::Less
-                } else {
-                    Ordering::Equal
-                }
-            } else {
-                Ordering::Equal
-            }
-        });
+        // Keep missing/unranked results after ranked boats so the first time is
+        // the fastest available result. Stable sorting preserves lane order for ties.
+        heat_entries.sort_by_key(|entry| entry.result.as_ref().map_or(u8::MAX, |result| result.rank_sort));
 
         let mut first_net_time: i32 = 0;
 
@@ -139,5 +136,67 @@ impl HeatEntry {
         }
 
         Ok(heat_entries)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ::tiberius::ColumnData;
+    use ::tiberius::ColumnType;
+
+    fn entry_row(rank: Option<u8>) -> Row {
+        Row::builder()
+            .column("CE_ID", ColumnType::Int4, ColumnData::I32(Some(10)))
+            .column("CE_Lane", ColumnType::Int2, ColumnData::I16(Some(2)))
+            .column("Entry_ID", ColumnType::Int4, ColumnData::I32(Some(20)))
+            .column("Entry_CancelValue", ColumnType::Int1, ColumnData::U8(Some(0)))
+            .column(
+                "Label_Short",
+                ColumnType::NVarchar,
+                ColumnData::String(Some("Club".into())),
+            )
+            .column("Club_ID", ColumnType::Int4, ColumnData::I32(Some(30)))
+            .column(
+                "Club_City",
+                ColumnType::NVarchar,
+                ColumnData::String(Some("Heidelberg".into())),
+            )
+            .column(BC_NUM_ROWERS, ColumnType::Int1, ColumnData::U8(Some(2)))
+            .column("Result_Rank", ColumnType::Int1, ColumnData::U8(rank))
+            .column(
+                "Result_NetTime",
+                ColumnType::Int4,
+                ColumnData::I32(rank.map(|_| 60_000)),
+            )
+            .column(
+                "Result_DisplayValue",
+                ColumnType::NVarchar,
+                ColumnData::String(rank.map(|_| "1:00.00".into())),
+            )
+            .build()
+    }
+
+    #[test]
+    fn missing_result_preserves_entry_and_lane() {
+        let entry = HeatEntry::from(&entry_row(None));
+        assert_eq!(entry.id, 10);
+        assert_eq!(entry.lane, 2);
+        assert_eq!(entry.entry.id, 20);
+        assert!(entry.result.is_none());
+    }
+
+    #[test]
+    fn available_result_is_decoded() {
+        let entry = HeatEntry::from(&entry_row(Some(1)));
+        let result = entry.result.unwrap();
+        assert_eq!(result.rank_sort, 1);
+        assert_eq!(result.net_time, 60_000);
+    }
+
+    #[test]
+    fn unranked_result_remains_unranked() {
+        let entry = HeatEntry::from(&entry_row(Some(0)));
+        assert_eq!(entry.result.unwrap().rank_sort, u8::MAX);
     }
 }
