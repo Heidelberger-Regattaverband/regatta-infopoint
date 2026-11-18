@@ -76,7 +76,14 @@ impl AquariusClient {
     /// # Arguments
     /// * `timestamp` - The time stamp to send to Aquarius.
     /// * `bib` - The bib number of the boat to send the time stamp to.
+    /// # Errors
+    /// Returns an error if the bib is negative or the command cannot be sent.
     pub fn send_time(&self, timestamp: &Timestamp, bib: Option<Bib>) -> Result<(), AquariusErr> {
+        if let Some(bib) = bib
+            && bib < 0
+        {
+            return Err(AquariusErr::InvalidMessage(format!("Invalid bib number: {bib}")));
+        }
         self.with_connection(|connection| {
             let request = RequestSetTime {
                 time: timestamp.time.into(),

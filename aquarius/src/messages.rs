@@ -6,7 +6,8 @@ use ::serde::Serialize;
 use ::std::fmt::{Display, Formatter, Result as FmtResult};
 use ::std::str::FromStr;
 
-pub(super) type Bib = u8;
+/// Bib numbers use the same range as the database's signed 16-bit entry bibs.
+pub(super) type Bib = i16;
 type Lane = u8;
 pub(super) type HeatNr = i16;
 
@@ -233,7 +234,10 @@ impl FromStr for Boat {
         let parts: Vec<&str> = s.splitn(4, ' ').collect();
         if parts.len() == 4 {
             let lane = parts[0].parse()?;
-            let bib: u8 = parts[1].parse()?;
+            let bib: Bib = parts[1].parse()?;
+            if bib < 0 {
+                return Err(AquariusErr::InvalidMessage(s.to_owned()));
+            }
             let state: u8 = parts[2].parse()?;
             let club = parts[3].to_owned();
             Ok(Boat::new(lane, bib, club, state))
@@ -339,6 +343,50 @@ mod tests {
     }
 
     #[test]
+    fn test_response_start_list_with_large_bibs() {
+        let message = "1 255 0 'Club A'\n2 256 0 'Club B'\n3 32767 0 'Club C'";
+        let response = message.parse::<ResponseStartList>().unwrap();
+        let bibs: Vec<Bib> = response.boats.iter().map(|boat| boat.bib).collect();
+        assert_eq!(bibs, vec![255, 256, i16::MAX]);
+    }
+
+    #[test]
+    fn test_request_set_time_with_large_bibs() {
+        let time = DateTime::parse_from_rfc3339("2026-11-18T12:00:00.123Z")
+            .unwrap()
+            .with_timezone(&Local);
+        for bib in [255, 256, i16::MAX] {
+            let request = RequestSetTime {
+                time,
+                split: Split::Finish,
+                heat_nr: 50,
+                bib: Some(bib),
+            };
+            assert_eq!(
+                request.to_string(),
+                format!("TIME time={} comp=50 split=64 bib={bib}\n", time.format("%H:%M:%S%.3f"))
+            );
+        }
+    }
+
+    #[test]
+    fn test_request_set_time_without_bib() {
+        let time = DateTime::parse_from_rfc3339("2026-11-18T12:00:00.123Z")
+            .unwrap()
+            .with_timezone(&Local);
+        let request = RequestSetTime {
+            time,
+            split: Split::Start,
+            heat_nr: 50,
+            bib: None,
+        };
+        assert_eq!(
+            request.to_string(),
+            format!("TIME time={} comp=50 split=0\n", time.format("%H:%M:%S%.3f"))
+        );
+    }
+
+    #[test]
     fn test_boat_new() {
         let boat = Boat::new(1, 12, "RV Neptun Konstanz".to_owned(), 0);
         assert_eq!(boat.lane, 1);
@@ -357,6 +405,17 @@ mod tests {
         assert_eq!(boat.state, 0);
 
         assert!("1 12".parse::<Boat>().is_err());
+    }
+
+    #[test]
+    fn test_boat_bib_boundaries() {
+        for bib in [0, 255, 256, i16::MAX] {
+            let boat = format!("1 {bib} 0 'Club'").parse::<Boat>().unwrap();
+            assert_eq!(boat.bib, bib);
+        }
+        for bib in ["-1", "32768", "65535", "invalid"] {
+            assert!(format!("1 {bib} 0 'Club'").parse::<Boat>().is_err());
+        }
     }
 
     #[test]

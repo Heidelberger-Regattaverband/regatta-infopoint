@@ -68,9 +68,9 @@ impl TimeStrip {
         Err(DbError::Custom(format!("Timestamp not found: {:?}", timestamp.time)))
     }
 
-    pub async fn set_bib(&mut self, timestamp: &Timestamp, bib: u8) -> Result<Timestamp, DbError> {
+    pub async fn set_bib(&mut self, timestamp: &Timestamp, bib: i16) -> Result<Timestamp, DbError> {
         if let Some(timestamp) = self.time_stamps.iter_mut().find(|ts| ts.time == timestamp.time) {
-            timestamp.set_bib(bib);
+            timestamp.set_bib(bib)?;
             let mut client = self.pool.get().await?;
             timestamp.update(&mut client).await?;
             return Ok(timestamp.clone());

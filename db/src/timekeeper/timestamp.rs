@@ -29,8 +29,8 @@ pub struct Timestamp {
     /// The optional heat number.
     heat_nr: Option<i16>,
 
-    /// The optional bib number.
-    bib: Option<u8>,
+    /// The optional non-negative bib number, matching the entry's signed 16-bit range.
+    bib: Option<i16>,
 
     /// Whether the time stamp is persisted in DB or not.
     persisted: bool,
@@ -64,12 +64,16 @@ impl Timestamp {
         self.heat_nr
     }
 
-    pub(crate) fn set_bib(&mut self, bib: u8) {
+    pub(crate) fn set_bib(&mut self, bib: i16) -> Result<(), DbError> {
+        if bib < 0 {
+            return Err(DbError::Custom(format!("Invalid bib number: {bib}")));
+        }
         self.bib = Some(bib);
         self.persisted = false;
+        Ok(())
     }
 
-    pub fn bib(&self) -> Option<u8> {
+    pub fn bib(&self) -> Option<i16> {
         self.bib
     }
 
@@ -80,7 +84,7 @@ impl Timestamp {
         client: &mut TiberiusClient,
     ) -> Result<Vec<Timestamp>, DbError> {
         let mut query = Query::new(format!(
-            "SELECT {TIMESTAMP}, {EVENT_ID}, {SPLIT_NR}, {HEAT_NR}, {BIB} FROM HRV_Timestamp \
+            "SELECT {TIMESTAMP}, {EVENT_ID}, {SPLIT_NR}, {HEAT_NR}, CAST({BIB} AS SMALLINT) AS {BIB} FROM HRV_Timestamp \
             WHERE {EVENT_ID} = @P1 ORDER BY {TIMESTAMP} DESC \
             OFFSET @P2 ROWS FETCH NEXT @P3 ROWS ONLY"
         ));
@@ -189,5 +193,35 @@ impl From<&Split> for u8 {
 impl From<&Split> for String {
     fn from(split: &Split) -> Self {
         split.to_string()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use ::tiberius::{ColumnData, ToSql};
+
+    #[test]
+    fn test_bib_boundaries_and_sql_binding() {
+        for bib in [0, 255, 256, i16::MAX] {
+            let mut timestamp = Timestamp::from_time(Utc::now(), Split::Finish);
+            timestamp.persisted = true;
+            timestamp.set_bib(bib).unwrap();
+
+            assert_eq!(timestamp.bib(), Some(bib));
+            assert!(!timestamp.is_persisted());
+            assert!(matches!(timestamp.bib.to_sql(), ColumnData::I16(Some(value)) if value == bib));
+        }
+    }
+
+    #[test]
+    fn test_invalid_bib_preserves_timestamp() {
+        let mut timestamp = Timestamp::from_time(Utc::now(), Split::Finish);
+        timestamp.set_bib(256).unwrap();
+        timestamp.persisted = true;
+
+        assert!(timestamp.set_bib(-1).is_err());
+        assert_eq!(timestamp.bib(), Some(256));
+        assert!(timestamp.is_persisted());
     }
 }
