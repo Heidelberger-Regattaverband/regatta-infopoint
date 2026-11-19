@@ -73,6 +73,8 @@ impl Aquarius {
     }
 
     /// Returns the regatta ID resolved at initialization, including any active override.
+    /// # Returns
+    /// The identifier of the active regatta.
     pub fn active_regatta_id(&self) -> i32 {
         self.active_regatta_id
     }
