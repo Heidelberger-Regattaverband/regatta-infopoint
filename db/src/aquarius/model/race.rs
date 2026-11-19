@@ -13,6 +13,7 @@ use crate::aquarius::model::TryToEntity;
 use crate::error::DbError;
 use crate::tiberius::RowColumn;
 use crate::tiberius::TiberiusClient;
+use crate::tiberius::TiberiusPool;
 use crate::tiberius::TryRowColumn;
 use ::chrono::DateTime;
 use ::chrono::Utc;
@@ -182,7 +183,8 @@ impl Race {
         Ok(races.into_iter().map(|row| Race::from(&row)).collect())
     }
 
-    pub async fn query_race_by_id(race_id: i32, client: &mut TiberiusClient) -> Result<Self, DbError> {
+    /// Query a race, releasing its pooled connection when the query completes.
+    pub async fn query_race_by_id(race_id: i32, pool: &TiberiusPool) -> Result<Self, DbError> {
         let sql = format!(
             "SELECT {0}, {1}, {2} FROM Offer o
             JOIN AgeClass  a ON o.Offer_AgeClass_ID_FK  = a.{AC_ID}
@@ -194,7 +196,8 @@ impl Race {
         );
         let mut query = Query::new(sql);
         query.bind(race_id);
-        let stream = query.query(client).await?;
+        let mut client = pool.get().await?;
+        let stream = query.query(&mut client).await?;
         Ok(Race::from(&get_row(stream).await?))
     }
 }

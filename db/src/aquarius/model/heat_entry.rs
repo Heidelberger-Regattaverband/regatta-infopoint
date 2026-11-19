@@ -80,6 +80,8 @@ impl HeatEntry {
 
         let mut client = pool.get().await?;
         let rows = get_rows(query.query(&mut client).await?).await?;
+        // Release the completed query's connection before loading crews.
+        drop(client);
 
         // convert rows into HeatEntry
         let mut heat_entries: Vec<HeatEntry> = rows

@@ -119,7 +119,9 @@ impl Aquarius {
     pub async fn get_race_heats_entries(&self, race_id: i32, force_cache: bool) -> Result<Race, DbError> {
         self.caches
             .race_heats_entries
-            .compute_if_missing(&race_id, force_cache, || self.query_race_heats_entries(race_id))
+            .compute_if_missing(&race_id, force_cache, || {
+                Self::query_race_heats_entries(race_id, TiberiusPool::instance())
+            })
             .await
     }
 
@@ -378,12 +380,12 @@ impl Aquarius {
 
     // private methods for querying the database
 
-    async fn query_race_heats_entries(&self, race_id: i32) -> Result<Race, DbError> {
+    async fn query_race_heats_entries(race_id: i32, pool: &TiberiusPool) -> Result<Race, DbError> {
         let start = Instant::now();
         let queries = join3(
-            Race::query_race_by_id(race_id, &mut *TiberiusPool::instance().get().await?),
-            Heat::query_heats_of_race(race_id, TiberiusPool::instance()),
-            Entry::query_entries_for_race(race_id, TiberiusPool::instance()),
+            Race::query_race_by_id(race_id, pool),
+            Heat::query_heats_of_race(race_id, pool),
+            Entry::query_entries_for_race(race_id, pool),
         )
         .await;
         let mut race = queries.0?;

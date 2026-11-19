@@ -226,6 +226,8 @@ impl Heat {
 
         let mut client = pool.get().await?;
         let mut heat = Heat::from(&get_row(query.query(&mut client).await?).await?);
+        // Dependent queries need to acquire their own connections from this pool.
+        drop(client);
 
         let results = join(
             Referee::query_referees_for_heat(heat.id, pool),
