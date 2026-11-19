@@ -25,8 +25,8 @@ cd static && npm run watch          # Watch mode for development
 
 ```
 regatta-infopoint/
-  Cargo.toml        # workspace root (resolver = "3", edition = "2024", rust-version = "1.98.1")
-  rust-toolchain.toml  # pins toolchain to 1.98.1 (minimal profile + clippy, rustfmt, rust-src, rust-analyzer)
+  Cargo.toml        # workspace root (resolver = "3", edition = "2024", rust-version = "1.100")
+  rust-toolchain.toml  # pins toolchain to 1.100 (minimal profile + clippy, rustfmt, rust-src, rust-analyzer)
   aquarius/         # Aquarius TCP client library (real-time event streaming from Aquarius)
   db/               # MS-SQL database layer: models, queries, connection pool, cache (library)
   infoportal/       # Main web server / REST API (binary — the deployed service)
@@ -34,7 +34,7 @@ regatta-infopoint/
   static/           # SAP OpenUI5 TypeScript frontend (webapp/ → dist/)
   doc/              # REST API HTTP file (rest_api.http)
   .github/          # CI workflows + Dependabot
-  Dockerfile        # Multi-stage build (rust:1.98.0 builder, ubuntu:26.04 runtime)
+  Dockerfile        # Multi-stage build (rust:1.100 builder, ubuntu:26.04 runtime)
   .env              # Local dev environment variables
 ```
 
@@ -139,11 +139,11 @@ Three GitHub Actions workflows:
 - **`build_and_push_docker.yml`** — push to main: builds and pushes `ofterdinger/regatta-infoportal:latest` (linux/amd64) to Docker Hub
 - **`coverage.yml`** — push to main: `cargo llvm-cov --workspace --all-features --codecov`, uploads to Codecov
 
-Docker image: multi-stage (`rust:1.98.0` builder with Node.js 24, `ubuntu:26.04` runtime, non-root UID 1001, ports 8080/8443).
+Docker image: multi-stage (`rust:1.100` builder with Node.js 24, `ubuntu:26.04` runtime, non-root UID 1001, ports 8080/8443).
 
 # Rust Toolchain
 
-- Pinned: **1.98.1** (stable), edition **2024** (`rust-toolchain.toml`, profile `minimal` + clippy, rustfmt, rust-src, rust-analyzer)
+- Pinned: **1.100** (stable), edition **2024** (`rust-toolchain.toml`, profile `minimal` + clippy, rustfmt, rust-src, rust-analyzer)
 - `unsafe_code = "forbid"` and `unsafe_op_in_unsafe_fn = "forbid"` enforced workspace-wide
 - All clippy lints set to `warn`
 - Release profile: `lto = "fat"`, `codegen-units = 1`
