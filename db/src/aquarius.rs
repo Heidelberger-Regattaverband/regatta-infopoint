@@ -72,6 +72,11 @@ impl Aquarius {
         self.caches.get_summary_stats()
     }
 
+    /// Returns the regatta ID resolved at initialization, including any active override.
+    pub fn active_regatta_id(&self) -> i32 {
+        self.active_regatta_id
+    }
+
     /// Returns the active regatta.
     pub async fn get_active_regatta(&self, force_cache: bool) -> Result<Option<Regatta>, DbError> {
         self.get_regatta(self.active_regatta_id, force_cache).await
@@ -403,5 +408,16 @@ impl Aquarius {
         }
         debug!(race_id, elapsed = ?start.elapsed(), "Query race with heats and entries from DB:");
         Ok(race)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Aquarius;
+
+    #[tokio::test]
+    async fn active_regatta_id_uses_override_without_database_lookup() {
+        let aquarius = Aquarius::new(Some(17), 60).await.unwrap();
+        assert_eq!(aquarius.active_regatta_id(), 17);
     }
 }

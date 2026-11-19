@@ -1,4 +1,3 @@
-use crate::aquarius::model::Regatta;
 use crate::error::DbError;
 use crate::tiberius::TiberiusPool;
 use crate::timekeeper::Timestamp;
@@ -23,18 +22,19 @@ pub struct TimeStrip {
 }
 
 impl TimeStrip {
-    pub async fn load(pool: Arc<TiberiusPool>) -> Result<Self, DbError> {
+    /// Loads timestamps for the explicitly selected regatta and uses it for new timestamps.
+    pub async fn load(regatta_id: i32, pool: Arc<TiberiusPool>) -> Result<Self, DbError> {
         let start = Instant::now();
-        let pool_clone = pool.clone();
-        let mut client = pool_clone.get().await?;
-        let regatta = Regatta::query_active_regatta(&mut client).await?;
-        let time_stamps = Timestamp::query_all_for_regatta(regatta.id, None, None, &mut client).await?;
+        let time_stamps = {
+            let mut client = pool.get().await?;
+            Timestamp::query_all_for_regatta(regatta_id, None, None, &mut client).await?
+        };
         let time_strip = TimeStrip {
-            regatta_id: regatta.id,
+            regatta_id,
             time_stamps: VecDeque::from(time_stamps),
             pool,
         };
-        info!(regatta_id = regatta.id, elapsed = ?start.elapsed(), "Loaded time strip:");
+        info!(regatta_id, elapsed = ?start.elapsed(), "Loaded time strip:");
         Ok(time_strip)
     }
 
