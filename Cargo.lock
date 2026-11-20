@@ -884,6 +884,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "built"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6192709ebc97997197804bcbb092ef897b5a6a2f33e2c77779f694dbe90fec1e"
+
+[[package]]
 name = "bumpalo"
 version = "3.20.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -933,9 +939,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.11.2"
+version = "1.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33ef9e3e8154a45c7a95cff4c1299702106ad94062d7bb85fdc5d3a5afd91d45"
+checksum = "02f0e023adb368345ce0ca6cdfc0f24a06554468d0e8503e14a0841de79bfa69"
 dependencies = [
  "find-msvc-tools",
  "jobserver",
@@ -2188,7 +2194,7 @@ dependencies = [
  "actix-web-actors",
  "actix-web-prom",
  "aquarius",
- "built",
+ "built 0.8.1",
  "chrono",
  "db",
  "dotenv",
@@ -4439,7 +4445,7 @@ name = "timekeeper"
 version = "0.1.0"
 dependencies = [
  "aquarius",
- "built",
+ "built 0.9.0",
  "chrono",
  "clap",
  "crossterm",
