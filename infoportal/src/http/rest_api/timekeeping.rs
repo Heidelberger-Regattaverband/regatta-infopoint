@@ -170,7 +170,9 @@ impl TimekeepingActor {
             aquarius_client,
             heats: Arc::new(RwLock::new(Vec::new())),
             event_receiver: Some(event_receiver),
-            time_strip: Arc::new(::tokio::sync::RwLock::new(TimeStrip::load(pool.clone()).await?)),
+            time_strip: Arc::new(::tokio::sync::RwLock::new(
+                TimeStrip::load(aquarius_db.active_regatta_id(), pool).await?,
+            )),
             aquarius_db,
         })
     }

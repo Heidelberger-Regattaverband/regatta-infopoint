@@ -69,7 +69,7 @@ impl ClubConflictRace {
     /// Query all races of a regatta that have club conflicts in their hypothetical heat assignments.
     ///
     /// The boats in a race are assigned in the order of their bib numbers into heats of
-    /// maximum [`LANES`] boats. If two or more boats from the same club end up in the same
+    /// maximum `LANES` boats. If two or more boats from the same club end up in the same
     /// heat, the race is reported as a conflict.
     ///
     /// # Arguments
