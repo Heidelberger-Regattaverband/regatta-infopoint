@@ -39,6 +39,13 @@ export default class AthleteDetailsController extends BaseController {
     delete this.athleteId;
   }
 
+  onClubPress(): void {
+    const clubId: number | undefined = super.getViewJSONModel(AthleteDetailsController.ATHLETE_MODEL).getProperty("/club/id");
+    if (clubId !== undefined) {
+      super.navToClubDetails(clubId);
+    }
+  }
+
   onSelectionChange(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
@@ -56,7 +63,7 @@ export default class AthleteDetailsController extends BaseController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadData().then((succeeded: [boolean, boolean]) => {
+    void this.loadData().then((succeeded: [boolean, boolean]) => {
       super.showDataUpdatedMessage(succeeded[0] && succeeded[1]);
     }).finally(() => source.setEnabled(true));
   }
