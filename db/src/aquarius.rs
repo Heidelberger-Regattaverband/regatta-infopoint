@@ -72,6 +72,13 @@ impl Aquarius {
         self.caches.get_summary_stats()
     }
 
+    /// Returns the regatta ID resolved at initialization, including any active override.
+    /// # Returns
+    /// The identifier of the active regatta.
+    pub fn active_regatta_id(&self) -> i32 {
+        self.active_regatta_id
+    }
+
     /// Returns the active regatta.
     pub async fn get_active_regatta(&self, force_cache: bool) -> Result<Option<Regatta>, DbError> {
         self.get_regatta(self.active_regatta_id, force_cache).await
@@ -119,7 +126,9 @@ impl Aquarius {
     pub async fn get_race_heats_entries(&self, race_id: i32, force_cache: bool) -> Result<Race, DbError> {
         self.caches
             .race_heats_entries
-            .compute_if_missing(&race_id, force_cache, || self.query_race_heats_entries(race_id))
+            .compute_if_missing(&race_id, force_cache, || {
+                Self::query_race_heats_entries(race_id, TiberiusPool::instance())
+            })
             .await
     }
 
@@ -378,12 +387,12 @@ impl Aquarius {
 
     // private methods for querying the database
 
-    async fn query_race_heats_entries(&self, race_id: i32) -> Result<Race, DbError> {
+    async fn query_race_heats_entries(race_id: i32, pool: &TiberiusPool) -> Result<Race, DbError> {
         let start = Instant::now();
         let queries = join3(
-            Race::query_race_by_id(race_id, &mut *TiberiusPool::instance().get().await?),
-            Heat::query_heats_of_race(race_id, TiberiusPool::instance()),
-            Entry::query_entries_for_race(race_id, TiberiusPool::instance()),
+            Race::query_race_by_id(race_id, pool),
+            Heat::query_heats_of_race(race_id, pool),
+            Entry::query_entries_for_race(race_id, pool),
         )
         .await;
         let mut race = queries.0?;
@@ -401,5 +410,16 @@ impl Aquarius {
         }
         debug!(race_id, elapsed = ?start.elapsed(), "Query race with heats and entries from DB:");
         Ok(race)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Aquarius;
+
+    #[tokio::test]
+    async fn active_regatta_id_uses_override_without_database_lookup() {
+        let aquarius = Aquarius::new(Some(17), 60).await.unwrap();
+        assert_eq!(aquarius.active_regatta_id(), 17);
     }
 }

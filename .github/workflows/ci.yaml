@@ -42,6 +42,11 @@ jobs:
       - name: Linting
         run: cargo clippy -- -D warnings
 
+      - name: Validate Rust documentation
+        env:
+          RUSTDOCFLAGS: "-D warnings"
+        run: cargo doc --workspace --all-features --no-deps --document-private-items --locked
+
       - name: Build and run tests
         uses: actions-rs/cargo@v1
         env:

@@ -22,6 +22,10 @@ pub(crate) struct Args {
     #[arg(long, default_value = "500")]
     pub(crate) timeout: u16,
 
+    /// The regatta to time; defaults to the latest regatta in the database
+    #[arg(long)]
+    pub(crate) regatta_id: Option<i32>,
+
     /// The database host
     #[arg(long, default_value = "data")]
     pub(crate) db_host: String,
@@ -56,5 +60,12 @@ mod tests {
         assert_eq!(args.db_name, "Regatta_Test");
         assert_eq!(args.db_host, "data");
         assert_eq!(args.db_port, 1433);
+        assert_eq!(args.regatta_id, None);
+    }
+
+    #[test]
+    fn test_regatta_id() {
+        let args = Args::try_parse_from(["timekeeper", "--regatta-id", "17"]).unwrap();
+        assert_eq!(args.regatta_id, Some(17));
     }
 }

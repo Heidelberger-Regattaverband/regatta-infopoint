@@ -18,6 +18,7 @@ use ::aquarius::event::AquariusEvent;
 use ::aquarius::messages::EventHeatChanged;
 use ::aquarius::messages::Heat;
 use ::clap::Parser;
+use ::db::aquarius::model::Regatta;
 use ::db::tiberius::TiberiusPool;
 use ::db::tiberius_client::{AuthMethod, Config, EncryptionLevel};
 use ::db::timekeeper::TimeStrip;
@@ -69,7 +70,14 @@ impl App<'_> {
 
         let db_config = Self::get_db_config(&args);
         let pool = Arc::new(TiberiusPool::new(db_config, 1, 1).await?);
-        let timestrip = TimeStrip::load(pool.clone()).await?;
+        let regatta_id = match args.regatta_id {
+            Some(id) => id,
+            None => {
+                let mut client = pool.get().await?;
+                Regatta::query_active_regatta(&mut client).await?.id
+            }
+        };
+        let timestrip = TimeStrip::load(regatta_id, pool).await?;
 
         let (aquarius_event_sender, aquarius_event_receiver) = mpsc::channel();
         let (app_event_sender, app_event_receiver) = mpsc::channel();
