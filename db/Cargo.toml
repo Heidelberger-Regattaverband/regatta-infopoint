@@ -29,6 +29,7 @@ utoipa.workspace = true
 strum_macros.workspace = true
 
 [dev-dependencies]
+serde_json.workspace = true
 tokio-shared-rt = "0"
 
 [lints]

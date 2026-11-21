@@ -2,11 +2,13 @@
 # @port=80
 # @protocol=https
 @hostname=localhost
-@port=8080
-@protocol=http
+# Authentication uses a Secure cookie. Use the server's HTTPS port (default 8443).
+# Trust the local development certificate before sending these requests.
+@port=8443
+@protocol=https
 @baseUrl={{protocol}}://{{hostname}}:{{port}}
 
-@activeRegatta=19
+@activeRegatta=20
 
 ###
 GET {{baseUrl}}/api/active_regatta HTTP/1.1
@@ -25,8 +27,23 @@ GET {{baseUrl}}/api/identity HTTP/1.1
 # Notifications API Examples
 #######################################
 
-### Get notifications for a regatta
-GET {{baseUrl}}/api/regattas/{{activeRegatta}}/notifications HTTP/1.1
+### Get visible notifications for a regatta
+GET {{baseUrl}}/api/regattas/{{activeRegatta}}/visible_notifications HTTP/1.1
+
+### Login to the API
+# @name login
+# @prompt password Enter your database password
+POST {{baseUrl}}/api/login  HTTP/1.1
+Content-Type: application/json
+
+{
+  "username": "sa",
+  "password": "{{password}}"
+}
+
+### Verify the session after login (expect 200 and the authenticated username)
+# REST Client must have rest-client.rememberCookiesForSubsequentRequests enabled (default).
+GET {{baseUrl}}/api/identity HTTP/1.1
 
 ### Create a new notification
 # @name createNotification
@@ -44,6 +61,8 @@ Content-Type: application/json
 @notificationId = {{createNotification.response.body.$.id}}
 
 ### Update an existing notification (replace {notification_id} with actual ID)
+# Partial update: omitted fields remain unchanged. Null clears text/priority;
+# null is invalid for title/visible. A supplied title must not be empty.
 PUT {{baseUrl}}/api/notifications/{{notificationId}} HTTP/1.1
 Content-Type: application/json
 
@@ -52,6 +71,15 @@ Content-Type: application/json
   "text": "This notification has been updated",
   "priority": 2,
   "visible": true
+}
+
+### Clear nullable fields while keeping title and visibility unchanged
+PUT {{baseUrl}}/api/notifications/{{notificationId}} HTTP/1.1
+Content-Type: application/json
+
+{
+  "text": null,
+  "priority": null
 }
 
 ### Mark a notification as read (replace {notification_id} with actual ID)

@@ -1332,6 +1332,7 @@ dependencies = [
  "futures",
  "scraper",
  "serde",
+ "serde_json",
  "stretto",
  "strum_macros",
  "thiserror 2.0.21",

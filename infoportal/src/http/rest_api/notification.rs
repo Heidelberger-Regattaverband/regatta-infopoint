@@ -18,6 +18,7 @@ use ::actix_web::web::Path;
 use ::db::aquarius::Aquarius;
 use ::db::aquarius::model::CreateNotificationRequest;
 use ::db::aquarius::model::Notification;
+use ::db::aquarius::model::UpdateField;
 use ::db::aquarius::model::UpdateNotificationRequest;
 use ::db::tiberius::user_pool::UserPoolManager;
 use ::db::tiberius_client::time::chrono::DateTime;
@@ -120,7 +121,7 @@ async fn create_notification(
 }
 
 #[utoipa::path(
-    description = "Update an existing notification.",
+    description = "Partially update a notification. Omitted fields remain unchanged; null clears priority or text. Title and visible must not be null, and title must not be empty.",
     context_path = PATH,
     request_body = UpdateNotificationRequest,
     responses(
@@ -143,7 +144,7 @@ async fn update_notification(
     require_admin(&identity).await?;
 
     // Basic validation
-    if let Some(ref title) = request.title
+    if let UpdateField::Set(title) = &request.title
         && title.trim().is_empty()
     {
         return Ok(HttpResponse::BadRequest().json(json!({
