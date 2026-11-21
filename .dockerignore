@@ -1,4 +1,4 @@
-static/dist
-static/node_modules
+ui5/dist
+ui5/node_modules
 
 target

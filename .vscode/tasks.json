@@ -17,7 +17,7 @@
             "problemMatcher": [
                 "$tsc-watch"
             ],
-            "path": "static"
+            "path": "ui5"
         }
     ]
 }

@@ -31,7 +31,7 @@ COPY . /code/
 # (always read by libgit2, independent of $HOME) lets it read the git commit hash.
 RUN git config --system safe.directory '*' && cargo fetch && cargo build --release
 
-WORKDIR /code/static
+WORKDIR /code/ui5
 
 # build UI5 application
 RUN npm ci && npx ui5 build --clean-dest
@@ -48,7 +48,7 @@ WORKDIR /app
 
 # copy server binary from build stage
 COPY --from=builder /code/target/release/infoportal infoportal
-COPY --from=builder /code/static/dist/ static/dist
+COPY --from=builder /code/ui5/dist/ ui5/dist
 
 # set user to non-root unless root is required for your app
 USER 1001
