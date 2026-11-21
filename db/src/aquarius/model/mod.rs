@@ -34,6 +34,7 @@ pub use heat_entry::HeatEntry;
 pub use heat_result::HeatResult;
 pub use notification::CreateNotificationRequest;
 pub use notification::Notification;
+pub use notification::UpdateField;
 pub use notification::UpdateNotificationRequest;
 pub use problems::ClubConflictRace;
 pub use race::Race;
