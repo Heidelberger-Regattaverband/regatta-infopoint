@@ -1,0 +1,20 @@
+{
+  "tabWidth": 2,
+  "useTabs": false,
+  "singleQuote": false,
+  "semi": true,
+  "trailingComma": "none",
+  "printWidth": 120,
+  "endOfLine": "lf",
+  "plugins": ["@prettier/plugin-xml"],
+  "overrides": [
+    {
+      "files": "*.xml",
+      "options": {
+        "xmlWhitespaceSensitivity": "strict",
+        "xmlSortAttributesByKey": false,
+        "xmlQuoteAttributes": "preserve"
+      }
+    }
+  ]
+}

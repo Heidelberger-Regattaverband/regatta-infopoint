@@ -13,7 +13,11 @@ cd ui5 && npm install
 cd ui5 && npm run build          # Builds TypeScript + assets to ui5/dist/
 cd ui5 && npm run build:opt      # Self-contained optimized build
 cd ui5 && npm run ts-typecheck   # tsc --noEmit
-cd ui5 && npm run lint           # ui5lint
+cd ui5 && npm run lint           # UI5 Linter + ESLint
+cd ui5 && npm run lint:strict    # Also fail on ESLint warnings
+cd ui5 && npm run format:check   # Check formatting without modifying files
+cd ui5 && npm run format         # Format source/configuration (not dist/)
+cd ui5 && npm run check          # Type checking + lint + formatting check
 cd ui5 && npm run watch          # Watch mode for development
 ```
 

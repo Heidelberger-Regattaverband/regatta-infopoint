@@ -1,0 +1,8 @@
+node_modules/
+dist/
+coverage/
+package-lock.json
+*.tsbuildinfo
+review.md
+# Vendored Leaflet stylesheet, not application-owned formatting.
+webapp/css/leaflet.css
