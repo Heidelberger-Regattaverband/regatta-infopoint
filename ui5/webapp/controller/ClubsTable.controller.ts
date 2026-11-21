@@ -29,7 +29,7 @@ export default class ClubsTableController extends BaseTableController {
   }
 
   onNavBack(): void {
-    super.navToStartPage();
+    super.navBack("startpage");
   }
 
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
