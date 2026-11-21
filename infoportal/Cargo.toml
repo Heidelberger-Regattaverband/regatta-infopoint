@@ -56,7 +56,7 @@ uptime_lib.workspace = true
 tokio-shared-rt = "0"
 
 [build-dependencies]
-built = { version = "0", features = ["chrono", "git2"] }
+built.workspace = true
 
 [lints.rust]
 # Allow unsafe at Cargo level so the module-level #[allow] in peak_alloc.rs can

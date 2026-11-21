@@ -37,7 +37,7 @@ thiserror.workspace = true
 [dev-dependencies]
 
 [build-dependencies]
-built = "0"
+built.workspace = true
 
 [lints]
 workspace = true
