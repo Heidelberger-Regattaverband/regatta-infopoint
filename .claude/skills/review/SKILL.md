@@ -10,8 +10,8 @@ Review the Rust backend and SAP OpenUI5 TypeScript frontend for actionable issue
 ## Scope and safety
 
 - Read applicable `AGENTS.md` files, `git status --short`, and existing reports. Preserve unrelated changes and report history; verify documented configuration against manifests, `rust-toolchain.toml`, and CI.
-- Follow the requested scope. Default repository scope: `aquarius/`, `db/`, `infoportal/`, `timekeeper/`, `static/`, and shared build/deployment configuration. For changes, inspect the requested diff and affected callers, separating regressions from pre-existing issues; ask if the base is ambiguous.
-- Review source, not generated `static/dist/`, except for source/build consistency. Write reports only; do not fix code, upgrade dependencies, regenerate assets, or change configuration unless asked.
+- Follow the requested scope. Default repository scope: `aquarius/`, `db/`, `infoportal/`, `timekeeper/`, `ui5/`, and shared build/deployment configuration. For changes, inspect the requested diff and affected callers, separating regressions from pre-existing issues; ask if the base is ambiguous.
+- Review source, not generated `ui5/dist/`, except for source/build consistency. Write reports only; do not fix code, upgrade dependencies, regenerate assets, or change configuration unless asked.
 - Never expose credentials, keys, auth headers, cookies, or personal data, including secrets in `.env` and TLS files.
 - Inspect integration-test setup and side effects first. Database-writing tests and production access require explicit authorization; use an approved disposable test database.
 
@@ -46,7 +46,7 @@ Review the Rust backend and SAP OpenUI5 TypeScript frontend for actionable issue
 - Check timestamp precision/order, start/finish association, duplicates, and race/heat/bib assignment.
 - Ensure write failures reach the operator, retries avoid duplicates, and cancellation/terminal shutdown preserves accepted input.
 
-### `static/`
+### `ui5/`
 - Use UI5 MCP for API/lifecycle questions; use the Web Components server only for Web Components. Check controllers/views/fragments, bindings, routes, types, async errors, and late responses overwriting newer navigation/filter state.
 - Check listener/timer/WebSocket/fragment/Leaflet cleanup, reconnects, loading/error/empty states, and escaping (including notifications/map popups). Hidden controls are not authorization.
 - Check accessibility, keyboard use, stable IDs, German/English i18n, and build/source consistency. Do not hand-edit generated bundles or report personal UI preferences.
@@ -65,8 +65,8 @@ Use the pinned toolchain and existing dependencies/scripts; do not override vers
 | Rust formatting | `cargo fmt --check` | Non-mutating. |
 | Rust linting | `cargo clippy -- -D warnings` | Match CI; scope crates as appropriate. |
 | Rust tests | `cargo test --workspace` | Integration tests need DB env vars and safety checks above; prefer safe targeted tests if unavailable. |
-| Frontend types/lint | `npm run ts-typecheck`, `npm run lint` in `static/` | Existing dependencies required; lint uses ui5lint. |
-| Frontend build | `npm run build` in `static/` | Optional; requires approval because it rewrites `static/dist/`. |
+| Frontend types/lint | `npm run ts-typecheck`, `npm run lint` in `ui5/` | Existing dependencies required; lint uses ui5lint. |
+| Frontend build | `npm run build` in `ui5/` | Optional; requires approval because it rewrites `ui5/dist/`. |
 
 Report actual results, failures, skipped checks, and blockers (toolchain, dependencies, DB access) separately from code findings. Never claim an unrun check passed.
 
@@ -81,7 +81,7 @@ Rate impact and likelihood, not fix effort. Separate speculative risks and archi
 
 ## Reports
 
-- Write module findings to `{aquarius,db,infoportal,timekeeper,static}/review.md`; use root `review.md` for shared/cross-module findings and the overall summary. Link related locations rather than duplicate findings.
+- Write module findings to `{aquarius,db,infoportal,timekeeper,ui5}/review.md`; use root `review.md` for shared/cross-module findings and the overall summary. Link related locations rather than duplicate findings.
 - Preserve existing history; append a dated, scoped section by default. Mark earlier issues resolved only after verifying current code.
 - Record date, scope/base revision or working-tree state, reviewed areas, checks/results, and limitations. Order findings by severity and use current repository-relative paths/lines.
 

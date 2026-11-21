@@ -60,7 +60,7 @@ use ::tracing::warn;
 /// Path to Infoportal UI
 const INFOPORTAL: &str = "infoportal";
 const INFOPORTAL_V2: &str = "infoportal2";
-const STATIC_CONTENT_PATH: &str = "./static/dist";
+const STATIC_CONTENT_PATH: &str = "./ui5/dist";
 
 /// The server struct contains the configuration of the server.
 pub struct Server {}

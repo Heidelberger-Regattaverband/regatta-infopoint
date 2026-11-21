@@ -24,7 +24,8 @@
           <HBox>
             <VBox class="sapUiTinyMarginEnd">
               <ObjectAttribute title="{i18n>common.club}"
-                text="{=!${device>/system/phone}?${athlete>/club/longName}:${athlete>/club/shortName}}" />
+                text="{=!${device>/system/phone}?${athlete>/club/longName}:${athlete>/club/shortName}}"
+                active="{=!!${athlete>/club/id}}" press=".onClubPress" />
               <ObjectAttribute title="{i18n>common.gender}" text="{=${athlete>/gender}==='M'?${i18n>common.male}:${i18n>common.female}}" />
             </VBox>
             <VBox>

@@ -9,12 +9,12 @@ cargo clippy -- -D warnings
 cargo fmt --check
 
 # UI5 frontend (SAP OpenUI5 TypeScript)
-cd static && npm install
-cd static && npm run build          # Builds TypeScript + assets to static/dist/
-cd static && npm run build:opt      # Self-contained optimized build
-cd static && npm run ts-typecheck   # tsc --noEmit
-cd static && npm run lint           # ui5lint
-cd static && npm run watch          # Watch mode for development
+cd ui5 && npm install
+cd ui5 && npm run build          # Builds TypeScript + assets to ui5/dist/
+cd ui5 && npm run build:opt      # Self-contained optimized build
+cd ui5 && npm run ts-typecheck   # tsc --noEmit
+cd ui5 && npm run lint           # ui5lint
+cd ui5 && npm run watch          # Watch mode for development
 ```
 
 # Architecture
@@ -31,7 +31,7 @@ regatta-infopoint/
   db/               # MS-SQL database layer: models, queries, connection pool, cache (library)
   infoportal/       # Main web server / REST API (binary — the deployed service)
   timekeeper/       # Terminal UI tool for live race timekeeping (binary)
-  static/           # SAP OpenUI5 TypeScript frontend (webapp/ → dist/)
+  ui5/              # SAP OpenUI5 TypeScript frontend (webapp/ → dist/)
   doc/              # REST API HTTP file (rest_api.http)
   .github/          # CI workflows + Dependabot
   Dockerfile        # Multi-stage build (rust:1.100 builder, ubuntu:26.04 runtime)
@@ -71,10 +71,10 @@ Authentication: `Option<Identity>` on read endpoints; `auth::authenticate` → p
 ### `timekeeper` (binary)
 Standalone ratatui TUI for entering race start/finish timestamps at the finish line. Uses the same `db` library. CLI args via clap. Tabs: heats, timestrip, logs. Has `build.rs` (embeds git hash + build timestamp via `built` crate). Has `timekeeper/review.md`.
 
-## Frontend (`static/`)
+## Frontend (`ui5/`)
 SAP OpenUI5 TypeScript SPA. 18 XML views (App, Launchpad, RacesTable, RaceDetails, HeatsTable, HeatDetails, AthletesTable, AthleteDetails, ClubsTable, ClubDetails, ScoringTable, ScheduleTable, Statistics, Timekeeping, Map, Monitoring, Admin, Problems) + 10 XML fragments (HeatsTable, HeatsFilterDialog, HeatsSortDialog, RacesFilterDialog, RacesSortDialog, AthletesSortDialog, ClubsTableSortDialog, LoginPopover, TimekeepingAquarius, TimekeepingTimestrip). One TypeScript controller per view. Leaflet 1.9.x for the map view. i18n: German + English.
 
-Build: `@ui5/cli` v4 (ui5.yaml, specVersion 4.0) with `ui5-tooling-modules-task` (npm bundle) and `ui5-tooling-transpile-task` (TS → JS). Built assets committed to `static/dist/` and served from Docker.
+Build: `@ui5/cli` v4 (ui5.yaml, specVersion 4.0) with `ui5-tooling-modules-task` (npm bundle) and `ui5-tooling-transpile-task` (TS → JS). Built assets committed to `ui5/dist/` and served from Docker.
 
 ## Database
 MS-SQL Server (Aquarius schema — externally managed, no migrations in this repo). Raw parameterized SQL via tiberius (`@P1`, `@P2`, ...). Column names as `const` strings to reduce typos. Authentication uses SQL Server users; admin ops get a dedicated per-user connection pool.
@@ -151,8 +151,8 @@ Docker image: multi-stage (`rust:1.100` builder with Node.js 24, `ubuntu:26.04` 
 # Key Files
 
 - `Cargo.toml` — workspace root (resolver 3, shared dependencies, workspace lints)
-- `static/package.json` — UI5 frontend deps and scripts
-- `static/ui5.yaml` — UI5 Tooling config (specVersion 4.0)
+- `ui5/package.json` — UI5 frontend deps and scripts
+- `ui5/ui5.yaml` — UI5 Tooling config (specVersion 4.0)
 - `.env` — local dev config
 - `doc/rest_api.http` — full REST API reference with example requests
 - `ssl/cert.pem`, `ssl/key.pem` — local TLS certificates
