@@ -15,7 +15,6 @@ import BaseTableController from "./BaseTable.controller";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class ClubsTableController extends BaseTableController {
-
   private static readonly CLUBS_MODEL: string = "clubs";
 
   onInit(): void {
@@ -23,7 +22,12 @@ export default class ClubsTableController extends BaseTableController {
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(new JSONModel(), ClubsTableController.CLUBS_MODEL);
-    super.getRouter()?.getRoute("clubs")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadModel(), this);
+    super
+      .getRouter()
+      ?.getRoute("clubs")
+      ?.attachMatched((_: Route$MatchedEvent) => {
+        super.runAsync(this.loadModel(), "Failed to load clubs:");
+      }, this);
 
     super.sortTable("clubCityCol", false, "city");
   }
@@ -40,16 +44,24 @@ export default class ClubsTableController extends BaseTableController {
     binding.filter(searchFilters);
   }
 
-  onSortButtonPress(event: Button$PressEvent): void {
-    void super.getViewSettingsDialog("de.regatta_hd.infoportal.view.ClubsTableSortDialog").then(dialog => dialog.open());
+  onSortButtonPress(_event: Button$PressEvent): void {
+    super.runAsync(
+      super.getViewSettingsDialog("de.regatta_hd.infoportal.view.ClubsTableSortDialog").then((dialog) => dialog.open()),
+      "Failed to open club sort dialog:"
+    );
   }
 
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    void this.loadModel().then((succeeded: boolean) => {
-      super.showDataUpdatedMessage(succeeded);
-    }).finally(() => source.setEnabled(true));
+    super.runAsync(
+      this.loadModel()
+        .then((succeeded: boolean) => {
+          super.showDataUpdatedMessage(succeeded);
+        })
+        .finally(() => source.setEnabled(true)),
+      "Failed to refresh clubs:"
+    );
   }
 
   onItemPress(event: ListBase$SelectionChangeEvent): void {
@@ -61,20 +73,22 @@ export default class ClubsTableController extends BaseTableController {
     }
   }
 
-  onItemChanged(item: any): void {
+  protected onItemChanged(_item: any): void {
     // nothing to do yet
   }
 
   private createSearchFilters(query: string): Filter[] {
-    return [new Filter({
-      filters: [
-        new Filter("shortName", FilterOperator.Contains, query),
-        new Filter("longName", FilterOperator.Contains, query),
-        new Filter("abbreviation", FilterOperator.Contains, query),
-        new Filter("city", FilterOperator.Contains, query)
-      ],
-      and: false
-    })]
+    return [
+      new Filter({
+        filters: [
+          new Filter("shortName", FilterOperator.Contains, query),
+          new Filter("longName", FilterOperator.Contains, query),
+          new Filter("abbreviation", FilterOperator.Contains, query),
+          new Filter("city", FilterOperator.Contains, query)
+        ],
+        and: false
+      })
+    ];
   }
 
   private async loadModel(): Promise<boolean> {

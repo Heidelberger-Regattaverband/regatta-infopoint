@@ -15,24 +15,34 @@ import { Model$RequestFailedEventParameters } from "sap/ui/model/Model";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class BaseController extends Controller {
-
   /**
    * Shows a message toast with the result of a data update operation.
    * @param succeeded data update succeeded or failed
    */
-  showDataUpdatedMessage(succeeded: boolean): void {
-    if (succeeded) { // NOSONAR
+  protected showDataUpdatedMessage(succeeded: boolean): void {
+    if (succeeded) {
       this.showInfoMessageToast(this.i18n("msg.dataUpdated"));
     } else {
       this.showErrorMessageToast(this.i18n("msg.dataUpdateFailed"));
     }
   }
 
+  /** Handles work started by synchronous UI5 callbacks without losing rejections. */
+  protected runAsync(task: Promise<unknown>, errorContext: string): void {
+    void task.catch((error: unknown) => {
+      console.error(errorContext, error);
+      const view = this.getView();
+      if (view && !view.isDestroyed()) {
+        this.showDataUpdatedMessage(false);
+      }
+    });
+  }
+
   /**
    * Shows an info message toast with the given message.
    * @param message the message to be shown
    */
-  showInfoMessageToast(message: string): void {
+  protected showInfoMessageToast(message: string): void {
     MessageToast.show(message);
     $(".sapMMessageToast").addClass("sapMMessageToastInfo");
   }
@@ -41,7 +51,7 @@ export default class BaseController extends Controller {
    * Shows an error message toast with the given message.
    * @param message the message to be shown
    */
-  showErrorMessageToast(message: string): void {
+  protected showErrorMessageToast(message: string): void {
     MessageToast.show(message);
     $(".sapMMessageToast").addClass("sapMMessageToastDanger");
   }
@@ -59,7 +69,7 @@ export default class BaseController extends Controller {
    * Convenience method for accessing the content density class defined in the component.
    * @returns {string} the content density class
    */
-  getContentDensityClass(): string {
+  protected getContentDensityClass(): string {
     return this.getComponent()?.getContentDensityClass() ?? "sapUiSizeCozy";
   }
 
@@ -67,7 +77,7 @@ export default class BaseController extends Controller {
    * Convenience method for accessing the event bus for this component.
    * @returns {sap.ui.core.EventBus} the event bus for this component
    */
-  getEventBus(): EventBus | undefined {
+  protected getEventBus(): EventBus | undefined {
     return super.getOwnerComponent()?.getEventBus();
   }
 
@@ -76,15 +86,15 @@ export default class BaseController extends Controller {
    * @param {string} [name] the model name
    * @returns {sap.ui.model.JSONModel} the model instance
    */
-  getComponentJSONModel(name: string): JSONModel {
-    return super.getOwnerComponent()?.getModel(name) as JSONModel ?? new JSONModel();
+  protected getComponentJSONModel(name: string): JSONModel {
+    return (super.getOwnerComponent()?.getModel(name) as JSONModel) ?? new JSONModel();
   }
 
   /**
    * Convenience method for accessing the router.
    * @returns {sap.ui.core.routing.Router} the router for this component
    */
-  getRouter(): Router {
+  protected getRouter(): Router {
     return this.getComponent().getRouter();
   }
 
@@ -93,8 +103,8 @@ export default class BaseController extends Controller {
    * @param {string} [name] the model name
    * @returns {sap.ui.model.JSONModel} the model instance
    */
-  getViewJSONModel(name: string): JSONModel {
-    return super.getView()?.getModel(name) as JSONModel ?? new JSONModel();
+  protected getViewJSONModel(name: string): JSONModel {
+    return (super.getView()?.getModel(name) as JSONModel) ?? new JSONModel();
   }
 
   /**
@@ -103,11 +113,11 @@ export default class BaseController extends Controller {
    * @param {string} name the model name
    * @returns {sap.ui.mvc.View} the view instance
    */
-  setViewModel(model: JSONModel, name: string): View | undefined {
+  protected setViewModel(model: JSONModel, name: string): View | undefined {
     return super.getView()?.setModel(model, name);
   }
 
-  navBack(target: string): void {
+  protected navBack(target: string): void {
     const previousHash: string | undefined = History.getInstance().getPreviousHash();
     if (previousHash) {
       globalThis.history.back();
@@ -122,11 +132,11 @@ export default class BaseController extends Controller {
    * @param {any[]}  args The arguments to be passed to the translation
    * @returns {string} The translated text
    */
-  i18n(key: string, args?: any[]): string {
+  protected i18n(key: string, args?: any[]): string {
     return this.getComponent()?.getResourceBundle().getText(key, args) ?? "";
   }
 
-  async updateJSONModel(model: JSONModel, url: string, button?: Button): Promise<boolean> {
+  protected async updateJSONModel(model: JSONModel, url: string, button?: Button): Promise<boolean> {
     button?.setBusy(true);
     try {
       await model.loadData(url);
@@ -140,7 +150,7 @@ export default class BaseController extends Controller {
     }
   }
 
-  navToStartPage(): void {
+  protected navToStartPage(): void {
     this.getRouter().navTo("startpage");
   }
 
@@ -148,7 +158,7 @@ export default class BaseController extends Controller {
     this.getRouter().navTo("races");
   }
 
-  navToRaceDetails(raceId: number): void {
+  protected navToRaceDetails(raceId: number): void {
     this.getRouter().navTo("raceDetails", { raceId: raceId });
   }
 
@@ -156,7 +166,7 @@ export default class BaseController extends Controller {
     this.getRouter().navTo("heats");
   }
 
-  navToHeatDetails(heatId: number): void {
+  protected navToHeatDetails(heatId: number): void {
     this.getRouter().navTo("heatDetails", { heatId: heatId });
   }
 
@@ -164,7 +174,7 @@ export default class BaseController extends Controller {
     this.getRouter().navTo("clubs");
   }
 
-  navToClubDetails(clubId: number): void {
+  protected navToClubDetails(clubId: number): void {
     this.getRouter().navTo("clubDetails", { clubId: clubId }, false /* history*/);
   }
 
@@ -172,31 +182,31 @@ export default class BaseController extends Controller {
     this.getRouter().navTo("athletes");
   }
 
-  navToClubAthletes(clubId: number): void {
+  protected navToClubAthletes(clubId: number): void {
     this.getRouter().navTo("clubAthletes", { clubId: clubId });
   }
 
-  navToAthleteDetails(athleteId: number): void {
+  protected navToAthleteDetails(athleteId: number): void {
     this.getRouter().navTo("athleteDetails", { athleteId: athleteId }, false /* history*/);
   }
 
   navToMap(location?: LatLng): void {
     let params: any = {};
     if (location) {
-      params = { "lat": location.lat, "lng": location.lng };
+      params = { lat: location.lat, lng: location.lng };
     }
     this.getRouter().navTo("map", params);
   }
 
-  navToAdmin(): void {
-    this.getRouter().navTo("admin");
+  navToNotifications(): void {
+    this.getRouter().navTo("notifications");
   }
 
-  async getFilters(): Promise<any> {
+  protected async getFilters(): Promise<any> {
     return (await this.getComponent().getFilters()).getData();
   }
 
-  async getActiveRegatta(): Promise<any> {
+  protected async getActiveRegatta(): Promise<any> {
     return (await this.getComponent().getActiveRegatta()).getData();
   }
 

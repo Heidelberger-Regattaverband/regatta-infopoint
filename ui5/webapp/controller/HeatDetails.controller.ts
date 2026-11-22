@@ -10,7 +10,6 @@ import HeatsTableController from "./HeatsTable.controller";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class HeatDetailsController extends BaseController {
-
   private static readonly ENTRIES_MODEL: string = "heatEntries";
 
   readonly formatter: Formatter = Formatter;
@@ -24,8 +23,12 @@ export default class HeatDetailsController extends BaseController {
     super.getView()?.addEventDelegate({ onBeforeShow: this.onBeforeShow, onBeforeHide: this.onBeforeHide }, this);
     super.setViewModel(new JSONModel(), HeatDetailsController.ENTRIES_MODEL);
 
-    super.getRouter()?.getRoute("heatDetails")?.attachPatternMatched(
-      async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
+    super
+      .getRouter()
+      ?.getRoute("heatDetails")
+      ?.attachPatternMatched((event: Route$PatternMatchedEvent) => {
+        super.runAsync(this.onPatternMatched(event), "Failed to load heat details:");
+      }, this);
   }
 
   /**
@@ -72,7 +75,9 @@ export default class HeatDetailsController extends BaseController {
   }
 
   onNavBack(): void {
-    const navData: NavigationData | undefined = super.getComponentJSONModel(HeatsTableController.HEAT_NAV_MODEL).getData();
+    const navData: NavigationData | undefined = super
+      .getComponentJSONModel(HeatsTableController.HEAT_NAV_MODEL)
+      .getData();
     if (navData?.back) {
       super.navBack(navData.back);
     } else {
@@ -114,13 +119,13 @@ export default class HeatDetailsController extends BaseController {
     const heat: any = super.getComponentJSONModel(HeatsTableController.HEAT_MODEL).getData();
     if (heat?.id) {
       this.heatId = heat.id;
-    };
+    }
     const url: string = `/api/heats/${this.heatId}`;
     return await super.updateJSONModel(super.getViewJSONModel(HeatDetailsController.ENTRIES_MODEL), url);
   }
 
-  private async onItemChanged(channelId: string, eventId: string, parametersMap: any): Promise<void> {
-    await this.loadHeatModel();
+  private onItemChanged(_channelId: string, _eventId: string, _parametersMap: any): void {
+    super.runAsync(this.loadHeatModel(), "Failed to load heat details:");
   }
 
   private onKeyDown(event: KeyboardEvent): void {
@@ -144,5 +149,4 @@ export default class HeatDetailsController extends BaseController {
         break;
     }
   }
-
 }

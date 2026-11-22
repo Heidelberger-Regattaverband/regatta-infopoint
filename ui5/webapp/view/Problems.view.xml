@@ -3,14 +3,26 @@
 
     <Page title="{i18n>problems.title}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
       <headerContent>
-        <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
-          press=".onRefreshButtonPress" />
+        <Button
+          text="{=!${device>/system/phone}?${i18n>common.refresh}:''}"
+          tooltip="{i18n>common.refresh}"
+          icon="sap-icon://refresh"
+          press=".onRefreshButtonPress"
+        />
       </headerContent>
 
       <content>
-        <Table id="problemsTable" items="{problems>/}" growing="true" growingScrollToLoad="true" growingThreshold="50"
-          sticky="ColumnHeaders" class="sapUiNoContentPadding" noDataText="{i18n>problems.noData}"
-          popinLayout="GridSmall">
+        <Table
+          id="problemsTable"
+          items="{problems>/}"
+          growing="true"
+          growingScrollToLoad="true"
+          growingThreshold="50"
+          sticky="ColumnHeaders"
+          class="sapUiNoContentPadding"
+          noDataText="{i18n>problems.noData}"
+          popinLayout="GridSmall"
+        >
 
           <columns>
             <Column hAlign="Center" width="4rem">

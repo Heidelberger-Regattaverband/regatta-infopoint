@@ -15,7 +15,6 @@ import BaseTableController from "./BaseTable.controller";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class AthletesTable extends BaseTableController {
-
   private static readonly ATHLETES_MODEL: string = "athletes";
   private static readonly CLUB_FILTER_MODEL: string = "clubFilter";
 
@@ -28,16 +27,30 @@ export default class AthletesTable extends BaseTableController {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(new JSONModel(), AthletesTable.ATHLETES_MODEL);
     super.setViewModel(new JSONModel([]), AthletesTable.CLUB_FILTER_MODEL);
-    super.getRouter()?.getRoute("athletes")?.attachMatched(async (_: Route$MatchedEvent) => {
-      await this.loadModel();
-      this.clearClubFilter();
-    }, this);
+    super
+      .getRouter()
+      ?.getRoute("athletes")
+      ?.attachMatched((_: Route$MatchedEvent) => {
+        super.runAsync(
+          this.loadModel().then(() => {
+            this.clearClubFilter();
+          }),
+          "Failed to load athletes:"
+        );
+      }, this);
 
-    super.getRouter()?.getRoute("clubAthletes")?.attachMatched(async (event: Route$MatchedEvent) => {
-      const clubId: number = Number((event.getParameter("arguments") as any)?.clubId);
-      await this.loadModel();
-      this.applyClubFilter(clubId);
-    }, this);
+    super
+      .getRouter()
+      ?.getRoute("clubAthletes")
+      ?.attachMatched((event: Route$MatchedEvent) => {
+        const clubId: number = Number((event.getParameter("arguments") as any)?.clubId);
+        super.runAsync(
+          this.loadModel().then(() => {
+            this.applyClubFilter(clubId);
+          }),
+          "Failed to load club athletes:"
+        );
+      }, this);
 
     super.sortTable("athleteLastNameCol", false, "lastName");
   }
@@ -58,11 +71,13 @@ export default class AthletesTable extends BaseTableController {
     this.applyAllFilters();
   }
 
-  async onSortButtonPress(event: Button$PressEvent): Promise<void> {
+  async onSortButtonPress(_event: Button$PressEvent): Promise<void> {
     try {
       const dialog = await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.AthletesSortDialog");
       dialog.open();
-    } catch (error) { console.error("Failed to load sort dialog:", error); }
+    } catch (error) {
+      console.error("Failed to load sort dialog:", error);
+    }
   }
 
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
@@ -88,7 +103,7 @@ export default class AthletesTable extends BaseTableController {
     }
   }
 
-  onItemChanged(item: any): void {
+  protected onItemChanged(_item: any): void {
     // nothing to do yet
   }
 
@@ -120,18 +135,20 @@ export default class AthletesTable extends BaseTableController {
   }
 
   private createSearchFilters(query: string): Filter[] {
-    return [new Filter({
-      filters: [
-        new Filter("lastName", FilterOperator.Contains, query),
-        new Filter("firstName", FilterOperator.Contains, query),
-        new Filter("year", FilterOperator.EQ, query),
-        new Filter("club/shortName", FilterOperator.Contains, query),
-        new Filter("club/longName", FilterOperator.Contains, query),
-        new Filter("club/abbreviation", FilterOperator.Contains, query),
-        new Filter("club/city", FilterOperator.Contains, query)
-      ],
-      and: false
-    })]
+    return [
+      new Filter({
+        filters: [
+          new Filter("lastName", FilterOperator.Contains, query),
+          new Filter("firstName", FilterOperator.Contains, query),
+          new Filter("year", FilterOperator.EQ, query),
+          new Filter("club/shortName", FilterOperator.Contains, query),
+          new Filter("club/longName", FilterOperator.Contains, query),
+          new Filter("club/abbreviation", FilterOperator.Contains, query),
+          new Filter("club/city", FilterOperator.Contains, query)
+        ],
+        and: false
+      })
+    ];
   }
 
   private populateClubFilterModel(athletesModel: JSONModel): void {

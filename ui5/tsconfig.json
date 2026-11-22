@@ -19,19 +19,12 @@
     "rootDir": "./webapp",
     "allowSyntheticDefaultImports": true,
     "paths": {
-      "de/regatta_hd/infoportal/*": [
-        "./webapp/*"
-      ]
+      "de/regatta_hd/infoportal/*": ["./webapp/*"]
     },
     "composite": true,
     "noImplicitAny": true,
     "outDir": "./dist",
-    "types": [
-      "@openui5/types",
-      "@types/leaflet"
-    ]
+    "types": ["@openui5/types", "@types/leaflet"]
   },
-  "include": [
-    "./webapp/**/*"
-  ]
+  "include": ["./webapp/**/*"]
 }

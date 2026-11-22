@@ -1,7 +1,17 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
 
-  <Table id="heatsTable" autoPopinMode="true" items="{heats>/}" growing="true" growingScrollToLoad="true" growingThreshold="30"
-    mode="SingleSelectMaster" itemPress=".onItemPress" sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding">
+  <Table
+    id="heatsTable"
+    autoPopinMode="true"
+    items="{heats>/}"
+    growing="true"
+    growingScrollToLoad="true"
+    growingThreshold="30"
+    mode="SingleSelectMaster"
+    itemPress=".onItemPress"
+    sticky="HeaderToolbar,InfoToolbar,ColumnHeaders"
+    class="sapUiNoContentPadding"
+  >
 
     <!-- The HeaderToolbar shows a title and the filter button -->
     <headerToolbar>
@@ -9,15 +19,27 @@
         <content>
           <SearchField width="10rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false" />
           <!-- Filter button -->
-          <Button text="{=!${device>/system/phone}?${i18n>common.filter}:''}" tooltip="{i18n>common.filter}" icon="sap-icon://filter"
-            press=".onFilterButtonPress" />
+          <Button
+            text="{=!${device>/system/phone}?${i18n>common.filter}:''}"
+            tooltip="{i18n>common.filter}"
+            icon="sap-icon://filter"
+            press=".onFilterButtonPress"
+          />
           <!-- Sorting button -->
-          <Button text="{=!${device>/system/phone}?${i18n>common.sorting}:''}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
-            press=".onSortButtonPress" />
+          <Button
+            text="{=!${device>/system/phone}?${i18n>common.sorting}:''}"
+            tooltip="{i18n>common.sorting}"
+            icon="sap-icon://sort"
+            press=".onSortButtonPress"
+          />
           <ToolbarSpacer />
           <!-- Refresh button -->
-          <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
-            press=".onRefreshButtonPress" />
+          <Button
+            text="{=!${device>/system/phone}?${i18n>common.refresh}:''}"
+            tooltip="{i18n>common.refresh}"
+            icon="sap-icon://refresh"
+            press=".onRefreshButtonPress"
+          />
         </content>
       </OverflowToolbar>
     </headerToolbar>
@@ -28,7 +50,12 @@
         <content>
           <Text />
           <ToolbarSpacer />
-          <Button tooltip="{i18n>common.clearFilters}" icon="sap-icon://clear-filter" press=".onClearFilterPress" type="Transparent" />
+          <Button
+            tooltip="{i18n>common.clearFilters}"
+            icon="sap-icon://clear-filter"
+            press=".onClearFilterPress"
+            type="Transparent"
+          />
         </content>
       </OverflowToolbar>
     </infoToolbar>
@@ -44,12 +71,26 @@
           <Text text="{i18n>common.heat}" />
         </header>
       </Column>
-      <Column id="heatDistance" hAlign="Center" width="6rem" importance="Medium" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
+      <Column
+        id="heatDistance"
+        hAlign="Center"
+        width="6rem"
+        importance="Medium"
+        popinDisplay="Inline"
+        visible="{=!${device>/system/phone}}"
+      >
         <header>
           <Text text="{i18n>common.distance}" />
         </header>
       </Column>
-      <Column id="heatNr" hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
+      <Column
+        id="heatNr"
+        hAlign="Center"
+        width="5rem"
+        importance="Low"
+        popinDisplay="Inline"
+        visible="{=!${device>/system/phone}}"
+      >
         <header>
           <Text text="{i18n>common.heatNr}" />
         </header>
@@ -78,8 +119,10 @@
           <Text text="{path:'heats>dateTime',formatter:'.formatter.dayTimeIsoLabel'}" />
 
           <VBox>
-            <Text text="{path:'heats>race',formatter:'.formatter.nrRaceLabel'}, {path:'heats>',formatter:'.formatter.heatLabel'}"
-              class="bold" />
+            <Text
+              text="{path:'heats>race',formatter:'.formatter.nrRaceLabel'}, {path:'heats>',formatter:'.formatter.heatLabel'}"
+              class="bold"
+            />
             <Text text="{heats>race/longLabel} {heats>race/comment}" visible="{=!${device>/system/phone}}" />
           </VBox>
 
@@ -89,8 +132,11 @@
 
           <Text text="{=${heats>race/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
 
-          <ObjectStatus text="{path:'heats>',formatter:'.formatter.heatStateLabel'}"
-            state="{path:'heats>',formatter:'.formatter.heatStateHighlight'}" class="bold" />
+          <ObjectStatus
+            text="{path:'heats>',formatter:'.formatter.heatStateLabel'}"
+            state="{path:'heats>',formatter:'.formatter.heatStateHighlight'}"
+            class="bold"
+          />
         </cells>
       </ColumnListItem>
     </items>

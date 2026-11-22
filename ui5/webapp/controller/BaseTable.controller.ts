@@ -4,7 +4,10 @@ import ListItemBase from "sap/m/ListItemBase";
 import Table from "sap/m/Table";
 import Text from "sap/m/Text";
 import Toolbar from "sap/m/Toolbar";
-import ViewSettingsDialog, { ViewSettingsDialog$ConfirmEvent, ViewSettingsDialog$ConfirmEventParameters } from "sap/m/ViewSettingsDialog";
+import ViewSettingsDialog, {
+  ViewSettingsDialog$ConfirmEvent,
+  ViewSettingsDialog$ConfirmEventParameters
+} from "sap/m/ViewSettingsDialog";
 import ViewSettingsItem from "sap/m/ViewSettingsItem";
 import CustomData from "sap/ui/core/CustomData";
 import EventBus from "sap/ui/core/EventBus";
@@ -21,14 +24,16 @@ import BaseController from "./Base.controller";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default abstract class BaseTableController extends BaseController {
-
   /**
    * Memoises in-flight {@link Fragment.load} promises per fragment name so that
    * concurrent callers of {@link getViewSettingsDialog} share the same load and
    * do not each create a duplicate dialog. Per-instance for the same lifetime
    * reasons as {@link viewSettingsDialogs}.
    */
-  private readonly viewSettingsDialogPromises: Map<string, Promise<ViewSettingsDialog>> = new Map<string, Promise<ViewSettingsDialog>>();
+  private readonly viewSettingsDialogPromises: Map<string, Promise<ViewSettingsDialog>> = new Map<
+    string,
+    Promise<ViewSettingsDialog>
+  >();
 
   protected table: Table;
   private filters: Filter[] = [];
@@ -49,7 +54,7 @@ export default abstract class BaseTableController extends BaseController {
    */
   private navModelName?: string;
 
-  init(table: Table, channelId?: string, navModelName?: string): void {
+  protected init(table: Table, channelId?: string, navModelName?: string): void {
     this.table = table;
 
     // return the path of the model that is bound to the items, e.g. races or heats
@@ -85,14 +90,14 @@ export default abstract class BaseTableController extends BaseController {
     super.onExit();
   }
 
-  private onFirstItemEvent(channelId: string, eventId: string, parametersMap: any): void {
+  private onFirstItemEvent(_channelId: string, _eventId: string, _parametersMap: any): void {
     const index: number = this.table.indexOfItem(this.table.getSelectedItem());
     if (index !== 0) {
       this.setCurrentItem(0);
     }
   }
 
-  private onLastItemEvent(channelId: string, eventId: string, parametersMap: any): void {
+  private onLastItemEvent(_channelId: string, _eventId: string, _parametersMap: any): void {
     this.growTable(400);
     const index: number = this.table.indexOfItem(this.table.getSelectedItem());
     const lastIndex: number = this.table.getItems().length - 1;
@@ -101,7 +106,7 @@ export default abstract class BaseTableController extends BaseController {
     }
   }
 
-  private onPreviousItemEvent(channelId: string, eventId: string, parametersMap: any): void {
+  private onPreviousItemEvent(_channelId: string, _eventId: string, _parametersMap: any): void {
     const index: number = this.table.indexOfItem(this.table.getSelectedItem());
     const previousIndex: number = index > 1 ? index - 1 : 0;
     if (index !== previousIndex) {
@@ -109,7 +114,7 @@ export default abstract class BaseTableController extends BaseController {
     }
   }
 
-  private onNextItemEvent(channelId: string, eventId: string, parametersMap: any): void {
+  private onNextItemEvent(_channelId: string, _eventId: string, _parametersMap: any): void {
     const index: number = this.table.indexOfItem(this.table.getSelectedItem());
     const items: ListItemBase[] = this.table.getItems();
     const nextIndex: number = index < items.length - 1 ? index + 1 : index;
@@ -119,7 +124,7 @@ export default abstract class BaseTableController extends BaseController {
     }
   }
 
-  async getViewSettingsDialog(dialogFragmentName: string): Promise<ViewSettingsDialog> {
+  protected async getViewSettingsDialog(dialogFragmentName: string): Promise<ViewSettingsDialog> {
     // Memoise the in-flight load so concurrent callers share the same promise
     // instead of each kicking off a duplicate Fragment.load.
     let pending: Promise<ViewSettingsDialog> | undefined = this.viewSettingsDialogPromises.get(dialogFragmentName);
@@ -177,38 +182,40 @@ export default abstract class BaseTableController extends BaseController {
     const split: string[] = value.split("___");
     const path: string = split[0];
     const operator: FilterOperator = split[1] as FilterOperator;
-    const value1: string | boolean = split[2] === 'true' || (split[2] === 'false' ? false : split[2]);
+    const value1: string | boolean = split[2] === "true" || (split[2] === "false" ? false : split[2]);
     const value2: string | undefined = split[3];
     return new Filter(path, operator, value1, value2);
   }
 
-  setSearchFilters(searchFilters: Filter[]): void {
+  protected setSearchFilters(searchFilters: Filter[]): void {
     this.searchFilters = searchFilters;
   }
 
-  clearFilters(): void {
+  protected clearFilters(): void {
     this.filters = [];
     this.updateFilterBar("");
   }
 
-  applyFilters(): void {
+  protected applyFilters(): void {
     // combine search and filters from dialog
     const allFilters: Filter[] = this.filters.concat(this.searchFilters);
     (this.table.getBinding("items") as ListBinding).filter(allFilters);
   }
 
   onSortDialogConfirm(event: ViewSettingsDialog$ConfirmEvent): void {
-    const params: ViewSettingsDialog$ConfirmEventParameters = event.getParameters()
+    const params: ViewSettingsDialog$ConfirmEventParameters = event.getParameters();
     const path: string | undefined = params.sortItem?.getKey();
 
-    const customData: CustomData | undefined = params.sortItem?.getCustomData()?.find((data: CustomData) => data.getKey() === "column");
+    const customData: CustomData | undefined = params.sortItem
+      ?.getCustomData()
+      ?.find((data: CustomData) => data.getKey() === "column");
     const columnName: string | undefined = customData?.getValue();
     if (columnName) {
       this.sortTable(columnName, params.sortDescending ?? false, path);
     }
   }
 
-  sortTable(columnName: string, sortDescending: boolean, path?: string) {
+  protected sortTable(columnName: string, sortDescending: boolean, path?: string) {
     this.table.getColumns().forEach((col: Column) => {
       if (col.getId().endsWith(columnName)) {
         col.setSortIndicator(sortDescending ? SortOrder.Descending : SortOrder.Ascending);
@@ -251,7 +258,7 @@ export default abstract class BaseTableController extends BaseController {
     super.getComponentJSONModel(this.navModelName).setData(state);
   }
 
-  abstract onItemChanged(item: any): void;
+  protected abstract onItemChanged(item: any): void;
 
   private growTable(index: number): void {
     const actual: number = this.table.getGrowingInfo()?.actual || 0;

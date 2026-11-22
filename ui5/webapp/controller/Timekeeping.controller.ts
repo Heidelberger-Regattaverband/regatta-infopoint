@@ -16,7 +16,6 @@ import BaseTableController from "./BaseTable.controller";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class TimekeepingController extends BaseTableController {
-
   private static readonly TIMESTRIP_MODEL: string = "timestrip";
   private static readonly AQUARIUS_HEATS_MODEL: string = "aquariusHeats";
   private static readonly HEATS_MODEL: string = "heats";
@@ -37,9 +36,12 @@ export default class TimekeepingController extends BaseTableController {
     super.setViewModel(new JSONModel(), TimekeepingController.AQUARIUS_HEATS_MODEL);
     super.setViewModel(new JSONModel(), TimekeepingController.HEATS_MODEL);
     super.setViewModel(new JSONModel(), TimekeepingController.BIBS_MODEL);
-    super.getRouter()?.getRoute("timekeeping")?.attachMatched((_: Route$MatchedEvent) => {
-      this.connect();
-    }, this);
+    super
+      .getRouter()
+      ?.getRoute("timekeeping")
+      ?.attachMatched((_: Route$MatchedEvent) => {
+        this.connect();
+      }, this);
   }
 
   private onBeforeShow(): void {
@@ -54,7 +56,9 @@ export default class TimekeepingController extends BaseTableController {
   onSelectionChange(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
-      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(TimekeepingController.TIMESTRIP_MODEL);
+      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(
+        TimekeepingController.TIMESTRIP_MODEL
+      );
       const timestamp: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
       this.onItemChanged(timestamp);
     }
@@ -78,12 +82,14 @@ export default class TimekeepingController extends BaseTableController {
     this.sendAddFinishCommand();
   }
 
-  onRefreshButtonPress(event: Button$PressEvent): void {
+  onRefreshButtonPress(_event: Button$PressEvent): void {
     this.sendGetTimestripCommand();
   }
 
   onDeleteTimestamp(event: Button$PressEvent): void {
-    const bindingCtx: Context | null | undefined = event.getSource().getBindingContext(TimekeepingController.TIMESTRIP_MODEL);
+    const bindingCtx: Context | null | undefined = event
+      .getSource()
+      .getBindingContext(TimekeepingController.TIMESTRIP_MODEL);
     if (bindingCtx) {
       const timestamp: any = bindingCtx.getModel().getProperty(bindingCtx.getPath());
       if (timestamp?.time) {
@@ -111,13 +117,15 @@ export default class TimekeepingController extends BaseTableController {
     }
   }
 
-  onLoadBibs(event: ComboBoxBase$LoadItemsEvent): void {
+  onLoadBibs(_event: ComboBoxBase$LoadItemsEvent): void {
     // TODO: Implement loading bibs for timestrip item
   }
 
   onHeatChange(event: ComboBox$ChangeEvent): void {
     const heatNr: string = event.getParameter("value") || "";
-    const bindingCtx: Context | null | undefined = event.getSource().getBindingContext(TimekeepingController.TIMESTRIP_MODEL);
+    const bindingCtx: Context | null | undefined = event
+      .getSource()
+      .getBindingContext(TimekeepingController.TIMESTRIP_MODEL);
     if (bindingCtx) {
       const timestamp: any = bindingCtx.getModel().getProperty(bindingCtx.getPath());
       if (timestamp) {
@@ -129,7 +137,9 @@ export default class TimekeepingController extends BaseTableController {
 
   onBibChange(event: ComboBox$ChangeEvent): void {
     const bibNr: string = event.getParameter("value") || "";
-    const bindingCtx: Context | null | undefined = event.getSource().getBindingContext(TimekeepingController.TIMESTRIP_MODEL);
+    const bindingCtx: Context | null | undefined = event
+      .getSource()
+      .getBindingContext(TimekeepingController.TIMESTRIP_MODEL);
     if (bindingCtx) {
       const timestamp: any = bindingCtx.getModel().getProperty(bindingCtx.getPath());
       if (timestamp) {
@@ -139,10 +149,9 @@ export default class TimekeepingController extends BaseTableController {
     }
   }
 
-  onItemChanged(item: any): void {
-  }
+  protected onItemChanged(_item: any): void {}
 
-  private updateModel(timekeeping: any) {
+  private updateModel(_timekeeping: any) {
     // nothing to do yet
   }
 
@@ -150,41 +159,40 @@ export default class TimekeepingController extends BaseTableController {
     this.disconnect();
 
     const location: Location = globalThis.location;
-    const proto = location.protocol.startsWith('https') ? 'wss' : 'ws';
+    const proto = location.protocol.startsWith("https") ? "wss" : "ws";
 
-    console.debug('Connecting Timekeeping WebSocket ...');
+    console.debug("Connecting Timekeeping WebSocket ...");
     this.socket = new WebSocket(`${proto}://${location.host}/api/timekeeping`);
 
     this.socket.onopen = (_event: Event) => {
       this.sendGetTimestripCommand();
-      this.statusButton?.setIcon('sap-icon://connected');
-      console.debug('Timekeeping WebSocket Connected');
-    }
+      this.statusButton?.setIcon("sap-icon://connected");
+      console.debug("Timekeeping WebSocket Connected");
+    };
     this.socket.onclose = (_event: CloseEvent) => {
-      this.statusButton?.setIcon('sap-icon://disconnected');
-      console.debug('Timekeeping WebSocket Disconnected');
-    }
+      this.statusButton?.setIcon("sap-icon://disconnected");
+      console.debug("Timekeeping WebSocket Disconnected");
+    };
     this.socket.onmessage = (msgEvent: MessageEvent) => {
       const data: any = JSON.parse(msgEvent.data);
       if (data.error) {
-        console.error('Timekeeping WebSocket error:', data.error);
+        console.error("Timekeeping WebSocket error:", data.error);
         super.showErrorMessageToast(data.error);
-      } else
-        if (data.AquariusHeats) {
-          super.getViewJSONModel(TimekeepingController.AQUARIUS_HEATS_MODEL).setData(data.AquariusHeats.heats);
-        } else if (data.Timestamp) {
-          this.updateTimestamp(data.Timestamp.timestamp);
-          super.showInfoMessageToast("Timestamp added successfully");
-        } else if (data.TimeStrip) {
-          super.getViewJSONModel(TimekeepingController.TIMESTRIP_MODEL).setData(data.TimeStrip.time_stamps);
-          super.showInfoMessageToast("Timestrip retrieved successfully");
-        } else if (data.HeatsReadyToStart) {
-          super.getViewJSONModel(TimekeepingController.HEATS_MODEL).setData(data.HeatsReadyToStart.heats);
-          super.showInfoMessageToast("Heats ready to start retrieved successfully");
-        } else {
-          console.warn(`Received unknown Timekeeping WebSocket event type: ${JSON.stringify(data)}`);
-        }
-    }
+      } else if (data.AquariusHeats) {
+        super.getViewJSONModel(TimekeepingController.AQUARIUS_HEATS_MODEL).setData(data.AquariusHeats.heats);
+      } else if (data.Timestamp) {
+        this.updateTimestamp(data.Timestamp.timestamp);
+        super.showInfoMessageToast("Timestamp added successfully");
+      } else if (data.TimeStrip) {
+        super.getViewJSONModel(TimekeepingController.TIMESTRIP_MODEL).setData(data.TimeStrip.time_stamps);
+        super.showInfoMessageToast("Timestrip retrieved successfully");
+      } else if (data.HeatsReadyToStart) {
+        super.getViewJSONModel(TimekeepingController.HEATS_MODEL).setData(data.HeatsReadyToStart.heats);
+        super.showInfoMessageToast("Heats ready to start retrieved successfully");
+      } else {
+        console.warn(`Received unknown Timekeeping WebSocket event type: ${JSON.stringify(data)}`);
+      }
+    };
   }
 
   private updateTimestamp(timestamp: any) {
@@ -211,7 +219,7 @@ export default class TimekeepingController extends BaseTableController {
 
   private disconnect() {
     if (this.socket) {
-      console.debug('Disconnecting Timekeeping WebSocket ...');
+      console.debug("Disconnecting Timekeeping WebSocket ...");
       this.socket.close();
       delete this.socket;
     }

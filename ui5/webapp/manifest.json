@@ -47,10 +47,7 @@
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
           "bundleName": "de.regatta_hd.infoportal.i18n.i18n",
-          "supportedLocales": [
-            "de",
-            "en"
-          ],
+          "supportedLocales": ["de", "en"],
           "fallbackLocale": "de"
         }
       }
@@ -64,9 +61,7 @@
         "controlAggregation": "pages",
         "transition": "slide",
         "bypassed": {
-          "target": [
-            "startpage"
-          ]
+          "target": ["startpage"]
         }
       },
       "routes": [
@@ -161,9 +156,9 @@
           "target": "problems"
         },
         {
-          "pattern": "admin",
-          "name": "admin",
-          "target": "admin"
+          "pattern": "notifications",
+          "name": "notifications",
+          "target": "notifications"
         }
       ],
       "targets": {
@@ -263,9 +258,9 @@
           "level": 1,
           "viewType": "XML"
         },
-        "admin": {
+        "notifications": {
           "type": "View",
-          "name": "Admin",
+          "name": "Notifications",
           "level": 1,
           "viewType": "XML"
         }

@@ -14,7 +14,6 @@ import RacesTableController from "./RacesTable.controller";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class RaceDetailsController extends BaseController {
-
   private static readonly RACE_ENTRIES_MODEL: string = "raceEntries";
 
   readonly formatter: Formatter = Formatter;
@@ -28,8 +27,12 @@ export default class RaceDetailsController extends BaseController {
     super.getView()?.addEventDelegate({ onBeforeShow: this.onBeforeShow, onBeforeHide: this.onBeforeHide }, this);
     super.setViewModel(new JSONModel(), RaceDetailsController.RACE_ENTRIES_MODEL);
 
-    super.getRouter()?.getRoute("raceDetails")?.attachPatternMatched(
-      async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
+    super
+      .getRouter()
+      ?.getRoute("raceDetails")
+      ?.attachPatternMatched((event: Route$PatternMatchedEvent) => {
+        super.runAsync(this.onPatternMatched(event), "Failed to load race details:");
+      }, this);
   }
 
   /**
@@ -76,7 +79,9 @@ export default class RaceDetailsController extends BaseController {
   }
 
   onNavBack(): void {
-    const navData: NavigationData | undefined = super.getComponentJSONModel(RacesTableController.RACE_NAV_MODEL).getData();
+    const navData: NavigationData | undefined = super
+      .getComponentJSONModel(RacesTableController.RACE_NAV_MODEL)
+      .getData();
     if (navData?.back) {
       super.navBack(navData.back);
     } else {
@@ -103,15 +108,22 @@ export default class RaceDetailsController extends BaseController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadRaceModel().then((succeeded: boolean) => {
-      super.showDataUpdatedMessage(succeeded);
-    }).finally(() => source.setEnabled(true));
+    super.runAsync(
+      this.loadRaceModel()
+        .then((succeeded: boolean) => {
+          super.showDataUpdatedMessage(succeeded);
+        })
+        .finally(() => source.setEnabled(true)),
+      "Failed to refresh race details:"
+    );
   }
 
   onEntriesItemPress(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
-      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(RaceDetailsController.RACE_ENTRIES_MODEL);
+      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(
+        RaceDetailsController.RACE_ENTRIES_MODEL
+      );
       const entry: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
 
       if (entry?.heats?.length > 0) {
@@ -130,14 +142,14 @@ export default class RaceDetailsController extends BaseController {
     const race: any = super.getComponentJSONModel(RacesTableController.RACE_MODEL).getData();
     if (race?.id) {
       this.raceId = race.id;
-    };
+    }
     const url: string = `/api/races/${this.raceId}`;
     const entriesModel = super.getViewJSONModel(RaceDetailsController.RACE_ENTRIES_MODEL);
     return await super.updateJSONModel(entriesModel, url);
   }
 
-  private async onItemChanged(channelId: string, eventId: string, parametersMap: any): Promise<void> {
-    await this.loadRaceModel();
+  private onItemChanged(_channelId: string, _eventId: string, _parametersMap: any): void {
+    super.runAsync(this.loadRaceModel(), "Failed to load race details:");
   }
 
   private onKeyDown(event: KeyboardEvent): void {

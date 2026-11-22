@@ -1,8 +1,17 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
 
-  <Table id="timestripTable" autoPopinMode="true" items="{path:'timestrip>/'}" growing="true" growingScrollToLoad="true"
-    growingThreshold="30" mode="SingleSelectMaster" itemPress=".onSelectionChange" sticky="HeaderToolbar,ColumnHeaders"
-    class="sapUiNoContentPadding">
+  <Table
+    id="timestripTable"
+    autoPopinMode="true"
+    items="{path:'timestrip>/'}"
+    growing="true"
+    growingScrollToLoad="true"
+    growingThreshold="30"
+    mode="SingleSelectMaster"
+    itemPress=".onSelectionChange"
+    sticky="HeaderToolbar,ColumnHeaders"
+    class="sapUiNoContentPadding"
+  >
 
     <!-- The HeaderToolbar shows a title and the filter button -->
     <headerToolbar>
@@ -10,8 +19,12 @@
         <content>
           <ToolbarSpacer />
           <!-- Refresh button -->
-          <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}" icon="sap-icon://refresh"
-            press=".onRefreshButtonPress" />
+          <Button
+            text="{=!${device>/system/phone}?${i18n>common.refresh}:''}"
+            tooltip="{i18n>common.refresh}"
+            icon="sap-icon://refresh"
+            press=".onRefreshButtonPress"
+          />
         </content>
       </OverflowToolbar>
     </headerToolbar>
@@ -33,7 +46,7 @@
         <Text text="{i18n>common.state}" class="bold" />
       </Column>
       <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
-        <Text text="{i18n>admin.column.actions}" class="bold" />
+        <Text text="{i18n>common.actions}" class="bold" />
       </Column>
     </columns>
 
@@ -48,7 +61,10 @@
           <ComboBox value="{timestrip>bib}" items="{bibs>/}" loadItems=".onLoadBibs" change=".onBibChange">
             <core:ListItem key="{bibs>number}" text="{bibs>number}" />
           </ComboBox>
-          <core:Icon src="{=${timestrip>persisted}?'sap-icon://SAP-icons-TNT/data-store':''}" tooltip="{i18n>common.persisted}" />
+          <core:Icon
+            src="{=${timestrip>persisted}?'sap-icon://SAP-icons-TNT/data-store':''}"
+            tooltip="{i18n>common.persisted}"
+          />
           <Button icon="sap-icon://delete" tooltip="{i18n>common.delete}" type="Reject" press=".onDeleteTimestamp" />
         </cells>
       </ColumnListItem>

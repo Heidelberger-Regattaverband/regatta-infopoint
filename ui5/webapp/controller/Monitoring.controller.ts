@@ -8,8 +8,7 @@ import BaseController from "./Base.controller";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class MonitoringController extends BaseController {
-
-  private readonly units = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+  private readonly units = ["bytes", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB"];
   private readonly monitoringModel: JSONModel = new JSONModel();
   private socket?: WebSocket;
   private statusButton?: Button;
@@ -17,7 +16,10 @@ export default class MonitoringController extends BaseController {
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getView()?.addEventDelegate({ onBeforeHide: this.onBeforeHide }, this);
-    super.getRouter()?.getRoute("monitoring")?.attachMatched((_: Route$MatchedEvent) => this.connect(), this);
+    super
+      .getRouter()
+      ?.getRoute("monitoring")
+      ?.attachMatched((_: Route$MatchedEvent) => this.connect(), this);
     super.setViewModel(this.monitoringModel, "monitoring");
     this.statusButton = this.byId("statusButton") as Button | undefined;
   }
@@ -40,13 +42,27 @@ export default class MonitoringController extends BaseController {
     const all = [];
 
     if (monitoring?.db?.connections) {
-      all.push({ name: this.i18n("monitoring.dbConnections.total"), value: monitoring.db.connections.total, group: "1" },
+      all.push(
+        { name: this.i18n("monitoring.dbConnections.total"), value: monitoring.db.connections.total, group: "1" },
         { name: this.i18n("monitoring.dbConnections.used"), value: monitoring.db.connections.used, group: "1" },
         { name: this.i18n("monitoring.dbConnections.idle"), value: monitoring.db.connections.idle, group: "1" },
         { name: this.i18n("monitoring.dbConnections.created"), value: monitoring.db.connections.created, group: "1" },
-        { name: this.i18n("monitoring.dbConnections.closedIdleTimeout"), value: monitoring.db.connections.closedIdleTimeout, group: "1" },
-        { name: this.i18n("monitoring.dbConnections.closedMaxLifetime"), value: monitoring.db.connections.closedMaxLifetime, group: "1" },
-        { name: this.i18n("monitoring.dbConnections.closedError"), value: monitoring.db.connections.closedError, group: "1" });
+        {
+          name: this.i18n("monitoring.dbConnections.closedIdleTimeout"),
+          value: monitoring.db.connections.closedIdleTimeout,
+          group: "1"
+        },
+        {
+          name: this.i18n("monitoring.dbConnections.closedMaxLifetime"),
+          value: monitoring.db.connections.closedMaxLifetime,
+          group: "1"
+        },
+        {
+          name: this.i18n("monitoring.dbConnections.closedError"),
+          value: monitoring.db.connections.closedError,
+          group: "1"
+        }
+      );
     }
 
     if (monitoring?.db?.userPools) {
@@ -56,23 +72,37 @@ export default class MonitoringController extends BaseController {
     }
 
     if (monitoring?.db?.caches) {
-      all.push({ name: this.i18n("monitoring.caches.accesses"), value: monitoring.db.caches.accesses, group: "3" },
+      all.push(
+        { name: this.i18n("monitoring.caches.accesses"), value: monitoring.db.caches.accesses, group: "3" },
         { name: this.i18n("monitoring.caches.hits"), value: monitoring.db.caches.hits, group: "3" },
         { name: this.i18n("monitoring.caches.misses"), value: monitoring.db.caches.misses, group: "3" },
         { name: this.i18n("monitoring.caches.entries"), value: monitoring.db.caches.entries, group: "3" },
-        { name: this.i18n("monitoring.caches.hitRate"), value: this.nicePercent(monitoring.db.caches.hitRate), group: "3" });
+        {
+          name: this.i18n("monitoring.caches.hitRate"),
+          value: this.nicePercent(monitoring.db.caches.hitRate),
+          group: "3"
+        }
+      );
     }
 
     if (monitoring?.app) {
-      all.push({ name: this.i18n("monitoring.app.mem_current"), value: this.niceBytes(monitoring.app.memCurrent), group: "4" },
-        { name: this.i18n("monitoring.app.mem_max"), value: this.niceBytes(monitoring.app.memMax), group: "4" });
+      all.push(
+        { name: this.i18n("monitoring.app.mem_current"), value: this.niceBytes(monitoring.app.memCurrent), group: "4" },
+        { name: this.i18n("monitoring.app.mem_max"), value: this.niceBytes(monitoring.app.memMax), group: "4" }
+      );
     }
 
     if (monitoring?.sys?.mem) {
-      all.push({ name: this.i18n("monitoring.mem.total"), value: this.niceBytes(monitoring.sys.mem.total), group: "5" },
+      all.push(
+        { name: this.i18n("monitoring.mem.total"), value: this.niceBytes(monitoring.sys.mem.total), group: "5" },
         { name: this.i18n("monitoring.mem.used"), value: this.niceBytes(monitoring.sys.mem.used), group: "5" },
-        { name: this.i18n("monitoring.mem.available"), value: this.niceBytes(monitoring.sys.mem.available), group: "5" },
-        { name: this.i18n("monitoring.mem.free"), value: this.niceBytes(monitoring.sys.mem.free), group: "5" });
+        {
+          name: this.i18n("monitoring.mem.available"),
+          value: this.niceBytes(monitoring.sys.mem.available),
+          group: "5"
+        },
+        { name: this.i18n("monitoring.mem.free"), value: this.niceBytes(monitoring.sys.mem.free), group: "5" }
+      );
     }
 
     if (monitoring?.sys?.cpus) {
@@ -82,7 +112,11 @@ export default class MonitoringController extends BaseController {
     }
 
     if (monitoring?.sys?.uptime) {
-      all.push({ name: this.i18n("monitoring.sys.uptime"), value: this.niceDuration(monitoring.sys.uptime.secs), group: "7" });
+      all.push({
+        name: this.i18n("monitoring.sys.uptime"),
+        value: this.niceDuration(monitoring.sys.uptime.secs),
+        group: "7"
+      });
     }
 
     this.monitoringModel.setData(all);
@@ -118,12 +152,12 @@ export default class MonitoringController extends BaseController {
         break;
     }
     return new GroupHeaderListItem({
-      title: title,
+      title: title
     });
   }
 
   private nicePercent(n: number): string {
-    return n.toFixed(1) + ' %';
+    return n.toFixed(1) + " %";
   }
 
   private niceBytes(n: number): string {
@@ -131,15 +165,20 @@ export default class MonitoringController extends BaseController {
     while (n >= 1024 && ++l) {
       n = n / 1024;
     }
-    return (n.toFixed(n < 10 && l > 0 ? 1 : 0) + ' ' + this.units[l]);
+    return n.toFixed(n < 10 && l > 0 ? 1 : 0) + " " + this.units[l];
   }
 
   private niceDuration(seconds: number): string {
     const days: number = Math.floor(seconds / 60 / 60 / 24);
-    const hours: number = Math.floor(seconds / 60 / 60 % 24);
-    const minutes: number = Math.floor(seconds / 60 % 60);
+    const hours: number = Math.floor((seconds / 60 / 60) % 24);
+    const minutes: number = Math.floor((seconds / 60) % 60);
     const secs: number = Math.floor(seconds % 60);
-    const duration: string = (days > 0 ? days + 'd ' : '') + (hours > 0 ? hours + 'h ' : '') + (minutes > 0 ? minutes + 'm ' : '') + secs + 's';
+    const duration: string =
+      (days > 0 ? days + "d " : "") +
+      (hours > 0 ? hours + "h " : "") +
+      (minutes > 0 ? minutes + "m " : "") +
+      secs +
+      "s";
     return duration;
   }
 
@@ -149,28 +188,27 @@ export default class MonitoringController extends BaseController {
     this.disconnect();
 
     const location: Location = globalThis.location;
-    const proto = location.protocol.startsWith('https') ? 'wss' : 'ws';
+    const proto = location.protocol.startsWith("https") ? "wss" : "ws";
 
-    console.debug('Connecting Monitoring WebSocket ...');
+    console.debug("Connecting Monitoring WebSocket ...");
     this.socket = new WebSocket(`${proto}://${location.host}/api/monitoring`);
 
     this.socket.onopen = (_event: Event) => {
       this.statusButton?.setEnabled(true);
-      this.statusButton?.setIcon('sap-icon://connected');
-      console.debug('Monitoring WebSocket Connected');
-    }
+      this.statusButton?.setIcon("sap-icon://connected");
+      console.debug("Monitoring WebSocket Connected");
+    };
     this.socket.onclose = (_event: CloseEvent) => {
       this.statusButton?.setEnabled(true);
-      this.statusButton?.setIcon('sap-icon://disconnected');
-      console.debug('Monitoring WebSocket Disconnected');
-    }
+      this.statusButton?.setIcon("sap-icon://disconnected");
+      console.debug("Monitoring WebSocket Disconnected");
+    };
     this.socket.onmessage = (event: MessageEvent) => {
       const monitoring: any = JSON.parse(event.data);
       if (monitoring.Update) {
         this.updateModel(monitoring.Update.monitoring);
-      } else
-        console.warn('Unknown Monitoring WebSocket Message', monitoring);
-    }
+      } else console.warn("Unknown Monitoring WebSocket Message", monitoring);
+    };
   }
 
   private disconnect() {
@@ -178,7 +216,7 @@ export default class MonitoringController extends BaseController {
       this.socket.onclose = null;
       this.socket.onmessage = null;
       this.socket.onopen = null;
-      console.debug('Disconnecting Monitoring WebSocket ...');
+      console.debug("Disconnecting Monitoring WebSocket ...");
       this.socket.close();
       delete this.socket;
     }

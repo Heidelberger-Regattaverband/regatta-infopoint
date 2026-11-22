@@ -1,8 +1,17 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
 
-  <Table id="aquariusHeatsTable" autoPopinMode="true" items="{path:'aquariusHeats>/',sorter:[{path:'time',descending:true}]}" growing="true"
-    growingScrollToLoad="true" growingThreshold="30" mode="SingleSelectMaster" itemPress=".onSelectionChange" sticky="ColumnHeaders"
-    class="sapUiNoContentPadding">
+  <Table
+    id="aquariusHeatsTable"
+    autoPopinMode="true"
+    items="{path:'aquariusHeats>/',sorter:[{path:'time',descending:true}]}"
+    growing="true"
+    growingScrollToLoad="true"
+    growingThreshold="30"
+    mode="SingleSelectMaster"
+    itemPress=".onSelectionChange"
+    sticky="ColumnHeaders"
+    class="sapUiNoContentPadding"
+  >
 
     <columns>
       <Column id="aquariusHeatId" hAlign="Center" width="4rem" importance="High" popinDisplay="Inline">
