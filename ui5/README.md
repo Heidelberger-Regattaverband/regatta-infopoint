@@ -71,9 +71,16 @@ npx --no-install prettier --write webapp/controller/ClubsTable.controller.ts
 Do not append a filename to `npm run format` expecting a single-file operation:
 that script already includes the entire source/configuration selection.
 
-For CI, use `npm ci` and `npm run check` after adopting the formatting baseline.
-Use `npm run lint:strict` when ready to enforce zero ESLint warnings. These checks
-do not build or regenerate `dist/`.
+To match CI locally, run `npm run format:check`, `npm run lint:strict`,
+`npm run ts-typecheck`, and `npm run test:async`. These checks do not build or
+regenerate `dist/`.
+
+The repository's `.github/workflows/ci.yaml` runs a separate **Check UI5 frontend**
+job on pushes and pull requests targeting `main`, and on manual workflow runs.
+It uses Node.js 24 and cached npm dependencies, then runs formatting checks,
+strict linting, TypeScript checking, and `test:async`. It does not require database
+credentials or Tailscale and runs independently of the existing Rust job. All
+checks are read-only; CI never applies formatting fixes or rebuilds `dist/`.
 
 Dependency security is a separate check: use `npm audit` (or `npm audit --omit=dev`
 for production dependencies only). Do not apply `npm audit fix --force` blindly;

@@ -11,6 +11,43 @@ on:
   workflow_dispatch:
 
 jobs:
+  ui5_checks:
+    name: Check UI5 frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ui5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: ui5/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Check frontend formatting
+        run: npm run format:check
+
+      - name: Lint UI5 and TypeScript
+        run: npm run lint:strict
+
+      - name: Check TypeScript types
+        run: npm run ts-typecheck
+
+      - name: Test async callbacks
+        run: npm run test:async
+
   build_and_test:
     name: Build and test rust project
     runs-on: ubuntu-latest
@@ -36,16 +73,13 @@ jobs:
       - name: Restore build & cargo cache
         uses: Swatinem/rust-cache@v2
 
-      - name: Enforce formatting
-        run: cargo fmt --check
-
-      - name: Linting
-        run: cargo clippy -- -D warnings
-
-      - name: Validate Rust documentation
+      - name: Enforce formatting, linting and rustdoc
         env:
           RUSTDOCFLAGS: "-D warnings"
-        run: cargo doc --workspace --all-features --no-deps --document-private-items --locked
+        run: |
+          cargo fmt --check
+          cargo clippy -- -D warnings
+          cargo doc --workspace --all-features --no-deps --document-private-items --locked  
 
       - name: Build and run tests
         uses: actions-rs/cargo@v1
