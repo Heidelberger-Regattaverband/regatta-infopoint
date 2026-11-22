@@ -99,7 +99,7 @@ export default class HeatsTableController extends BaseTableController {
     }
   }
 
-  onItemChanged(item: any): void {
+  protected onItemChanged(item: any): void {
     super.getComponentJSONModel(HeatsTableController.HEAT_MODEL).setData(item);
     super.getEventBus()?.publish("heat", "itemChanged", {});
   }

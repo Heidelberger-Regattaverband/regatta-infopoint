@@ -103,7 +103,7 @@ export default class AthletesTable extends BaseTableController {
     }
   }
 
-  onItemChanged(_item: any): void {
+  protected onItemChanged(_item: any): void {
     // nothing to do yet
   }
 

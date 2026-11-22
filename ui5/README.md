@@ -58,7 +58,13 @@ promises while keeping callbacks synchronous. Route arguments are read before
 the callback returns; refresh cleanup remains in `finally`. The `test:async`
 suite transpiles current controllers in memory and uses isolated UI5 stubs to
 check rejection handling, destroyed views, route argument capture, filter order,
-and busy/button cleanup. It does not build assets or make HTTP requests.
+and busy/button cleanup. It also checks that subclass-only helpers are protected
+and XML-bound handlers/formatters remain public. It does not build assets or make HTTP requests.
+
+Controller helper methods used only by the class/subclasses use `private` or
+`protected`. Methods referenced by XML bindings, including inherited navigation
+handlers and formatter functions, remain public. UI5 lifecycle overrides also
+remain public because the installed TypeScript declarations require it.
 
 To check or format just one file, use the local executable directly:
 

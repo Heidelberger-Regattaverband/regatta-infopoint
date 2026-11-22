@@ -54,7 +54,7 @@ export default abstract class BaseTableController extends BaseController {
    */
   private navModelName?: string;
 
-  init(table: Table, channelId?: string, navModelName?: string): void {
+  protected init(table: Table, channelId?: string, navModelName?: string): void {
     this.table = table;
 
     // return the path of the model that is bound to the items, e.g. races or heats
@@ -124,7 +124,7 @@ export default abstract class BaseTableController extends BaseController {
     }
   }
 
-  async getViewSettingsDialog(dialogFragmentName: string): Promise<ViewSettingsDialog> {
+  protected async getViewSettingsDialog(dialogFragmentName: string): Promise<ViewSettingsDialog> {
     // Memoise the in-flight load so concurrent callers share the same promise
     // instead of each kicking off a duplicate Fragment.load.
     let pending: Promise<ViewSettingsDialog> | undefined = this.viewSettingsDialogPromises.get(dialogFragmentName);
@@ -187,16 +187,16 @@ export default abstract class BaseTableController extends BaseController {
     return new Filter(path, operator, value1, value2);
   }
 
-  setSearchFilters(searchFilters: Filter[]): void {
+  protected setSearchFilters(searchFilters: Filter[]): void {
     this.searchFilters = searchFilters;
   }
 
-  clearFilters(): void {
+  protected clearFilters(): void {
     this.filters = [];
     this.updateFilterBar("");
   }
 
-  applyFilters(): void {
+  protected applyFilters(): void {
     // combine search and filters from dialog
     const allFilters: Filter[] = this.filters.concat(this.searchFilters);
     (this.table.getBinding("items") as ListBinding).filter(allFilters);
@@ -215,7 +215,7 @@ export default abstract class BaseTableController extends BaseController {
     }
   }
 
-  sortTable(columnName: string, sortDescending: boolean, path?: string) {
+  protected sortTable(columnName: string, sortDescending: boolean, path?: string) {
     this.table.getColumns().forEach((col: Column) => {
       if (col.getId().endsWith(columnName)) {
         col.setSortIndicator(sortDescending ? SortOrder.Descending : SortOrder.Ascending);
@@ -258,7 +258,7 @@ export default abstract class BaseTableController extends BaseController {
     super.getComponentJSONModel(this.navModelName).setData(state);
   }
 
-  abstract onItemChanged(item: any): void;
+  protected abstract onItemChanged(item: any): void;
 
   private growTable(index: number): void {
     const actual: number = this.table.getGrowingInfo()?.actual || 0;

@@ -149,7 +149,7 @@ export default class TimekeepingController extends BaseTableController {
     }
   }
 
-  onItemChanged(_item: any): void {}
+  protected onItemChanged(_item: any): void {}
 
   private updateModel(_timekeeping: any) {
     // nothing to do yet

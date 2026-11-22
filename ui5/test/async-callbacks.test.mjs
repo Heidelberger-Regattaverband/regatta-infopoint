@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { setImmediate } from "node:timers/promises";
 import test from "node:test";
 import vm from "node:vm";
@@ -198,4 +198,132 @@ test("race refresh restores the disabled button even when loading rejects", asyn
   await setImmediate();
   assert.deepEqual(enabled, [false, true]);
   assert.deepEqual(controller.feedback, [false]);
+});
+
+// XML bindings are runtime references, so TypeScript alone cannot detect an
+// accidental visibility reduction of their inherited handlers or formatters.
+function visibilityModel() {
+  const directory = new URL("../webapp/controller/", import.meta.url);
+  const byModule = new Map();
+  const byClass = new Map();
+  const files = readdirSync(directory).filter((file) => file.endsWith(".controller.ts"));
+  for (const file of [...files, "../Component.ts", "../model/Formatter.ts"]) {
+    const source = ts.createSourceFile(
+      file,
+      readFileSync(new URL(file, directory), "utf8"),
+      ts.ScriptTarget.Latest,
+      true
+    );
+    const declaration = source.statements.find(ts.isClassDeclaration);
+    assert.ok(declaration, file);
+    const moduleName = file.replace(/\.controller\.ts$/, "");
+    byModule.set(moduleName, declaration);
+    byClass.set(declaration.name.text, declaration);
+  }
+  const member = (declaration, name) => {
+    const own = declaration.members.find((item) => item.name?.getText() === name);
+    if (own) return own;
+    const parent = declaration.heritageClauses?.find((clause) => clause.token === ts.SyntaxKind.ExtendsKeyword)
+      ?.types[0];
+    const base = parent && byClass.get(parent.expression.getText());
+    return base && member(base, name);
+  };
+  const visibility = (item) => {
+    assert.ok(item, "member must exist");
+    if (item.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.PrivateKeyword)) return "private";
+    if (item.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ProtectedKeyword)) return "protected";
+    return "public";
+  };
+  return { byModule, byClass, member, visibility };
+}
+
+test("subclass helpers and table hooks are protected, while component APIs stay public", () => {
+  const { byModule, byClass, member, visibility } = visibilityModel();
+  const base = byModule.get("Base");
+  for (const name of [
+    "showDataUpdatedMessage",
+    "showInfoMessageToast",
+    "showErrorMessageToast",
+    "runAsync",
+    "getContentDensityClass",
+    "getEventBus",
+    "getComponentJSONModel",
+    "getRouter",
+    "getViewJSONModel",
+    "setViewModel",
+    "navBack",
+    "i18n",
+    "updateJSONModel",
+    "navToStartPage",
+    "navToRaceDetails",
+    "navToHeatDetails",
+    "navToClubDetails",
+    "navToClubAthletes",
+    "navToAthleteDetails",
+    "getFilters",
+    "getActiveRegatta"
+  ]) {
+    assert.equal(visibility(member(base, name)), "protected", name);
+  }
+  const table = byModule.get("BaseTable");
+  for (const name of [
+    "init",
+    "getViewSettingsDialog",
+    "setSearchFilters",
+    "clearFilters",
+    "applyFilters",
+    "sortTable",
+    "onItemChanged"
+  ]) {
+    assert.equal(visibility(member(table, name)), "protected", name);
+  }
+  for (const name of ["AthletesTable", "ClubsTable", "HeatsTable", "RacesTable", "Timekeeping"]) {
+    assert.equal(visibility(member(byModule.get(name), "onItemChanged")), "protected", name);
+  }
+  for (const name of ["getActiveRegatta", "getFilters", "getContentDensityClass", "getResourceBundle", "init"]) {
+    assert.equal(visibility(member(byClass.get("Component"), name)), "public", name);
+  }
+});
+
+test("XML-bound controller methods and formatter APIs retain public visibility", () => {
+  const { byModule, byClass, member, visibility } = visibilityModel();
+  const directory = new URL("../webapp/view/", import.meta.url);
+  let checked = 0;
+  for (const file of readdirSync(directory).filter((file) => file.endsWith(".xml"))) {
+    const xml = readFileSync(new URL(file, directory), "utf8");
+    const controllerName = xml
+      .match(/\bcontrollerName="([^"]+)"/)?.[1]
+      .split(".")
+      .at(-1);
+    const controller = controllerName && byModule.get(controllerName);
+    const handlers = new Set([
+      ...Array.from(xml.matchAll(/\b[\w:]+\s*=\s*["']\.([\w$]+)["']/g), (match) => match[1]),
+      ...Array.from(
+        xml.matchAll(/(?:formatter|group|groupHeaderFactory)\s*:\s*['"]\.([\w$.]+)['"]/g),
+        (match) => match[1]
+      )
+    ]);
+    for (const path of handlers) {
+      if (path.startsWith("formatter.")) {
+        if (controller) assert.equal(visibility(member(controller, "formatter")), "public", `${file}: formatter`);
+        assert.equal(
+          visibility(member(byClass.get("Formatter"), path.slice("formatter.".length))),
+          "public",
+          `${file}: ${path}`
+        );
+      } else if (controller) {
+        assert.equal(visibility(member(controller, path)), "public", `${file}: ${path}`);
+      } else {
+        // Fragments receive their controller from their caller. All matching
+        // app declarations must remain public (including base-table handlers).
+        const candidates = [...byClass.values()].flatMap((declaration) =>
+          declaration.members.filter((item) => item.name?.getText() === path)
+        );
+        assert.ok(candidates.length, `${file}: ${path}`);
+        for (const candidate of candidates) assert.equal(visibility(candidate), "public", `${file}: ${path}`);
+      }
+      checked++;
+    }
+  }
+  assert.ok(checked > 50, "expected broad coverage of view/fragment bindings");
 });

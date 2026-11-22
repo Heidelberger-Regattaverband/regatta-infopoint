@@ -128,7 +128,7 @@ export default class RacesTableController extends BaseTableController {
     }
   }
 
-  onItemChanged(item: any): void {
+  protected onItemChanged(item: any): void {
     super.getComponentJSONModel(RacesTableController.RACE_MODEL).setData(item);
     super.getEventBus()?.publish("race", "itemChanged", {});
   }

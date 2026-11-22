@@ -73,7 +73,7 @@ export default class ClubsTableController extends BaseTableController {
     }
   }
 
-  onItemChanged(_item: any): void {
+  protected onItemChanged(_item: any): void {
     // nothing to do yet
   }
 
