@@ -15,7 +15,7 @@ const MODEL_NOTIFICATIONS: string = "notifications";
 /**
  * @namespace de.regatta_hd.infoportal.controller
  */
-export default class AdminController extends BaseController {
+export default class NotificationsController extends BaseController {
   readonly formatter: Formatter = Formatter;
   private readonly notificationsModel: JSONModel = new JSONModel();
   private readonly dialogModel: JSONModel = new JSONModel();

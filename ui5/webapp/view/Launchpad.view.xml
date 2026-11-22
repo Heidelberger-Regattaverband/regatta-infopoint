@@ -227,7 +227,7 @@
             class="sapUiTinyMarginBegin sapUiTinyMarginTop"
             header="{i18n>admin.notificationsTitle}"
             visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}"
-            press=".navToAdmin"
+            press=".navToNotifications"
           >
             <tileContent>
               <TileContent>

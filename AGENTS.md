@@ -76,7 +76,7 @@ Authentication: `Option<Identity>` on read endpoints; `auth::authenticate` → p
 Standalone ratatui TUI for entering race start/finish timestamps at the finish line. Uses the same `db` library. CLI args via clap. Tabs: heats, timestrip, logs. Has `build.rs` (embeds git hash + build timestamp via `built` crate). Has `timekeeper/review.md`.
 
 ## Frontend (`ui5/`)
-SAP OpenUI5 TypeScript SPA. 18 XML views (App, Launchpad, RacesTable, RaceDetails, HeatsTable, HeatDetails, AthletesTable, AthleteDetails, ClubsTable, ClubDetails, ScoringTable, ScheduleTable, Statistics, Timekeeping, Map, Monitoring, Admin, Problems) + 10 XML fragments (HeatsTable, HeatsFilterDialog, HeatsSortDialog, RacesFilterDialog, RacesSortDialog, AthletesSortDialog, ClubsTableSortDialog, LoginPopover, TimekeepingAquarius, TimekeepingTimestrip). One TypeScript controller per view. Leaflet 1.9.x for the map view. i18n: German + English.
+SAP OpenUI5 TypeScript SPA. 18 XML views (App, Launchpad, RacesTable, RaceDetails, HeatsTable, HeatDetails, AthletesTable, AthleteDetails, ClubsTable, ClubDetails, ScoringTable, ScheduleTable, Statistics, Timekeeping, Map, Monitoring, Notifications, Problems) + 10 XML fragments (HeatsTable, HeatsFilterDialog, HeatsSortDialog, RacesFilterDialog, RacesSortDialog, AthletesSortDialog, ClubsTableSortDialog, LoginPopover, TimekeepingAquarius, TimekeepingTimestrip). One TypeScript controller per view. Leaflet 1.9.x for the map view. i18n: German + English.
 
 Build: `@ui5/cli` v4 (ui5.yaml, specVersion 4.0) with `ui5-tooling-modules-task` (npm bundle) and `ui5-tooling-transpile-task` (TS → JS). Built assets committed to `ui5/dist/` and served from Docker.
 

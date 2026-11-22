@@ -198,8 +198,8 @@ export default class BaseController extends Controller {
     this.getRouter().navTo("map", params);
   }
 
-  navToAdmin(): void {
-    this.getRouter().navTo("admin");
+  navToNotifications(): void {
+    this.getRouter().navTo("notifications");
   }
 
   protected async getFilters(): Promise<any> {

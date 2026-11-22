@@ -327,3 +327,22 @@ test("XML-bound controller methods and formatter APIs retain public visibility",
   }
   assert.ok(checked > 50, "expected broad coverage of view/fragment bindings");
 });
+
+test("the notifications route loads the Notifications view and controller", () => {
+  const manifest = JSON.parse(readFileSync(new URL("../webapp/manifest.json", import.meta.url), "utf8"));
+  const routing = manifest["sap.ui5"].routing;
+  const route = routing.routes.find((item) => item.name === "notifications");
+  assert.equal(route.pattern, "notifications");
+  assert.equal(route.target, "notifications");
+  assert.ok(!routing.routes.some((item) => item.name === "admin" || item.pattern === "admin"));
+  assert.equal(routing.targets.admin, undefined);
+  assert.equal(routing.targets[route.target].name, "Notifications");
+  const launchpad = readFileSync(new URL("../webapp/view/Launchpad.view.xml", import.meta.url), "utf8");
+  assert.match(launchpad, /press="\.navToNotifications"/);
+  const view = readFileSync(new URL("../webapp/view/Notifications.view.xml", import.meta.url), "utf8");
+  assert.match(view, /controllerName="de\.regatta_hd\.infoportal\.controller\.Notifications"/);
+  const controller = readFileSync(new URL("../webapp/controller/Notifications.controller.ts", import.meta.url), "utf8");
+  assert.match(controller, /export default class NotificationsController extends BaseController/);
+  assert.ok(!readdirSync(new URL("../webapp/view/", import.meta.url)).includes("Admin.view.xml"));
+  assert.ok(!readdirSync(new URL("../webapp/controller/", import.meta.url)).includes("Admin.controller.ts"));
+});
