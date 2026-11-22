@@ -20,8 +20,7 @@ export default class BaseController extends Controller {
    * @param succeeded data update succeeded or failed
    */
   showDataUpdatedMessage(succeeded: boolean): void {
-    if (succeeded) {
-      // NOSONAR
+    if (succeeded) { // NOSONAR
       this.showInfoMessageToast(this.i18n("msg.dataUpdated"));
     } else {
       this.showErrorMessageToast(this.i18n("msg.dataUpdateFailed"));
