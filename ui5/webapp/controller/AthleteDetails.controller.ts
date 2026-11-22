@@ -14,7 +14,6 @@ import RacesTableController from "./RacesTable.controller";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class AthleteDetailsController extends BaseController {
-
   private static readonly ATHLETE_MODEL: string = "athlete";
   private static readonly ENTRIES_MODEL: string = "entries";
 
@@ -30,8 +29,12 @@ export default class AthleteDetailsController extends BaseController {
     super.setViewModel(new JSONModel(), AthleteDetailsController.ENTRIES_MODEL);
     super.setViewModel(new JSONModel(), AthleteDetailsController.ATHLETE_MODEL);
 
-    super.getRouter()?.getRoute("athleteDetails")?.attachPatternMatched(
-      async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
+    super
+      .getRouter()
+      ?.getRoute("athleteDetails")
+      ?.attachPatternMatched((event: Route$PatternMatchedEvent) => {
+        super.runAsync(this.onPatternMatched(event), "Failed to load athlete details:");
+      }, this);
   }
 
   onNavBack(): void {
@@ -40,7 +43,9 @@ export default class AthleteDetailsController extends BaseController {
   }
 
   onClubPress(): void {
-    const clubId: number | undefined = super.getViewJSONModel(AthleteDetailsController.ATHLETE_MODEL).getProperty("/club/id");
+    const clubId: number | undefined = super
+      .getViewJSONModel(AthleteDetailsController.ATHLETE_MODEL)
+      .getProperty("/club/id");
     if (clubId !== undefined) {
       super.navToClubDetails(clubId);
     }
@@ -49,7 +54,9 @@ export default class AthleteDetailsController extends BaseController {
   onSelectionChange(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
-      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(AthleteDetailsController.ENTRIES_MODEL);
+      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(
+        AthleteDetailsController.ENTRIES_MODEL
+      );
       const entry: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
       super.getComponentJSONModel(RacesTableController.RACE_MODEL).setData(entry.race);
 
@@ -63,9 +70,14 @@ export default class AthleteDetailsController extends BaseController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    void this.loadData().then((succeeded: [boolean, boolean]) => {
-      super.showDataUpdatedMessage(succeeded[0] && succeeded[1]);
-    }).finally(() => source.setEnabled(true));
+    super.runAsync(
+      this.loadData()
+        .then((succeeded: [boolean, boolean]) => {
+          super.showDataUpdatedMessage(succeeded[0] && succeeded[1]);
+        })
+        .finally(() => source.setEnabled(true)),
+      "Failed to refresh athlete details:"
+    );
   }
 
   private async onPatternMatched(event: Route$PatternMatchedEvent): Promise<void> {
@@ -82,6 +94,9 @@ export default class AthleteDetailsController extends BaseController {
     const athleteModel: JSONModel = super.getViewJSONModel(AthleteDetailsController.ATHLETE_MODEL);
     const entriesModel: JSONModel = super.getViewJSONModel(AthleteDetailsController.ENTRIES_MODEL);
 
-    return await Promise.all([super.updateJSONModel(entriesModel, entriesUrl), super.updateJSONModel(athleteModel, athleteUrl)]);
+    return await Promise.all([
+      super.updateJSONModel(entriesModel, entriesUrl),
+      super.updateJSONModel(athleteModel, athleteUrl)
+    ]);
   }
 }

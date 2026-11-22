@@ -25,7 +25,9 @@ prefix intentionally unused names with `_`. `eslint-config-prettier` disables
 overlapping style rules, so ESLint is not a second formatter.
 
 Prettier uses two spaces, double quotes for TypeScript, semicolons, no trailing
-commas, and a 120-column target. XML formatting preserves meaningful whitespace,
+commas, and a 120-column target. XML uses the same 120-column target and does not
+force one attribute per line. Tags exceeding that width can still wrap their
+attributes onto separate lines. XML formatting preserves meaningful whitespace,
 attribute order, and existing attribute quote styles. The vendored Leaflet stylesheet, generated output,
 dependencies, lockfiles, and local review reports are excluded. Images, SVGs,
 i18n properties, and other non-code assets are not selected by the format scripts.
@@ -42,13 +44,21 @@ i18n properties, and other non-code assets are not selected by the format script
 | `npm run format:check` | Check formatting without changing files                         |
 | `npm run check`        | Run type checking, both linters, then formatting checks         |
 | `npm run lint:fix`     | Apply available ESLint fixes to source code; review the diff    |
+| `npm run test:async`   | Run isolated async-callback regression tests                    |
 | `npm run format`       | Format all selected source/configuration files; review the diff |
 
 The setup does not bulk-format existing application sources. Initial formatting
 checks may flag existing files. Run `npm run format` when ready to adopt the
-formatting baseline, ideally in a separate formatting-only commit. Likewise,
-strict linting can fail until existing warnings are addressed. Do not silence
+formatting baseline, ideally in a separate formatting-only commit. Strict
+linting fails on any warning and can prevent warnings from being reintroduced. Do not silence
 promise warnings blindly with `void`: handle errors or await work where appropriate.
+
+Async UI5 route/event callbacks use `BaseController.runAsync` to handle rejected
+promises while keeping callbacks synchronous. Route arguments are read before
+the callback returns; refresh cleanup remains in `finally`. The `test:async`
+suite transpiles current controllers in memory and uses isolated UI5 stubs to
+check rejection handling, destroyed views, route argument capture, filter order,
+and busy/button cleanup. It does not build assets or make HTTP requests.
 
 To check or format just one file, use the local executable directly:
 

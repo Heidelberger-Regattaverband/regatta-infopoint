@@ -7,12 +7,13 @@
     "ts-typecheck": "tsc --noEmit",
     "lint": "npm run lint:ui5 && npm run lint:ts",
     "lint:ui5": "ui5lint",
-    "lint:ts": "eslint \"webapp/**/*.{ts,js}\"",
+    "lint:ts": "eslint \"webapp/**/*.{ts,js}\" \"test/**/*.mjs\"",
     "lint:strict": "npm run lint:ui5 && npm run lint:ts -- --max-warnings=0",
     "lint:fix": "npm run lint:ts -- --fix",
-    "format": "prettier --write \"webapp/**/*.{ts,js,xml,json,css,html}\" \"*.{json,yaml,mjs,md}\" \".prettierrc.json\"",
-    "format:check": "prettier --check \"webapp/**/*.{ts,js,xml,json,css,html}\" \"*.{json,yaml,mjs,md}\" \".prettierrc.json\"",
+    "format": "prettier --write \"webapp/**/*.{ts,js,xml,json,css,html}\" \"test/**/*.mjs\" \"*.{json,yaml,mjs,md}\" \".prettierrc.json\"",
+    "format:check": "prettier --check \"webapp/**/*.{ts,js,xml,json,css,html}\" \"test/**/*.mjs\" \"*.{json,yaml,mjs,md}\" \".prettierrc.json\"",
     "check": "npm run ts-typecheck && npm run lint && npm run format:check",
+    "test:async": "node --test test/async-callbacks.test.mjs",
     "watch": "watch 'npm run build' webapp"
   },
   "dependencies": {

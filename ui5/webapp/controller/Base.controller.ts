@@ -15,17 +15,28 @@ import { Model$RequestFailedEventParameters } from "sap/ui/model/Model";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class BaseController extends Controller {
-
   /**
    * Shows a message toast with the result of a data update operation.
    * @param succeeded data update succeeded or failed
    */
   showDataUpdatedMessage(succeeded: boolean): void {
-    if (succeeded) { // NOSONAR
+    if (succeeded) {
+      // NOSONAR
       this.showInfoMessageToast(this.i18n("msg.dataUpdated"));
     } else {
       this.showErrorMessageToast(this.i18n("msg.dataUpdateFailed"));
     }
+  }
+
+  /** Handles work started by synchronous UI5 callbacks without losing rejections. */
+  protected runAsync(task: Promise<unknown>, errorContext: string): void {
+    void task.catch((error: unknown) => {
+      console.error(errorContext, error);
+      const view = this.getView();
+      if (view && !view.isDestroyed()) {
+        this.showDataUpdatedMessage(false);
+      }
+    });
   }
 
   /**
@@ -77,7 +88,7 @@ export default class BaseController extends Controller {
    * @returns {sap.ui.model.JSONModel} the model instance
    */
   getComponentJSONModel(name: string): JSONModel {
-    return super.getOwnerComponent()?.getModel(name) as JSONModel ?? new JSONModel();
+    return (super.getOwnerComponent()?.getModel(name) as JSONModel) ?? new JSONModel();
   }
 
   /**
@@ -94,7 +105,7 @@ export default class BaseController extends Controller {
    * @returns {sap.ui.model.JSONModel} the model instance
    */
   getViewJSONModel(name: string): JSONModel {
-    return super.getView()?.getModel(name) as JSONModel ?? new JSONModel();
+    return (super.getView()?.getModel(name) as JSONModel) ?? new JSONModel();
   }
 
   /**
@@ -183,7 +194,7 @@ export default class BaseController extends Controller {
   navToMap(location?: LatLng): void {
     let params: any = {};
     if (location) {
-      params = { "lat": location.lat, "lng": location.lng };
+      params = { lat: location.lat, lng: location.lng };
     }
     this.getRouter().navTo("map", params);
   }

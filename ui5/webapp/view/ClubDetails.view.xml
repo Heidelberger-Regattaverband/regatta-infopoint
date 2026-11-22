@@ -1,4 +1,10 @@
-<mvc:View controllerName="de.regatta_hd.infoportal.controller.ClubDetails" xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.f" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View
+  controllerName="de.regatta_hd.infoportal.controller.ClubDetails"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:f="sap.f"
+  xmlns:mvc="sap.ui.core.mvc"
+>
   <mvc:content>
 
     <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
@@ -13,8 +19,13 @@
             </HBox>
           </f:heading>
           <f:navigationActions>
-            <Button tooltip="{i18n>common.map}" icon="sap-icon://map" press=".onCityPress" type="Transparent"
-              visible="{=!!${club>/latitude}}" />
+            <Button
+              tooltip="{i18n>common.map}"
+              icon="sap-icon://map"
+              press=".onCityPress"
+              type="Transparent"
+              visible="{=!!${club>/latitude}}"
+            />
             <Button tooltip="" icon="sap-icon://decline" press=".onNavBack" type="Transparent" />
           </f:navigationActions>
         </f:DynamicPageTitle>
@@ -24,32 +35,56 @@
         <f:DynamicPageHeader>
           <HBox>
             <VBox class="sapUiTinyMarginEnd">
-              <ObjectAttribute title="{i18n>common.city}" text="{club>/city}"
-                active="{=!!${club>/latitude}}" press=".onCityPress" />
+              <ObjectAttribute
+                title="{i18n>common.city}"
+                text="{club>/city}"
+                active="{=!!${club>/latitude}}"
+                press=".onCityPress"
+              />
               <ObjectAttribute title="{i18n>common.abbreviation}" text="{club>/abbreviation}" />
             </VBox>
             <VBox>
               <ObjectAttribute title="{i18n>common.entries}" text="{club>/participationsCount}" />
-              <ObjectAttribute title="{i18n>statistics.athletes} (w/m)"
+              <ObjectAttribute
+                title="{i18n>statistics.athletes} (w/m)"
                 text="{club>/athletesCount} ({club>/athletesFemaleCount}/{club>/athletesMaleCount})"
-                active="true" press=".onAthletesPress" />
+                active="true"
+                press=".onAthletesPress"
+              />
             </VBox>
           </HBox>
         </f:DynamicPageHeader>
       </f:header>
 
       <f:content>
-        <Table id="clubEntriesTable" autoPopinMode="true" items="{path:'entries>/'}" growing="true" growingThreshold="50"
-          growingScrollToLoad="true" sticky="ColumnHeaders,HeaderToolbar" class="sapUiNoContentPadding" mode="SingleSelectMaster"
-          itemPress=".onSelectionChange">
+        <Table
+          id="clubEntriesTable"
+          autoPopinMode="true"
+          items="{path:'entries>/'}"
+          growing="true"
+          growingThreshold="50"
+          growingScrollToLoad="true"
+          sticky="ColumnHeaders,HeaderToolbar"
+          class="sapUiNoContentPadding"
+          mode="SingleSelectMaster"
+          itemPress=".onSelectionChange"
+        >
           <headerToolbar>
             <OverflowToolbar>
               <content>
-                <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false"
-                  placeholder="{i18n>search.athletes}" />
+                <SearchField
+                  width="12rem"
+                  liveChange=".onSearchFieldLiveChange"
+                  showSearchButton="false"
+                  placeholder="{i18n>search.athletes}"
+                />
                 <ToolbarSpacer />
-                <Button tooltip="{i18n>common.refresh}" text="{=!${device>/system/phone}?${i18n>common.refresh}:''}"
-                  icon="sap-icon://refresh" press=".onRefreshButtonPress" />
+                <Button
+                  tooltip="{i18n>common.refresh}"
+                  text="{=!${device>/system/phone}?${i18n>common.refresh}:''}"
+                  icon="sap-icon://refresh"
+                  press=".onRefreshButtonPress"
+                />
               </content>
             </OverflowToolbar>
           </headerToolbar>
@@ -70,7 +105,13 @@
                 <Text text="{i18n>common.heats}" />
               </header>
             </Column>
-            <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
+            <Column
+              hAlign="Begin"
+              width="8rem"
+              importance="Low"
+              popinDisplay="Inline"
+              visible="{=!${device>/system/phone}}"
+            >
               <header>
                 <Text text="{i18n>common.clubRegistration}" />
               </header>
@@ -78,24 +119,35 @@
           </columns>
 
           <items>
-            <ColumnListItem type="Navigation" vAlign="{=${device>/system/phone}?'Top':'Inherit'}"
-              highlight="{parts:[{path:'entries>race'},{path:'entries>'}],formatter:'.formatter.raceEntryHighlight'}">
+            <ColumnListItem
+              type="Navigation"
+              vAlign="{=${device>/system/phone}?'Top':'Inherit'}"
+              highlight="{parts:[{path:'entries>race'},{path:'entries>'}],formatter:'.formatter.raceEntryHighlight'}"
+            >
               <!-- CustomData writes data-cancelled="true/false" as a DOM attribute on the row element.
                    The CSS rule [data-cancelled="true"] .sapMText then applies strikethrough to all Text cells.
                    (The class attribute is not a ManagedObject property so it cannot be bound reactively.) -->
               <customData>
-                <core:CustomData key="cancelled" value="{=${entries>cancelled}||${entries>race/cancelled}?'true':'false'}" writeToDom="true" />
+                <core:CustomData
+                  key="cancelled"
+                  value="{=${entries>cancelled}||${entries>race/cancelled}?'true':'false'}"
+                  writeToDom="true"
+                />
               </customData>
               <cells>
                 <Text text="{path:'entries>race',formatter:'.formatter.nrRaceLabel'}" />
 
                 <VBox>
-                  <Text text="{parts:[{path:'entries>race/groupMode'},{path:'entries>'}],formatter:'.formatter.bibBoatLabel'}"
-                    class="bold" />
+                  <Text
+                    text="{parts:[{path:'entries>race/groupMode'},{path:'entries>'}],formatter:'.formatter.bibBoatLabel'}"
+                    class="bold"
+                  />
                   <Text text="{path:'entries>crew',formatter:'.formatter.crewLabel'}" />
                 </VBox>
 
-                <Text text="{path:'entries>race/dateTime',formatter:'.formatter.dayTimeIsoLabel'} ({entries>race/heatsCount})" />
+                <Text
+                  text="{path:'entries>race/dateTime',formatter:'.formatter.dayTimeIsoLabel'} ({entries>race/heatsCount})"
+                />
 
                 <HBox alignItems="Center">
                   <items>

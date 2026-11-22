@@ -16,7 +16,6 @@ const MODEL_NOTIFICATIONS: string = "notifications";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class AdminController extends BaseController {
-
   readonly formatter: Formatter = Formatter;
   private readonly notificationsModel: JSONModel = new JSONModel();
   private readonly dialogModel: JSONModel = new JSONModel();
@@ -125,7 +124,6 @@ export default class AdminController extends BaseController {
     this.closeDialog();
   }
 
-
   private async loadNotifications(): Promise<void> {
     try {
       const regatta = await super.getActiveRegatta();
@@ -168,7 +166,7 @@ export default class AdminController extends BaseController {
           priority: Number.parseInt(data.priority, 10),
           visible: data.visible
         }),
-        success: (result: any) => {
+        success: () => {
           MessageToast.show(super.i18n("admin.success.created"));
           $(".sapMMessageToast").addClass("sapMMessageToastSuccess");
           void this.loadNotifications();
@@ -198,7 +196,7 @@ export default class AdminController extends BaseController {
         priority: Number.parseInt(data.priority, 10),
         visible: data.visible
       }),
-      success: (result: any) => {
+      success: () => {
         MessageToast.show(super.i18n("admin.success.updated"));
         $(".sapMMessageToast").addClass("sapMMessageToastSuccess");
         void this.loadNotifications();
@@ -220,20 +218,18 @@ export default class AdminController extends BaseController {
       data: JSON.stringify({
         visible: visible
       }),
-      success: (result: any) => {
+      success: () => {
         MessageToast.show(super.i18n("admin.success.visibilityUpdated"));
         $(".sapMMessageToast").addClass("sapMMessageToastSuccess");
         void this.loadNotifications();
       },
-      error: async (xhr: any) => {
+      error: (xhr: any) => {
         console.error("Failed to update notification visibility:", xhr);
         MessageToast.show(super.i18n("admin.error.visibilityFailed"));
         $(".sapMMessageToast").addClass("sapMMessageToastDanger");
-        try {
-          await this.loadNotifications();
-        } catch (revertError) {
+        void this.loadNotifications().catch((revertError: unknown) => {
           console.error("Failed to revert switch state:", revertError);
-        }
+        });
       }
     });
   }
@@ -242,7 +238,7 @@ export default class AdminController extends BaseController {
     $.ajax({
       type: "DELETE",
       url: `/api/notifications/${notificationId}`,
-      success: (result: any) => {
+      success: () => {
         MessageToast.show(super.i18n("admin.success.deleted"));
         $(".sapMMessageToast").addClass("sapMMessageToastSuccess");
         void this.loadNotifications();

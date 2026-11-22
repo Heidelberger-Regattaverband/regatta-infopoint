@@ -18,7 +18,6 @@ import RacesTableController from "./RacesTable.controller";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class ClubDetailsController extends BaseController {
-
   private static readonly CLUB_MODEL: string = "club";
   private static readonly ENTRIES_MODEL: string = "entries";
 
@@ -34,8 +33,12 @@ export default class ClubDetailsController extends BaseController {
     super.setViewModel(new JSONModel(), ClubDetailsController.ENTRIES_MODEL);
     super.setViewModel(new JSONModel(), ClubDetailsController.CLUB_MODEL);
 
-    super.getRouter()?.getRoute("clubDetails")?.attachPatternMatched(
-      async (event: Route$PatternMatchedEvent) => await this.onPatternMatched(event), this);
+    super
+      .getRouter()
+      ?.getRoute("clubDetails")
+      ?.attachPatternMatched((event: Route$PatternMatchedEvent) => {
+        super.runAsync(this.onPatternMatched(event), "Failed to load club details:");
+      }, this);
   }
 
   onNavBack(): void {
@@ -54,7 +57,9 @@ export default class ClubDetailsController extends BaseController {
   onSelectionChange(oEvent: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = oEvent.getParameter("listItem");
     if (selectedItem) {
-      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(ClubDetailsController.ENTRIES_MODEL);
+      const bindingCtx: Context | null | undefined = selectedItem.getBindingContext(
+        ClubDetailsController.ENTRIES_MODEL
+      );
       const entry: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
       super.getComponentJSONModel(RacesTableController.RACE_MODEL).setData(entry.race);
 
@@ -88,25 +93,28 @@ export default class ClubDetailsController extends BaseController {
   }
 
   private createSearchFilters(query: string): Filter[] {
-    return [new Filter({
-      filters: [
-        new Filter({
-          path: "crew/",
-          test: function (crews: any[]) {
-            for (const crew of crews) {
-              const found = crew.athlete.firstName.toLowerCase().includes(query.toLowerCase())
-                || crew.athlete.lastName.toLowerCase().includes(query.toLowerCase());
-              if (found) {
-                return true;
+    return [
+      new Filter({
+        filters: [
+          new Filter({
+            path: "crew/",
+            test: function (crews: any[]) {
+              for (const crew of crews) {
+                const found =
+                  crew.athlete.firstName.toLowerCase().includes(query.toLowerCase()) ||
+                  crew.athlete.lastName.toLowerCase().includes(query.toLowerCase());
+                if (found) {
+                  return true;
+                }
               }
+              return false;
             }
-            return false;
-          }
-        }),
-        new Filter("race/number", FilterOperator.Contains, query),
-      ],
-      and: false
-    })]
+          }),
+          new Filter("race/number", FilterOperator.Contains, query)
+        ],
+        and: false
+      })
+    ];
   }
 
   private async onPatternMatched(event: Route$PatternMatchedEvent): Promise<void> {
@@ -123,6 +131,9 @@ export default class ClubDetailsController extends BaseController {
     const clubModel: JSONModel = super.getViewJSONModel(ClubDetailsController.CLUB_MODEL);
     const entriesModel: JSONModel = super.getViewJSONModel(ClubDetailsController.ENTRIES_MODEL);
 
-    return await Promise.all([super.updateJSONModel(entriesModel, entriesUrl), super.updateJSONModel(clubModel, clubUrl)]);
+    return await Promise.all([
+      super.updateJSONModel(entriesModel, entriesUrl),
+      super.updateJSONModel(clubModel, clubUrl)
+    ]);
   }
 }

@@ -1,10 +1,17 @@
 <!-- see: https://stackoverflow.com/a/47049779 -->
-<mvc:View controllerName="de.regatta_hd.infoportal.controller.App" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc" height="100%"
-  displayBlock="true">
+<mvc:View
+  controllerName="de.regatta_hd.infoportal.controller.App"
+  xmlns="sap.m"
+  xmlns:mvc="sap.ui.core.mvc"
+  height="100%"
+  displayBlock="true"
+>
   <mvc:content>
 
-    <Shell homeIcon="{ 'phone ':'', 'phone@2':'', 'tablet':'', 'tablet@2':'', 'precomposed':true, 'favicon':'icon/favicon.ico' }"
-      logo="icon/hrv_bw.jpg">
+    <Shell
+      homeIcon="{ 'phone ':'', 'phone@2':'', 'tablet':'', 'tablet@2':'', 'precomposed':true, 'favicon':'icon/favicon.ico' }"
+      logo="icon/hrv_bw.jpg"
+    >
       <app>
         <App id="infoportalApp" class="infoportal" />
       </app>

@@ -1,14 +1,27 @@
 <mvc:View controllerName="de.regatta_hd.infoportal.controller.Monitoring" xmlns="sap.m" xmlns:mvc="sap.ui.core.mvc">
   <mvc:content>
 
-    <Page title="{i18n>monitoring.title}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
+    <Page
+      title="{i18n>monitoring.title}"
+      class="sapUiNoContentPadding"
+      showNavButton="true"
+      navButtonPress=".onNavBack"
+    >
       <headerContent>
-        <Button id="statusButton" icon="sap-icon://disconnected" enabled="true" type="Transparent" press=".onStatusButtonPress" />
+        <Button
+          id="statusButton"
+          icon="sap-icon://disconnected"
+          enabled="true"
+          type="Transparent"
+          press=".onStatusButtonPress"
+        />
       </headerContent>
 
       <content>
-        <Table id="monitoringTable"
-          items="{path:'monitoring>/',sorter:{path:'group',descending:false,group:'.getGroup'},groupHeaderFactory:'.getGroupHeader'}">
+        <Table
+          id="monitoringTable"
+          items="{path:'monitoring>/',sorter:{path:'group',descending:false,group:'.getGroup'},groupHeaderFactory:'.getGroupHeader'}"
+        >
           <columns>
             <Column />
             <Column />

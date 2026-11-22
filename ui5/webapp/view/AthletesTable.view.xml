@@ -1,27 +1,58 @@
-<mvc:View controllerName="de.regatta_hd.infoportal.controller.AthletesTable" xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:mvc="sap.ui.core.mvc">
+<mvc:View
+  controllerName="de.regatta_hd.infoportal.controller.AthletesTable"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:mvc="sap.ui.core.mvc"
+>
   <mvc:content>
 
     <Page title="{i18n>common.athletes}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
       <content>
 
-        <Table id="athletesTable" autoPopinMode="true" items="{athletes>/}" growing="true" growingScrollToLoad="true" growingThreshold="50"
-          sticky="HeaderToolbar,ColumnHeaders" class="sapUiNoContentPadding" itemPress=".onItemPress">
+        <Table
+          id="athletesTable"
+          autoPopinMode="true"
+          items="{athletes>/}"
+          growing="true"
+          growingScrollToLoad="true"
+          growingThreshold="50"
+          sticky="HeaderToolbar,ColumnHeaders"
+          class="sapUiNoContentPadding"
+          itemPress=".onItemPress"
+        >
           <!-- The HeaderToolbar shows a title and the filter button -->
           <headerToolbar>
             <OverflowToolbar>
               <content>
-                <SearchField width="12rem" liveChange=".onSearchFieldLiveChange" showSearchButton="false"
-                  placeholder="{i18n>search.athletes}" />
-                <ComboBox id="clubComboBox" showClearIcon="true" selectionChange=".onClubSelectionChange"
-                  width="{=${device>/system/phone}?'9rem':'15rem'}" placeholder="{i18n>filter.allClubs}"
-                  items="{path:'clubFilter>/',templateShareable:false}">
+                <SearchField
+                  width="12rem"
+                  liveChange=".onSearchFieldLiveChange"
+                  showSearchButton="false"
+                  placeholder="{i18n>search.athletes}"
+                />
+                <ComboBox
+                  id="clubComboBox"
+                  showClearIcon="true"
+                  selectionChange=".onClubSelectionChange"
+                  width="{=${device>/system/phone}?'9rem':'15rem'}"
+                  placeholder="{i18n>filter.allClubs}"
+                  items="{path:'clubFilter>/',templateShareable:false}"
+                >
                   <core:Item key="{clubFilter>key}" text="{clubFilter>text}" />
                 </ComboBox>
-                <Button text="{=!${device>/system/phone}?${i18n>common.sorting}:''}" tooltip="{i18n>common.sorting}" icon="sap-icon://sort"
-                  press=".onSortButtonPress" />
+                <Button
+                  text="{=!${device>/system/phone}?${i18n>common.sorting}:''}"
+                  tooltip="{i18n>common.sorting}"
+                  icon="sap-icon://sort"
+                  press=".onSortButtonPress"
+                />
                 <ToolbarSpacer />
-                <Button text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" tooltip="{i18n>common.refresh}"
-                  icon="sap-icon://refresh" press=".onRefreshButtonPress">
+                <Button
+                  text="{=!${device>/system/phone}?${i18n>common.refresh}:''}"
+                  tooltip="{i18n>common.refresh}"
+                  icon="sap-icon://refresh"
+                  press=".onRefreshButtonPress"
+                >
                   <layoutData>
                     <OverflowToolbarLayoutData priority="NeverOverflow" />
                   </layoutData>
@@ -41,20 +72,38 @@
                 <Text text="{i18n>common.firstName}" wrapping="false" />
               </header>
             </Column>
-            <Column id="athleteGenderCol" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
-              visible="{=!${device>/system/phone}}">
+            <Column
+              id="athleteGenderCol"
+              hAlign="Center"
+              width="4rem"
+              importance="Low"
+              popinDisplay="Inline"
+              visible="{=!${device>/system/phone}}"
+            >
               <header>
                 <Text text="{i18n>common.gender}" wrapping="false" />
               </header>
             </Column>
-            <Column id="athleteYearOfBirthCol" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
-              visible="{=!${device>/system/phone}}">
+            <Column
+              id="athleteYearOfBirthCol"
+              hAlign="Center"
+              width="4rem"
+              importance="Low"
+              popinDisplay="Inline"
+              visible="{=!${device>/system/phone}}"
+            >
               <header>
                 <Text text="{i18n>common.yearOfBirth}" wrapping="false" />
               </header>
             </Column>
-            <Column id="athleteEntriesCountCol" hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline"
-              visible="{=!${device>/system/phone}}">
+            <Column
+              id="athleteEntriesCountCol"
+              hAlign="Center"
+              width="4rem"
+              importance="Low"
+              popinDisplay="Inline"
+              visible="{=!${device>/system/phone}}"
+            >
               <header>
                 <Text text="{i18n>common.entries}" wrapping="false" />
               </header>

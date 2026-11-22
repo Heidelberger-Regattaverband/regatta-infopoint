@@ -11,6 +11,8 @@
     {
       "files": "*.xml",
       "options": {
+        "printWidth": 120,
+        "singleAttributePerLine": false,
         "xmlWhitespaceSensitivity": "strict",
         "xmlSortAttributesByKey": false,
         "xmlQuoteAttributes": "preserve"

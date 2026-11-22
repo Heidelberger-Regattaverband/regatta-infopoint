@@ -1,5 +1,8 @@
-<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core"
-  xmlns:cust="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:cust="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"
+>
   <ViewSettingsDialog confirm=".onHandleFilterDialogConfirm">
     <filterItems>
       <ViewSettingsFilterItem text="{i18n>common.gender}" key="gender" multiSelect="false">
@@ -15,10 +18,26 @@
           <ViewSettingsItem text="{i18n>heat.state.cancelled}" key="cancelled___EQ___true" />
           <ViewSettingsItem text="{i18n>common.scheduled}" key="state___EQ___0" cust:filter="cancelled___EQ___false" />
           <ViewSettingsItem text="{i18n>common.seeded}" key="state___EQ___1" cust:filter="cancelled___EQ___false" />
-          <ViewSettingsItem text="{i18n>heat.state.started}" key="state___EQ___2" cust:filter="cancelled___EQ___false" />
-          <ViewSettingsItem text="{i18n>heat.state.finished}" key="state___EQ___5" cust:filter="cancelled___EQ___false" />
-          <ViewSettingsItem text="{i18n>heat.state.official}" key="state___EQ___4" cust:filter="cancelled___EQ___false" />
-          <ViewSettingsItem text="{i18n>heat.state.photoFinish}" key="state___EQ___6" cust:filter="cancelled___EQ___false" />
+          <ViewSettingsItem
+            text="{i18n>heat.state.started}"
+            key="state___EQ___2"
+            cust:filter="cancelled___EQ___false"
+          />
+          <ViewSettingsItem
+            text="{i18n>heat.state.finished}"
+            key="state___EQ___5"
+            cust:filter="cancelled___EQ___false"
+          />
+          <ViewSettingsItem
+            text="{i18n>heat.state.official}"
+            key="state___EQ___4"
+            cust:filter="cancelled___EQ___false"
+          />
+          <ViewSettingsItem
+            text="{i18n>heat.state.photoFinish}"
+            key="state___EQ___6"
+            cust:filter="cancelled___EQ___false"
+          />
         </items>
       </ViewSettingsFilterItem>
 

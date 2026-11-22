@@ -19,7 +19,6 @@ import BaseTableController from "./BaseTable.controller";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class HeatsTableController extends BaseTableController {
-
   private static readonly FILTER_DIALOG: string = "de.regatta_hd.infoportal.view.HeatsFilterDialog";
   private static readonly SORT_DIALOG: string = "de.regatta_hd.infoportal.view.HeatsSortDialog";
   static readonly HEAT_MODEL: string = "heat";
@@ -29,11 +28,20 @@ export default class HeatsTableController extends BaseTableController {
   readonly formatter: Formatter = Formatter;
 
   onInit(): void {
-    super.init(super.getView()?.byId("heatsTable") as Table, "heat" /* eventBus channel */, HeatsTableController.HEAT_NAV_MODEL);
+    super.init(
+      super.getView()?.byId("heatsTable") as Table,
+      "heat" /* eventBus channel */,
+      HeatsTableController.HEAT_NAV_MODEL
+    );
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(new JSONModel(), HeatsTableController.HEATS_MODEL);
-    super.getRouter()?.getRoute("heats")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadHeatsModel(), this);
+    super
+      .getRouter()
+      ?.getRoute("heats")
+      ?.attachMatched((_: Route$MatchedEvent) => {
+        super.runAsync(this.loadHeatsModel(), "Failed to load heats:");
+      }, this);
 
     super.sortTable("heatDateTime", false, "dateTime");
 
@@ -48,7 +56,12 @@ export default class HeatsTableController extends BaseTableController {
 
       const index: number = this.table.indexOfItem(selectedItem);
       const count = this.table.getItems().length;
-      const navData: NavigationData = { isFirst: index === 0, isLast: index === count - 1, disabled: false, back: undefined };
+      const navData: NavigationData = {
+        isFirst: index === 0,
+        isLast: index === count - 1,
+        disabled: false,
+        back: undefined
+      };
       super.updateNavModel(navData);
 
       this.onItemChanged(heat);
@@ -91,97 +104,153 @@ export default class HeatsTableController extends BaseTableController {
     super.getEventBus()?.publish("heat", "itemChanged", {});
   }
 
-  async onSortButtonPress(event: Button$PressEvent): Promise<void> {
+  async onSortButtonPress(_event: Button$PressEvent): Promise<void> {
     try {
       const dialog = await super.getViewSettingsDialog(HeatsTableController.SORT_DIALOG);
       dialog.open();
-    } catch (error) { console.error("Failed to load sort dialog:", error); }
+    } catch (error) {
+      console.error("Failed to load sort dialog:", error);
+    }
   }
 
-  async onFilterButtonPress(event: Button$PressEvent): Promise<void> {
+  async onFilterButtonPress(_event: Button$PressEvent): Promise<void> {
     try {
       const dialog = await super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG);
       dialog.open();
-    } catch (error) { console.error("Failed to load filter dialog:", error); }
+    } catch (error) {
+      console.error("Failed to load filter dialog:", error);
+    }
   }
 
-  async onClearFilterPress(event: Button$PressEvent): Promise<void> {
+  async onClearFilterPress(_event: Button$PressEvent): Promise<void> {
     try {
       const dialog = await super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG);
       dialog.clearFilters();
-    } catch (error) { console.error("Failed to load filter dialog:", error); }
+    } catch (error) {
+      console.error("Failed to load filter dialog:", error);
+    }
     super.clearFilters();
     super.applyFilters();
   }
 
   private createSearchFilters(query: string): Filter[] {
-    return [new Filter({
-      filters: [
-        new Filter("race/number", FilterOperator.Contains, query),
-        new Filter("race/shortLabel", FilterOperator.Contains, query),
-        new Filter("race/longLabel", FilterOperator.Contains, query),
-        new Filter("race/comment", FilterOperator.Contains, query)
-      ],
-      and: false
-    })]
+    return [
+      new Filter({
+        filters: [
+          new Filter("race/number", FilterOperator.Contains, query),
+          new Filter("race/shortLabel", FilterOperator.Contains, query),
+          new Filter("race/longLabel", FilterOperator.Contains, query),
+          new Filter("race/comment", FilterOperator.Contains, query)
+        ],
+        and: false
+      })
+    ];
   }
 
   private async initFilterDialog(): Promise<void> {
     try {
       const filters: any = await super.getFilters();
-      const viewSettingsDialog: ViewSettingsDialog = await super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG);
+      const viewSettingsDialog: ViewSettingsDialog = await super.getViewSettingsDialog(
+        HeatsTableController.FILTER_DIALOG
+      );
       if (filters.dates && filters.dates.length > 1) {
-        const datesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "day", text: "{i18n>common.day}" });
+        const datesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({
+          multiSelect: true,
+          key: "day",
+          text: "{i18n>common.day}"
+        });
         filters.dates.forEach((date: any) => {
-          datesFilter.addItem(new ViewSettingsItem({ text: Formatter.weekDayDateLabel(date), key: `dateTime___Contains___${date}` }));
+          datesFilter.addItem(
+            new ViewSettingsItem({ text: Formatter.weekDayDateLabel(date), key: `dateTime___Contains___${date}` })
+          );
         });
         viewSettingsDialog.insertFilterItem(datesFilter, 0);
       }
       if (filters.blocks && filters.blocks.length > 1) {
-        const blocksFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "block", text: "Block" });
+        const blocksFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({
+          multiSelect: true,
+          key: "block",
+          text: "Block"
+        });
         filters.blocks.forEach((block: any) => {
-          blocksFilter.addItem(new ViewSettingsItem({
-            text: `${Formatter.dayTimeIsoLabel(block.begin)} - ${Formatter.dayTimeIsoLabel(block.end)}: ${block.heats} {i18n>common.heats}`,
-            key: `dateTime___BT___${block.begin}___${block.end}`
-          }));
+          blocksFilter.addItem(
+            new ViewSettingsItem({
+              text: `${Formatter.dayTimeIsoLabel(block.begin)} - ${Formatter.dayTimeIsoLabel(block.end)}: ${block.heats} {i18n>common.heats}`,
+              key: `dateTime___BT___${block.begin}___${block.end}`
+            })
+          );
         });
         viewSettingsDialog.insertFilterItem(blocksFilter, 1);
       }
       if (filters.boatClasses && filters.boatClasses.length > 1) {
-        const boatClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "boatClass", text: "{i18n>common.boatClass}" });
+        const boatClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({
+          multiSelect: true,
+          key: "boatClass",
+          text: "{i18n>common.boatClass}"
+        });
         filters.boatClasses.forEach((boatClass: any) => {
-          boatClassFilter.addItem(new ViewSettingsItem({
-            text: `${boatClass.caption} (${boatClass.abbreviation})`, key: `race/boatClass/id___EQ___${boatClass.id}`
-          }));
+          boatClassFilter.addItem(
+            new ViewSettingsItem({
+              text: `${boatClass.caption} (${boatClass.abbreviation})`,
+              key: `race/boatClass/id___EQ___${boatClass.id}`
+            })
+          );
         });
         viewSettingsDialog.insertFilterItem(boatClassFilter, 2);
       }
       if (filters.ageClasses && filters.ageClasses.length > 1) {
-        const ageClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "ageClass", text: "{i18n>common.ageClass}" });
+        const ageClassFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({
+          multiSelect: true,
+          key: "ageClass",
+          text: "{i18n>common.ageClass}"
+        });
         filters.ageClasses.forEach((ageClass: any) => {
-          ageClassFilter.addItem(new ViewSettingsItem({ text: `${ageClass.caption} ${ageClass.suffix}`, key: `race/ageClass/id___EQ___${ageClass.id}` }));
+          ageClassFilter.addItem(
+            new ViewSettingsItem({
+              text: `${ageClass.caption} ${ageClass.suffix}`,
+              key: `race/ageClass/id___EQ___${ageClass.id}`
+            })
+          );
         });
         viewSettingsDialog.insertFilterItem(ageClassFilter, 3);
       }
       if (filters.distances && filters.distances.length > 1) {
-        const distancesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "distance", text: "{i18n>common.distance}" });
+        const distancesFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({
+          multiSelect: true,
+          key: "distance",
+          text: "{i18n>common.distance}"
+        });
         filters.distances.forEach((distance: any) => {
-          distancesFilter.addItem(new ViewSettingsItem({ text: distance + "m", key: `race/distance___EQ___${distance}` }));
+          distancesFilter.addItem(
+            new ViewSettingsItem({ text: distance + "m", key: `race/distance___EQ___${distance}` })
+          );
         });
         viewSettingsDialog.insertFilterItem(distancesFilter, 5);
       }
       if (filters.rounds && filters.rounds.length > 1) {
-        const roundFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: true, key: "round", text: "{i18n>common.round}" });
+        const roundFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({
+          multiSelect: true,
+          key: "round",
+          text: "{i18n>common.round}"
+        });
         filters.rounds.forEach((round: any) => {
-          roundFilter.addItem(new ViewSettingsItem({ text: Formatter.roundLabel(round.code), key: `roundCode___EQ___${round.code}` }));
+          roundFilter.addItem(
+            new ViewSettingsItem({ text: Formatter.roundLabel(round.code), key: `roundCode___EQ___${round.code}` })
+          );
         });
         viewSettingsDialog.insertFilterItem(roundFilter, 6);
       }
       if (filters.lightweight && filters.lightweight.length > 1) {
-        const lightweightFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({ multiSelect: false, key: "lightweight", text: "{i18n>common.lightweight}" });
+        const lightweightFilter: ViewSettingsFilterItem = new ViewSettingsFilterItem({
+          multiSelect: false,
+          key: "lightweight",
+          text: "{i18n>common.lightweight}"
+        });
         filters.lightweight.forEach((lightweight: any) => {
           const text: string = lightweight ? this.i18n("common.yes") : this.i18n("common.no");
-          lightweightFilter.addItem(new ViewSettingsItem({ text: text, key: `race/lightweight___EQ___${lightweight}` }));
+          lightweightFilter.addItem(
+            new ViewSettingsItem({ text: text, key: `race/lightweight___EQ___${lightweight}` })
+          );
         });
         viewSettingsDialog.insertFilterItem(lightweightFilter, 7);
       }

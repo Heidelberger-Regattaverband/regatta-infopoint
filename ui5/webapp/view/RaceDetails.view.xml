@@ -1,19 +1,48 @@
-<mvc:View xmlns:core="sap.ui.core" controllerName="de.regatta_hd.infoportal.controller.RaceDetails" xmlns="sap.m" xmlns:f="sap.f"
-  xmlns:mvc="sap.ui.core.mvc">
+<mvc:View
+  xmlns:core="sap.ui.core"
+  controllerName="de.regatta_hd.infoportal.controller.RaceDetails"
+  xmlns="sap.m"
+  xmlns:f="sap.f"
+  xmlns:mvc="sap.ui.core.mvc"
+>
   <mvc:content>
 
     <!-- see: https://sapui5.hana.ondemand.com/#/entity/sap.ui.core.ContainerPadding and
     https://sapui5.hana.ondemand.com/#/topic/c71f6df62dae47ca8284310a6f5fc80a -->
     <Page title="{i18n>common.entries}" class="sapUiNoContentPadding" showNavButton="true" navButtonPress=".onNavBack">
       <headerContent>
-        <Button type="Transparent" icon="sap-icon://close-command-field" press=".onFirstPress" tooltip="First"
-          enabled="{=!${raceNav>/isFirst}}" visible="{=!${raceNav>/disabled}}" />
-        <Button type="Transparent" icon="sap-icon://navigation-left-arrow" press=".onPreviousPress" tooltip="Previous"
-          enabled="{=!${raceNav>/isFirst}}" visible="{=!${raceNav>/disabled}}" />
-        <Button type="Transparent" icon="sap-icon://navigation-right-arrow" press=".onNextPress" tooltip="Next"
-          enabled="{=!${raceNav>/isLast}}" visible="{=!${raceNav>/disabled}}" />
-        <Button type="Transparent" icon="sap-icon://open-command-field" press=".onLastPress" tooltip="Last"
-          enabled="{=!${raceNav>/isLast}}" visible="{=!${raceNav>/disabled}}" />
+        <Button
+          type="Transparent"
+          icon="sap-icon://close-command-field"
+          press=".onFirstPress"
+          tooltip="First"
+          enabled="{=!${raceNav>/isFirst}}"
+          visible="{=!${raceNav>/disabled}}"
+        />
+        <Button
+          type="Transparent"
+          icon="sap-icon://navigation-left-arrow"
+          press=".onPreviousPress"
+          tooltip="Previous"
+          enabled="{=!${raceNav>/isFirst}}"
+          visible="{=!${raceNav>/disabled}}"
+        />
+        <Button
+          type="Transparent"
+          icon="sap-icon://navigation-right-arrow"
+          press=".onNextPress"
+          tooltip="Next"
+          enabled="{=!${raceNav>/isLast}}"
+          visible="{=!${raceNav>/disabled}}"
+        />
+        <Button
+          type="Transparent"
+          icon="sap-icon://open-command-field"
+          press=".onLastPress"
+          tooltip="Last"
+          enabled="{=!${raceNav>/isLast}}"
+          visible="{=!${raceNav>/disabled}}"
+        />
       </headerContent>
 
       <content>
@@ -24,20 +53,32 @@
                 <VBox>
                   <Title text="{path:'raceEntries>/',formatter:'.formatter.nrRaceLabel'}" wrapping="true" />
                   <Label text="{raceEntries>/longLabel} {raceEntries>/comment}" />
-                  <ObjectStatus title="{i18n>common.state}" text="{path:'raceEntries>/',formatter:'.formatter.raceStateLabel'}"
-                    state="{path:'raceEntries>/',formatter:'.formatter.raceStateHighlight'}" class="bold" />
+                  <ObjectStatus
+                    title="{i18n>common.state}"
+                    text="{path:'raceEntries>/',formatter:'.formatter.raceStateLabel'}"
+                    state="{path:'raceEntries>/',formatter:'.formatter.raceStateHighlight'}"
+                    class="bold"
+                  />
                 </VBox>
               </f:expandedHeading>
               <f:snappedHeading>
                 <VBox>
                   <Title text="{path:'raceEntries>/',formatter:'.formatter.nrRaceLabel'}" wrapping="true" />
-                  <ObjectStatus title="{i18n>common.state}" text="{path:'raceEntries>/',formatter:'.formatter.raceStateLabel'}"
-                    state="{path:'raceEntries>/',formatter:'.formatter.raceStateHighlight'}" />
+                  <ObjectStatus
+                    title="{i18n>common.state}"
+                    text="{path:'raceEntries>/',formatter:'.formatter.raceStateLabel'}"
+                    state="{path:'raceEntries>/',formatter:'.formatter.raceStateHighlight'}"
+                  />
                 </VBox>
               </f:snappedHeading>
               <f:actions>
-                <Button tooltip="{i18n>common.refresh}" icon="sap-icon://refresh" press=".onRefreshButtonPress" type="Transparent"
-                  text="{=!${device>/system/phone}?${i18n>common.refresh}:''}" />
+                <Button
+                  tooltip="{i18n>common.refresh}"
+                  icon="sap-icon://refresh"
+                  press=".onRefreshButtonPress"
+                  type="Transparent"
+                  text="{=!${device>/system/phone}?${i18n>common.refresh}:''}"
+                />
               </f:actions>
             </f:DynamicPageTitle>
           </f:title>
@@ -47,23 +88,39 @@
               <f:content>
                 <HBox>
                   <VBox class="sapUiMediumMarginEnd">
-                    <ObjectAttribute title="{i18n>common.distance}" text="{path:'raceEntries>/',formatter:'.formatter.distanceLabel'}" />
+                    <ObjectAttribute
+                      title="{i18n>common.distance}"
+                      text="{path:'raceEntries>/',formatter:'.formatter.distanceLabel'}"
+                    />
                     <ObjectAttribute title="{i18n>common.entries}" text="{raceEntries>/entriesCount}" />
                   </VBox>
                   <VBox class="sapUiMediumMarginEnd">
-                    <ObjectAttribute title="{i18n>common.seeded}" text="{=${raceEntries>/seeded}?${i18n>common.yes}:${i18n>common.no}}" />
+                    <ObjectAttribute
+                      title="{i18n>common.seeded}"
+                      text="{=${raceEntries>/seeded}?${i18n>common.yes}:${i18n>common.no}}"
+                    />
                   </VBox>
                 </HBox>
-                <ObjectAttribute title="{i18n>common.heats} ({raceEntries>/heatsCount})"
-                  text="{parts:[{path:'race>/'},{path:'raceEntries>/heats'}],formatter:'.formatter.heatsLabel'}" />
+                <ObjectAttribute
+                  title="{i18n>common.heats} ({raceEntries>/heatsCount})"
+                  text="{parts:[{path:'race>/'},{path:'raceEntries>/heats'}],formatter:'.formatter.heatsLabel'}"
+                />
               </f:content>
             </f:DynamicPageHeader>
           </f:header>
 
           <f:content>
-            <Table headerText="" autoPopinMode="true" growing="true" growingThreshold="50" growingScrollToLoad="true"
+            <Table
+              headerText=""
+              autoPopinMode="true"
+              growing="true"
+              growingThreshold="50"
+              growingScrollToLoad="true"
               items="{path:'raceEntries>/entries/',sorter:[{path:'result/rankSort',descending:false},{path:'bib',descending:false}]}"
-              sticky="HeaderToolbar,InfoToolbar,ColumnHeaders" class="sapUiNoContentPadding" itemPress=".onEntriesItemPress">
+              sticky="HeaderToolbar,InfoToolbar,ColumnHeaders"
+              class="sapUiNoContentPadding"
+              itemPress=".onEntriesItemPress"
+            >
               <columns>
                 <Column hAlign="Center" width="3rem" importance="High" popinDisplay="Inline">
                   <header>
@@ -75,12 +132,24 @@
                     <Text text="{i18n>common.boat}" />
                   </header>
                 </Column>
-                <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline" visible="{=!${device>/system/phone}}">
+                <Column
+                  hAlign="Begin"
+                  width="8rem"
+                  importance="Low"
+                  popinDisplay="Inline"
+                  visible="{=!${device>/system/phone}}"
+                >
                   <header>
                     <Text text="{i18n>common.clubRegistration}" />
                   </header>
                 </Column>
-                <Column hAlign="Begin" width="8rem" importance="Low" popinDisplay="Inline" visible="{=${raceEntries>/heatsCount}>0}">
+                <Column
+                  hAlign="Begin"
+                  width="8rem"
+                  importance="Low"
+                  popinDisplay="Inline"
+                  visible="{=${raceEntries>/heatsCount}>0}"
+                >
                   <header>
                     <Text text="{i18n>common.heat}" />
                   </header>
@@ -88,20 +157,29 @@
               </columns>
 
               <items>
-                <ColumnListItem highlight="{parts:[{path:'race>/'},{path:'raceEntries>'}],formatter:'.formatter.raceEntryHighlight'}"
-                  vAlign="{=${device>/system/phone}?'Top':'Inherit'}" type="{=${raceEntries>/heatsCount}>0?'Navigation':'Inactive'}">
+                <ColumnListItem
+                  highlight="{parts:[{path:'race>/'},{path:'raceEntries>'}],formatter:'.formatter.raceEntryHighlight'}"
+                  vAlign="{=${device>/system/phone}?'Top':'Inherit'}"
+                  type="{=${raceEntries>/heatsCount}>0?'Navigation':'Inactive'}"
+                >
                   <!-- CustomData writes data-cancelled="true/false" as a DOM attribute on the row element.
                        The CSS rule [data-cancelled="true"] .sapMText then applies strikethrough to all Text cells.
                        (The class attribute is not a ManagedObject property so it cannot be bound reactively.) -->
                   <customData>
-                    <core:CustomData key="cancelled" value="{=${raceEntries>cancelled}?'true':'false'}" writeToDom="true" />
+                    <core:CustomData
+                      key="cancelled"
+                      value="{=${raceEntries>cancelled}?'true':'false'}"
+                      writeToDom="true"
+                    />
                   </customData>
                   <cells>
                     <Text text="{raceEntries>bib}" />
 
                     <VBox>
-                      <Text text="{parts:[{path:'race>/groupMode'},{path:'raceEntries>'}],formatter:'.formatter.boatLabel'}"
-                        class="bold" />
+                      <Text
+                        text="{parts:[{path:'race>/groupMode'},{path:'raceEntries>'}],formatter:'.formatter.boatLabel'}"
+                        class="bold"
+                      />
                       <Text text="{path:'raceEntries>crew',formatter: '.formatter.crewLabel'}" />
                     </VBox>
 
@@ -109,7 +187,9 @@
                       <Image src="{raceEntries>club/flagUrl}" width="25px" class="sapUiTinyMarginEnd" />
                       <Text text="{raceEntries>club/shortName}" />
                     </HBox>
-                    <Text text="{parts:[{path:'race>/'},{path:'raceEntries>heats'}],formatter:'.formatter.heatsLabel'}" />
+                    <Text
+                      text="{parts:[{path:'race>/'},{path:'raceEntries>heats'}],formatter:'.formatter.heatsLabel'}"
+                    />
                   </cells>
                 </ColumnListItem>
               </items>

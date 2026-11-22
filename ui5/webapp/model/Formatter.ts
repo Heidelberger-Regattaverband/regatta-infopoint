@@ -12,14 +12,14 @@ import {
   RaceState,
   HeatState,
   RoundCode,
-  GroupValue,
+  GroupValue
 } from "./types";
 import { Priority } from "sap/m/library";
 
 /**
  * Formatter utility class for regatta application data formatting.
  * Provides static methods for formatting various data types used in the regatta application.
- * 
+ *
  * @namespace de.regatta_hd.infoportal.model
  */
 export default class Formatter {
@@ -45,10 +45,14 @@ export default class Formatter {
 
   static priority(priority?: number): Priority {
     switch (priority) {
-      case 3: return Priority.High;
-      case 2: return Priority.Medium;
-      case 1: return Priority.Low;
-      default: return Priority.None;
+      case 3:
+        return Priority.High;
+      case 2:
+        return Priority.Medium;
+      case 1:
+        return Priority.Low;
+      default:
+        return Priority.None;
     }
   }
 
@@ -156,8 +160,10 @@ export default class Formatter {
       case RaceState.Finished:
       case RaceState.PhotoFinish:
         return IndicationColor.Indication03; // started -> orange
-      case RaceState.Official: return IndicationColor.Indication04; // official -> green
-      default: return undefined;
+      case RaceState.Official:
+        return IndicationColor.Indication04; // official -> green
+      default:
+        return undefined;
     }
   }
 
@@ -414,13 +420,20 @@ export default class Formatter {
 
   static heatStateLabel2(heatState?: number): string | undefined {
     switch (heatState) {
-      case HeatState.Initial: return Formatter.i18n("common.scheduled");
-      case HeatState.Seeded: return Formatter.i18n("common.seeded");
-      case HeatState.Started: return Formatter.i18n("heat.state.started");
-      case HeatState.Official: return Formatter.i18n("heat.state.official");
-      case HeatState.Finished: return Formatter.i18n("heat.state.finished");
-      case HeatState.PhotoFinish: return Formatter.i18n("heat.state.photoFinish");
-      default: return Formatter.i18n("common.scheduled");
+      case HeatState.Initial:
+        return Formatter.i18n("common.scheduled");
+      case HeatState.Seeded:
+        return Formatter.i18n("common.seeded");
+      case HeatState.Started:
+        return Formatter.i18n("heat.state.started");
+      case HeatState.Official:
+        return Formatter.i18n("heat.state.official");
+      case HeatState.Finished:
+        return Formatter.i18n("heat.state.finished");
+      case HeatState.PhotoFinish:
+        return Formatter.i18n("heat.state.photoFinish");
+      default:
+        return Formatter.i18n("common.scheduled");
     }
   }
 
@@ -441,12 +454,18 @@ export default class Formatter {
 
     switch (heat.state) {
       default:
-      case HeatState.Initial: return undefined; // initial -> no color
-      case HeatState.Seeded: return IndicationColor.Indication05; // scheduled -> blue
-      case HeatState.Started: return IndicationColor.Indication03; // started -> orange
-      case HeatState.Official: return IndicationColor.Indication04; // official -> green
-      case HeatState.Finished: return IndicationColor.Indication06; // finished -> dark green
-      case HeatState.PhotoFinish: return IndicationColor.Indication07; // photo finish -> custom color
+      case HeatState.Initial:
+        return undefined; // initial -> no color
+      case HeatState.Seeded:
+        return IndicationColor.Indication05; // scheduled -> blue
+      case HeatState.Started:
+        return IndicationColor.Indication03; // started -> orange
+      case HeatState.Official:
+        return IndicationColor.Indication04; // official -> green
+      case HeatState.Finished:
+        return IndicationColor.Indication06; // finished -> dark green
+      case HeatState.PhotoFinish:
+        return IndicationColor.Indication07; // photo finish -> custom color
     }
   }
 
@@ -496,13 +515,20 @@ export default class Formatter {
     }
 
     switch (roundCode) {
-      case "A": return Formatter.i18n("heat.label.division");
-      case "H": return Formatter.i18n("heat.label.repechage");
-      case "R": return Formatter.i18n("heat.label.mainRace");
-      case "V": return Formatter.i18n("heat.label.forerun");
-      case "S": return Formatter.i18n("heat.label.semifinal");
-      case "F": return Formatter.i18n("heat.label.final");
-      default: return undefined;
+      case "A":
+        return Formatter.i18n("heat.label.division");
+      case "H":
+        return Formatter.i18n("heat.label.repechage");
+      case "R":
+        return Formatter.i18n("heat.label.mainRace");
+      case "V":
+        return Formatter.i18n("heat.label.forerun");
+      case "S":
+        return Formatter.i18n("heat.label.semifinal");
+      case "F":
+        return Formatter.i18n("heat.label.final");
+      default:
+        return undefined;
     }
   }
 
@@ -519,17 +545,28 @@ export default class Formatter {
     const prefix: string = "AK ";
 
     switch (groupValue) {
-      case GroupValue.A: return `${prefix}A`;
-      case GroupValue.B: return `${prefix}B`;
-      case GroupValue.C: return `${prefix}C`;
-      case GroupValue.D: return `${prefix}D`;
-      case GroupValue.E: return `${prefix}E`;
-      case GroupValue.F: return `${prefix}F`;
-      case GroupValue.G: return `${prefix}G`;
-      case GroupValue.H: return `${prefix}H`;
-      case GroupValue.I: return `${prefix}I`;
-      case GroupValue.J: return `${prefix}J`;
-      default: return "";
+      case GroupValue.A:
+        return `${prefix}A`;
+      case GroupValue.B:
+        return `${prefix}B`;
+      case GroupValue.C:
+        return `${prefix}C`;
+      case GroupValue.D:
+        return `${prefix}D`;
+      case GroupValue.E:
+        return `${prefix}E`;
+      case GroupValue.F:
+        return `${prefix}F`;
+      case GroupValue.G:
+        return `${prefix}G`;
+      case GroupValue.H:
+        return `${prefix}H`;
+      case GroupValue.I:
+        return `${prefix}I`;
+      case GroupValue.J:
+        return `${prefix}J`;
+      default:
+        return "";
     }
   }
 
@@ -565,14 +602,22 @@ export default class Formatter {
   private static weekdayLabel(weekday: number): string {
     switch (weekday) {
       case 0:
-      case 7: return "So";
-      case 1: return "Mo";
-      case 2: return "Di";
-      case 3: return "Mi";
-      case 4: return "Do";
-      case 5: return "Fr";
-      case 6: return "Sa";
-      default: return "";
+      case 7:
+        return "So";
+      case 1:
+        return "Mo";
+      case 2:
+        return "Di";
+      case 3:
+        return "Mi";
+      case 4:
+        return "Do";
+      case 5:
+        return "Fr";
+      case 6:
+        return "Sa";
+      default:
+        return "";
     }
   }
 

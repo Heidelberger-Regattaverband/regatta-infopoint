@@ -19,7 +19,6 @@ const NOTIFICATIONS_POLL_INTERVAL_MS = 60_000;
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class LaunchpadController extends BaseController {
-
   readonly formatter: Formatter = Formatter;
   private readonly credentialsModel: JSONModel = new JSONModel({ username: "", password: "" });
   private readonly notificationsModel: JSONModel = new JSONModel([]);
@@ -69,17 +68,17 @@ export default class LaunchpadController extends BaseController {
     super.getRouter().navTo("problems", {}, false /* history */);
   }
 
-  onUserSubmit(event: Input$SubmitEvent): void {
+  onUserSubmit(_event: Input$SubmitEvent): void {
     super.byId("password")?.focus();
   }
 
-  onPasswordSubmit(event: Input$SubmitEvent): void {
+  onPasswordSubmit(_event: Input$SubmitEvent): void {
     super.byId("login")?.focus();
     // perform login if return is pressed in password input field
     this.performLogin();
   }
 
-  onLoginPress(event: Button$PressEvent): void {
+  onLoginPress(_event: Button$PressEvent): void {
     // close login popover when login button is pressed
     this.performLogin();
   }
@@ -128,7 +127,9 @@ export default class LaunchpadController extends BaseController {
       // check if fragment is already loaded or not
       // load fragment ...
       this.popoverPromise ??= Fragment.load({
-        id: this.getView()?.getId(), name: "de.regatta_hd.infoportal.view.LoginPopover", controller: this
+        id: this.getView()?.getId(),
+        name: "de.regatta_hd.infoportal.view.LoginPopover",
+        controller: this
       }).then((popover: any) => {
         // ... and initialize
         super.getView()?.addDependent(popover);
@@ -139,14 +140,17 @@ export default class LaunchpadController extends BaseController {
       // finish loading of fragment and open it. We swallow rejections explicitly
       // (logging only) — without a `.catch` an unhandled promise rejection would
       // surface in the browser console for every fragment-load failure.
-      this.popoverPromise.then((popover: ResponsivePopover) => {
-        this.popover = popover;
-        popover.openBy(eventSource);
-      }, (err: unknown) => {
-        delete this.popoverPromise;
-        Log.error("Failed to load login popover fragment", err as Error);
-        super.showErrorMessageToast(super.i18n("msg.loginFailed"));
-      });
+      this.popoverPromise.then(
+        (popover: ResponsivePopover) => {
+          this.popover = popover;
+          popover.openBy(eventSource);
+        },
+        (err: unknown) => {
+          delete this.popoverPromise;
+          Log.error("Failed to load login popover fragment", err as Error);
+          super.showErrorMessageToast(super.i18n("msg.loginFailed"));
+        }
+      );
     }
   }
 
@@ -159,12 +163,12 @@ export default class LaunchpadController extends BaseController {
       url: "/api/login",
       data: JSON.stringify(credentials),
       contentType: "application/json",
-      success: (result: { username: string, scope: string }) => {
+      success: (result: { username: string; scope: string }) => {
         this.updateIdentity(true, result.username, result.scope);
         MessageToast.show(super.i18n("msg.loginSucceeded"));
         $(".sapMMessageToast").addClass("sapMMessageToastSuccess");
       },
-      error: (result: any) => {
+      error: () => {
         MessageToast.show(super.i18n("msg.loginFailed"));
         $(".sapMMessageToast").addClass("sapMMessageToastDanger");
       }
@@ -178,7 +182,7 @@ export default class LaunchpadController extends BaseController {
     $.ajax({
       type: "POST",
       url: "/api/logout",
-      success: (result: any) => {
+      success: () => {
         this.updateIdentity(false, "", "");
       }
     });
@@ -189,10 +193,10 @@ export default class LaunchpadController extends BaseController {
       type: "GET",
       url: "/api/identity",
       contentType: "application/json",
-      success: (result: { username: string, scope: string }) => {
+      success: (result: { username: string; scope: string }) => {
         this.updateIdentity(true, result.username, result.scope);
       },
-      error: (result: any) => {
+      error: () => {
         this.updateIdentity(false, "", "");
       }
     });

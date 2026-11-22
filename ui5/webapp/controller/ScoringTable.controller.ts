@@ -12,7 +12,6 @@ import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class ScoringTableController extends BaseController {
-
   private table?: Table;
   private readonly scoringModel: JSONModel = new JSONModel();
 
@@ -21,7 +20,12 @@ export default class ScoringTableController extends BaseController {
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.scoringModel, "scoring");
-    super.getRouter()?.getRoute("scoring")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadScoringModel(), this);
+    super
+      .getRouter()
+      ?.getRoute("scoring")
+      ?.attachMatched((_: Route$MatchedEvent) => {
+        super.runAsync(this.loadScoringModel(), "Failed to load scoring:");
+      }, this);
   }
 
   onNavBack(): void {
@@ -30,7 +34,7 @@ export default class ScoringTableController extends BaseController {
 
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
     const query: string | undefined = event.getParameters().newValue?.trim();
-    const searchFilters: Filter[] = (query) ? this.createSearchFilters(query) : [];
+    const searchFilters: Filter[] = query ? this.createSearchFilters(query) : [];
     const binding: ListBinding | undefined = this.table?.getBinding("items") as ListBinding;
     binding?.filter(searchFilters);
   }
@@ -38,21 +42,28 @@ export default class ScoringTableController extends BaseController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadScoringModel().then((succeeded: boolean) => {
-      super.showDataUpdatedMessage(succeeded);
-    }).finally(() => source.setEnabled(true));
+    super.runAsync(
+      this.loadScoringModel()
+        .then((succeeded: boolean) => {
+          super.showDataUpdatedMessage(succeeded);
+        })
+        .finally(() => source.setEnabled(true)),
+      "Failed to refresh scoring:"
+    );
   }
 
   private createSearchFilters(query: string): Filter[] {
-    return [new Filter({
-      filters: [
-        new Filter("club/shortName", FilterOperator.Contains, query),
-        new Filter("club/longName", FilterOperator.Contains, query),
-        new Filter("club/city", FilterOperator.Contains, query),
-        new Filter("club/abbreviation", FilterOperator.Contains, query)
-      ],
-      and: false
-    })]
+    return [
+      new Filter({
+        filters: [
+          new Filter("club/shortName", FilterOperator.Contains, query),
+          new Filter("club/longName", FilterOperator.Contains, query),
+          new Filter("club/city", FilterOperator.Contains, query),
+          new Filter("club/abbreviation", FilterOperator.Contains, query)
+        ],
+        and: false
+      })
+    ];
   }
 
   private async loadScoringModel(): Promise<boolean> {

@@ -1,4 +1,24 @@
-import { Circle, FitBoundsOptions, LatLng, LatLngBounds, LayerGroup, Map as LeafletMap, MapOptions, Marker, TileLayer, circle, control, icon, latLng, latLngBounds, layerGroup, map, marker, popup, tileLayer } from "leaflet";
+import {
+  Circle,
+  FitBoundsOptions,
+  LatLng,
+  LatLngBounds,
+  LayerGroup,
+  Map as LeafletMap,
+  MapOptions,
+  Marker,
+  TileLayer,
+  circle,
+  control,
+  icon,
+  latLng,
+  latLngBounds,
+  layerGroup,
+  map,
+  marker,
+  popup,
+  tileLayer
+} from "leaflet";
 import Log from "sap/base/Log";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
@@ -9,7 +29,6 @@ import BaseController from "./Base.controller";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class MapController extends BaseController {
-
   private readonly participatingClubsModel: JSONModel = new JSONModel();
   private readonly boundsOpts: FitBoundsOptions = { paddingTopLeft: [0, 0], paddingBottomRight: [0, 0] };
   private readonly clubMarkers: Map<number, Marker> = new Map();
@@ -41,11 +60,17 @@ export default class MapController extends BaseController {
         });
     };
 
-    super.getRouter()?.getRoute("map")?.attachMatched((_: Route$MatchedEvent) => handleRoute(), this);
-    super.getRouter()?.getRoute("mapClub")?.attachMatched((event: Route$MatchedEvent) => {
-      const clubId = Number((event.getParameter("arguments") as any).clubId);
-      handleRoute(clubId);
-    }, this);
+    super
+      .getRouter()
+      ?.getRoute("map")
+      ?.attachMatched((_: Route$MatchedEvent) => handleRoute(), this);
+    super
+      .getRouter()
+      ?.getRoute("mapClub")
+      ?.attachMatched((event: Route$MatchedEvent) => {
+        const clubId = Number((event.getParameter("arguments") as any).clubId);
+        handleRoute(clubId);
+      }, this);
 
     this.centerClubsButton = this.byId("centerClubsButton") as Button;
     this.centerRegattaButton = this.byId("centerRegattaButton") as Button;
@@ -84,13 +109,14 @@ export default class MapController extends BaseController {
 
   private loadMap(): void {
     if (!this.map) {
-      const layerOsm: TileLayer = tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      const layerOsm: TileLayer = tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       });
-      const layerOsmHOT: TileLayer = tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+      const layerOsmHOT: TileLayer = tileLayer("https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png", {
         maxZoom: 19,
-        attribution: '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team hosted by OpenStreetMap France'
+        attribution:
+          "© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team hosted by OpenStreetMap France"
       });
 
       const regattaLayer: [LayerGroup, LatLngBounds] = this.getRegattaLayerGroup();
@@ -99,17 +125,17 @@ export default class MapController extends BaseController {
       this.clubBounds = clubsLayer[1];
 
       const baseMaps = {
-        "OpenStreetMap": layerOsm,
+        OpenStreetMap: layerOsm,
         "OpenStreetMap.HOT": layerOsmHOT
       };
       const overlayMaps = {
         "Regatta Orte": regattaLayer[0],
-        "Vereine": clubsLayer[0],
+        Vereine: clubsLayer[0],
         "Entfernung 250km": this.getCircleLayerGroup()
       };
       const options: MapOptions = {
         doubleClickZoom: true,
-        layers: [layerOsm, regattaLayer[0], clubsLayer[0]],
+        layers: [layerOsm, regattaLayer[0], clubsLayer[0]]
       };
       this.map = map("map", options);
       control.layers(baseMaps, overlayMaps).addTo(this.map);
@@ -144,7 +170,13 @@ export default class MapController extends BaseController {
     const markStart1000m: Marker = marker(posStart1000m).bindPopup(popup().setContent("Start 1000m"));
     const markStart1500m: Marker = marker(posStart1500m).bindPopup(popup().setContent("Start 1500m"));
     const layer: LayerGroup = layerGroup([mark1, markOffice, markFinish, markStart1000m, markStart1500m]);
-    const bounds: LatLngBounds = latLngBounds([mark1.getLatLng(), markOffice.getLatLng(), markFinish.getLatLng(), markStart1000m.getLatLng(), markStart1500m.getLatLng()]);
+    const bounds: LatLngBounds = latLngBounds([
+      mark1.getLatLng(),
+      markOffice.getLatLng(),
+      markFinish.getLatLng(),
+      markStart1000m.getLatLng(),
+      markStart1500m.getLatLng()
+    ]);
     return [layer, bounds];
   }
 
@@ -157,7 +189,7 @@ export default class MapController extends BaseController {
         if (club.flagUrl) {
           const iconClub = icon({
             iconUrl: club.flagUrl,
-            iconSize: [25, 25], // size of the icon
+            iconSize: [25, 25] // size of the icon
           });
           mark.setIcon(iconClub);
         }
@@ -165,7 +197,7 @@ export default class MapController extends BaseController {
         marks.push(mark);
       }
     });
-    return [layerGroup(marks), latLngBounds(marks.map(mark => mark.getLatLng()))];
+    return [layerGroup(marks), latLngBounds(marks.map((mark) => mark.getLatLng()))];
   }
 
   /**

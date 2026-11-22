@@ -47,10 +47,7 @@
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
           "bundleName": "de.regatta_hd.infoportal.i18n.i18n",
-          "supportedLocales": [
-            "de",
-            "en"
-          ],
+          "supportedLocales": ["de", "en"],
           "fallbackLocale": "de"
         }
       }
@@ -64,9 +61,7 @@
         "controlAggregation": "pages",
         "transition": "slide",
         "bypassed": {
-          "target": [
-            "startpage"
-          ]
+          "target": ["startpage"]
         }
       },
       "routes": [

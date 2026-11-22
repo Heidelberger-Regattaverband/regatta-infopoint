@@ -38,6 +38,11 @@ export default defineConfig(
     // TypeScript checks names, including UI5's ambient declarations.
     rules: { "no-undef": "off" }
   },
+  {
+    files: ["test/**/*.mjs"],
+    extends: [js.configs.recommended],
+    languageOptions: { globals: globals.node }
+  },
   // Formatting belongs to Prettier, not overlapping ESLint style rules.
   prettier
 );

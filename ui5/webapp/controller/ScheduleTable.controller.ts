@@ -13,7 +13,6 @@ import Formatter from "../model/Formatter";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class ScheduleTableController extends BaseController {
-
   formatter: Formatter = Formatter;
   private table: Table;
   private readonly scheduleModel: JSONModel = new JSONModel();
@@ -23,7 +22,12 @@ export default class ScheduleTableController extends BaseController {
 
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.scheduleModel, "schedule");
-    super.getRouter()?.getRoute("schedule")?.attachMatched(async (_: Route$MatchedEvent) => await this.loadScheduleModel(), this);
+    super
+      .getRouter()
+      ?.getRoute("schedule")
+      ?.attachMatched((_: Route$MatchedEvent) => {
+        super.runAsync(this.loadScheduleModel(), "Failed to load schedule:");
+      }, this);
   }
 
   onNavBack(): void {
@@ -32,7 +36,7 @@ export default class ScheduleTableController extends BaseController {
 
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
     const query: string | undefined = event.getParameters().newValue?.trim();
-    const searchFilters: Filter[] = (query) ? this.createSearchFilters(query) : [];
+    const searchFilters: Filter[] = query ? this.createSearchFilters(query) : [];
     const binding: ListBinding = this.table.getBinding("items") as ListBinding;
     binding?.filter(searchFilters);
   }
@@ -40,19 +44,26 @@ export default class ScheduleTableController extends BaseController {
   onRefreshButtonPress(event: Button$PressEvent): void {
     const source: Button = event.getSource();
     source.setEnabled(false);
-    this.loadScheduleModel().then((succeeded: boolean) => {
-      super.showDataUpdatedMessage(succeeded);
-    }).finally(() => source.setEnabled(true));
+    super.runAsync(
+      this.loadScheduleModel()
+        .then((succeeded: boolean) => {
+          super.showDataUpdatedMessage(succeeded);
+        })
+        .finally(() => source.setEnabled(true)),
+      "Failed to refresh schedule:"
+    );
   }
 
   private createSearchFilters(query: string): Filter[] {
-    return [new Filter({
-      filters: [
-        new Filter("raceNumber", FilterOperator.Contains, query),
-        new Filter("raceShortLabel", FilterOperator.Contains, query),
-      ],
-      and: false
-    })]
+    return [
+      new Filter({
+        filters: [
+          new Filter("raceNumber", FilterOperator.Contains, query),
+          new Filter("raceShortLabel", FilterOperator.Contains, query)
+        ],
+        and: false
+      })
+    ];
   }
 
   private async loadScheduleModel(): Promise<boolean> {
