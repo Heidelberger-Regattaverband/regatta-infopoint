@@ -5,14 +5,18 @@ import Dialog from "sap/m/Dialog";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import { Switch$ChangeEvent } from "sap/m/Switch";
+import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
+import { Routes } from "../model/Routes";
 import BaseController from "./Base.controller";
 
 const MODEL_NOTIFICATIONS: string = "notifications";
 
 /**
+ * Notification administration with create/edit dialogs, deletion, priority changes, and visibility updates.
+ *
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class NotificationsController extends BaseController {
@@ -22,21 +26,28 @@ export default class NotificationsController extends BaseController {
   private currentNotificationId?: number;
   private isEditMode: boolean = false;
 
+  /** Registers the notification and dialog models and reloads notifications whenever the route matches. */
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.notificationsModel, MODEL_NOTIFICATIONS);
     super.setViewModel(this.dialogModel, "dialog");
-    void this.loadNotifications();
+    super
+      .getRouter()
+      ?.getRoute(Routes.Notifications)
+      ?.attachMatched((_: Route$MatchedEvent) => {
+        super.runAsync(this.loadNotifications(), "Failed to load notifications:");
+      }, this);
   }
 
   navBack(): void {
-    super.navBack("startpage");
+    super.navBack(Routes.StartPage);
   }
 
   onRefresh(): void {
     void this.loadNotifications();
   }
 
+  /** Opens a blank creation form without modifying an existing notification. */
   onAddNotification(): void {
     this.isEditMode = false;
     this.currentNotificationId = undefined;
@@ -49,6 +60,11 @@ export default class NotificationsController extends BaseController {
     this.openDialog();
   }
 
+  /**
+   * Copies the selected notification into the dialog model so edits stay separate from the displayed list.
+   *
+   * @param event - Edit-button press event whose binding context identifies the notification to edit.
+   */
   onEditNotification(event: Button$PressEvent): void {
     const context: Context | undefined | null = event.getSource().getBindingContext(MODEL_NOTIFICATIONS);
     const notification: any = context?.getObject();
@@ -66,6 +82,11 @@ export default class NotificationsController extends BaseController {
     }
   }
 
+  /**
+   * Deletes the selected notification only after the user confirms.
+   *
+   * @param event - Delete-button press event whose binding context identifies the notification to confirm.
+   */
   onDeleteNotification(event: Button$PressEvent): void {
     const context: Context | undefined | null = event.getSource().getBindingContext(MODEL_NOTIFICATIONS);
     const notification: any = context?.getObject();
@@ -83,6 +104,11 @@ export default class NotificationsController extends BaseController {
     }
   }
 
+  /**
+   * Submits the notification's new visibility flag without changing its other editable fields.
+   *
+   * @param event - Switch-change event providing the notification binding context and requested visibility state.
+   */
   onVisibilityChange(event: Switch$ChangeEvent): void {
     const context: Context | undefined | null = event.getSource().getBindingContext(MODEL_NOTIFICATIONS);
     const notification: any = context?.getObject();
@@ -93,6 +119,11 @@ export default class NotificationsController extends BaseController {
     }
   }
 
+  /**
+   * Sends the selected priority along with the notification's other editable fields.
+   *
+   * @param event - Combo-box selection event providing the notification context and numeric priority key.
+   */
   onPriorityChange(event: ComboBox$SelectionChangeEvent): void {
     const context: Context | undefined | null = event.getSource().getBindingContext(MODEL_NOTIFICATIONS);
     const notification: any = context?.getObject();
@@ -103,6 +134,7 @@ export default class NotificationsController extends BaseController {
     }
   }
 
+  /** Requires a nonblank title, then dispatches creation or update according to the dialog's edit mode. */
   onSaveNotification(): void {
     const dialogData: any = this.dialogModel.getData();
 
@@ -124,6 +156,13 @@ export default class NotificationsController extends BaseController {
     this.closeDialog();
   }
 
+  /**
+   * Starts a request for all active-regatta notifications, including invisible ones.
+   * The promise covers regatta lookup and AJAX dispatch only; the list updates in the success callback.
+   *
+   * @returns A promise resolving after dispatch, or after a regatta-lookup failure is handled.
+   * It does not wait for the GET request to finish.
+   */
   private async loadNotifications(): Promise<void> {
     try {
       const regatta = await super.getActiveRegatta();
@@ -151,6 +190,14 @@ export default class NotificationsController extends BaseController {
     }
   }
 
+  /**
+   * Starts notification creation for the active regatta and closes the dialog on successful completion.
+   * The promise covers regatta lookup and AJAX dispatch only, not completion of the POST request.
+   *
+   * @param data - Dialog fields for title, text, priority, and visibility.
+   * @returns A promise resolving after dispatch, or after a regatta-lookup failure is handled.
+   * It does not wait for the POST request to finish.
+   */
   private async createNotification(data: any): Promise<void> {
     try {
       const regatta = await super.getActiveRegatta();
@@ -185,6 +232,12 @@ export default class NotificationsController extends BaseController {
     }
   }
 
+  /**
+   * Submits editable fields, then refreshes the list and closes the dialog after a successful update.
+   *
+   * @param notificationId - Backend ID of the notification to update.
+   * @param data - Replacement title, text, priority, and visibility fields; priority is parsed as a decimal integer.
+   */
   private updateNotification(notificationId: number, data: any): void {
     $.ajax({
       type: "PUT",
@@ -210,6 +263,12 @@ export default class NotificationsController extends BaseController {
     });
   }
 
+  /**
+   * Updates only visibility and reloads the list on success or failure to reconcile the displayed switch state.
+   *
+   * @param notificationId - Backend ID of the notification whose visibility is changing.
+   * @param visible - Whether the notification should be publicly visible.
+   */
   private updateNotificationVisibility(notificationId: number, visible: boolean): void {
     $.ajax({
       type: "PUT",
@@ -234,6 +293,11 @@ export default class NotificationsController extends BaseController {
     });
   }
 
+  /**
+   * Deletes a previously confirmed notification and refreshes the list after backend success.
+   *
+   * @param notificationId - Backend ID of the notification to delete.
+   */
   private deleteNotification(notificationId: number): void {
     $.ajax({
       type: "DELETE",

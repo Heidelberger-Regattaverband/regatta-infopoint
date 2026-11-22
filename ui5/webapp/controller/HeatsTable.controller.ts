@@ -12,21 +12,27 @@ import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
-import { NavigationData } from "../model/types";
+import { Routes } from "../model/Routes";
+import { NavigationData } from "../model/Types";
 import BaseTableController from "./BaseTable.controller";
 
 /**
+ * Heat list with schedule-based sorting, search, dynamic filters, and selection shared with heat details.
+ *
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class HeatsTableController extends BaseTableController {
   private static readonly FILTER_DIALOG: string = "de.regatta_hd.infoportal.view.HeatsFilterDialog";
   private static readonly SORT_DIALOG: string = "de.regatta_hd.infoportal.view.HeatsSortDialog";
+  /** Component model containing the heat selected for the detail view. */
   static readonly HEAT_MODEL: string = "heat";
+  /** Component model containing list-navigation state, kept separate from heat data. */
   static readonly HEAT_NAV_MODEL: string = "heatNav";
   private static readonly HEATS_MODEL: string = "heats";
 
   readonly formatter: Formatter = Formatter;
 
+  /** Configures table navigation, route-triggered loading, chronological sorting, and dynamic filter options. */
   onInit(): void {
     super.init(
       super.getView()?.byId("heatsTable") as Table,
@@ -38,7 +44,7 @@ export default class HeatsTableController extends BaseTableController {
     super.setViewModel(new JSONModel(), HeatsTableController.HEATS_MODEL);
     super
       .getRouter()
-      ?.getRoute("heats")
+      ?.getRoute(Routes.Heats)
       ?.attachMatched((_: Route$MatchedEvent) => {
         super.runAsync(this.loadHeatsModel(), "Failed to load heats:");
       }, this);
@@ -48,6 +54,11 @@ export default class HeatsTableController extends BaseTableController {
     void this.initFilterDialog();
   }
 
+  /**
+   * Stores the selected heat and its list position before opening details.
+   *
+   * @param event - Selection event whose list item is bound to the heat to display.
+   */
   onItemPress(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
@@ -69,12 +80,18 @@ export default class HeatsTableController extends BaseTableController {
     }
   }
 
+  /** Returns to the launchpad and reduces the growing threshold for the next visit. */
   onNavBack(): void {
     super.navToStartPage();
     // reduce table growing threshold to improve performance next time table is shown
     this.table.setGrowingThreshold(30);
   }
 
+  /**
+   * Applies trimmed race-related text search together with the active heat-dialog filters.
+   *
+   * @param event - Live-change event containing new search text; blank text removes only the search constraint.
+   */
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
     const query: string | undefined = event.getParameters().newValue?.trim();
     if (query) {
@@ -85,6 +102,12 @@ export default class HeatsTableController extends BaseTableController {
     super.applyFilters();
   }
 
+  /**
+   * Reloads heats and restores the refresh button on both success and failure.
+   *
+   * @param event - Press event providing the refresh button to disable during loading.
+   * @returns A promise resolving after loading, feedback, and button restoration, including handled failures.
+   */
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
@@ -99,11 +122,22 @@ export default class HeatsTableController extends BaseTableController {
     }
   }
 
+  /**
+   * Updates the shared heat model and notifies the visible detail view through the `heat` event-bus channel.
+   *
+   * @param item - Selected heat data to place in the component's shared heat model.
+   */
   protected onItemChanged(item: any): void {
     super.getComponentJSONModel(HeatsTableController.HEAT_MODEL).setData(item);
     super.getEventBus()?.publish("heat", "itemChanged", {});
   }
 
+  /**
+   * Opens the heat sorting dialog, logging fragment-loading failures.
+   *
+   * @param _event - Sort-button press event; unused because the dialog is fixed for this controller.
+   * @returns A promise resolving after the dialog opens or a loading failure is logged.
+   */
   async onSortButtonPress(_event: Button$PressEvent): Promise<void> {
     try {
       const dialog = await super.getViewSettingsDialog(HeatsTableController.SORT_DIALOG);
@@ -113,6 +147,12 @@ export default class HeatsTableController extends BaseTableController {
     }
   }
 
+  /**
+   * Opens the heat filtering dialog, logging fragment-loading failures.
+   *
+   * @param _event - Filter-button press event; unused because the dialog is fixed for this controller.
+   * @returns A promise resolving after the dialog opens or a loading failure is logged.
+   */
   async onFilterButtonPress(_event: Button$PressEvent): Promise<void> {
     try {
       const dialog = await super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG);
@@ -122,6 +162,12 @@ export default class HeatsTableController extends BaseTableController {
     }
   }
 
+  /**
+   * Clears dialog filters without discarding the current text search, even if the dialog cannot load.
+   *
+   * @param _event - Clear-filter press event; unused because all dialog filters are reset.
+   * @returns A promise resolving after dialog reset is attempted and the remaining search filters are applied.
+   */
   async onClearFilterPress(_event: Button$PressEvent): Promise<void> {
     try {
       const dialog = await super.getViewSettingsDialog(HeatsTableController.FILTER_DIALOG);
@@ -133,6 +179,12 @@ export default class HeatsTableController extends BaseTableController {
     super.applyFilters();
   }
 
+  /**
+   * Builds an OR search across the heat's race number, labels, and comment.
+   *
+   * @param query - Trimmed search text applied to each race search field.
+   * @returns One compound OR filter combining all supported race search fields for the heat list.
+   */
   private createSearchFilters(query: string): Filter[] {
     return [
       new Filter({
@@ -147,6 +199,11 @@ export default class HeatsTableController extends BaseTableController {
     ];
   }
 
+  /**
+   * Adds multi-choice date, block, and race filter categories using keys decoded by the base table controller.
+   *
+   * @returns A promise resolving after dynamic categories are added, or after a loading failure is logged.
+   */
   private async initFilterDialog(): Promise<void> {
     try {
       const filters: any = await super.getFilters();
@@ -259,6 +316,11 @@ export default class HeatsTableController extends BaseTableController {
     }
   }
 
+  /**
+   * Loads heats for the active regatta into the view's list model.
+   *
+   * @returns Whether the list request succeeded; active-regatta loading failures still reject.
+   */
   private async loadHeatsModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
     const url: string = `/api/regattas/${regatta.id}/heats`;

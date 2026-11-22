@@ -10,9 +10,12 @@ import Context from "sap/ui/model/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ListBinding from "sap/ui/model/ListBinding";
 import Formatter from "../model/Formatter";
+import { Routes } from "../model/Routes";
 import BaseTableController from "./BaseTable.controller";
 
 /**
+ * Live timestrip and Aquarius heat view with WebSocket commands for start/finish timestamps and assignments.
+ *
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class TimekeepingController extends BaseTableController {
@@ -27,6 +30,7 @@ export default class TimekeepingController extends BaseTableController {
   // bind keyListener method to this context to have access to navigation methods
   private readonly keyListener: (event: KeyboardEvent) => void = this.onKeyDown.bind(this);
 
+  /** Registers timekeeping models, table behavior, visibility-scoped keyboard shortcuts, and route connection. */
   onInit(): void {
     super.init(super.getView()?.byId("timestripTable") as Table, "timestamp" /* eventBus channel */);
     this.statusButton = this.byId("timekeepingStatusButton") as Button;
@@ -38,7 +42,7 @@ export default class TimekeepingController extends BaseTableController {
     super.setViewModel(new JSONModel(), TimekeepingController.BIBS_MODEL);
     super
       .getRouter()
-      ?.getRoute("timekeeping")
+      ?.getRoute(Routes.Timekeeping)
       ?.attachMatched((_: Route$MatchedEvent) => {
         this.connect();
       }, this);
@@ -48,11 +52,17 @@ export default class TimekeepingController extends BaseTableController {
     globalThis.addEventListener("keydown", this.keyListener);
   }
 
+  /** Removes timekeeping shortcuts and closes the socket when the page is hidden. */
   private onBeforeHide(): void {
     globalThis.removeEventListener("keydown", this.keyListener);
     this.disconnect();
   }
 
+  /**
+   * Passes the selected timestrip timestamp to the table's selection hook.
+   *
+   * @param event - Selection event whose list item is bound to a timestrip timestamp.
+   */
   onSelectionChange(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
@@ -82,10 +92,20 @@ export default class TimekeepingController extends BaseTableController {
     this.sendAddFinishCommand();
   }
 
+  /**
+   * Requests a fresh timestrip snapshot over the current socket.
+   *
+   * @param _event - Refresh-button press event; unused because the command needs no source-specific arguments.
+   */
   onRefreshButtonPress(_event: Button$PressEvent): void {
     this.sendGetTimestripCommand();
   }
 
+  /**
+   * After confirmation, sends a delete command and immediately removes the timestamp from the local timestrip.
+   *
+   * @param event - Delete-button press event whose binding context identifies the timestamp's time key.
+   */
   onDeleteTimestamp(event: Button$PressEvent): void {
     const bindingCtx: Context | null | undefined = event
       .getSource()
@@ -107,6 +127,11 @@ export default class TimekeepingController extends BaseTableController {
     }
   }
 
+  /**
+   * Requests heats ready to start and resumes the combo box's suspended items binding.
+   *
+   * @param event - Lazy-load event whose source combo box provides the items binding to resume.
+   */
   onLoadHeats(event: ComboBoxBase$LoadItemsEvent): void {
     this.sendGetHeatsReadyToStartCommand();
     const binding: ListBinding | undefined = event.getSource().getBinding("items") as ListBinding;
@@ -117,10 +142,20 @@ export default class TimekeepingController extends BaseTableController {
     }
   }
 
+  /**
+   * Placeholder for lazy bib loading; no command is currently sent.
+   *
+   * @param _event - Bib combo-box lazy-load event; currently unused because bib loading is not implemented.
+   */
   onLoadBibs(_event: ComboBoxBase$LoadItemsEvent): void {
     // TODO: Implement loading bibs for timestrip item
   }
 
+  /**
+   * Updates the local heat assignment and sends its parsed numeric value to the backend.
+   *
+   * @param event - Combo-box change event providing the entered heat number and timestamp binding context.
+   */
   onHeatChange(event: ComboBox$ChangeEvent): void {
     const heatNr: string = event.getParameter("value") || "";
     const bindingCtx: Context | null | undefined = event
@@ -135,6 +170,11 @@ export default class TimekeepingController extends BaseTableController {
     }
   }
 
+  /**
+   * Updates the local bib assignment and sends its parsed numeric value to the backend.
+   *
+   * @param event - Combo-box change event providing the entered bib number and timestamp binding context.
+   */
   onBibChange(event: ComboBox$ChangeEvent): void {
     const bibNr: string = event.getParameter("value") || "";
     const bindingCtx: Context | null | undefined = event
@@ -149,12 +189,26 @@ export default class TimekeepingController extends BaseTableController {
     }
   }
 
+  /**
+   * No-op base-table hook; timestamp selection currently has no separate detail view.
+   *
+   * @param _item - Selected timestamp data; unused until selection-specific behavior is implemented.
+   */
   protected onItemChanged(_item: any): void {}
 
+  /**
+   * Placeholder for a combined timekeeping snapshot; current socket messages update individual models instead.
+   *
+   * @param _timekeeping - Timekeeping snapshot; unused because this placeholder has no implementation.
+   */
   private updateModel(_timekeeping: any) {
     // nothing to do yet
   }
 
+  /**
+   * Replaces the timekeeping socket and requests the full timestrip once connected.
+   * Incoming messages update heat/timestamp models or report backend errors.
+   */
   private connect() {
     this.disconnect();
 
@@ -195,6 +249,11 @@ export default class TimekeepingController extends BaseTableController {
     };
   }
 
+  /**
+   * Replaces a timestamp with the same time key, or prepends a newly received timestamp to the timestrip.
+   *
+   * @param timestamp - Incoming backend timestamp whose `time` field identifies the existing row, if any.
+   */
   private updateTimestamp(timestamp: any) {
     const timestripModel: JSONModel = super.getViewJSONModel(TimekeepingController.TIMESTRIP_MODEL);
     const existingTimestamps: any[] = timestripModel.getData() || [];
@@ -207,6 +266,11 @@ export default class TimekeepingController extends BaseTableController {
     timestripModel.setData(existingTimestamps);
   }
 
+  /**
+   * Removes the local timestamp matching the supplied time key without waiting for backend acknowledgement.
+   *
+   * @param timestamp - Timestamp object whose `time` field identifies the local row to remove.
+   */
   private deleteTimestamp(timestamp: any) {
     const timestripModel: JSONModel = super.getViewJSONModel(TimekeepingController.TIMESTRIP_MODEL);
     const existingTimestamps: any[] = timestripModel.getData() || [];
@@ -217,6 +281,7 @@ export default class TimekeepingController extends BaseTableController {
     timestripModel.setData(existingTimestamps);
   }
 
+  /** Closes the current socket and clears the controller's reference to it. */
   private disconnect() {
     if (this.socket) {
       console.debug("Disconnecting Timekeeping WebSocket ...");
@@ -225,20 +290,28 @@ export default class TimekeepingController extends BaseTableController {
     }
   }
 
+  /**
+   * Sends a JSON-encoded protocol command only when the socket is open; disconnected commands are discarded.
+   *
+   * @param command - Protocol object containing a command name and its payload, such as `AddStart` or `GetTimestrip`.
+   */
   private sendCommand(command: any) {
     if (this.socket?.readyState === WebSocket.OPEN) {
       this.socket.send(JSON.stringify(command));
     }
   }
 
+  /** Requests a full timestrip snapshot rather than an incremental timestamp update. */
   private sendGetTimestripCommand() {
     this.sendCommand({ GetTimestrip: null });
   }
 
+  /** Adds a start timestamp using the browser's current clock, serialized as a UTC ISO string. */
   private sendAddStartCommand() {
     this.sendCommand({ AddStart: { time: new Date().toISOString() } });
   }
 
+  /** Adds a finish timestamp using the browser's current clock, serialized as a UTC ISO string. */
   private sendAddFinishCommand() {
     this.sendCommand({ AddFinish: { time: new Date().toISOString() } });
   }
@@ -247,6 +320,11 @@ export default class TimekeepingController extends BaseTableController {
     this.sendCommand({ GetHeatsReadyToStart: null });
   }
 
+  /**
+   * Maps Space to a finish and `+` to a start, suppressing default browser handling for those keys.
+   *
+   * @param event - Browser keyboard event used to choose the timestamp command and stop further key handling.
+   */
   private onKeyDown(event: KeyboardEvent): void {
     switch (event.key) {
       case " ":

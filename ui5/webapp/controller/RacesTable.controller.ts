@@ -12,21 +12,27 @@ import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
-import { NavigationData } from "../model/types";
+import { Routes } from "../model/Routes";
+import { NavigationData } from "../model/Types";
 import BaseTableController from "./BaseTable.controller";
 
 /**
+ * Race list with search, regatta-specific filters, sorting, and selection shared with race details.
+ *
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class RacesTableController extends BaseTableController {
   private static readonly FILTER_DIALOG: string = "de.regatta_hd.infoportal.view.RacesFilterDialog";
   private static readonly SORT_DIALOG: string = "de.regatta_hd.infoportal.view.RacesSortDialog";
+  /** Component model containing the race selected for the detail view. */
   static readonly RACE_MODEL: string = "race";
+  /** Component model containing list-navigation state, kept separate from race data. */
   static readonly RACE_NAV_MODEL: string = "raceNav";
   private static readonly RACES_MODEL: string = "races";
 
   readonly formatter: Formatter = Formatter;
 
+  /** Configures table navigation, route-triggered loading, default sorting, and dynamic filter options. */
   onInit(): void {
     super.init(
       super.getView()?.byId("racesTable") as Table,
@@ -38,7 +44,7 @@ export default class RacesTableController extends BaseTableController {
     super.setViewModel(new JSONModel(), RacesTableController.RACES_MODEL);
     super
       .getRouter()
-      ?.getRoute("races")
+      ?.getRoute(Routes.Races)
       ?.attachMatched((_: Route$MatchedEvent) => {
         super.runAsync(this.loadRacesModel(), "Failed to load races:");
       }, this);
@@ -48,6 +54,11 @@ export default class RacesTableController extends BaseTableController {
     void this.initFilterDialog();
   }
 
+  /**
+   * Stores the selected race and its list position before opening details.
+   *
+   * @param event - Selection event whose list item is bound to the race to display.
+   */
   onItemPress(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameter("listItem");
     if (selectedItem) {
@@ -69,12 +80,18 @@ export default class RacesTableController extends BaseTableController {
     }
   }
 
+  /** Returns to the launchpad and reduces the growing threshold for the next visit. */
   onNavBack(): void {
     super.navToStartPage();
     // reduce table growing threshold to improve performance next time table is shown
     this.table.setGrowingThreshold(30);
   }
 
+  /**
+   * Applies trimmed text search together with the active dialog filters.
+   *
+   * @param event - Live-change event containing new search text; blank text removes only the search constraint.
+   */
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
     const query: string | undefined = event.getParameters().newValue?.trim();
     if (query) {
@@ -85,6 +102,12 @@ export default class RacesTableController extends BaseTableController {
     super.applyFilters();
   }
 
+  /**
+   * Opens the race filtering dialog, logging fragment-loading failures.
+   *
+   * @param _event - Filter-button press event; unused because the dialog is fixed for this controller.
+   * @returns A promise resolving after the dialog opens or a loading failure is logged.
+   */
   async onFilterButtonPress(_event: Button$PressEvent): Promise<void> {
     try {
       const dialog = await super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG);
@@ -94,6 +117,12 @@ export default class RacesTableController extends BaseTableController {
     }
   }
 
+  /**
+   * Clears dialog filters without discarding the current text search, even if the dialog cannot load.
+   *
+   * @param _event - Clear-filter press event; unused because all dialog filters are reset.
+   * @returns A promise resolving after dialog reset is attempted and the remaining search filters are applied.
+   */
   async onClearFilterPress(_event: Button$PressEvent): Promise<void> {
     try {
       const dialog = await super.getViewSettingsDialog(RacesTableController.FILTER_DIALOG);
@@ -105,6 +134,12 @@ export default class RacesTableController extends BaseTableController {
     super.applyFilters();
   }
 
+  /**
+   * Opens the race sorting dialog, logging fragment-loading failures.
+   *
+   * @param _event - Sort-button press event; unused because the dialog is fixed for this controller.
+   * @returns A promise resolving after the dialog opens or a loading failure is logged.
+   */
   async onSortButtonPress(_event: Button$PressEvent): Promise<void> {
     try {
       const dialog = await super.getViewSettingsDialog(RacesTableController.SORT_DIALOG);
@@ -114,6 +149,12 @@ export default class RacesTableController extends BaseTableController {
     }
   }
 
+  /**
+   * Reloads races and restores the refresh button on both success and failure.
+   *
+   * @param event - Press event providing the refresh button to disable during loading.
+   * @returns A promise resolving after loading, feedback, and button restoration, including handled failures.
+   */
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
@@ -128,11 +169,22 @@ export default class RacesTableController extends BaseTableController {
     }
   }
 
+  /**
+   * Updates the shared race model and notifies the visible detail view through the `race` event-bus channel.
+   *
+   * @param item - Selected race data to place in the component's shared race model.
+   */
   protected onItemChanged(item: any): void {
     super.getComponentJSONModel(RacesTableController.RACE_MODEL).setData(item);
     super.getEventBus()?.publish("race", "itemChanged", {});
   }
 
+  /**
+   * Builds an OR search across race number, labels, and comment.
+   *
+   * @param query - Trimmed search text applied to each race search field.
+   * @returns One compound OR filter combining all supported race search fields.
+   */
   private createSearchFilters(query: string): Filter[] {
     return [
       new Filter({
@@ -147,6 +199,11 @@ export default class RacesTableController extends BaseTableController {
     ];
   }
 
+  /**
+   * Adds backend-provided filter categories only when they contain multiple choices; logs loading errors.
+   *
+   * @returns A promise resolving after dynamic categories are added, or after a loading failure is logged.
+   */
   private async initFilterDialog(): Promise<void> {
     try {
       const filters: any = await super.getFilters();
@@ -213,6 +270,11 @@ export default class RacesTableController extends BaseTableController {
     }
   }
 
+  /**
+   * Loads races for the active regatta into the view's list model.
+   *
+   * @returns Whether the list request succeeded; active-regatta loading failures still reject.
+   */
   private async loadRacesModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
     const url: string = `/api/regattas/${regatta.id}/races`;

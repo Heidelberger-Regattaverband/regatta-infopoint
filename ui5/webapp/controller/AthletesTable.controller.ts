@@ -9,9 +9,12 @@ import Context from "sap/ui/model/Context";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import { Routes } from "../model/Routes";
 import BaseTableController from "./BaseTable.controller";
 
 /**
+ * Athlete list supporting text search, club selection, and club-specific route navigation.
+ *
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class AthletesTable extends BaseTableController {
@@ -21,6 +24,10 @@ export default class AthletesTable extends BaseTableController {
   private clubFilter?: Filter;
   private textSearchFilters: Filter[] = [];
 
+  /**
+   * Registers list models and both athlete routes.
+   * Club-route arguments are captured synchronously and applied only after the athlete model has loaded.
+   */
   onInit(): void {
     super.init(super.getView()?.byId("athletesTable") as Table);
 
@@ -29,7 +36,7 @@ export default class AthletesTable extends BaseTableController {
     super.setViewModel(new JSONModel([]), AthletesTable.CLUB_FILTER_MODEL);
     super
       .getRouter()
-      ?.getRoute("athletes")
+      ?.getRoute(Routes.Athletes)
       ?.attachMatched((_: Route$MatchedEvent) => {
         super.runAsync(
           this.loadModel().then(() => {
@@ -41,7 +48,7 @@ export default class AthletesTable extends BaseTableController {
 
     super
       .getRouter()
-      ?.getRoute("clubAthletes")
+      ?.getRoute(Routes.ClubAthletes)
       ?.attachMatched((event: Route$MatchedEvent) => {
         const clubId: number = Number((event.getParameter("arguments") as any)?.clubId);
         super.runAsync(
@@ -56,21 +63,37 @@ export default class AthletesTable extends BaseTableController {
   }
 
   onNavBack(): void {
-    super.navBack("startpage");
+    super.navBack(Routes.StartPage);
   }
 
+  /**
+   * Updates text search while preserving the current club selection.
+   *
+   * @param event - Live-change event containing the new search text; blank text clears the text constraint.
+   */
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
     const query: string | undefined = event.getParameters().newValue?.trim();
     this.textSearchFilters = query ? this.createSearchFilters(query) : [];
     this.applyAllFilters();
   }
 
+  /**
+   * Filters by the selected club's short name, combining it with the current text search.
+   *
+   * @param event - Selection event providing a club short-name key; no selection removes the club constraint.
+   */
   onClubSelectionChange(event: ComboBox$SelectionChangeEvent): void {
     const key: string = event.getParameters().selectedItem?.getKey() ?? "";
     this.clubFilter = key ? new Filter("club/shortName", FilterOperator.EQ, key) : undefined;
     this.applyAllFilters();
   }
 
+  /**
+   * Opens the athlete sorting dialog, logging fragment-loading failures.
+   *
+   * @param _event - Sort-button press event; unused because the dialog has no source-specific configuration.
+   * @returns A promise resolving after the dialog opens or a loading failure is logged.
+   */
   async onSortButtonPress(_event: Button$PressEvent): Promise<void> {
     try {
       const dialog = await super.getViewSettingsDialog("de.regatta_hd.infoportal.view.AthletesSortDialog");
@@ -80,6 +103,12 @@ export default class AthletesTable extends BaseTableController {
     }
   }
 
+  /**
+   * Reloads athletes and club choices, restoring the refresh button even when loading fails.
+   *
+   * @param event - Press event providing the refresh button to disable during loading.
+   * @returns A promise resolving after loading, feedback, and button restoration, including handled failures.
+   */
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
@@ -94,6 +123,11 @@ export default class AthletesTable extends BaseTableController {
     }
   }
 
+  /**
+   * Opens details for the selected athlete.
+   *
+   * @param event - Selection event whose list item is bound to an athlete with a backend ID.
+   */
   onItemPress(event: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = event.getParameters().listItem;
     if (selectedItem) {
@@ -103,10 +137,20 @@ export default class AthletesTable extends BaseTableController {
     }
   }
 
+  /**
+   * No-op base-table hook; selecting an athlete navigates directly rather than updating shared detail state.
+   *
+   * @param _item - Selected athlete data; unused because no shared detail state is maintained.
+   */
   protected onItemChanged(_item: any): void {
     // nothing to do yet
   }
 
+  /**
+   * Resolves a route's club ID to a loaded athlete's club short name and synchronizes the club selector.
+   *
+   * @param clubId - Backend club ID to locate in the already loaded athlete collection.
+   */
   private applyClubFilter(clubId: number): void {
     const athletes: any[] = super.getViewJSONModel(AthletesTable.ATHLETES_MODEL).getData() ?? [];
     const shortName: string | undefined = athletes.find((a: any) => a.club?.id === clubId)?.club?.shortName;
@@ -117,6 +161,7 @@ export default class AthletesTable extends BaseTableController {
     }
   }
 
+  /** Removes a previous club-route filter while retaining text search. */
   private clearClubFilter(): void {
     if (this.clubFilter) {
       this.clubFilter = undefined;
@@ -125,6 +170,7 @@ export default class AthletesTable extends BaseTableController {
     }
   }
 
+  /** Applies text-search alternatives and the optional club constraint together through the base table binding. */
   private applyAllFilters(): void {
     const allFilters: Filter[] = [...this.textSearchFilters];
     if (this.clubFilter) {
@@ -134,6 +180,12 @@ export default class AthletesTable extends BaseTableController {
     super.applyFilters();
   }
 
+  /**
+   * Builds an OR search over athlete and club names, city, abbreviation, and exact birth year.
+   *
+   * @param query - Trimmed search text applied to each search alternative.
+   * @returns One compound OR filter combining all supported athlete and club search fields.
+   */
   private createSearchFilters(query: string): Filter[] {
     return [
       new Filter({
@@ -151,6 +203,11 @@ export default class AthletesTable extends BaseTableController {
     ];
   }
 
+  /**
+   * Builds alphabetically sorted club choices, deduplicated by short name, from the loaded athletes.
+   *
+   * @param athletesModel - Model containing the athlete array from which club choices are derived.
+   */
   private populateClubFilterModel(athletesModel: JSONModel): void {
     const data: any = athletesModel.getData();
     const athletes: any[] = Array.isArray(data) ? data : [];
@@ -171,6 +228,11 @@ export default class AthletesTable extends BaseTableController {
     super.getViewJSONModel(AthletesTable.CLUB_FILTER_MODEL).setData(items);
   }
 
+  /**
+   * Loads athletes for the active regatta and rebuilds club choices only after a successful request.
+   *
+   * @returns Whether the athlete request succeeded; active-regatta loading failures still reject.
+   */
   private async loadModel(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
     const url = `/api/regattas/${regatta.id}/athletes`;
