@@ -7,7 +7,7 @@ import Context from "sap/ui/model/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import { Routes } from "../model/Routes";
-import { NavigationData } from "../model/types";
+import { NavigationData } from "../model/Types";
 import BaseController from "./Base.controller";
 import RacesTableController from "./RacesTable.controller";
 

@@ -13,7 +13,7 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
 import { Routes } from "../model/Routes";
-import { NavigationData } from "../model/types";
+import { NavigationData } from "../model/Types";
 import BaseTableController from "./BaseTable.controller";
 
 /**

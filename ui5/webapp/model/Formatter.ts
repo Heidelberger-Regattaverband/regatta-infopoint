@@ -13,7 +13,7 @@ import {
   HeatState,
   RoundCode,
   GroupValue
-} from "./types";
+} from "./Types";
 import { Priority } from "sap/m/library";
 
 /**

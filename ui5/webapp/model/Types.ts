@@ -4,7 +4,7 @@ import type { RouteName } from "./Routes";
  * Shared navigation state and the partial backend data shapes consumed by `Formatter`.
  * These interfaces describe frontend needs, not the complete REST API payloads.
  *
- * @namespace de.regatta_hd.infoportal.model.types
+ * @namespace de.regatta_hd.infoportal.model.Types
  */
 
 /**

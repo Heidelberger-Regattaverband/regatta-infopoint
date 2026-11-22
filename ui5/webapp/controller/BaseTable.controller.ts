@@ -17,7 +17,7 @@ import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import ListBinding from "sap/ui/model/ListBinding";
 import Sorter from "sap/ui/model/Sorter";
-import { NavigationData } from "../model/types";
+import { NavigationData } from "../model/Types";
 import BaseController from "./Base.controller";
 
 /**

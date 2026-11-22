@@ -7,7 +7,7 @@ import ResourceModel from "sap/ui/model/resource/ResourceModel";
 import HeatsTableController from "./controller/HeatsTable.controller";
 import RacesTableController from "./controller/RacesTable.controller";
 import Formatter from "./model/Formatter";
-import { NavigationData } from "./model/types";
+import { NavigationData } from "./model/Types";
 
 /**
  * Application component owning shared models, routing, localization, and cached regatta data.
