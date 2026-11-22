@@ -83,7 +83,8 @@ function loadController(name) {
     if (id === "sap/ui/model/json/JSONModel") return JSONModel;
     if (id === "jquery") return () => ({ addClass() {} });
     if (id === "sap/m/MessageToast") return { show() {} };
-    if (id === "sap/m/GroupHeaderListItem" || id === "sap/ui/model/Filter") return class {};
+    if (id === "sap/m/GroupHeaderListItem" || id === "sap/ui/model/Filter" || id === "sap/m/Dialog") return class {};
+    if (id === "sap/m/MessageBox") return {};
     if (id === "sap/ui/model/FilterOperator") return {};
     if (id === "./Base.controller") return loadController("Base");
     if (id === "./BaseTable.controller") {
@@ -157,6 +158,34 @@ test("statistics callbacks return void and clear busy state on refresh failure",
   await setImmediate();
   assert.deepEqual(controller.busy, [true, false]);
   assert.deepEqual(controller.feedback, [false]);
+});
+
+test("notifications load on every route match, not directly during initialization", async () => {
+  const controller = new (loadController("Notifications"))();
+  let loads = 0;
+  controller.loadNotifications = () => {
+    loads++;
+    return Promise.resolve();
+  };
+
+  assert.equal(controller.onInit(), undefined);
+  assert.equal(loads, 0, "initialization must not load notifications before the route matches");
+  assert.ok(controller.models.has("notifications"));
+  assert.ok(controller.models.has("dialog"));
+
+  const onMatched = controller.routes.get(Routes.Notifications);
+  assert.equal(typeof onMatched, "function");
+  assert.equal(onMatched({}), undefined);
+  assert.equal(loads, 1, "the first navigation must load notifications");
+  await setImmediate();
+
+  assert.equal(onMatched({}), undefined);
+  assert.equal(loads, 2, "revisiting the same controller must reload notifications");
+  await setImmediate();
+  assert.deepEqual(controller.feedback, []);
+
+  assert.equal(controller.onRefresh(), undefined);
+  assert.equal(loads, 3, "manual refresh must still load notifications");
 });
 
 test("heat route arguments are consumed synchronously, before a pooled event is cleared", async () => {

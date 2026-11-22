@@ -5,6 +5,7 @@ import Dialog from "sap/m/Dialog";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import { Switch$ChangeEvent } from "sap/m/Switch";
+import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
@@ -25,12 +26,17 @@ export default class NotificationsController extends BaseController {
   private currentNotificationId?: number;
   private isEditMode: boolean = false;
 
-  /** Registers the notification and dialog models and starts the initial administrative list request. */
+  /** Registers the notification and dialog models and reloads notifications whenever the route matches. */
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.notificationsModel, MODEL_NOTIFICATIONS);
     super.setViewModel(this.dialogModel, "dialog");
-    void this.loadNotifications();
+    super
+      .getRouter()
+      ?.getRoute(Routes.Notifications)
+      ?.attachMatched((_: Route$MatchedEvent) => {
+        super.runAsync(this.loadNotifications(), "Failed to load notifications:");
+      }, this);
   }
 
   navBack(): void {
