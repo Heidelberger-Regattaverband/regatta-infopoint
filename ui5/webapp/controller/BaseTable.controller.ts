@@ -96,7 +96,8 @@ export default abstract class BaseTableController extends BaseController {
       bus?.unsubscribe(this.channelId, "last", this.onLastItemEvent, this);
       this.channelId = undefined;
     }
-    super.onExit();
+    // UI5's abstract lifecycle hook has no guaranteed runtime implementation.
+    super.onExit?.();
   }
 
   /**

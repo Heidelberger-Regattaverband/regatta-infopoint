@@ -32,6 +32,12 @@ export default class MonitoringController extends BaseController {
     this.disconnect();
   }
 
+  /** Closes the monitoring stream on view destruction and runs any implemented base cleanup. */
+  onExit(): void {
+    this.disconnect();
+    super.onExit?.();
+  }
+
   /** Returns to the launchpad, closes the stream, and clears displayed metrics. */
   onNavBack(): void {
     super.navToStartPage();
@@ -223,29 +229,44 @@ export default class MonitoringController extends BaseController {
     return duration;
   }
 
-  /** Replaces any existing socket with a same-origin monitoring stream, using WSS on HTTPS pages. */
+  /**
+   * Replaces the monitoring stream, using WSS on HTTPS pages and disabling reconnect until open or close.
+   * Only callbacks from the currently owned socket may update metrics or connection status.
+   */
   private connect() {
     this.statusButton?.setEnabled(false);
 
     this.disconnect();
+    this.statusButton?.setIcon("sap-icon://disconnected");
 
     const location: Location = globalThis.location;
     const proto = location.protocol.startsWith("https") ? "wss" : "ws";
 
     console.debug("Connecting Monitoring WebSocket ...");
-    this.socket = new WebSocket(`${proto}://${location.host}/api/monitoring`);
+    const socket = new WebSocket(`${proto}://${location.host}/api/monitoring`);
+    this.socket = socket;
 
-    this.socket.onopen = (_event: Event) => {
+    socket.onopen = (_event: Event) => {
+      if (this.socket !== socket) {
+        return;
+      }
       this.statusButton?.setEnabled(true);
       this.statusButton?.setIcon("sap-icon://connected");
       console.debug("Monitoring WebSocket Connected");
     };
-    this.socket.onclose = (_event: CloseEvent) => {
+    socket.onclose = (_event: CloseEvent) => {
+      if (this.socket !== socket) {
+        return;
+      }
+      delete this.socket;
       this.statusButton?.setEnabled(true);
       this.statusButton?.setIcon("sap-icon://disconnected");
       console.debug("Monitoring WebSocket Disconnected");
     };
-    this.socket.onmessage = (event: MessageEvent) => {
+    socket.onmessage = (event: MessageEvent) => {
+      if (this.socket !== socket) {
+        return;
+      }
       const monitoring: any = JSON.parse(event.data);
       if (monitoring.Update) {
         this.updateModel(monitoring.Update.monitoring);
@@ -253,15 +274,17 @@ export default class MonitoringController extends BaseController {
     };
   }
 
-  /** Detaches socket callbacks before closing so the old connection cannot keep updating the view. */
+  /** Invalidates socket ownership and detaches callbacks before closing; safe to call more than once. */
   private disconnect() {
-    if (this.socket) {
-      this.socket.onclose = null;
-      this.socket.onmessage = null;
-      this.socket.onopen = null;
-      console.debug("Disconnecting Monitoring WebSocket ...");
-      this.socket.close();
+    const socket = this.socket;
+    if (socket) {
       delete this.socket;
+      socket.onopen = null;
+      socket.onclose = null;
+      socket.onmessage = null;
+      socket.onerror = null;
+      console.debug("Disconnecting Monitoring WebSocket ...");
+      socket.close();
     }
   }
 }

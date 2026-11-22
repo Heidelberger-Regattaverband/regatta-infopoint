@@ -48,6 +48,12 @@ export default class TimekeepingController extends BaseTableController {
       }, this);
   }
 
+  /** Releases the visible view's resources on destruction and retains inherited table cleanup. */
+  onExit(): void {
+    this.onBeforeHide();
+    super.onExit();
+  }
+
   private onBeforeShow(): void {
     globalThis.addEventListener("keydown", this.keyListener);
   }
@@ -207,27 +213,39 @@ export default class TimekeepingController extends BaseTableController {
 
   /**
    * Replaces the timekeeping socket and requests the full timestrip once connected.
-   * Incoming messages update heat/timestamp models or report backend errors.
+   * Only callbacks from the currently owned socket may update status or heat/timestamp models.
    */
   private connect() {
     this.disconnect();
+    this.statusButton?.setIcon("sap-icon://disconnected");
 
     const location: Location = globalThis.location;
     const proto = location.protocol.startsWith("https") ? "wss" : "ws";
 
     console.debug("Connecting Timekeeping WebSocket ...");
-    this.socket = new WebSocket(`${proto}://${location.host}/api/timekeeping`);
+    const socket = new WebSocket(`${proto}://${location.host}/api/timekeeping`);
+    this.socket = socket;
 
-    this.socket.onopen = (_event: Event) => {
+    socket.onopen = (_event: Event) => {
+      if (this.socket !== socket) {
+        return;
+      }
       this.sendGetTimestripCommand();
       this.statusButton?.setIcon("sap-icon://connected");
       console.debug("Timekeeping WebSocket Connected");
     };
-    this.socket.onclose = (_event: CloseEvent) => {
+    socket.onclose = (_event: CloseEvent) => {
+      if (this.socket !== socket) {
+        return;
+      }
+      delete this.socket;
       this.statusButton?.setIcon("sap-icon://disconnected");
       console.debug("Timekeeping WebSocket Disconnected");
     };
-    this.socket.onmessage = (msgEvent: MessageEvent) => {
+    socket.onmessage = (msgEvent: MessageEvent) => {
+      if (this.socket !== socket) {
+        return;
+      }
       const data: any = JSON.parse(msgEvent.data);
       if (data.error) {
         console.error("Timekeeping WebSocket error:", data.error);
@@ -281,12 +299,17 @@ export default class TimekeepingController extends BaseTableController {
     timestripModel.setData(existingTimestamps);
   }
 
-  /** Closes the current socket and clears the controller's reference to it. */
+  /** Invalidates socket ownership and detaches callbacks before closing; safe to call more than once. */
   private disconnect() {
-    if (this.socket) {
-      console.debug("Disconnecting Timekeeping WebSocket ...");
-      this.socket.close();
+    const socket = this.socket;
+    if (socket) {
       delete this.socket;
+      socket.onopen = null;
+      socket.onclose = null;
+      socket.onmessage = null;
+      socket.onerror = null;
+      console.debug("Disconnecting Timekeeping WebSocket ...");
+      socket.close();
     }
   }
 

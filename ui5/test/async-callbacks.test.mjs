@@ -31,6 +31,29 @@ class JSONModel {
   }
 }
 
+class FakeWebSocket {
+  static OPEN = 1;
+  static CLOSED = 3;
+
+  constructor(url) {
+    this.url = url;
+    this.readyState = 0;
+    this.sent = [];
+    this.closeCalls = 0;
+    this.onopen = null;
+    this.onclose = null;
+    this.onmessage = null;
+    this.onerror = null;
+  }
+  send(data) {
+    this.sent.push(JSON.parse(data));
+  }
+  close() {
+    this.closeCalls++;
+    this.readyState = FakeWebSocket.CLOSED;
+  }
+}
+
 class Controller {
   constructor() {
     this.feedback = [];
@@ -86,6 +109,10 @@ function loadController(name) {
     if (id === "sap/m/GroupHeaderListItem" || id === "sap/ui/model/Filter" || id === "sap/m/Dialog") return class {};
     if (id === "sap/m/MessageBox") return {};
     if (id === "sap/ui/model/FilterOperator") return {};
+    if (id === "sap/ui/model/Sorter") return class {};
+    if (id === "sap/base/Log") return { debug() {} };
+    if (id === "sap/ui/core/Fragment") return {};
+    if (id === "sap/ui/core/library") return { SortOrder: {} };
     if (id === "./Base.controller") return loadController("Base");
     if (id === "./BaseTable.controller") {
       return class extends loadController("Base") {
@@ -93,6 +120,9 @@ function loadController(name) {
           this.table = table;
         }
         sortTable() {}
+        onExit() {
+          this.baseExitCalled = true;
+        }
       };
     }
     // Detail-controller navigation constants; no table controller is executed.
@@ -109,7 +139,10 @@ function loadController(name) {
       module,
       exports: module.exports,
       require,
-      console: { error: (...args) => errors.push(args) }
+      WebSocket: FakeWebSocket,
+      location: { protocol: "https:", host: "test.invalid" },
+      removeEventListener() {},
+      console: { error: (...args) => errors.push(args), debug() {}, warn() {} }
     },
     { filename: filename.pathname }
   );
@@ -186,6 +219,251 @@ test("notifications load on every route match, not directly during initializatio
 
   assert.equal(controller.onRefresh(), undefined);
   assert.equal(loads, 3, "manual refresh must still load notifications");
+});
+
+function timekeepingFixture() {
+  const controller = new (loadController("Timekeeping"))();
+  const icons = [];
+  controller.control.setIcon = (icon) => icons.push(icon);
+  controller.onInit();
+  for (const name of ["timestrip", "aquariusHeats", "heats", "bibs"]) controller.models.get(name).setData([]);
+  controller.routes.get(Routes.Timekeeping)({});
+  return { controller, icons };
+}
+
+test("timekeeping reconnect invalidates and detaches the previous socket before closing it", () => {
+  const { controller } = timekeepingFixture();
+  const previous = controller.socket;
+  const close = previous.close.bind(previous);
+  previous.close = () => {
+    assert.equal(controller.socket, undefined, "invalidate ownership before close can dispatch any events");
+    for (const handler of ["onopen", "onclose", "onmessage", "onerror"]) assert.equal(previous[handler], null);
+    close();
+  };
+  controller.onStatusButtonPress();
+  assert.notEqual(controller.socket, previous);
+  assert.equal(previous.closeCalls, 1);
+});
+
+test("queued old timekeeping callbacks cannot affect the replacement connection", () => {
+  const { controller, icons } = timekeepingFixture();
+  const previous = controller.socket;
+  const queued = { open: previous.onopen, close: previous.onclose, message: previous.onmessage };
+  controller.onStatusButtonPress();
+  const current = controller.socket;
+  current.readyState = FakeWebSocket.OPEN;
+  current.onopen({});
+  const currentData = [{ time: "current" }];
+  controller.models.get("timestrip").setData(currentData);
+  const sent = current.sent.length;
+  const iconUpdates = icons.length;
+
+  queued.open({});
+  queued.close({});
+  queued.message({ data: JSON.stringify({ TimeStrip: { time_stamps: [{ time: "obsolete" }] } }) });
+  assert.doesNotThrow(() => queued.message({ data: "obsolete malformed JSON" }));
+
+  assert.equal(controller.socket, current);
+  assert.equal(controller.models.get("timestrip").getData(), currentData);
+  assert.equal(current.sent.length, sent, "an old open callback must not send another request on the new socket");
+  assert.equal(icons.length, iconUpdates);
+  assert.equal(icons.at(-1), "sap-icon://connected");
+});
+
+test("hiding timekeeping closes its socket and makes previously queued callbacks harmless", () => {
+  const { controller, icons } = timekeepingFixture();
+  const socket = controller.socket;
+  const queued = { open: socket.onopen, close: socket.onclose, message: socket.onmessage };
+  const currentData = controller.models.get("timestrip").getData();
+  controller.onBeforeHide();
+  const iconUpdates = icons.length;
+  assert.equal(controller.socket, undefined);
+  assert.equal(socket.closeCalls, 1);
+  queued.open({});
+  queued.close({});
+  queued.message({ data: JSON.stringify({ TimeStrip: { time_stamps: [{ time: "obsolete" }] } }) });
+  assert.equal(controller.models.get("timestrip").getData(), currentData);
+  assert.equal(icons.length, iconUpdates);
+  controller.disconnect();
+  assert.equal(socket.closeCalls, 1, "disconnect must be idempotent");
+});
+
+test("destroying timekeeping closes its socket and retains inherited cleanup", () => {
+  const { controller } = timekeepingFixture();
+  const socket = controller.socket;
+  assert.equal(controller.onExit(), undefined);
+  assert.equal(controller.socket, undefined);
+  assert.equal(socket.closeCalls, 1);
+  for (const handler of ["onopen", "onclose", "onmessage", "onerror"]) assert.equal(socket[handler], null);
+  assert.equal(controller.baseExitCalled, true);
+});
+
+test("the active timekeeping socket still requests and updates data normally", () => {
+  const { controller, icons } = timekeepingFixture();
+  const socket = controller.socket;
+  assert.equal(socket.url, "wss://test.invalid/api/timekeeping");
+  socket.readyState = FakeWebSocket.OPEN;
+  socket.onopen({});
+  assert.deepEqual(socket.sent, [{ GetTimestrip: null }]);
+  assert.equal(icons.at(-1), "sap-icon://connected");
+
+  socket.onmessage({ data: JSON.stringify({ TimeStrip: { time_stamps: [{ time: "existing" }] } }) });
+  socket.onmessage({ data: JSON.stringify({ Timestamp: { timestamp: { time: "added" } } }) });
+  assert.deepEqual(
+    Array.from(controller.models.get("timestrip").getData(), (timestamp) => timestamp.time),
+    ["added", "existing"]
+  );
+  socket.onmessage({ data: JSON.stringify({ AquariusHeats: { heats: [{ id: 7 }] } }) });
+  assert.equal(controller.models.get("aquariusHeats").getData()[0].id, 7);
+  socket.onmessage({ data: JSON.stringify({ HeatsReadyToStart: { heats: [{ id: 8 }] } }) });
+  assert.equal(controller.models.get("heats").getData()[0].id, 8);
+
+  socket.readyState = FakeWebSocket.CLOSED;
+  socket.onclose({});
+  assert.equal(controller.socket, undefined);
+  assert.equal(icons.at(-1), "sap-icon://disconnected");
+});
+
+function monitoringFixture() {
+  const controller = new (loadController("Monitoring"))();
+  const icons = [];
+  const enabled = [];
+  controller.control.setIcon = (icon) => icons.push(icon);
+  controller.control.setEnabled = (value) => enabled.push(value);
+  controller.onInit();
+  controller.routes.get(Routes.Monitoring)({});
+  return { controller, icons, enabled };
+}
+
+test("monitoring reconnect invalidates and detaches the previous socket before closing it", () => {
+  const { controller } = monitoringFixture();
+  const previous = controller.socket;
+  previous.readyState = FakeWebSocket.OPEN;
+  previous.onopen({});
+  const close = previous.close.bind(previous);
+  previous.close = () => {
+    assert.equal(controller.socket, undefined);
+    for (const handler of ["onopen", "onclose", "onmessage", "onerror"]) assert.equal(previous[handler], null);
+    close();
+  };
+  controller.onStatusButtonPress();
+  assert.notEqual(controller.socket, previous);
+  assert.equal(previous.closeCalls, 1);
+});
+
+test("old monitoring callbacks cannot alter metrics or re-enable a replacement connection's button", () => {
+  const { controller, icons, enabled } = monitoringFixture();
+  const previous = controller.socket;
+  previous.readyState = FakeWebSocket.OPEN;
+  previous.onopen({});
+  const queued = { open: previous.onopen, close: previous.onclose, message: previous.onmessage };
+  const currentData = [{ name: "current", value: 1, group: "7" }];
+  controller.models.get("monitoring").setData(currentData);
+  controller.onStatusButtonPress();
+  const current = controller.socket;
+  const iconUpdates = icons.length;
+  const enabledUpdates = enabled.length;
+
+  queued.open({});
+  queued.close({});
+  queued.message({ data: JSON.stringify({ Update: { monitoring: { sys: { uptime: { secs: 99 } } } } }) });
+  assert.doesNotThrow(() => queued.message({ data: "obsolete malformed JSON" }));
+  assert.equal(controller.socket, current);
+  assert.equal(controller.models.get("monitoring").getData(), currentData);
+  assert.equal(icons.length, iconUpdates);
+  assert.equal(enabled.length, enabledUpdates);
+  assert.equal(enabled.at(-1), false);
+  assert.equal(icons.at(-1), "sap-icon://disconnected");
+
+  current.readyState = FakeWebSocket.OPEN;
+  current.onopen({});
+  queued.close({});
+  assert.equal(enabled.at(-1), true);
+  assert.equal(icons.at(-1), "sap-icon://connected");
+});
+
+test("hiding monitoring closes its socket and makes previously queued callbacks harmless", () => {
+  const { controller, icons, enabled } = monitoringFixture();
+  const socket = controller.socket;
+  const queued = { open: socket.onopen, close: socket.onclose, message: socket.onmessage };
+  const currentData = controller.models.get("monitoring").getData();
+  controller.onBeforeHide();
+  const iconUpdates = icons.length;
+  const enabledUpdates = enabled.length;
+  assert.equal(controller.socket, undefined);
+  assert.equal(socket.closeCalls, 1);
+  queued.open({});
+  queued.close({});
+  queued.message({ data: JSON.stringify({ Update: { monitoring: { sys: { uptime: { secs: 99 } } } } }) });
+  assert.equal(controller.models.get("monitoring").getData(), currentData);
+  assert.equal(icons.length, iconUpdates);
+  assert.equal(enabled.length, enabledUpdates);
+  controller.disconnect();
+  assert.equal(socket.closeCalls, 1);
+});
+
+test("destroying monitoring closes its socket without requiring an abstract base onExit implementation", () => {
+  const { controller } = monitoringFixture();
+  const socket = controller.socket;
+  assert.equal(controller.onExit(), undefined);
+  assert.equal(controller.socket, undefined);
+  assert.equal(socket.closeCalls, 1);
+  for (const handler of ["onopen", "onclose", "onmessage", "onerror"]) assert.equal(socket[handler], null);
+});
+
+test("the active monitoring socket retains connection status and metric formatting", () => {
+  const { controller, icons, enabled } = monitoringFixture();
+  const socket = controller.socket;
+  assert.equal(socket.url, "wss://test.invalid/api/monitoring");
+  assert.equal(enabled.at(-1), false);
+  assert.equal(icons.at(-1), "sap-icon://disconnected");
+  socket.readyState = FakeWebSocket.OPEN;
+  socket.onopen({});
+  assert.equal(enabled.at(-1), true);
+  assert.equal(icons.at(-1), "sap-icon://connected");
+  socket.onmessage({
+    data: JSON.stringify({
+      Update: {
+        monitoring: {
+          db: { caches: { accesses: 10, hits: 7, misses: 3, entries: 1, hitRate: 70 } },
+          app: { memCurrent: 2048, memMax: 4096 },
+          sys: { uptime: { secs: 123 } }
+        }
+      }
+    })
+  });
+  const rows = controller.models.get("monitoring").getData();
+  assert.equal(rows.find((row) => row.name === "monitoring.caches.hitRate").value, "70.0 %");
+  assert.equal(rows.find((row) => row.name === "monitoring.app.mem_current").value, "2.0 KiB");
+  assert.equal(rows.find((row) => row.name === "monitoring.sys.uptime").value, "2m 3s");
+  const message = socket.onmessage;
+  socket.readyState = FakeWebSocket.CLOSED;
+  socket.onclose({});
+  assert.equal(controller.socket, undefined);
+  assert.equal(enabled.at(-1), true);
+  assert.equal(icons.at(-1), "sap-icon://disconnected");
+  message({ data: JSON.stringify({ Update: { monitoring: {} } }) });
+  assert.equal(controller.models.get("monitoring").getData(), rows);
+});
+
+test("real base-table cleanup tolerates UI5's absent abstract onExit hook", () => {
+  const controller = new (loadController("BaseTable"))();
+  assert.equal(controller.onExit(), undefined);
+
+  const original = BaseController.prototype.onExit;
+  const cleaned = [];
+  BaseController.prototype.onExit = function () {
+    cleaned.push(this);
+  };
+  try {
+    assert.equal(controller.onExit(), undefined);
+    const { controller: monitoring } = monitoringFixture();
+    assert.equal(monitoring.onExit(), undefined);
+    assert.deepEqual(cleaned, [controller, monitoring], "implemented base cleanup must still run");
+  } finally {
+    if (original === undefined) delete BaseController.prototype.onExit;
+    else BaseController.prototype.onExit = original;
+  }
 });
 
 test("heat route arguments are consumed synchronously, before a pooled event is cleared", async () => {
