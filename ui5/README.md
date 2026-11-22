@@ -66,6 +66,14 @@ Controller helper methods used only by the class/subclasses use `private` or
 handlers and formatter functions, remain public. UI5 lifecycle overrides also
 remain public because the installed TypeScript declarations require it.
 
+Route names are centralized in `webapp/model/Routes.ts`. Use `Routes.Races`,
+`Routes.RaceDetails`, etc. for `navTo`, `getRoute`, and back-navigation targets.
+`RouteName` constrains the `navBack` argument and `NavigationData.back` to known
+names. JSON route definitions and URL patterns remain in `manifest.json`; a
+regression test verifies that its route names exactly match the constants and
+that controller routing calls do not reintroduce string literals. Model names,
+translation keys, and backend API URLs are separate identifiers, not routes.
+
 To check or format just one file, use the local executable directly:
 
 ```bash

@@ -10,6 +10,8 @@ import Formatter from "./model/Formatter";
 import { NavigationData } from "./model/types";
 
 /**
+ * Application component owning shared models, routing, localization, and cached regatta data.
+ *
  * @namespace de.regatta_hd.infoportal
  */
 export default class Component extends UIComponent {
@@ -34,6 +36,9 @@ export default class Component extends UIComponent {
    * On failure (e.g. transient backend outage during bootstrap) the cached
    * promise is **invalidated** so the next call retries the network request,
    * rather than handing every subsequent caller the same rejected promise.
+   *
+   * @returns A promise resolving to the shared model containing the active regatta's backend payload.
+   * @throws The request error if the active regatta cannot be loaded.
    */
   async getActiveRegatta(): Promise<JSONModel> {
     this.regattaModelPromise ??= this.loadActiveRegatta().catch((err: unknown) => {
@@ -48,6 +53,9 @@ export default class Component extends UIComponent {
    * Returns the filters {@link JSONModel} for the active regatta.
    *
    * Same memoisation + failure-invalidation contract as {@link getActiveRegatta}.
+   *
+   * @returns A promise resolving to the shared model containing filter options for the active regatta.
+   * @throws The regatta-lookup or filter-request error if loading fails.
    */
   async getFilters(): Promise<JSONModel> {
     this.filtersModelPromise ??= this.loadFilters().catch((err: unknown) => {
@@ -58,6 +66,10 @@ export default class Component extends UIComponent {
     return await this.filtersModelPromise;
   }
 
+  /**
+   * Registers models before the first route match, then starts routing and background data bootstrap.
+   * Localization and backend failures are logged without blocking the navigable shell.
+   */
   init(): void {
     super.init();
 
@@ -144,6 +156,8 @@ export default class Component extends UIComponent {
    * Errors at any step are logged. The router is **not** started here — it
    * was already initialized synchronously by {@link init}, so the user gets
    * a navigable shell regardless of backend availability.
+   *
+   * @returns A promise resolving after both models are registered, or after a loading failure has been logged.
    */
   private async bootstrap(): Promise<void> {
     try {
@@ -159,8 +173,9 @@ export default class Component extends UIComponent {
   }
 
   /**
-   * Returns the content density class according to the current device.
-   * @returns {string} the content density class
+   * Caches cozy sizing for touch devices or compact sizing for other devices.
+   *
+   * @returns `sapUiSizeCozy` for touch devices or `sapUiSizeCompact` otherwise.
    */
   getContentDensityClass(): string {
     if (!this.contentDensityClass) {
@@ -174,16 +189,19 @@ export default class Component extends UIComponent {
   }
 
   /**
-   * Getter for the resource bundle.
-   * @returns {sap.base.i18n.ResourceBundle} the resourceModel of the component
+   * Returns the resource bundle cached during initialization.
+   * Callers rely on the bundle having resolved; async bundle loading does not delay router initialization.
+   *
+   * @returns The shared localization bundle; it may still be unset at runtime before async loading completes.
    */
   getResourceBundle(): ResourceBundle {
     return this.resourceBundle;
   }
 
   /**
-   * Loads the active regatta into a JSONModel from the server and returns it as a Promise.
-   * @returns {Promise<sap.ui.model.json.JSONModel>} the active regatta model as a Promise
+   * Fetches the active regatta into a new model; request failures propagate to {@link getActiveRegatta}.
+   *
+   * @returns A promise resolving to a newly loaded model containing the active-regatta response.
    */
   private async loadActiveRegatta(): Promise<JSONModel> {
     console.debug("Loading active regatta");
@@ -194,15 +212,10 @@ export default class Component extends UIComponent {
   }
 
   /**
-   * Loads the filters into a JSONModel for the active regatta from the server and returns it as a Promise.
+   * Fetches filter options using the ID from the resolved active-regatta model.
+   * Request failures propagate to {@link getFilters} so its cached promise can be invalidated.
    *
-   * Reads the regatta id from the resolved JSONModel directly rather than
-   * from the side-channel `this.regattaModel` field, so the call cannot
-   * silently fall through to `/api/regattas/-1/filters` if the field
-   * assignment in {@link getActiveRegatta} is ever decoupled from the
-   * promise resolution.
-   *
-   * @returns {Promise<sap.ui.model.json.JSONModel>} the filters model as a Promise
+   * @returns A promise resolving to a newly loaded model containing the active regatta's filter options.
    */
   private async loadFilters(): Promise<JSONModel> {
     const regattaModel: JSONModel = await this.getActiveRegatta();

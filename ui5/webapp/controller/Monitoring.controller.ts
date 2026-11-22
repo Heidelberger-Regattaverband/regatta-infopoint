@@ -3,8 +3,11 @@ import GroupHeaderListItem from "sap/m/GroupHeaderListItem";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import BaseController from "./Base.controller";
+import { Routes } from "../model/Routes";
 
 /**
+ * Live monitoring dashboard mapping WebSocket snapshots to localized, grouped metric rows.
+ *
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class MonitoringController extends BaseController {
@@ -13,12 +16,13 @@ export default class MonitoringController extends BaseController {
   private socket?: WebSocket;
   private statusButton?: Button;
 
+  /** Registers the monitoring model, route-triggered connection, and disconnect-on-hide delegate. */
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.getView()?.addEventDelegate({ onBeforeHide: this.onBeforeHide }, this);
     super
       .getRouter()
-      ?.getRoute("monitoring")
+      ?.getRoute(Routes.Monitoring)
       ?.attachMatched((_: Route$MatchedEvent) => this.connect(), this);
     super.setViewModel(this.monitoringModel, "monitoring");
     this.statusButton = this.byId("statusButton") as Button | undefined;
@@ -28,6 +32,7 @@ export default class MonitoringController extends BaseController {
     this.disconnect();
   }
 
+  /** Returns to the launchpad, closes the stream, and clears displayed metrics. */
   onNavBack(): void {
     super.navToStartPage();
     this.disconnect();
@@ -38,6 +43,12 @@ export default class MonitoringController extends BaseController {
     this.connect();
   }
 
+  /**
+   * Flattens available database, application, and system metrics into localized rows grouped by category.
+   *
+   * @param monitoring - Monitoring snapshot with optional `db`, `app`, and `sys` categories.
+   * An empty object clears the displayed rows.
+   */
   private updateModel(monitoring: any) {
     const all = [];
 
@@ -122,10 +133,22 @@ export default class MonitoringController extends BaseController {
     this.monitoringModel.setData(all);
   }
 
+  /**
+   * UI5 grouping callback returning the metric-category key from a row's binding context.
+   *
+   * @param context - Binding context of the metric row being grouped.
+   * @returns The row's `group` category key used by the group-header factory.
+   */
   getGroup(context: any): string {
     return context.getProperty("group");
   }
 
+  /**
+   * UI5 group-header factory localizing metric-category keys 1 through 7.
+   *
+   * @param group - UI5 grouping descriptor whose `key` identifies the metric category.
+   * @returns A group-header list item with the localized category title, or an empty title for an unknown key.
+   */
   getGroupHeader(group: any): any {
     let title: string = "";
     switch (group?.key) {
@@ -156,10 +179,22 @@ export default class MonitoringController extends BaseController {
     });
   }
 
+  /**
+   * Formats an already percentage-scaled value with one decimal place; does not multiply by 100.
+   *
+   * @param n - Percentage value, such as 42.5 for 42.5 percent, not a fractional ratio.
+   * @returns The value rounded to one decimal place followed by ` %`.
+   */
   private nicePercent(n: number): string {
     return n.toFixed(1) + " %";
   }
 
+  /**
+   * Scales bytes by powers of 1024, using one decimal place only for scaled values below 10.
+   *
+   * @param n - Byte count to scale using binary units.
+   * @returns Rounded byte text followed by a unit from `bytes` through `YiB` for values in the supported range.
+   */
   private niceBytes(n: number): string {
     let l: number = 0;
     while (n >= 1024 && ++l) {
@@ -168,6 +203,12 @@ export default class MonitoringController extends BaseController {
     return n.toFixed(n < 10 && l > 0 ? 1 : 0) + " " + this.units[l];
   }
 
+  /**
+   * Formats elapsed seconds as nonzero day/hour/minute components followed by whole seconds.
+   *
+   * @param seconds - Elapsed duration in seconds; fractional seconds are rounded down.
+   * @returns A compact duration such as `1d 2h 3m 4s`, always including the seconds component.
+   */
   private niceDuration(seconds: number): string {
     const days: number = Math.floor(seconds / 60 / 60 / 24);
     const hours: number = Math.floor((seconds / 60 / 60) % 24);
@@ -182,6 +223,7 @@ export default class MonitoringController extends BaseController {
     return duration;
   }
 
+  /** Replaces any existing socket with a same-origin monitoring stream, using WSS on HTTPS pages. */
   private connect() {
     this.statusButton?.setEnabled(false);
 
@@ -211,6 +253,7 @@ export default class MonitoringController extends BaseController {
     };
   }
 
+  /** Detaches socket callbacks before closing so the old connection cannot keep updating the view. */
   private disconnect() {
     if (this.socket) {
       this.socket.onclose = null;

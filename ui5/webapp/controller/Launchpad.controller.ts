@@ -11,11 +11,15 @@ import Control from "sap/ui/core/Control";
 import Fragment from "sap/ui/core/Fragment";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
+import { Routes } from "../model/Routes";
 import BaseController from "./Base.controller";
 
+/** Refresh cadence for visible launchpad notifications while the controller is alive. */
 const NOTIFICATIONS_POLL_INTERVAL_MS = 60_000;
 
 /**
+ * Launchpad navigation, session login/logout, and periodically refreshed visible notifications.
+ *
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class LaunchpadController extends BaseController {
@@ -26,6 +30,7 @@ export default class LaunchpadController extends BaseController {
   private popover?: ResponsivePopover;
   private popoverPromise?: Promise<ResponsivePopover>;
 
+  /** Registers credential/notification models, checks the session identity, and starts notification polling. */
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.credentialsModel, "credentials");
@@ -37,6 +42,7 @@ export default class LaunchpadController extends BaseController {
     }, NOTIFICATIONS_POLL_INTERVAL_MS);
   }
 
+  /** Stops notification polling when the view's controller is destroyed. */
   onExit(): void {
     if (this.notificationsTimer) {
       globalThis.clearInterval(this.notificationsTimer);
@@ -45,44 +51,64 @@ export default class LaunchpadController extends BaseController {
   }
 
   onNavToScoring(): void {
-    super.getRouter().navTo("scoring", {}, false /* history */);
+    super.getRouter().navTo(Routes.Scoring, {}, false /* history */);
   }
 
   onNavToStatistics(): void {
-    super.getRouter().navTo("statistics", {}, false /* history */);
+    super.getRouter().navTo(Routes.Statistics, {}, false /* history */);
   }
 
   onNavToMonitoring(): void {
-    super.getRouter().navTo("monitoring", {}, false /* history */);
+    super.getRouter().navTo(Routes.Monitoring, {}, false /* history */);
   }
 
   onNavToSchedule(): void {
-    super.getRouter().navTo("schedule", {}, false /* history */);
+    super.getRouter().navTo(Routes.Schedule, {}, false /* history */);
   }
 
   onNavToTimekeeping(): void {
-    super.getRouter().navTo("timekeeping", {}, false /* history */);
+    super.getRouter().navTo(Routes.Timekeeping, {}, false /* history */);
   }
 
   onNavToProblems(): void {
-    super.getRouter().navTo("problems", {}, false /* history */);
+    super.getRouter().navTo(Routes.Problems, {}, false /* history */);
   }
 
+  /**
+   * Moves keyboard focus from the username field to the password field.
+   *
+   * @param _event - Username submit event; unused because the target field is fixed.
+   */
   onUserSubmit(_event: Input$SubmitEvent): void {
     super.byId("password")?.focus();
   }
 
+  /**
+   * Moves focus to the login button and submits the entered credentials.
+   *
+   * @param _event - Password submit event; unused because credentials are read from the model.
+   */
   onPasswordSubmit(_event: Input$SubmitEvent): void {
     super.byId("login")?.focus();
     // perform login if return is pressed in password input field
     this.performLogin();
   }
 
+  /**
+   * Closes the login popover and submits the entered credentials.
+   *
+   * @param _event - Login-button press event; unused because credentials are read from the model.
+   */
   onLoginPress(_event: Button$PressEvent): void {
     // close login popover when login button is pressed
     this.performLogin();
   }
 
+  /**
+   * Removes the displayed notification immediately and posts its read acknowledgement to the backend.
+   *
+   * @param event - Close event whose source notification item stores the backend notification ID in its counter.
+   */
   onNotificationClose(event: Event): void {
     const item: NotificationListItem = event.getSource();
     (item.getParent() as NotificationList).removeItem(item);
@@ -97,6 +123,11 @@ export default class LaunchpadController extends BaseController {
     });
   }
 
+  /**
+   * Refreshes visible notifications for the active regatta, logging failures without rejecting the polling task.
+   *
+   * @returns A promise resolving after the model loads or a lookup/request failure is logged.
+   */
   private async loadNotifications(): Promise<void> {
     try {
       const regatta = await super.getActiveRegatta();
@@ -106,6 +137,7 @@ export default class LaunchpadController extends BaseController {
     }
   }
 
+  /** Closes the login popover before submitting the entered credentials. */
   private performLogin() {
     if (this.popover) {
       this.popover.close();
@@ -114,6 +146,12 @@ export default class LaunchpadController extends BaseController {
     this.login();
   }
 
+  /**
+   * Logs out an authenticated user or toggles the login popover for an anonymous user.
+   * Fragment loading is shared between callers and retried after failure.
+   *
+   * @param event - User-button press event whose source anchors the login popover when it opens.
+   */
   onShowLoginPress(event: Button$PressEvent): void {
     const eventSource: Control = event.getSource();
 
@@ -154,6 +192,7 @@ export default class LaunchpadController extends BaseController {
     }
   }
 
+  /** Submits credentials, updates session identity on success, and clears the password model immediately. */
   private login(): void {
     const credentials: any = this.credentialsModel.getData();
 
@@ -178,6 +217,7 @@ export default class LaunchpadController extends BaseController {
     this.credentialsModel.setProperty("/password", "");
   }
 
+  /** Requests logout and clears the displayed identity after the backend confirms success. */
   private logout(): void {
     $.ajax({
       type: "POST",
@@ -188,6 +228,7 @@ export default class LaunchpadController extends BaseController {
     });
   }
 
+  /** Restores the backend session identity, treating a failed identity request as anonymous. */
   private getIdentity(): void {
     $.ajax({
       type: "GET",
@@ -202,6 +243,13 @@ export default class LaunchpadController extends BaseController {
     });
   }
 
+  /**
+   * Updates authentication, username, and scope fields used by launchpad bindings.
+   *
+   * @param authenticated - Whether the backend session is authenticated.
+   * @param name - Session username, or an empty string when clearing the displayed identity.
+   * @param scope - Backend-provided authorization scope, or an empty string for an anonymous identity.
+   */
   private updateIdentity(authenticated: boolean, name: string, scope: string): void {
     const identityModel: JSONModel = super.getComponentJSONModel("identity");
     identityModel.setProperty("/authenticated", authenticated);
@@ -209,6 +257,11 @@ export default class LaunchpadController extends BaseController {
     identityModel.setProperty("/scope", scope);
   }
 
+  /**
+   * Reads the session flag used to choose between login and logout actions.
+   *
+   * @returns The identity model's authentication flag; it may be unset if the model is unavailable.
+   */
   private isAuthenticated(): boolean {
     return this.getViewJSONModel("identity")?.getProperty("/authenticated");
   }

@@ -23,9 +23,12 @@ import Log from "sap/base/Log";
 import Button, { Button$PressEvent } from "sap/m/Button";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import { Routes } from "../model/Routes";
 import BaseController from "./Base.controller";
 
 /**
+ * Leaflet map of regatta locations and participating clubs, including club-specific route focus.
+ *
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class MapController extends BaseController {
@@ -38,6 +41,7 @@ export default class MapController extends BaseController {
   private centerClubsButton?: Button;
   private centerRegattaButton?: Button;
 
+  /** Registers map routes that load club data before creating layers and choosing the initial viewport. */
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
 
@@ -62,11 +66,11 @@ export default class MapController extends BaseController {
 
     super
       .getRouter()
-      ?.getRoute("map")
+      ?.getRoute(Routes.Map)
       ?.attachMatched((_: Route$MatchedEvent) => handleRoute(), this);
     super
       .getRouter()
-      ?.getRoute("mapClub")
+      ?.getRoute(Routes.MapClub)
       ?.attachMatched((event: Route$MatchedEvent) => {
         const clubId = Number((event.getParameter("arguments") as any).clubId);
         handleRoute(clubId);
@@ -77,9 +81,14 @@ export default class MapController extends BaseController {
   }
 
   onNavBack(): void {
-    super.navBack("startpage");
+    super.navBack(Routes.StartPage);
   }
 
+  /**
+   * Selects the club or regatta viewport according to which center button was pressed.
+   *
+   * @param event - Press event whose source identifies the requested viewport.
+   */
   onCenterButtonPress(event: Button$PressEvent): void {
     if (event.getSource() === this.centerClubsButton) {
       this.centerClubsMap();
@@ -88,6 +97,7 @@ export default class MapController extends BaseController {
     }
   }
 
+  /** Fits all club markers, falling back to regatta bounds if no valid club bounds exist. */
   private centerClubsMap(): void {
     if (this.clubBounds?.isValid()) {
       this.map?.fitBounds(this.clubBounds, this.boundsOpts);
@@ -102,11 +112,17 @@ export default class MapController extends BaseController {
     }
   }
 
+  /**
+   * Loads participating clubs for layer creation; the model must be available before {@link loadMap}.
+   *
+   * @returns A promise resolving after the club request settles; active-regatta lookup failures reject.
+   */
   private async loadModel(): Promise<void> {
     const regatta: any = await super.getActiveRegatta();
     await super.updateJSONModel(this.participatingClubsModel, `/api/regattas/${regatta.id}/clubs`);
   }
 
+  /** Creates the map and its layers on the first call only; later calls retain the existing layer data. */
   private loadMap(): void {
     if (!this.map) {
       const layerOsm: TileLayer = tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -145,6 +161,11 @@ export default class MapController extends BaseController {
     }
   }
 
+  /**
+   * Zooms to a known club marker and opens its popup; unknown club IDs are ignored.
+   *
+   * @param clubId - Backend club ID used to look up the marker created for the participating club.
+   */
   private panToClub(clubId: number): void {
     const mark = this.clubMarkers.get(clubId);
     if (mark) {
@@ -153,11 +174,21 @@ export default class MapController extends BaseController {
     }
   }
 
+  /**
+   * Creates the optional 250 km distance overlay around the regatta office.
+   *
+   * @returns A Leaflet layer group containing the radius circle.
+   */
   private getCircleLayerGroup(): LayerGroup {
     const circle250: Circle = circle(latLng(49.41315519733915, 8.691352456928998), { radius: 250000 });
     return layerGroup([circle250]);
   }
 
+  /**
+   * Builds the fixed regatta-location markers.
+   *
+   * @returns The marker layer and its viewport bounds, in that order.
+   */
   private getRegattaLayerGroup(): [LayerGroup, LatLngBounds] {
     const pos1: LatLng = latLng(49.41294441086431, 8.690510474742936);
     const posOffice: LatLng = latLng(49.41315519733915, 8.691352456928998);
@@ -180,6 +211,11 @@ export default class MapController extends BaseController {
     return [layer, bounds];
   }
 
+  /**
+   * Builds markers for clubs with coordinates and indexes them by ID for route-based focus.
+   *
+   * @returns The marker layer and its viewport bounds, in that order.
+   */
   private getClubsLayerGroup(): [LayerGroup, LatLngBounds] {
     const marks: Marker[] = [];
     this.participatingClubsModel.getData().forEach((club: any) => {
@@ -202,10 +238,13 @@ export default class MapController extends BaseController {
 
   /**
    * Builds the popup content for a club marker as a DOM tree (rather than an
-   * HTML string) to prevent XSS via `club.longName` / `club.city` (review item 1.1).
+   * HTML string) so club names and cities are inserted as text rather than parsed as markup.
    *
    * Leaflet's `Popup.setContent` accepts an `HTMLElement`, which inserts text
-   * nodes verbatim — no parser, no script execution.
+   * nodes verbatim. The club ID is URL-encoded in the detail link.
+   *
+   * @param club - Club ID, long name, and city used to build the text-only linked popup.
+   * @returns An anchor element linking to club details, with name and city separated by a line break.
    */
   private buildClubPopup(club: { id: number | string; longName?: string; city?: string }): HTMLElement {
     const link: HTMLAnchorElement = document.createElement("a");

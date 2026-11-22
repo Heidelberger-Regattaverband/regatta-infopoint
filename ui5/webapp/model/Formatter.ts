@@ -17,8 +17,8 @@ import {
 import { Priority } from "sap/m/library";
 
 /**
- * Formatter utility class for regatta application data formatting.
- * Provides static methods for formatting various data types used in the regatta application.
+ * XML-binding formatters for regatta labels, backend state codes, and highlight colors.
+ * The component injects a shared resource bundle; localized formatters return keys until it is available.
  *
  * @namespace de.regatta_hd.infoportal.model
  */
@@ -36,13 +36,18 @@ export default class Formatter {
    * `Component#getModel("i18n").getResourceBundle()`). Idempotent — subsequent
    * calls overwrite the reference, which lets tests provide a stub bundle.
    *
-   * Replaces the previous static initializer block that performed a deprecated
-   * synchronous XHR via `ResourceBundle.create({ async: false, ... })`.
+   * @param bundle - Already loaded bundle shared with the application component.
    */
   static init(bundle: ResourceBundle): void {
     Formatter.bundle = bundle;
   }
 
+  /**
+   * Maps backend priority values 1 through 3 to low, medium, and high; all other values map to none.
+   *
+   * @param priority - Optional numeric priority code from the backend.
+   * @returns The matching UI5 priority, or `Priority.None` for missing or unrecognized codes.
+   */
   static priority(priority?: number): Priority {
     switch (priority) {
       case 3:
@@ -56,6 +61,12 @@ export default class Formatter {
     }
   }
 
+  /**
+   * Formats a date-time string as local browser time in `DD.MM.YYYY HH:mm` format; missing input yields empty text.
+   *
+   * @param dateTime - Optional date-time string interpreted by the browser's `Date` constructor.
+   * @returns Local date/time text, or an empty string for missing input; malformed dates are not validated.
+   */
   static dateTime(dateTime?: string): string {
     if (!dateTime) {
       return "";
@@ -71,6 +82,13 @@ export default class Formatter {
     return `${day}.${month}.${year} ${hours}:${minutes}`;
   }
 
+  /**
+   * Formats a timestamp in local browser time, including seconds and milliseconds; missing input yields empty text.
+   *
+   * @param timestamp - Optional timestamp string interpreted by the browser's `Date` constructor.
+   * @returns Local time in `DD.MM.YYYY HH:mm:ss.SSS` format, or empty text for missing input.
+   * Invalid dates are not checked.
+   */
   static timestamp(timestamp?: string): string {
     if (!timestamp) {
       return "";
@@ -94,13 +112,14 @@ export default class Formatter {
 
   /**
    * Returns a formatted label for the race combining shortLabel and comment.
-   * @param race The race object with shortLabel and optional comment properties
+   *
+   * @param race - Race with a short label and optional comment.
    * @returns The formatted race label, or empty string if race is undefined
    * @example
    * ```typescript
-   * raceLabel({shortLabel: "M1x", comment: "Final"}) // returns "M1x Final"
-   * raceLabel({shortLabel: "W2x"}) // returns "W2x"
-   * raceLabel(undefined) // returns ""
+   * Formatter.raceLabel({ shortLabel: "M1x", comment: "Final" }); // "M1x Final"
+   * Formatter.raceLabel({ shortLabel: "W2x" }); // "W2x"
+   * Formatter.raceLabel(undefined); // ""
    * ```
    */
   static raceLabel(race?: Race): string {
@@ -118,13 +137,14 @@ export default class Formatter {
   /**
    * Returns a formatted label for the race combining race number and race label.
    * The format is "{race.number} - {raceLabel(race)}" where raceLabel includes shortLabel and optional comment.
-   * @param race The race object with number, shortLabel and optional comment properties
+   *
+   * @param race - Race with a number, short label, and optional comment.
    * @returns The formatted race label with number prefix, or empty string if race is undefined
    * @example
    * ```typescript
-   * nrRaceLabel({number: 123, shortLabel: "M1x", comment: "Final"}) // returns "123 - M1x Final"
-   * nrRaceLabel({number: 456, shortLabel: "W2x"}) // returns "456 - W2x"
-   * nrRaceLabel(undefined) // returns ""
+   * Formatter.nrRaceLabel({ number: 123, shortLabel: "M1x", comment: "Final" }); // "123 - M1x Final"
+   * Formatter.nrRaceLabel({ number: 456, shortLabel: "W2x" }); // "456 - W2x"
+   * Formatter.nrRaceLabel(undefined); // ""
    * ```
    */
   static nrRaceLabel(race?: Race): string {
@@ -138,7 +158,8 @@ export default class Formatter {
 
   /**
    * Returns the appropriate indication color for race state highlighting.
-   * @param race The race object
+   *
+   * @param race - Race whose cancellation flag and state determine its color.
    * @returns The indication color or undefined if no highlighting needed
    */
   static raceStateHighlight(race?: Race): IndicationColor | undefined {
@@ -169,7 +190,8 @@ export default class Formatter {
 
   /**
    * Returns a localized label for the race state.
-   * @param race The race object
+   *
+   * @param race - Race whose cancellation flag takes precedence over its state.
    * @returns The localized race state label
    */
   static raceStateLabel(race?: Race): string {
@@ -199,7 +221,8 @@ export default class Formatter {
 
   /**
    * Formats the race distance with unit.
-   * @param race The race object
+   *
+   * @param race - Race with a distance in meters.
    * @returns The formatted distance string with "m" suffix
    */
   static distanceLabel(race?: Race): string {
@@ -208,8 +231,9 @@ export default class Formatter {
 
   /**
    * Returns the appropriate indication color for race entry highlighting.
-   * @param race The race object
-   * @param entry The entry object
+   *
+   * @param race - Race whose cancellation also marks its entries as cancelled.
+   * @param entry - Entry to highlight.
    * @returns The indication color for the entry
    */
   static raceEntryHighlight(race?: Race, entry?: Entry): IndicationColor {
@@ -225,10 +249,11 @@ export default class Formatter {
   // -----------------
 
   /**
-   * Formats a list of heats for display.
-   * @param race The race object
-   * @param heats Array of heat objects
-   * @returns Formatted string of heat labels
+   * Formats noncancelled heats as comma-separated schedule and heat labels.
+   *
+   * @param race - Race providing the heat count and grouping mode.
+   * @param heats - Heats to display, excluding cancelled ones.
+   * @returns Joined labels, or the localized "none" label when the race has no heat count or the list is empty.
    */
   static heatsLabel(race?: Race, heats?: Heat[]): string {
     if (!race?.heatsCount || !heats?.length) {
@@ -249,7 +274,8 @@ export default class Formatter {
 
   /**
    * Returns the appropriate indication color for heat entry highlighting.
-   * @param heatEntry The heat entry object
+   *
+   * @param heatEntry - Entry with an optional result; cancellation takes precedence over result highlighting.
    * @returns The indication color for the heat entry
    */
   static heatEntryHighlight(heatEntry?: HeatEntry): IndicationColor {
@@ -276,7 +302,8 @@ export default class Formatter {
 
   /**
    * Formats an athlete label with name, year, and club information.
-   * @param athlete The athlete object
+   *
+   * @param athlete - Athlete with birth year and club information.
    * @returns Formatted athlete label
    */
   static athleteLabel(athlete?: Athlete): string {
@@ -300,7 +327,8 @@ export default class Formatter {
 
   /**
    * Formats a crew label with position and athlete information.
-   * @param crews Array of crew members
+   *
+   * @param crews - Crew members in display order; coxswains use `St` as their position label.
    * @returns Formatted crew label
    */
   static crewLabel(crews?: Crew[]): string {
@@ -318,8 +346,9 @@ export default class Formatter {
 
   /**
    * Formats a boat label based on group mode.
-   * @param groupMode The group mode setting
-   * @param entry The entry object
+   *
+   * @param groupMode - Mode 2 includes age-group and comment information.
+   * @param entry - Entry providing the label and optional boat number.
    * @returns Formatted boat label
    */
   static boatLabel(groupMode: number, entry?: Entry): string {
@@ -346,8 +375,9 @@ export default class Formatter {
 
   /**
    * Formats a boat label with bib number prefix.
-   * @param groupMode The group mode setting
-   * @param entry The entry object
+   *
+   * @param groupMode - Grouping mode passed to {@link boatLabel}.
+   * @param entry - Entry providing the optional bib prefix.
    * @returns Formatted boat label with bib number
    */
   static bibBoatLabel(groupMode: number, entry?: Entry): string {
@@ -357,7 +387,8 @@ export default class Formatter {
 
   /**
    * Formats a date with weekday prefix.
-   * @param date The ISO date string
+   *
+   * @param date - ISO date string; the weekday uses the browser's local date interpretation.
    * @returns Formatted weekday and date string
    */
   static weekDayDateLabel(date?: string): string {
@@ -371,8 +402,10 @@ export default class Formatter {
   }
 
   /**
-   * Formats a datetime string with weekday and time.
-   * @param dateTime The ISO datetime string
+   * Formats a date-time string using a German weekday abbreviation and UTC hours/minutes.
+   * The weekday is derived in the browser's local time zone, unlike the time portion.
+   *
+   * @param dateTime - ISO date-time string.
    * @returns Formatted weekday and time string
    */
   static dayTimeIsoLabel(dateTime?: string): string {
@@ -389,7 +422,8 @@ export default class Formatter {
 
   /**
    * Formats a time string to HH:MM format.
-   * @param time The time string
+   *
+   * @param time - Colon-separated time string; seconds and subsequent components are omitted.
    * @returns Formatted time string
    */
   static timeLabel(time?: string): string {
@@ -403,8 +437,9 @@ export default class Formatter {
 
   /**
    * Returns a localized label for the heat state.
-   * @param heat The heat object
-   * @returns The localized heat state label
+   *
+   * @param heat - Heat whose cancellation flag takes precedence over its state code.
+   * @returns The localized state label, or `undefined` when no heat is supplied.
    */
   static heatStateLabel(heat?: Heat): string | undefined {
     if (!heat) {
@@ -418,6 +453,12 @@ export default class Formatter {
     return Formatter.heatStateLabel2(heat.state);
   }
 
+  /**
+   * Maps a raw heat-state code to its localized label, defaulting to scheduled for missing or unknown codes.
+   *
+   * @param heatState - Optional Aquarius numeric heat-state code.
+   * @returns The localized state label, falling back to the scheduled label for missing or unknown codes.
+   */
   static heatStateLabel2(heatState?: number): string | undefined {
     switch (heatState) {
       case HeatState.Initial:
@@ -439,7 +480,8 @@ export default class Formatter {
 
   /**
    * Returns the appropriate indication color for heat state highlighting.
-   * @param heat The heat object
+   *
+   * @param heat - Heat whose cancellation flag and state determine its color.
    * @returns The indication color or undefined if no highlighting needed
    */
   static heatStateHighlight(heat?: Heat): IndicationColor | undefined {
@@ -471,7 +513,8 @@ export default class Formatter {
 
   /**
    * Formats a heat label with group value and round information.
-   * @param heat The heat object
+   *
+   * @param heat - Heat providing optional age-subclass, round, and heat-number information.
    * @returns Formatted heat label
    */
   static heatLabel(heat?: Heat): string {
@@ -500,13 +543,14 @@ export default class Formatter {
 
   /**
    * Returns a localized label for the round code.
-   * @param roundCode The round code identifier
+   *
+   * @param roundCode - Aquarius round-code identifier.
    * @returns The localized round label or undefined if not found
    * @example
    * ```typescript
-   * roundLabel("F") // returns "Final"
-   * roundLabel("S") // returns "Semifinal"
-   * roundLabel("X") // returns undefined
+   * Formatter.roundLabel("F"); // Localized final label.
+   * Formatter.roundLabel("S"); // Localized semifinal label.
+   * Formatter.roundLabel(undefined); // undefined
    * ```
    */
   static roundLabel(roundCode?: RoundCode): string | undefined {
@@ -538,7 +582,8 @@ export default class Formatter {
 
   /**
    * Maps a group value number to its corresponding label.
-   * @param groupValue The numeric group value
+   *
+   * @param groupValue - Encoded age-group value from {@link GroupValue}.
    * @returns The formatted group label (e.g., "AK A", "AK B")
    */
   private static groupValueLabel(groupValue: number): string {
@@ -571,16 +616,10 @@ export default class Formatter {
   }
 
   /**
-   * Formats a date string from ISO format (YYYY-MM-DD) to German date format (DD.MM.YYYY).
-   * @param date The date string in ISO format (YYYY-MM-DD)
-   * @returns The formatted date string in German format (DD.MM.YYYY), or empty string if input is invalid
-   * @example
-   * ```typescript
-   * dateLabel("2024-03-15") // returns "15.03.2024"
-   * dateLabel("2023-12-31") // returns "31.12.2023"
-   * dateLabel(undefined)    // returns ""
-   * dateLabel("invalid")    // returns ""
-   * ```
+   * Reorders hyphen-separated date components from `YYYY-MM-DD` to `DD.MM.YYYY` without validating the date.
+   *
+   * @param date - Date-only string in ISO component order.
+   * @returns Reordered components, or empty text when the input is missing or has fewer than three components.
    */
   private static dateLabel(date?: string): string {
     if (!date) {
@@ -596,7 +635,8 @@ export default class Formatter {
 
   /**
    * Returns a short German label for the weekday.
-   * @param weekday The weekday number: 0 = Sunday, 1 = Monday, ..., 6 = Saturday, 7 = Sunday
+   *
+   * @param weekday - Weekday number: 0 = Sunday through 6 = Saturday; 7 also maps to Sunday.
    * @returns The short German label for the weekday
    */
   private static weekdayLabel(weekday: number): string {
@@ -625,13 +665,11 @@ export default class Formatter {
    * Gets a localized text from the resource bundle.
    *
    * If the bundle has not been initialised yet (e.g., a formatter is invoked
-   * before `Component#init` finished), returns the i18n key itself rather than
-   * throwing — matching the behaviour of UI5's `{i18n>...}` bindings before
-   * the bundle is available.
+   * before bundle resolution), returns the i18n key itself rather than throwing.
    *
-   * @param key The i18n key
-   * @param args Optional arguments for text interpolation
-   * @returns The localized text or the key if not found
+   * @param key - Resource-bundle key.
+   * @param args - Optional values substituted into translation placeholders.
+   * @returns Localized text, or the key if the bundle or translated text is unavailable.
    */
   private static i18n(key: string, args?: any[]): string {
     if (!Formatter.bundle) {

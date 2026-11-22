@@ -10,11 +10,14 @@ import FilterOperator from "sap/ui/model/FilterOperator";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import ListBinding from "sap/ui/model/ListBinding";
 import Formatter from "../model/Formatter";
+import { Routes } from "../model/Routes";
 import { NavigationData } from "../model/types";
 import BaseController from "./Base.controller";
 import RacesTableController from "./RacesTable.controller";
 
 /**
+ * Displays a club and its entries, with links to club athletes, location, and race details.
+ *
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class ClubDetailsController extends BaseController {
@@ -25,6 +28,7 @@ export default class ClubDetailsController extends BaseController {
   private table?: Table;
   private clubId?: number;
 
+  /** Registers club and entry models and loads them when the club route matches. */
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
 
@@ -35,25 +39,30 @@ export default class ClubDetailsController extends BaseController {
 
     super
       .getRouter()
-      ?.getRoute("clubDetails")
+      ?.getRoute(Routes.ClubDetails)
       ?.attachPatternMatched((event: Route$PatternMatchedEvent) => {
         super.runAsync(this.onPatternMatched(event), "Failed to load club details:");
       }, this);
   }
 
   onNavBack(): void {
-    super.navBack("clubs");
+    super.navBack(Routes.Clubs);
     delete this.clubId;
   }
 
   onCityPress(): void {
-    super.getRouter()?.navTo("mapClub", { clubId: this.clubId });
+    super.getRouter()?.navTo(Routes.MapClub, { clubId: this.clubId });
   }
 
   onAthletesPress(): void {
     super.navToClubAthletes(this.clubId!);
   }
 
+  /**
+   * Opens the selected entry's race with list-navigation controls hidden and club details as the back target.
+   *
+   * @param oEvent - Selection event whose list item is bound to a club race entry.
+   */
   onSelectionChange(oEvent: ListBase$SelectionChangeEvent): void {
     const selectedItem: ListItemBase | undefined = oEvent.getParameter("listItem");
     if (selectedItem) {
@@ -63,13 +72,19 @@ export default class ClubDetailsController extends BaseController {
       const entry: any = bindingCtx?.getModel().getProperty(bindingCtx.getPath());
       super.getComponentJSONModel(RacesTableController.RACE_MODEL).setData(entry.race);
 
-      const navData: NavigationData = { isFirst: false, isLast: false, disabled: true, back: "clubDetails" };
+      const navData: NavigationData = { isFirst: false, isLast: false, disabled: true, back: Routes.ClubDetails };
       super.getComponentJSONModel(RacesTableController.RACE_NAV_MODEL).setData(navData);
 
       super.navToRaceDetails(entry.race.id);
     }
   }
 
+  /**
+   * Refreshes both models and restores the triggering button whether loading succeeds or fails.
+   *
+   * @param event - Press event providing the refresh button to disable during loading.
+   * @returns A promise resolving after loading, feedback, and button restoration, including handled failures.
+   */
   async onRefreshButtonPress(event: Button$PressEvent): Promise<void> {
     const source: Button = event.getSource();
     source.setEnabled(false);
@@ -84,6 +99,11 @@ export default class ClubDetailsController extends BaseController {
     }
   }
 
+  /**
+   * Applies or clears text-search constraints on the club's entries table.
+   *
+   * @param event - Live-change event containing the new search text; blank text clears search filters.
+   */
   onSearchFieldLiveChange(event: SearchField$LiveChangeEvent): void {
     const query: string | undefined = event.getParameters().newValue?.trim();
     const searchFilters: Filter[] = query ? this.createSearchFilters(query) : [];
@@ -92,6 +112,12 @@ export default class ClubDetailsController extends BaseController {
     binding?.filter(searchFilters);
   }
 
+  /**
+   * Matches any crew member's name case-insensitively or the entry's race number.
+   *
+   * @param query - Trimmed search text applied to crew names and race numbers.
+   * @returns One compound OR filter combining crew-name and race-number alternatives.
+   */
   private createSearchFilters(query: string): Filter[] {
     return [
       new Filter({
@@ -117,11 +143,22 @@ export default class ClubDetailsController extends BaseController {
     ];
   }
 
+  /**
+   * Captures the club ID before awaiting the initial detail load.
+   *
+   * @param event - Route match containing `clubId` in its arguments.
+   * @returns A promise resolving after both detail requests settle; regatta-lookup failures reject.
+   */
   private async onPatternMatched(event: Route$PatternMatchedEvent): Promise<void> {
     this.clubId = (event.getParameter("arguments") as any).clubId;
     await this.loadData();
   }
 
+  /**
+   * Refreshes club details and entries in parallel for the active regatta.
+   *
+   * @returns Update results in `[entries, club]` order.
+   */
   private async loadData(): Promise<[boolean, boolean]> {
     const regatta: any = await super.getActiveRegatta();
 

@@ -4,9 +4,12 @@ import Table from "sap/m/Table";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import Formatter from "../model/Formatter";
+import { Routes } from "../model/Routes";
 import BaseController from "./Base.controller";
 
 /**
+ * Regatta statistics view transforming backend totals into localized, grouped table rows.
+ *
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class StatisticsController extends BaseController {
@@ -14,11 +17,12 @@ export default class StatisticsController extends BaseController {
   private readonly statisticsModel: JSONModel = new JSONModel();
   private statisticsTable?: Table;
 
+  /** Registers the display model and loads statistics each time the route matches. */
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super
       .getRouter()
-      ?.getRoute("statistics")
+      ?.getRoute(Routes.Statistics)
       ?.attachMatched((_: Route$MatchedEvent) => {
         super.runAsync(this.loadStatistics(), "Failed to load statistics:");
       }, this);
@@ -30,6 +34,11 @@ export default class StatisticsController extends BaseController {
     super.navToStartPage();
   }
 
+  /**
+   * Refreshes statistics with a table busy indicator that clears even when loading rejects.
+   *
+   * @param _event - Refresh-button press event; unused because busy state is applied to the table.
+   */
   onRefreshButtonPress(_event: Button$PressEvent): void {
     this.setBusy(true);
     super.runAsync(
@@ -44,6 +53,11 @@ export default class StatisticsController extends BaseController {
     );
   }
 
+  /**
+   * Loads statistics and flattens available categories into localized rows; request failure clears displayed rows.
+   *
+   * @returns Whether the statistics request succeeded; active-regatta loading failures still reject.
+   */
   private async loadStatistics(): Promise<boolean> {
     const regatta: any = await super.getActiveRegatta();
     // load statistic data from backend
@@ -114,10 +128,22 @@ export default class StatisticsController extends BaseController {
     return succeeded;
   }
 
+  /**
+   * UI5 grouping callback returning the category key stored on a row's binding context.
+   *
+   * @param context - Binding context of the statistics row being grouped.
+   * @returns The row's `group` category key used by the group-header factory.
+   */
   getGroup(context: any): string {
     return context.getProperty("group");
   }
 
+  /**
+   * UI5 group-header factory localizing category keys 1 through 5 for the table.
+   *
+   * @param group - UI5 grouping descriptor whose `key` identifies the statistics category.
+   * @returns A group-header list item with the localized category title, or an empty title for an unknown key.
+   */
   getGroupHeader(group: any): any {
     let title: string = "";
     switch (group?.key) {
@@ -142,6 +168,11 @@ export default class StatisticsController extends BaseController {
     });
   }
 
+  /**
+   * Updates the statistics table's busy indicator if the table is available.
+   *
+   * @param busy - Whether the table should display its busy indicator.
+   */
   private setBusy(busy: boolean): void {
     this.statisticsTable?.setBusy(busy);
   }

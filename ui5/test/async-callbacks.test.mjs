@@ -9,6 +9,15 @@ import ts from "typescript";
 // HTTP requests, credentials, or backend writes. UI5 objects are isolated stubs.
 const modules = new Map();
 const errors = [];
+const routesModule = {};
+const routesSource = readFileSync(new URL("../webapp/model/Routes.ts", import.meta.url), "utf8");
+vm.runInNewContext(
+  ts.transpileModule(routesSource, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
+  }).outputText,
+  { exports: routesModule }
+);
+const { Routes } = routesModule;
 
 class JSONModel {
   constructor(data = {}) {
@@ -89,6 +98,7 @@ function loadController(name) {
     if (id === "./HeatsTable.controller") return { HEAT_MODEL: "heat", HEAT_NAV_MODEL: "heatNav" };
     if (id === "./RacesTable.controller") return { RACE_MODEL: "race", RACE_NAV_MODEL: "raceNav" };
     if (id === "../model/Formatter") return {};
+    if (id === "../model/Routes") return routesModule;
     if (id === "sap/ui/core/routing/History") return {};
     throw new Error(`Unmocked controller dependency: ${id}`);
   };
@@ -138,7 +148,7 @@ test("statistics callbacks return void and clear busy state on refresh failure",
   const controller = new (loadController("Statistics"))();
   controller.loadStatistics = () => Promise.reject(new Error("Synthetic statistics failure"));
   controller.onInit();
-  assert.equal(controller.routes.get("statistics")({}), undefined);
+  assert.equal(controller.routes.get(Routes.Statistics)({}), undefined);
   await setImmediate();
   assert.deepEqual(controller.feedback, [false]);
   controller.feedback.length = 0;
@@ -159,7 +169,7 @@ test("heat route arguments are consumed synchronously, before a pooled event is 
   };
   controller.onInit();
   const event = { getParameter: () => ({ heatId: 47 }) };
-  assert.equal(controller.routes.get("heatDetails")(event), undefined);
+  assert.equal(controller.routes.get(Routes.HeatDetails)(event), undefined);
   event.getParameter = () => {
     throw new Error("Event was already cleared");
   };
@@ -179,7 +189,7 @@ test("club athlete filters are applied after loading, with a captured club ID", 
   controller.applyClubFilter = (id) => filters.push(id);
   controller.onInit();
   const event = { getParameter: () => ({ clubId: 7 }) };
-  assert.equal(controller.routes.get("clubAthletes")(event), undefined);
+  assert.equal(controller.routes.get(Routes.ClubAthletes)(event), undefined);
   event.getParameter = () => {
     throw new Error("Event was already cleared");
   };
@@ -331,7 +341,7 @@ test("XML-bound controller methods and formatter APIs retain public visibility",
 test("the notifications route loads the Notifications view and controller", () => {
   const manifest = JSON.parse(readFileSync(new URL("../webapp/manifest.json", import.meta.url), "utf8"));
   const routing = manifest["sap.ui5"].routing;
-  const route = routing.routes.find((item) => item.name === "notifications");
+  const route = routing.routes.find((item) => item.name === Routes.Notifications);
   assert.equal(route.pattern, "notifications");
   assert.equal(route.target, "notifications");
   assert.ok(!routing.routes.some((item) => item.name === "admin" || item.pattern === "admin"));
@@ -345,6 +355,46 @@ test("the notifications route loads the Notifications view and controller", () =
   assert.match(controller, /export default class NotificationsController extends BaseController/);
   assert.ok(!readdirSync(new URL("../webapp/view/", import.meta.url)).includes("Admin.view.xml"));
   assert.ok(!readdirSync(new URL("../webapp/controller/", import.meta.url)).includes("Admin.controller.ts"));
+});
+
+test("route constants exactly match every manifest route name", () => {
+  const manifest = JSON.parse(readFileSync(new URL("../webapp/manifest.json", import.meta.url), "utf8"));
+  const names = Object.values(Routes);
+  assert.equal(names.length, new Set(names).size, "route names must be unique");
+  assert.deepEqual(names.sort(), manifest["sap.ui5"].routing.routes.map((route) => route.name).sort());
+});
+
+test("controller navigation and route lookups do not use string literals", () => {
+  const directory = new URL("../webapp/controller/", import.meta.url);
+  let checked = 0;
+  for (const file of readdirSync(directory).filter((name) => name.endsWith(".ts"))) {
+    const source = ts.createSourceFile(
+      file,
+      readFileSync(new URL(file, directory), "utf8"),
+      ts.ScriptTarget.Latest,
+      true
+    );
+    const isLiteral = (node) => node && (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node));
+    const visit = (node) => {
+      if (
+        ts.isCallExpression(node) &&
+        ts.isPropertyAccessExpression(node.expression) &&
+        ["navTo", "getRoute", "navBack"].includes(node.expression.name.text)
+      ) {
+        assert.ok(!isLiteral(node.arguments[0]), `${file}: ${node.getText()}`);
+        if (ts.isPropertyAccessExpression(node.arguments[0]) && node.arguments[0].expression.getText() === "Routes") {
+          assert.ok(Object.hasOwn(Routes, node.arguments[0].name.text), `${file}: unknown route constant`);
+        }
+        checked++;
+      }
+      if (ts.isPropertyAssignment(node) && node.name.getText() === "back") {
+        assert.ok(!isLiteral(node.initializer), `${file}: navigation back target must use a route constant`);
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(source);
+  }
+  assert.ok(checked >= 40, "expected all controller routing calls to be checked");
 });
 
 test("notification translation keys are migrated consistently in every locale", () => {
