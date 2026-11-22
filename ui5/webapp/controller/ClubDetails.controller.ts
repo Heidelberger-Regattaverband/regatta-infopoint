@@ -114,26 +114,30 @@ export default class ClubDetailsController extends BaseController {
 
   /**
    * Matches any crew member's name case-insensitively or the entry's race number.
+   * Missing/non-array crews and missing/non-text names do not match the crew-name alternative.
    *
    * @param query - Trimmed search text applied to crew names and race numbers.
    * @returns One compound OR filter combining crew-name and race-number alternatives.
    */
   private createSearchFilters(query: string): Filter[] {
+    const normalizedQuery = query.toLowerCase();
     return [
       new Filter({
         filters: [
           new Filter({
             path: "crew/",
-            test: function (crews: any[]) {
-              for (const crew of crews) {
-                const found =
-                  crew.athlete.firstName.toLowerCase().includes(query.toLowerCase()) ||
-                  crew.athlete.lastName.toLowerCase().includes(query.toLowerCase());
-                if (found) {
-                  return true;
-                }
+            test: function (crews: unknown): boolean {
+              if (!Array.isArray(crews)) {
+                return false;
               }
-              return false;
+              return crews.some((crew) => {
+                const firstName = crew?.athlete?.firstName;
+                const lastName = crew?.athlete?.lastName;
+                return (
+                  (typeof firstName === "string" && firstName.toLowerCase().includes(normalizedQuery)) ||
+                  (typeof lastName === "string" && lastName.toLowerCase().includes(normalizedQuery))
+                );
+              });
             }
           }),
           new Filter("race/number", FilterOperator.Contains, query)

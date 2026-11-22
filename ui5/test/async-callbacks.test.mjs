@@ -31,6 +31,30 @@ class JSONModel {
   }
 }
 
+class FakeFilter {
+  constructor(info, operator, value1, value2) {
+    this.info = typeof info === "string" ? { path: info, operator, value1, value2 } : info;
+  }
+  getFilters() {
+    return this.info.filters;
+  }
+  getTest() {
+    return this.info.test;
+  }
+  getPath() {
+    return this.info.path;
+  }
+  getOperator() {
+    return this.info.operator;
+  }
+  getValue1() {
+    return this.info.value1;
+  }
+  isAnd() {
+    return this.info.and ?? false;
+  }
+}
+
 class FakeWebSocket {
   static OPEN = 1;
   static CLOSED = 3;
@@ -106,9 +130,10 @@ function loadController(name) {
     if (id === "sap/ui/model/json/JSONModel") return JSONModel;
     if (id === "jquery") return () => ({ addClass() {} });
     if (id === "sap/m/MessageToast") return { show() {} };
-    if (id === "sap/m/GroupHeaderListItem" || id === "sap/ui/model/Filter" || id === "sap/m/Dialog") return class {};
+    if (id === "sap/m/GroupHeaderListItem" || id === "sap/m/Dialog") return class {};
+    if (id === "sap/ui/model/Filter") return FakeFilter;
     if (id === "sap/m/MessageBox") return {};
-    if (id === "sap/ui/model/FilterOperator") return {};
+    if (id === "sap/ui/model/FilterOperator") return { Contains: "Contains", EQ: "EQ" };
     if (id === "sap/ui/model/Sorter") return class {};
     if (id === "sap/base/Log") return { debug() {} };
     if (id === "sap/ui/core/Fragment") return {};
@@ -504,6 +529,85 @@ test("club athlete filters are applied after loading, with a captured club ID", 
   resolve(true);
   await setImmediate();
   assert.deepEqual(filters, [7]);
+});
+
+test("club-entry crew search safely rejects omitted, empty, and malformed crews", () => {
+  const controller = new (loadController("ClubDetails"))();
+  const crewMatches = controller.createSearchFilters("alice")[0].getFilters()[0].getTest();
+  for (const crews of [
+    undefined,
+    null,
+    [],
+    {},
+    "not an array",
+    [null, undefined, {}],
+    [{ athlete: null }],
+    [{ athlete: { firstName: 42, lastName: null } }]
+  ]) {
+    assert.equal(crewMatches(crews), false);
+  }
+});
+
+test("club-entry crew search matches first or last names case-insensitively", () => {
+  const controller = new (loadController("ClubDetails"))();
+  const crewMatches = controller.createSearchFilters("ALIce")[0].getFilters()[0].getTest();
+  assert.equal(crewMatches([{ athlete: { firstName: "Alice" } }]), true);
+  assert.equal(crewMatches([{ athlete: { lastName: "MacAlice" } }]), true);
+  assert.equal(crewMatches([null, {}, { athlete: { firstName: null, lastName: "ALICE" } }]), true);
+  assert.equal(crewMatches([{ athlete: { firstName: "Bob", lastName: "Smith" } }]), false);
+});
+
+// Only the custom predicate, OR conjunction, and Contains operator used by
+// club search are simulated here; this is not a full UI5 filtering engine.
+function matchesClubSearch(filter, entry) {
+  const nested = filter.getFilters();
+  if (nested) {
+    return filter.isAnd()
+      ? nested.every((child) => matchesClubSearch(child, entry))
+      : nested.some((child) => matchesClubSearch(child, entry));
+  }
+  const value = filter
+    .getPath()
+    .split("/")
+    .filter(Boolean)
+    .reduce((object, key) => object?.[key], entry);
+  const predicate = filter.getTest();
+  if (predicate) return predicate(value);
+  assert.equal(filter.getOperator(), "Contains");
+  return value != null && String(value).toLowerCase().includes(String(filter.getValue1()).toLowerCase());
+}
+
+test("club-entry search retains race-number matches without crew and clears on blank text", () => {
+  const controller = new (loadController("ClubDetails"))();
+  const entries = [
+    { id: 1, race: { number: "202" } },
+    { id: 2, race: { number: "303" }, crew: [] },
+    { id: 3, race: { number: "404" }, crew: [{ athlete: { firstName: "Rower 202" } }] },
+    { id: 4, race: { number: "505" }, crew: null },
+    { id: 5, race: { number: "606" }, crew: [null, {}] }
+  ];
+  let applied;
+  let matched;
+  controller.table = {
+    getBinding: () => ({
+      filter: (filters) => {
+        applied = filters;
+        matched = entries.filter((entry) => filters.every((filter) => matchesClubSearch(filter, entry)));
+      }
+    })
+  };
+  controller.onSearchFieldLiveChange({ getParameters: () => ({ newValue: " 202 " }) });
+  assert.equal(applied[0].isAnd(), false);
+  const raceFilter = applied[0].getFilters()[1];
+  assert.equal(raceFilter.getPath(), "race/number");
+  assert.equal(raceFilter.getValue1(), "202");
+  assert.deepEqual(
+    matched.map((entry) => entry.id),
+    [1, 3]
+  );
+  controller.onSearchFieldLiveChange({ getParameters: () => ({ newValue: "   " }) });
+  assert.equal(applied.length, 0);
+  assert.deepEqual(matched, entries);
 });
 
 test("race refresh restores the disabled button even when loading rejects", async () => {
