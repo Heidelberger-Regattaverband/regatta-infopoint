@@ -71,8 +71,8 @@ export default class NotificationsController extends BaseController {
     const notification: any = context?.getObject();
 
     if (notification) {
-      MessageBox.confirm(super.i18n("admin.delete.message"), {
-        title: super.i18n("admin.delete.title"),
+      MessageBox.confirm(super.i18n("notifications.delete.message"), {
+        title: super.i18n("notifications.delete.title"),
         emphasizedAction: MessageBox.Action.CANCEL,
         onClose: (action: any) => {
           if (action === MessageBox.Action.OK) {
@@ -108,7 +108,7 @@ export default class NotificationsController extends BaseController {
 
     // Validation
     if (!dialogData.title || dialogData.title.trim() === "") {
-      MessageToast.show(super.i18n("admin.validation.titleRequired"));
+      MessageToast.show(super.i18n("notifications.validation.titleRequired"));
       $(".sapMMessageToast").addClass("sapMMessageToastDanger");
       return;
     }
@@ -140,13 +140,13 @@ export default class NotificationsController extends BaseController {
         },
         error: (xhr: any) => {
           console.error("Failed to load notifications:", xhr);
-          MessageToast.show(super.i18n("admin.error.loadFailed"));
+          MessageToast.show(super.i18n("notifications.error.loadFailed"));
           $(".sapMMessageToast").addClass("sapMMessageToastDanger");
         }
       });
     } catch (error) {
       console.error("Failed to get active regatta:", error);
-      MessageToast.show(super.i18n("admin.error.regattaFailed"));
+      MessageToast.show(super.i18n("notifications.error.regattaFailed"));
       $(".sapMMessageToast").addClass("sapMMessageToastDanger");
     }
   }
@@ -167,20 +167,20 @@ export default class NotificationsController extends BaseController {
           visible: data.visible
         }),
         success: () => {
-          MessageToast.show(super.i18n("admin.success.created"));
+          MessageToast.show(super.i18n("notifications.success.created"));
           $(".sapMMessageToast").addClass("sapMMessageToastSuccess");
           void this.loadNotifications();
           this.closeDialog();
         },
         error: (xhr: any) => {
           console.error("Failed to create notification:", xhr);
-          MessageToast.show(super.i18n("admin.error.createFailed"));
+          MessageToast.show(super.i18n("notifications.error.createFailed"));
           $(".sapMMessageToast").addClass("sapMMessageToastDanger");
         }
       });
     } catch (error) {
       console.error("Failed to get active regatta:", error);
-      MessageToast.show(super.i18n("admin.error.regattaFailed"));
+      MessageToast.show(super.i18n("notifications.error.regattaFailed"));
       $(".sapMMessageToast").addClass("sapMMessageToastDanger");
     }
   }
@@ -197,14 +197,14 @@ export default class NotificationsController extends BaseController {
         visible: data.visible
       }),
       success: () => {
-        MessageToast.show(super.i18n("admin.success.updated"));
+        MessageToast.show(super.i18n("notifications.success.updated"));
         $(".sapMMessageToast").addClass("sapMMessageToastSuccess");
         void this.loadNotifications();
         this.closeDialog();
       },
       error: (xhr: any) => {
         console.error("Failed to update notification:", xhr);
-        MessageToast.show(super.i18n("admin.error.updateFailed"));
+        MessageToast.show(super.i18n("notifications.error.updateFailed"));
         $(".sapMMessageToast").addClass("sapMMessageToastDanger");
       }
     });
@@ -219,13 +219,13 @@ export default class NotificationsController extends BaseController {
         visible: visible
       }),
       success: () => {
-        MessageToast.show(super.i18n("admin.success.visibilityUpdated"));
+        MessageToast.show(super.i18n("notifications.success.visibilityUpdated"));
         $(".sapMMessageToast").addClass("sapMMessageToastSuccess");
         void this.loadNotifications();
       },
       error: (xhr: any) => {
         console.error("Failed to update notification visibility:", xhr);
-        MessageToast.show(super.i18n("admin.error.visibilityFailed"));
+        MessageToast.show(super.i18n("notifications.error.visibilityFailed"));
         $(".sapMMessageToast").addClass("sapMMessageToastDanger");
         void this.loadNotifications().catch((revertError: unknown) => {
           console.error("Failed to revert switch state:", revertError);
@@ -239,13 +239,13 @@ export default class NotificationsController extends BaseController {
       type: "DELETE",
       url: `/api/notifications/${notificationId}`,
       success: () => {
-        MessageToast.show(super.i18n("admin.success.deleted"));
+        MessageToast.show(super.i18n("notifications.success.deleted"));
         $(".sapMMessageToast").addClass("sapMMessageToastSuccess");
         void this.loadNotifications();
       },
       error: (xhr: any) => {
         console.error("Failed to delete notification:", xhr);
-        MessageToast.show(super.i18n("admin.error.deleteFailed"));
+        MessageToast.show(super.i18n("notifications.error.deleteFailed"));
         $(".sapMMessageToast").addClass("sapMMessageToastDanger");
       }
     });

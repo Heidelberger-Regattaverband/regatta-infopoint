@@ -46,7 +46,7 @@
         <Text text="{i18n>common.state}" class="bold" />
       </Column>
       <Column hAlign="Center" width="4rem" importance="Low" popinDisplay="Inline">
-        <Text text="{i18n>admin.column.actions}" class="bold" />
+        <Text text="{i18n>common.actions}" class="bold" />
       </Column>
     </columns>
 

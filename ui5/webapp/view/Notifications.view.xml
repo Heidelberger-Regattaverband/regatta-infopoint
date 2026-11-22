@@ -8,7 +8,7 @@
 >
   <mvc:content>
 
-    <Page title="{i18n>admin.notificationsTitle}" showNavButton="true" navButtonPress=".navBack">
+    <Page title="{i18n>notifications.title}" showNavButton="true" navButtonPress=".navBack">
       <content>
         <Table
           id="notificationsTable"
@@ -20,7 +20,7 @@
         >
           <headerToolbar>
             <OverflowToolbar>
-              <Title text="{i18n>admin.notificationsTitle}" />
+              <Title text="{i18n>notifications.title}" />
               <ToolbarSpacer />
               <Button
                 icon="sap-icon://add"
@@ -41,16 +41,16 @@
               <Text text="{i18n>common.title}" />
             </Column>
             <Column hAlign="Center" width="7rem" importance="Low" popinDisplay="Inline">
-              <Text text="{i18n>admin.column.priority}" />
+              <Text text="{i18n>notifications.column.priority}" />
             </Column>
             <Column hAlign="Center" width="5rem" importance="Medium" popinDisplay="Inline">
-              <Text text="{i18n>admin.column.visible}" />
+              <Text text="{i18n>notifications.column.visible}" />
             </Column>
             <Column hAlign="Center" width="9rem" importance="Low" popinDisplay="Inline">
-              <Text text="{i18n>admin.column.modifiedAt}" />
+              <Text text="{i18n>notifications.column.modifiedAt}" />
             </Column>
             <Column hAlign="Center" width="5rem" importance="Low" popinDisplay="Inline">
-              <Text text="{i18n>admin.column.actions}" />
+              <Text text="{i18n>common.actions}" />
             </Column>
           </columns>
           <items>
@@ -58,10 +58,10 @@
               <cells>
                 <Text text="{notifications>title}" />
                 <ComboBox selectedKey="{notifications>priority}" selectionChange=".onPriorityChange">
-                  <core:Item key="0" text="{i18n>admin.priority.none}" />
-                  <core:Item key="1" text="{i18n>admin.priority.low}" />
-                  <core:Item key="2" text="{i18n>admin.priority.medium}" />
-                  <core:Item key="3" text="{i18n>admin.priority.high}" />
+                  <core:Item key="0" text="{i18n>notifications.priority.none}" />
+                  <core:Item key="1" text="{i18n>notifications.priority.low}" />
+                  <core:Item key="2" text="{i18n>notifications.priority.medium}" />
+                  <core:Item key="3" text="{i18n>notifications.priority.high}" />
                 </ComboBox>
                 <Switch state="{notifications>visible}" change=".onVisibilityChange" />
                 <Text text="{path:'notifications>modifiedAt',formatter:'.formatter.dateTime'}" />
@@ -87,30 +87,34 @@
     </Page>
 
     <!-- Add/Edit Notification Dialog -->
-    <Dialog id="notificationDialog" title="{i18n>admin.dialog.title}">
+    <Dialog id="notificationDialog" title="{i18n>notifications.dialog.title}">
       <content>
         <VBox class="sapUiSmallMargin">
           <Label text="{i18n>common.title}" required="true" />
-          <Input id="titleInput" value="{dialog>/title}" placeholder="{i18n>admin.dialog.title.placeholder}" />
+          <Input id="titleInput" value="{dialog>/title}" placeholder="{i18n>notifications.dialog.title.placeholder}" />
 
-          <Label text="{i18n>admin.dialog.text.label}" />
+          <Label text="{i18n>notifications.dialog.text.label}" />
           <TextArea
             id="textInput"
             value="{dialog>/text}"
-            placeholder="{i18n>admin.dialog.text.placeholder}"
+            placeholder="{i18n>notifications.dialog.text.placeholder}"
             rows="4"
             width="100%"
           />
 
-          <Label text="{i18n>admin.dialog.priority.label}" />
+          <Label text="{i18n>notifications.dialog.priority.label}" />
           <Select id="prioritySelect" selectedKey="{dialog>/priority}">
-            <core:Item key="0" text="{i18n>admin.priority.none}" />
-            <core:Item key="1" text="{i18n>admin.priority.low}" />
-            <core:Item key="2" text="{i18n>admin.priority.medium}" />
-            <core:Item key="3" text="{i18n>admin.priority.high}" />
+            <core:Item key="0" text="{i18n>notifications.priority.none}" />
+            <core:Item key="1" text="{i18n>notifications.priority.low}" />
+            <core:Item key="2" text="{i18n>notifications.priority.medium}" />
+            <core:Item key="3" text="{i18n>notifications.priority.high}" />
           </Select>
 
-          <CheckBox id="visibleCheckBox" text="{i18n>admin.dialog.visible.label}" selected="{dialog>/visible}" />
+          <CheckBox
+            id="visibleCheckBox"
+            text="{i18n>notifications.dialog.visible.label}"
+            selected="{dialog>/visible}"
+          />
         </VBox>
       </content>
       <beginButton>

@@ -173,7 +173,7 @@
               class="sapUiTinyMarginTop"
             >
               <contentLeft>
-                <Text text="{i18n>admin.title}" />
+                <Text text="{i18n>launchpad.administration}" />
               </contentLeft>
             </Bar>
 
@@ -225,7 +225,7 @@
 
           <GenericTile
             class="sapUiTinyMarginBegin sapUiTinyMarginTop"
-            header="{i18n>admin.notificationsTitle}"
+            header="{i18n>notifications.title}"
             visible="{=${identity>/authenticated}&amp;&amp;${identity>/scope}==='admin'}"
             press=".navToNotifications"
           >

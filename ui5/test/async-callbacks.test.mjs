@@ -346,3 +346,54 @@ test("the notifications route loads the Notifications view and controller", () =
   assert.ok(!readdirSync(new URL("../webapp/view/", import.meta.url)).includes("Admin.view.xml"));
   assert.ok(!readdirSync(new URL("../webapp/controller/", import.meta.url)).includes("Admin.controller.ts"));
 });
+
+test("notification translation keys are migrated consistently in every locale", () => {
+  const directory = new URL("../webapp/i18n/", import.meta.url);
+  const locales = readdirSync(directory).filter((file) => file.endsWith(".properties"));
+  assert.ok(locales.length >= 2);
+  const migrated = (key) =>
+    key.startsWith("notifications.") || key === "launchpad.administration" || key === "common.actions";
+  const bundles = locales.map((file) => {
+    const entries = readFileSync(new URL(file, directory), "utf8")
+      .split(/\r?\n/)
+      .flatMap((line) => {
+        const match = line.match(/^([^#!\s][^=]*)=(.*)$/);
+        return match ? [[match[1].trim(), match[2]]] : [];
+      });
+    const bundle = new Map(entries);
+    assert.ok(![...bundle.keys()].some((key) => key.startsWith("admin.")), file);
+    const migratedEntries = entries.filter(([key]) => migrated(key));
+    assert.equal(
+      migratedEntries.length,
+      new Set(migratedEntries.map(([key]) => key)).size,
+      `duplicate keys in ${file}`
+    );
+    for (const key of ["notifications.title", "launchpad.administration", "common.actions"]) {
+      assert.ok(bundle.get(key), `${file}: ${key}`);
+    }
+    return { file, bundle };
+  });
+  const expected = [...bundles[0].bundle.keys()].filter(migrated).sort();
+  for (const { file, bundle } of bundles) assert.deepEqual([...bundle.keys()].filter(migrated).sort(), expected, file);
+
+  let checked = 0;
+  for (const file of [
+    "controller/Notifications.controller.ts",
+    "view/Notifications.view.xml",
+    "view/Launchpad.view.xml",
+    "view/TimekeepingTimestrip.fragment.xml"
+  ]) {
+    const source = readFileSync(new URL(`../webapp/${file}`, import.meta.url), "utf8");
+    const references = [
+      ...Array.from(source.matchAll(/i18n\(["']([^"']+)["']/g), (match) => match[1]),
+      ...Array.from(source.matchAll(/i18n>([^}]+)\}/g), (match) => match[1])
+    ];
+    assert.ok(!references.some((key) => key.startsWith("admin.")), file);
+    for (const key of references.filter(migrated)) {
+      for (const { file: locale, bundle } of bundles)
+        assert.ok(bundle.get(key), `${file}: ${key} missing in ${locale}`);
+      checked++;
+    }
+  }
+  assert.ok(checked > 25, "expected controller and XML translation coverage");
+});
