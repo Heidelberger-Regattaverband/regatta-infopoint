@@ -20,7 +20,8 @@ import {
   tileLayer
 } from "leaflet";
 import Log from "sap/base/Log";
-import Button, { Button$PressEvent } from "sap/m/Button";
+import MenuItem, { MenuItem$PressEvent } from "sap/m/MenuItem";
+import { HTML$AfterRenderingEvent } from "sap/ui/core/HTML";
 import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import JSONModel from "sap/ui/model/json/JSONModel";
 import { Routes } from "../model/Routes";
@@ -32,52 +33,75 @@ import BaseController from "./Base.controller";
  * @namespace de.regatta_hd.infoportal.controller
  */
 export default class MapController extends BaseController {
-  private readonly participatingClubsModel: JSONModel = new JSONModel();
+  private readonly participatingClubsModel: JSONModel = new JSONModel([]);
   private readonly boundsOpts: FitBoundsOptions = { paddingTopLeft: [0, 0], paddingBottomRight: [0, 0] };
   private readonly clubMarkers: Map<number, Marker> = new Map();
   private map?: LeafletMap;
+  private clubsLayer?: LayerGroup;
+  private selectedClubId?: number;
   private clubBounds?: LatLngBounds;
   private regattaBounds?: LatLngBounds;
-  private centerClubsButton?: Button;
-  private centerRegattaButton?: Button;
+  private centerClubsButton?: MenuItem;
+  private centerRegattaButton?: MenuItem;
 
-  /** Registers map routes that load club data before creating layers and choosing the initial viewport. */
+  /** Registers route-driven club loading; the rendered HTML container initializes the static map independently. */
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
+    super.getView()?.addEventDelegate({ onAfterShow: this.onAfterShow }, this);
 
-    const handleRoute = (clubId?: number): void => {
-      // Load clubs model first, then init the map (idempotent) and center/focus.
-      // On model error, still call loadMap() so the static regatta layer is visible.
-      this.loadModel()
-        .then(() => {
-          this.loadMap();
-          if (clubId) {
-            this.panToClub(clubId);
-          } else {
-            this.centerClubsMap();
-          }
-        })
-        .catch((err: unknown) => {
-          Log.error("Failed to load map data", err as Error);
-          // Still try to render the static regatta layer so the page is not blank.
-          this.loadMap();
-        });
-    };
+    super.getRouter()?.getRoute(Routes.Map)?.attachMatched(this.onRouteMatched, this);
+    super.getRouter()?.getRoute(Routes.MapClub)?.attachMatched(this.onRouteMatched, this);
 
-    super
-      .getRouter()
-      ?.getRoute(Routes.Map)
-      ?.attachMatched((_: Route$MatchedEvent) => handleRoute(), this);
-    super
-      .getRouter()
-      ?.getRoute(Routes.MapClub)
-      ?.attachMatched((event: Route$MatchedEvent) => {
-        const clubId = Number((event.getParameter("arguments") as any).clubId);
-        handleRoute(clubId);
-      }, this);
+    this.centerClubsButton = this.byId("centerClubsButton") as MenuItem;
+    this.centerRegattaButton = this.byId("centerRegattaButton") as MenuItem;
+  }
 
-    this.centerClubsButton = this.byId("centerClubsButton") as Button;
-    this.centerRegattaButton = this.byId("centerRegattaButton") as Button;
+  /**
+   * Captures the current route's focus before asynchronously loading optional club data.
+   *
+   * @param event - Match for the general map or club-map route; `clubId` is optional.
+   */
+  private onRouteMatched(event: Route$MatchedEvent): void {
+    const args = event.getParameter("arguments") as { clubId?: string } | undefined;
+    const clubId = args?.clubId === undefined ? undefined : Number(args.clubId);
+    this.selectedClubId = Number.isInteger(clubId) ? clubId : undefined;
+    this.updateMapViewport();
+    void this.loadModel().catch((err: unknown) => {
+      Log.error("Failed to load map data", err as Error);
+    });
+  }
+
+  /**
+   * Initializes Leaflet only after its native container exists, even if club loading has failed or is still pending.
+   *
+   * @param event - Rendering event from the HTML container, including preserved-DOM rerenders.
+   */
+  onMapAfterRendering(event: HTML$AfterRenderingEvent): void {
+    if (super.getView()?.isDestroyed() !== false) {
+      return;
+    }
+    const container = event.getSource().getDomRef() as HTMLElement | null;
+    if (container) {
+      this.loadMap(container);
+    }
+  }
+
+  /** Recalculates map size and bounds after a cached view becomes visible again. */
+  private onAfterShow(): void {
+    this.map?.invalidateSize({ pan: false });
+    this.updateMapViewport();
+  }
+
+  /** Unsubscribes route handlers and releases Leaflet's DOM/window listeners on view destruction. */
+  onExit(): void {
+    for (const route of [Routes.Map, Routes.MapClub]) {
+      super.getRouter()?.getRoute(route)?.detachMatched(this.onRouteMatched, this);
+    }
+    this.map?.remove();
+    this.map = undefined;
+    this.clubsLayer = undefined;
+    this.clubMarkers.clear();
+    super.onExit?.();
   }
 
   onNavBack(): void {
@@ -89,7 +113,7 @@ export default class MapController extends BaseController {
    *
    * @param event - Press event whose source identifies the requested viewport.
    */
-  onCenterButtonPress(event: Button$PressEvent): void {
+  onCenterButtonPress(event: MenuItem$PressEvent): void {
     if (event.getSource() === this.centerClubsButton) {
       this.centerClubsMap();
     } else if (event.getSource() === this.centerRegattaButton) {
@@ -113,17 +137,36 @@ export default class MapController extends BaseController {
   }
 
   /**
-   * Loads participating clubs for layer creation; the model must be available before {@link loadMap}.
+   * Loads participating clubs and refreshes the existing layer only after a successful request.
+   * Fixed regatta locations remain available on failure; data arriving before rendering is used at initialization.
    *
-   * @returns A promise resolving after the club request settles; active-regatta lookup failures reject.
+   * @returns Whether club loading succeeded for a still-live view; active-regatta lookup failures reject.
    */
-  private async loadModel(): Promise<void> {
+  private async loadModel(): Promise<boolean> {
+    const view = super.getView();
     const regatta: any = await super.getActiveRegatta();
-    await super.updateJSONModel(this.participatingClubsModel, `/api/regattas/${regatta.id}/clubs`);
+    if (view?.isDestroyed() !== false) {
+      return false;
+    }
+    const succeeded = await super.updateJSONModel(this.participatingClubsModel, `/api/regattas/${regatta.id}/clubs`);
+    if (succeeded && !view.isDestroyed()) {
+      this.refreshClubsLayer();
+      this.updateMapViewport();
+      return true;
+    }
+    return false;
   }
 
-  /** Creates the map and its layers on the first call only; later calls retain the existing layer data. */
-  private loadMap(): void {
+  /**
+   * Creates fixed and optional layers once per native container; replacing the container releases the previous map.
+   *
+   * @param container - Rendered HTML element owned by this view, not a globally resolved DOM ID.
+   */
+  private loadMap(container: HTMLElement): void {
+    if (this.map && this.map.getContainer() !== container) {
+      this.map.remove();
+      this.map = undefined;
+    }
     if (!this.map) {
       const layerOsm: TileLayer = tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
@@ -138,6 +181,7 @@ export default class MapController extends BaseController {
       const regattaLayer: [LayerGroup, LatLngBounds] = this.getRegattaLayerGroup();
       this.regattaBounds = regattaLayer[1];
       const clubsLayer: [LayerGroup, LatLngBounds] = this.getClubsLayerGroup();
+      this.clubsLayer = clubsLayer[0];
       this.clubBounds = clubsLayer[1];
 
       const baseMaps = {
@@ -153,10 +197,30 @@ export default class MapController extends BaseController {
         doubleClickZoom: true,
         layers: [layerOsm, regattaLayer[0], clubsLayer[0]]
       };
-      this.map = map("map", options);
+      this.map = map(container, options);
       control.layers(baseMaps, overlayMaps).addTo(this.map);
       control.scale({ imperial: false, metric: true }).addTo(this.map);
 
+      this.updateMapViewport();
+    }
+  }
+
+  /** Updates markers and bounds without replacing the overlay registered in Leaflet's layer selector. */
+  private refreshClubsLayer(): void {
+    if (!this.clubsLayer || !this.map) {
+      return;
+    }
+    const [layer, bounds] = this.getClubsLayerGroup();
+    this.clubBounds = bounds;
+    this.clubsLayer.clearLayers();
+    layer.eachLayer((marker) => this.clubsLayer?.addLayer(marker));
+  }
+
+  /** Focuses the current route's club if present; otherwise fits clubs or falls back to regatta locations. */
+  private updateMapViewport(): void {
+    if (this.selectedClubId !== undefined && this.clubMarkers.has(this.selectedClubId)) {
+      this.panToClub(this.selectedClubId);
+    } else {
       this.centerClubsMap();
     }
   }
@@ -212,15 +276,27 @@ export default class MapController extends BaseController {
   }
 
   /**
-   * Builds markers for clubs with coordinates and indexes them by ID for route-based focus.
+   * Builds markers for clubs with numeric or decimal-string coordinates and indexes them by ID for route-based focus.
    *
    * @returns The marker layer and its viewport bounds, in that order.
    */
   private getClubsLayerGroup(): [LayerGroup, LatLngBounds] {
     const marks: Marker[] = [];
-    this.participatingClubsModel.getData().forEach((club: any) => {
-      if (club.latitude && club.longitude) {
-        const pos: LatLng = latLng(club.latitude, club.longitude);
+    this.clubMarkers.clear();
+    const data: unknown = this.participatingClubsModel.getData();
+    const clubs = Array.isArray(data) ? data : [];
+    clubs.forEach((club: any) => {
+      const latitude = this.parseCoordinate(club?.latitude);
+      const longitude = this.parseCoordinate(club?.longitude);
+      if (
+        club?.id != null &&
+        Number.isInteger(Number(club.id)) &&
+        Number.isFinite(latitude) &&
+        Number.isFinite(longitude) &&
+        Math.abs(latitude) <= 90 &&
+        Math.abs(longitude) <= 180
+      ) {
+        const pos: LatLng = latLng(latitude, longitude);
         const mark: Marker = marker(pos).bindPopup(popup().setContent(this.buildClubPopup(club)));
         if (club.flagUrl) {
           const iconClub = icon({
@@ -234,6 +310,19 @@ export default class MapController extends BaseController {
       }
     });
     return [layerGroup(marks), latLngBounds(marks.map((mark) => mark.getLatLng()))];
+  }
+
+  /**
+   * Normalizes coordinates, including the decimal strings serialized by the backend, without coercing absent values to zero.
+   *
+   * @param value - Coordinate from the club response; only numbers and nonempty numeric strings are accepted.
+   * @returns The numeric coordinate, or `NaN` for unsupported or nonnumeric values; callers validate range and finiteness.
+   */
+  private parseCoordinate(value: unknown): number {
+    if (typeof value === "number") {
+      return value;
+    }
+    return typeof value === "string" && value.trim() !== "" ? Number(value) : Number.NaN;
   }
 
   /**

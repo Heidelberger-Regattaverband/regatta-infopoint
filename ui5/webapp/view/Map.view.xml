@@ -25,9 +25,11 @@
       </headerContent>
 
       <content>
-        <!-- <Panel height="100%"> -->
-        <core:HTML content="&lt;div id=&quot;map&quot; /&gt;" />
-        <!-- </Panel> -->
+        <core:HTML
+          id="mapContainer"
+          content="&lt;div class=&quot;regattaMap&quot;&gt;&lt;/div&gt;"
+          afterRendering=".onMapAfterRendering"
+        />
       </content>
     </Page>
 
