@@ -34,7 +34,6 @@ export default class NotificationsController extends BaseController {
   private readonly dialogModel: JSONModel = new JSONModel();
   private readonly stateModel: JSONModel = new JSONModel({ saving: false });
   private dialog: Dialog;
-  private latestRead?: object;
 
   /** Registers the notification and dialog models and reloads notifications whenever the route matches. */
   onInit(): void {
@@ -57,7 +56,6 @@ export default class NotificationsController extends BaseController {
 
   /** Invalidates pending reads and detaches the route listener on destruction. */
   onExit(): void {
-    this.latestRead = undefined;
     super.getRouter()?.getRoute(Routes.Notifications)?.detachMatched(this.onRefresh, this);
     super.onExit?.();
   }
@@ -212,24 +210,21 @@ export default class NotificationsController extends BaseController {
    * @returns Whether the request completed successfully and was still relevant when its data arrived.
    */
   private async loadNotifications(): Promise<boolean> {
-    const read = {};
-    this.latestRead = read;
     let errorKey = "notifications.error.regattaFailed";
-    const isCurrent = () => read === this.latestRead && this.isViewAlive();
     try {
       const regatta = await super.getActiveRegatta();
-      if (!isCurrent()) {
+      if (!this.isViewAlive()) {
         return false;
       }
       errorKey = "notifications.error.loadFailed";
       const notifications: any[] = await $.ajax({ type: "GET", url: `/api/regattas/${regatta.id}/notifications` });
-      if (!isCurrent()) {
+      if (!this.isViewAlive()) {
         return false;
       }
       this.notificationsModel.setData(notifications);
       return true;
     } catch (error) {
-      if (isCurrent()) {
+      if (this.isViewAlive()) {
         console.error("Failed to load notifications:", error);
         this.showNotificationMessage(errorKey, false);
       }
@@ -246,7 +241,6 @@ export default class NotificationsController extends BaseController {
     if (!this.isViewAlive()) {
       return false;
     }
-    this.latestRead = undefined;
     const { method, success, error: failure } = WRITE_ACTIONS[action];
     const payload =
       data && action !== "visibility"
