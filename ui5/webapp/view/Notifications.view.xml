@@ -27,6 +27,7 @@
                 text="{=!${device>/system/phone}?${i18n>common.add}:''}"
                 tooltip="{i18n>common.add}"
                 press=".onAddNotification"
+                enabled="{=!${notificationState>/saving}}"
               />
               <Button
                 icon="sap-icon://refresh"
@@ -69,6 +70,7 @@
                   <Button
                     icon="sap-icon://edit"
                     press=".onEditNotification"
+                    enabled="{=!${notificationState>/saving}}"
                     tooltip="{i18n>common.edit}"
                     type="Default"
                   />
@@ -91,7 +93,12 @@
       <content>
         <VBox class="sapUiSmallMargin">
           <Label text="{i18n>common.title}" required="true" />
-          <Input id="titleInput" value="{dialog>/title}" placeholder="{i18n>notifications.dialog.title.placeholder}" />
+          <Input
+            id="titleInput"
+            value="{dialog>/title}"
+            placeholder="{i18n>notifications.dialog.title.placeholder}"
+            enabled="{=!${notificationState>/saving}}"
+          />
 
           <Label text="{i18n>notifications.dialog.text.label}" />
           <TextArea
@@ -100,10 +107,11 @@
             placeholder="{i18n>notifications.dialog.text.placeholder}"
             rows="4"
             width="100%"
+            enabled="{=!${notificationState>/saving}}"
           />
 
           <Label text="{i18n>notifications.dialog.priority.label}" />
-          <Select id="prioritySelect" selectedKey="{dialog>/priority}">
+          <Select id="prioritySelect" selectedKey="{dialog>/priority}" enabled="{=!${notificationState>/saving}}">
             <core:Item key="0" text="{i18n>notifications.priority.none}" />
             <core:Item key="1" text="{i18n>notifications.priority.low}" />
             <core:Item key="2" text="{i18n>notifications.priority.medium}" />
@@ -114,14 +122,21 @@
             id="visibleCheckBox"
             text="{i18n>notifications.dialog.visible.label}"
             selected="{dialog>/visible}"
+            enabled="{=!${notificationState>/saving}}"
           />
         </VBox>
       </content>
       <beginButton>
-        <Button text="{i18n>common.save}" press=".onSaveNotification" type="Emphasized" />
+        <Button
+          text="{i18n>common.save}"
+          press=".onSaveNotification"
+          type="Emphasized"
+          enabled="{=!${notificationState>/saving}}"
+          busy="{notificationState>/saving}"
+        />
       </beginButton>
       <endButton>
-        <Button text="{i18n>common.cancel}" press=".onCancelDialog" />
+        <Button text="{i18n>common.cancel}" press=".onCancelDialog" enabled="{=!${notificationState>/saving}}" />
       </endButton>
     </Dialog>
 

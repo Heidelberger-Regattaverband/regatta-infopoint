@@ -9,6 +9,38 @@ import ts from "typescript";
 // HTTP requests, credentials, or backend writes. UI5 objects are isolated stubs.
 const modules = new Map();
 const errors = [];
+const ajaxRequests = [];
+const toasts = [];
+const confirmations = [];
+const fakeJQuery = () => ({ addClass() {} });
+fakeJQuery.ajax = (options) => {
+  let resolve;
+  let reject;
+  const completed = new Promise((done, failed) => {
+    resolve = done;
+    reject = failed;
+  });
+  const request = {
+    ...options,
+    // jqXHR is thenable; awaiting it resolves with the response data.
+    then: completed.then.bind(completed),
+    settled: false,
+    succeed(data) {
+      assert.equal(this.settled, false, "requests settle once");
+      this.settled = true;
+      options.success?.(data);
+      resolve(data);
+    },
+    fail(error = { status: 503, statusText: "Synthetic request failure" }) {
+      assert.equal(this.settled, false, "requests settle once");
+      this.settled = true;
+      options.error?.(error);
+      reject(error);
+    }
+  };
+  ajaxRequests.push(request);
+  return request;
+};
 const routesModule = {};
 const routesSource = readFileSync(new URL("../webapp/model/Routes.ts", import.meta.url), "utf8");
 vm.runInNewContext(
@@ -91,12 +123,54 @@ const fakeLeaflet = {
 class JSONModel {
   constructor(data = {}) {
     this.data = data;
+    this.bindings = new Set();
   }
   getData() {
     return this.data;
   }
   setData(data) {
     this.data = data;
+    this.bindings.forEach((binding) => binding.checkUpdate());
+  }
+  getProperty(path) {
+    return path
+      .split("/")
+      .filter(Boolean)
+      .reduce((value, key) => value?.[key], this.data);
+  }
+  setProperty(path, value) {
+    const keys = path.split("/").filter(Boolean);
+    const parent = keys.slice(0, -1).reduce((object, key) => object[key], this.data);
+    parent[keys.at(-1)] = value;
+    this.bindings.forEach((binding) => binding.checkUpdate());
+    return true;
+  }
+  bindProperty(path) {
+    const model = this;
+    const binding = {
+      value: model.getProperty(path),
+      handlers: [],
+      destroyed: false,
+      attachChange(callback, context) {
+        this.handlers.push({ callback, context });
+      },
+      detachChange(callback, context) {
+        this.handlers = this.handlers.filter((entry) => entry.callback !== callback || entry.context !== context);
+      },
+      checkUpdate() {
+        const value = model.getProperty(path);
+        if (!Object.is(value, this.value)) {
+          this.value = value;
+          this.handlers.forEach(({ callback, context }) => callback.call(context));
+        }
+      },
+      destroy() {
+        this.destroyed = true;
+        model.bindings.delete(this);
+      }
+    };
+    this.bindings.add(binding);
+    return binding;
   }
 }
 
@@ -168,6 +242,7 @@ class Controller {
     };
     this.component = {
       getContentDensityClass: () => "sapUiSizeCozy",
+      getModel: (name) => this.models.get(name),
       getResourceBundle: () => ({ getText: (key) => key }),
       getRouter: () => ({
         getRoute: (name) => ({
@@ -208,11 +283,13 @@ function loadController(name) {
   const require = (id) => {
     if (id === "sap/ui/core/mvc/Controller") return Controller;
     if (id === "sap/ui/model/json/JSONModel") return JSONModel;
-    if (id === "jquery") return () => ({ addClass() {} });
-    if (id === "sap/m/MessageToast") return { show() {} };
+    if (id === "jquery") return fakeJQuery;
+    if (id === "sap/m/MessageToast") return { show: (message) => toasts.push(message) };
     if (id === "sap/m/GroupHeaderListItem" || id === "sap/m/Dialog") return class {};
     if (id === "sap/ui/model/Filter") return FakeFilter;
-    if (id === "sap/m/MessageBox") return {};
+    if (id === "sap/m/MessageBox") {
+      return { Action: { OK: "OK", CANCEL: "CANCEL" }, confirm: (message, options) => confirmations.push(options) };
+    }
     if (id === "sap/ui/model/FilterOperator") return { Contains: "Contains", EQ: "EQ" };
     if (id === "sap/ui/model/Sorter") return class {};
     if (id === "sap/base/Log") return { debug() {}, error: (...args) => errors.push(args) };
@@ -576,6 +653,7 @@ test("statistics callbacks return void and clear busy state on refresh failure",
 
 test("notifications load on every route match, not directly during initialization", async () => {
   const controller = new (loadController("Notifications"))();
+  controller.control.setEscapeHandler = () => {};
   let loads = 0;
   controller.loadNotifications = () => {
     loads++;
@@ -600,6 +678,486 @@ test("notifications load on every route match, not directly during initializatio
 
   assert.equal(controller.onRefresh(), undefined);
   assert.equal(loads, 3, "manual refresh must still load notifications");
+});
+
+function notificationsFixture() {
+  ajaxRequests.length = 0;
+  toasts.length = 0;
+  confirmations.length = 0;
+  const controller = new (loadController("Notifications"))();
+  const identity = new JSONModel({ authenticated: true, username: "admin", scope: "admin" });
+  controller.models.set("identity", identity);
+  controller.component.getActiveRegatta = () => Promise.resolve(new JSONModel({ id: 7 }));
+  const dialog = {
+    opened: 0,
+    closed: 0,
+    visible: false,
+    isOpen() {
+      return this.visible;
+    },
+    setEscapeHandler(handler) {
+      this.escapeHandler = handler;
+    },
+    escape() {
+      this.escapeHandler({ resolve: () => this.close(), reject() {} });
+    },
+    open() {
+      this.opened++;
+      this.visible = true;
+    },
+    close() {
+      this.closed++;
+      this.visible = false;
+    }
+  };
+  controller.control = dialog;
+  controller.onInit();
+  const eventFor = (notification, parameters = {}) => ({
+    getSource: () => ({ getBindingContext: () => ({ getObject: () => notification }) }),
+    getParameters: () => parameters
+  });
+  const requests = (method) => ajaxRequests.filter((request) => request.type === method);
+  const form = controller.models.get("dialog");
+  const state = controller.models.get("notificationState");
+  const list = controller.models.get("notifications");
+  const add = (title = "New notification") => {
+    const previousOpens = dialog.opened;
+    controller.onAddNotification();
+    if (dialog.opened !== previousOpens) {
+      form.setData({ title, text: "Details", priority: "2", visible: true });
+    }
+  };
+  return { controller, identity, dialog, eventFor, requests, form, state, list, add };
+}
+
+test("notification loading awaits the GET response, not just AJAX dispatch", async () => {
+  const { controller, requests, list } = notificationsFixture();
+  let settled = false;
+  const pending = controller.loadNotifications().then((result) => {
+    settled = true;
+    return result;
+  });
+  await setImmediate();
+  assert.equal(settled, false);
+  assert.equal(requests("GET").length, 1);
+  assert.equal(requests("GET")[0].url, "/api/regattas/7/notifications");
+  const notifications = [{ id: 1, title: "Current", visible: false }];
+  requests("GET")[0].succeed(notifications);
+  assert.equal(await pending, true);
+  assert.equal(list.getData(), notifications);
+});
+
+test("an older route read cannot overwrite a newer notification refresh", async () => {
+  const { controller, requests, list } = notificationsFixture();
+  controller.routes.get(Routes.Notifications)({});
+  await setImmediate();
+  controller.onRefresh();
+  await setImmediate();
+  const newest = [{ id: 1, title: "Updated by admin" }];
+  requests("GET")[1].succeed(newest);
+  await setImmediate();
+  requests("GET")[0].succeed([{ id: 1, title: "Obsolete" }]);
+  await setImmediate();
+  assert.equal(list.getData(), newest);
+});
+
+test("obsolete notification failures are silent while current failures remain visible and retryable", async () => {
+  const { controller, requests, list } = notificationsFixture();
+  const old = controller.loadNotifications();
+  await setImmediate();
+  const current = controller.loadNotifications();
+  await setImmediate();
+  const newest = [{ id: 1, title: "Newest" }];
+  requests("GET")[1].succeed(newest);
+  assert.equal(await current, true);
+  requests("GET")[0].fail();
+  assert.equal(await old, false);
+  assert.deepEqual(toasts, []);
+  const failed = controller.loadNotifications();
+  await setImmediate();
+  requests("GET")[2].fail();
+  assert.equal(await failed, false);
+  assert.deepEqual(toasts, ["notifications.error.loadFailed"]);
+  assert.equal(list.getData(), newest);
+  const retry = controller.loadNotifications();
+  await setImmediate();
+  requests("GET")[3].succeed([]);
+  assert.equal(await retry, true);
+  assert.equal(list.getData().length, 0, "successful empty responses must replace older rows");
+});
+
+test("notification read identity covers delayed regatta lookup as well as GET completion", async () => {
+  const { controller, requests, list } = notificationsFixture();
+  const lookups = [];
+  controller.component.getActiveRegatta = () => new Promise((resolve) => lookups.push(resolve));
+  const old = controller.loadNotifications();
+  const current = controller.loadNotifications();
+  lookups[1](new JSONModel({ id: 8 }));
+  await setImmediate();
+  assert.equal(requests("GET")[0].url, "/api/regattas/8/notifications");
+  lookups[0](new JSONModel({ id: 7 }));
+  assert.equal(await old, false);
+  assert.equal(requests("GET").length, 1, "obsolete lookup must not start another GET");
+  const newest = [{ id: 2, title: "Regatta 8" }];
+  requests("GET")[0].succeed(newest);
+  assert.equal(await current, true);
+  assert.equal(list.getData(), newest);
+});
+
+test("all notification mutations reconcile with a newer read that obsolete reads cannot replace", async () => {
+  for (const kind of ["create", "update", "visibility", "delete"]) {
+    const { controller, requests, list } = notificationsFixture();
+    const oldRead = controller.loadNotifications();
+    await setImmediate();
+    const data = { title: "Updated", text: "Text", priority: "3", visible: false };
+    const write = controller.writeNotification(
+      kind,
+      kind === "create" ? undefined : 1,
+      kind === "delete" ? undefined : kind === "visibility" ? { visible: false } : data
+    );
+    await setImmediate();
+    const mutation = ajaxRequests.find((request) => request.type !== "GET");
+    assert.ok(mutation, kind);
+    mutation.succeed({ id: 1, ...data });
+    assert.equal(await write, true);
+    await setImmediate();
+    assert.equal(requests("GET").length, 2, kind);
+    const newest = kind === "delete" ? [] : [{ id: 1, ...data }];
+    requests("GET")[1].succeed(newest);
+    await setImmediate();
+    requests("GET")[0].succeed([{ id: 1, title: "Old value" }]);
+    assert.equal(await oldRead, false);
+    assert.equal(list.getData(), newest, kind);
+  }
+});
+
+test("starting a notification mutation invalidates older reads before the write completes", async () => {
+  const { controller, requests, list } = notificationsFixture();
+  const current = [{ id: 1, title: "Current local state" }];
+  list.setData(current);
+  const oldRead = controller.loadNotifications();
+  await setImmediate();
+  const write = controller.writeNotification("update", 1, { title: "Edited", priority: 1, visible: true });
+  requests("GET")[0].succeed([{ id: 1, title: "Stale read" }]);
+  assert.equal(await oldRead, false);
+  assert.equal(list.getData(), current);
+  requests("PUT")[0].fail();
+  assert.equal(await write, false);
+});
+
+test("failed visibility writes reconcile the switch state without accepting earlier reads", async () => {
+  const { controller, requests, list } = notificationsFixture();
+  const oldRead = controller.loadNotifications();
+  await setImmediate();
+  const write = controller.writeNotification("visibility", 1, { visible: false });
+  assert.deepEqual(JSON.parse(requests("PUT")[0].data), { visible: false });
+  requests("PUT")[0].fail();
+  assert.equal(await write, false);
+  await setImmediate();
+  requests("GET")[1].succeed([{ id: 1, visible: true }]);
+  await setImmediate();
+  requests("GET")[0].succeed([{ id: 1, visible: false }]);
+  assert.equal(await oldRead, false);
+  assert.equal(list.getData()[0].visible, true);
+  assert.deepEqual(toasts, ["notifications.error.visibilityFailed"]);
+});
+
+test("notification Save blocks duplicate creation during bootstrap and the pending POST", async () => {
+  const { controller, requests, dialog, state, add } = notificationsFixture();
+  let resolveRegatta;
+  controller.component.getActiveRegatta = () => new Promise((resolve) => (resolveRegatta = resolve));
+  add();
+  assert.equal(controller.onSaveNotification(), undefined);
+  controller.onSaveNotification();
+  assert.equal(state.getProperty("/saving"), true, "lock before the first await");
+  assert.equal(requests("POST").length, 0);
+  controller.onCancelDialog();
+  dialog.escape();
+  controller.onAddNotification();
+  assert.equal(dialog.opened, 1);
+  assert.equal(dialog.closed, 0);
+  resolveRegatta(new JSONModel({ id: 7 }));
+  await setImmediate();
+  controller.onSaveNotification();
+  assert.equal(requests("POST").length, 1);
+  assert.deepEqual(JSON.parse(requests("POST")[0].data), {
+    title: "New notification",
+    text: "Details",
+    priority: 2,
+    visible: true
+  });
+  assert.equal(requests("POST")[0].url, "/api/regattas/7/notifications");
+  assert.equal(dialog.closed, 0);
+  controller.component.getActiveRegatta = () => Promise.resolve(new JSONModel({ id: 7 }));
+  requests("POST")[0].succeed({ id: 1 });
+  await setImmediate();
+  assert.equal(state.getProperty("/saving"), false);
+  assert.equal(dialog.closed, 1);
+  assert.equal(requests("GET").length, 1);
+  assert.equal(requests("GET")[0].settled, false, "list reload must not hold the write lock");
+});
+
+test("failed notification saves retain the form and allow a deliberate retry", async () => {
+  const { controller, requests, form, state, dialog, add } = notificationsFixture();
+  add("Recoverable title");
+  const input = form.getData();
+  controller.onSaveNotification();
+  await setImmediate();
+  requests("POST")[0].fail();
+  await setImmediate();
+  assert.equal(state.getProperty("/saving"), false);
+  assert.equal(form.getData(), input);
+  assert.equal(dialog.isOpen(), true);
+  assert.deepEqual(toasts, ["notifications.error.createFailed"]);
+  controller.onSaveNotification();
+  await setImmediate();
+  assert.equal(requests("POST").length, 2);
+  requests("POST")[1].succeed({ id: 1 });
+  await setImmediate();
+  assert.equal(dialog.closed, 1);
+  assert.equal(state.getProperty("/saving"), false);
+});
+
+test("regatta bootstrap failure unlocks notification Save without discarding the form", async () => {
+  const { controller, requests, form, state, dialog, add } = notificationsFixture();
+  add();
+  controller.component.getActiveRegatta = () => Promise.reject(new Error("Synthetic bootstrap failure"));
+  controller.onSaveNotification();
+  await setImmediate();
+  assert.equal(requests("POST").length, 0);
+  assert.equal(state.getProperty("/saving"), false);
+  assert.equal(form.getProperty("/title"), "New notification");
+  assert.equal(dialog.isOpen(), true);
+  assert.deepEqual(toasts, ["notifications.error.regattaFailed"]);
+});
+
+test("notification edits are single-flight and use a snapshot of the originating form", async () => {
+  const { controller, eventFor, requests, form, state, dialog } = notificationsFixture();
+  controller.onEditNotification(eventFor({ id: 7, title: "Original", text: "Text", priority: "1", visible: false }));
+  const input = form.getData();
+  controller.onSaveNotification();
+  input.title = "Modified after submission";
+  controller.onSaveNotification();
+  assert.equal(requests("PUT").length, 1);
+  assert.equal(JSON.parse(requests("PUT")[0].data).title, "Original");
+  assert.equal(requests("PUT")[0].url, "/api/notifications/7");
+  requests("PUT")[0].fail();
+  await setImmediate();
+  assert.equal(dialog.isOpen(), true);
+  assert.equal(state.getProperty("/saving"), false);
+  assert.equal(form.getData(), input);
+  assert.deepEqual(toasts, ["notifications.error.updateFailed"]);
+  controller.onSaveNotification();
+  controller.onSaveNotification();
+  assert.equal(requests("PUT").length, 2);
+  requests("PUT")[1].succeed({ id: 7 });
+  await setImmediate();
+  assert.equal(dialog.closed, 1);
+  assert.equal(state.getProperty("/saving"), false);
+});
+
+test("pending notification saves block Cancel, Escape, Add, and Edit until the write settles", async () => {
+  for (const edit of [false, true]) {
+    for (const succeed of [false, true]) {
+      const { controller, eventFor, requests, form, state, dialog, add } = notificationsFixture();
+      if (edit) controller.onEditNotification(eventFor({ id: 1, title: "Old", priority: 1, visible: true }));
+      else add("Old");
+      const originalForm = form.getData();
+      controller.onSaveNotification();
+      await setImmediate();
+      controller.onCancelDialog();
+      dialog.escape();
+      add("New form");
+      controller.onEditNotification(eventFor({ id: 2, title: "Another edit", priority: 2, visible: false }));
+      assert.equal(dialog.isOpen(), true);
+      assert.equal(dialog.closed, 0);
+      assert.equal(dialog.opened, 1);
+      assert.equal(form.getData(), originalForm);
+      controller.onSaveNotification();
+      assert.equal(requests(edit ? "PUT" : "POST").length, 1);
+      const request = requests(edit ? "PUT" : "POST")[0];
+      if (succeed) request.succeed({ id: 1 });
+      else request.fail();
+      await setImmediate();
+      assert.equal(state.getProperty("/saving"), false);
+      assert.equal(dialog.isOpen(), !succeed);
+      assert.equal(dialog.closed, succeed ? 1 : 0);
+      if (succeed) assert.deepEqual(Object.keys(form.getData()), []);
+      else assert.equal(form.getData(), originalForm);
+      add("New form");
+      assert.equal(dialog.isOpen(), true);
+      assert.equal(form.getProperty("/title"), "New form");
+    }
+  }
+});
+
+test("inline priority updates cannot close an unrelated notification dialog", async () => {
+  const { controller, eventFor, requests, form, dialog, add } = notificationsFixture();
+  add("Unrelated form");
+  controller.onPriorityChange(
+    eventFor(
+      { id: 1, title: "Existing", text: "Text", priority: 1, visible: true },
+      { selectedItem: { getKey: () => "3" } }
+    )
+  );
+  assert.equal(JSON.parse(requests("PUT")[0].data).priority, 3);
+  requests("PUT")[0].succeed({ id: 1 });
+  await setImmediate();
+  assert.equal(dialog.isOpen(), true);
+  assert.equal(dialog.closed, 0);
+  assert.equal(form.getProperty("/title"), "Unrelated form");
+});
+
+test("session changes clear administrative notifications and reject old reads even after the same user logs in again", async () => {
+  const { controller, identity, requests, list } = notificationsFixture();
+  list.setData([{ id: 1, title: "Private" }]);
+  const pending = controller.loadNotifications();
+  await setImmediate();
+  identity.setProperty("/authenticated", false);
+  identity.setProperty("/authenticated", true);
+  assert.equal(list.getData().length, 0);
+  requests("GET")[0].succeed([{ id: 1, title: "Old session" }]);
+  assert.equal(await pending, false);
+  assert.equal(list.getData().length, 0);
+  assert.deepEqual(toasts, []);
+  const current = controller.loadNotifications();
+  await setImmediate();
+  requests("GET")[1].succeed([{ id: 2, title: "Current session" }]);
+  assert.equal(await current, true);
+  assert.equal(list.getData()[0].id, 2);
+});
+
+test("session changes close the locked form while old writes remain silent", async () => {
+  const { controller, identity, requests, form, dialog, state, add } = notificationsFixture();
+  add("Old session");
+  controller.onSaveNotification();
+  await setImmediate();
+  identity.setProperty("/username", "another-admin");
+  add("Current session");
+  assert.equal(dialog.isOpen(), false, "a new form stays blocked until the pending write settles");
+  assert.deepEqual(Object.keys(form.getData()), []);
+  requests("POST")[0].succeed({ id: 1 });
+  await setImmediate();
+  assert.equal(dialog.isOpen(), false);
+  assert.equal(dialog.closed, 1);
+  assert.equal(state.getProperty("/saving"), false);
+  assert.equal(requests("GET").length, 0);
+  assert.deepEqual(toasts, []);
+  add("Current session");
+  assert.equal(dialog.isOpen(), true);
+  assert.equal(form.getProperty("/title"), "Current session");
+});
+
+test("notification deletion waits for confirmation and ignores confirmations from an obsolete session", async () => {
+  const { controller, identity, eventFor, requests } = notificationsFixture();
+  controller.onDeleteNotification(eventFor({ id: 1 }));
+  assert.equal(requests("DELETE").length, 0);
+  confirmations[0].onClose("CANCEL");
+  assert.equal(requests("DELETE").length, 0);
+  controller.onDeleteNotification(eventFor({ id: 1 }));
+  confirmations[1].onClose("OK");
+  assert.equal(requests("DELETE").length, 1);
+  assert.equal(requests("DELETE")[0].url, "/api/notifications/1");
+  requests("DELETE")[0].succeed();
+  await setImmediate();
+  assert.equal(requests("GET").length, 1);
+  controller.onDeleteNotification(eventFor({ id: 2 }));
+  identity.setProperty("/scope", "user");
+  confirmations[2].onClose("OK");
+  assert.equal(requests("DELETE").length, 1);
+});
+
+test("destroying notification views invalidates reads and writes and detaches all identity and route listeners", async () => {
+  const { controller, identity, requests, state, list, dialog, add } = notificationsFixture();
+  const pending = controller.loadNotifications();
+  await setImmediate();
+  add();
+  controller.onSaveNotification();
+  await setImmediate();
+  const bindings = [...identity.bindings];
+  const currentData = list.getData();
+  controller.onExit();
+  state.setProperty = () => assert.fail("late write must not update destroyed state");
+  requests("POST")[0].succeed({ id: 1 });
+  requests("GET")[0].succeed([{ id: 1, title: "Late response" }]);
+  assert.equal(await pending, false);
+  await setImmediate();
+  assert.equal(list.getData(), currentData);
+  assert.equal(dialog.closed, 0);
+  assert.equal(requests("GET").length, 1);
+  assert.deepEqual(toasts, []);
+  assert.equal(identity.bindings.size, 0);
+  assert.ok(bindings.every((binding) => binding.destroyed && binding.handlers.length === 0));
+  assert.equal(controller.routes.has(Routes.Notifications), false);
+  controller.onExit();
+});
+
+test("closing a notification controller during regatta lookup prevents later HTTP dispatch", async () => {
+  const { controller, requests, add } = notificationsFixture();
+  let resolveRegatta;
+  const bootstrap = new Promise((resolve) => (resolveRegatta = resolve));
+  controller.component.getActiveRegatta = () => bootstrap;
+  const read = controller.loadNotifications();
+  add();
+  controller.onSaveNotification();
+  controller.onExit();
+  resolveRegatta(new JSONModel({ id: 7 }));
+  assert.equal(await read, false);
+  await setImmediate();
+  assert.equal(requests("GET").length, 0);
+  assert.equal(requests("POST").length, 0);
+  assert.deepEqual(toasts, []);
+});
+
+test("notification Save, Cancel, Add, and Edit bind their enabled state to the pending write", () => {
+  const xml = readFileSync(new URL("../webapp/view/Notifications.view.xml", import.meta.url), "utf8");
+  const buttons = Array.from(xml.matchAll(/<Button\b[\s\S]*?\/>/g), (match) => match[0]);
+  for (const handler of ["onSaveNotification", "onCancelDialog", "onAddNotification", "onEditNotification"]) {
+    const button = buttons.find((item) => item.includes(`press=".${handler}"`));
+    assert.ok(button, handler);
+    assert.ok(button.includes('enabled="{=!${notificationState>/saving}}"'), handler);
+  }
+  const save = buttons.find((item) => item.includes('press=".onSaveNotification"'));
+  assert.ok(save.includes('busy="{notificationState>/saving}"'));
+});
+
+test("Cancel and Escape work when no save is pending and clear the closed form", () => {
+  const { controller, dialog, form, add } = notificationsFixture();
+  add();
+  controller.onCancelDialog();
+  assert.equal(dialog.isOpen(), false);
+  assert.deepEqual(Object.keys(form.getData()), []);
+  add();
+  dialog.escape();
+  assert.equal(dialog.isOpen(), false);
+  assert.deepEqual(Object.keys(form.getData()), []);
+});
+
+test("a blank notification title is still validated before locking the form", async () => {
+  const { controller, dialog, state, requests, add } = notificationsFixture();
+  add("");
+  controller.onSaveNotification();
+  await setImmediate();
+  assert.equal(dialog.isOpen(), true);
+  assert.equal(state.getProperty("/saving"), false);
+  assert.equal(requests("POST").length, 0);
+  assert.deepEqual(toasts, ["notifications.validation.titleRequired"]);
+});
+
+test("queued Save events during the closing animation cannot create another notification", async () => {
+  const { controller, dialog, form, requests, add } = notificationsFixture();
+  add();
+  controller.onSaveNotification();
+  await setImmediate();
+  requests("POST")[0].succeed({ id: 1 });
+  await setImmediate();
+  assert.deepEqual(Object.keys(form.getData()), []);
+  // UI5 reports isOpen() throughout its closing animation.
+  dialog.visible = true;
+  controller.onSaveNotification();
+  await setImmediate();
+  assert.equal(requests("POST").length, 1);
+  assert.deepEqual(toasts, ["notifications.success.created"]);
 });
 
 function timekeepingFixture() {
@@ -1355,6 +1913,7 @@ test("notification translation keys are migrated consistently in every locale", 
     const source = readFileSync(new URL(`../webapp/${file}`, import.meta.url), "utf8");
     const references = [
       ...Array.from(source.matchAll(/i18n\(["']([^"']+)["']/g), (match) => match[1]),
+      ...Array.from(source.matchAll(/\b(?:success|error):\s*["'](notifications\.[^"']+)["']/g), (match) => match[1]),
       ...Array.from(source.matchAll(/i18n>([^}]+)\}/g), (match) => match[1])
     ];
     assert.ok(!references.some((key) => key.startsWith("admin.")), file);

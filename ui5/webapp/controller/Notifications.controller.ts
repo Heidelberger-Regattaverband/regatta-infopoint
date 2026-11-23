@@ -5,14 +5,24 @@ import Dialog from "sap/m/Dialog";
 import MessageBox from "sap/m/MessageBox";
 import MessageToast from "sap/m/MessageToast";
 import { Switch$ChangeEvent } from "sap/m/Switch";
-import { Route$MatchedEvent } from "sap/ui/core/routing/Route";
 import Context from "sap/ui/model/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
+import PropertyBinding from "sap/ui/model/PropertyBinding";
 import Formatter from "../model/Formatter";
 import { Routes } from "../model/Routes";
 import BaseController from "./Base.controller";
 
 const MODEL_NOTIFICATIONS: string = "notifications";
+const WRITE_ACTIONS = {
+  create: { method: "POST", success: "notifications.success.created", error: "notifications.error.createFailed" },
+  update: { method: "PUT", success: "notifications.success.updated", error: "notifications.error.updateFailed" },
+  delete: { method: "DELETE", success: "notifications.success.deleted", error: "notifications.error.deleteFailed" },
+  visibility: {
+    method: "PUT",
+    success: "notifications.success.visibilityUpdated",
+    error: "notifications.error.visibilityFailed"
+  }
+} as const;
 
 /**
  * Notification administration with create/edit dialogs, deletion, priority changes, and visibility updates.
@@ -21,22 +31,58 @@ const MODEL_NOTIFICATIONS: string = "notifications";
  */
 export default class NotificationsController extends BaseController {
   readonly formatter: Formatter = Formatter;
-  private readonly notificationsModel: JSONModel = new JSONModel();
+  private readonly notificationsModel: JSONModel = new JSONModel([]);
   private readonly dialogModel: JSONModel = new JSONModel();
-  private currentNotificationId?: number;
-  private isEditMode: boolean = false;
+  private readonly stateModel: JSONModel = new JSONModel({ saving: false });
+  private identityBindings: PropertyBinding[] = [];
+  private dialog: Dialog;
+  // Only reads and sessions need identity tracking; forms cannot be replaced during a save.
+  private session?: object = {};
+  private latestRead?: object;
 
   /** Registers the notification and dialog models and reloads notifications whenever the route matches. */
   onInit(): void {
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.notificationsModel, MODEL_NOTIFICATIONS);
     super.setViewModel(this.dialogModel, "dialog");
-    super
-      .getRouter()
-      ?.getRoute(Routes.Notifications)
-      ?.attachMatched((_: Route$MatchedEvent) => {
-        super.runAsync(this.loadNotifications(), "Failed to load notifications:");
-      }, this);
+    super.setViewModel(this.stateModel, "notificationState");
+    this.dialog = super.byId("notificationDialog") as Dialog;
+    this.dialog.setEscapeHandler((handlers) => {
+      if (this.stateModel.getProperty("/saving")) {
+        handlers.reject();
+      } else {
+        this.dialogModel.setData({});
+        handlers.resolve();
+      }
+    });
+    super.getRouter()?.getRoute(Routes.Notifications)?.attachMatched(this.onRefresh, this);
+    const identity = super.getComponentJSONModel("identity");
+    this.identityBindings = ["/authenticated", "/username", "/scope"].map((path) => {
+      const binding = identity.bindProperty(path);
+      binding.attachChange(this.onIdentityChanged, this);
+      return binding;
+    });
+  }
+
+  /** Invalidates pending completions and detaches route and identity listeners on destruction. */
+  onExit(): void {
+    this.session = undefined;
+    this.latestRead = undefined;
+    super.getRouter()?.getRoute(Routes.Notifications)?.detachMatched(this.onRefresh, this);
+    this.identityBindings.forEach((binding) => {
+      binding.detachChange(this.onIdentityChanged, this);
+      binding.destroy();
+    });
+    this.identityBindings = [];
+    super.onExit?.();
+  }
+
+  /** Discards data and pending UI effects belonging to a previous login or authorization scope. */
+  private onIdentityChanged(): void {
+    this.session = {};
+    this.latestRead = undefined;
+    this.notificationsModel.setData([]);
+    this.closeDialog();
   }
 
   navBack(): void {
@@ -44,20 +90,17 @@ export default class NotificationsController extends BaseController {
   }
 
   onRefresh(): void {
-    void this.loadNotifications();
+    super.runAsync(this.loadNotifications(), "Failed to load notifications:");
   }
 
   /** Opens a blank creation form without modifying an existing notification. */
   onAddNotification(): void {
-    this.isEditMode = false;
-    this.currentNotificationId = undefined;
-    this.dialogModel.setData({
+    this.openDialog({
       title: "",
       text: "",
       priority: 0,
       visible: true
     });
-    this.openDialog();
   }
 
   /**
@@ -70,15 +113,13 @@ export default class NotificationsController extends BaseController {
     const notification: any = context?.getObject();
 
     if (notification) {
-      this.isEditMode = true;
-      this.currentNotificationId = notification.id;
-      this.dialogModel.setData({
+      this.openDialog({
+        id: notification.id,
         title: notification.title,
         text: notification.text,
         priority: Number.parseInt(notification.priority || "0", 10),
         visible: notification.visible !== false
       });
-      this.openDialog();
     }
   }
 
@@ -92,12 +133,13 @@ export default class NotificationsController extends BaseController {
     const notification: any = context?.getObject();
 
     if (notification) {
+      const session = this.session;
       MessageBox.confirm(super.i18n("notifications.delete.message"), {
         title: super.i18n("notifications.delete.title"),
         emphasizedAction: MessageBox.Action.CANCEL,
         onClose: (action: any) => {
-          if (action === MessageBox.Action.OK) {
-            this.deleteNotification(notification.id);
+          if (action === MessageBox.Action.OK && this.isCurrentSession(session)) {
+            super.runAsync(this.writeNotification("delete", notification.id), "Failed to delete notification:");
           }
         }
       });
@@ -115,7 +157,10 @@ export default class NotificationsController extends BaseController {
     const newState: boolean = event.getParameters().state || false;
 
     if (notification) {
-      this.updateNotificationVisibility(notification.id, newState);
+      super.runAsync(
+        this.writeNotification("visibility", notification.id, { visible: newState }),
+        "Failed to update notification visibility:"
+      );
     }
   }
 
@@ -130,198 +175,162 @@ export default class NotificationsController extends BaseController {
     const newPriority: number = Number.parseInt(event.getParameters().selectedItem?.getKey() || "0", 10);
 
     if (notification) {
-      this.updateNotification(notification.id, { ...notification, priority: newPriority });
+      super.runAsync(
+        this.writeNotification("update", notification.id, { ...notification, priority: newPriority }),
+        "Failed to update notification priority:"
+      );
     }
   }
 
-  /** Requires a nonblank title, then dispatches creation or update according to the dialog's edit mode. */
+  /** Starts at most one dialog write; pending saves are also disabled through the state model. */
   onSaveNotification(): void {
-    const dialogData: any = this.dialogModel.getData();
+    super.runAsync(this.saveNotification(), "Failed to save notification:");
+  }
+
+  /** Locks the form until the write settles; failures retain its input for retry. */
+  private async saveNotification(): Promise<void> {
+    const data: any = this.dialogModel.getData();
+    if (
+      this.stateModel.getProperty("/saving") ||
+      !Object.hasOwn(data, "title") ||
+      !this.dialog.isOpen() ||
+      !this.isCurrentSession()
+    ) {
+      return;
+    }
+    const dialogData: any = { ...data };
 
     // Validation
     if (!dialogData.title || dialogData.title.trim() === "") {
-      MessageToast.show(super.i18n("notifications.validation.titleRequired"));
-      $(".sapMMessageToast").addClass("sapMMessageToastDanger");
+      this.showNotificationMessage("notifications.validation.titleRequired", false);
       return;
     }
 
-    if (this.isEditMode && this.currentNotificationId) {
-      this.updateNotification(this.currentNotificationId, dialogData);
-    } else {
-      void this.createNotification(dialogData);
+    const session = this.session;
+    this.stateModel.setProperty("/saving", true);
+    try {
+      const succeeded = await this.writeNotification(
+        dialogData.id === undefined ? "create" : "update",
+        dialogData.id,
+        dialogData,
+        session
+      );
+      if (succeeded) {
+        this.closeDialog();
+      }
+    } finally {
+      if (this.isCurrentSession()) {
+        this.stateModel.setProperty("/saving", false);
+      }
     }
   }
 
   onCancelDialog(): void {
-    this.closeDialog();
-  }
-
-  /**
-   * Starts a request for all active-regatta notifications, including invisible ones.
-   * The promise covers regatta lookup and AJAX dispatch only; the list updates in the success callback.
-   *
-   * @returns A promise resolving after dispatch, or after a regatta-lookup failure is handled.
-   * It does not wait for the GET request to finish.
-   */
-  private async loadNotifications(): Promise<void> {
-    try {
-      const regatta = await super.getActiveRegatta();
-      const regattaId = regatta.id;
-
-      // Load all notifications for admin (including invisible ones)
-      const url = `/api/regattas/${regattaId}/notifications`;
-
-      $.ajax({
-        type: "GET",
-        url: url,
-        success: (notifications: any[]) => {
-          this.notificationsModel.setData(notifications);
-        },
-        error: (xhr: any) => {
-          console.error("Failed to load notifications:", xhr);
-          MessageToast.show(super.i18n("notifications.error.loadFailed"));
-          $(".sapMMessageToast").addClass("sapMMessageToastDanger");
-        }
-      });
-    } catch (error) {
-      console.error("Failed to get active regatta:", error);
-      MessageToast.show(super.i18n("notifications.error.regattaFailed"));
-      $(".sapMMessageToast").addClass("sapMMessageToastDanger");
+    if (!this.stateModel.getProperty("/saving")) {
+      this.closeDialog();
     }
   }
 
   /**
-   * Starts notification creation for the active regatta and closes the dialog on successful completion.
-   * The promise covers regatta lookup and AJAX dispatch only, not completion of the POST request.
+   * Waits for all active-regatta notifications, including invisible ones.
+   * Only the newest request in the current live session may update the list or report a failure.
    *
-   * @param data - Dialog fields for title, text, priority, and visibility.
-   * @returns A promise resolving after dispatch, or after a regatta-lookup failure is handled.
-   * It does not wait for the POST request to finish.
+   * @returns Whether the request completed successfully and was still relevant when its data arrived.
    */
-  private async createNotification(data: any): Promise<void> {
+  private async loadNotifications(): Promise<boolean> {
+    const read = {};
+    this.latestRead = read;
+    const session = this.session;
+    let errorKey = "notifications.error.regattaFailed";
+    const isCurrent = () => read === this.latestRead && this.isCurrentSession(session);
     try {
       const regatta = await super.getActiveRegatta();
-      const regattaId = regatta.id;
-
-      $.ajax({
-        type: "POST",
-        url: `/api/regattas/${regattaId}/notifications`,
-        contentType: "application/json",
-        data: JSON.stringify({
-          title: data.title,
-          text: data.text,
-          priority: Number.parseInt(data.priority, 10),
-          visible: data.visible
-        }),
-        success: () => {
-          MessageToast.show(super.i18n("notifications.success.created"));
-          $(".sapMMessageToast").addClass("sapMMessageToastSuccess");
-          void this.loadNotifications();
-          this.closeDialog();
-        },
-        error: (xhr: any) => {
-          console.error("Failed to create notification:", xhr);
-          MessageToast.show(super.i18n("notifications.error.createFailed"));
-          $(".sapMMessageToast").addClass("sapMMessageToastDanger");
-        }
-      });
+      if (!isCurrent()) {
+        return false;
+      }
+      errorKey = "notifications.error.loadFailed";
+      const notifications: any[] = await $.ajax({ type: "GET", url: `/api/regattas/${regatta.id}/notifications` });
+      if (!isCurrent()) {
+        return false;
+      }
+      this.notificationsModel.setData(notifications);
+      return true;
     } catch (error) {
-      console.error("Failed to get active regatta:", error);
-      MessageToast.show(super.i18n("notifications.error.regattaFailed"));
-      $(".sapMMessageToast").addClass("sapMMessageToastDanger");
+      if (isCurrent()) {
+        console.error("Failed to load notifications:", error);
+        this.showNotificationMessage(errorKey, false);
+      }
+      return false;
     }
   }
 
-  /**
-   * Submits editable fields, then refreshes the list and closes the dialog after a successful update.
-   *
-   * @param notificationId - Backend ID of the notification to update.
-   * @param data - Replacement title, text, priority, and visibility fields; priority is parsed as a decimal integer.
-   */
-  private updateNotification(notificationId: number, data: any): void {
-    $.ajax({
-      type: "PUT",
-      url: `/api/notifications/${notificationId}`,
-      contentType: "application/json",
-      data: JSON.stringify({
-        title: data.title,
-        text: data.text,
-        priority: Number.parseInt(data.priority, 10),
-        visible: data.visible
-      }),
-      success: () => {
-        MessageToast.show(super.i18n("notifications.success.updated"));
-        $(".sapMMessageToast").addClass("sapMMessageToastSuccess");
-        void this.loadNotifications();
-        this.closeDialog();
-      },
-      error: (xhr: any) => {
-        console.error("Failed to update notification:", xhr);
-        MessageToast.show(super.i18n("notifications.error.updateFailed"));
-        $(".sapMMessageToast").addClass("sapMMessageToastDanger");
+  /** Waits for one write, then reconciles the list; dialog ownership is handled only by Save. */
+  private async writeNotification(
+    action: keyof typeof WRITE_ACTIONS,
+    notificationId?: number,
+    data?: any,
+    session = this.session
+  ): Promise<boolean> {
+    if (!this.isCurrentSession(session)) {
+      return false;
+    }
+    this.latestRead = undefined;
+    const { method, success, error: failure } = WRITE_ACTIONS[action];
+    const payload =
+      data && action !== "visibility"
+        ? { title: data.title, text: data.text, priority: Number.parseInt(data.priority, 10), visible: data.visible }
+        : data;
+    let errorKey = "notifications.error.regattaFailed";
+    try {
+      const url =
+        action === "create"
+          ? `/api/regattas/${(await super.getActiveRegatta()).id}/notifications`
+          : `/api/notifications/${notificationId}`;
+      if (!this.isCurrentSession(session)) {
+        return false;
       }
-    });
+      errorKey = failure;
+      await $.ajax({ type: method, url, contentType: "application/json", data: payload && JSON.stringify(payload) });
+      if (!this.isCurrentSession(session)) {
+        return false;
+      }
+      this.showNotificationMessage(success, true);
+      this.onRefresh();
+      return true;
+    } catch (error) {
+      if (this.isCurrentSession(session)) {
+        console.error("Failed to modify notification:", error);
+        this.showNotificationMessage(errorKey, false);
+        if (action === "visibility") {
+          this.onRefresh();
+        }
+      }
+      return false;
+    }
   }
 
-  /**
-   * Updates only visibility and reloads the list on success or failure to reconcile the displayed switch state.
-   *
-   * @param notificationId - Backend ID of the notification whose visibility is changing.
-   * @param visible - Whether the notification should be publicly visible.
-   */
-  private updateNotificationVisibility(notificationId: number, visible: boolean): void {
-    $.ajax({
-      type: "PUT",
-      url: `/api/notifications/${notificationId}`,
-      contentType: "application/json",
-      data: JSON.stringify({
-        visible: visible
-      }),
-      success: () => {
-        MessageToast.show(super.i18n("notifications.success.visibilityUpdated"));
-        $(".sapMMessageToast").addClass("sapMMessageToastSuccess");
-        void this.loadNotifications();
-      },
-      error: (xhr: any) => {
-        console.error("Failed to update notification visibility:", xhr);
-        MessageToast.show(super.i18n("notifications.error.visibilityFailed"));
-        $(".sapMMessageToast").addClass("sapMMessageToastDanger");
-        void this.loadNotifications().catch((revertError: unknown) => {
-          console.error("Failed to revert switch state:", revertError);
-        });
-      }
-    });
+  private isCurrentSession(session = this.session): boolean {
+    return session !== undefined && session === this.session && super.getView()?.isDestroyed() === false;
   }
 
-  /**
-   * Deletes a previously confirmed notification and refreshes the list after backend success.
-   *
-   * @param notificationId - Backend ID of the notification to delete.
-   */
-  private deleteNotification(notificationId: number): void {
-    $.ajax({
-      type: "DELETE",
-      url: `/api/notifications/${notificationId}`,
-      success: () => {
-        MessageToast.show(super.i18n("notifications.success.deleted"));
-        $(".sapMMessageToast").addClass("sapMMessageToastSuccess");
-        void this.loadNotifications();
-      },
-      error: (xhr: any) => {
-        console.error("Failed to delete notification:", xhr);
-        MessageToast.show(super.i18n("notifications.error.deleteFailed"));
-        $(".sapMMessageToast").addClass("sapMMessageToastDanger");
-      }
-    });
+  private showNotificationMessage(key: string, succeeded: boolean): void {
+    MessageToast.show(super.i18n(key));
+    $(".sapMMessageToast").addClass(succeeded ? "sapMMessageToastSuccess" : "sapMMessageToastDanger");
   }
 
-  private openDialog(): void {
-    const dialog: Dialog = super.byId("notificationDialog") as Dialog;
-    dialog.open();
+  private openDialog(data: any): void {
+    if (this.stateModel.getProperty("/saving")) {
+      return;
+    }
+    this.dialogModel.setData(data);
+    this.dialog.open();
   }
 
   private closeDialog(): void {
-    const dialog: Dialog = super.byId("notificationDialog") as Dialog;
-    dialog.close();
+    if (this.isCurrentSession() && this.dialog.isOpen()) {
+      // Reject queued Save events even while UI5's closing animation still reports isOpen().
+      this.dialogModel.setData({});
+      this.dialog.close();
+    }
   }
 }
