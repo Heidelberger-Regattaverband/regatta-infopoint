@@ -34,8 +34,6 @@ export default class NotificationsController extends BaseController {
   private readonly dialogModel: JSONModel = new JSONModel();
   private readonly stateModel: JSONModel = new JSONModel({ saving: false });
   private dialog: Dialog;
-  // Only reads and sessions need identity tracking; forms cannot be replaced during a save.
-  private session?: object = {};
   private latestRead?: object;
 
   /** Registers the notification and dialog models and reloads notifications whenever the route matches. */
@@ -57,9 +55,8 @@ export default class NotificationsController extends BaseController {
     super.getRouter()?.getRoute(Routes.Notifications)?.attachMatched(this.onRefresh, this);
   }
 
-  /** Invalidates pending completions and detaches route and identity listeners on destruction. */
+  /** Invalidates pending reads and detaches the route listener on destruction. */
   onExit(): void {
-    this.session = undefined;
     this.latestRead = undefined;
     super.getRouter()?.getRoute(Routes.Notifications)?.detachMatched(this.onRefresh, this);
     super.onExit?.();
@@ -113,12 +110,11 @@ export default class NotificationsController extends BaseController {
     const notification: any = context?.getObject();
 
     if (notification) {
-      const session = this.session;
       MessageBox.confirm(super.i18n("notifications.delete.message"), {
         title: super.i18n("notifications.delete.title"),
         emphasizedAction: MessageBox.Action.CANCEL,
         onClose: (action: any) => {
-          if (action === MessageBox.Action.OK && this.isCurrentSession(session)) {
+          if (action === MessageBox.Action.OK && this.isViewAlive()) {
             super.runAsync(this.writeNotification("delete", notification.id), "Failed to delete notification:");
           }
         }
@@ -174,7 +170,7 @@ export default class NotificationsController extends BaseController {
       this.stateModel.getProperty("/saving") ||
       !Object.hasOwn(data, "title") ||
       !this.dialog.isOpen() ||
-      !this.isCurrentSession()
+      !this.isViewAlive()
     ) {
       return;
     }
@@ -186,20 +182,18 @@ export default class NotificationsController extends BaseController {
       return;
     }
 
-    const session = this.session;
     this.stateModel.setProperty("/saving", true);
     try {
       const succeeded = await this.writeNotification(
         dialogData.id === undefined ? "create" : "update",
         dialogData.id,
-        dialogData,
-        session
+        dialogData
       );
       if (succeeded) {
         this.closeDialog();
       }
     } finally {
-      if (this.isCurrentSession()) {
+      if (this.isViewAlive()) {
         this.stateModel.setProperty("/saving", false);
       }
     }
@@ -213,16 +207,15 @@ export default class NotificationsController extends BaseController {
 
   /**
    * Waits for all active-regatta notifications, including invisible ones.
-   * Only the newest request in the current live session may update the list or report a failure.
+   * Only the newest request for a live view may update the list or report a failure.
    *
    * @returns Whether the request completed successfully and was still relevant when its data arrived.
    */
   private async loadNotifications(): Promise<boolean> {
     const read = {};
     this.latestRead = read;
-    const session = this.session;
     let errorKey = "notifications.error.regattaFailed";
-    const isCurrent = () => read === this.latestRead && this.isCurrentSession(session);
+    const isCurrent = () => read === this.latestRead && this.isViewAlive();
     try {
       const regatta = await super.getActiveRegatta();
       if (!isCurrent()) {
@@ -248,10 +241,9 @@ export default class NotificationsController extends BaseController {
   private async writeNotification(
     action: keyof typeof WRITE_ACTIONS,
     notificationId?: number,
-    data?: any,
-    session = this.session
+    data?: any
   ): Promise<boolean> {
-    if (!this.isCurrentSession(session)) {
+    if (!this.isViewAlive()) {
       return false;
     }
     this.latestRead = undefined;
@@ -266,19 +258,19 @@ export default class NotificationsController extends BaseController {
         action === "create"
           ? `/api/regattas/${(await super.getActiveRegatta()).id}/notifications`
           : `/api/notifications/${notificationId}`;
-      if (!this.isCurrentSession(session)) {
+      if (!this.isViewAlive()) {
         return false;
       }
       errorKey = failure;
       await $.ajax({ type: method, url, contentType: "application/json", data: payload && JSON.stringify(payload) });
-      if (!this.isCurrentSession(session)) {
+      if (!this.isViewAlive()) {
         return false;
       }
       this.showNotificationMessage(success, true);
       this.onRefresh();
       return true;
     } catch (error) {
-      if (this.isCurrentSession(session)) {
+      if (this.isViewAlive()) {
         console.error("Failed to modify notification:", error);
         this.showNotificationMessage(errorKey, false);
         if (action === "visibility") {
@@ -289,8 +281,8 @@ export default class NotificationsController extends BaseController {
     }
   }
 
-  private isCurrentSession(session = this.session): boolean {
-    return session !== undefined && session === this.session && super.getView()?.isDestroyed() === false;
+  private isViewAlive(): boolean {
+    return super.getView()?.isDestroyed() === false;
   }
 
   private showNotificationMessage(key: string, succeeded: boolean): void {
@@ -307,7 +299,7 @@ export default class NotificationsController extends BaseController {
   }
 
   private closeDialog(): void {
-    if (this.isCurrentSession() && this.dialog.isOpen()) {
+    if (this.isViewAlive() && this.dialog.isOpen()) {
       // Reject queued Save events even while UI5's closing animation still reports isOpen().
       this.dialogModel.setData({});
       this.dialog.close();

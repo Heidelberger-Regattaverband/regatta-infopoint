@@ -123,14 +123,12 @@ const fakeLeaflet = {
 class JSONModel {
   constructor(data = {}) {
     this.data = data;
-    this.bindings = new Set();
   }
   getData() {
     return this.data;
   }
   setData(data) {
     this.data = data;
-    this.bindings.forEach((binding) => binding.checkUpdate());
   }
   getProperty(path) {
     return path
@@ -142,35 +140,7 @@ class JSONModel {
     const keys = path.split("/").filter(Boolean);
     const parent = keys.slice(0, -1).reduce((object, key) => object[key], this.data);
     parent[keys.at(-1)] = value;
-    this.bindings.forEach((binding) => binding.checkUpdate());
     return true;
-  }
-  bindProperty(path) {
-    const model = this;
-    const binding = {
-      value: model.getProperty(path),
-      handlers: [],
-      destroyed: false,
-      attachChange(callback, context) {
-        this.handlers.push({ callback, context });
-      },
-      detachChange(callback, context) {
-        this.handlers = this.handlers.filter((entry) => entry.callback !== callback || entry.context !== context);
-      },
-      checkUpdate() {
-        const value = model.getProperty(path);
-        if (!Object.is(value, this.value)) {
-          this.value = value;
-          this.handlers.forEach(({ callback, context }) => callback.call(context));
-        }
-      },
-      destroy() {
-        this.destroyed = true;
-        model.bindings.delete(this);
-      }
-    };
-    this.bindings.add(binding);
-    return binding;
   }
 }
 
@@ -685,8 +655,6 @@ function notificationsFixture() {
   toasts.length = 0;
   confirmations.length = 0;
   const controller = new (loadController("Notifications"))();
-  const identity = new JSONModel({ authenticated: true, username: "admin", scope: "admin" });
-  controller.models.set("identity", identity);
   controller.component.getActiveRegatta = () => Promise.resolve(new JSONModel({ id: 7 }));
   const dialog = {
     opened: 0,
@@ -727,7 +695,7 @@ function notificationsFixture() {
       form.setData({ title, text: "Details", priority: "2", visible: true });
     }
   };
-  return { controller, identity, dialog, eventFor, requests, form, state, list, add };
+  return { controller, dialog, eventFor, requests, form, state, list, add };
 }
 
 test("notification loading awaits the GET response, not just AJAX dispatch", async () => {
@@ -1008,48 +976,8 @@ test("inline priority updates cannot close an unrelated notification dialog", as
   assert.equal(form.getProperty("/title"), "Unrelated form");
 });
 
-test("session changes clear administrative notifications and reject old reads even after the same user logs in again", async () => {
-  const { controller, identity, requests, list } = notificationsFixture();
-  list.setData([{ id: 1, title: "Private" }]);
-  const pending = controller.loadNotifications();
-  await setImmediate();
-  identity.setProperty("/authenticated", false);
-  identity.setProperty("/authenticated", true);
-  assert.equal(list.getData().length, 0);
-  requests("GET")[0].succeed([{ id: 1, title: "Old session" }]);
-  assert.equal(await pending, false);
-  assert.equal(list.getData().length, 0);
-  assert.deepEqual(toasts, []);
-  const current = controller.loadNotifications();
-  await setImmediate();
-  requests("GET")[1].succeed([{ id: 2, title: "Current session" }]);
-  assert.equal(await current, true);
-  assert.equal(list.getData()[0].id, 2);
-});
-
-test("session changes close the locked form while old writes remain silent", async () => {
-  const { controller, identity, requests, form, dialog, state, add } = notificationsFixture();
-  add("Old session");
-  controller.onSaveNotification();
-  await setImmediate();
-  identity.setProperty("/username", "another-admin");
-  add("Current session");
-  assert.equal(dialog.isOpen(), false, "a new form stays blocked until the pending write settles");
-  assert.deepEqual(Object.keys(form.getData()), []);
-  requests("POST")[0].succeed({ id: 1 });
-  await setImmediate();
-  assert.equal(dialog.isOpen(), false);
-  assert.equal(dialog.closed, 1);
-  assert.equal(state.getProperty("/saving"), false);
-  assert.equal(requests("GET").length, 0);
-  assert.deepEqual(toasts, []);
-  add("Current session");
-  assert.equal(dialog.isOpen(), true);
-  assert.equal(form.getProperty("/title"), "Current session");
-});
-
-test("notification deletion waits for confirmation and ignores confirmations from an obsolete session", async () => {
-  const { controller, identity, eventFor, requests } = notificationsFixture();
+test("notification deletion waits for confirmation and ignores confirmations after view destruction", async () => {
+  const { controller, eventFor, requests } = notificationsFixture();
   controller.onDeleteNotification(eventFor({ id: 1 }));
   assert.equal(requests("DELETE").length, 0);
   confirmations[0].onClose("CANCEL");
@@ -1062,21 +990,22 @@ test("notification deletion waits for confirmation and ignores confirmations fro
   await setImmediate();
   assert.equal(requests("GET").length, 1);
   controller.onDeleteNotification(eventFor({ id: 2 }));
-  identity.setProperty("/scope", "user");
+  controller.onExit();
+  controller.view.isDestroyed = () => true;
   confirmations[2].onClose("OK");
   assert.equal(requests("DELETE").length, 1);
 });
 
-test("destroying notification views invalidates reads and writes and detaches all identity and route listeners", async () => {
-  const { controller, identity, requests, state, list, dialog, add } = notificationsFixture();
+test("destroying notification views ignores late reads and writes and detaches the route listener", async () => {
+  const { controller, requests, state, list, dialog, add } = notificationsFixture();
   const pending = controller.loadNotifications();
   await setImmediate();
   add();
   controller.onSaveNotification();
   await setImmediate();
-  const bindings = [...identity.bindings];
   const currentData = list.getData();
   controller.onExit();
+  controller.view.isDestroyed = () => true;
   state.setProperty = () => assert.fail("late write must not update destroyed state");
   requests("POST")[0].succeed({ id: 1 });
   requests("GET")[0].succeed([{ id: 1, title: "Late response" }]);
@@ -1086,8 +1015,6 @@ test("destroying notification views invalidates reads and writes and detaches al
   assert.equal(dialog.closed, 0);
   assert.equal(requests("GET").length, 1);
   assert.deepEqual(toasts, []);
-  assert.equal(identity.bindings.size, 0);
-  assert.ok(bindings.every((binding) => binding.destroyed && binding.handlers.length === 0));
   assert.equal(controller.routes.has(Routes.Notifications), false);
   controller.onExit();
 });
@@ -1101,6 +1028,7 @@ test("closing a notification controller during regatta lookup prevents later HTT
   add();
   controller.onSaveNotification();
   controller.onExit();
+  controller.view.isDestroyed = () => true;
   resolveRegatta(new JSONModel({ id: 7 }));
   assert.equal(await read, false);
   await setImmediate();
