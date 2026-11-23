@@ -224,8 +224,16 @@ function loadController(name) {
       return class extends loadController("Base") {
         init(table) {
           this.table = table;
+          this.filters = [];
+          this.searchFilters = [];
         }
         sortTable() {}
+        setSearchFilters(filters) {
+          loadController("BaseTable").prototype.setSearchFilters.call(this, filters);
+        }
+        applyFilters() {
+          loadController("BaseTable").prototype.applyFilters.call(this);
+        }
         onExit() {
           this.baseExitCalled = true;
         }
@@ -858,7 +866,7 @@ test("heat route arguments are consumed synchronously, before a pooled event is 
   assert.deepEqual(controller.feedback, []);
 });
 
-test("club athlete filters are applied after loading, with a captured club ID", async () => {
+test("club athlete filters capture and apply the club ID before loading", async () => {
   const controller = new (loadController("AthletesTable"))();
   let resolve;
   const loaded = new Promise((done) => {
@@ -873,10 +881,161 @@ test("club athlete filters are applied after loading, with a captured club ID", 
   event.getParameter = () => {
     throw new Error("Event was already cleared");
   };
-  assert.deepEqual(filters, []);
+  assert.deepEqual(filters, [7]);
   resolve(true);
   await setImmediate();
   assert.deepEqual(filters, [7]);
+});
+
+function athletesFixture(athletes = []) {
+  const controller = new (loadController("AthletesTable"))();
+  let applied = [];
+  const table = { getBinding: () => ({ filter: (filters) => (applied = filters) }) };
+  const comboBox = {
+    selectedKey: "",
+    value: "",
+    setSelectedKey(key) {
+      this.selectedKey = key;
+      const item = controller.models
+        .get("clubFilter")
+        .getData()
+        .find((choice) => choice.key === key);
+      // Match UI5: unknown keys retain the old visual selection unless cleared first.
+      if (!key) this.value = "";
+      else if (item) this.value = item.text;
+      return this;
+    }
+  };
+  controller.view.byId = (id) => (id === "athletesTable" ? table : comboBox);
+  controller.component.getActiveRegatta = () => Promise.resolve(new JSONModel({ id: 7 }));
+  controller.onInit();
+  const model = controller.models.get("athletes");
+  model.loadData = async (url) => {
+    assert.equal(url, "/api/regattas/7/athletes");
+    model.setData(athletes);
+  };
+  const match = (clubId) =>
+    controller.routes.get(clubId === undefined ? Routes.Athletes : Routes.ClubAthletes)({
+      getParameter: () => (clubId === undefined ? {} : { clubId: String(clubId) })
+    });
+  const visibleIds = () =>
+    Array.from(model.getData())
+      .filter((athlete) => applied.every((filter) => matchesClubSearch(filter, athlete)))
+      .map((athlete) => athlete.id);
+  const select = (key) =>
+    controller.onClubSelectionChange({
+      getParameters: () => ({ selectedItem: key ? { getKey: () => key } : undefined })
+    });
+  return { controller, comboBox, model, match, visibleIds, select };
+}
+
+test("club athlete routes replace A with empty B, including during loading and on failure", async () => {
+  const { controller, comboBox, model, match, visibleIds } = athletesFixture([
+    { id: 11, club: { id: 1, shortName: "Club A" } }
+  ]);
+  match(1);
+  await setImmediate();
+  assert.deepEqual(visibleIds(), [11]);
+  assert.equal(comboBox.value, "Club A");
+  model.loadData = () => Promise.reject({ statusCode: 503, statusText: "Unavailable" });
+  match(2);
+  assert.equal(controller.clubFilter.getPath(), "club/id");
+  assert.equal(controller.clubFilter.getValue1(), 2);
+  assert.deepEqual(visibleIds(), []);
+  assert.equal(comboBox.selectedKey, "2");
+  assert.equal(comboBox.value, "", "missing clubs must not retain another club's label");
+  await setImmediate();
+  assert.deepEqual(visibleIds(), []);
+  match();
+  assert.deepEqual(visibleIds(), [11]);
+  assert.equal(comboBox.selectedKey, "");
+  await setImmediate();
+});
+
+test("a fresh empty-club route stays restricted after a successful athlete load", async () => {
+  const { controller, comboBox, match, visibleIds } = athletesFixture([
+    { id: 11, club: { id: 1, shortName: "Club A" } }
+  ]);
+  match(2);
+  assert.equal(controller.clubFilter.getValue1(), 2);
+  await setImmediate();
+  assert.deepEqual(visibleIds(), []);
+  assert.equal(comboBox.selectedKey, "2");
+  assert.equal(comboBox.value, "");
+});
+
+test("equal club names retain separate ID choices and restrict routes and manual selections by ID", async () => {
+  const { controller, comboBox, match, visibleIds, select } = athletesFixture([
+    { id: 11, lastName: "Alice", club: { id: 1, shortName: "Same club" } },
+    { id: 12, lastName: "Bob", club: { id: 1, shortName: "Same club" } },
+    { id: 21, lastName: "Alice", club: { id: 2, shortName: "Same club" } }
+  ]);
+  match(1);
+  await setImmediate();
+  const choices = Array.from(controller.models.get("clubFilter").getData());
+  assert.deepEqual(
+    choices.map((choice) => choice.key),
+    ["1", "2"]
+  );
+  assert.notEqual(choices[0].text, choices[1].text);
+  assert.equal(comboBox.selectedKey, "1");
+  assert.deepEqual(visibleIds(), [11, 12]);
+  match(2);
+  assert.deepEqual(visibleIds(), [21]);
+  await setImmediate();
+  select("1");
+  assert.deepEqual(visibleIds(), [11, 12]);
+  controller.onSearchFieldLiveChange({ getParameters: () => ({ newValue: " Alice " }) });
+  assert.deepEqual(visibleIds(), [11]);
+  select("2");
+  assert.deepEqual(visibleIds(), [21]);
+  select("");
+  assert.deepEqual(visibleIds(), [11, 21], "clearing the club must preserve text search");
+  assert.equal(comboBox.selectedKey, "");
+});
+
+test("late athlete loads use current club selection and cannot restore an obsolete route restriction", async () => {
+  for (const [firstClub, currentClub] of [
+    [1, 2],
+    [undefined, 2],
+    [1, undefined]
+  ]) {
+    const athletes = [
+      { id: 11, club: { id: 1, shortName: "Club A" } },
+      { id: 21, club: { id: 2, shortName: "Club B" } }
+    ];
+    const { comboBox, model, match, visibleIds } = athletesFixture(athletes);
+    const pending = [];
+    model.loadData = () => new Promise((resolve) => pending.push(resolve));
+    match(firstClub);
+    await setImmediate();
+    match(currentClub);
+    await setImmediate();
+    model.setData(athletes);
+    pending[1]();
+    await setImmediate();
+    pending[0]();
+    await setImmediate();
+    assert.equal(comboBox.selectedKey, currentClub === undefined ? "" : String(currentClub));
+    assert.equal(comboBox.value, currentClub === undefined ? "" : "Club B");
+    assert.deepEqual(visibleIds(), currentClub === undefined ? [11, 21] : [21]);
+  }
+});
+
+test("refresh rebuilds choices without losing the current club restriction", async () => {
+  const { controller, comboBox, model, match, visibleIds } = athletesFixture([
+    { id: 11, club: { id: 1, shortName: "Club A" } }
+  ]);
+  match(1);
+  await setImmediate();
+  const enabled = [];
+  model.loadData = async () => model.setData([{ id: 21, club: { id: 2, shortName: "Club B" } }]);
+  await controller.onRefreshButtonPress({ getSource: () => ({ setEnabled: (value) => enabled.push(value) }) });
+  assert.deepEqual(enabled, [false, true]);
+  assert.deepEqual(controller.feedback, [true]);
+  assert.equal(comboBox.selectedKey, "1");
+  assert.equal(comboBox.value, "");
+  assert.deepEqual(visibleIds(), []);
 });
 
 test("club-entry crew search safely rejects omitted, empty, and malformed crews", () => {
@@ -905,8 +1064,8 @@ test("club-entry crew search matches first or last names case-insensitively", ()
   assert.equal(crewMatches([{ athlete: { firstName: "Bob", lastName: "Smith" } }]), false);
 });
 
-// Only the custom predicate, OR conjunction, and Contains operator used by
-// club search are simulated here; this is not a full UI5 filtering engine.
+// Only the predicates, conjunctions, Contains and EQ operators used by these
+// club/athlete filters are simulated here; this is not a full UI5 filtering engine.
 function matchesClubSearch(filter, entry) {
   const nested = filter.getFilters();
   if (nested) {
@@ -921,6 +1080,7 @@ function matchesClubSearch(filter, entry) {
     .reduce((object, key) => object?.[key], entry);
   const predicate = filter.getTest();
   if (predicate) return predicate(value);
+  if (filter.getOperator() === "EQ") return value === filter.getValue1();
   assert.equal(filter.getOperator(), "Contains");
   return value != null && String(value).toLowerCase().includes(String(filter.getValue1()).toLowerCase());
 }
