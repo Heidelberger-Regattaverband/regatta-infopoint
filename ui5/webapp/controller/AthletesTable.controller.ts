@@ -22,11 +22,12 @@ export default class AthletesTable extends BaseTableController {
   private static readonly CLUB_FILTER_MODEL: string = "clubFilter";
 
   private clubFilter?: Filter;
+  private selectedClubId?: number;
   private textSearchFilters: Filter[] = [];
 
   /**
    * Registers list models and both athlete routes.
-   * Club-route arguments are captured synchronously and applied only after the athlete model has loaded.
+   * Club restrictions are applied synchronously, even if the requested club has no loaded athletes.
    */
   onInit(): void {
     super.init(super.getView()?.byId("athletesTable") as Table);
@@ -38,12 +39,8 @@ export default class AthletesTable extends BaseTableController {
       .getRouter()
       ?.getRoute(Routes.Athletes)
       ?.attachMatched((_: Route$MatchedEvent) => {
-        super.runAsync(
-          this.loadModel().then(() => {
-            this.clearClubFilter();
-          }),
-          "Failed to load athletes:"
-        );
+        this.applyClubFilter();
+        super.runAsync(this.loadModel(), "Failed to load athletes:");
       }, this);
 
     super
@@ -51,12 +48,8 @@ export default class AthletesTable extends BaseTableController {
       ?.getRoute(Routes.ClubAthletes)
       ?.attachMatched((event: Route$MatchedEvent) => {
         const clubId: number = Number((event.getParameter("arguments") as any)?.clubId);
-        super.runAsync(
-          this.loadModel().then(() => {
-            this.applyClubFilter(clubId);
-          }),
-          "Failed to load club athletes:"
-        );
+        this.applyClubFilter(clubId);
+        super.runAsync(this.loadModel(), "Failed to load club athletes:");
       }, this);
 
     super.sortTable("athleteLastNameCol", false, "lastName");
@@ -78,14 +71,13 @@ export default class AthletesTable extends BaseTableController {
   }
 
   /**
-   * Filters by the selected club's short name, combining it with the current text search.
+   * Filters by the selected club's ID, combining it with the current text search.
    *
-   * @param event - Selection event providing a club short-name key; no selection removes the club constraint.
+   * @param event - Selection event providing a club ID key; no selection removes the club constraint.
    */
   onClubSelectionChange(event: ComboBox$SelectionChangeEvent): void {
     const key: string = event.getParameters().selectedItem?.getKey() ?? "";
-    this.clubFilter = key ? new Filter("club/shortName", FilterOperator.EQ, key) : undefined;
-    this.applyAllFilters();
+    this.applyClubFilter(key ? Number(key) : undefined);
   }
 
   /**
@@ -147,26 +139,24 @@ export default class AthletesTable extends BaseTableController {
   }
 
   /**
-   * Resolves a route's club ID to a loaded athlete's club short name and synchronizes the club selector.
+   * Replaces the club restriction independently of the loaded athletes and synchronizes the selector.
    *
-   * @param clubId - Backend club ID to locate in the already loaded athlete collection.
+   * @param clubId - Backend club ID to match; omitted to remove the restriction.
    */
-  private applyClubFilter(clubId: number): void {
-    const athletes: any[] = super.getViewJSONModel(AthletesTable.ATHLETES_MODEL).getData() ?? [];
-    const shortName: string | undefined = athletes.find((a: any) => a.club?.id === clubId)?.club?.shortName;
-    if (shortName) {
-      this.clubFilter = new Filter("club/shortName", FilterOperator.EQ, shortName);
-      (super.getView()?.byId("clubComboBox") as ComboBox)?.setSelectedKey(shortName);
-      this.applyAllFilters();
-    }
+  private applyClubFilter(clubId?: number): void {
+    this.selectedClubId = clubId;
+    this.clubFilter = clubId !== undefined ? new Filter("club/id", FilterOperator.EQ, clubId) : undefined;
+    this.synchronizeClubSelection();
+    this.applyAllFilters();
   }
 
-  /** Removes a previous club-route filter while retaining text search. */
-  private clearClubFilter(): void {
-    if (this.clubFilter) {
-      this.clubFilter = undefined;
-      (super.getView()?.byId("clubComboBox") as ComboBox)?.setSelectedKey("");
-      this.applyAllFilters();
+  /** Uses the current selection, not a completed request's route, when club choices change. */
+  private synchronizeClubSelection(): void {
+    const comboBox = super.getView()?.byId("clubComboBox") as ComboBox;
+    // A nonexistent key alone leaves the previous visual selection intact in UI5.
+    comboBox?.setSelectedKey("");
+    if (this.selectedClubId !== undefined) {
+      comboBox?.setSelectedKey(String(this.selectedClubId));
     }
   }
 
@@ -204,45 +194,53 @@ export default class AthletesTable extends BaseTableController {
   }
 
   /**
-   * Builds alphabetically sorted club choices, deduplicated by short name, from the loaded athletes.
+   * Builds alphabetically sorted club choices, deduplicated by ID, from the loaded athletes.
+   * Equal display names include their IDs so that users can distinguish the choices.
    *
    * @param athletesModel - Model containing the athlete array from which club choices are derived.
    */
   private populateClubFilterModel(athletesModel: JSONModel): void {
     const data: any = athletesModel.getData();
     const athletes: any[] = Array.isArray(data) ? data : [];
-    const seen = new Set<string>();
+    const clubs = new Map<number, string>();
+    athletes.forEach((athlete: any) => {
+      const club = athlete?.club;
+      if (club?.id != null) {
+        clubs.set(club.id as number, club.shortName || club.longName || String(club.id));
+      }
+    });
+    const nameCounts = new Map<string, number>();
+    clubs.forEach((name) => nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1));
     const items: { key: string; text: string }[] = [];
-
-    athletes
-      .map((a: any) => a.club)
-      .filter((club: any) => club?.shortName)
-      .sort((a: any, b: any) => (a.shortName as string).localeCompare(b.shortName as string))
-      .forEach((club: any) => {
-        if (!seen.has(club.shortName as string)) {
-          seen.add(club.shortName as string);
-          items.push({ key: club.shortName as string, text: club.shortName as string });
-        }
-      });
+    clubs.forEach((name, id) => {
+      items.push({ key: String(id), text: (nameCounts.get(name) ?? 0) > 1 ? `${name} (${id})` : name });
+    });
+    items.sort((a, b) => a.text.localeCompare(b.text));
 
     super.getViewJSONModel(AthletesTable.CLUB_FILTER_MODEL).setData(items);
+    this.synchronizeClubSelection();
   }
 
   /**
    * Loads athletes for the active regatta and rebuilds club choices only after a successful request.
    *
-   * @returns Whether the athlete request succeeded; active-regatta loading failures still reject.
+   * @returns Whether the athlete request succeeded for a still-live view; active-regatta loading failures still reject.
    */
   private async loadModel(): Promise<boolean> {
+    const view = super.getView();
     const regatta: any = await super.getActiveRegatta();
+    if (view?.isDestroyed() !== false) {
+      return false;
+    }
     const url = `/api/regattas/${regatta.id}/athletes`;
     const athletesModel: JSONModel = super.getViewJSONModel(AthletesTable.ATHLETES_MODEL);
     const succeeded: boolean = await super.updateJSONModel(athletesModel, url);
 
-    if (succeeded) {
+    if (succeeded && !view.isDestroyed()) {
       this.populateClubFilterModel(athletesModel);
+      return true;
     }
 
-    return succeeded;
+    return false;
   }
 }

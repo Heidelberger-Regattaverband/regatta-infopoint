@@ -19,6 +19,75 @@ vm.runInNewContext(
 );
 const { Routes } = routesModule;
 
+const leafletState = { maps: [] };
+const fakeLeaflet = {
+  latLng: (lat, lng) => ({ lat, lng }),
+  latLngBounds: (points) => ({ points, isValid: () => points.length > 0 }),
+  layerGroup: (layers = []) => ({
+    layers: [...layers],
+    clearLayers() {
+      this.layers = [];
+      return this;
+    },
+    addLayer(layer) {
+      this.layers.push(layer);
+      return this;
+    },
+    eachLayer(callback) {
+      this.layers.forEach(callback);
+      return this;
+    }
+  }),
+  tileLayer: (url) => ({ url }),
+  circle: (position, options) => ({ position, options }),
+  icon: (options) => options,
+  popup: () => ({
+    setContent(content) {
+      this.content = content;
+      return this;
+    }
+  }),
+  marker: (position) => ({
+    position,
+    bindPopup(popup) {
+      this.popup = popup;
+      return this;
+    },
+    setIcon(icon) {
+      this.icon = icon;
+      return this;
+    },
+    getLatLng: () => position,
+    openPopup() {}
+  }),
+  control: { layers: () => ({ addTo() {} }), scale: () => ({ addTo() {} }) },
+  map: (container, options) => {
+    const instance = {
+      container,
+      options,
+      fitted: [],
+      focused: [],
+      removed: 0,
+      resized: 0,
+      getContainer: () => container,
+      fitBounds(bounds) {
+        this.fitted.push(bounds);
+      },
+      setView(position, zoom) {
+        this.focused.push({ position, zoom });
+      },
+      invalidateSize() {
+        this.resized++;
+      },
+      remove() {
+        this.removed++;
+      }
+    };
+    leafletState.maps.push(instance);
+    return instance;
+  }
+};
+
 class JSONModel {
   constructor(data = {}) {
     this.data = data;
@@ -83,6 +152,7 @@ class Controller {
     this.feedback = [];
     this.busy = [];
     this.routes = new Map();
+    this.routeHandlers = new Map();
     this.models = new Map();
     this.control = { setBusy: (value) => this.busy.push(value) };
     this.view = {
@@ -101,7 +171,17 @@ class Controller {
       getResourceBundle: () => ({ getText: (key) => key }),
       getRouter: () => ({
         getRoute: (name) => ({
-          attachMatched: (callback, context) => this.routes.set(name, callback.bind(context)),
+          attachMatched: (callback, context) => {
+            this.routeHandlers.set(name, { callback, context });
+            this.routes.set(name, callback.bind(context));
+          },
+          detachMatched: (callback, context) => {
+            const registered = this.routeHandlers.get(name);
+            if (registered?.callback === callback && registered.context === context) {
+              this.routeHandlers.delete(name);
+              this.routes.delete(name);
+            }
+          },
           attachPatternMatched: (callback, context) => this.routes.set(name, callback.bind(context))
         })
       })
@@ -135,7 +215,8 @@ function loadController(name) {
     if (id === "sap/m/MessageBox") return {};
     if (id === "sap/ui/model/FilterOperator") return { Contains: "Contains", EQ: "EQ" };
     if (id === "sap/ui/model/Sorter") return class {};
-    if (id === "sap/base/Log") return { debug() {} };
+    if (id === "sap/base/Log") return { debug() {}, error: (...args) => errors.push(args) };
+    if (id === "leaflet") return fakeLeaflet;
     if (id === "sap/ui/core/Fragment") return {};
     if (id === "sap/ui/core/library") return { SortOrder: {} };
     if (id === "./Base.controller") return loadController("Base");
@@ -143,8 +224,16 @@ function loadController(name) {
       return class extends loadController("Base") {
         init(table) {
           this.table = table;
+          this.filters = [];
+          this.searchFilters = [];
         }
         sortTable() {}
+        setSearchFilters(filters) {
+          loadController("BaseTable").prototype.setSearchFilters.call(this, filters);
+        }
+        applyFilters() {
+          loadController("BaseTable").prototype.applyFilters.call(this);
+        }
         onExit() {
           this.baseExitCalled = true;
         }
@@ -180,6 +269,273 @@ const BaseController = loadController("Base");
 BaseController.prototype.showDataUpdatedMessage = function (succeeded) {
   this.feedback.push(succeeded);
 };
+
+function mapFixture(render = true) {
+  leafletState.maps.length = 0;
+  const controller = new (loadController("Map"))();
+  controller.component.getActiveRegatta = () => Promise.resolve(new JSONModel({ id: 7 }));
+  controller.buildClubPopup = (club) => ({ clubId: club.id });
+  controller.onInit();
+  const container = {};
+  const rendered = (element = container) =>
+    controller.onMapAfterRendering({ getSource: () => ({ getDomRef: () => element }) });
+  const match = (clubId) =>
+    controller.routes.get(clubId === undefined ? Routes.Map : Routes.MapClub)({
+      getParameter: () => (clubId === undefined ? {} : { clubId: String(clubId) })
+    });
+  if (render) rendered();
+  return { controller, container, rendered, match };
+}
+
+test("map renders fixed regatta locations even when the first club request fails", async () => {
+  const { controller, container, match } = mapFixture();
+  assert.ok(Array.isArray(controller.participatingClubsModel.getData()));
+  const instance = controller.map;
+  controller.participatingClubsModel.loadData = () =>
+    Promise.reject({ statusCode: 503, statusText: "Synthetic club failure" });
+  match();
+  await setImmediate();
+  assert.equal(controller.map, instance);
+  assert.equal(instance.container, container);
+  assert.equal(instance.options.layers[1].layers.length, 5);
+  assert.equal(instance.fitted.at(-1), controller.regattaBounds);
+  assert.equal(controller.clubMarkers.size, 0);
+  assert.equal(leafletState.maps.length, 1);
+});
+
+test("map renders fixed locations when active-regatta lookup fails", async () => {
+  const { controller, match } = mapFixture();
+  controller.component.getActiveRegatta = () => Promise.reject(new Error("Synthetic regatta failure"));
+  match();
+  await setImmediate();
+  assert.ok(controller.map);
+  assert.equal(controller.map.options.layers[1].layers.length, 5);
+  assert.equal(controller.map.fitted.at(-1), controller.regattaBounds);
+});
+
+test("a retry refreshes club markers, bounds, and focus without replacing the map or overlay", async () => {
+  const { controller, match } = mapFixture();
+  const instance = controller.map;
+  const overlay = controller.clubsLayer;
+  controller.participatingClubsModel.loadData = () => Promise.reject({ statusText: "Unavailable" });
+  match(1);
+  await setImmediate();
+
+  let clubs = [{ id: 1, latitude: 49, longitude: 8 }];
+  controller.participatingClubsModel.loadData = async (url) => {
+    assert.equal(url, "/api/regattas/7/clubs");
+    controller.participatingClubsModel.setData(clubs);
+  };
+  match(1);
+  await setImmediate();
+  assert.equal(controller.map, instance);
+  assert.equal(controller.clubsLayer, overlay);
+  assert.equal(overlay.layers.length, 1);
+  assert.equal(instance.focused.at(-1).position.lat, 49);
+  const oldMarker = controller.clubMarkers.get(1);
+
+  clubs = [
+    { id: 1, latitude: 50, longitude: 9 },
+    { id: 2, latitude: 0, longitude: 0 }
+  ];
+  match(2);
+  await setImmediate();
+  assert.equal(overlay.layers.length, 2);
+  assert.notEqual(controller.clubMarkers.get(1), oldMarker);
+  assert.equal(controller.clubMarkers.get(1).position.lat, 50);
+  assert.equal(instance.focused.at(-1).position.lat, 0);
+  assert.equal(instance.focused.at(-1).position.lng, 0);
+
+  clubs = [{ id: 2, latitude: 0, longitude: 0 }];
+  match();
+  await setImmediate();
+  assert.equal(controller.clubMarkers.has(1), false);
+  assert.equal(overlay.layers.length, 1);
+  assert.equal(instance.fitted.at(-1), controller.clubBounds);
+  assert.equal(leafletState.maps.length, 1);
+});
+
+test("club data arriving before HTML rendering is used without premature map creation", async () => {
+  const { controller, rendered, match } = mapFixture(false);
+  controller.participatingClubsModel.loadData = async () => {
+    controller.participatingClubsModel.setData([{ id: 1, latitude: 49, longitude: 8 }]);
+  };
+  match(1);
+  await setImmediate();
+  assert.equal(leafletState.maps.length, 0);
+  assert.equal(controller.map, undefined);
+  rendered();
+  assert.equal(controller.clubMarkers.size, 1);
+  assert.equal(controller.map.focused.at(-1).position.lat, 49);
+});
+
+test("backend decimal-string coordinates populate club markers before rendering and on later refresh", async () => {
+  for (const renderFirst of [false, true]) {
+    const { controller, rendered, match } = mapFixture(renderFirst);
+    controller.participatingClubsModel.loadData = async () => {
+      controller.participatingClubsModel.setData([
+        { id: 1, latitude: "49.412944", longitude: "8.690510" },
+        { id: 2, latitude: "0.000000", longitude: "-8.500000" }
+      ]);
+    };
+    match(1);
+    await setImmediate();
+    if (!renderFirst) rendered();
+    assert.equal(controller.clubsLayer.layers.length, 2);
+    assert.equal(controller.clubMarkers.get(1).position.lat, 49.412944);
+    assert.equal(controller.clubMarkers.get(1).position.lng, 8.69051);
+    assert.equal(controller.clubMarkers.get(2).position.lat, 0);
+    assert.equal(controller.clubMarkers.get(2).position.lng, -8.5);
+    assert.equal(controller.map.focused.at(-1).position.lat, 49.412944);
+    match();
+    await setImmediate();
+    assert.equal(controller.map.fitted.at(-1), controller.clubBounds);
+    assert.equal(controller.clubBounds.points[0].lat, 49.412944);
+    assert.equal(leafletState.maps.length, 1);
+  }
+});
+
+test("malformed club responses and invalid coordinates preserve the static map fallback", async () => {
+  const { controller, match } = mapFixture();
+  let response = { clubs: [] };
+  controller.participatingClubsModel.loadData = async () => controller.participatingClubsModel.setData(response);
+  match();
+  await setImmediate();
+  assert.equal(controller.clubsLayer.layers.length, 0);
+  assert.equal(controller.map.fitted.at(-1), controller.regattaBounds);
+  response = [null, {}, { id: null, latitude: 49, longitude: 8 }];
+  for (const invalid of [undefined, null, "", "   ", true, false, [], {}, "invalid", "NaN", "Infinity", Infinity]) {
+    response.push({ id: 1, latitude: invalid, longitude: 8 }, { id: 2, latitude: 49, longitude: invalid });
+  }
+  response.push(
+    { id: 3, latitude: 91, longitude: 0 },
+    { id: 4, latitude: "-91", longitude: "0" },
+    { id: 5, latitude: "49", longitude: "181" },
+    { id: 6, latitude: 49, longitude: -181 }
+  );
+  match();
+  await setImmediate();
+  assert.equal(controller.clubMarkers.size, 0);
+  assert.equal(controller.map.fitted.at(-1), controller.regattaBounds);
+});
+
+test("map rerenders preserve the current container or release a replaced one", () => {
+  const { controller, rendered } = mapFixture();
+  const first = controller.map;
+  rendered();
+  assert.equal(controller.map, first);
+  controller.onAfterShow();
+  assert.equal(first.resized, 1);
+  rendered({});
+  assert.equal(first.removed, 1);
+  assert.notEqual(controller.map, first);
+  controller.onExit();
+  assert.equal(leafletState.maps.at(-1).removed, 1);
+  assert.equal(controller.map, undefined);
+  assert.equal(controller.routes.has(Routes.Map), false);
+  assert.equal(controller.routes.has(Routes.MapClub), false);
+  controller.onExit();
+  assert.equal(leafletState.maps.at(-1).removed, 1);
+});
+
+test("map uses the latest route focus when club loading completes and ignores completion after destruction", async () => {
+  const { controller, match } = mapFixture();
+  let resolve;
+  controller.component.getActiveRegatta = () =>
+    new Promise((done) => {
+      resolve = done;
+    });
+  // Share one pending bootstrap lookup as the real component does.
+  const pending = controller.component.getActiveRegatta();
+  controller.component.getActiveRegatta = () => pending;
+  controller.participatingClubsModel.loadData = async () => {
+    controller.participatingClubsModel.setData([
+      { id: 1, latitude: 49, longitude: 8 },
+      { id: 2, latitude: 50, longitude: 9 }
+    ]);
+  };
+  match(1);
+  match(2);
+  resolve(new JSONModel({ id: 7 }));
+  await setImmediate();
+  assert.ok(controller.map.focused.every((focus) => focus.position.lat === 50));
+  const instance = controller.map;
+  let finish;
+  controller.participatingClubsModel.loadData = () =>
+    new Promise((done) => {
+      finish = done;
+    });
+  match(1);
+  await setImmediate();
+  controller.onExit();
+  controller.view.isDestroyed = () => true;
+  finish();
+  await setImmediate();
+  assert.equal(controller.map, undefined);
+  assert.equal(instance.removed, 1);
+  assert.equal(leafletState.maps.length, 1);
+});
+
+function loadFormatter() {
+  const types = {};
+  vm.runInNewContext(
+    ts.transpileModule(readFileSync(new URL("../webapp/model/Types.ts", import.meta.url), "utf8"), {
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
+    }).outputText,
+    { exports: types }
+  );
+  const module = { exports: {} };
+  const { outputText } = ts.transpileModule(
+    readFileSync(new URL("../webapp/model/Formatter.ts", import.meta.url), "utf8"),
+    { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true } }
+  );
+  vm.runInNewContext(outputText, {
+    exports: module.exports,
+    module,
+    require: (id) => {
+      if (id === "./Types") return types;
+      if (id === "sap/base/Log") return { warning() {} };
+      if (id === "sap/ui/core/library") return { IndicationColor: {} };
+      if (id === "sap/m/library") return { Priority: {} };
+      throw new Error(`Unmocked formatter dependency: ${id}`);
+    }
+  });
+  return module.exports.default;
+}
+
+test("schedule weekday and UTC clock remain consistent across browser timezones and DST boundaries", () => {
+  const formatter = loadFormatter();
+  const original = process.env.TZ;
+  try {
+    for (const timezone of ["UTC", "Europe/Berlin", "America/Los_Angeles", "Pacific/Auckland"]) {
+      process.env.TZ = timezone;
+      assert.equal(formatter.dayTimeIsoLabel("2026-05-22T23:30:00Z"), "Fr, 23:30", timezone);
+      assert.equal(formatter.dayTimeIsoLabel("2026-05-23T00:30:00Z"), "Sa, 00:30", timezone);
+      assert.equal(formatter.dayTimeIsoLabel("2026-05-23T00:30:00+02:00"), "Fr, 22:30", timezone);
+      assert.equal(formatter.dayTimeIsoLabel("2026-03-29T00:30:00Z"), "So, 00:30", timezone);
+      assert.equal(formatter.dayTimeIsoLabel("2026-03-29T01:30:00Z"), "So, 01:30", timezone);
+      assert.equal(formatter.weekDayDateLabel("2026-05-22"), "Fr, 22.05.2026", timezone);
+    }
+    assert.equal(formatter.dayTimeIsoLabel(undefined), "");
+    assert.equal(formatter.weekDayDateLabel(undefined), "");
+  } finally {
+    if (original === undefined) delete process.env.TZ;
+    else process.env.TZ = original;
+  }
+});
+
+test("UTC schedule formatting does not alter local notification and timekeeping timestamp formats", () => {
+  const formatter = loadFormatter();
+  const original = process.env.TZ;
+  try {
+    process.env.TZ = "Europe/Berlin";
+    assert.equal(formatter.dateTime("2026-05-22T23:30:00Z"), "23.05.2026 01:30");
+    assert.equal(formatter.timestamp("2026-05-22T23:30:00Z"), "23.05.2026 01:30:00.000");
+  } finally {
+    if (original === undefined) delete process.env.TZ;
+    else process.env.TZ = original;
+  }
+});
 
 test("runAsync handles a rejection once and does not treat false as a rejection", async () => {
   const controller = new BaseController();
@@ -510,7 +866,7 @@ test("heat route arguments are consumed synchronously, before a pooled event is 
   assert.deepEqual(controller.feedback, []);
 });
 
-test("club athlete filters are applied after loading, with a captured club ID", async () => {
+test("club athlete filters capture and apply the club ID before loading", async () => {
   const controller = new (loadController("AthletesTable"))();
   let resolve;
   const loaded = new Promise((done) => {
@@ -525,10 +881,161 @@ test("club athlete filters are applied after loading, with a captured club ID", 
   event.getParameter = () => {
     throw new Error("Event was already cleared");
   };
-  assert.deepEqual(filters, []);
+  assert.deepEqual(filters, [7]);
   resolve(true);
   await setImmediate();
   assert.deepEqual(filters, [7]);
+});
+
+function athletesFixture(athletes = []) {
+  const controller = new (loadController("AthletesTable"))();
+  let applied = [];
+  const table = { getBinding: () => ({ filter: (filters) => (applied = filters) }) };
+  const comboBox = {
+    selectedKey: "",
+    value: "",
+    setSelectedKey(key) {
+      this.selectedKey = key;
+      const item = controller.models
+        .get("clubFilter")
+        .getData()
+        .find((choice) => choice.key === key);
+      // Match UI5: unknown keys retain the old visual selection unless cleared first.
+      if (!key) this.value = "";
+      else if (item) this.value = item.text;
+      return this;
+    }
+  };
+  controller.view.byId = (id) => (id === "athletesTable" ? table : comboBox);
+  controller.component.getActiveRegatta = () => Promise.resolve(new JSONModel({ id: 7 }));
+  controller.onInit();
+  const model = controller.models.get("athletes");
+  model.loadData = async (url) => {
+    assert.equal(url, "/api/regattas/7/athletes");
+    model.setData(athletes);
+  };
+  const match = (clubId) =>
+    controller.routes.get(clubId === undefined ? Routes.Athletes : Routes.ClubAthletes)({
+      getParameter: () => (clubId === undefined ? {} : { clubId: String(clubId) })
+    });
+  const visibleIds = () =>
+    Array.from(model.getData())
+      .filter((athlete) => applied.every((filter) => matchesClubSearch(filter, athlete)))
+      .map((athlete) => athlete.id);
+  const select = (key) =>
+    controller.onClubSelectionChange({
+      getParameters: () => ({ selectedItem: key ? { getKey: () => key } : undefined })
+    });
+  return { controller, comboBox, model, match, visibleIds, select };
+}
+
+test("club athlete routes replace A with empty B, including during loading and on failure", async () => {
+  const { controller, comboBox, model, match, visibleIds } = athletesFixture([
+    { id: 11, club: { id: 1, shortName: "Club A" } }
+  ]);
+  match(1);
+  await setImmediate();
+  assert.deepEqual(visibleIds(), [11]);
+  assert.equal(comboBox.value, "Club A");
+  model.loadData = () => Promise.reject({ statusCode: 503, statusText: "Unavailable" });
+  match(2);
+  assert.equal(controller.clubFilter.getPath(), "club/id");
+  assert.equal(controller.clubFilter.getValue1(), 2);
+  assert.deepEqual(visibleIds(), []);
+  assert.equal(comboBox.selectedKey, "2");
+  assert.equal(comboBox.value, "", "missing clubs must not retain another club's label");
+  await setImmediate();
+  assert.deepEqual(visibleIds(), []);
+  match();
+  assert.deepEqual(visibleIds(), [11]);
+  assert.equal(comboBox.selectedKey, "");
+  await setImmediate();
+});
+
+test("a fresh empty-club route stays restricted after a successful athlete load", async () => {
+  const { controller, comboBox, match, visibleIds } = athletesFixture([
+    { id: 11, club: { id: 1, shortName: "Club A" } }
+  ]);
+  match(2);
+  assert.equal(controller.clubFilter.getValue1(), 2);
+  await setImmediate();
+  assert.deepEqual(visibleIds(), []);
+  assert.equal(comboBox.selectedKey, "2");
+  assert.equal(comboBox.value, "");
+});
+
+test("equal club names retain separate ID choices and restrict routes and manual selections by ID", async () => {
+  const { controller, comboBox, match, visibleIds, select } = athletesFixture([
+    { id: 11, lastName: "Alice", club: { id: 1, shortName: "Same club" } },
+    { id: 12, lastName: "Bob", club: { id: 1, shortName: "Same club" } },
+    { id: 21, lastName: "Alice", club: { id: 2, shortName: "Same club" } }
+  ]);
+  match(1);
+  await setImmediate();
+  const choices = Array.from(controller.models.get("clubFilter").getData());
+  assert.deepEqual(
+    choices.map((choice) => choice.key),
+    ["1", "2"]
+  );
+  assert.notEqual(choices[0].text, choices[1].text);
+  assert.equal(comboBox.selectedKey, "1");
+  assert.deepEqual(visibleIds(), [11, 12]);
+  match(2);
+  assert.deepEqual(visibleIds(), [21]);
+  await setImmediate();
+  select("1");
+  assert.deepEqual(visibleIds(), [11, 12]);
+  controller.onSearchFieldLiveChange({ getParameters: () => ({ newValue: " Alice " }) });
+  assert.deepEqual(visibleIds(), [11]);
+  select("2");
+  assert.deepEqual(visibleIds(), [21]);
+  select("");
+  assert.deepEqual(visibleIds(), [11, 21], "clearing the club must preserve text search");
+  assert.equal(comboBox.selectedKey, "");
+});
+
+test("late athlete loads use current club selection and cannot restore an obsolete route restriction", async () => {
+  for (const [firstClub, currentClub] of [
+    [1, 2],
+    [undefined, 2],
+    [1, undefined]
+  ]) {
+    const athletes = [
+      { id: 11, club: { id: 1, shortName: "Club A" } },
+      { id: 21, club: { id: 2, shortName: "Club B" } }
+    ];
+    const { comboBox, model, match, visibleIds } = athletesFixture(athletes);
+    const pending = [];
+    model.loadData = () => new Promise((resolve) => pending.push(resolve));
+    match(firstClub);
+    await setImmediate();
+    match(currentClub);
+    await setImmediate();
+    model.setData(athletes);
+    pending[1]();
+    await setImmediate();
+    pending[0]();
+    await setImmediate();
+    assert.equal(comboBox.selectedKey, currentClub === undefined ? "" : String(currentClub));
+    assert.equal(comboBox.value, currentClub === undefined ? "" : "Club B");
+    assert.deepEqual(visibleIds(), currentClub === undefined ? [11, 21] : [21]);
+  }
+});
+
+test("refresh rebuilds choices without losing the current club restriction", async () => {
+  const { controller, comboBox, model, match, visibleIds } = athletesFixture([
+    { id: 11, club: { id: 1, shortName: "Club A" } }
+  ]);
+  match(1);
+  await setImmediate();
+  const enabled = [];
+  model.loadData = async () => model.setData([{ id: 21, club: { id: 2, shortName: "Club B" } }]);
+  await controller.onRefreshButtonPress({ getSource: () => ({ setEnabled: (value) => enabled.push(value) }) });
+  assert.deepEqual(enabled, [false, true]);
+  assert.deepEqual(controller.feedback, [true]);
+  assert.equal(comboBox.selectedKey, "1");
+  assert.equal(comboBox.value, "");
+  assert.deepEqual(visibleIds(), []);
 });
 
 test("club-entry crew search safely rejects omitted, empty, and malformed crews", () => {
@@ -557,8 +1064,8 @@ test("club-entry crew search matches first or last names case-insensitively", ()
   assert.equal(crewMatches([{ athlete: { firstName: "Bob", lastName: "Smith" } }]), false);
 });
 
-// Only the custom predicate, OR conjunction, and Contains operator used by
-// club search are simulated here; this is not a full UI5 filtering engine.
+// Only the predicates, conjunctions, Contains and EQ operators used by these
+// club/athlete filters are simulated here; this is not a full UI5 filtering engine.
 function matchesClubSearch(filter, entry) {
   const nested = filter.getFilters();
   if (nested) {
@@ -573,6 +1080,7 @@ function matchesClubSearch(filter, entry) {
     .reduce((object, key) => object?.[key], entry);
   const predicate = filter.getTest();
   if (predicate) return predicate(value);
+  if (filter.getOperator() === "EQ") return value === filter.getValue1();
   assert.equal(filter.getOperator(), "Contains");
   return value != null && String(value).toLowerCase().includes(String(filter.getValue1()).toLowerCase());
 }

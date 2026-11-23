@@ -388,7 +388,7 @@ export default class Formatter {
   /**
    * Formats a date with weekday prefix.
    *
-   * @param date - ISO date string; the weekday uses the browser's local date interpretation.
+   * @param date - ISO date-only string; the weekday uses UTC to preserve its calendar date in every browser timezone.
    * @returns Formatted weekday and date string
    */
   static weekDayDateLabel(date?: string): string {
@@ -396,14 +396,14 @@ export default class Formatter {
       return "";
     }
 
-    const weekday: string = Formatter.weekdayLabel(new Date(date).getDay());
+    const weekday: string = Formatter.weekdayLabel(new Date(date).getUTCDay());
     const dateLabel: string = Formatter.dateLabel(date);
     return `${weekday}, ${dateLabel}`;
   }
 
   /**
    * Formats a date-time string using a German weekday abbreviation and UTC hours/minutes.
-   * The weekday is derived in the browser's local time zone, unlike the time portion.
+   * Weekday and clock both use UTC, preserving the existing schedule-clock convention without a local-time shift.
    *
    * @param dateTime - ISO date-time string.
    * @returns Formatted weekday and time string
@@ -414,7 +414,7 @@ export default class Formatter {
     }
 
     const oDateTime: Date = new Date(dateTime);
-    const weekday: string = Formatter.weekdayLabel(oDateTime.getDay());
+    const weekday: string = Formatter.weekdayLabel(oDateTime.getUTCDay());
     const hours: string = oDateTime.getUTCHours().toString().padStart(2, "0");
     const minutes: string = oDateTime.getUTCMinutes().toString().padStart(2, "0");
     return `${weekday}, ${hours}:${minutes}`;
