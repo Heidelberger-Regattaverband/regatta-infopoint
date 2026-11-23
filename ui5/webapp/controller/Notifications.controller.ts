@@ -7,7 +7,6 @@ import MessageToast from "sap/m/MessageToast";
 import { Switch$ChangeEvent } from "sap/m/Switch";
 import Context from "sap/ui/model/Context";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import PropertyBinding from "sap/ui/model/PropertyBinding";
 import Formatter from "../model/Formatter";
 import { Routes } from "../model/Routes";
 import BaseController from "./Base.controller";
@@ -34,7 +33,6 @@ export default class NotificationsController extends BaseController {
   private readonly notificationsModel: JSONModel = new JSONModel([]);
   private readonly dialogModel: JSONModel = new JSONModel();
   private readonly stateModel: JSONModel = new JSONModel({ saving: false });
-  private identityBindings: PropertyBinding[] = [];
   private dialog: Dialog;
   // Only reads and sessions need identity tracking; forms cannot be replaced during a save.
   private session?: object = {};
@@ -42,6 +40,7 @@ export default class NotificationsController extends BaseController {
 
   /** Registers the notification and dialog models and reloads notifications whenever the route matches. */
   onInit(): void {
+    super.onInit?.();
     super.getView()?.addStyleClass(super.getContentDensityClass());
     super.setViewModel(this.notificationsModel, MODEL_NOTIFICATIONS);
     super.setViewModel(this.dialogModel, "dialog");
@@ -56,12 +55,6 @@ export default class NotificationsController extends BaseController {
       }
     });
     super.getRouter()?.getRoute(Routes.Notifications)?.attachMatched(this.onRefresh, this);
-    const identity = super.getComponentJSONModel("identity");
-    this.identityBindings = ["/authenticated", "/username", "/scope"].map((path) => {
-      const binding = identity.bindProperty(path);
-      binding.attachChange(this.onIdentityChanged, this);
-      return binding;
-    });
   }
 
   /** Invalidates pending completions and detaches route and identity listeners on destruction. */
@@ -69,20 +62,7 @@ export default class NotificationsController extends BaseController {
     this.session = undefined;
     this.latestRead = undefined;
     super.getRouter()?.getRoute(Routes.Notifications)?.detachMatched(this.onRefresh, this);
-    this.identityBindings.forEach((binding) => {
-      binding.detachChange(this.onIdentityChanged, this);
-      binding.destroy();
-    });
-    this.identityBindings = [];
     super.onExit?.();
-  }
-
-  /** Discards data and pending UI effects belonging to a previous login or authorization scope. */
-  private onIdentityChanged(): void {
-    this.session = {};
-    this.latestRead = undefined;
-    this.notificationsModel.setData([]);
-    this.closeDialog();
   }
 
   navBack(): void {
